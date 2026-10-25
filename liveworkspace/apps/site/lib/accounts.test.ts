@@ -100,21 +100,21 @@ describe("on an app's own address", () => {
     expect(onAppAddress('https://www.livediagram.app')).toBe(true);
     expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
     expect(onAppAddress('http://localhost:3300')).toBe(true);
-    expect(onAppAddress('https://liveworkspace.app')).toBe(false);
-    expect(onAppAddress('https://staging.liveworkspace.app')).toBe(false);
+    expect(onAppAddress('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(false);
+    expect(onAppAddress('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev')).toBe(false);
     expect(onAppAddress('http://localhost:3000')).toBe(false);
   });
 
   it('reaches the accounts API through the app’s router there, and directly here', () => {
     expect(accountsApi('https://livediagram.app')).toBe('/api/workspace/auth');
-    expect(accountsApi('https://liveworkspace.app')).toBe('/api/auth');
+    expect(accountsApi('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe('/api/auth');
   });
 
   it('links to the app’s own sign-in there, which keeps the address on the app', () => {
     expect(signInHref('/explorer/recent', 'https://liveplanner.app')).toBe(
       '/api/auth/sign-in?return_to=%2Fexplorer%2Frecent',
     );
-    expect(signInHref('/explorer/recent', 'https://liveworkspace.app')).toBe(
+    expect(signInHref('/explorer/recent', 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
       '/sign-in?return=%2Fexplorer%2Frecent',
     );
   });
@@ -127,7 +127,7 @@ describe("on an app's own address", () => {
   });
 
   it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
-    const hop = 'https://liveworkspace.app/api/auth/handoff?token=t';
+    const hop = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/handoff?token=t';
     const fetched = at('https://livediagram.app', Response.json({ url: hop }));
     const next = 'https://livediagram.app/api/auth/callback?code=c&state=s';
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(hop);
@@ -147,7 +147,7 @@ describe("on an app's own address", () => {
     // A consent step still to come keeps the session where it is.
     expect(await afterSignIn('/consent?sig=s', `?handoff=${BIND}`)).toBe('/consent?sig=s');
     // liveworkspace.app itself has its session already.
-    const home = at('https://liveworkspace.app');
+    const home = at('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev');
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
     expect(home).not.toHaveBeenCalled();
   });

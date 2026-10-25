@@ -36,7 +36,7 @@ import { flushServerEvents } from './telemetry.ts';
 // turned down staying on the list, and the admins hearing the answer.
 
 const SECRET = 'test-secret-test-secret-test-secret';
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = Date.UTC(2026, 9, 1);
 
@@ -74,7 +74,7 @@ describe('the join link', () => {
     expect(await currentInviteLink(db, id, SECRET, BASE, T0)).toBeNull();
     const made = await makeInviteLink(db, ADA, id, SECRET, BASE, T0);
     if (!made.ok) throw new Error(made.error);
-    expect(made.value.url).toMatch(/^https:\/\/liveworkspace\.app\/join\?token=[\w-]{43}$/);
+    expect(made.value.url).toMatch(/^https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\?token=[\w-]{43}$/);
     expect(made.value.expiresAt).toBe(T0 + INVITE_LINK_TTL_MS);
     // The admin sees the same link again later.
     expect(await currentInviteLink(db, id, SECRET, BASE, T0 + DAY)).toEqual(made.value);
@@ -379,7 +379,7 @@ describe('the account API routes', () => {
   it('puts a Decline link in the invitation, which works signed out and tells the admins', async () => {
     const id = await team();
     await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
-    const link = /https:\/\/liveworkspace\.app\/join\/decline\?token=(\S+)/.exec(mail[0]!.text);
+    const link = /https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\/decline\?token=(\S+)/.exec(mail[0]!.text);
     expect(link).not.toBeNull();
     const token = decodeURIComponent(link![1]!);
 
@@ -431,7 +431,7 @@ describe('counting team emails, teams and tokens', () => {
       ENVIRONMENT: 'production',
       RESEND_API_KEY: 're_test',
       BETTER_AUTH_SECRET: SECRET,
-      TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
+      TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
       TELEMETRY_KEY_LIVEDESIGN: 'lds',
       TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
       TELEMETRY: {

@@ -6,10 +6,12 @@ compatibility_date = "2026-05-29"
 # Its API, /api/media, on liveworkspace.app (liveworkspace/docs/media.md): browsers never call it, each app's own
 # Worker does, and serves the bytes to the people it lets in. And every app's previews, /api/previews
 # (liveworkspace/docs/previews.md): browsers do call these, on liveworkspace.app and through each app's router.
-routes = [
-  { pattern = "liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/api/previews*", zone_name = "liveworkspace.app" },
-]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [
+#   { pattern = "liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },
+#   { pattern = "liveworkspace.app/api/previews*", zone_name = "liveworkspace.app" },
+# ]
+workers_dev = false
 
 # The share card's rasteriser (@liveworkspace/render-png/worker) imports its fonts as raw bytes: a Worker has no
 # system fonts. Inheritable, so staging takes it too.
@@ -27,7 +29,7 @@ IMAGE_MAX_PER_OWNER = "100"
 IMAGE_MAX_BYTES_PER_OWNER = "104857600"
 # Previews: who may see an item is the index's to say, reached through the INDEX service binding below (a Worker's
 # fetch to another Worker's route on its own zone isn't routed to it).
-INDEX_URL = "https://liveworkspace.app/api/index"
+INDEX_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index"
 # Where each app answers its export door (/api/internal/items/:id/export).
 APP_ORIGIN_LIVEDIAGRAM = "https://livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://liveplanner.app"
@@ -56,15 +58,17 @@ crons = ["41 3 * * *"]
 
 [env.staging]
 name = "liveworkspace-media-staging"
-routes = [
-  { pattern = "staging.liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/api/previews*", zone_name = "liveworkspace.app" },
-]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [
+#   { pattern = "staging.liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },
+#   { pattern = "staging.liveworkspace.app/api/previews*", zone_name = "liveworkspace.app" },
+# ]
+workers_dev = false
 
 [env.staging.vars]
 IMAGE_MAX_PER_OWNER = "100"
 IMAGE_MAX_BYTES_PER_OWNER = "104857600"
-INDEX_URL = "https://staging.liveworkspace.app/api/index"
+INDEX_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/index"
 APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"

@@ -7,7 +7,7 @@ import {
 } from './workbench';
 
 const CREDENTIALS = {
-  accountsUrl: 'https://liveworkspace.app/',
+  accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
   clientId: 'liveplanner',
   clientSecret: 's3cret',
 };
@@ -47,7 +47,7 @@ describe('createWorkbenchSessionChecker', () => {
     at += 59_000;
     await check(SECRET);
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/workbench/session');
+    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/workbench/session');
     const headers = calls[0]!.init.headers as Record<string, string>;
     expect(headers.authorization).toBe(`Basic ${btoa('liveplanner:s3cret')}`);
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual({ session: SECRET });
@@ -123,7 +123,7 @@ describe('createWorkbenchRoomNoter', () => {
     await note(input);
     await note({ ...input, itemId: 'plan2' });
     expect(calls.map((c) => JSON.parse(c.init.body as string).itemId)).toEqual(['plan1', 'plan2']);
-    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/workbench/rooms');
+    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/workbench/rooms');
   });
 
   it('tries again after a note that failed', async () => {
@@ -149,7 +149,7 @@ describe('takeAllowance', () => {
       count: 3,
     };
     await expect(takeAllowance(CREDENTIALS, input, fetcher)).resolves.toBe(2);
-    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/allowance');
+    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/allowance');
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual(input);
   });
 

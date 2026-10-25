@@ -9,7 +9,7 @@ import { clientApp } from './clients.ts';
 import { signupAppOf, startLifecycle } from './lifecycle.ts';
 import { addClient, testD1 } from './test-d1.ts';
 
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
 const RESOURCE = 'https://liveplanner.app/api';
 const CALLBACK = 'https://liveplanner.app/auth/callback';

@@ -17,7 +17,7 @@ const ctx = {
   waitUntil: () => {},
   passThroughOnException: () => {},
 } as unknown as ExecutionContext;
-const BASE = 'https://liveworkspace.app/api/community';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community';
 const KEY = '0b7a2b6e-3f1c-4d2a-8e9b-1a2b3c4d5e6f';
 const KEY2 = '1b7a2b6e-3f1c-4d2a-8e9b-1a2b3c4d5e6f';
 const KEY3 = '2b7a2b6e-3f1c-4d2a-8e9b-1a2b3c4d5e6f';
@@ -364,7 +364,7 @@ describe('the public routes', () => {
 
   it('answer nothing outside its API: liveworkspace.app hosts no Community pages', async () => {
     for (const path of ['/community', '/community/post/', '/api/communityx']) {
-      const res = await worker.fetch(new Request(`https://liveworkspace.app${path}`), db.env, ctx);
+      const res = await worker.fetch(new Request(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`), db.env, ctx);
       expect(res.status).toBe(404);
     }
   });

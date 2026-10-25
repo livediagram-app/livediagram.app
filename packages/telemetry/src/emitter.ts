@@ -25,7 +25,7 @@ export type TelemetryEngine = {
 };
 
 export function createTelemetryEngine(opts: {
-  // The central service's URL, e.g. 'https://liveworkspace.app/api/telemetry'; batches go to
+  // The central service's URL, e.g. 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry'; batches go to
   // `${url}/events`.
   url: string;
   // Build-time kill switch: false makes track() a permanent no-op.

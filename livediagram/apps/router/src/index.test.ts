@@ -131,13 +131,13 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://liveworkspace.app/telemetry?app=livediagram.app',
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry?app=livediagram.app',
       );
     }
     expect(marketing.urls).toEqual([]);
     const staging = await dispatch('/telemetry', { ...env, DEPLOY_ENV: 'staging' });
     expect(staging.headers.get('Location')).toBe(
-      'https://staging.liveworkspace.app/telemetry?app=livediagram.app',
+      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry?app=livediagram.app',
     );
   });
 
@@ -408,7 +408,7 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
         PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
       });
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
-        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/items/d1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
@@ -442,7 +442,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         const res = await router.fetch(new Request(`https://livediagram.app${path}#ignored`), env);
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`);
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -507,7 +507,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       Promise.resolve(
         new Response(null, {
           status: 307,
-          headers: { Location: 'https://liveworkspace.app/explorer/recent' },
+          headers: { Location: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent' },
         }),
       ),
     );

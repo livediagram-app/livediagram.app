@@ -18,7 +18,7 @@ describe('the apps a browser may write from', () => {
       'https://evil.example',
       'https://livediagram.app.evil.example',
       'http://livediagram.app',
-      'https://liveworkspace.app',
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
     ]) {
       expect(communityAppOfOrigin(origin), origin).toBeNull();
     }

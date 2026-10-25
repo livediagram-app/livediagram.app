@@ -6,10 +6,12 @@ compatibility_date = "2026-05-29"
 # specific routes, so they win: accounts (/api/auth/*, /api/account/* and the two .well-known documents),
 # the index, media, telemetry and the Community (/api/index*, /api/media*, /api/previews*, /api/telemetry*,
 # /api/community*).
-routes = [
-  { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
-  { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
-]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [
+#   { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
+#   { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
+# ]
+workers_dev = false
 
 # Static assets only: the Next export in ./out. Headers come from public/_headers.
 [assets]
@@ -18,7 +20,9 @@ not_found_handling = "404-page"
 
 [env.staging]
 name = "liveworkspace-site-staging"
-routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+workers_dev = false
 
 [env.staging.assets]
 directory = "./out"

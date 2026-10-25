@@ -21,7 +21,7 @@ describe("each app's origins", () => {
     expect(appOfOrigin('https://livediagram.app.evil.example', 'production')).toBeNull();
     expect(appOfOrigin('https://evil.livediagram.app', 'production')).toBeNull();
     expect(appOfOrigin('http://livediagram.app', 'production')).toBeNull();
-    expect(appOfOrigin('https://liveworkspace.app', 'production')).toBeNull();
+    expect(appOfOrigin('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', 'production')).toBeNull();
     expect(appOfOrigin('not a url', 'production')).toBeNull();
     expect(appOfAnyOrigin('http://localhost:3200')).toBe('liveplanner.app');
     expect(appOfAnyOrigin('http://localhost:3000')).toBeNull();

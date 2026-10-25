@@ -8,14 +8,14 @@ const ctx = {
   waitUntil: () => {},
   passThroughOnException: () => {},
 } as unknown as ExecutionContext;
-const get = (path: string) => new Request(`https://liveworkspace.app${path}`);
+const get = (path: string) => new Request(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`);
 
 describe('telemetry worker', () => {
   it('takes events in, and counts them by app', async () => {
     const env = testEnv();
     const send = (app: string) =>
       worker.fetch(
-        new Request('https://liveworkspace.app/api/telemetry/events', {
+        new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry/events', {
           method: 'POST',
           headers: { Origin: 'http://localhost:3100' },
           body: JSON.stringify({
@@ -110,7 +110,7 @@ describe('telemetry worker', () => {
   it('keeps its API under /api: the old /telemetry/api path takes no events', async () => {
     const env = testEnv();
     const res = await worker.fetch(
-      new Request('https://liveworkspace.app/telemetry/api/events', {
+      new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry/api/events', {
         method: 'POST',
         headers: { Origin: 'http://localhost:3100' },
         body: JSON.stringify({

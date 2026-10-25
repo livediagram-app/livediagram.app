@@ -8,7 +8,7 @@ import { RESOURCES } from './resources.ts';
 import { testD1 } from './test-d1.ts';
 import { WORKSPACE_TOKEN_TTL_SECONDS, workspaceToken } from './workspace-token.ts';
 
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
 
 let env: Env;

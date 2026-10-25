@@ -8,7 +8,7 @@ import {
 } from './telemetry.ts';
 
 const env = {
-  TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry/',
+  TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry/',
   TELEMETRY_KEY_LIVEDIAGRAM: 'ld-key',
   TELEMETRY_KEY_LIVEPLANNER: 'lp-key',
 };
@@ -46,7 +46,7 @@ describe('server events', () => {
     await flushServerEvents({ ...env, TELEMETRY: fetcher });
     expect(sent).toHaveLength(2);
     const diagram = sent.find((s) => s.body.app === 'livediagram.app')!;
-    expect(diagram.url).toBe('https://liveworkspace.app/api/telemetry/events');
+    expect(diagram.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry/events');
     expect(diagram.key).toBe('ld-key');
     expect(diagram.body.events).toEqual([
       { category: 'Email', action: 'Sent', type: 'Welcome' },

@@ -11,7 +11,7 @@ export type Env = {
   // hosted app; other deployments point it at their own live origin.
   CONSENT_BASE_URL?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
-  // https://liveworkspace.app/api/telemetry; staging and local development name their own.
+  // https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // livediagram's secret on that service, sent as X-Telemetry-Key (the same value as the api
   // worker's TELEMETRY_KEY). A secret; unset means this worker sends no telemetry, which is also

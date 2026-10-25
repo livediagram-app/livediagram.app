@@ -66,7 +66,7 @@ beforeEach(() => {
   };
   db = testDb({
     INDEX: index as unknown as Fetcher,
-    INDEX_URL: 'https://liveworkspace.app/api/index',
+    INDEX_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index',
     APP_ORIGIN_LIVEPLANNER: 'https://liveplanner.test',
     APP_ORIGIN_LIVEDIAGRAM: 'https://livediagram.test',
     MEDIA_KEY_LIVEPLANNER: 'lp-key',
@@ -92,7 +92,7 @@ const ctx = {
 
 async function get(path: string, headers: Record<string, string> = {}) {
   const res = await worker.fetch(
-    new Request(`https://liveworkspace.app/api/previews${path}`, { headers }),
+    new Request(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews${path}`, { headers }),
     db.env,
     ctx,
   );
@@ -274,7 +274,7 @@ describe('purging an item', () => {
 
     const asApp = (app: string, key: string) =>
       worker.fetch(
-        new Request('https://liveworkspace.app/api/media/app/previews/I1', {
+        new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media/app/previews/I1', {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${key}`, 'X-Media-App': app },
         }),

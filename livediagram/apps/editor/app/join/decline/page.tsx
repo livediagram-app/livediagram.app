@@ -9,7 +9,7 @@ import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/pane
 // there with its token: siteUrl keeps a dev server on the local liveworkspace port, and
 // NEXT_PUBLIC_ACCOUNTS_SITE_URL points a staging build at staging. The card is the fallback if the
 // forward doesn't run. `index: false` is inherited from the root layout.
-const DECLINE_URL = `${(process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || siteUrl('liveworkspace.app', 'https://liveworkspace.app')).replace(/\/+$/, '')}/join/decline`;
+const DECLINE_URL = `${(process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || siteUrl('liveworkspace.app', 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).replace(/\/+$/, '')}/join/decline`;
 
 const noSubscribe = () => () => {};
 const readSearch = () => window.location.search;

@@ -98,7 +98,7 @@ describe('sharePage', () => {
     const { calls, doFetch } = service(() => Response.json({ name: 'Payments flow' }));
     const res = await sharePage(visit('/document/shared?s=CODE1234'), shell(), { fetch: doFetch });
     expect(calls.map((c) => c.url)).toEqual([
-      'https://liveworkspace.app/api/previews/share/CODE1234/card',
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/card',
     ]);
     const edits = (await res.json()) as Edits;
     const image = 'https://www.livediagram.app/api/previews/share/CODE1234/image.png';

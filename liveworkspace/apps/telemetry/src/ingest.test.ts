@@ -3,7 +3,7 @@ import { handleIngest, rateKey } from './ingest';
 import { testEnv } from './test-env';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  new Request('https://liveworkspace.app/api/telemetry/events', {
+  new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry/events', {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain', ...headers },
     body: typeof body === 'string' ? body : JSON.stringify(body),
@@ -62,14 +62,14 @@ describe('ingest', () => {
     await handleIngest(
       post(
         { app: 'liveplanner.app', events: [lens, projectCreated, view] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );
     await handleIngest(
       post(
         { app: 'liveworkspace.app', events: [view, created] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );
@@ -77,7 +77,7 @@ describe('ingest', () => {
     await handleIngest(
       post(
         { app: 'livediagram.app', events: [{ ...lens, type: 'Anything' }] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );
@@ -95,7 +95,7 @@ describe('ingest', () => {
     await handleIngest(
       post(
         { app: 'liveplanner.app', events: [comments, join] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );
@@ -103,7 +103,7 @@ describe('ingest', () => {
     await handleIngest(
       post(
         { app: 'livediagram.app', events: [join, comments] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );
@@ -112,7 +112,7 @@ describe('ingest', () => {
     await handleIngest(
       post(
         { app: 'liveworkspace.app', events: [comments, join] },
-        fromPage('https://liveworkspace.app'),
+        fromPage('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
       ),
       env,
     );

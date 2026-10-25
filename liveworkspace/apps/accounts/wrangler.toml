@@ -8,12 +8,14 @@ compatibility_flags = ["nodejs_compat"]
 # The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents. The other
 # /api/* paths are the other platform Workers', and everything else the static site's (apps/site). Each route is
 # more specific than the site's liveworkspace.app/*, so it wins.
-routes = [
-  { pattern = "liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
-]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [
+#   { pattern = "liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
+#   { pattern = "liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
+#   { pattern = "liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
+#   { pattern = "liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
+# ]
+workers_dev = false
 
 # Secrets (wrangler secret put, or .dev.vars locally; see .dev.vars.example):
 #   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
@@ -30,16 +32,16 @@ routes = [
 #                         optional, an app without one isn't counted
 [vars]
 ENVIRONMENT = "production"
-BASE_URL = "https://liveworkspace.app"
+BASE_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 # The index service, told when a guest signs in (src/guests.ts) and when an account closes
 # (src/index-purge.ts), reached through the INDEX service binding below: a Worker's fetch to another
 # Worker's route on its own zone isn't routed to it. Unset, or without INDEX_MERGE_KEY, the merge is
 # skipped and a closed account's purge waits in pending_purges until it is set.
-INDEX_URL = "https://liveworkspace.app/api/index"
+INDEX_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 # The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
-TELEMETRY_URL = "https://liveworkspace.app/api/telemetry"
+TELEMETRY_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry"
 # Signing in on each app's own address (src/handoff.ts): the sign-in pages are served under the app's address, and
 # a one-time hop brings the session here. Every app's router must serve them before this is "true".
 SIGN_IN_ON_APP_ORIGINS = "true"
@@ -112,20 +114,22 @@ crons = ["17 9 * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-accounts-staging"
-routes = [
-  { pattern = "staging.liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
-]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [
+#   { pattern = "staging.liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
+#   { pattern = "staging.liveworkspace.app/api/account/*", zone_name = "liveworkspace.app" },
+#   { pattern = "staging.liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
+#   { pattern = "staging.liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
+# ]
+workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
-BASE_URL = "https://staging.liveworkspace.app"
-INDEX_URL = "https://staging.liveworkspace.app/api/index"
+BASE_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+INDEX_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
-TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
+TELEMETRY_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry"
 SIGN_IN_ON_APP_ORIGINS = "true"
 GOOGLE_ON_APP_ORIGINS = "false"
 

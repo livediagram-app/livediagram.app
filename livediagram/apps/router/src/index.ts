@@ -55,10 +55,10 @@ const TELEMETRY_PATH = '/telemetry';
 export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
   const base =
     env.DEPLOY_ENV === 'staging'
-      ? 'https://staging.liveworkspace.app/telemetry'
+      ? 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry'
       : env.DEPLOY_ENV === 'local'
         ? 'http://localhost:3000/telemetry'
-        : 'https://liveworkspace.app/telemetry';
+        : 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry';
   return `${base}?app=livediagram.app`;
 }
 const HELP_PATH = '/help';

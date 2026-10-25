@@ -21,14 +21,14 @@ port = 8987
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
-# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# unset means production's (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry). Locally,
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
 # The central index (liveworkspace/docs/one-explorer.md): where every document is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
-INDEX_ORIGIN = "https://liveworkspace.app"
+INDEX_ORIGIN = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -136,7 +136,7 @@ simple = { limit = 120, period = 60 }
 # lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   ACCOUNTS_URL            the accounts Worker's origin
-#                           (https://liveworkspace.app)
+#                           (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev)
 #   API_RESOURCE            this API's registered resource, the access
 #                           token's audience (https://livedocuments.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id
@@ -219,7 +219,7 @@ name = "livedocuments-api-staging"
 RESEND_FROM = "livedocuments staging <hello@livedocuments.app>"
 
 # Staging's own index (see the top-level [vars]).
-INDEX_ORIGIN = "https://staging.liveworkspace.app"
+INDEX_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedocuments.app"

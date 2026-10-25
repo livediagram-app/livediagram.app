@@ -12,7 +12,7 @@ import {
 const cookies = silentCookieNames('lp_', 'lp_signed_in');
 const APP = 'https://liveplanner.app';
 const config = {
-  accountsUrl: 'https://liveworkspace.app',
+  accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
   clientId: 'client-1',
   resource: `${APP}/api`,
 };
@@ -235,7 +235,7 @@ describe('GET /api/auth/silent', () => {
     expect(res.status).toBe(302);
     const to = new URL(res.headers.get('location')!);
     expect(`${to.origin}${to.pathname}`).toBe(
-      'https://liveworkspace.app/api/auth/oauth2/authorize',
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/authorize',
     );
     expect(to.searchParams.get('prompt')).toBe('none');
     expect(to.searchParams.get('redirect_uri')).toBe(callbackUrl);

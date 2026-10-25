@@ -296,7 +296,7 @@ export function createIndexDelegateClient({
   fetch: doFetch,
 }: IndexDelegateOptions): IndexClient {
   return createIndexClient({
-    baseUrl: (baseUrl || `https://liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, ''),
+    baseUrl: (baseUrl || `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${INDEX_API_PATH}`).replace(/\/+$/, ''),
     getToken: () => key,
     headers: {
       [INDEX_APP_HEADER]: app,
@@ -318,7 +318,7 @@ export type IndexAppClientOptions = {
 
 // What an app's server (its api Worker or an item's Durable Object) pushes about an item.
 export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
-  const base = (baseUrl || `https://liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const base = (baseUrl || `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${INDEX_API_PATH}`).replace(/\/+$/, '');
   const failed = async (res: Response): Promise<IndexError> => {
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
     return new IndexError(res.status, typeof parsed?.error === 'string' ? parsed.error : 'unknown');

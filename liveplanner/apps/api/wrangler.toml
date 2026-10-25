@@ -21,14 +21,14 @@ port = 8887
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
-# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# unset means production's (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry). Locally,
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
 # The central index (liveworkspace/docs/one-explorer.md): where every plan is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the plan rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
-INDEX_ORIGIN = "https://liveworkspace.app"
+INDEX_ORIGIN = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -135,7 +135,7 @@ simple = { limit = 60, period = 60 }
 # lands in the repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   ACCOUNTS_URL            the accounts Worker's origin
-#                           (https://liveworkspace.app)
+#                           (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev)
 #   API_RESOURCE            this API's registered resource, the access
 #                           token's audience (https://liveplanner.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id
@@ -166,7 +166,7 @@ simple = { limit = 60, period = 60 }
 # purge drops the plan's previews with it. The service holds the same value as MEDIA_KEY_LIVEPLANNER. Never in
 # [vars]: `MEDIA_KEY=dev-liveplanner-media-key` and `MEDIA_URL=http://localhost:8792/api/media` in `.dev.vars`
 # locally; the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the deploy workflow, in production and
-# staging. MEDIA_URL unset means production's (https://liveworkspace.app/api/media); staging sets its own below.
+# staging. MEDIA_URL unset means production's (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media); staging sets its own below.
 
 # TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
@@ -214,9 +214,9 @@ name = "liveplanner-api-staging"
 RESEND_FROM = "liveplanner staging <hello@liveplanner.app>"
 
 # Staging's own index (see the top-level [vars]).
-INDEX_ORIGIN = "https://staging.liveworkspace.app"
+INDEX_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 # Staging's media service, which serves its previews (MEDIA_KEY, above).
-MEDIA_URL = "https://staging.liveworkspace.app/api/media"
+MEDIA_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/media"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"

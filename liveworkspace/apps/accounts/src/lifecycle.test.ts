@@ -21,7 +21,7 @@ import { addUser, testD1 } from './test-d1.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = 1_000 * DAY;
-const env = { ENVIRONMENT: 'production', BASE_URL: 'https://liveworkspace.app' } as Pick<
+const env = { ENVIRONMENT: 'production', BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev' } as Pick<
   Env,
   'ENVIRONMENT' | 'BASE_URL'
 >;
@@ -114,8 +114,8 @@ describe('the welcome', () => {
     await account('user_ada', T0, true, 'liveworkspace.app');
     await account('user_bea', T0, true, 'liveworkspace.app');
     await sendWelcomes(db, env, send, ['user_ada'], T0);
-    expect(sent[0]!.html).toContain('href="https://liveworkspace.app/#apps"');
-    expect(sent[0]!.text).toContain('Pick an app: https://liveworkspace.app/#apps');
+    expect(sent[0]!.html).toContain('href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps"');
+    expect(sent[0]!.text).toContain('Pick an app: https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps');
     expect(sent[0]!.html).not.toContain('livediagram.app/new');
     // Later in the series, the first app they opened.
     await recordSighting(db, 'user_bea', 'liveplanner.app', T0 + 1);
@@ -125,7 +125,7 @@ describe('the welcome', () => {
     const ada = sent.find(
       (e) => e.to === 'user_ada@example.com' && e.subject !== 'Welcome to liveworkspace',
     )!;
-    expect(ada.html).toContain('https://liveworkspace.app/#apps');
+    expect(ada.html).toContain('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/#apps');
   });
 
   it('keeps the app signed up through over the first one opened', async () => {
@@ -205,7 +205,7 @@ describe('the series', () => {
     await recordSighting(db, 'user_ada', 'livediagram.app', T0 + 1);
     await run(T0 + 7 * DAY);
     expect(sent.at(-1)!.unsubscribeUrl).toBe(
-      'https://liveworkspace.app/explorer?settings=notifications',
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
     );
     expect(sent.at(-1)!.html).toContain('https://www.livedesign.app/explorer');
   });
@@ -239,7 +239,7 @@ describe('the series', () => {
 describe('telemetry', () => {
   const posted: { app: string; events: { type: string }[] }[] = [];
   const telemetry = {
-    TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
+    TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
     TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
     TELEMETRY_KEY_LIVEDESIGN: 'lds',
     TELEMETRY: {
@@ -296,18 +296,18 @@ describe('the emails', () => {
       'https://staging.livedesign.app',
     );
     const email = lifecycleEmail(env, 'week2', { home: null });
-    expect(email.html).toContain('https://liveworkspace.app/explorer');
+    expect(email.html).toContain('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer');
     expect(email.text).toContain('Manage your notifications');
-    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/explorer?settings=notifications');
+    expect(email.unsubscribeUrl).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
     expect(email.html).toContain(
-      'href="https://liveworkspace.app/explorer?settings=notifications" style="color:#334155;text-decoration:underline">Manage your notifications',
+      'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications" style="color:#334155;text-decoration:underline">Manage your notifications',
     );
     // A deployment's own origin.
     expect(
-      lifecycleEmail({ ...env, BASE_URL: 'https://staging.liveworkspace.app/' }, 'winback', {
+      lifecycleEmail({ ...env, BASE_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/' }, 'winback', {
         home: null,
       }).unsubscribeUrl,
-    ).toBe('https://staging.liveworkspace.app/explorer?settings=notifications');
+    ).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/explorer?settings=notifications');
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }

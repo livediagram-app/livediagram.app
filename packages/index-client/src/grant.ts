@@ -8,11 +8,11 @@ import { GRANT_ALG, isApp, isLevel, type App } from './constants';
 import type { GrantClaims } from './types';
 
 export interface GrantVerifierOptions {
-  // The index's key set, e.g. `https://liveworkspace.app/api/index/jwks` (GRANT_JWKS_URL).
+  // The index's key set, e.g. `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/jwks` (GRANT_JWKS_URL).
   jwksUrl: string;
   // This app: a grant for another app's item is refused.
   audience: App;
-  // The index's issuer, e.g. `https://liveworkspace.app/api/index`. Checked when given.
+  // The index's issuer, e.g. `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index`. Checked when given.
   issuer?: string;
   // Tests pass a local key set instead of fetching one.
   keys?: JWTVerifyGetKey;

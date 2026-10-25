@@ -44,7 +44,7 @@ describe('who gets in', () => {
   it('answers paths outside /api/index and unknown routes as missing', async () => {
     const ctx = { waitUntil: () => {} } as unknown as ExecutionContext;
     const res = await worker.fetch(
-      new Request('https://liveworkspace.app/api/other'),
+      new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/other'),
       h.db.env,
       ctx,
     );
@@ -477,7 +477,7 @@ describe('grants', () => {
     return createGrantVerifier({
       jwksUrl: `${BASE}/jwks`,
       audience: app,
-      issuer: 'https://liveworkspace.app/api/index',
+      issuer: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index',
       keys: createLocalJWKSet(jwks),
     });
   }

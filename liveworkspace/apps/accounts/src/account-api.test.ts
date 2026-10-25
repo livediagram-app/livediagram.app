@@ -6,7 +6,7 @@ import { __setBearerVerifier } from './bearer.ts';
 import { signGuestCookie } from './guests.ts';
 import { addClient, addUser, testD1 } from './test-d1.ts';
 
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const CLIENT = `Basic ${btoa('liveplanner:secret')}`;
 // Two more clients with the right secret: livediagram's, and one registered without an app.
 const DIAGRAM = `Basic ${btoa('livediagram:secret')}`;

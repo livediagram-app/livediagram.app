@@ -7,7 +7,7 @@ export interface Env {
   // The service's off switch: "false", "0" or "off" answers every route as missing. Unset is on.
   INDEX_ENABLED?: string;
   INDEX_DB: D1Database;
-  // The accounts origin, e.g. https://liveworkspace.app: tokens are checked against
+  // The accounts origin, e.g. https://liveworkspace-gateway.liveworkspace-easing509.workers.dev: tokens are checked against
   // `${ACCOUNTS_URL}/api/auth`, and grants are issued as `${ACCOUNTS_URL}/api/index`.
   ACCOUNTS_URL?: string;
   // Comma-separated: every app's API resource. A token addressed to any of them is let in.
@@ -54,7 +54,7 @@ export function appOrigin(env: Env, app: App): string | undefined {
   return setting(env[ORIGIN_OF[app]])?.replace(/\/+$/, '');
 }
 
-const DEFAULT_ACCOUNTS_URL = 'https://liveworkspace.app';
+const DEFAULT_ACCOUNTS_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 
 export function accountsUrl(env: Env): string {
   return (setting(env.ACCOUNTS_URL) ?? DEFAULT_ACCOUNTS_URL).replace(/\/+$/, '');

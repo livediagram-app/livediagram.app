@@ -512,7 +512,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
-            <a href="https://liveworkspace.app/privacy">privacy policy</a> for the details.
+            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">privacy policy</a> for the details.
           </>
         ),
         aText:

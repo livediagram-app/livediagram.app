@@ -5,7 +5,9 @@ main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Only its API, /api/index, on liveworkspace.app (liveworkspace/docs/index-service.md). Browsers reach it
 # through their own app's router, which forwards /api/index/* on the app's origin here.
-routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+workers_dev = false
 
 # Secrets (wrangler secret put):
 #   INDEX_KEY_LIVEDIAGRAM, INDEX_KEY_LIVEPLANNER, INDEX_KEY_LIVEDOCUMENTS, INDEX_KEY_LIVEDESIGN
@@ -18,7 +20,7 @@ routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace
 ENVIRONMENT = "production"
 # The accounts origin: access and guest tokens are checked against `${ACCOUNTS_URL}/api/auth`, and
 # grants are issued as `${ACCOUNTS_URL}/api/index`.
-ACCOUNTS_URL = "https://liveworkspace.app"
+ACCOUNTS_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 # Every app's API resource: an access or guest token addressed to any of them is let in.
 INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
 # Where the index calls each app's internal routes.
@@ -32,7 +34,7 @@ APP_ORIGIN_LIVEDESIGN = "https://livedesign.app"
 [[d1_databases]]
 binding = "INDEX_DB"
 database_name = "liveworkspace-index"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "72bee473-8f70-472f-ac1d-2d914e74c53e"
 migrations_dir = "migrations"
 
 # Once a day: purge items 30 days in the Trash, and retry apps that missed a purge. Every 15 minutes
@@ -42,13 +44,15 @@ crons = ["23 4 * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-index-staging"
-routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
 # Staging's app origins and API resources: check them against each app's staging deploy before the first
 # deploy here.
-ACCOUNTS_URL = "https://staging.liveworkspace.app"
+ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
 APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
@@ -59,7 +63,7 @@ APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
 [[env.staging.d1_databases]]
 binding = "INDEX_DB"
 database_name = "liveworkspace-index-staging"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "32313469-478a-493d-a9de-77e0a759d83e"
 migrations_dir = "migrations"
 
 [env.staging.triggers]

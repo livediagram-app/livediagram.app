@@ -156,7 +156,7 @@ describe('reporting', () => {
     expect(await within(dialog).findByText(/When enough people report a canvas/)).toBeTruthy();
     const sent = calls.find((c) => new URL(c.url).pathname.endsWith('/report'))!;
     expect(sent.url).toBe(
-      'https://liveworkspace.app/api/community/posts/post1/report?app=livediagram.app',
+      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community/posts/post1/report?app=livediagram.app',
     );
     expect(sentJson(sent.init)).toEqual({ reason: 'spam', note: 'buy now' });
     expect(h.telemetry.reported).toHaveBeenCalledWith('Spam');

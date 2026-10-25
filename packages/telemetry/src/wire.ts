@@ -4,10 +4,10 @@ import type { TelemetrySender } from './apps';
 
 // Where the service lives. Apps take it as configuration (NEXT_PUBLIC_TELEMETRY_URL in the browser,
 // TELEMETRY_URL in a Worker), so local development and staging can point elsewhere.
-export const TELEMETRY_URL = 'https://liveworkspace.app/api/telemetry';
+export const TELEMETRY_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry';
 
 // The public dashboard page, which every app's own /telemetry redirects to.
-export const TELEMETRY_DASHBOARD_URL = 'https://liveworkspace.app/telemetry';
+export const TELEMETRY_DASHBOARD_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry';
 
 // The ingest and summary paths, under the service's URL. Like every liveworkspace API, the service
 // sits under /api; the dashboard page is /telemetry.

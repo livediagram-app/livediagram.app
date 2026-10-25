@@ -18,7 +18,7 @@ port = 8687
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. TELEMETRY_URL
 # names that service per environment (hosted-vars.json); unset means
-# production's, https://liveworkspace.app/api/telemetry. Local dev sets
+# production's, https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 
@@ -225,7 +225,7 @@ simple = { limit = 10, period = 60 }
 # lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   ACCOUNTS_URL            the accounts Worker's origin
-#                           (https://liveworkspace.app)
+#                           (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev)
 #   API_RESOURCE            this API's registered resource, the access
 #                           token's audience (https://livediagram.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id

@@ -91,15 +91,15 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://liveworkspace.app/telemetry?app=liveplanner.app',
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry?app=liveplanner.app',
       );
     }
     const staging = await dispatch('/telemetry', {
       ...env,
-      TELEMETRY_DASHBOARD_URL: 'https://staging.liveworkspace.app/telemetry',
+      TELEMETRY_DASHBOARD_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry',
     });
     expect(staging.headers.get('Location')).toBe(
-      'https://staging.liveworkspace.app/telemetry?app=liveplanner.app',
+      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry?app=liveplanner.app',
     );
   });
 
@@ -177,7 +177,7 @@ describe('local-dev dispatch (origin proxy)', () => {
       // Never the api worker, and production's index when no origin is named.
       expect(api.urls).toEqual([]);
       await dispatch('/api/index/items', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/index/items');
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/items');
       // `/api/indexes` is not the index.
       await dispatch('/api/indexes', env);
       expect(api.urls).toEqual(['https://liveplanner.app/api/indexes']);
@@ -403,7 +403,7 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
         PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
       });
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
-        'https://liveworkspace.app/api/previews/items/p1?v=5',
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/items/p1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
@@ -437,7 +437,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         const res = await router.fetch(new Request(`https://liveplanner.app${path}#ignored`), env);
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`);
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -502,7 +502,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       Promise.resolve(
         new Response(null, {
           status: 307,
-          headers: { Location: 'https://liveworkspace.app/explorer/recent' },
+          headers: { Location: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent' },
         }),
       ),
     );

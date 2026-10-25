@@ -5,7 +5,7 @@ import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRed
 // The terms of service cover every liveworkspace app, livedesign included, so they live on liveworkspace.app.
 // This page keeps the historical /terms URL alive (it redirects there) but is noindex so search engines
 // consolidate on that page.
-const TERMS_URL = 'https://liveworkspace.app/terms';
+const TERMS_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service · livedesign',

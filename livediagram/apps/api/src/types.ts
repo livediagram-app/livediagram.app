@@ -46,7 +46,7 @@ export type Env = {
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
-  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://livediagram.app/api`, and every access token must
   // name it as its audience, as must a guest's token (liveworkspace/docs/accounts.md "Guests"). With either unset
   // no caller has an identity: only share-link visitors are served.
@@ -96,13 +96,13 @@ export type Env = {
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
   // The liveworkspace Community service (liveworkspace/docs/community.md), which keeps every app's posts. Unset means
-  // production's, https://liveworkspace.app/api/community; staging and local development name their own.
+  // production's, https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community; staging and local development name their own.
   COMMUNITY_URL?: string;
   // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
   // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
   COMMUNITY_KEY?: string;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
-  // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
+  // images. Unset means production's, https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livediagram's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
@@ -115,7 +115,7 @@ export type Env = {
   // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
-  // https://liveworkspace.app/api/telemetry; staging and local development name their own.
+  // https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.

@@ -79,9 +79,9 @@ export function isTelemetrySender(value: unknown): value is TelemetrySender {
 }
 
 export const PLATFORM_TELEMETRY_ORIGINS: readonly string[] = [
-  'https://liveworkspace.app',
+  'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
   'https://www.liveworkspace.app',
-  'https://staging.liveworkspace.app',
+  'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
 ];
 
 export function isPlatformOrigin(origin: string): boolean {

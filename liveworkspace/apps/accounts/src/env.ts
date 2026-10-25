@@ -2,7 +2,7 @@ import type { WorkbenchNamespace } from './workbench/store.ts';
 
 export interface Env {
   ENVIRONMENT: 'production' | 'staging' | 'development';
-  // The origin this Worker answers on, e.g. https://liveworkspace.app (it owns only its own paths there)
+  // The origin this Worker answers on, e.g. https://liveworkspace-gateway.liveworkspace-easing509.workers.dev (it owns only its own paths there)
   BASE_URL: string;
   // The From address, on a domain verified in Resend.
   EMAIL_FROM: string;

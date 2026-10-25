@@ -1,0 +1,62 @@
+name = "liveworkspace-gateway"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# liveworkspace's stand-in origin until liveworkspace.app is on this account (docs/gateway.md):
+# https://liveworkspace-gateway.liveworkspace-easing509.workers.dev. The only liveworkspace Worker on workers.dev.
+workers_dev = true
+
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
+
+[[services]]
+binding = "MEDIA"
+service = "liveworkspace-media"
+
+[[services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry"
+
+[[services]]
+binding = "COMMUNITY"
+service = "liveworkspace-community"
+
+[[services]]
+binding = "SITE"
+service = "liveworkspace-site"
+
+# Staging: https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev, in front of the
+# -staging Workers. Service bindings are non-inheritable, so all six are restated, each with the suffix.
+[env.staging]
+name = "liveworkspace-gateway-staging"
+workers_dev = true
+
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
+
+[[env.staging.services]]
+binding = "MEDIA"
+service = "liveworkspace-media-staging"
+
+[[env.staging.services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry-staging"
+
+[[env.staging.services]]
+binding = "COMMUNITY"
+service = "liveworkspace-community-staging"
+
+[[env.staging.services]]
+binding = "SITE"
+service = "liveworkspace-site-staging"

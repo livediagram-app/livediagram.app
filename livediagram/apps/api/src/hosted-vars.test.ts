@@ -63,10 +63,10 @@ describe('hosted profile', () => {
   it('turns telemetry on and points each environment at its media service', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     expect(shared.TELEMETRY_ENABLED).toBe('true');
-    expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
-    expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
-    expect(environments.production.INDEX_ORIGIN).toBe('https://liveworkspace.app');
-    expect(environments.staging.INDEX_ORIGIN).toBe('https://staging.liveworkspace.app');
+    expect(environments.production.MEDIA_URL).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media');
+    expect(environments.staging.MEDIA_URL).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/media');
+    expect(environments.production.INDEX_ORIGIN).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev');
+    expect(environments.staging.INDEX_ORIGIN).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev');
   });
 
   it('names only vars the worker reads', async () => {
@@ -109,8 +109,8 @@ describe('hosted-vars script', () => {
     ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
     // The frontends send to the same telemetry service as the api.
-    expect(buildEnv({ TELEMETRY_URL: 'https://staging.liveworkspace.app/api/telemetry' })).toEqual([
-      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry',
+    expect(buildEnv({ TELEMETRY_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_URL=https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry',
     ]);
   });
 
@@ -123,8 +123,8 @@ describe('hosted-vars script', () => {
 
   it('points the Community pages at the same Community service as the api', async () => {
     const { buildEnv } = await load();
-    expect(buildEnv({ COMMUNITY_URL: 'https://staging.liveworkspace.app/api/community' })).toEqual([
-      'NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community',
+    expect(buildEnv({ COMMUNITY_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community' })).toEqual([
+      'NEXT_PUBLIC_COMMUNITY_API=https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community',
     ]);
   });
 

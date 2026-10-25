@@ -3,7 +3,7 @@ import type { Env } from './env.ts';
 import { signInOptions } from './sign-in-options.ts';
 
 const env = (extra: Partial<Env> = {}) =>
-  ({ TURNSTILE_SITE_KEY: 'site-key', BASE_URL: 'https://liveworkspace.app', ...extra }) as Env;
+  ({ TURNSTILE_SITE_KEY: 'site-key', BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', ...extra }) as Env;
 
 describe('sign-in options', () => {
   it('gives the pages the Turnstile key and the name limit, and caches briefly', async () => {
@@ -12,7 +12,7 @@ describe('sign-in options', () => {
       turnstileSiteKey: 'site-key',
       google: false,
       nameMaxLength: 80,
-      accountsUrl: 'https://liveworkspace.app',
+      accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
       googleOnApps: false,
     });
     expect(response.headers.get('cache-control')).toBe('public, max-age=300');

@@ -12,10 +12,10 @@ import {
 } from './token-expiry.ts';
 import { mintApiToken, revokeApiToken } from './tokens.ts';
 
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 9, 23, 9, 17);
-const env = { BASE_URL: BASE, TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry' };
+const env = { BASE_URL: BASE, TELEMETRY_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry' };
 
 let db: D1Database;
 let sql: DatabaseSync;

@@ -3,7 +3,7 @@ import { Redirect } from '@liveworkspace/help-site/components/Redirect';
 
 // The terms covers every liveworkspace app, livediagram included, so it lives on liveworkspace.app. This stub
 // keeps the old help URL alive (it redirects there) but is noindex so search engines consolidate on that page.
-const NEW_URL = 'https://liveworkspace.app/terms';
+const NEW_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/terms';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',

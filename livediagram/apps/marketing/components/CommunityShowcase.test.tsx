@@ -81,7 +81,7 @@ describe('CommunityShowcase', () => {
     await waitFor(() =>
       expect(
         urls().some(
-          (url) => url === 'https://liveworkspace.app/api/community/featured?app=livediagram.app',
+          (url) => url === 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community/featured?app=livediagram.app',
         ),
       ).toBe(true),
     );

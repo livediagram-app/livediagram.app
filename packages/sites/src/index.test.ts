@@ -3,7 +3,7 @@ import { LOCAL_PORTS, PLATFORM_SITE, SITES, siteUrl, workspaceOriginFor } from '
 
 describe('workspaceOriginFor', () => {
   it("is staging's site from a staging app, else the platform's", () => {
-    expect(workspaceOriginFor('staging.liveplanner.app')).toBe('https://staging.liveworkspace.app');
+    expect(workspaceOriginFor('staging.liveplanner.app')).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev');
     expect(workspaceOriginFor('www.livediagram.app')).toBe(PLATFORM_SITE.url);
     expect(workspaceOriginFor('')).toBe(PLATFORM_SITE.url);
   });
@@ -14,9 +14,13 @@ describe('sites', () => {
     expect(SITES[0]).toBe(PLATFORM_SITE);
     expect(new Set(SITES.map((s) => s.id)).size).toBe(SITES.length);
     for (const site of SITES) {
-      // The platform is on its bare domain; links to an app always use www.
-      const host = site.id === 'liveworkspace.app' ? site.id : `www.${site.id}`;
-      expect(new URL(site.url).origin).toBe(`https://${host}`);
+      // The platform is on its stand-in origin until liveworkspace.app moves (liveworkspace/docs/gateway.md);
+      // links to an app always use www.
+      const origin =
+        site.id === 'liveworkspace.app'
+          ? 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'
+          : `https://www.${site.id}`;
+      expect(new URL(site.url).origin).toBe(origin);
       expect(site.accent).toMatch(/^#[0-9a-f]{6}$/);
       expect(site.deep).toMatch(/^#[0-9a-f]{6}$/);
     }

@@ -18,7 +18,7 @@ import {
 } from './handoff.ts';
 import { addClient, testD1 } from './test-d1.ts';
 
-const BASE = 'https://liveworkspace.app';
+const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
 const APP = 'https://livediagram.app';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
 const RESOURCE = 'https://livediagram.app/api';
