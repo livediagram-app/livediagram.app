@@ -531,8 +531,8 @@ the settings as they now are.
   routes: `GET` and `PATCH /api/account/settings` for the `all` scope (the Account section's switches), and
   `GET /api/account/settings/:app` for both of the person's scopes for one app (the app's rows can depend on a
   shared switch), with `PATCH /api/account/settings/:app` `{ app }` patching the app's scope alone. A body's `all`
-  is ignored there, and only the four apps' site ids are scopes. The profile is the session's only: on
-  liveworkspace.app the panel sets it in place, elsewhere it links there.
+  is ignored there, and only the four apps' site ids are scopes. The profile is set in place through either door
+  too: `GET` and `PATCH /api/account/profile`, the same handler on both (`profileRoute` in `src/account-api.ts`).
 - **A guest's Settings panel** (the Explorer on an app's address, [site.md](site.md#settings) "A guest") calls
   nothing. It reads and writes the guest's copy in the app's own storage on that address, the editor's
   `<app>:user-preferences:v1`, and marks it unsynced for the guest, so the editor sends it on through its own
@@ -561,6 +561,12 @@ for every app. An app keeps no participants table of its own.
 - **An account** shows its account name (the first and last name it registered with) until it sets a
   display name of its own; clearing that shows the account name again. Its colour is its own to set.
 - **A guest** has whatever it sets, under its guest id.
+- **Setting it from Settings.** The Settings panel's Profile sets an account's name and colour in place wherever
+  it opens: over the session on liveworkspace.app, and over the app's bearer (`/api/workspace/account/profile`) on
+  an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color? }` with
+  one handler; a guest's bearer is refused (`401 signed_out`), since a guest sets its name in the app itself.
+- **An editor never overwrites a stored name.** On opening, an editor uses the profile as it is; only a first
+  visit with none seeds one (the account name, or a guest's placeholder), so a display name set anywhere stays.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
   when it could load something or break out of a CSS value (the apps' `isSafeColourValue`), since it is
   painted into every peer's page. Either may be null: no name of its own, or the app's own pick of colour.
@@ -768,7 +774,9 @@ Settings panel) are also answered for an **app's bearer**: the access token the 
 minted for one of the app APIs, sent by the Explorer on the app's address and by the app's editor through the app's
 router (`/api/workspace/account/…`; `src/bearer.ts`). A bearer is no ambient credential, so its writes need no
 same-origin check. A guest's bearer reads names alone; an API token (`lwt_…`) is not a bearer here, so no tool or
-script runs a team. Joining by link, tokens and the profile stay the session's.
+script runs a team. An account's bearer also reads and sets its own profile (`GET` and `PATCH /api/account/profile`,
+the session door's own handler), which grants nothing new: the app's API already sets the same name and colour with
+the same token (`PUT /api/participants/:id`). Joining by link and tokens stay the session's.
 
 | Route                                                   | Does                                                                                    |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |

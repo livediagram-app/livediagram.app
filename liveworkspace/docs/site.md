@@ -272,8 +272,9 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
   (`appOrigin`); share links are always the app's public site. The Settings panel opens here in place (the bottom
-  bar, the account menu, `?settings=`), its Profile and API Tokens rows linking to the panel on liveworkspace.app
-  (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that sets them lives.
+  bar, the account menu, `?settings=`). Its Profile's Name and Colour is set in place there, over the app's token
+  (`/api/workspace/account/profile`); its Sign-in Methods and API Tokens rows link to the panel on liveworkspace.app
+  (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that runs them lives.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
 - **Telemetry** goes to liveworkspace.app's `/api/telemetry`, always for the app (the service takes a page's
@@ -349,7 +350,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   the other, each eases open and shut, picking a category opens its group, and a search opens them all so no hit is
   hidden. Account holds what belongs to the person in every app, the `all`
   scope ([accounts.md](accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
-  collaborators see, with a preview of their cursor and avatar, `ProfileCard.tsx`; the apps' one palette
+  collaborators see, with a preview of their cursor and avatar, `ProfileEditor` in `@liveworkspace/settings-ui`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it
   **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
@@ -384,9 +385,15 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     colour, as the account menu paints it), their display name, email, **liveworkspace account** and when they
     joined. Every host passes what it knows (`AccountHost.identity`): the site its session, the Explorer on an
     app's address the app's session, an editor its signed-in user.
-  - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar
-    (`ProfileCard.tsx`) on liveworkspace.app; on an app's address and in an editor, a row with the current name and
-    colour and **Edit** on liveworkspace.app, since the profile is the session's.
+  - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar, edited
+    in place wherever the panel opens, never a link away: one editor (`ProfileEditor`,
+    `packages/settings-ui/src/profile/ProfileEditor.tsx`) fed by the host's `AccountHost.profile`, which loads the
+    profile and saves a patch (`{ name }` or `{ color }`, null clearing either). liveworkspace.app's host goes over
+    its session (`/api/account/profile`); the Explorer on an app's address and each editor's over the app's token
+    through the app's router (`/api/workspace/account/profile`, the bearer door, [accounts.md](accounts.md#profiles)).
+    There is no link-out for it: `AccountHost` has no profile address to link to. A saved colour repaints the host's
+    own avatar at once (the header's, or in an editor its cursor, name tag and presence avatar in the room, with the
+    name), with no reload.
   - **Sign-in Methods** and **Where You’re Signed In**, two sections (on liveworkspace.app, `AccountHost.security`): the methods (an emailed code to
     the account's address, always; Google, **Connected** or **Connect**, when the deployment has Google), and
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
@@ -410,7 +417,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   the pointer heads for Settings); each app's catalogue is its own chunk too. The app's side reads that app's scopes
   once (`GET /api/account/settings/:app`, which answers `all` too); All reads each app's once, and the `all` scope
   comes with them, so it costs no request of its own. The profile is read when its category is first shown
-  (`GET /api/account/profile`). What is read is kept for the page's lifetime (`settingsStore` in
+  (`GET /api/account/profile`, or `/api/workspace/account/profile` on an app's address and in an editor): one
+  request per opening of Profile, then one `PATCH` per change. What is read is kept for the page's lifetime (`settingsStore` in
   `lib/app-settings.ts`), so opening the panel again, or switching sides, costs nothing.
 - **Saving.** Each change is shown at once and written alone, as a patch of just its key: an app's row to the app's
   scope (`PATCH /api/account/settings/:app` `{ app }`), an Account switch, a Common row or a common setting's row on
@@ -422,9 +430,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
-  the app's token; its Profile header is the app's session's, and its Name and Colour, Sign-in Methods and API
-  Tokens rows link to liveworkspace.app, since the profile, sessions and tokens are the
-  session's.
+  the app's token; its Profile header is the app's session's, its Name and Colour is set in place over the same
+  token (`/api/workspace/account/profile`), and its Sign-in Methods and API Tokens rows link to liveworkspace.app,
+  since sessions and tokens are the session's.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
   tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and

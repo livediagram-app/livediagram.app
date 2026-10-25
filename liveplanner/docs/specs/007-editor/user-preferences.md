@@ -743,7 +743,13 @@ and the dialog stays as the one complete, browsable index of them.
   with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.
   The Account section's switches are this editor's own shared preferences, changed through this
   editor's own row for the key when it has one (so the change is counted and synced as here), and
-  its Profile row links to liveworkspace.app, where the profile is set. Nothing of All is fetched
+  its Profile's Name and Colour is edited in place, never a link away: the shared editor
+  (`ProfileEditor` in `@liveworkspace/settings-ui`), which reads and patches the profile over the
+  same door (`/api/workspace/account/profile`, `bearerProfileHost`). A saved name or colour is the
+  editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
+  reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
+  a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
+  session holds them. Nothing of All is fetched
   until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account
   outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
