@@ -57,7 +57,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livediagram/fake-google": "workspace:*",
+    "@liveworkspace/fake-google": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/source-ast": "workspace:*",
