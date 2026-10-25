@@ -66,7 +66,7 @@ Scope, by file:
 | `EXCALIDRAW_STICKY_FILL`           | `'#ffdf6b'`                                           | Excalidraw's sticky-note yellow (seen in real copies)                                     | fixed by the source |
 | `DROP_NOT_A_SCENE`                 | the refusal copy                                      | [Excalidraw import & export](../excalidraw-import-export.md) "Paste"                      | copy                |
 | `EXCALIDRAW_UNTITLED_NAME`         | `/^Untitled-(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})$/` | Excalidraw `getFileName`: `Untitled-${getDateTime()}`                                     | fixed by the source |
-| `EXCALIDRAW_BOARD_NAME`            | `'Excalidraw board'`                                  | [Excalidraw import & export](../excalidraw-import-export.md) "Import as new documents"    | copy                |
+| `EXCALIDRAW_BOARD_NAME`            | `'Excalidraw board'`                                  | [Excalidraw import & export](../excalidraw-import-export.md) "Import as new canvass"      | copy                |
 | `EXCALIDRAW_NOT_A_SCENE`           | `"This file isn't an Excalidraw scene."`              | the same                                                                                  | copy                |
 
 ## Interfaces and contracts

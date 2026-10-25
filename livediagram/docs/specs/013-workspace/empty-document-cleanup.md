@@ -63,9 +63,9 @@ An automatically moved document is marked with why it is there, and the Trash
 says so on its row: "Moved here {d MMM} because it was empty" in place of
 "Deleted {d MMM}", followed by the days left as usual. Opening one by URL shows
 the deleted card, worded for what happened: no one deleted it, so someone who
-may restore it reads **In the Trash** and "This document is in the Trash", then
+may restore it reads **In the Trash** and "This canvas is in the Trash", then
 that it was empty for 30 days and so moved there. A share-link visitor, who
-learns no reason, reads the usual "This document was deleted".
+learns no reason, reads the usual "This canvas was deleted".
 
 A person deleting a document leaves it unmarked. The mark is a reason, not an
 author: it records no one, so it adds nothing to erase on account deletion.

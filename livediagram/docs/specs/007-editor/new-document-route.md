@@ -25,7 +25,7 @@ want to create a document" end-to-end.
 
 The overlap is the source of recurring state bugs:
 
-- The "Empty Canvas" flash on `New Document` clicks (multiple
+- The "Empty Canvas" flash on `New Canvas` clicks (multiple
   iterations to land cleanly).
 - `templatePickerMode = 'welcome'` showing on existing-document tabs.
 - Hydration spinner hangs because the no-params path raced with the
@@ -44,7 +44,7 @@ each one own a clean state model without conditional gates.
   `?s=` URLs and never has to consider "do I mint an id?".
 - Visiting `/live` with no params redirects to `/new` instead
   of trying to be both surfaces at once.
-- "New Document" buttons (Explorer + NotFound CTA) navigate to
+- "New Canvas" buttons (Explorer + NotFound CTA) navigate to
   `/new`. Existing share / open flows stay on `/live`.
 
 ## Non-goals
@@ -125,11 +125,11 @@ document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
 `<NotFound>` card at once, titled **Page not found**
 ("There is no page at this address. Open a document from the Explorer or
-start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
+start fresh.") with its **Open Explorer** and **New Canvas** buttons, and asks
 the API for nothing. A document that is missing or not yours gets the same card
-titled **Document not found**. The card stands alone under the app header, with
+titled **Canvas not found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
-`/explorer`, New Document to `/new`). An embed shows the card with New Document
+`/explorer`, New Canvas to `/new`). An embed shows the card with New Canvas
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`. Before, every address without a
 document id went to `/new`, so a mistyped or retired page opened the New
@@ -164,7 +164,7 @@ knowing about when adding another.
 
 ### Owner creates a new document
 
-1. User clicks **New Document** in the Explorer (or lands on `/live`).
+1. User clicks **New Canvas** in the Explorer (or lands on `/live`).
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately — no spinner.
 4. User picks a mode, which creates the document at once, where new documents go by default
@@ -199,7 +199,7 @@ knowing about when adding another.
    Start Drawing, Start a Workshop; [Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
-### Document not found
+### Canvas not found
 
 1. URL is `/document/<id>` but the API returns 404.
 2. NotFound surface renders as today, but its "Create new document"
@@ -211,7 +211,7 @@ Removed from the editor route:
 
 - `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
   derivation.
-- `welcomeOpen` (the chrome-hide trigger for the New Document modal).
+- `welcomeOpen` (the chrome-hide trigger for the New Canvas modal).
 - `commitDocumentId()` and every call site (`createShareLink`,
   `skipTemplatePicker`, `chooseTemplate`).
 - The "no URL params" branch of hydration. If the pathname's id
@@ -252,7 +252,7 @@ creates anything:
 - **On `/new`:** back to the screen that opened it, at once (the step has
   no search; a `?q=` preset waits for the new document's start). When the
   browser came from another page of this site (the home page's Diagram or Brainstorm,
-  the header's Choose Template, the Explorer's New Document), it goes back there,
+  the header's Choose Template, the Explorer's New Canvas), it goes back there,
   as the browser's Back would (`history.back()`), so that page returns as it was.
   With nothing of ours to go back to (the URL typed, or opened from another site),
   it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
@@ -288,7 +288,7 @@ reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetr
 
 ## Responsive layout
 
-The New Document wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
+The New Canvas wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
 The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the logo's site switcher, the account menu) open in front of the card rather than behind it.
 
@@ -338,7 +338,7 @@ browsed before signing up.
 The welcome screen asks **one question**, what you are making, and creates the document as soon as it is
 answered. It does not ask where the document goes or what it is called:
 
-- **Mode.** [Choosing a mode](#choosing-a-mode). Footer: **Open Existing Document** on the left, then **Skip**
+- **Mode.** [Choosing a mode](#choosing-a-mode). Footer: **Open Existing Canvas** on the left, then **Skip**
   and **Create**. Choosing a card creates at once; **Create** creates the chosen card (a `?mode=` preset), else a
   Blank Diagram.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
@@ -361,7 +361,7 @@ answered. It does not ask where the document goes or what it is called:
   anything is on the canvas was a decision most people could not yet make.
 - **Skip** commits the documented defaults straight away: the **Blank** template and the **Default** theme, with
   its start closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
-- A bottom-left **Open Existing Document** button navigates to `/explorer`. The
+- A bottom-left **Open Existing Canvas** button navigates to `/explorer`. The
   `/new` route therefore does **not** render an Explorer panel of its own (it
   used to float one as the escape hatch); the button is the single, unambiguous
   way out, which is less confusing.
@@ -603,13 +603,13 @@ wizard is filed by its mode; the template picked later on its start screen may t
 default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
-  "Placement refused", title "Couldn't file the document there", and one action,
+  "Placement refused", title "Couldn't file the canvas there", and one action,
   **Choose another place**, which reopens `/new` without the bypass and placement params, so the
   next create goes where new documents go by default:
-  - `team_forbidden`: "You're not a member of that team, so the document can't be filed in its library."
+  - `team_forbidden`: "You're not a member of that team, so the canvas can't be filed in its library."
   - `folder_not_found`: "That folder no longer exists, or isn't yours."
   - `folder_scope_mismatch`: "That folder belongs to a different space from the one you chose."
-  - `placement_invalid`: "That isn't a place a document can be filed."
+  - `placement_invalid`: "That isn't a place a canvas can be filed."
 - **Any other failure** keeps the connection copy and **Try again**.
 - **Telemetry:** `Team / Added / Document` fires once a create into a team has succeeded,
   never on a refused one.
@@ -642,7 +642,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 - `/document/<id>` (existing) → editor hydrates as before.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
-- "New Document" from Explorer → goes to `/new`.
+- "New Canvas" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
 - `/new`, choose a mode → the document is created at once, This Browser for a guest, filed in the

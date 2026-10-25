@@ -56,7 +56,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   ([Team shared documents](../013-workspace/team-shared-documents.md)) cannot be published: they are not one person's to
   give away. A post its document's current owner did not make (it came with the document from a team library) is not
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
-  document at once give the second **This document is already in the Community.**
+  document at once give the second **This canvas is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
   Private, Shared and Team; only This Browser beats it), and the Share dialog's Community band shows the listed post.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
@@ -169,7 +169,7 @@ type) and on the worker (authoritative).
 - Title, author, publish date, category, tags (each opens the gallery with its `#tag` in the search), and the full
   description.
 - The actions, in one panel: **Make a Copy** (opens the document in the editor and copies it into the visitor's own
-  documents in one step) and **Open Document** (the read-only viewer, full screen) side by side at equal size, Make a
+  documents in one step) and **Open Canvas** (the read-only viewer, full screen) side by side at equal size, Make a
   Copy leading in colour; beneath them one strip of equal chips, the **Like** toggle with its count ("3 likes"), the
   copy count ("1 copy") and **Report** at the end.
 - **Layout**: from the `lg` breakpoint, the preview on the left and a sticky column on the right holding the title block
@@ -236,8 +236,8 @@ ordinary view link in exactly these ways:
   comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
-- It is read-only for **everyone, the author included**: the post page's preview and Open Document never open the document
-  for editing. The author's Community bar offers **Edit Your Document** (their own document) in place of Make a Copy.
+- It is read-only for **everyone, the author included**: the post page's preview and Open Canvas never open the document
+  for editing. The author's Community bar offers **Edit Your Canvas** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
 not, and the copy carries exactly what the viewer shows: no comments, no people on its actions, and items without
@@ -334,18 +334,18 @@ for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 - The Explorer panel's footer row of links (Home, Explorer, **Community**, Help).
 - The shared site footer, and the marketing sitemap (`/community/`).
 - The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
-  Community** and **Finding Documents in the Community** under Collaboration, Sharing and Embeds.
+  Community** and **Finding Canvases in the Community** under Collaboration, Sharing and Embeds.
 
 ## Help
 
 Community surfaces deep link those two help articles, each a quiet link with the help glyph (the full placement list
 is in [Contextual help links](../018-help/contextual-help-links.md)):
 
-- The gallery's header: **How the Community Works** (Finding Documents in the Community) as a link ending the lead,
+- The gallery's header: **How the Community Works** (Finding Canvases in the Community) as a link ending the lead,
   and **How Sharing Works** (Sharing to the Community) as a secondary button to the left of Share Your Own (on a
   phone, below it).
 - My Shares' **Your Shares** summary: **Managing Your Shares** (Sharing to the Community).
-- The report dialog: **How Reports Work** (Finding Documents in the Community).
+- The report dialog: **How Reports Work** (Finding Canvases in the Community).
 - The landing page's From the Community section: **How the Community Works** beside Explore the Community.
 - In the editor, the Share dialog's **Community** section label and the **Share to Community** dialog's header carry
   the editor's help link to Sharing to the Community.

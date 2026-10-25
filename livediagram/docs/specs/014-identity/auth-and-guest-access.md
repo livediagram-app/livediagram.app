@@ -209,7 +209,7 @@ asking the api.
 
 Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
 
-- **Move Documents in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move Canvases in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
 - **Move** runs Sync Canvas ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
 - **Not Now** is remembered for this account in this browser (`livediagram:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
 - The same move is always reachable by hand: **Sync Canvas** on any document in This Browser.
@@ -217,7 +217,7 @@ Signing in never moves a document in This Browser by itself ([Offline Mode → A
 ## Implications for how we build
 
 - UI must never block the canvas behind a sign-in wall.
-- Features that genuinely need an account are surfaced as opt-in prompts ("Sign in to keep your documents"), never modal walls.
+- Features that genuinely need an account are surfaced as opt-in prompts ("Sign in to keep your canvases"), never modal walls.
 - The single persistence boundary (`apps/editor/lib/api-client.ts` against the api worker, see [11-api.md](../015-api/api.md)) is the same in guest and authenticated mode. Both send `Authorization: Bearer`: the guest token from `localStorage` for guests, the in-memory access token for signed-in users. The api-client's module-level `setTokenProvider` is the single switch.
 - Page script never holds the client secret or the refresh token: both live only in the api worker and its HttpOnly cookie, and the access token lives only in memory. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 - The api worker's degraded-mode behaviour matters: with `ACCOUNTS_URL` or `API_RESOURCE` unset, it resolves no owner for any request, so nobody can keep a document on the server. The editor still opens and documents in This Browser still work, but a real deployment, even a guest-only one, configures the accounts site.

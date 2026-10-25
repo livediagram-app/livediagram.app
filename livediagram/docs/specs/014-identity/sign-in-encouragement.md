@@ -85,7 +85,7 @@ never triggers it; staying in one for 5+ minutes does.
 Reuses the app's portal-based modal pattern (Escape + backdrop close).
 Lists the benefits, each with an icon, headline, and a sentence:
 
-1. **Keep your documents safe.** Guest documents live under a
+1. **Keep your canvases safe.** Guest documents live under a
    per-browser id; clearing your browser cache or cookies can lose
    access to them. Signing in ties them to your account so they
    survive a cache clear or browser restart.

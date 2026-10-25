@@ -8,7 +8,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
 
 - The heading always names what is missing, in the plural, and starts **"No <things>"**: "No icons",
   "No settings", never "Nothing matches", "No matches" or "No results". A search across several kinds names them
-  ("No documents, folders or help articles match “x”").
+  ("No canvases, folders or help articles match “x”").
 - The heading is a sentence (it can quote the person's own words), so it is written in sentence case with no full
   stop. Its action button is Title Case, as every button is.
 - **A search found nothing**: "No <things> match “<words>”". The words are the trimmed query, cut to

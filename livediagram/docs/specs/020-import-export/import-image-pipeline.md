@@ -165,7 +165,7 @@ without images closes the dialog as before. Copy per failure:
 | `too-large`          | The image was too large to import.                                         |
 | `gallery-full`       | Your image gallery is full. Free up space in the Explorer's Image Gallery. |
 | `images-unavailable` | This server doesn't store images.                                          |
-| `offline-budget`     | This offline document reached its image limit for one import.              |
+| `offline-budget`     | This offline canvas reached its image limit for one import.                |
 | `upload-failed`      | The upload didn't go through. Check your connection and try again.         |
 
 Every summary that lists placeholders ends with the same way forward: _Double-click a placeholder to add its image._

@@ -2,7 +2,7 @@
 
 ## Status
 
-Shipped. One tab can sit in several of a person's documents at once: **Add to Document** puts the active tab into
+Shipped. One tab can sit in several of a person's documents at once: **Add to Another Canvas** puts the active tab into
 another document, and an edit to it in either reaches the other. Each document's content lives in its own
 SQLite-backed Durable Object ([API app, Storage](../015-api/api.md#storage)), so every document holding a shared tab
 keeps its own copy of it under the same tab id, and the documents keep their copies in step. The mechanism is
@@ -85,9 +85,9 @@ saying those tabs stay in the other documents. Delete asks nothing: it moves the
 shared tabs stay in step, and Undo brings it back. It answers exactly the callers who may delete the document, in the DELETE's order: 400 with no
 caller, 404 when missing, 403 otherwise.
 
-## Add to Document
+## Add to Another Canvas
 
-The tab menu's **Add to Document** row opens `AddTabToDocumentDialog`, a filterable tile grid of the caller's other
+The tab menu's **Add to Another Canvas** row opens `AddTabToDocumentDialog`, a filterable tile grid of the caller's other
 documents with their snapshot previews ([Document SVG snapshots](document-snapshots.md)). Picking one calls
 `apiLinkTab` (`apps/editor/lib/api/tabs.ts`), the link route above with this document as `from`. The route answers
 `{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides

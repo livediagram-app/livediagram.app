@@ -5,7 +5,7 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
-**Nobody is asked.** The New Document wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+**Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
 (The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser
@@ -73,7 +73,7 @@ A signed-in user can mirror the documents in My Work to their own Google
 Drive. The document still lives in livediagram (the default location): Drive
 holds a copy that is kept in sync both ways while a tab is open, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
-**livediagram** is mirrored like any other. Documents in This Browser have no
+**livediagram** is mirrored like any other. Canvases in This Browser have no
 server copy and are not mirrored. The mirror itself (connection, folder tree,
 rename, move, delete to Trash, "Open with") is specified in [Google Drive mirror](../022-drive-mirror/drive-mirror.md), not
 here.

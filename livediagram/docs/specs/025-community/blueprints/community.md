@@ -276,7 +276,7 @@ Editor (`apps/editor`):
   which wins over Private, Shared and Team (only This Browser beats it).
 - `resolveDocumentSession` (`apps/editor/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
-  Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.
+  Open Canvas can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Canvas in the bar.
 - Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
   and `apps/editor/components/chrome/CommunityBar.tsx` renders under the header with the author
@@ -311,7 +311,7 @@ Community app (`apps/community`):
   past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
   titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@livediagram/ui`, a phone sheet below `sm`), `RelatedPosts`.
-  Links come from `apps/community/lib/links.ts`: Open Document `openDocumentHref` (`/document/shared?s=<code>`), Make
+  Links come from `apps/community/lib/links.ts`: Open Canvas `openDocumentHref` (`/document/shared?s=<code>`), Make
   a Copy `makeCopyHref` (`/document/shared?s=<code>&copy=1`). Once the post loads, `PostView` sets `document.title`
   and a `link rel="canonical"` to the post's own address (`apps/community/app/post/page.tsx` carries none).
 
@@ -332,7 +332,7 @@ Community app (`apps/community`):
 | Like twice / unlike twice               | Idempotent; counts recomputed                                                                                     |
 | Report twice from one browser           | 204, row unchanged                                                                                                |
 | Storage blocked in the Community app    | In-memory key; likes work for the page's life                                                                     |
-| Embed frame fails                       | Falls back to the card image with Open Document                                                                   |
+| Embed frame fails                       | Falls back to the card image with Open Canvas                                                                     |
 | Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                                                     |
 | Search with only stop characters        | Treated as no search                                                                                              |
 | Offset past the end                     | Empty `posts`, `nextOffset: null`                                                                                 |
@@ -403,7 +403,7 @@ Final copy:
   share password set, the button is disabled beside "Remove the share password to share it to the Community." With
   the open first tab empty, it is disabled beside "Add something to your first tab before sharing: it is the picture
   on your Community card." Guest: "Sign in to share your document with the
-  Community." Button: **Sign In to Share**. Team document: "Team library documents can't be shared to the Community."
+  Community." Button: **Sign In to Share**. Team document: "Team library canvases can't be shared to the Community."
 - Published: post title, category, "♥ n · Copied n times", **View Post**, **Edit Listing**, **Remove From Community**;
   hidden: "**Hidden after reports.** Several people reported it, so it was taken out of the Community for good. Only you
   can see it, and it can no longer be changed or removed." Remove asks in place: "Remove it from the Community? Its
@@ -411,14 +411,14 @@ Final copy:
 - Publish dialog title: **Share to Community** / **Edit Listing**. Consequences: "Anyone can view this document and make
   their own copy." "Your later edits show in the Community too." "Comments stay private." "You can remove it at any
   time." Primary button: **Share to Community** / **Save Changes**.
-- Gallery heading: **Community**; lead: "Documents people are proud of. Find inspiration, then make it your own."
-- Empty (no posts): "Nothing here yet. Be the first to share a document." Empty (filters): "No documents match these
+- Gallery heading: **Community**; lead: "Canvases people are proud of. Find inspiration, then make it your own."
+- Empty (no posts): "Nothing here yet. Be the first to share a canvas." Empty (filters): "No documents match these
   filters." Button **Clear Filters**. Error: "We couldn't load the Community." Button **Try Again**.
 - My Shares: signed out "Sign in to see your shares." with **Sign In**; nothing shared "You haven't shared anything
   yet." with **Share Your Own**; totals headed **Your Shares**.
-- Post not found: "This document isn't in the Community any more." Link **Back to Community**.
+- Post not found: "This canvas isn't in the Community any more." Link **Back to Community**.
 - Community bar: "Shared to the Community by <name>" · **Back to Community** · **Make a Copy**.
-- Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,
+- Report dialog: title **Report This Canvas**, reasons as radio rows, note optional, button **Send Report**,
   confirmation "Thanks for letting us know. When enough people report a document, it is taken out of the
   Community." (no promise of a human review)
 - Help links (`CommunityHelpLink`): `CommunityHero` **How the Community Works** (`finding`, `variant="inline"`, ending the

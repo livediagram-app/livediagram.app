@@ -62,7 +62,7 @@ The opening screen escalates on its own:
 
 ## The recovery card
 
-The load-error screen ("Couldn't load document") carries, beneath its Retry
+The load-error screen ("Couldn't load canvas") carries, beneath its Retry
 button, a recovery card. It shows for every load error, timed out or not:
 
 - **Copy Diagnostics** copies a plain-text report (below) for the person to
@@ -72,7 +72,7 @@ button, a recovery card. It shows for every load error, timed out or not:
   clears livediagram's saved settings and caches in this browser." and what is
   kept, with **Repair and Reload** and **Cancel**. Inline rather than a modal,
   so the same component serves the editor and the help page.
-- **Troubleshooting steps** links to the "A Document Will Not Load" help
+- **Troubleshooting steps** links to the "A Canvas Will Not Load" help
   article.
 - When copying is refused (no clipboard permission), the report shows in a
   read-only text box to copy by hand.
@@ -149,7 +149,7 @@ the help page can repair the editor's storage even when the editor itself
 cannot start. The page lists what is cleared and kept, runs the browser checks
 and the identity lines on open and shows both, and offers Copy Diagnostics
 (identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your document
-again." with a link to the Explorer. The "A Document Will Not Load" article
+again." with a link to the Explorer. The "A Canvas Will Not Load" article
 gains two sections: "Stuck on "Opening your canvas"" (the escalation above)
 and "It opens for a colleague but not for you" (account first, then the share
 link, the repair, another browser or network).

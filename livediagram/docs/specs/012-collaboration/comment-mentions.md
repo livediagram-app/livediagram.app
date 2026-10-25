@@ -17,7 +17,7 @@ who can open the document and read the thread, and a teammate on another team
 almost certainly cannot.
 
 - On a **personal document** or for a **guest** there is nobody to mention.
-  Typing `@` then shows one quiet row, "Mention teammates on a team document",
+  Typing `@` then shows one quiet row, "Mention teammates on a team canvas",
   and nothing is inserted.
 - An **invited** member (no account yet) can be mentioned. They are keyed by
   their membership row, like an invited assignee, and get the email at their

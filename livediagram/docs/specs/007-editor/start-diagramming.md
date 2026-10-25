@@ -3,7 +3,7 @@
 An empty tab starts from a choice, not a blank page and a modal. Diagram, Draw and Workshop tabs each offer their
 own: **Start Diagramming**, **Start Drawing** and **Start a Workshop**. Each is the same wide
 panel in the middle of the canvas, its rail of groups beside a grid of the mode's templates, so the templates sit
-where the work begins instead of in a step before it. The New Document wizard asks only for a mode
+where the work begins instead of in a step before it. The New Canvas wizard asks only for a mode
 ([New document route](new-document-route.md) "Choosing a mode"), and the document opens on that mode's start.
 
 ## The panel

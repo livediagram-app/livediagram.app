@@ -291,7 +291,7 @@ non-elected tab, handed to the elected one).
 | our MIME or `.livediagram`, other `ldOrigin` or no `ldDocumentId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
 | anything else, 404, 403 or unreadable                                               | `error`                       | `Error`         |
 
-`import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new document** (`copy`): download
+`import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new canvas** (`copy`): download
 (`alt=media`), `parseDocumentEnvelope`, then `port.importDocumentCopy` (fresh document and tab ids, tab links remapped
 with `remapTabLinks`, the deck carried). A `copy` import also runs `importAsNewDocument`
 (`apps/editor/lib/drive/open-with-copy.ts`):
@@ -630,13 +630,13 @@ raises the same signal on receipt. The provider's own write relay ignores `drive
 `useAfterDriveChange(onChange)` (`hooks/persistence/useAfterDriveChange.ts`) is `useAfterApiWrite` with a
 `filter` for `drive` signals; its callers re-read quietly (no loading skeleton):
 
-| View                                      | Re-read                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Explorer page (`useExplorerState`)        | `load(ownerId)`: documents, shared, folders                                                                                     |
-| Any `useFolders` with an owner            | its folder list (the Explorer, the editor, the wizard)                                                                          |
-| Trash view (`useTrash`)                   | the Trash listing                                                                                                               |
-| Editor (`useDriveFollow`)                 | `refreshDocumentList`; the open document's meta: a new name sets `documentName`, a 410 `document_trashed` sets the deleted card |
-| New Document page (`RecentDocumentsCard`) | its recent list                                                                                                                 |
+| View                                    | Re-read                                                                                                                         |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Explorer page (`useExplorerState`)      | `load(ownerId)`: documents, shared, folders                                                                                     |
+| Any `useFolders` with an owner          | its folder list (the Explorer, the editor, the wizard)                                                                          |
+| Trash view (`useTrash`)                 | the Trash listing                                                                                                               |
+| Editor (`useDriveFollow`)               | `refreshDocumentList`; the open document's meta: a new name sets `documentName`, a 410 `document_trashed` sets the deleted card |
+| New Canvas page (`RecentDocumentsCard`) | its recent list                                                                                                                 |
 
 ### Not-ours logging
 
@@ -770,9 +770,9 @@ editor's Settings, so every way back to it is the remembered page (which already
 connection the api refused offers **Back to Cloud Sync** there, as does the account switch dialog. With no remembered
 page (a consent this browser did not start: **Go to Explorer**; a cancel whose page was lost: **Back**) they go to
 the Explorer. `/drive/open`: "Opening from
-Google Drive…"; import: "This document isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
-"This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
-**Import as new document**; error: "This file can't be
+Google Drive…"; import: "This canvas isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
+"This is a copy made in Google Drive. Import it as a new canvas to open it here; the original stays as it is."
+**Import as new canvas**; error: "This file can't be
 opened in livediagram." with **Go to Explorer**.
 
 ### Account switch dialog

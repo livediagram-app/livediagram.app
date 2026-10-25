@@ -27,7 +27,7 @@ Two promises shape the design:
   importer shares ([Board scene](board-scene.md) "The report"): what landed, counted by kind, and
   each change as a rule with its count.
 - In the same folder: `json-export.ts` (the JSON export, below), `library.ts` (shape libraries,
-  below) and `files.ts` (many files to documents, "Import as new documents" below).
+  below) and `files.ts` (many files to documents, "Import as new canvass" below).
 - Nothing lives in `packages/`: only the editor imports draw.io files, and the importer leans on the
   browser's `DOMParser` and `DecompressionStream`, which the Workers runtime lacks.
 
@@ -463,7 +463,7 @@ image.
   default page) leave it unset.
 - The tab keeps its own theme, pattern and font.
 
-## Import as new documents (Explorer)
+## Import as new canvass (Explorer)
 
 The Explorer page header's **Import from** group ([Folders](../013-workspace/folders.md)) has a
 **draw.io** source beside Microsoft Whiteboard and Excalidraw. It takes **files or a whole folder**
@@ -471,7 +471,7 @@ The Explorer page header's **Import from** group ([Folders](../013-workspace/fol
 
 - **Diagrams**: each draw.io file becomes **its own new document**, its pages as **diagram tabs** in
   page order (named after the pages), through the shared new-document target ([Board import](board-import.md)
-  "new-document"), filed where New Document files.
+  "new-document"), filed where New Canvas files.
 - **Libraries**: each library file becomes its own shape library (above).
 - **Everything else** (an image without a diagram, a text file, a folder's stray files) is listed as
   skipped with its reason, never fatal.
@@ -580,7 +580,7 @@ These differ from draw.io for every file and are not worth a line each time:
   shifts the canvas. While images store, the panel counts them ("Importing images 3 of 12…").
 - **Explorer.** The **draw.io** button of the page header's **Import from** group (an original
   glyph, not draw.io's logo: the repo ships no vendor marks, [Iconography](../004-interface-design/iconography.md));
-  its tooltip "draw.io" and its accessible name "Import from draw.io" ("Import as new documents" above).
+  its tooltip "draw.io" and its accessible name "Import from draw.io" ("Import as new canvass" above).
 - **Telemetry** ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
   `track('Tab', 'Imported', 'Drawio')`, once per tab import and once per document the Explorer
   import makes (as Microsoft Whiteboard counts once per board), the existing pair and no schema

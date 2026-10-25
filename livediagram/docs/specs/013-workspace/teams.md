@@ -1,6 +1,6 @@
 # Teams
 
-Groups of signed-in people. Teams belong to the liveworkspace account, not to livediagram: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livediagram.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livediagram keeps no copy of them. An account's teams come from its access token's `teams` claim, and a team made or joined since the token was minted is asked of accounts (`createTeamAccess` in `@liveworkspace/index-app`). The Explorer lists them, each with its shared library on the index ([Team Shared Documents](team-shared-documents.md)).
+Groups of signed-in people. Teams belong to the liveworkspace account, not to livediagram: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livediagram.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livediagram keeps no copy of them. An account's teams come from its access token's `teams` claim, and a team made or joined since the token was minted is asked of accounts (`createTeamAccess` in `@liveworkspace/index-app`). The Explorer lists them, each with its shared library on the index ([Team Shared Canvases](team-shared-documents.md)).
 
 ## Why
 
@@ -27,7 +27,7 @@ All under `/api/teams`, account Bearer or API token required, handled by `apps/a
 - `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
 - `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
 - `GET /api/teams/:id` — team + member list + `myRole` (`inviteLink` is always null). Members only.
-- `GET /api/teams/:id/library` — the team's folders and documents ([Team Shared Documents](team-shared-documents.md)).
+- `GET /api/teams/:id/library` — the team's folders and documents ([Team Shared Canvases](team-shared-documents.md)).
 - `GET /api/teams/:id/access-check`, `POST /api/teams/:id/notify-action`, `POST /api/teams/:id/notify-mention` — as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe; the two notices need a signed-in session.
 - There are no routes that administer a team (rename, delete, invite, change a role, remove, an invite link, accept, decline): the Explorer runs them against liveworkspace's account API, through the router's `/api/workspace/account/…`.
 

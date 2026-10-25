@@ -272,19 +272,19 @@ this spec does not restate it.
 
 ## Outbound: livediagram to Drive
 
-| In livediagram                   | In Drive                                                                                                                                                                      |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Document created                 | File created in its folder                                                                                                                                                    |
-| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                             |
-| Document renamed                 | File renamed                                                                                                                                                                  |
-| Document moved to another folder | File moved                                                                                                                                                                    |
-| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                     |
-| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                         |
-| Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                 |
-| Document moved into a team       | File moved to Drive's bin (the document left My Work)                                                                                                                         |
-| Document moved out of a team     | File created (or restored), as a new document in My Work                                                                                                                      |
-| Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                              |
-| Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
+| In livediagram                   | In Drive                                                                                                                                                                     |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document created                 | File created in its folder                                                                                                                                                   |
+| Document edited                  | File contents and thumbnail rewritten, at the [cadence](#cadence)                                                                                                            |
+| Document renamed                 | File renamed                                                                                                                                                                 |
+| Document moved to another folder | File moved                                                                                                                                                                   |
+| Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                    |
+| Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                        |
+| Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                |
+| Document moved into a team       | File moved to Drive's bin (the document left My Work)                                                                                                                        |
+| Document moved out of a team     | File created (or restored), as a new document in My Work                                                                                                                     |
+| Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                             |
+| Folder deleted                   | Its canvases and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md)), then the empty Drive folder goes to the bin |
 
 ## Inbound: Drive to livediagram
 
@@ -354,7 +354,7 @@ copy (below), or **Duplicate** inside livediagram.
   records another file for that `ldDocumentId` (and `ldOrigin` is this
   host). It is never taken for the original: livediagram never opens the
   original from it and never re-tags or adopts it as the original. It offers
-  **Import as new document**, which makes a new document in My Work from
+  **Import as new canvas**, which makes a new document in My Work from
   the **copy's contents**.
 - **What the copy becomes** (the current rule, **pending the operator's
   confirmation**): after the import a copy the user owns is re-tagged with the
@@ -454,7 +454,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 When a check applies a change from Drive, every open view that lists or shows
 documents re-reads itself without a reload: the Explorer (Recent, folders,
 My Work, the Trash view), the editor's own Explorer panel and folders, the
-New Document page's recent list, and the open editor itself (its title after a
+New Canvas page's recent list, and the open editor itself (its title after a
 rename, its folder after a move, the deleted card after a move to the Trash).
 Every open tab follows, not only the one that ran the check. It rides the
 existing "something was just written" signal the Timeline already listens to,
@@ -512,7 +512,7 @@ What decides it:
   - **The user can open the document** in livediagram, and the file is the one
     the mirror records for it (or the mirror records none): go to it.
   - **A copy of a mirrored document** (the mirror records a different file for
-    that `ldDocumentId`): offer **Import as new document**
+    that `ldDocumentId`): offer **Import as new canvas**
     ([Copies made in Drive](#copies-made-in-drive)), never the original.
   - **They cannot** (someone shared the Drive file with them): offer
     **Import a copy**, which creates a new document in My Work from the

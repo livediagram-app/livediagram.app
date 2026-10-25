@@ -20,7 +20,7 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Document** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+- The **New Canvas** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
   asks only for a mode and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livediagram** for a signed-in person.
   Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Canvas** puts one in This Browser on
@@ -228,7 +228,7 @@ uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
 - **The gate.** Share on a document in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Document Is in This Browser**, "It is saved only
+  offline gate (`ShareOfflineGate`): **This Canvas Is in This Browser**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livediagram to
   share it: share links, real-time collaboration and the live image all need it
   on our servers. You can take it offline again any time.", with **Sync Canvas**
@@ -253,7 +253,7 @@ reload:
 1. **It waits for this browser's last save** to land (`hasUnsavedChanges`), up to
    `SYNC_SAVE_WAIT_MS` (5 s), so the record it uploads is what is on screen and no
    save lands in a record about to be deleted. Past that it refuses with
-   `SyncStillSavingError` ("Still saving this document. Try again in a moment.").
+   `SyncStillSavingError` ("Still saving this canvas. Try again in a moment.").
 2. **It uploads** with `saveOfflineToCloud`, which returns the images it re-homed
    (data URI → gallery id).
 3. **The offline index announces the move** (`subscribeOfflineIds` in
@@ -296,7 +296,7 @@ dialog's gate and in the move prompt after signing in.
   document is created under a fresh id, and the document's tab / element links and
   deck slides follow it. So a tab that forked on Take Offline returns as a new
   tab beside the original rather than overwriting it; joining them again is an
-  explicit "Add to Document". A retried create (the tab already in this document)
+  explicit "Add to Another Canvas". A retried create (the tab already in this document)
   keeps its ids.
 - **What went up is what is removed.** The upload takes seconds and the document
   stays editable meanwhile (here or in another tab). The local copy is removed only if
@@ -400,7 +400,7 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Document wizard calls `offlineCreateDocument`
+  to dispatch on yet: the New Canvas wizard calls `offlineCreateDocument`
   directly when the location is This Browser (picked, or a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
@@ -432,7 +432,7 @@ category), and — per the help-registry rule — **register it in
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
 
-- What Offline Mode is and how to create one (the New Document wizard's Save
+- What Offline Mode is and how to create one (the New Canvas wizard's Save
   location chooser, [Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
@@ -440,7 +440,7 @@ covers:
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration and teams.
 
-Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Document
+Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Canvas
 wizard's data-loss warning to this article.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
@@ -476,7 +476,7 @@ Track adoption without content, reusing the closed vocabulary:
 - `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-document
   dispatch via a local index.
-- New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
+- New Canvas wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.
 - `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
@@ -506,7 +506,7 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Document structure](document-structure.md) (document model),
 [API app](../015-api/api.md) (api + persistence),
 [Per-tab storage](per-tab-storage.md) (per-tab storage + autosave),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Document),
+[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Canvas),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),

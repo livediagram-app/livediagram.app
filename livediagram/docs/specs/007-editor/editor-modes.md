@@ -73,7 +73,7 @@ where it is and changes only how the next mark is made.
   - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
   - Draw: "Sketch freehand with pens, tidied into shapes as you go."
   - Workshop: "Run a live session: timers, votes, polls and reveals."
-- **One switch:** every start panel's rail carries the same chip and menu. The New Document wizard's mode cards are
+- **One switch:** every start panel's rail carries the same chip and menu. The New Canvas wizard's mode cards are
   a choice of what to make, not a switch.
 - **One mode chosen:** Diagram, Draw or Workshop.
   Exactly one is active.
@@ -394,7 +394,7 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   ([Templates by mode](templates-by-mode.md)); the document it makes is named "Untitled
   Whiteboard", for the activity a person comes for.
 - **Workshop** is the mode for running a session ([Workshop mode](../012-collaboration/workshop-mode.md)), its name
-  everywhere: the switch, Settings, the New Document wizard, help, the marketing site and the agents' tools. Its
+  everywhere: the switch, Settings, the New Canvas wizard, help, the marketing site and the agents' tools. Its
   template start is **Start a Workshop** and its tour **The Workshop Tour**. It was called **Facilitate**. Every
   stored trace of the old name reads as Workshop: `opensIn: 'facilitate'`, a recorded creation intent, a create's
   intent, a `/new?mode=` link and a recently opened document's mode (`parseEditorMode`), an `opens-in:facilitate`

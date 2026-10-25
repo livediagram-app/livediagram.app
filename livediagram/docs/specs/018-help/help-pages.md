@@ -52,7 +52,7 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Your First Diagram, Sharing Your Document, Keyboard
+   link straight to the articles most readers come for (Your First Diagram, Sharing Your Canvas, Keyboard
    Shortcuts, Templates, Exporting Diagrams, Editor Modes). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
 2. **Start here.** A full-width card: livediagram's own Getting Started scene (drawing a first diagram: pick a starting point, add shapes and arrows, share the link) beside
