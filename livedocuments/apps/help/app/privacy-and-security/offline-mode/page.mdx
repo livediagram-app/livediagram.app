@@ -4,19 +4,21 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Offline Mode',
   description:
-    'Create documents that are saved only in your browser, never to the server, and move them to and from your account.',
+    "Documents saved only in your browser, where a guest's new documents start, and how to move them to and from your account.",
   path: '/help/privacy-and-security/offline-mode/',
 });
 
-<ArticleLayout title="Offline Mode" description="Documents saved only in this browser, never on the server, and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Offline Mode" description="Documents saved only in this browser, where a guest's new documents start, and how to move them to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Most documents are saved to livedocuments' servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a document saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, or simply wanting a document that physically never leaves your machine.
+Most documents are saved to livedocuments' servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a document saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, simply trying livedocuments out, or wanting a document that physically never leaves your machine.
 
 ## Creating a document in This Browser
 
 Offline Mode is chosen per document, so you can keep normal documents and ones in This Browser side by side.
 
-- New documents go to livedocuments, whether you are signed in or a guest. To keep one only in this browser, choose **Take Offline** from its menu (see below).
+- **If you haven't signed in**, your new documents start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from [New Document](/new), and from the links that create a document straight away (a template from the home page, say), starts in This Browser. Use **Sync Document** from its Share dialog if you would rather it went to livedocuments now.
+- **Once you've signed in**, new documents go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
+- **A document made inside a folder or a team** goes to livedocuments, whoever makes it, because that is where the folder or team lives.
 - The document is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which documents live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the document. The rest of the Explorer lists only documents on the server, so **This Browser**, in the **More** group of the Explorer sidebar, is where you find them all.
 
 <Note>
@@ -41,7 +43,7 @@ You can change your mind at any time, from the document's **⋯** menu.
 
 - **When you sign in** with documents in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
-- **Sync Document** (on each document under **This Browser**, in the Explorer and on the This Browser page, when you're signed in) uploads a document in This Browser to the cloud. From the Explorer, the This Browser page opens and asks you to confirm. It becomes a normal document, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **Sync Document** (in a document's Share dialog, signed in or not, and on each document under **This Browser**, in the Explorer and on the This Browser page, when you're signed in) uploads a document in This Browser to the cloud. From the Explorer, the This Browser page opens and asks you to confirm. It becomes a normal document, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
 - **Take Offline** (on a document's menu in the Explorer and the Explorer panel) does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 - **A tab it shares with other documents** (see [Add a Tab to Another Document](/help/tabs/add-to-document/)) stays in those documents, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the document back brings your copy in as a new tab beside the original.
 

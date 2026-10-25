@@ -4,6 +4,7 @@ import {
   expectNoPageErrors,
   openStartBlank,
   pageOwnerHeaders,
+  serverNewUrl,
   paletteTile,
 } from './fixtures';
 
@@ -39,7 +40,8 @@ test.describe('Viewport on add', () => {
   });
 
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    await openStartBlank(page);
+    // On livedocuments, not This Browser: the autosave is read back through the api.
+    await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
     const canvas = page.locator(CANVAS);
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;

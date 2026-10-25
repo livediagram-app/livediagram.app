@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livedocuments/api-schema';
-import { dismissQuickTour, expect, expectNoPageErrors, paletteTile, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  paletteTile,
+  serverNewUrl,
+  test,
+} from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the document format number every
@@ -35,7 +42,8 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?blank=1');
+  // On livedocuments, not This Browser: the prompt answers what the api's responses say.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
