@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useThisBrowserList, type ThisBrowserHost } from '@liveworkspace/explorer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { offlineDeleteDocument } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 

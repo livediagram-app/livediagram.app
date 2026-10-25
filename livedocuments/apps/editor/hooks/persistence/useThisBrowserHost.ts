@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useThisBrowserList, type ThisBrowserHost } from '@liveworkspace/explorer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the documents kept only in this browser, from the
