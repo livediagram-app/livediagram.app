@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // The verbs run in each product's CLI (Node) and MCP Worker: fetch, Request and Response from DOM, no Node
+    // types.
+    "lib": ["ES2023", "DOM"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

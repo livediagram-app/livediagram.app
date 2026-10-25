@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { defineVerb } from '../define';
 import { listAllDocuments, type FoundDocument } from '../find-documents';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
 
 export const listedDocument = z.object({

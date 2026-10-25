@@ -681,6 +681,9 @@ importers:
       '@livedesign/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../packages/agent-verbs
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -1886,6 +1889,9 @@ importers:
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../packages/agent-verbs
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -3017,6 +3023,9 @@ importers:
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../packages/agent-verbs
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -4104,6 +4113,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../templates
+      '@liveworkspace/agent-verbs':
+        specifier: workspace:*
+        version: link:../../../packages/agent-verbs
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -5120,6 +5132,34 @@ importers:
       react-dom:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/agent-verbs:
+    dependencies:
+      '@liveworkspace/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2

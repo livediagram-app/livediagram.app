@@ -1,0 +1,46 @@
+{
+  "name": "@liveworkspace/agent-verbs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./addressing": "./src/addressing.ts",
+    "./api-refusal": "./src/api-refusal.ts",
+    "./argv-line": "./src/argv-line.ts",
+    "./copies": "./src/copies.ts",
+    "./define": "./src/define.ts",
+    "./find": "./src/find.ts",
+    "./folders": "./src/folders.ts",
+    "./images/gallery": "./src/images/gallery.ts",
+    "./listing": "./src/listing.ts",
+    "./mcp/image-schema": "./src/mcp/image-schema.ts",
+    "./mcp/tool": "./src/mcp/tool.ts",
+    "./product": "./src/product.ts",
+    "./refs": "./src/refs.ts",
+    "./testing/fake-api": "./src/testing/fake-api.ts",
+    "./testing/memory-copies": "./src/testing/memory-copies.ts",
+    "./verbs/folder": "./src/verbs/folder.ts",
+    "./verbs/image": "./src/verbs/image.ts",
+    "./write": "./src/write.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/api-client": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

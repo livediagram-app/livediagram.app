@@ -306,6 +306,23 @@ Each step is its own PR, and both products build and pass their tests after ever
      its name and re-exports, so callers didn't change, and every product renders exactly as before (each moved piece
      rendered byte-identical). livedocuments now ships the whole shared `preview-motion.css`, about 0.5 KB gzipped of
      rules it never matches. help-registry had nothing left to share beyond product data.
+   - `agent-verbs`, first slice: `@liveworkspace/agent-verbs` (`packages/agent-verbs`) holds what the four products'
+     agent-verbs packages shared once the product's name, noun and collection were set aside: 16 modules and their
+     tests, about 2,750 lines, and about 1,600 to 2,000 fewer lines in each product. The verb shape (`define`), short
+     refs, the element-command line (`argv-line`), the list helpers and the MCP tool helper were the same in all four;
+     where they differed, one side was behind (livediagram's `connect` arrow and `telemetryType`), and the newer side
+     won. Read copies, the library sweep (`find`), folders, addressing, the changeset write and the folder verbs
+     differed only in the product's CLI name, noun and collection, so each is a `createX(binding)` and each product's
+     `agent-product.ts` holds those facts (liveplanner's messages say "plan" where its api says "project"). The api
+     refusals, the image gallery and `image ls` are shared by the three products that keep images. The shared code
+     never imports a product's api-schema: it declares the fields it reads, and each product hands in `revOfEtag`,
+     `CHANGESET_SUMMARY_MAX` and its element fingerprint. Every product's verb catalogue and MCP tools dump
+     byte-identical before and after; the shared suites run against a made-up product, so a word left unbound fails.
+   - Still in each product's agent-verbs: the catalogue, the MCP schemas, guides and skill, and the verbs typed on its
+     elements or its api-schema (lifecycle, edit, tab, changeset, the pages and plan verbs). Presence, comment and
+     workbench sit on its api-schema's rules and its model's ref functions; the `find-*` and `verbs/shared` bindings
+     stay because the apps read their product-named keys (`Libraries.personal.documents`, `tabOf`'s
+     `{ document, tab }`).
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

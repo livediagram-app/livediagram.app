@@ -2,5 +2,5 @@
 // its tools as verbs, their schemas, and the texts it serves with them.
 export * from './schema';
 export * from './output-schema';
-export * from './image-schema';
+export * from '@liveworkspace/agent-verbs/mcp/image-schema';
 export * from '../verbs/mcp-tools';

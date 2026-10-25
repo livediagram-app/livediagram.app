@@ -6,7 +6,7 @@ import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livedocuments/api-s
 import { formatLintReport } from '@livedocuments/diagram-lint';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, documentOf, tabOf, tabPath } from './shared';
 
 const tabFlag = z

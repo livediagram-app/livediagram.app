@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { defineVerb } from '../define';
 import { listAllDesigns, type FoundDesign } from '../find-designs';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, day, designOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
 
 export const listedDesign = z.object({
@@ -100,9 +100,7 @@ export const designView = defineVerb({
   output: z.object({ text: z.string() }),
   run: async (ctx, { doc }) => {
     const design = await designOf(ctx, doc);
-    const { body } = await ctx.api.text(
-      `/designs/${encodeURIComponent(design.id)}?view=overview`,
-    );
+    const { body } = await ctx.api.text(`/designs/${encodeURIComponent(design.id)}?view=overview`);
     return { text: body };
   },
   text: ({ text }) => [text],
