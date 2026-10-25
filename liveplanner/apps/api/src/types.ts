@@ -66,6 +66,10 @@ export type Env = {
   // leaves the plan's previews to lapse.
   MEDIA_URL?: string;
   MEDIA_KEY?: string;
+  // liveplanner's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // same value as the service's DRIVE_KEY_LIVEPLANNER: it opens the internal export door (its `file` format) and the
+  // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
+  DRIVE_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

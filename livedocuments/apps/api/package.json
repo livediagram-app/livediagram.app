@@ -24,6 +24,7 @@
     "@livedocuments/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/email": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

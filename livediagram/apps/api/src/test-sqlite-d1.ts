@@ -367,6 +367,19 @@ function testDocumentRooms(
               version: savedAt,
             };
       },
+      // The Drive file's two halves (document-room.ts exportFile and importFile).
+      exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
+        (await import('./document-room/document-file')).exportDocumentFile(
+          env,
+          documentId,
+          query.ifVersion,
+        ),
+      importFile: async (documentId: string, file: unknown) =>
+        (await import('./document-room/document-file')).importDocumentFile(
+          env,
+          documentId,
+          file as never,
+        ),
       hasTab: async (documentId: string, tabId: string) =>
         (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
       servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>

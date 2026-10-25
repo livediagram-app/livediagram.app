@@ -88,16 +88,20 @@ export async function readDesignMeta(env: DesignEnv, designId: string): Promise<
   return (await readDesignHead(env, designId)).meta;
 }
 
-// What the design knows of itself and its last save, in one read: the export door's version
+// What the design knows of itself, its last save and its slide deck, in one read: the export door's version
 // (liveworkspace/docs/previews.md), without the tab outline.
 export async function readDesignHead(
   env: DesignEnv,
   designId: string,
-): Promise<{ meta: DesignMeta | null; savedAt: number }> {
+): Promise<{ meta: DesignMeta | null; savedAt: number; presentation: string | null }> {
   const head = await env.DESIGN_DB.prepare(`SELECT ${DESIGN_HEAD_COLS} FROM design WHERE id = ?`)
     .bind(designId)
     .first<DesignHeadRow>();
-  return { meta: metaOf(head ?? null), savedAt: head?.saved_at ?? 0 };
+  return {
+    meta: metaOf(head ?? null),
+    savedAt: head?.saved_at ?? 0,
+    presentation: head?.presentation ?? null,
+  };
 }
 
 // The design's tabs alone, in order, for the Share dialog's tab picker (@liveworkspace/index-app tabs.ts): each tab's
@@ -245,6 +249,34 @@ export type DesignCopy = {
   blobs: (PhotoBlobMeta & { tabId: string })[];
 };
 
+// Every tab of the design (or one) with its body, in order: the read a copy makes, and the Drive file's
+// (design-file.ts).
+export type ContentTabRow = {
+  id: string;
+  name: string;
+  order_index: number;
+  folder: string | null;
+  data: string;
+  element_count: number | null;
+};
+
+export async function readContentTabRows(
+  env: DesignEnv,
+  designId: string,
+  onlyTabId: string | null,
+): Promise<ContentTabRow[]> {
+  const tabRows = await env.DESIGN_DB.prepare(
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
+       FROM design_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.design_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(...(onlyTabId === null ? [designId] : [designId, onlyTabId]))
+    .all<ContentTabRow>();
+  return tabRows.results ?? [];
+}
+
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and no slide deck,
 // which spans the design's tabs). `copierId`: who copies (null when the index did not say); anyone but the owner
 // copies the comments as the tab read serves them to them, every author id but their own blanked.
@@ -265,23 +297,7 @@ export async function exportDesignCopy(
       owner_id: string | null;
     }>();
   const redactAuthorsFor = copierId !== null && copierId !== design?.owner_id ? copierId : null;
-  const tabRows = await env.DESIGN_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
-       FROM design_tabs dt
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.design_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
-      ORDER BY dt.order_index ASC`,
-  )
-    .bind(...(onlyTabId === null ? [designId] : [designId, onlyTabId]))
-    .all<{
-      id: string;
-      name: string;
-      order_index: number;
-      folder: string | null;
-      data: string;
-      element_count: number | null;
-    }>();
-  const rows = tabRows.results ?? [];
+  const rows = await readContentTabRows(env, designId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
   const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
   const tabs = rows.map((row) => {

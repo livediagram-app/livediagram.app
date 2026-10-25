@@ -66,6 +66,10 @@ export type Env = {
   // livedocuments' secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY);
   // unset, this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
+  // livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // same value as the service's DRIVE_KEY_LIVEDOCUMENTS: it opens the internal export door (its `file` format) and
+  // the import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
+  DRIVE_KEY?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

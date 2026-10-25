@@ -66,6 +66,10 @@ export type Env = {
   // livedesign's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
+  // livedesign's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // same value as the service's DRIVE_KEY_LIVEDESIGN: it opens the internal export door (its `file` format) and the
+  // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
+  DRIVE_KEY?: string;
   // R2 bucket holding photo pages' blobs (docs/specs/031-photo/photo-store.md "The photo blob store"),
   // a tab's working data, not someone's pictures. Unbound, every photo blob route answers 503 photos_unavailable.
   PHOTO_BLOBS?: R2Bucket;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DOCUMENT_ENVELOPE_KIND,
+  copyDocumentEnvelope,
   documentToEnvelopeText,
   parseDocumentEnvelope,
   type EnvelopeTab,
@@ -62,5 +63,59 @@ describe('parseDocumentEnvelope', () => {
       '{"kind":"livediagram.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
     );
     expect(parsed.ok && parsed.envelope.document.presentation).toBeNull();
+  });
+});
+
+describe('copyDocumentEnvelope', () => {
+  it('gives every tab a fresh id, with tab links and the deck following them', () => {
+    const parsed = parseDocumentEnvelope(
+      documentToEnvelopeText(
+        {
+          id: 'd',
+          name: 'n',
+          presentation: JSON.stringify({
+            decks: [{ id: 'k', slides: [{ id: 's', tabId: 't2' }] }],
+          }),
+        },
+        [
+          {
+            id: 't1',
+            name: 'One',
+            elements: [
+              {
+                id: 'a',
+                type: 'shape',
+                shape: 'square',
+                x: 0,
+                y: 0,
+                width: 1,
+                height: 1,
+                link: { kind: 'tab', tabId: 't2' },
+              },
+            ],
+          },
+          { id: 't2', name: 'Two', elements: [], folder: 'Ideas' },
+        ],
+        1,
+      ),
+    );
+    if (!parsed.ok) throw new Error(parsed.failure);
+    const { tabs, presentation } = copyDocumentEnvelope(parsed.envelope);
+    const [one, two] = tabs;
+    expect([one!.id, two!.id]).not.toContain('t1');
+    expect(two!.id).not.toBe('t2');
+    expect(two!.folder).toBe('Ideas');
+    expect((one!.elements[0] as { link?: { tabId: string } }).link?.tabId).toBe(two!.id);
+    expect(presentation).toContain(`"tabId":"${two!.id}"`);
+  });
+
+  it('drops a deck it cannot read', () => {
+    const { presentation } = copyDocumentEnvelope({
+      kind: DOCUMENT_ENVELOPE_KIND,
+      schemaVersion: 1,
+      exportedAt: 0,
+      document: { id: 'd', name: 'n', presentation: '{nope', tabs: [] },
+    });
+    expect(presentation).toBeNull();
   });
 });

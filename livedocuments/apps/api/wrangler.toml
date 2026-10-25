@@ -186,6 +186,15 @@ name = "EMAIL"
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
+# DRIVE_KEY is livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md
+# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDOCUMENTS. It opens the
+# internal export door's `file` format and the import door, nothing else. Never in [vars]:
+#
+#   - Local dev: `DRIVE_KEY=dev-livedocuments-drive-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DRIVE_KEY` (and `--env staging`).
+#
+# Unset = the mirror cannot export or import documents (the two doors take only the index's key).
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-api-staging` via

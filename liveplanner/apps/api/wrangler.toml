@@ -166,6 +166,12 @@ name = "EMAIL"
 # [vars]: `MEDIA_KEY=dev-liveplanner-media-key` and `MEDIA_URL=http://localhost:8792/api/media` in `.dev.vars`
 # locally; the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the deploy workflow, in production and
 # staging. MEDIA_URL unset means production's (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media); staging sets its own below.
+#
+# DRIVE_KEY is liveplanner's key at liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps");
+# the service holds the same value as DRIVE_KEY_LIVEPLANNER. It opens the internal export door's `file` format and
+# the import door, nothing else. Never in [vars]: `DRIVE_KEY=dev-liveplanner-drive-key` in `.dev.vars` locally,
+# `wrangler secret put DRIVE_KEY` (and `--env staging`) in production and staging. Unset, the mirror cannot export or
+# import plans.
 
 # TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as

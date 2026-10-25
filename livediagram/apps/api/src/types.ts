@@ -105,6 +105,10 @@ export type Env = {
   // livediagram's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
+  // livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // same value as the service's DRIVE_KEY_LIVEDIAGRAM: it opens the internal export door (its `file` format) and the
+  // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
+  DRIVE_KEY?: string;
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Gates every event this worker
   // sends to the liveworkspace telemetry service, its own and the relay's. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.

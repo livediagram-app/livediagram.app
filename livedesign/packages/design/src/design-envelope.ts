@@ -4,7 +4,9 @@
 // design with every tab, each tab's per-design folder, and the slide deck.
 // Images stay references to livedesign's image store; no bytes are embedded.
 
+import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
+import type { StoredPresentation } from './slide-deck';
 
 export const DESIGN_ENVELOPE_KIND = 'livedesign.design';
 export const DESIGN_SCHEMA_VERSION = 1;
@@ -98,4 +100,32 @@ export function parseDesignEnvelope(
       },
     },
   };
+}
+
+// A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/drive.md): fresh tab ids, with
+// the tab links and the deck's slides following them, so the copy navigates and presents like the original. An
+// unreadable deck is dropped rather than carried broken.
+export function copyDesignEnvelope(envelope: DesignEnvelope): {
+  tabs: EnvelopeTab[];
+  presentation: string | null;
+} {
+  const idMap = new Map(envelope.design.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
+  const tabs = envelope.design.tabs.map((t) => ({
+    ...t,
+    id: idMap.get(t.id)!,
+    elements: remapTabLinks(t.elements, idMap),
+  }));
+  let presentation = envelope.design.presentation;
+  if (presentation) {
+    try {
+      const deck = JSON.parse(presentation) as StoredPresentation;
+      for (const d of deck.decks ?? []) {
+        for (const slide of d.slides ?? []) slide.tabId = idMap.get(slide.tabId) ?? slide.tabId;
+      }
+      presentation = JSON.stringify(deck);
+    } catch {
+      presentation = null;
+    }
+  }
+  return { tabs, presentation };
 }

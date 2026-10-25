@@ -96,6 +96,7 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
+import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import {
   documentShares,
   type ShareAnswer,
@@ -691,6 +692,21 @@ export class DocumentRoom extends DurableObject<Env> {
     return svg === null
       ? { status: 'empty', version: savedAt }
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
+  }
+
+  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", document-file.ts): the
+  // canvas's whole envelope, its last save as the version, unread when the caller holds that save.
+  async exportFile(documentId: string, query: ExportQuery): Promise<ExportResult> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return { status: 'not_found' };
+    return exportDocumentFile(this.requireEnv(), documentId, query.ifVersion);
+  }
+
+  // A new canvas from a Drive file (routes/internal-file.ts read it): its tabs land as a copy's do, and it starts as
+  // its owner's.
+  async importFile(documentId: string, file: DocumentFileImport): Promise<void> {
+    this.bindDocument(documentId);
+    await importDocumentFile(this.requireEnv(), documentId, file);
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

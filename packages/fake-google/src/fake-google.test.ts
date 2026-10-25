@@ -471,3 +471,137 @@ describe('a root the user moves and renames', () => {
     expect(fake.get(child.id)!.parents).toEqual([root.id]);
   });
 });
+
+describe('push channels (changes.watch, channels.stop)', () => {
+  const ADDRESS = 'https://liveworkspace.test/api/drive/push';
+
+  async function startToken(call: ReturnType<typeof setup>['call']): Promise<string> {
+    return (await call('GET', '/drive/v3/changes/startPageToken')).body!.startPageToken as string;
+  }
+
+  it('opens a channel from a page token, answering it without the user', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    const res = await call('POST', `/drive/v3/changes/watch?pageToken=${token}`, {
+      id: 'chan-1',
+      type: 'web_hook',
+      address: ADDRESS,
+      token: 'verify-me',
+      expiration: 1_700_000_100_000,
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      kind: 'api#channel',
+      id: 'chan-1',
+      type: 'web_hook',
+      address: ADDRESS,
+      token: 'verify-me',
+      expiration: '1700000100000',
+      resourceId: expect.stringMatching(/^res-/),
+    });
+    expect(fake.channels.get('chan-1')).toMatchObject({
+      user: 'me',
+      resourceId: res.body!.resourceId,
+    });
+  });
+
+  it('defaults the expiration to a week, and the token to empty', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    await call('POST', `/drive/v3/changes/watch?pageToken=${token}`, {
+      id: 'chan-1',
+      type: 'web_hook',
+      address: ADDRESS,
+    });
+    expect(fake.channels.get('chan-1')).toMatchObject({
+      token: '',
+      expiration: String(1_700_000_000_000 + 7 * 24 * 3600 * 1000),
+    });
+  });
+
+  it('refuses a page token it never issued, or a channel that is not an https web hook', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    const watch = (pageToken: string, body: Record<string, unknown>) =>
+      call('POST', `/drive/v3/changes/watch?pageToken=${pageToken}`, {
+        id: 'c',
+        type: 'web_hook',
+        address: ADDRESS,
+        ...body,
+      });
+    expect((await watch('999', {})).status).toBe(400);
+    expect((await watch('nope', {})).status).toBe(400);
+    expect((await watch(token, { type: 'email' })).status).toBe(400);
+    expect((await watch(token, { address: 'http://liveworkspace.test/push' })).status).toBe(400);
+    expect((await watch(token, { address: undefined })).status).toBe(400);
+    expect((await watch(token, { id: '' })).status).toBe(400);
+    expect(fake.channels.size).toBe(0);
+  });
+
+  it('needs a live access token', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    const res = await fake.fetch(`${API}/drive/v3/changes/watch?pageToken=${token}`, {
+      method: 'POST',
+      body: JSON.stringify({ id: 'c', type: 'web_hook', address: ADDRESS }),
+    });
+    expect(res.status).toBe(401);
+    expect(fake.channels.size).toBe(0);
+  });
+
+  it('stops a channel by id and resourceId, once', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    const opened = (
+      await call('POST', `/drive/v3/changes/watch?pageToken=${token}`, {
+        id: 'chan-1',
+        type: 'web_hook',
+        address: ADDRESS,
+      })
+    ).body!;
+    expect(
+      (await call('POST', '/drive/v3/channels/stop', { id: 'chan-1', resourceId: 'wrong' })).status,
+    ).toBe(404);
+    expect(fake.channels.has('chan-1')).toBe(true);
+    const stopped = await call('POST', '/drive/v3/channels/stop', {
+      id: 'chan-1',
+      resourceId: opened.resourceId,
+    });
+    expect(stopped.status).toBe(204);
+    expect(stopped.body).toBeNull();
+    expect(fake.channels.has('chan-1')).toBe(false);
+    const again = await call('POST', '/drive/v3/channels/stop', {
+      id: 'chan-1',
+      resourceId: opened.resourceId,
+    });
+    expect(again.status).toBe(404);
+    expect(again.body!.error!.errors[0]!.reason).toBe('notFound');
+  });
+
+  it('never lets another user stop a channel', async () => {
+    const { fake, call } = setup();
+    const token = await startToken(call);
+    const opened = (
+      await call('POST', `/drive/v3/changes/watch?pageToken=${token}`, {
+        id: 'chan-1',
+        type: 'web_hook',
+        address: ADDRESS,
+      })
+    ).body!;
+    const res = await fake.fetch(`${API}/drive/v3/channels/stop`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${fake.issueAccessToken('someone-else')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: 'chan-1', resourceId: opened.resourceId }),
+    });
+    expect(res.status).toBe(404);
+    expect(fake.channels.has('chan-1')).toBe(true);
+  });
+
+  it('refuses a stop with no id', async () => {
+    const { call } = setup();
+    expect((await call('POST', '/drive/v3/channels/stop', {})).status).toBe(404);
+  });
+});
