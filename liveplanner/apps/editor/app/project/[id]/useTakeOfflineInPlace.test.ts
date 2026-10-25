@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // docs/specs/006-project/offline-mode.md "Taking offline in place": the start screen's switch takes the open
-// document offline with no reload: it waits for the pending save, closes the room before the server delete, and a
+// plan offline with no reload: it waits for the pending save, closes the room before the server delete, and a
 // failure opens it again.
 
 const { convert, track, pick, dismiss } = vi.hoisted(() => ({
@@ -67,7 +67,7 @@ describe('useTakeOfflineInPlace', () => {
     expect(track).toHaveBeenCalledWith('Project', 'Moved', 'TakenOffline');
   });
 
-  it('leaves another document’s template note alone', async () => {
+  it('leaves another plan’s template note alone', async () => {
     pick.read.mockReturnValue({ itemId: 'doc-2' });
     const { take } = setup();
     await take();

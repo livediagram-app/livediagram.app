@@ -65,14 +65,14 @@ afterEach(() => vi.clearAllMocks());
 const view = () => render(<StartSaveSwitch palette={PALETTE} />);
 
 describe('StartSaveSwitch', () => {
-  it('names the switch for a document and shows it on, on the server, for a signed-in owner', () => {
+  it('names the switch for a plan and shows it on, on the server, for a signed-in owner', () => {
     view();
     const sw = screen.getByRole('switch', { name: 'Sync Plan to Server' });
     expect(sw.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByText('Saved to your account, on every device.')).toBeTruthy();
   });
 
-  it('shows off for a guest’s document in this browser', () => {
+  it('shows off for a guest’s plan in this browser', () => {
     state.offline = true;
     state.ctx = fresh({
       accountUserId: null,
@@ -92,7 +92,7 @@ describe('StartSaveSwitch', () => {
     ['outside an editor', null],
     ['before sign-in answers', { authLoaded: false }],
     ['as the early placeholder', { selfParticipant: { id: 'self' } }],
-    ['for someone else’s document', { isOwner: false }],
+    ['for someone else’s plan', { isOwner: false }],
     ['read only', { isReadOnly: true }],
     ['embedded', { embedMode: true }],
     ['in a workbench', { workbenchMode: true }],
@@ -108,14 +108,14 @@ describe('StartSaveSwitch', () => {
     expect(screen.queryByRole('switch')).toBeNull();
   });
 
-  it('turned off, takes the document to this browser in place', async () => {
+  it('turned off, takes the plan to this browser in place', async () => {
     view();
     await act(async () => fireEvent.click(screen.getByRole('switch')));
     expect(state.ctx!.takeOfflineInPlace).toHaveBeenCalledTimes(1);
     expect(state.ctx!.syncToCloud).not.toHaveBeenCalled();
   });
 
-  it('turned on, syncs the document in place', async () => {
+  it('turned on, syncs the plan in place', async () => {
     state.offline = true;
     view();
     await act(async () => fireEvent.click(screen.getByRole('switch')));
