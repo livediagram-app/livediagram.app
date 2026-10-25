@@ -1,4 +1,6 @@
 name = "livedocuments-api"
+# The liveworkspace Cloudflare account, which also hosts livedocuments.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 

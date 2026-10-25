@@ -4,7 +4,7 @@ A small Cloudflare Worker that fronts the apex domain (`livedocuments.app`) and 
 
 - **Workspace:** `apps/router` (`@livedocuments/router`).
 - **Runtime:** Cloudflare Workers.
-- **Production hostname:** `livedocuments.app` (custom domain configured in the Cloudflare dashboard). Default Workers URL also remains reachable.
+- **Production hostname:** `livedocuments.app` and `www.livedocuments.app`; staging's is `staging.livedocuments.app`. Each is a custom domain declared in `apps/router/wrangler.toml`, attached by `wrangler deploy` ([Deployment](deployment.md#custom-domain)). Default Workers URL also remains reachable.
 
 ## Routing table
 
