@@ -263,7 +263,7 @@ whose name the constants keep. Local `wrangler dev` does not enforce it, so the 
   headroom covers the row's other columns (the tab id, a UUID; the name, at
   most 60 characters, so at most 240 bytes; `updated_at`; SQLite's record
   header) many times over, so a tab under the cap always fits its row.
-- All three live in `@livedesign/api-schema` (`packages/api-schema/src/tab-size.ts`, with `tabDataBytes` and
+- All three live in `@livedesign/api-schema` (`../packages/api-schema/src/tab-size.ts`, with `tabDataBytes` and
   `tabTooLarge`), so the editor checks the same cap the worker does and the two cannot drift. A changeset part is
   capped the same (`CHANGESET_PART_MAX_BYTES` = `MAX_TAB_BYTES`).
 - **Every write of a tab's data** is checked against it, at the storage layer

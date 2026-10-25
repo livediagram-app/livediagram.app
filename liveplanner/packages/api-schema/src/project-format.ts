@@ -7,13 +7,5 @@ export const PROJECT_FORMAT = 2;
 // Every api response carries the server's number in this header.
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';
 
-/** A safe positive integer (a number, or the digits of one), else null. */
-export function parseProjectFormat(value: unknown): number | null {
-  const n =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string' && /^\d+$/.test(value)
-        ? Number(value)
-        : NaN;
-  return Number.isSafeInteger(n) && n > 0 ? n : null;
-}
+// Reading the number off the wire is liveworkspace's.
+export { parseDocumentFormat as parseProjectFormat } from '@liveworkspace/api-schema/document-format';

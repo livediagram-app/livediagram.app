@@ -17,7 +17,7 @@ packages/
   templates/      template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
-  api-schema/     wire-format DTOs the api worker emits + the live editor consumes
+  api-schema/     wire-format DTOs the api worker emits + the live editor consumes (over @liveworkspace/api-schema)
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   forms/          Form tabs: the form model, answer checks, mapping answers to card fields, starters (pure)
   plan-art/       Plan tab images: Board, Sheet and Dashboard tabs as laid out, plan view and card pictures (pure)

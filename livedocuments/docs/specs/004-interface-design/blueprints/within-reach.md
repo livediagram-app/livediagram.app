@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                           | Role                                                     |
 | ---------------------------------------------- | -------------------------------------------------------- |
-| `packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
+| `../packages/api-schema/src/within-reach.ts`   | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
 | `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
 | `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
 
@@ -50,7 +50,7 @@ document id, before allocating).
 ## Interfaces and contracts
 
 ```ts
-// packages/api-schema/src/within-reach.ts
+// ../packages/api-schema/src/within-reach.ts
 export type WithinReachUse = { uses: number; lastUsedAt: number };
 export type WithinReach<T> = { mostUsed: T[]; recent: T[] };
 export function withinReach<T>(

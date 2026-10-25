@@ -21,7 +21,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 
 | File                                                                                                          | Role                                                                                           |
 | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/access-levels.ts` (new)                                                              | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`         |
+| `../packages/api-schema/src/access-levels.ts` (new)                                                           | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`         |
 | `packages/api-schema/src/index.ts`                                                                            | `ShareRole` becomes an alias of `AccessLevel`                                                  |
 | `packages/api-schema/src/room-messages.ts`                                                                    | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                     |
 | `packages/project/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
@@ -199,7 +199,7 @@ Invariants:
 
 ## Interfaces and contracts
 
-`packages/api-schema/src/access-levels.ts`:
+`../packages/api-schema/src/access-levels.ts`:
 
 ```ts
 export const ACCESS_LEVELS = ['view', 'participate', 'edit'] as const;

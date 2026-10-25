@@ -40,5 +40,5 @@ side's set and then the set of both, and loses nothing.
 ## Implementation
 
 One shared, pure function decides every within-reach set: `withinReach` in `@livedocuments/api-schema`
-(`packages/api-schema/src/within-reach.ts`), used by the api worker and the editor app alike
+(`../packages/api-schema/src/within-reach.ts`), used by the api worker and the editor app alike
 ([blueprint](blueprints/within-reach.md)).

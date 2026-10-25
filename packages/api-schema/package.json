@@ -1,0 +1,58 @@
+{
+  "name": "@liveworkspace/api-schema",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./access-levels": "./src/access-levels.ts",
+    "./agent-presence": "./src/agent-presence.ts",
+    "./api-tokens": "./src/api-tokens.ts",
+    "./build-id": "./src/build-id.ts",
+    "./catalogues": "./src/catalogues.ts",
+    "./comment-threads": "./src/comment-threads.ts",
+    "./creation-use": "./src/creation-use.ts",
+    "./document-conversion": "./src/document-conversion.ts",
+    "./document-dates": "./src/document-dates.ts",
+    "./document-format": "./src/document-format.ts",
+    "./document-source": "./src/document-source.ts",
+    "./folders": "./src/folders.ts",
+    "./http-errors": "./src/http-errors.ts",
+    "./image-limits": "./src/image-limits.ts",
+    "./image-size": "./src/image-size.ts",
+    "./image-sniff": "./src/image-sniff.ts",
+    "./image-summary": "./src/image-summary.ts",
+    "./mcp-origin": "./src/mcp-origin.ts",
+    "./participants": "./src/participants.ts",
+    "./placement": "./src/placement.ts",
+    "./ref-errors": "./src/ref-errors.ts",
+    "./sha256": "./src/sha256.ts",
+    "./share-links": "./src/share-links.ts",
+    "./signed-in-hint": "./src/signed-in-hint.ts",
+    "./snapshot-svg": "./src/snapshot-svg.ts",
+    "./tab-size": "./src/tab-size.ts",
+    "./teams": "./src/teams.ts",
+    "./title-case": "./src/title-case.ts",
+    "./trash": "./src/trash.ts",
+    "./within-reach": "./src/within-reach.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/model-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

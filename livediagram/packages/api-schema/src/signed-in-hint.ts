@@ -4,15 +4,11 @@
 // who, so any app on the origin can read it without the session: the editor picks a default save
 // location from it, the site header its primary link, and the Repair page reports it. It only ever
 // picks a default; every request still authenticates the real way.
+// The reader is liveworkspace's (@liveworkspace/api-schema/signed-in-hint), bound to this product's cookie.
+
+import { createSignedInHintReader } from '@liveworkspace/api-schema/signed-in-hint';
 
 export const SIGNED_IN_HINT_COOKIE = 'ld_signed_in';
 
 /** True / false from the hint in a `document.cookie` string, null when the browser has none. */
-export function signedInHintOf(cookie: string): boolean | null {
-  for (const part of cookie.split(';')) {
-    const at = part.indexOf('=');
-    if (at < 0 || part.slice(0, at).trim() !== SIGNED_IN_HINT_COOKIE) continue;
-    return part.slice(at + 1).trim() === '1';
-  }
-  return null;
-}
+export const signedInHintOf = /* @__PURE__ */ createSignedInHintReader(SIGNED_IN_HINT_COOKIE);

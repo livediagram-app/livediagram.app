@@ -14,10 +14,10 @@ Scope, by file:
 | `packages/design/src/svg-render-describe.ts`         | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius        |
 | `packages/design/src/svg-render.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect              |
 | `packages/design/src/svg-render-image-icon.ts`       | `svgImageShape`: clipped `<image>` over a white backing rect                 |
-| `packages/api-schema/src/image-limits.ts`            | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy             |
-| `packages/api-schema/src/image-sniff.ts`             | `sniffImageType`: magic-number table                                         |
+| `../packages/api-schema/src/image-limits.ts`         | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy             |
+| `../packages/api-schema/src/image-sniff.ts`          | `sniffImageType`: magic-number table                                         |
 | `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining               |
-| `packages/api-schema/src/sha256.ts`                  | `sha256Hex`, shared by editor and worker                                     |
+| `../packages/api-schema/src/sha256.ts`               | `sha256Hex`, shared by editor and worker                                     |
 | `packages/api-schema/src/index.ts`                   | `ImageSummary`                                                               |
 | `apps/api/src/design-room/design-schema.ts`          | `image_owners`; the `outbox` keys that carry references to the media service |
 | `apps/api/src/routes/images.ts`                      | `handleImages`: the five `/api/images*` routes; `originalNameOf`             |
