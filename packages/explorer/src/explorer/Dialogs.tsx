@@ -2,7 +2,7 @@
 
 // The Explorer's dialogs, one at a time, opened from a menu through the context.
 
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { isWithin } from '../data/useFolders';
 import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
@@ -17,8 +17,12 @@ import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { useHostExtras } from './host';
 import { SIDEBAR_LABELS } from '../views';
-import { HistoryDialog } from '../library/HistoryDialog';
 import { useTeams } from '../teams/context';
+
+// History loads when it is first opened: its timeline, runs and chips are only for the one who asks.
+const HistoryDialog = lazy(() =>
+  import('../library/HistoryDialog').then((m) => ({ default: m.HistoryDialog })),
+);
 
 const defaultShareUrl: ShareUrl = (link) =>
   typeof window === 'undefined' ? `/s/${link.code}` : `${window.location.origin}/s/${link.code}`;
@@ -179,7 +183,11 @@ export function ExplorerDialogs() {
       );
     }
     case 'history':
-      return <HistoryDialog item={dialog.item} onClose={close} />;
+      return (
+        <Suspense fallback={null}>
+          <HistoryDialog item={dialog.item} onClose={close} />
+        </Suspense>
+      );
     case 'delete-local': {
       // Nothing else holds it (the index never saw it), so this is for good, as This Browser's Delete always asks.
       const item = dialog.item;
