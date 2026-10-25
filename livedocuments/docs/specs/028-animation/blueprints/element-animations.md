@@ -176,7 +176,7 @@ keyframes.
   unit's turns, in `--lvd-tx-color`; the letter's own colour is mixed to transparent until its turns end.
 - **Flicker.** `flickerPhase` marks 12% of letters (always the first) with `data-flick` and a phase `--h`; each runs
   its own keyframe offset by `--h`.
-- **Accents.** `--lvd-anim-color` is the stroke or brand sky; `--lvd-tx-mark` the stroke or marker yellow.
+- **Accents.** `--lvd-anim-color` is the stroke or the app's brand colour; `--lvd-tx-mark` the stroke or marker yellow.
 
 ### Text: granularity
 
@@ -320,17 +320,17 @@ in `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts
 
 ## Constants and configuration
 
-| Constant                | Value           | Provenance                                   | Safe range |
-| ----------------------- | --------------- | -------------------------------------------- | ---------- |
-| `TEXT_ANIM_MAX_LETTERS` | 400             | a long paragraph; bounds per-frame restyling | 100–1000   |
-| `TEXT_ANIM_MAX_WORDS`   | 120             | a long sticky note                           | 40–300     |
-| Reveal share            | 0.45            | reveal reads as a gesture, not a wait (EA2)  | 0.3–0.6    |
-| Hold end / faded        | 0.86 / 0.93     | long enough to read; a short clear           | 0.7–0.95   |
-| `FLICKER_SHARE`         | 0.12            | a sign with a few bad letters                | 0.05–0.3   |
-| Boil                    | 8 fps, 3 frames | classic hand-drawn boil (EA9)                | 6–12 fps   |
-| `TEXT_ACCENT`           | `#0ea5e9`       | brand sky                                    | any        |
-| `MARKER_YELLOW`         | `#facc15`       | a highlighter's yellow                       | any        |
-| Trace samples           | 96              | sub-pixel accurate on any outline            | 32–256     |
+| Constant                | Value             | Provenance                                   | Safe range |
+| ----------------------- | ----------------- | -------------------------------------------- | ---------- |
+| `TEXT_ANIM_MAX_LETTERS` | 400               | a long paragraph; bounds per-frame restyling | 100–1000   |
+| `TEXT_ANIM_MAX_WORDS`   | 120               | a long sticky note                           | 40–300     |
+| Reveal share            | 0.45              | reveal reads as a gesture, not a wait (EA2)  | 0.3–0.6    |
+| Hold end / faded        | 0.86 / 0.93       | long enough to read; a short clear           | 0.7–0.95   |
+| `FLICKER_SHARE`         | 0.12              | a sign with a few bad letters                | 0.05–0.3   |
+| Boil                    | 8 fps, 3 frames   | classic hand-drawn boil (EA9)                | 6–12 fps   |
+| `TEXT_ACCENT`           | `BRAND_RAMP[500]` | the app's brand-500, as hex                  | any        |
+| `MARKER_YELLOW`         | `#facc15`         | a highlighter's yellow                       | any        |
+| Trace samples           | 96                | sub-pixel accurate on any outline            | 32–256     |
 
 ## Assets and external resources
 

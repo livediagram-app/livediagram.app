@@ -15,5 +15,5 @@ One row per default applied where a spec is silent or qualitative.
 | EA9  | element-animations | Boil frame rate                                             | 8 frames a second, three frames                                                                                                               |
 | EA10 | element-animations | Fixed time for a long table cascade                         | The reveal phase of the cycle (45% of `D`); the stagger divides it by the unit count                                                          |
 
-| EA11 | element-animations | The accent of words without a stroke colour | Brand sky; marker yellow for Highlighter |
+| EA11 | element-animations | The accent of words without a stroke colour | The app's brand colour; marker yellow for Highlighter |
 | EA12 | element-animations | The accent of a body animation when the element sets no stroke | Its theme's default stroke as drawn; a text element's own ink |

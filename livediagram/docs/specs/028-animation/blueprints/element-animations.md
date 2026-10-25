@@ -37,11 +37,11 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 ## Modules
 
-| Module                                                    | Holds                                                                                                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/animation-sets.ts`                 | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                      | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
-| `packages/document/src/animation-membership.ts`           | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
+| Module                                                      | Holds                                                                                                                                      |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/animation-sets.ts`                   | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `packages/document/src/animation.ts`                        | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/document/src/animation-membership.ts`             | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/editor/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/editor/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
 | `apps/editor/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
@@ -176,7 +176,7 @@ keyframes.
   unit's turns, in `--lvd-tx-color`; the letter's own colour is mixed to transparent until its turns end.
 - **Flicker.** `flickerPhase` marks 12% of letters (always the first) with `data-flick` and a phase `--h`; each runs
   its own keyframe offset by `--h`.
-- **Accents.** `--lvd-anim-color` is the stroke or brand sky; `--lvd-tx-mark` the stroke or marker yellow.
+- **Accents.** `--lvd-anim-color` is the stroke or the app's brand colour; `--lvd-tx-mark` the stroke or marker yellow.
 
 ### Text: granularity
 
@@ -307,9 +307,9 @@ in liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts.
 
 ## Testing
 
-| Rule                                                                | Test                                                      |
-| ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`      |
+| Rule                                                                | Test                                                        |
+| ------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`        |
 | Every option has a rule in its sheet, none orphaned, reduced motion | `apps/editor/app/animation-classes.test.ts`                 |
 | One category per set present                                        | `apps/editor/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/editor/components/palette/AnimationSetTiles.test.tsx` |
@@ -321,17 +321,17 @@ in liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts.
 
 ## Constants and configuration
 
-| Constant                | Value           | Provenance                                   | Safe range |
-| ----------------------- | --------------- | -------------------------------------------- | ---------- |
-| `TEXT_ANIM_MAX_LETTERS` | 400             | a long paragraph; bounds per-frame restyling | 100–1000   |
-| `TEXT_ANIM_MAX_WORDS`   | 120             | a long sticky note                           | 40–300     |
-| Reveal share            | 0.45            | reveal reads as a gesture, not a wait (EA2)  | 0.3–0.6    |
-| Hold end / faded        | 0.86 / 0.93     | long enough to read; a short clear           | 0.7–0.95   |
-| `FLICKER_SHARE`         | 0.12            | a sign with a few bad letters                | 0.05–0.3   |
-| Boil                    | 8 fps, 3 frames | classic hand-drawn boil (EA9)                | 6–12 fps   |
-| `TEXT_ACCENT`           | `#0ea5e9`       | brand sky                                    | any        |
-| `MARKER_YELLOW`         | `#facc15`       | a highlighter's yellow                       | any        |
-| Trace samples           | 96              | sub-pixel accurate on any outline            | 32–256     |
+| Constant                | Value             | Provenance                                   | Safe range |
+| ----------------------- | ----------------- | -------------------------------------------- | ---------- |
+| `TEXT_ANIM_MAX_LETTERS` | 400               | a long paragraph; bounds per-frame restyling | 100–1000   |
+| `TEXT_ANIM_MAX_WORDS`   | 120               | a long sticky note                           | 40–300     |
+| Reveal share            | 0.45              | reveal reads as a gesture, not a wait (EA2)  | 0.3–0.6    |
+| Hold end / faded        | 0.86 / 0.93       | long enough to read; a short clear           | 0.7–0.95   |
+| `FLICKER_SHARE`         | 0.12              | a sign with a few bad letters                | 0.05–0.3   |
+| Boil                    | 8 fps, 3 frames   | classic hand-drawn boil (EA9)                | 6–12 fps   |
+| `TEXT_ACCENT`           | `BRAND_RAMP[500]` | the app's brand-500, as hex                  | any        |
+| `MARKER_YELLOW`         | `#facc15`         | a highlighter's yellow                       | any        |
+| Trace samples           | 96                | sub-pixel accurate on any outline            | 32–256     |
 
 ## Assets and external resources
 
