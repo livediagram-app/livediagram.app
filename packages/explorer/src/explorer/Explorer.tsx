@@ -55,8 +55,8 @@ import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
 import { ThisBrowserPane, useThisBrowserItems, type ThisBrowserHost } from './ThisBrowser';
 import { SignInBanner } from './SignInBanner';
-import { WelcomeProvider, useFirstRun } from '../welcome/context';
-import { WelcomeFan } from '../welcome/HomeWelcome';
+import { WelcomeProvider } from '../welcome/context';
+import { WorkKinds, type TemplateHref } from '../hero/WorkKinds';
 import type { WelcomeOptions } from '../welcome/types';
 import { ExtrasProvider, type ViewModeTelemetry } from './extras';
 import type { ExplorerAccounts } from '../data/accounts';
@@ -114,8 +114,10 @@ export type ExplorerProps = {
   /** The host's top bar, given the search field to set in it (null while Home's hero holds the field).
    *  Without it the Explorer draws a slim bar of its own with the field in the middle. */
   header?: (parts: { search: ReactNode }) => ReactNode;
-  /** The picture on the right of Home's hero (a fan of previews, say), from `lg` up. */
-  heroArt?: ReactNode;
+  /** Where Home's hero starts a kind of work: the app's New route with the template (`/new?template=`), or null for
+   *  no link. By default the host app's own `/new?template=<template>` on this origin, and another app's on that
+   *  app's site. */
+  templateHref?: TemplateHref;
   /** The hero's question and lead; each app's kind has its own by default. */
   heroWords?: HeroWords;
   /** Controlled: whether the person hid Home's hero (a synced setting). Uncontrolled (remembered in this
@@ -286,7 +288,7 @@ function ExplorerInner({
   onFilterChange,
   toolbar,
   header,
-  heroArt,
+  templateHref,
   heroWords,
   heroHidden: controlledHeroHidden,
   onHideHero,
@@ -397,7 +399,7 @@ function ExplorerInner({
                   }`}
                 >
                   <div className="min-h-0 overflow-hidden">
-                    <HeroWithCount art={heroArt} onHide={hideHero} />
+                    <HeroWithCount templateHref={templateHref} onHide={hideHero} />
                   </div>
                 </div>
               ) : null}
@@ -476,7 +478,13 @@ function BarSearch({ toolbar }: { toolbar?: ReactNode }) {
 }
 
 /** The hero with My Work's count: asked for only while the hero is in the page. */
-function HeroWithCount({ art, onHide }: { art?: ReactNode; onHide: () => void }) {
+function HeroWithCount({
+  templateHref,
+  onHide,
+}: {
+  templateHref?: TemplateHref;
+  onHide: () => void;
+}) {
   const { client, app, filter, epoch } = useExplorerContext();
   const indexed = useItemCount(client, app, filter, true, epoch);
   // What this browser keeps is the person's too, and Jump Back In lists it: the pill counts it beside the index's.
@@ -485,10 +493,12 @@ function HeroWithCount({ art, onHide }: { art?: ReactNode; onHide: () => void })
     () => (indexed && local.length ? { ...indexed, count: indexed.count + local.length } : indexed),
     [indexed, local.length],
   );
-  // A first run fans the app's starts in the art's place.
-  const { heroFirstRun, welcome } = useFirstRun();
-  const shown = heroFirstRun && welcome?.manifest ? <WelcomeFan /> : art;
-  return <HomeHero items={items} art={shown} onHide={onHide} />;
+  // What the app makes, the same set on a first run as on any other visit.
+  const kinds = useMemo(
+    () => <WorkKinds app={app} all={filter === 'all'} templateHref={templateHref} />,
+    [app, filter, templateHref],
+  );
+  return <HomeHero items={items} kinds={kinds} onHide={onHide} />;
 }
 
 function Pane({

@@ -1,5 +1,5 @@
 import { SupportedDevicesArt as Scene } from '@liveworkspace/help-site/art/scenes/supported-devices';
-import { MiniArticle } from './page-parts';
+import { MiniArticle } from '@liveworkspace/help-site/art/work';
 
 // Supported Devices: the shared scene (docs/specs/018-help/help-pages.md "Category art"), one article page on a
 // computer, a tablet and a phone, on the canvas's grey.

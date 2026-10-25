@@ -46,7 +46,7 @@ describe("The panel's Take Offline and Sync Canvas", () => {
     const menu = renderHook(() => useOfflineItemMenu('user_ada')).result.current;
     const [verb] = menu!(item());
     expect(verb!.label).toBe('Take Offline');
-    verb!.onSelect();
+    void verb!.onSelect();
     expect(state.takeOffline).toHaveBeenCalledWith({ id: 'doc-1', name: 'Plan' });
   });
 
@@ -55,7 +55,7 @@ describe("The panel's Take Offline and Sync Canvas", () => {
     const menu = renderHook(() => useOfflineItemMenu('user_ada')).result.current;
     const [verb] = menu!(item());
     expect(verb!.label).toBe('Sync Canvas');
-    verb!.onSelect();
+    void verb!.onSelect();
     expect(state.sync).toHaveBeenCalledWith({ id: 'doc-1', name: 'Plan' });
   });
 

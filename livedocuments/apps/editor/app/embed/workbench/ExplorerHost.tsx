@@ -4,13 +4,13 @@
 // (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served on this app's own address by its router; a frame keeps its own. Everything it lists comes
 // from the index through /api/index; livedocuments supplies the addresses and Help articles
-// (lib/explorer-host.ts), New (the /new flow), the hero's art (the fanned previews) and its setting (the synced
+// (lib/explorer-host.ts), New (the /new flow), the hero's setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
 // Explorer asks for anything.
 
 import Link from 'next/link';
-import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Explorer,
   type ExplorerView,
@@ -41,14 +41,6 @@ import {
   shareUrl,
   useTokenTeams,
 } from '@/lib/explorer-host';
-
-// The hero's art draws three template previews; it loads with Home's hero rather than with every Explorer page.
-const HeroTemplateFan = lazy(() => import('@/components/panels/home/HeroTemplateFan'));
-const HERO_ART = (
-  <Suspense fallback={null}>
-    <HeroTemplateFan />
-  </Suspense>
-);
 
 // The welcome manifest as the templates package writes it (its addresses are this site's own), in a chunk of its
 // own, fetched once.
@@ -195,7 +187,6 @@ export function ExplorerHost({
         thisBrowser={thisBrowser}
         welcome={welcome}
         helpHref={explorerHelpHref}
-        heroArt={HERO_ART}
         renderThumbnail={renderDocumentThumbnail}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}

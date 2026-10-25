@@ -1,5 +1,5 @@
 import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
-import { MiniBoard } from './plan-parts';
+import { MiniBoard } from '@liveworkspace/help-site/art/work';
 
 // Developers: the shared scene (docs/specs/018-help/help-pages.md "Category art"). `POST /api/projects` with one tab
 // from the `kanban` template (Working with Plans), and the board it makes.

@@ -1,6 +1,6 @@
 import { Cursor, Label, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
-import { MiniWireframe } from './design-parts';
+import { MiniWireframe } from '@liveworkspace/help-site/art/work';
 
 // Canvas: a design's pages side by side on the canvas. A logo artboard with its construction circle and the mark
 // selected (its rotate handle above it), a phone wireframe beside it, and the undo and zoom controls in their corners.

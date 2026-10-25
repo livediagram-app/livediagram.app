@@ -22,7 +22,8 @@ export type WelcomeManifest = {
   pillFree: string;
   blanks: readonly WelcomeStart[];
   popular: readonly WelcomeStart[];
-  /** Three start ids fanned in the hero, the front one first. */
+  /** Three start ids, the front one first, once fanned in the hero; the hero now shows what the app makes
+   *  (WorkKinds) instead, so nothing draws them. */
   fan: readonly string[];
   /** The New wizard with Start Blank chosen, the wizard itself, and its template search ("…?q=" + words). */
   startBlankHref: string;

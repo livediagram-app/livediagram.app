@@ -4,7 +4,7 @@
 
 ## The hero
 
-The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); livedocuments gives it its words, its art, its Help article and its setting: on the Explorer page, liveworkspace's, served on livedocuments' address (`liveworkspace/apps/site/lib/explorer/hero.ts`, `welcome.ts`, `settings.ts`), and in a workbench frame its own copy ([`apps/editor/app/embed/workbench/ExplorerHost.tsx`](../../../apps/editor/app/embed/workbench/ExplorerHost.tsx)). It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
+The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); livedocuments gives it its words, its Help article and its setting: on the Explorer page, liveworkspace's, served on livedocuments' address (`liveworkspace/apps/site/lib/explorer/welcome.ts`, `settings.ts`), and in a workbench frame its own copy ([`apps/editor/app/embed/workbench/ExplorerHost.tsx`](../../../apps/editor/app/embed/workbench/ExplorerHost.tsx)). It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
 
 Top to bottom, left column:
 
@@ -29,19 +29,10 @@ livedocuments' welcome manifest (`packages/templates/welcome.json`, the template
 loaded once, only then, in a chunk of its own (`liveworkspace/apps/site/lib/explorer/welcome.ts` on the Explorer page, `loadWelcome` in
 `apps/editor/app/embed/workbench/ExplorerHost.tsx` in a workbench frame).
 
-The right column, on a wide screen only (`lg` and up), shows livedocuments' **hero art**, the Explorer's `heroArt`
-([`apps/editor/components/panels/home/HeroTemplateFan.tsx`](../../../apps/editor/components/panels/home/HeroTemplateFan.tsx)):
-three template previews (`HERO_FAN`: a slide deck, an event poster and a year in review) fanned out, each on a
-white sheet with a soft shadow, in the page's light or dark look, so a person sees what livedocuments makes. **Nothing is fetched** to draw them. They are not
-links: Jump Back In is the way in. For assistive technology they are one group of images. Their one motion is a
-short fade as they land, and none under reduced motion. On a phone or a tablet the column is not drawn.
-
-On liveworkspace.app, which carries none of the editor's code, the same previews ship as data in
-`packages/templates/hero.json` (the templates package's `hero.json` export), written from these components by
-[`hero-manifest.test.tsx`](../../../apps/editor/components/panels/home/hero-manifest.test.tsx) through
-`@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx`
-in `apps/editor`; without it the test fails when the file has drifted), and drawn there by the Explorer's
-`HeroArt`, the slide deck in front, loaded only on a wide screen.
+Beside the field (from `lg` up) or under it, the hero shows **what livedocuments makes**: an **Article**, a
+**Slide Deck**, an **Infographic** and a **Poster**, each a small picture in livedocuments' amber with its name, laid
+out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-article`, `blank-slide-deck`,
+`blank-infographic`, `event-poster`). **Nothing is fetched** to draw them.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again, over the `long` motion token

@@ -18,10 +18,14 @@ What every help centre draws alike lives once in `src/art/`:
   content as props (its name, share host, export formats, commands and keys, its work drawn on a screen), and the
   app's `components/category-art/<slug>.tsx` binds it. Policies takes nothing.
 - `art/illustrations/<area>`: in-article figures that are the same in every product that shows them.
+- `art/work`: every product's work in miniature (`MiniBoard`, `MiniSheet`, `MiniArticle`, `MiniSlide`, `MiniLogo`,
+  `MiniWireframe` and the rest), each scaled to the box it is handed, for the scenes that draw a product's work on a
+  screen or a thumbnail. They live once in `@liveworkspace/ui/work-art`, because the Explorer's Home draws the same
+  pictures for what each app makes; this entry re-exports them for the help apps.
 - `art/tool-picker`: the Pages editors' tool picker (Edit, Present and Preview bands), which livedocuments's and
   livedesign's Selection Modes scenes open beside their own work.
 
-A scene or figure that shows one product's own work stays in that app.
+A scene or figure that shows one product's own work stays in that app; the miniatures of the work itself are shared (`art/work`).
 
 Specs: `docs/specs/018-help/help-app.md` and `help-pages.md` in each product.
 

@@ -116,6 +116,12 @@ export function newItemHref(app: App, placement: Placement | null): string {
   return `${appUrl(app)}${APP_ITEMS[app].newPath}${query ? `?${query}` : ''}`;
 }
 
+/** A kind of work on Home's hero: the app's New flow with the template that starts it (`?template=`, the address its
+ *  welcome uses), in that app. */
+export function templateHref(app: App, template: string): string {
+  return `${appUrl(app)}${APP_ITEMS[app].newPath}?template=${encodeURIComponent(template)}`;
+}
+
 /** The app's view of what it keeps only in this browser: This Browser in the Explorer on the app's address
  *  (`offlinePath`, `/explorer/offline`), which can read the app's list (one-explorer.md "This Browser"). Null for an
  *  app that keeps nothing there. */

@@ -1,6 +1,6 @@
 import { Label } from '@liveworkspace/help-site/art/primitives';
 import { Callout, Stage, Window } from '@liveworkspace/help-site/art/parts';
-import { MiniArticle, MiniSlide } from './page-parts';
+import { MiniArticle, MiniSlide } from '@liveworkspace/help-site/art/work';
 
 const CHROME = 'fill-white stroke-slate-200';
 

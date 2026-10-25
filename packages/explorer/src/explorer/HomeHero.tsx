@@ -2,8 +2,8 @@
 
 // Home's hero: the full-width band under the host's header on Home, its page header (livediagram's and
 // liveplanner's HomeHero, made app-agnostic). Status pills, the greeting by the reader's hour, the app's
-// question and lead, the search field drawn large with New inside it, and the host's art on the right (a
-// fan of previews, say). The pills count from what the Explorer already reads: My Work's count (one small
+// question and lead, the search field drawn large with New inside it, and what the app makes (WorkKinds) on the
+// right from `lg`, under the field below that. The pills count from what the Explorer already reads: My Work's count (one small
 // request, only while the hero shows) and the Inbox the sidebar counts; a pill shows only once its count is
 // known, never "0 plans" while it loads. Help and a close that hides the banner sit in its corner.
 
@@ -92,12 +92,12 @@ function useHour(): number | null {
 /** The Explorer makes the band inert while it folds away, so the page holds one live field. */
 export function HomeHero({
   items,
-  art,
+  kinds,
   onHide,
 }: {
   items: ItemCount | undefined;
-  /** The host's picture for the right-hand side, from `lg` up. */
-  art?: ReactNode;
+  /** What the app makes (WorkKinds): the right-hand column from `lg`, under the search field below that. */
+  kinds?: ReactNode;
   /** Hides the banner for good (the host's setting, or this browser's). */
   onHide?: () => void;
 }) {
@@ -150,7 +150,7 @@ export function HomeHero({
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--color-brand-600)_30%,transparent),transparent)] dark:block"
       />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-10 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
           {/* A phone: the menu button and the corner share their own row, so the pills never push Help onto
               a line of its own. */}
@@ -191,7 +191,7 @@ export function HomeHero({
               ),
             )}
             {/* Help and the close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
-                top right, over the art; on a phone they sit beside the menu button above. */}
+                top right, above the tiles; on a phone they sit beside the menu button above. */}
             <span className="ml-auto hidden sm:inline-flex lg:hidden">
               <HeroCorner onHide={onHide} />
             </span>
@@ -214,10 +214,11 @@ export function HomeHero({
         <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">
           <HeroCorner onHide={onHide} />
         </div>
-        {art ? (
-          // Set down below the corner's Help and close (top-6, 30px tall), so the sheets never sit under them.
-          <div className="relative mt-14 hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
-            {art}
+        {kinds ? (
+          // Its own line under the field below `lg`, as wide as the field; from `lg` the right-hand column, set down
+          // below the corner's Help and close (top-6, 30px tall) so the tiles never sit under them.
+          <div className="w-full max-w-2xl lg:mt-10 lg:w-auto lg:max-w-[21rem] lg:flex-[1_1_18rem]">
+            {kinds}
           </div>
         ) : null}
       </div>

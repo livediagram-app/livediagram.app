@@ -4,13 +4,13 @@
 // (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served at this address's /explorer (lib/explorer-href.ts); a frame keeps its own. Everything it lists comes from the index
 // through /api/index; liveplanner supplies the addresses and Help articles
-// (lib/explorer-host.ts), New (the /new flow), the hero's art (the fanned previews) and its setting (the synced
+// (lib/explorer-host.ts), New (the /new flow), the hero's setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
 // Explorer asks for anything.
 
 import Link from 'next/link';
-import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Explorer,
   type ExplorerView,
@@ -38,14 +38,6 @@ import {
   shareUrl,
   useTokenTeams,
 } from '@/lib/explorer-host';
-
-// The hero's art draws Start Planning's pictures; it loads with Home's hero rather than with every Explorer page.
-const HeroFeatureFan = lazy(() => import('@/components/panels/home/HeroFeatureFan'));
-const HERO_ART = (
-  <Suspense fallback={null}>
-    <HeroFeatureFan />
-  </Suspense>
-);
 
 // The Timeline's reports (docs/specs/017-telemetry/telemetry.md "Timeline"), each a literal pair so the telemetry
 // manifest's coverage test sees it. The type is a fixed token from the Explorer: a mode, a filter, More or Retry,
@@ -153,7 +145,6 @@ export function ExplorerHost({
         share={shareHost}
         inbox={inboxHost}
         helpHref={explorerHelpHref}
-        heroArt={HERO_ART}
         renderThumbnail={renderPlanThumbnail}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}

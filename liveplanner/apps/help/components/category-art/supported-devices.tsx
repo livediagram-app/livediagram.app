@@ -1,5 +1,5 @@
 import { SupportedDevicesArt as Scene } from '@liveworkspace/help-site/art/scenes/supported-devices';
-import { MiniBoard } from './plan-parts';
+import { MiniBoard } from '@liveworkspace/help-site/art/work';
 
 // Supported Devices: the shared scene (docs/specs/018-help/help-pages.md "Category art"), one board of cards on a
 // computer, a tablet and a phone.
