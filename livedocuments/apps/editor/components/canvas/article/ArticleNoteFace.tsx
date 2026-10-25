@@ -7,6 +7,7 @@
 // (slate for Won't Do). Its own count, so no badge strip rides on it. The chip's outline (round
 // for a comment, a rounded square for an action) is element-variant.ts's.
 import type { ArticleNoteElement } from '@livedocuments/document';
+import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livedocuments/ui';
 import { NOTE_INK, noteLook, type NoteAssignee } from '@/lib/article/article-note-look';
 
 const BUBBLE =
@@ -103,16 +104,18 @@ function ActionGlyph({ closed }: { closed: string | null }) {
   );
 }
 
-// Who an open action is for (D90): their initials in their colour on the chip's corner.
+// Who an open action is for (D90): their initials in their colour on the chip's corner, its deep
+// shade in dark mode as every identity disc (white text never sits on a raw runtime colour).
 function AssigneeDisc({ who }: { who: NoteAssignee }) {
   return (
-    <span
+    <GlyphDisc
+      size={14}
       data-note-assignee=""
       aria-hidden
-      className="absolute -right-1.5 -bottom-1.5 flex h-[14px] w-[14px] items-center justify-center rounded-full text-[6.5px] leading-none font-bold text-white ring-[1.5px] ring-white"
-      style={{ backgroundColor: who.color }}
+      style={identityVars(who.color)}
+      className={`absolute -right-1.5 -bottom-1.5 text-[6.5px] font-bold text-white ring-[1.5px] ring-white ${IDENTITY_FILL}`}
     >
       {who.initials}
-    </span>
+    </GlyphDisc>
   );
 }
