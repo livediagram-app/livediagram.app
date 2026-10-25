@@ -36,7 +36,7 @@ export function Hero() {
           data-hero-anchor="title"
           className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
         >
-          What are you <HeroVerb /> today?
+          <HeroVerb before="What are you" after="today?" />
         </h1>
         <p
           data-hero-anchor="lead"

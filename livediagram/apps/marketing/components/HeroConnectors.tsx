@@ -4,7 +4,8 @@
 // from the end of the headline's question down to the template search, the gesture of the editor's
 // loading animation (DiagramBuildAnimation in apps/editor: a connector draws, its head lands, the
 // target flashes a selection ring, a pulse of light runs along it), drawn in marker on the hero's
-// whiteboard, with "start here" scrawled under its tip where that fits. The question is wired to
+// whiteboard, with "start here" scrawled beside its curve (or under its tip) where that fits, and a looser
+// stroke underlining the headline's last line. The question is wired to
 // where it is answered, as a diagram would wire them.
 //
 // The geometry is the page's own, so it is measured, not drawn to a fixed picture: the headline's
@@ -26,8 +27,10 @@ type Layout = {
   // The curve's start, its two controls and where it ends, then the tip the straight run reaches.
   p: [Point, Point, Point, Point, Point];
   ring: { x: number; y: number; w: number; h: number };
-  // Where "start here" is written, under the tip; null where the band has no room for it.
+  // Where "start here" is written, beside the curve or under the tip; null where the band has no room for it.
   note: Point | null;
+  // The marker's underline under the headline's last line, left end and right end.
+  under: [Point, Point];
 };
 
 // How far the line starts clear of the text and stops clear of the bar, and the least it bows out past
@@ -43,10 +46,16 @@ const EDGE_CLEAR = 12;
 // The straight run into the bar after the curve, so the line meets the arrowhead level at its tip.
 const LEAD_IN = 28;
 
-// The note under the tip: how far right of the tip and below the line it starts, and the room it needs.
+// The note beside the curve: how far right of the sweep it starts, and below the curve's middle.
+const NOTE_GAP = 18;
+const NOTE_DROP = 10;
+// The fallback under the tip: how far right of the tip and below the line it starts, and the room it needs.
 const NOTE_DX = 4;
 const NOTE_DY = 42;
 const NOTE_W = 120;
+// The note may run out past the copy's column onto the band, but stays this far inside the band's right
+// edge, clear of the share rail.
+const BAND_CLEAR = 88;
 // The marker (app/hero-whiteboard.css), the prism's sky, light or dark.
 const MARKER = { stroke: 'var(--wb-marker)' } as const;
 
@@ -66,6 +75,7 @@ function measure(root: HTMLElement): Layout | null {
     .querySelector<HTMLElement>('[data-hero-anchor="lead"]')
     ?.getBoundingClientRect();
   const o = root.getBoundingClientRect();
+  const bandRight = (root.closest('section') ?? root).getBoundingClientRect().right - o.left;
   const t = target.getBoundingClientRect();
   const start: Point = [last.right - o.left + TEXT_GAP, last.top + last.height * 0.55 - o.top];
   const end: Point = [t.right - o.left + TARGET_GAP, t.top + t.height / 2 - o.top];
@@ -90,9 +100,15 @@ function measure(root: HTMLElement): Layout | null {
       h: t.height + RING_PAD * 2,
     },
     note:
-      end[0] + NOTE_DX + NOTE_W <= o.width - EDGE_CLEAR
-        ? [end[0] + NOTE_DX, end[1] + NOTE_DY]
-        : null,
+      clear + NOTE_GAP + NOTE_W <= bandRight - BAND_CLEAR
+        ? [clear + NOTE_GAP, (start[1] + end[1]) / 2 + NOTE_DROP]
+        : end[0] + NOTE_DX + NOTE_W <= o.width - EDGE_CLEAR
+          ? [end[0] + NOTE_DX, end[1] + NOTE_DY]
+          : null,
+    under: [
+      [last.left - o.left + 6, last.bottom - o.top + 2],
+      [last.right - o.left - 6, last.bottom - o.top - 2],
+    ],
   };
 }
 
@@ -178,12 +194,24 @@ export function HeroConnectors() {
             strokeLinejoin="round"
           />
         </g>
+        {/* The underline: a marker swipe, a touch uphill, dipping in the middle. */}
+        <path
+          className="hero-conn-line"
+          d={`M ${layout.under[0][0]} ${layout.under[0][1]} Q ${(layout.under[0][0] + layout.under[1][0]) / 2} ${layout.under[0][1] + 6}, ${layout.under[1][0]} ${layout.under[1][1]}`}
+          pathLength={1}
+          fill="none"
+          style={MARKER}
+          strokeOpacity={0.75}
+          strokeWidth={5}
+          strokeLinecap="round"
+        />
         {layout.note ? (
           <text
             className="hero-conn-note hero-wb-note"
             x={layout.note[0]}
             y={layout.note[1]}
-            transform={`rotate(-6 ${layout.note[0]} ${layout.note[1]})`}
+            // Turned about its own middle: hero-animations.css gives it a fill-box origin.
+            transform="rotate(-6)"
             fontSize={30}
             style={{ fill: 'var(--wb-marker)' }}
           >

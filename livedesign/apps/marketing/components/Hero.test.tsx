@@ -73,7 +73,7 @@ describe('the hero', () => {
   it('asks the question under its two promise badges', () => {
     render(<Hero />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'What are you making today?',
+      'What are you designing today?',
     );
     const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
       'listitem',
