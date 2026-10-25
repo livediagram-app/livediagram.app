@@ -1,4 +1,4 @@
-// The whole-document envelope (docs/specs/022-drive-mirror/drive-mirror.md, "The file"):
+// The whole-document envelope (liveworkspace/docs/drive.md, "The file"):
 // the contents of a `.livediagram` file in Google Drive, and what "Import a
 // copy" reads back. The sibling of the per-tab `livediagram.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one

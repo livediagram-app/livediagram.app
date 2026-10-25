@@ -104,9 +104,9 @@ the copy takes).
      live, so when a token lapses the tool signs in again on its own instead of failing on an unknown client.
      Some tools may still ask to be reconnected, which step 8's email says.
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
-   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has the
-   Drive mirror off for now (both hosted client ids are empty, `drive-mirror.md`), so a person reconnects once it
-   is back; until then step 8's email says Drive sync is paused, not that it needs reconnecting.
+   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
+   Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/drive.md), so a
+   person connects there once; step 8's email says Drive sync is paused, not that it needs reconnecting.
 
 ## 2. Copy documents into livediagram
 

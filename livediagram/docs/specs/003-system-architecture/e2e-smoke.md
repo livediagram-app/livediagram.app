@@ -36,7 +36,7 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
 pull request never queues two runs of the suite.
 
-It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in Drive, perf and WebKit projects),
+It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
 | Job                 | Builds                                           | Runs                                                                    |
@@ -132,8 +132,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
 1. **index**: `wrangler dev --local` (liveworkspace/apps/index) on `E2E_INDEX_PORT` (8119), its D1 a fresh
    `liveworkspace/apps/index/.wrangler/e2e-state` each boot (migrations applied first), kept apart from a
    developer's own, sharing a test-only key with the api (the api's `INDEX_KEY`, the index's
-   `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below, or the Drive spec's
-   own), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
+   `INDEX_KEY_LIVEDIAGRAM`). It trusts the same accounts the api does (the stand-in below), takes tokens addressed to the api's `API_RESOURCE`, and calls this api for its internal item routes.
    The stack forwards `/api/index/*` to it, cookies dropped, as the router does.
 2. **media**: liveworkspace's media service (`liveworkspace/apps/media`, booted by
    `liveworkspace/apps/media/scripts/e2e-media.mjs`, which every product's stack can share) under `wrangler dev --local` on
@@ -200,8 +199,7 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8115`, marketing `:3116`, index `:8117`, media `:8116`), so a guest stack already up on `:3102` is never
 reused for it; the workbench run has its own too (live `:3121`, api `:8121`, marketing `:3122`, index `:8118`, media `:8122`).
-The stack also stands in for the accounts Worker (in every run but the Drive one, whose spec serves its own
-key and JWKS, which the api and the index then trust instead; guests get their identity from it and the api
+The stack also stands in for the accounts Worker in every run (guests get their identity from it and the api
 keeps no settings or profiles of its own, so guest runs need it too, and it answers the settings, profile,
 sighting, milestone, email, activity and team-making routes from memory, and the index's
 `POST /api/account/index/teams` for a person's teams as they are now): it makes a
@@ -252,7 +250,7 @@ the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-pl
 
 The same `test` sets the editor's debug flag (`livediagram:debug` = `*`) on its browser
 context before any page loads, so the production build the suite drives writes its trace lines
-([Console logging](console-logging.md)) and a spec may wait for one (`[drive-mirror] pass-end`).
+([Console logging](console-logging.md)) and a spec may wait for one (the photo reader's `[photo-…]`).
 A spec that opens its own context with `browser.newContext()` sets it there with
 `enableDebugLogs(context)`.
 

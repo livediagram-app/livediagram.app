@@ -50,7 +50,6 @@ export * from './api/images';
 export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';
-export * from './api/drive';
 export * from './api/community';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';

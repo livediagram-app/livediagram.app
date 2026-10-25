@@ -192,7 +192,7 @@ export class FakeGoogle {
   }
 
   // Drive's "Make a copy" in its own UI, as real Drive does it (verified,
-  // docs/specs/022-drive-mirror/drive-mirror.md, "Copies made in Drive"): a new
+  // liveworkspace/docs/drive.md, "Copies made in Drive"): a new
   // file id, "Copy of <name>" in the same folder, the same contents and
   // appProperties, and invisible to the app under drive.file until the user
   // opens it with the app (`openWithState`). `visibleToApp` and

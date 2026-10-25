@@ -14,7 +14,6 @@ Derived from [Trusted Types](../trusted-types.md).
 | Asset prefix       | `''`, `/live`, `/help`, `/community`, `/telemetry`   | Where an app's own build is served from (`assetPrefix` or `basePath`)                                                                  |
 | Markup helper      | `trustedHtml(markup)`                                | `TrustedHTML` in a browser with Trusted Types, else the string itself                                                                  |
 | Inert parse        | `parseInert(source, type)`                           | `DOMParser` through the inert-parse policy                                                                                             |
-| Allowed origin     | `trustedScriptOrigins(env)`                          | Third-party script origins the default policy lets through (Google's, for the Drive mirror)                                            |
 
 ## Modules
 
@@ -87,8 +86,8 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 
 ### Third-party origins
 
-Google's two (`accounts.google.com`, `apis.google.com`), in the editor only and only in a build with a Google client
-id, for the Drive mirror; every other layout calls `trustedTypesBootScript(prefix)` with no origins. Sign-in used to
+None. Every layout calls `trustedTypesBootScript(prefix)` with no origins. Google's two (`accounts.google.com`,
+`apis.google.com`) were let through for livediagram's own Google Drive mirror, which is gone. Sign-in used to
 load Clerk's script (from the origin in its publishable key) and Cloudflare Turnstile for its sign-up CAPTCHA; it now
 happens on the accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
 

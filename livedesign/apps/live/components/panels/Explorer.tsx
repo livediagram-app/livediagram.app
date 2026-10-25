@@ -27,6 +27,7 @@ import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDesignThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDesign } from '@/lib/design-delete-undo';
+import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
 import type { ExplorerProps } from './Explorer.types';
 
 // The filter's logos: this app's own, and liveworkspace's for All.
@@ -66,6 +67,10 @@ function ExplorerImpl({
   const inboxHost = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
+  // Google Drive's marks on the person's items (liveworkspace/docs/drive.md "The Explorer shows each item's sync"),
+  // over the same Drive host as Settings' Cloud Sync: an account's only, made once per sign-in so the marks read keeps
+  // one client. The panel mounts only while open, so nothing is asked before it opens.
+  const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
   // The open design as the index has it (its title, place and star), for the card on top.
   const [current, setCurrent] = useState<Item | null>(null);
@@ -149,6 +154,7 @@ function ExplorerImpl({
         }}
         onOpenItem={(href) => go(href)}
         renderThumbnail={renderDesignThumbnail}
+        drive={drive}
         Link={Link}
         teams={teams}
         viewerId={viewerId}

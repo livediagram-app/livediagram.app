@@ -16,7 +16,7 @@ These docs are the practical guide: what the app does, how to run it locally, an
 - ./development/local-development.md - when cloning, installing, and running the apps locally
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
 - ./research/README.md - when you need measurements and experiment reports, such as sticky detection in wall photos
-- ./research/migration-readiness.md - when designing the Google Drive mirror or importing boards from Miro or Microsoft Whiteboard
+- ./research/migration-readiness.md - when importing boards from Miro or Microsoft Whiteboard, or for the Google Drive research behind liveworkspace's Drive sync
 - ./demo/sticky-vision/index.html - when watching the sticky detector run live on a synthetic wall (`pnpm demo:sticky-vision`)
 
 ## How docs relate to specs

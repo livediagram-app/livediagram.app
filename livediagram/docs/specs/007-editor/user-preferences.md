@@ -611,8 +611,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Documents** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#surfaces) entry, with Change and Clear; those are not a
   preference, they read and write the index's `/placement-defaults`), and an **Explorer** section with **Show Home Banner**
-  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the
-  deployment offers, [Google Drive mirror](../022-drive-mirror/drive-mirror.md)), delete account, see
+  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, **Cloud Sync** (the shared
+  `@liveworkspace/settings-ui` section, for an account, where the deployment offers [Google Drive sync](../../../../liveworkspace/docs/drive.md)), delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);

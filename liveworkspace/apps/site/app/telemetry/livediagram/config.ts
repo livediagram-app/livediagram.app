@@ -41,7 +41,6 @@ import {
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
   DRAW_TOUR,
-  DRIVE_MIRROR,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -147,9 +146,6 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Token: '#d946ef',
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
-  // Deep brown: apart from the greens (Action, Element, Cta), Email's teal and
-  // Activity's amber.
-  Drive: '#854d0e',
   Mcp: '#f43f5e',
   // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
   Cli: '#1e293b',
@@ -324,11 +320,8 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
     ],
   },
   connections: {
-    intro:
-      'API tokens, agent changes and the Google Drive mirror, beside the MCP and CLI on the Dashboard',
-    groups: [
-      { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, DRIVE_MIRROR] },
-    ],
+    intro: 'API tokens and agent changes, beside the MCP and CLI on the Dashboard',
+    groups: [{ title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS] }],
   },
   pages: [{ title: 'Calls to action', metrics: [CALLS_TO_ACTION] }],
   help: {

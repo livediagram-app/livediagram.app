@@ -4,7 +4,7 @@ import { FOLDER_MIME } from './drive-store';
 import { fakePngBase64Url } from './thumbnail';
 
 // The fake behaves like the slice of Google the mirror relies on
-// (docs/specs/022-drive-mirror/blueprints/drive-mirror.md).
+// (liveworkspace/docs/drive.md).
 
 const API = 'https://www.googleapis.com';
 const FILE_FIELDS = 'id,name,parents,trashed,md5Checksum,headRevisionId,appProperties,mimeType';
@@ -155,7 +155,7 @@ describe('files', () => {
         name: 'A.livediagram',
         parents: [root.id],
         mimeType: 'application/vnd.livediagram+json',
-        appProperties: { ldDocumentId: 'd1' },
+        appProperties: { lwItemId: 'd1' },
         contentHints: { thumbnail: { image: fakePngBase64Url(400), mimeType: 'image/png' } },
       },
       '{"x":1}',
@@ -171,7 +171,7 @@ describe('files', () => {
       name: 'A.livediagram',
       parents: [root.id],
       trashed: false,
-      appProperties: { ldDocumentId: 'd1' },
+      appProperties: { lwItemId: 'd1' },
     });
     expect(file.body!.md5Checksum).toMatch(/^[0-9a-f]{32}$/);
     // Without fields: Drive's default subset only.
@@ -409,7 +409,7 @@ describe('userCopy', () => {
     const { fake, call } = setup();
     const folder = await createFolder(call, 'f');
     const up = multipart(
-      { name: 'Plan.livediagram', parents: [folder.id], appProperties: { ldDocumentId: 'd1' } },
+      { name: 'Plan.livediagram', parents: [folder.id], appProperties: { lwItemId: 'd1' } },
       'body',
     );
     const file = (
@@ -428,7 +428,7 @@ describe('userCopy', () => {
     expect(copy).toMatchObject({
       name: 'Copy of Plan.livediagram',
       parents: [folder.id],
-      appProperties: { ldDocumentId: 'd1' },
+      appProperties: { lwItemId: 'd1' },
       md5Checksum: file.md5Checksum,
     });
   });

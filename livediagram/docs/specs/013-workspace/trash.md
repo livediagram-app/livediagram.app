@@ -24,7 +24,7 @@ team library): it only sends the canvas to the Trash, so a question would guard 
 - A team canvas goes to the team's Trash, and its Undo restores it there.
 
 Every delete of a whole canvas goes to the Trash: the Explorer, the editor, the team library, the public API with a
-token, the MCP server, and the Drive mirror. So does a canvas left empty, by the index's daily sweep
+token, the MCP server, and Google Drive sync. So does a canvas left empty, by the index's daily sweep
 ([Empty document clean-up](empty-document-cleanup.md)), with the reason `empty`. Tabs are not trashed; deleting a
 tab is unchanged.
 
@@ -58,7 +58,7 @@ When the api answers a canvas as not found, the editor asks the index whether it
 (`isTrashedInIndex`, `apps/editor/lib/document-trashed.ts`): the index's item outlives the trashing, so it can tell a
 trashed canvas from one that does not exist. A trashed one shows the deleted card in place of the canvas: Restore for
 someone the index lets restore it (its owner, or a member of the team that owns it), and only that it was deleted for
-a share-link visitor. The same question settles a room that closes, and a Drive follow that finds nothing.
+a share-link visitor. The same question settles a room that closes.
 
 On restore the same share links work again, subject to their own expiry
 ([Share-link expiry](share-link-expiry.md)).
@@ -84,9 +84,9 @@ writes the index: `GET /api/trash`, `POST /api/trash/:id/restore`, `DELETE /api/
 canvas but never destroys one; `list_trash` and `restore_document` are the way back
 ([MCP server](../015-api/mcp-server.md)).
 
-## The Drive mirror
+## Google Drive sync
 
-The [Google Drive mirror](../022-drive-mirror/drive-mirror.md) maps Drive's bin onto this Trash: binning a canvas's
+liveworkspace's [Google Drive sync](../../../../liveworkspace/docs/drive.md) maps Drive's bin onto this Trash: binning a canvas's
 file in Drive sends the canvas to the Trash, restoring it in Drive restores it, and emptying Drive's bin purges it,
 each through the index's own calls, which keep their guards (only a live canvas is trashed, only a trashed one
 restored or purged).

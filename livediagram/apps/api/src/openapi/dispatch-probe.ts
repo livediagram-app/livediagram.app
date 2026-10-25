@@ -198,10 +198,6 @@ export async function probeDispatch(
     // Images, which live in liveworkspace's media service (liveworkspace/docs/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
-    // The Drive mirror in broker mode (docs/specs/022-drive-mirror/drive-mirror.md).
-    GOOGLE_CLIENT_ID: 'probe-client',
-    GOOGLE_CLIENT_SECRET: 'probe-secret',
-    DRIVE_TOKEN_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
     INDEX_ORIGIN: 'https://index.probe',
   } as unknown as Env;
   const now = Math.floor(Date.now() / 1000);

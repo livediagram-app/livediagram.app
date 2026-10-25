@@ -5,8 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts",
-    "./server": "./src/http-server.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "oxlint",

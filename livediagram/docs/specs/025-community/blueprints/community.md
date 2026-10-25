@@ -118,7 +118,7 @@ content-only pass (`apps/api/src/routes/context.ts`).
   become the account's (`apps/api/src/community-service.ts`).
 - Snapshots: `snapshotKeys(documentId)` (`apps/api/src/db/documents.ts`) holds the Community thumbnail and share card
   beside the canvas's own; all are deleted when the index purges the canvas.
-- Snapshot/restore and the Drive mirror carry no Community state; a copy is never published.
+- Snapshot/restore and Google Drive sync carry no Community state; a copy is never published.
 
 ## 4. Interfaces and contracts
 

@@ -39,7 +39,6 @@ import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
-import { handleDrive } from './routes/drive';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
@@ -375,8 +374,6 @@ async function routeApiRequest(
         return await handlePreferences(ctx);
       case 'participants':
         return await handleParticipants(ctx);
-      case 'drive':
-        return await handleDrive(ctx);
       // The one-time doors of the move from the old livediagram.app (docs/migration.md step 6).
       case 'legacy-guest':
         return await handleLegacyGuestClaim(ctx);

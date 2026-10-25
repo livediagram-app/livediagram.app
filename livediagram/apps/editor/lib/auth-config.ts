@@ -6,8 +6,7 @@
 // compile-time constants: no per-render cost, no React state.
 
 // Test builds only: the signed-in and opt-in e2e specs
-// (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing",
-// docs/specs/022-drive-mirror/blueprints/drive-mirror.md "Testing") sign in
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") sign in
 // without the accounts Worker, through E2EAuthBridge and a JWT the test mints
 // against its own JWKS. A compile-time constant like the rest of this file, so
 // a real build (which never sets it) drops the branch and the bridge entirely.

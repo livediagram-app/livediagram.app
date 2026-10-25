@@ -26,7 +26,6 @@ import type {
 } from './settings-catalogue';
 import { settingsCategoryIcon } from './settings-icons';
 import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
-import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { SettingsRetiredPartsRow } from './SettingsRetiredPartsRow';
@@ -81,8 +80,6 @@ export function settingsModel(
         return { ...row, kind: 'custom', render: () => <SettingsTrashRow row={row} /> };
       case 'retiredParts':
         return { ...row, kind: 'custom', render: () => <SettingsRetiredPartsRow row={row} /> };
-      case 'cloudSync':
-        return { ...row, kind: 'custom', render: () => <SettingsCloudSyncRow row={row} /> };
       case 'defaultFolders':
         return { ...row, kind: 'custom', render: () => <SettingsDefaultFoldersRow row={row} /> };
     }

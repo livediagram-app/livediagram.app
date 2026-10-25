@@ -84,11 +84,6 @@ export type Env = {
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
   // absent → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
-  // "Tokens"): each call reaches Google's token endpoint, so it gets a far
-  // tighter bound than the general write limiter. Keyed on the account id.
-  // Optional: absent → "allow".
-  DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
@@ -181,20 +176,6 @@ export type Env = {
   // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
   // it open to guests. Hosted livediagram.app leaves it unset.
   AI_REQUIRE_SIGN_IN?: string;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Configuration").
-  // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
-  // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
-  // refresh tokens, otherwise the browser holds its own short-lived tokens.
-  // Unset = every /api/drive route answers 503 drive_not_configured.
-  GOOGLE_CLIENT_ID?: string;
-  GOOGLE_CLIENT_SECRET?: string;
-  // base64 of 32 random bytes (`openssl rand -base64 32`): seals refresh
-  // tokens (AES-GCM) and, through HKDF, signs the consent state.
-  DRIVE_TOKEN_KEY?: string;
-  // Test-only: where the token exchange and revoke go instead of
-  // https://oauth2.googleapis.com (the e2e suite's fake Google). Never set
-  // by a real deployment.
-  GOOGLE_OAUTH_BASE_URL?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
