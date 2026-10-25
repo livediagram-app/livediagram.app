@@ -92,8 +92,8 @@ export type Env = {
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
-  // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never send analytics unless they opt in.
+  // Absent/anything-else keeps telemetry fully off — the
+  // default, so a deployment never sends analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.

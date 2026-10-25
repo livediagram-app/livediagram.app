@@ -158,7 +158,7 @@ caps) is already built — OAuth is the front door, not a new lock.
 **Sign-in gating.** OAuth depends on the consent page authenticating
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
 same gate as every token's ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
-no-auth self-host: the exchange endpoint rejects every caller and the consent
+deployment without sign-in: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
@@ -596,10 +596,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                    |
-| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                     |
+| Name               | Where                          | Absent means                                                                                                                                                  |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so OAuth callers land on the hosted consent screen unless it is set. Also the host of every tool's `url` and share link |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                   |
 
 `TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what

@@ -34,7 +34,7 @@ marketing/
   `SITE_PITCH` in `packages/ui/src/site.ts`). It is not a diagram, whiteboard or
   slide tool; never describe it as one.
 - **Don't overclaim.** Only what the fact sheet lists as shipped.
-- **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
+- **Free means free.** MIT-licensed, no paid tier, no plan for
   one. Say so where the format allows.
 - **Brand color** is rose, `#f43f5e` ("livedesign rose"); text and fills in it use `#be123c`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

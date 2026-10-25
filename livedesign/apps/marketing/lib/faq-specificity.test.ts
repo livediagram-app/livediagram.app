@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+
+import { FAQ_CATEGORIES } from './faq-content';
 
 // The FAQ is about livedesign only (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"). Much of
 // it began as a copy of livediagram's, so this guard keeps the other liveworkspace products, and the kinds of

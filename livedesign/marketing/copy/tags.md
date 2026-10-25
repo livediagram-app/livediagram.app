@@ -17,8 +17,7 @@ livedocuments).
 
 **Tier 2, strong supporting**
 
-`mockups` · `branding` · `ui-design` · `layers` · `opensource` · `selfhosted`
-· `free`
+`mockups` · `branding` · `ui-design` · `layers` · `opensource` · `free`
 
 **Tier 3, context-dependent (when a directory wants more, or is dev-focused)**
 
@@ -43,7 +42,7 @@ tags belong here):
 
 ```
 logo-design wireframes wireframing photo-editor design collaboration
-multiplayer realtime open-source self-hosted nextjs cloudflare
+multiplayer realtime open-source nextjs cloudflare
 typescript durable-objects mcp
 ```
 
@@ -57,7 +56,7 @@ Design Tools · Productivity · Open Source · Photo Editing · SaaS
 
 ```
 logo design wireframes photo editor design collaboration multiplayer
-realtime branding mockups free open source self-hosted
+realtime branding mockups free open source
 ```
 
 **App store / short keyword field** (tightest, highest-fit only):

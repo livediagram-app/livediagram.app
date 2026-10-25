@@ -696,47 +696,6 @@ export const articles: Article[] = [
     parentSlug: 'privacy-and-security',
   },
 
-  // ---- Self-Hosting ----
-  {
-    slug: 'self-hosting-overview',
-    title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own livedesign, and why you might.',
-    keywords: 'host yourself own server on premise deploy install run',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'deploying-livedesign',
-    title: 'Deploying livedesign',
-    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords:
-      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'configuration',
-    title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional sign-in, and guest-only mode.',
-    keywords:
-      'env vars environment sign-in accounts setup secrets settings configure resend email mcp telemetry r2',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'mcp-server',
-    title: 'The MCP Server on a Self-Hosted Instance',
-    description: 'Set up the MCP server for AI tools on your own deployment.',
-    keywords:
-      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting/configuration',
-    parentSlug: 'configuration',
-  },
-
   // ---- Troubleshooting ----
   {
     slug: 'design-not-loading',

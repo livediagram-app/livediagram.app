@@ -462,34 +462,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
   {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host livedesign?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livedesign/">deploying livedesign</a>.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedesign.',
-      },
-      {
-        q: 'Do I need sign-in to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Email switches on once sign-in and its own key are set up.',
-      },
-    ],
-  },
-  {
     id: 'support',
     title: 'Help and support',
     blurb: 'When something is not right.',

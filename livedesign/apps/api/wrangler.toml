@@ -183,7 +183,7 @@ simple = { limit = 120, period = 60 }
 #     worker, the SAME value as the service's TELEMETRY_KEY_LIVEDESIGN.
 #     Generate with `openssl rand -hex 32`.
 #
-# Unset = this worker sends no telemetry, so a self-host can ignore it.
+# Unset = this worker sends no telemetry, so a deployment can ignore it.
 
 # MEDIA_KEY is livedesign's secret on liveworkspace's media service (liveworkspace/docs/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as

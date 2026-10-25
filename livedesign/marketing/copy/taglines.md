@@ -48,7 +48,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 Meta-description-adjacent fields, longer banner copy.
 
 - A real-time editor for logos, wireframes and photos, with live cursors and comments. No sign-in. [96]
-- Open a link and design with your team: logos, wireframes, photos. Free, MIT, self-hostable. [91]
+- Open a link and design with your team: logos, wireframes, photos. Free and MIT-licensed. [81]
 
 ## Pick-list by use
 

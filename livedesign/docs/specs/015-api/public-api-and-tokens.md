@@ -364,7 +364,7 @@ hardening landed first:
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page
-   ([§3.7](#37-self-hosting)).
+   ([§3.7](#37-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live

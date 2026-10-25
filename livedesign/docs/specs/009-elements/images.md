@@ -233,7 +233,7 @@ The rules are `@liveworkspace/index-app`'s placement grants ([packages/index-app
 
 Uploaded images no design or other item places are swept by the media service, for every app at once ([media.md](../../../../liveworkspace/docs/media.md) "Retention"), once each app has told it which images its items place. livedesign tells it from the [reference index](#reference-index): each design sends its whole set when it changes, from its outbox, so every design that places an image has been sent at least once. The api's one cron, daily at 03:00 UTC (`announceMediaRefs`, `apps/api/src/index.ts` `scheduled()`), says livedesign's set is `complete`, so a quiet day never holds the sweep up. The api keeps no images of its own and so sweeps nothing itself.
 
-- **Self-host.** Without `MEDIA_KEY` there is no service to tell, and no images.
+- **No key.** Without `MEDIA_KEY` there is no service to tell, and no images.
 - **Tested against real SQLite.** The index and its writers run against a design's real schema in an in-memory SQLite (`src/test-sqlite-d1.ts`, over `nodeItemSql` from `@liveworkspace/index-app/testing`), and the SQL extraction is held to the JavaScript extractor over one shared corpus of tab bodies.
 
 ## Realtime

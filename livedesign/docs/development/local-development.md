@@ -121,7 +121,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from its `sub` claim; a guest gets a liveworkspace guest token from the same accounts site and is verified the same way.
 
-Without these set: the api worker verifies no Bearer, so every caller is a link visitor (the page uses a stand-in guest id for each load), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. Preferences, names and colours are then kept in the browser only, since livedesign keeps none of its own ([User preferences](../specs/007-editor/user-preferences.md)). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: the api worker verifies no Bearer, so every caller is a link visitor (the page uses a stand-in guest id for each load), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the default when they are unset. Preferences, names and colours are then kept in the browser only, since livedesign keeps none of its own ([User preferences](../specs/007-editor/user-preferences.md)). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 
