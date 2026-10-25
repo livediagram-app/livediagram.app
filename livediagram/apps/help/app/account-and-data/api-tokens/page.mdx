@@ -31,7 +31,7 @@ Name the token, switch on **Read-only** if it only needs to look, and create it.
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries, or read access only if it is read-only. It can't manage teams or your account: those are done on liveworkspace.app, signed in.
+- **Access:** a token has your account's read + write access to canvases and folders, including your [teams'](/help/collaboration/teams/) shared libraries, or read access only if it is read-only. It can't manage teams or your account: those are done on liveworkspace.app, signed in.
 - **Lifetime:** every token lasts **six months**, then expires. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **20** tokens at once, across every liveworkspace app. Revoke one to free a slot.
 
@@ -45,7 +45,7 @@ curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a document's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a canvas's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
 
 For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-documents/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
 

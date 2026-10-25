@@ -3,25 +3,25 @@ import { helpMetadata } from '@/lib/seo';
 import { StuckCanvas } from '@/components/illustrations/troubleshooting';
 
 export const metadata = helpMetadata({
-  title: 'A Document Will Not Load',
+  title: 'A Canvas Will Not Load',
   description:
-    'Fix a livediagram document that will not open or is stuck loading: check for expired or revoked share links and password gates, and repair your browser.',
+    'Fix a livediagram canvas that will not open or is stuck loading: check for expired or revoked share links and password gates, and repair your browser.',
   path: '/help/troubleshooting/document-not-loading/',
 });
 
-<ArticleLayout title="A Document Will Not Load" description="A practical checklist for when a document does not open, from share-link issues to connection hiccups." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout title="A Canvas Will Not Load" description="A practical checklist for when a canvas does not open, from share-link issues to connection hiccups." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-When a document does not open, the cause is usually access-related rather than data loss. livediagram deliberately returns the same "not found" surface for a document you cannot reach as for one that truly does not exist, so a blank or "not found" screen does not mean your work is gone. Work through the checks below in order.
+When a canvas does not open, the cause is usually access-related rather than data loss. livediagram deliberately returns the same "not found" surface for a canvas you cannot reach as for one that truly does not exist, so a blank or "not found" screen does not mean your work is gone. Work through the checks below in order.
 
-<Figure caption="A document stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
+<Figure caption="A canvas stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
   <StuckCanvas />
 </Figure>
 
 ## Quick checks
 
 1. **Reload the page.** A transient network blip is the single most common cause. A refresh re-runs the load from scratch.
-2. **Check your connection.** The editor needs to reach the API to load a document. Confirm you are online and not behind a network that blocks the site.
-3. **Open it from your own list.** If you own the document, open it from [your documents](/explorer/recent) rather than an old URL, to rule out a stale link.
+2. **Check your connection.** The editor needs to reach the API to load a canvas. Confirm you are online and not behind a network that blocks the site.
+3. **Open it from your own list.** If you own the canvas, open it from [your canvases](/explorer/recent) rather than an old URL, to rule out a stale link.
 
 ## Stuck on "Opening your canvas"
 
@@ -29,34 +29,34 @@ The opening screen tries to fix a slow load on its own:
 
 1. **After 10 seconds** it says "This is taking longer than usual." and offers **Refresh**.
 2. **After 30 seconds** it reloads the page once by itself, with a fresh start.
-3. **If that does not help**, it shows "Something went wrong" ("We couldn't load this document: it didn't finish loading.") with **Try again**, and under "Still not loading?" two more ways out: **Copy Diagnostics**, a short report to send to [support](/help/contact/), and **Repair This Browser**, which clears stuck settings and caches while keeping your documents. You can also run the repair from [Repair This Browser](/help/troubleshooting/repair-this-browser/), even if the editor will not start.
+3. **If that does not help**, it shows "Something went wrong" ("We couldn't load this canvas: it didn't finish loading.") with **Try again**, and under "Still not loading?" two more ways out: **Copy Diagnostics**, a short report to send to [support](/help/contact/), and **Repair This Browser**, which clears stuck settings and caches while keeping your canvases. You can also run the repair from [Repair This Browser](/help/troubleshooting/repair-this-browser/), even if the editor will not start.
 
-If your browser is offline, the screen says "You're offline" instead, and the document opens by itself as soon as you reconnect. While you are offline in an open document, a banner says so: your changes stay in that tab and save when the connection is back, so keep the tab open until it does.
+If your browser is offline, the screen says "You're offline" instead, and the canvas opens by itself as soon as you reconnect. While you are offline in an open canvas, a banner says so: your changes stay in that tab and save when the connection is back, so keep the tab open until it does.
 
 ## A Single Tab Won't Load
 
-Each tab's content loads on its own when you open it, so a document can open fine while one tab doesn't. While a tab is loading, the canvas shows "Loading tab…" and can't be clicked. If the load fails, a card reads "Couldn't load this tab" ("We couldn't reach the server to load this tab's contents. Your work is safe. Check your connection and try again.") with a **Retry** button.
+Each tab's content loads on its own when you open it, so a canvas can open fine while one tab doesn't. While a tab is loading, the canvas shows "Loading tab…" and can't be clicked. If the load fails, a card reads "Couldn't load this tab" ("We couldn't reach the server to load this tab's contents. Your work is safe. Check your connection and try again.") with a **Retry** button.
 
 1. **Press Retry.** It asks for the tab again, and a brief connection blip usually clears with one try.
-2. **Carry on in another tab.** Only the canvas is covered: the tab bar and the header above it keep working, so you can switch to another tab or leave the document.
+2. **Carry on in another tab.** Only the canvas is covered: the tab bar and the header above it keep working, so you can switch to another tab or leave the canvas.
 3. **Check your connection,** then reload the page if the card keeps coming back.
 
 The card covers the canvas on purpose. Until the tab's real content has arrived, what is underneath would be an empty canvas, and drawing on it could save over your work. Nothing you made is lost while the card is up.
 
 ## It opens for a colleague but not for you
 
-When the same link works for someone else, the document is fine and the difference is on your side:
+When the same link works for someone else, the canvas is fine and the difference is on your side:
 
-1. **Check who you are signed in as.** A document belongs to one account or one guest browser. If your colleague shared it with a different account, or you made it as a guest in another browser, it will not be in your list. Compare the account in the top right with the one the document was shared with.
+1. **Check who you are signed in as.** A canvas belongs to one account or one guest browser. If your colleague shared it with a different account, or you made it as a guest in another browser, it will not be in your list. Compare the account in the top right with the one the canvas was shared with.
 2. **Open the share link itself**, not a copy of the address bar from your colleague's browser. The owner's address only works for the owner.
 3. **[Repair this browser](/help/troubleshooting/repair-this-browser/)**, which clears anything saved in this browser that could be in the way.
 4. **Try another browser or network.** A browser extension, an out-of-date browser, or a work network that blocks parts of the site can stop a load that works elsewhere.
 
 ## If you opened it from a share link
 
-A share link is the most common reason a document refuses to load, and the fixes are different from a document you own.
+A share link is the most common reason a canvas refuses to load, and the fixes are different from a canvas you own.
 
-1. **You may need a password.** If the document has a [share password](/help/privacy-and-security/share-link-security/), you will see a lock screen. Enter the password the owner gave you. A wrong password shows an error and lets you retry.
+1. **You may need a password.** If the canvas has a [share password](/help/privacy-and-security/share-link-security/), you will see a lock screen. Enter the password the owner gave you. A wrong password shows an error and lets you retry.
 2. **The link may have expired.** Share links can be created with a lifetime. An expired link stops working everywhere and looks just like a revoked one. Ask the owner to **Extend** it or send a fresh link.
 3. **The link may have been revoked.** If the owner stopped sharing or deleted that specific link, it no longer grants access. Ask for a new one.
 4. **Check you copied the whole URL.** A truncated link, missing its share code, will not resolve.
@@ -64,9 +64,9 @@ A share link is the most common reason a document refuses to load, and the fixes
 ## Still not loading
 
 1. **Try a different browser or an incognito window** to rule out an extension or cached data. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
-2. **Try another device** on a different network to separate a local problem from a document problem.
-3. **Confirm you are signed in as the right identity.** A guest document is tied to the browser that made it, so a different browser has a different guest identity. Signing in moves this browser's guest documents into your account. See [working as a guest](/help/getting-started/guest-vs-account/).
+2. **Try another device** on a different network to separate a local problem from a canvas problem.
+3. **Confirm you are signed in as the right identity.** A guest canvas is tied to the browser that made it, so a different browser has a different guest identity. Signing in moves this browser's guest canvases into your account. See [working as a guest](/help/getting-started/guest-vs-account/).
 
-If none of this helps, the document itself may be reachable but stuck on real-time connection; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/). If you are still stuck, [contact us](/help/contact/) with the URL you used, what you see, and the report from **Copy Diagnostics**.
+If none of this helps, the canvas itself may be reachable but stuck on real-time connection; see [real-time collaboration problems](/help/troubleshooting/collaboration-issues/). If you are still stuck, [contact us](/help/contact/) with the URL you used, what you see, and the report from **Copy Diagnostics**.
 
 </ArticleLayout>

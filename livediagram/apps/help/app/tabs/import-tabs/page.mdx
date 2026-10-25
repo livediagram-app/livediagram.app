@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="tabs"
 >
 
-**Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one document, import it into a tab somewhere else.
+**Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one canvas, import it into a tab somewhere else.
 
 ## Import formats
 
@@ -44,9 +44,9 @@ You don't need a file to bring a drawing across. In Excalidraw, select what you 
 
 When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
 
-## Excalidraw files as new documents
+## Excalidraw files as new canvases
 
-To bring whole boards across without opening a document first, use the [Explorer page](/help/explorer/explorer-page/): next to **Help** at the top right, **Import from** has an **Excalidraw** button (hover it to see its name), beside the ones for [Microsoft Whiteboard](/help/explorer/microsoft-whiteboard-import/) and [draw.io](/help/explorer/drawio-import/). Choose one or more `.excalidraw` files, or PNG or SVG images exported from Excalidraw with **Embed scene** on, or drop them onto the panel. Each file becomes **its own document** with one tab that opens in [Draw mode](/help/canvas/draw-mode/), named after the file. A file Excalidraw named for you, such as `Untitled-2026-04-12-1430`, becomes "Excalidraw board, 12 Apr 2026", dated when you saved it. From inside a folder, the new documents go into that folder. When the import finishes, it lists the new documents so you can open them, and any file it couldn't read, with the reason.
+To bring whole boards across without opening a canvas first, use the [Explorer page](/help/explorer/explorer-page/): next to **Help** at the top right, **Import from** has an **Excalidraw** button (hover it to see its name), beside the ones for [Microsoft Whiteboard](/help/explorer/microsoft-whiteboard-import/) and [draw.io](/help/explorer/drawio-import/). Choose one or more `.excalidraw` files, or PNG or SVG images exported from Excalidraw with **Embed scene** on, or drop them onto the panel. Each file becomes **its own canvas** with one tab that opens in [Draw mode](/help/canvas/draw-mode/), named after the file. A file Excalidraw named for you, such as `Untitled-2026-04-12-1430`, becomes "Excalidraw board, 12 Apr 2026", dated when you saved it. From inside a folder, the new canvases go into that folder. When the import finishes, it lists the new canvases so you can open them, and any file it couldn't read, with the reason.
 
 ## Images in an imported file
 
@@ -54,11 +54,11 @@ When an imported file carries images, they come across with it. Each one is resi
 
 While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the file always imports. Double-click a placeholder to add its image later.
 
-In a [document in This Browser](/help/privacy-and-security/offline-mode/), images are kept inside the document in this browser instead of your gallery, up to a limit for each import.
+In a [canvas in This Browser](/help/privacy-and-security/offline-mode/), images are kept inside the canvas in this browser instead of your gallery, up to a limit for each import.
 
 ## Importing from draw.io
 
-To bring many draw.io files across at once, each as its own document, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page.
+To bring many draw.io files across at once, each as its own canvas, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page.
 
 A draw.io file can hold several pages. **The first page replaces the active tab, and every further page becomes a new tab** right after it, named after its page, so a three-page file arrives as three tabs. One undo takes the whole import back, new tabs included, and links between pages become links between the tabs.
 

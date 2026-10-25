@@ -83,7 +83,7 @@ export function AccessControl() {
   return (
     <Scene w={420} h={210}>
       {/* The private document, with a lock */}
-      <Panel x={150} y={48} w={120} h={108} title="DOCUMENT">
+      <Panel x={150} y={48} w={120} h={108} title="CANVAS">
         <Shape x={166} y={88} w={40} h={26} kind="rect" />
         <Shape x={216} y={88} w={40} h={26} kind="circle" accent />
         <g transform="translate(210 124)">

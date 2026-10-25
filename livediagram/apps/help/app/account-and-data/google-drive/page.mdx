@@ -4,20 +4,20 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Google Drive',
   description:
-    'Sync your livediagram documents to Google Drive: each becomes a .livediagram file in matching folders, synced both ways and opened via Open with.',
+    'Sync your livediagram canvases to Google Drive: each becomes a .livediagram file in matching folders, synced both ways and opened via Open with.',
   path: '/help/account-and-data/google-drive/',
 });
 
 <ArticleLayout
   title="Google Drive"
-  description="Keep a copy of your documents in your own Google Drive, in folders that match yours, synced both ways."
+  description="Keep a copy of your canvases in your own Google Drive, in folders that match yours, synced both ways."
   categoryTitle="Account and Data"
   categorySlug="account-and-data"
 >
 
-When you are signed in, you can **sync My Work to your own Google Drive**. Every document becomes a `.livediagram` file in a **livediagram** folder, arranged in the same folders you use here, with a picture of the document as its thumbnail.
+When you are signed in, you can **sync My Work to your own Google Drive**. Every canvas becomes a `.livediagram` file in a **livediagram** folder, arranged in the same folders you use here, with a picture of the canvas as its thumbnail.
 
-The copy in Drive is a mirror. Your documents still live in livediagram, so sharing, realtime editing and history work exactly as before.
+The copy in Drive is a mirror. Your canvases still live in livediagram, so sharing, realtime editing and history work exactly as before.
 
 ## Connecting
 
@@ -25,40 +25,40 @@ Open **Settings**, then **Account**, and find **Google Drive** under **Cloud Syn
 
 **livediagram only sees files it created, or a file you open with it.** Google gives it no view of the rest of your Drive: not your other files, not folders you make in Drive, not copies you make there.
 
-The first time, livediagram copies every document into Drive, oldest first, into a folder called **livediagram**, with the progress in Cloud Sync. If you close the tab part way, it carries on next time. You may rename or move that folder in Drive; livediagram keeps using it. (On a self-hosted livediagram the folder is called **livediagram (self-hosted)**, so it never clashes with this one.)
+The first time, livediagram copies every canvas into Drive, oldest first, into a folder called **livediagram**, with the progress in Cloud Sync. If you close the tab part way, it carries on next time. You may rename or move that folder in Drive; livediagram keeps using it. (On a self-hosted livediagram the folder is called **livediagram (self-hosted)**, so it never clashes with this one.)
 
 ## Seeing how it is doing
 
-Open **Settings**, then **Account**, and find the **Cloud Sync** section. The Google Drive row says when it last synced (for example **Last synced 3 mins ago**), or that it is syncing or copying, and checks again as you open it. Under the row, it says which Drive folder your documents are synced to. When something needs you, the status turns amber and a second line says what happened, with the button to fix it where there is one: **Reconnect**, **Resume** or **Show folder**. In the Explorer, each document also carries a small mark saying whether it is synced or waiting to sync.
+Open **Settings**, then **Account**, and find the **Cloud Sync** section. The Google Drive row says when it last synced (for example **Last synced 3 mins ago**), or that it is syncing or copying, and checks again as you open it. Under the row, it says which Drive folder your canvases are synced to. When something needs you, the status turns amber and a second line says what happened, with the button to fix it where there is one: **Reconnect**, **Resume** or **Show folder**. In the Explorer, each canvas also carries a small mark saying whether it is synced or waiting to sync.
 
-To look at your documents in Google Drive, click the folder name under the row: the livediagram folder opens in Google Drive in a new tab.
+To look at your canvases in Google Drive, click the folder name under the row: the livediagram folder opens in Google Drive in a new tab.
 
 ## What stays in sync
 
-Syncing is automatic: there is nothing to press. It runs while a livediagram tab is open and in view, and catches up when you come back; nothing happens while nobody is looking. It checks for changes every 2 minutes while livediagram is open, and again when you return to the tab, and copies your edits a minute after you stop, at most once every 5 minutes per document, so a long editing session writes to Drive a few times rather than on every keystroke. Leaving the document or switching away from the tab copies your edits straight away.
+Syncing is automatic: there is nothing to press. It runs while a livediagram tab is open and in view, and catches up when you come back; nothing happens while nobody is looking. It checks for changes every 2 minutes while livediagram is open, and again when you return to the tab, and copies your edits a minute after you stop, at most once every 5 minutes per canvas, so a long editing session writes to Drive a few times rather than on every keystroke. Leaving the canvas or switching away from the tab copies your edits straight away.
 
-| Here in livediagram               | In Google Drive                         |
-| --------------------------------- | --------------------------------------- |
-| Create, edit or rename a document | The file is created, updated or renamed |
-| Move a document to another folder | The file moves                          |
-| Delete a document                 | The file moves to Drive's bin           |
-| Restore a document from the Trash | The file comes back from the bin        |
-| Delete a document for good        | The file is deleted                     |
-| Move a document into a team       | The file moves to Drive's bin           |
-| Create, rename or move a folder   | The Drive folder follows                |
-| Delete a folder                   | The Drive folder moves to the bin       |
+| Here in livediagram             | In Google Drive                         |
+| ------------------------------- | --------------------------------------- |
+| Create, edit or rename a canvas | The file is created, updated or renamed |
+| Move a canvas to another folder | The file moves                          |
+| Delete a canvas                 | The file moves to Drive's bin           |
+| Restore a canvas from the Trash | The file comes back from the bin        |
+| Delete a canvas for good        | The file is deleted                     |
+| Move a canvas into a team       | The file moves to Drive's bin           |
+| Create, rename or move a folder | The Drive folder follows                |
+| Delete a folder                 | The Drive folder moves to the bin       |
 
-It works the other way too: **rename** a file in Drive, **move** it to another folder in the livediagram tree, or **move it to the bin**, and the document follows here. Restoring it from Drive's bin restores the document, and emptying the bin deletes it for good from your [Trash](/help/account-and-data/trash/). Folders livediagram made follow the same way: rename or move one in Drive and it follows here, and moving one to the bin sends its documents to the Trash.
+It works the other way too: **rename** a file in Drive, **move** it to another folder in the livediagram tree, or **move it to the bin**, and the canvas follows here. Restoring it from Drive's bin restores the canvas, and emptying the bin deletes it for good from your [Trash](/help/account-and-data/trash/). Folders livediagram made follow the same way: rename or move one in Drive and it follows here, and moving one to the bin sends its canvases to the Trash.
 
 Edits to a file's contents made outside livediagram are not taken in: livediagram writes its copy again the next time it syncs.
 
 ## Copies made in Drive
 
-**Copies you make in Drive are not picked up automatically.** A **Make a copy** in Drive is a file livediagram did not create, so Google keeps it hidden from livediagram. To bring one in, right-click it and choose **Open with**, then **livediagram**: you are offered **Import as new document**, and your original stays as it is. Or use **Duplicate** inside livediagram.
+**Copies you make in Drive are not picked up automatically.** A **Make a copy** in Drive is a file livediagram did not create, so Google keeps it hidden from livediagram. To bring one in, right-click it and choose **Open with**, then **livediagram**: you are offered **Import as new canvas**, and your original stays as it is. Or use **Duplicate** inside livediagram.
 
 ## Folders livediagram cannot see
 
-A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a document's file into such a folder, the document moves to the root of **My Work** here and Cloud Sync says so. Choose **Show folder** (where the deployment offers it), pick the folder, and livediagram makes a matching folder and moves the document into it. From then on that folder syncs both ways.
+A folder you make in Google Drive itself is invisible to livediagram until you show it one. If you move a canvas's file into such a folder, the canvas moves to the root of **My Work** here and Cloud Sync says so. Choose **Show folder** (where the deployment offers it), pick the folder, and livediagram makes a matching folder and moves the canvas into it. From then on that folder syncs both ways.
 
 Folders you create in livediagram always appear in Drive, so building your tree here needs no extra step.
 
@@ -68,17 +68,17 @@ Folders you create in livediagram always appear in Drive, so building your tree 
 - **Google Drive needs reconnecting.** Google stopped accepting livediagram's access: you removed it from your Google account, changed your password, or Google expired it. Syncing pauses and **nothing is deleted**, here or in Drive. Choose **Reconnect** (in Cloud Sync, or on the banner that appears in the corner) and sync carries on where it stopped.
 - **Syncing paused in this browser.** Some setups keep Drive access only for a while in the browser. Choose **Resume** to carry on.
 
-## Opening a document from Drive
+## Opening a canvas from Drive
 
-Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own document opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new document of your own from it. A copy you made in Drive of one of your own documents offers **Import as new document** instead: a new document from the copy's contents, which that copy then keeps in sync.
+Right-click a `.livediagram` file in Google Drive and choose **Open with**, then **livediagram**. Your own canvas opens straight away. If someone shared the file with you in Drive, or it came from another livediagram, you are offered **Import a copy**, which makes a new canvas of your own from it. A copy you made in Drive of one of your own canvases offers **Import as new canvas** instead: a new canvas from the copy's contents, which that copy then keeps in sync.
 
 ## Disconnecting
 
 Choose **Disconnect** in the Cloud Sync section of Settings, Account. livediagram stops updating Drive and forgets its access; **your files stay in Drive**. Connect again later and livediagram picks up the same folder rather than making a second one. You can also remove livediagram from your Google account's settings: Cloud Sync then offers **Reconnect**, and nothing is deleted.
 
 <Tip>
-  Cloud Sync covers My Work. Team libraries, documents shared with you and documents kept only in
-  this browser are not synced.
+  Cloud Sync covers My Work. Team libraries, canvases shared with you and canvases kept only in this
+  browser are not synced.
 </Tip>
 
 </ArticleLayout>

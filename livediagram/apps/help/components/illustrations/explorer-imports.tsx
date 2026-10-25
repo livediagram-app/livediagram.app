@@ -254,13 +254,13 @@ export function GalleryCards() {
     {
       name: 'logo.png',
       size: '640 × 320 · 48 KB',
-      used: 'Used in 2 documents',
+      used: 'Used in 2 canvases',
       hue: 'fill-brand-200',
     },
     {
       name: 'team-photo.jpg',
       size: '1600 × 900 · 1.1 MB',
-      used: 'Used in 1 document',
+      used: 'Used in 1 canvas',
       hue: 'fill-emerald-200',
     },
     { name: 'old-sketch.png', size: '800 × 600 · 210 KB', used: 'Not used', hue: 'fill-amber-200' },

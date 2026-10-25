@@ -9,7 +9,7 @@ const NEW_URL = '/help/explorer/personal-space/';
 
 export const metadata: Metadata = {
   title: 'My Work and Folders',
-  description: 'Unsorted is gone: documents with no folder sit at the root of My Work.',
+  description: 'Unsorted is gone: canvases with no folder sit at the root of My Work.',
   robots: { index: false, follow: true },
   alternates: { canonical: NEW_URL },
 };

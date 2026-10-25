@@ -9,11 +9,11 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-documents/images-and-copies/',
 });
 
-<ArticleLayout title="Images, Copies and Libraries" description="Worked examples for the rest of a document: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-copies")}>
+<ArticleLayout title="Images, Copies and Libraries" description="Worked examples for the rest of a canvas: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Canvases", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-canvases").filter((a) => a.slug !== "images-and-copies")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the images it shows, pictures of its tabs, copies of it. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livediagram.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a canvas holds more than elements: the images it shows, pictures of its tabs, copies of it. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a canvas id in `$DOC`; paths are relative to `https://livediagram.app/api`, and `/api/openapi.json` has every field.
 
-Every write here reaches anyone with the document open straight away, credited to you.
+Every write here reaches anyone with the canvas open straight away, credited to you.
 
 ## Images
 
@@ -51,7 +51,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
   -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
 ```
 
-`GET /images` lists your uploads, `GET /images/usage` maps each to the documents that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
+`GET /images` lists your uploads, `GET /images/usage` maps each to the canvases that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
 
 ## A Tab as a Picture
 
@@ -62,7 +62,7 @@ curl https://livediagram.app/api/documents/$DOC/tabs/$TAB/render.svg \
 
 The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, as `image/svg+xml`, with images inlined when the host stores them. It is never cached, so it always shows the tab now. For an image to embed somewhere public, use a [live image](/help/collaboration/sharing/live-image/) instead.
 
-## Copy a Document
+## Copy a Canvas
 
 ```bash
 curl -X POST https://livediagram.app/api/documents/$DOC/copy \
@@ -74,7 +74,7 @@ Makes a copy in your own files and answers `201` with the new `document`. Leave 
 
 ## Shape Libraries
 
-Your [shape libraries](/help/explorer/shape-libraries/) belong to you, not to a document.
+Your [shape libraries](/help/explorer/shape-libraries/) belong to you, not to a canvas.
 
 ```bash
 # A shape library: each item is a reusable shape, its elements placed from its top-left corner
@@ -85,6 +85,6 @@ curl -X POST https://livediagram.app/api/shape-libraries \
           "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
 ```
 
-A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their documents). `GET /shape-libraries` lists yours.
+A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their canvases). `GET /shape-libraries` lists yours.
 
 </ArticleLayout>

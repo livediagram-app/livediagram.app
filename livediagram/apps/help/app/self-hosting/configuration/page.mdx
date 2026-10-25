@@ -33,7 +33,7 @@ Each app that needs configuration ships an example file documenting which variab
 Every livediagram build offers sign-in. What you configure is the API's link to a liveworkspace accounts Worker, which signs people in and also gives every guest their identity, a guest token kept in their browser.
 
 1. **With an accounts Worker**, the normal setup: the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
-2. **No accounts Worker at all**: nobody gets a guest identity, so nothing can be kept on the server and signing in fails. Only documents in This Browser work. It exists for trying the editor out, not for production.
+2. **No accounts Worker at all**: nobody gets a guest identity, so nothing can be kept on the server and signing in fails. Only canvases in This Browser work. It exists for trying the editor out, not for production.
 
 Signing in unlocks the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email, the Google Drive mirror and the MCP server.
 

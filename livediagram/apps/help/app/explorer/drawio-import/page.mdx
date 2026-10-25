@@ -5,18 +5,18 @@ import { DrawioImportList } from '@/components/illustrations/explorer-imports';
 export const metadata = helpMetadata({
   title: 'Importing draw.io files',
   description:
-    'Import draw.io (diagrams.net) files from the Explorer: pick files or a folder, Google Drive saves and JSON exports too, each a document, a tab per page.',
+    'Import draw.io (diagrams.net) files from the Explorer: pick files or a folder, Google Drive saves and JSON exports too, each a canvas, a tab per page.',
   path: '/help/explorer/drawio-import/',
 });
 
 <ArticleLayout
   title="Importing draw.io files"
-  description="Bring draw.io diagrams across as documents, a tab per page."
+  description="Bring draw.io diagrams across as canvases, a tab per page."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Import from draw.io** brings diagrams made in [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins) across as livediagram documents. Pick as many files as you like, or a whole folder: each diagram becomes **its own document**, and each of its pages becomes a [diagram tab](/help/tabs/import-tabs/#importing-from-draw-io) in that document.
+**Import from draw.io** brings diagrams made in [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins) across as livediagram canvases. Pick as many files as you like, or a whole folder: each diagram becomes **its own canvas**, and each of its pages becomes a [diagram tab](/help/tabs/import-tabs/#importing-from-draw-io) in that canvas.
 
 To import one diagram into the tab you are working on instead, use [Import in the tab menu](/help/tabs/import-tabs/#importing-from-draw-io). Everything is read in your browser: no draw.io account is needed, and nothing is sent to draw.io.
 
@@ -39,7 +39,7 @@ On the [Explorer page](/help/explorer/explorer-page/), **Import from** at the to
 
 The group shows wherever **New Canvas** files a canvas in your own space (My Work and its folders, Recent, Favourites and search results), on Home the first time you visit, and on Shape Libraries, where only draw.io (which brings libraries) is offered. A team's library has none. A button opens the import page for that tool; from inside a folder, the new canvases go into that folder, and elsewhere they land at the root of My Work. You come back to where you were when the import is done.
 
-In the **Import from draw.io** dialog, press **Choose files** or **Choose a folder**, or drop files or a folder onto the panel. A single diagram with nothing left out imports straight away. Otherwise the panel lists what it found, each under the name its document will get, with the date it was last edited and how many pages it has (a library shows how many shapes it holds). Every row starts ticked; untick the ones you don't want, or use **Select all**, then press the import button, which counts what you chose (for example **Import 2 files**). **Back** returns you to the picker.
+In the **Import from draw.io** dialog, press **Choose files** or **Choose a folder**, or drop files or a folder onto the panel. A single diagram with nothing left out imports straight away. Otherwise the panel lists what it found, each under the name its canvas will get, with the date it was last edited and how many pages it has (a library shows how many shapes it holds). Every row starts ticked; untick the ones you don't want, or use **Select all**, then press the import button, which counts what you chose (for example **Import 2 files**). **Back** returns you to the picker.
 
 <Figure caption="Every diagram and library starts ticked; the button counts what will be imported.">
   <DrawioImportList />
@@ -47,14 +47,14 @@ In the **Import from draw.io** dialog, press **Choose files** or **Choose a fold
 
 ## Names and dates
 
-- A document is **named after its file**. When the file has draw.io's default name (such as "Untitled Diagram"), it takes the name saved inside the file, else its first page's name (unless it is draw.io's default, such as "Page-1"), else "draw.io diagram" with the date.
-- A document is **dated as the diagram**: draw.io records when a file was last saved, and the document shows that date (falling back to the file's own date), so your library keeps its history.
+- A canvas is **named after its file**. When the file has draw.io's default name (such as "Untitled Diagram"), it takes the name saved inside the file, else its first page's name (unless it is draw.io's default, such as "Page-1"), else "draw.io diagram" with the date.
+- A canvas is **dated as the diagram**: draw.io records when a file was last saved, and the canvas shows that date (falling back to the file's own date), so your library keeps its history.
 
 ## What comes across
 
 Shapes, text, connections, containers, swimlanes, tables, layers, colours and pictures come across as they do in the [tab import](/help/tabs/import-tabs/#importing-from-draw-io). Pictures embedded in the diagram are saved to your [image gallery](/help/explorer/image-gallery/); pictures linked from the web, or from draw.io's own icon sets, are never fetched and come in as placeholders.
 
-When the import finishes, it lists the new documents (and any new shape libraries) so you can open them, says what changed on the way (for example shapes that came in as the nearest livediagram shape) and names any files it left out, with the reason. Nothing in your other documents changes.
+When the import finishes, it lists the new canvases (and any new shape libraries) so you can open them, says what changed on the way (for example shapes that came in as the nearest livediagram shape) and names any files it left out, with the reason. Nothing in your other canvases changes.
 
 ## Limits
 
@@ -62,11 +62,11 @@ When the import finishes, it lists the new documents (and any new shape librarie
 - A file with more than **100 pages** imports its first 100, and the report counts the rest.
 - A page with more than **10,000 elements** imports its first 10,000.
 - A JSON export without positions lays out at most **500 shapes** and **1,000 connections** per page; the rest are counted in the report.
-- Each page must fit in one tab (just under 2 MB of stored data). A page too large to store is left out of its document and named in the report; the file's other pages still arrive.
+- Each page must fit in one tab (just under 2 MB of stored data). A page too large to store is left out of its canvas and named in the report; the file's other pages still arrive.
 
 <Tip>
   Moving a whole draw.io folder across? Use **Choose a folder** and pick the top folder: every
-  diagram inside becomes its own document and every library its own shape library, in one go.
+  diagram inside becomes its own canvas and every library its own shape library, in one go.
 </Tip>
 
 </ArticleLayout>

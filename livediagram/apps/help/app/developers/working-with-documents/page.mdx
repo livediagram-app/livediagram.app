@@ -3,18 +3,18 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Working with Documents',
+  title: 'Working with Canvases',
   description:
-    'Worked livediagram API examples: list, read, create, and update documents, tabs, and folders, and create a share link, all with curl.',
+    'Worked livediagram API examples: list, read, create, and update canvases, tabs, and folders, and create a share link, all with curl.',
   path: '/help/developers/working-with-documents/',
 });
 
 <ArticleLayout
-  title="Working with Documents"
+  title="Working with Canvases"
   description="Copy-pasteable examples for the calls you will reach for most."
   categoryTitle="Developers"
   categorySlug="developers"
-  subArticles={getSubArticles("working-with-documents")}
+  subArticles={getSubArticles("working-with-canvases")}
 >
 
 These examples use `curl` against the hosted service. Each request carries your [API token](/help/developers/authentication/); the examples assume you have put it in a shell variable:
@@ -27,13 +27,13 @@ Paths are relative to `https://livediagram.app/api`. For the exact request and r
 
 {/* legacy-names */}
 
-**Old paths.** These routes were called `/api/diagrams…` until documents got their name. Scripts that still call the old paths keep working until **30 April 2027**, with a `Deprecation` header on every answer; move them to `/api/documents…` before then.
+**Old paths.** These routes were called `/api/diagrams…` until canvases got their name. Scripts that still call the old paths keep working until **30 April 2027**, with a `Deprecation` header on every answer; move them to `/api/documents…` before then.
 
 {/* /legacy-names */}
 
-## List your documents
+## List your canvases
 
-A document **list** returns the documents in your personal library (documents in a team library are not included), as metadata only, not the tab contents:
+A canvas **list** returns the canvases in your personal library (canvases in a team library are not included), as metadata only, not the tab contents:
 
 ```bash
 curl https://livediagram.app/api/documents \
@@ -46,16 +46,16 @@ curl https://livediagram.app/api/documents \
 }
 ```
 
-## Read a document and a tab
+## Read a canvas and a tab
 
-Fetching one document returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
+Fetching one canvas returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
 
 ```bash
 curl https://livediagram.app/api/documents/abc123 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-To get the actual contents of a tab, request it by id. This keeps listing a big document cheap:
+To get the actual contents of a tab, request it by id. This keeps listing a big canvas cheap:
 
 ```bash
 curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
@@ -107,11 +107,11 @@ W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=a
 
 Every changeset's last line carries the same verdict, such as `lint clean` or `lint 1 warning`, beside the new revision and the revert command. A changeset that changes nothing answers `nothing changed`.
 
-Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
+Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a canvas at a glance, ask the canvas itself: `GET /documents/abc123?view=overview`.
 
-## Create a document
+## Create a canvas
 
-`POST /documents` creates a document. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livediagram, not just your account, so use a fresh UUID for the document, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
+`POST /documents` creates a canvas. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livediagram, not just your account, so use a fresh UUID for the canvas, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
 
 ```bash
 DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
@@ -139,7 +139,7 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 
 ## Update a tab
 
-Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the document open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept.
+Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the canvas open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept.
 
 ```bash
 curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
@@ -176,7 +176,7 @@ Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or pic
 + arrow  n2→db
 ```
 
-To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elements` (or a `graph`, `mermaid` text or a `template`). A replace on a tab id the document doesn't have yet creates that tab.
+To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elements` (or a `graph`, `mermaid` text or a `template`). A replace on a tab id the canvas doesn't have yet creates that tab.
 
 <Note>
   Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is
@@ -193,7 +193,7 @@ Images, tab pictures and copies have endpoints of their own: see [Images, Copies
 
 ## Organise into folders
 
-Create a folder (add `"parentId"` to make it inside another, or `"teamId"` for a team's), then create a document straight into it by naming its id as `folderId`. Renaming and moving folders, and moving a document you already have, happens in the Explorer.
+Create a folder (add `"parentId"` to make it inside another, or `"teamId"` for a team's), then create a canvas straight into it by naming its id as `folderId`. Renaming and moving folders, and moving a canvas you already have, happens in the Explorer.
 
 ```bash
 curl -X POST https://livediagram.app/api/folders \
@@ -209,7 +209,7 @@ curl -X POST https://livediagram.app/api/documents \
 
 ## Delete and restore
 
-`DELETE /documents/$DOC` moves the document to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
+`DELETE /documents/$DOC` moves the canvas to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
 
 ```bash
 curl -X DELETE https://livediagram.app/api/documents/$DOC \
@@ -223,9 +223,9 @@ curl -X POST https://livediagram.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/$DOC` deletes one trashed document for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed canvas for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
 
-## Share a document
+## Share a canvas
 
 Create a share link with a role of `view`, `participate` or `edit`:
 

@@ -198,7 +198,7 @@ export function LinkElementDialogScene() {
         <Tabs
           x={112}
           y={98}
-          items={['External URL', 'Tab', 'Document']}
+          items={['External URL', 'Tab', 'Canvas']}
           active={0}
           tabW={90}
           h={24}

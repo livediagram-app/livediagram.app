@@ -134,7 +134,7 @@ export function CliConsent() {
       title="Connect livediagram CLI"
       intro={[
         'livediagram CLI wants to access your livediagram',
-        'documents on your behalf. Approving creates an API token.',
+        'canvases on your behalf. Approving creates an API token.',
       ]}
       sentTo="127.0.0.1:53124"
     />

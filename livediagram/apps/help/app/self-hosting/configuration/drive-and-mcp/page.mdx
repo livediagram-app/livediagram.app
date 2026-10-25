@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Google Drive and MCP on a Self-Hosted Instance" description="Turn on the Google Drive mirror and the MCP server for AI tools on your own deployment." categoryTitle="Self-Hosting" categorySlug="self-hosting" parentArticle={{ title: "Configuration and Optional Auth", slug: "configuration" }} subArticles={getSubArticles("configuration").filter((a) => a.slug !== "drive-and-mcp")}>
 
-Two optional features need more than one variable to switch on: the [Google Drive mirror](/help/account-and-data/google-drive/), which copies people's documents into their own Drive, and the [MCP server](/help/account-and-data/connect-ai-mcp/), which lets AI tools such as Claude work on their documents. Both are off until you set them up, both need [sign-in](/help/self-hosting/configuration/) to be configured, and leaving either off changes nothing else about the editor.
+Two optional features need more than one variable to switch on: the [Google Drive mirror](/help/account-and-data/google-drive/), which copies people's canvases into their own Drive, and the [MCP server](/help/account-and-data/connect-ai-mcp/), which lets AI tools such as Claude work on their canvases. Both are off until you set them up, both need [sign-in](/help/self-hosting/configuration/) to be configured, and leaving either off changes nothing else about the editor.
 
 ## Google Drive
 
@@ -107,8 +107,8 @@ The `wrangler.toml` values and Worker secrets are read at runtime, so they do no
 
 <Tip>
   The repository's `docs/operations/self-hosting.md`, and the `.env.example` file in `apps/api`,
-  `apps/editor` and `apps/mcp`, list every variable these features read, for local development as well
-  as production.
+  `apps/editor` and `apps/mcp`, list every variable these features read, for local development as
+  well as production.
 </Tip>
 
 </ArticleLayout>

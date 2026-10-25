@@ -431,8 +431,8 @@ export function TeamMembers() {
  *  the folders and documents of the level you are in. */
 export function TeamSharedTree() {
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: '4 documents' },
-    { label: 'Onboarding', folder: true, meta: '2 documents' },
+    { label: 'Architecture', folder: true, meta: '4 canvases' },
+    { label: 'Onboarding', folder: true, meta: '2 canvases' },
     { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
     { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
   ];
@@ -442,7 +442,7 @@ export function TeamSharedTree() {
         <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
         <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
         <Label x={66} y={34} size={9.5} weight={700} tone="muted">
-          TEAM DOCUMENTS
+          TEAM CANVASES
         </Label>
         {/* View toggle: list and grid. */}
         <rect

@@ -8,7 +8,7 @@ const COPY = {
   title: 'Privacy and Security',
   description:
     'How your data is handled, what livediagram collects, and how share links are protected.',
-  lede: 'How your data is handled and how to keep your documents safe.',
+  lede: 'How your data is handled and how to keep your canvases safe.',
 };
 
 export const metadata = supportCategoryMetadata(site, 'privacy-and-security', COPY);

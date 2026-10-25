@@ -34,7 +34,7 @@ curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same access to your documents, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a document's share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
+Every request authenticated this way acts as your account, with the same access to your canvases, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a canvas's share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
 
 ## Check or retire the token you are using
 
@@ -56,7 +56,7 @@ The editor itself does not use an API token. When you are not signed in, the app
 ## Keep tokens safe
 
 <Note>
-  A token has your account's full read and write access to your documents. Treat it like a password:
+  A token has your account's full read and write access to your canvases. Treat it like a password:
   keep it out of source control and shared logs, and never put it in client-side code that ships to
   a browser. If a token might have leaked, revoke it on liveworkspace.app and create a replacement.
 </Note>

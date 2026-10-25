@@ -5,30 +5,30 @@ import { DocumentStorage, AccessControl } from '@/components/illustrations/priva
 export const metadata = helpMetadata({
   title: 'Data Privacy',
   description:
-    'Where your livediagram documents live, what is stored, and the control you have over your own data.',
+    'Where your livediagram canvases live, what is stored, and the control you have over your own data.',
   path: '/help/privacy-and-security/data-privacy/',
 });
 
-<ArticleLayout title="Data Privacy" description="Where your documents live, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Data Privacy" description="Where your canvases live, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Your documents are the whole point, so it helps to know exactly where they live and who can reach them. livediagram stores documents on Cloudflare infrastructure behind an authenticated API, never in a third-party analytics product, and you keep control of them whether you sign in or stay a guest. This page explains how it works; the [Privacy Policy](https://liveworkspace.app/privacy), which covers every liveworkspace app, is the formal statement for the hosted service.
+Your canvases are the whole point, so it helps to know exactly where they live and who can reach them. livediagram stores canvases on Cloudflare infrastructure behind an authenticated API, never in a third-party analytics product, and you keep control of them whether you sign in or stay a guest. This page explains how it works; the [Privacy Policy](https://liveworkspace.app/privacy), which covers every liveworkspace app, is the formal statement for the hosted service.
 
-## Where your documents live
+## Where your canvases live
 
-Documents are saved through a single Cloudflare Worker API. The browser never talks to storage directly.
+Canvases are saved through a single Cloudflare Worker API. The browser never talks to storage directly.
 
-- **Durable storage** is one Cloudflare Durable Object per document, reached only through the API: the document's tabs, comments and the images it places are stored there. Where it is filed, its folders, share links and its Timeline events are kept by liveworkspace's index, the shared library behind every liveworkspace app.
-- **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the document's room. It also keeps a working record of collaborative input (answers, ideas, ticks, votes, comments and live polls) in its own storage, so that saves made at the same moment can be merged.
-- **Images** you add are kept by liveworkspace's media service, and a cached picture of each document, used for its thumbnail and live image, in Cloudflare R2 object storage; both are served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
+- **Durable storage** is one Cloudflare Durable Object per canvas, reached only through the API: the canvas's tabs, comments and the images it places are stored there. Where it is filed, its folders, share links and its Timeline events are kept by liveworkspace's index, the shared library behind every liveworkspace app.
+- **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the canvas's room. It also keeps a working record of collaborative input (answers, ideas, ticks, votes, comments and live polls) in its own storage, so that saves made at the same moment can be merged.
+- **Images** you add are kept by liveworkspace's media service, and a cached picture of each canvas, used for its thumbnail and live image, in Cloudflare R2 object storage; both are served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
 
-**Or nowhere but your own machine.** A document created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Canvas** to move it to the cloud.
+**Or nowhere but your own machine.** A canvas created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Canvas** to move it to the cloud.
 
-The hosted version runs on Cloudflare, and a self-hoster runs the same stack on their own account. Your document content goes to another company only when you use a feature that needs one:
+The hosted version runs on Cloudflare, and a self-hoster runs the same stack on their own account. Your canvas content goes to another company only when you use a feature that needs one:
 
 - **Reading sticky notes from a photo** sends small crops of the notes, never the whole photo, to the reading model the deployment uses (Google's Gemini on livediagram.app). On a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you import a photo.
-- **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your documents in your own Drive, written straight from your browser.
+- **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your canvases in your own Drive, written straight from your browser.
 - **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no livediagram server sees it.
-- **Emails** about your work go through the email provider. They name the document, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
+- **Emails** about your work go through the email provider. They name the canvas, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
   <DocumentStorage />
@@ -36,22 +36,22 @@ The hosted version runs on Cloudflare, and a self-hoster runs the same stack on 
 
 ## What is stored, and who can read it
 
-A document is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the document is in can read a document. A document you [share to the Community](/help/collaboration/sharing/community/) is public until you remove it. Opening a document you cannot access returns a plain "not found", so its contents and name are never revealed.
+A canvas is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the canvas is in can read a canvas. A canvas you [share to the Community](/help/collaboration/sharing/community/) is public until you remove it. Opening a canvas you cannot access returns a plain "not found", so its contents and name are never revealed.
 
-<Figure caption="A document is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+<Figure caption="A canvas is tied to its owner, so a request from anyone without access comes back as a plain not found.">
   <AccessControl />
 </Figure>
 
 ## Staying in control
 
-- **Guest by default.** You can build and share documents without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
-- **Keep it in the browser.** [Offline Mode](/help/privacy-and-security/offline-mode/) keeps a document off the server entirely.
-- **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) to a document or an expiry to a share link, and revoke links at any time.
-- **Delete what you own.** Deleting a document moves it to the [Trash](/help/account-and-data/trash/) for 30 days, then removes it with its tabs, comments and share links; you can delete it permanently from the Trash sooner. Signed-in users can [delete their whole account](/help/account-and-data/deleting-your-data/#deleting-your-account), which removes their personal documents, folders, images, tokens and preferences straight away (documents in a team library stay with the team).
+- **Guest by default.** You can build and share canvases without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
+- **Keep it in the browser.** [Offline Mode](/help/privacy-and-security/offline-mode/) keeps a canvas off the server entirely.
+- **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) to a canvas or an expiry to a share link, and revoke links at any time.
+- **Delete what you own.** Deleting a canvas moves it to the [Trash](/help/account-and-data/trash/) for 30 days, then removes it with its tabs, comments and share links; you can delete it permanently from the Trash sooner. Signed-in users can [delete their whole account](/help/account-and-data/deleting-your-data/#deleting-your-account), which removes their personal canvases, folders, images, tokens and preferences straight away (canvases in a team library stay with the team).
 - **Opt out of analytics.** The anonymous usage events have a switch in Settings. See [What We Collect](/help/privacy-and-security/what-we-collect/).
 
 <Note>
-  livediagram does not claim end-to-end encryption. Document content is protected by authentication
+  livediagram does not claim end-to-end encryption. Canvas content is protected by authentication
   and access controls, not by client-side encryption. Found a way around them? Please [report it
   privately](/help/policies/report-a-vulnerability/).
 </Note>

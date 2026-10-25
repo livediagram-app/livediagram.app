@@ -17,7 +17,7 @@ export function NewDocumentWelcome() {
         y={10}
         w={360}
         h={252}
-        title="New Document"
+        title="New Canvas"
         sceneW={420}
         sceneH={270}
         scrim={false}
@@ -93,7 +93,14 @@ export function NewDocumentWelcome() {
                 className="fill-white stroke-slate-300"
                 strokeWidth={1}
               />
-              <Label x={x + w - 14.5} y={y + 116} anchor="middle" size={8} weight={500} tone="muted">
+              <Label
+                x={x + w - 14.5}
+                y={y + 116}
+                anchor="middle"
+                size={8}
+                weight={500}
+                tone="muted"
+              >
                 {String(i + 1)}
               </Label>
             </g>
@@ -103,7 +110,7 @@ export function NewDocumentWelcome() {
             away; Create makes the chosen mode's document. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
         <Label x={42} y={243} size={9.5} weight={600} tone="accent">
-          Open Existing Document
+          Open Existing Canvas
         </Label>
         <Button x={250} y={231} w={56} h={22} label="Skip" />
         <Button x={314} y={231} w={64} h={22} label="Create" variant="primary" />
