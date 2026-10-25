@@ -19,3 +19,6 @@ playwright-report/
 # `next dev` drops these into each app it runs; agent guidance lives in the root AGENTS.md.
 apps/*/AGENTS.md
 apps/*/CLAUDE.md
+
+# Work plans (livediagram/AGENTS.md "Plans"), kept out of the repo.
+/plans/
