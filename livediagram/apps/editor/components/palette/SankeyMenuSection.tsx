@@ -35,7 +35,7 @@ import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { OptionRows } from '@/components/primitives/OptionRows';
+import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';

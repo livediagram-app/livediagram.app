@@ -6,7 +6,7 @@ import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livediagra
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
-import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
+import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';

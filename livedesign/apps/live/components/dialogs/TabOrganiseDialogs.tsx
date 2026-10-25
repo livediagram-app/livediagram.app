@@ -15,7 +15,7 @@ import {
   FolderPlaceIcon,
   NewFolderTile,
   PlacementCard,
-} from '@/components/placement/PlacementCard';
+} from '@liveworkspace/workbench/components/placement/PlacementCard';
 import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import {
   CompactEmptyState,

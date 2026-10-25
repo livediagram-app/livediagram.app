@@ -18,7 +18,7 @@ import { SlotCog } from './SlotCog';
 import { DashboardSlotContent } from './DashboardSlotContent';
 import { SlotFillPicker } from './SlotFillPicker';
 import { SheetChartSource } from './SheetChartSource';
-import { DashedAddButton } from '@/components/primitives/DashedAddButton';
+import { DashedAddButton } from '@liveworkspace/workbench/components/primitives/DashedAddButton';
 import { useSlotEnter } from './useSlotEnter';
 import { isCondensed } from './condense';
 import { isDashboardStyledType } from '@liveplanner/project';

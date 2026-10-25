@@ -33,7 +33,7 @@ import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
-import { PlayIcon } from '@/components/primitives/PlayIcon';
+import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';

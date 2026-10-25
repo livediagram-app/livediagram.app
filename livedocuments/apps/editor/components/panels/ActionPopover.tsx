@@ -2,7 +2,7 @@
 
 // The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
-import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
+import { ActionMenuIcon as ClipboardIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   CloseIcon,
   TrashIcon,

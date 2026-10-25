@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { Button, Glyph } from '@livedesign/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
-import { Spinner } from '@/components/palette/template-picker-icons';
+import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The offer to move a design in This Browser onto livedesign (docs/specs/006-design/offline-mode.md "Sharing a
 // design in This Browser"), drawn inside a dialog: the design Share dialog's gate and Share Form's. It says

@@ -52,7 +52,7 @@ import {
   MenuAccordionSection,
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile } from '@/components/primitives/MenuTiles';
+import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
@@ -60,7 +60,7 @@ import { presetPxFor } from './TextSizeControl';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { hasStylePresets, TargetPresetsSection } from '@/components/palette/PresetSections';
 import {

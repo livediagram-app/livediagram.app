@@ -49,7 +49,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
   paint a control's chosen state: the ARIA-state Highlight rule and the switch rule.
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/editor/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
-  `apps/editor/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
+  `../packages/workbench/src/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
 - `apps/editor/components/chrome/SignInBanner.tsx`: a solid background under the gradient.
 
 ## Testing

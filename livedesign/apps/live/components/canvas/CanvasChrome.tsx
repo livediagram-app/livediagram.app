@@ -21,7 +21,7 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
-import { ContentsClusterSegment } from './ContentsClusterSegment';
+import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PhotoClusterSegment } from './PhotoClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';

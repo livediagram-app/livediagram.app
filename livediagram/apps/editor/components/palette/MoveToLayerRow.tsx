@@ -1,7 +1,7 @@
 import { trustedHtml } from '@livediagram/ui';
 import type { Element, Layer } from '@livediagram/document';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 
 // The context menu's "move selection to layer" control (docs/specs/006-document/layers.md), shared

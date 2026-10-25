@@ -11,7 +11,7 @@ import { lucideSparkles } from '@liveworkspace/icons/lucide';
 import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/design';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedesign/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedesign/ui';
-import { DashedAddButton } from '@/components/primitives/DashedAddButton';
+import { DashedAddButton } from '@liveworkspace/workbench/components/primitives/DashedAddButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { layoutCardSize } from './page-layout-card';
 

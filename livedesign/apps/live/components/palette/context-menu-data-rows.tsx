@@ -38,7 +38,7 @@ import {
   ProgressAnimPreview,
   RatingAnimPreview,
 } from '@/components/palette/animation-previews-existing';
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
 import { Glyph, lucideGlyph, Prims } from '@livedesign/ui';
 import { lucideChartColumn, lucideChartPie, lucideStar } from '@liveworkspace/icons/lucide';

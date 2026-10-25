@@ -4,7 +4,7 @@ import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import type { MigrationApp } from '@liveworkspace/migration';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { Spinner } from '@/components/palette/template-picker-icons';
+import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 import type { RetiredPartsPhase } from '@/hooks/persistence/useRetiredPartsMove';
 
 // The dialog that moves the parts set aside from documents in This Browser

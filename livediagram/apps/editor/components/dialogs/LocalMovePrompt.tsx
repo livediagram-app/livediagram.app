@@ -5,7 +5,7 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { Spinner } from '@/components/palette/template-picker-icons';
+import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useLocalMovePrompt } from '@/hooks/persistence/useLocalMovePrompt';
 

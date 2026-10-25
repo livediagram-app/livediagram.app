@@ -35,7 +35,10 @@ import {
   type LegendItem,
   type PieSlice,
 } from '@livedocuments/document';
-import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import {
+  ProgressMenuGlyph,
+  ToolsMenuGlyph,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';

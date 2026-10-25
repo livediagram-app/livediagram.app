@@ -8,7 +8,7 @@ import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDesign, ImageUploadError, type PickedImage } from '@/lib/upload-image';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
-import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
+import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/GalleryEmpty';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';

@@ -12,7 +12,7 @@ import {
   EllipsisIcon,
   SendToBackIcon,
   TextIcon,
-} from '@/components/canvas/selection-popover-icons';
+} from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
 import {

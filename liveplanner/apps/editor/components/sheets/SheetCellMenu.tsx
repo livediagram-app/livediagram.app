@@ -22,7 +22,10 @@ import {
   MenuGroupSeparator,
   MenuHeader,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
+import {
+  MenuToolButton,
+  MenuToolbar,
+} from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { useSheetController } from './sheet-controller';

@@ -15,7 +15,7 @@ import {
 import { reloadWhenSaved } from '@liveworkspace/workbench/lib/reload-when-saved';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { TOAST_SURFACE } from '@/components/toast/ToastCard';
+import { TOAST_SURFACE } from '@liveworkspace/workbench/components/toast/ToastCard';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
 
 type Phase = 'offered' | 'saving' | 'unsaved';

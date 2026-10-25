@@ -181,7 +181,7 @@ is.
 - `apps/live/app/new/useNewDesignLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/live/components/start/StartSaveSwitch.tsx`: the start screen's Sync Design to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
 - `apps/live/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/live/components/placement/PlacementCard.tsx`: the selectable destination card and the inline New Folder
+- `../packages/workbench/src/components/placement/PlacementCard.tsx`: the selectable destination card and the inline New Folder
   card a placement level is built from. The Move dialog's browser is the shared Explorer's `PlacementBrowser`
   (`@liveworkspace/explorer`).
 

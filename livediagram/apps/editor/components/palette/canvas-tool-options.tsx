@@ -10,7 +10,7 @@ import {
   SpotlightIcon,
   ZenIcon,
 } from '@/components/palette/palette-icons';
-import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
+import type { PaletteDropdownOption } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 
 // The modes only a Selection Mode button on the board hands out (docs/specs/008-canvas/avatar-mode.md "Where it
 // lives"): the dropdown lists one only while you are in it, so the picker names the mode you are in and any other

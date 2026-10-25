@@ -257,7 +257,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |
-| Locked element menu focus and Escape                                                       | `apps/editor/components/canvas/LockedElementMenu.test.tsx`                                                |
+| Locked element menu focus and Escape                                                       | `../packages/workbench/src/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `../packages/workbench/src/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                                   |
 | Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`                     |

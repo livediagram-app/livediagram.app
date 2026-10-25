@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PagesClusterStrip } from './PagesClusterStrip';
-import { ContentsClusterSegment } from './ContentsClusterSegment';
+import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { SlidesClusterSegment } from './SlidesClusterSegment';
 
 // Pages mode's pages strip (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): Contents and Slides in

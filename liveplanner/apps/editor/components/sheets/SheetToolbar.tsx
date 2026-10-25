@@ -5,7 +5,7 @@
 // not fit fold from the right into More (⋯), so it never wraps. For someone who may edit, in Plan mode.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Tooltip } from '@liveplanner/ui';
-import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
+import { PaletteDropdown } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';

@@ -20,7 +20,7 @@ import {
   dialFraction,
   formatMinutesLabel,
 } from './session-studio';
-import { TimerPresetChips } from './TimerPresetChips';
+import { TimerPresetChips } from '@liveworkspace/workbench/components/panels/session-studio/TimerPresetChips';
 import { TimerDial } from './TimerDial';
 import { PlayGlyph, StudioButton, StudioSegmented } from './studio-ui';
 import { GlyphDisc } from '@liveplanner/ui';

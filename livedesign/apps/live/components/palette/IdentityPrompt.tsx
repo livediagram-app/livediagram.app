@@ -7,7 +7,7 @@ import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
 import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { IdentityNameRow } from './IdentityNameRow';
-import { SparkleIcon } from './template-picker-icons';
+import { SparkleIcon } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The visitor name prompt (docs/specs/007-editor/new-design-route.md): someone joining another person's design
 // confirms the name others will see on their cursor and comments before they join. Join keeps the name typed, Cancel,

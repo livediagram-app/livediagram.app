@@ -6,11 +6,11 @@ import { lucidePanelsTopLeft, lucideSettings } from '@liveworkspace/icons/lucide
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
-import { EmptyPageInvite } from './EmptyPageInvite';
+import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
 import { LayoutGalleryDialog } from './LayoutGalleryDialog';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
-import { PageLockButton } from './PageLockButton';
+import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';

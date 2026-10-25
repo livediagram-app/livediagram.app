@@ -10,8 +10,11 @@ import type { ReactNode } from 'react';
 import { FINISHES, isFinish, type Finish } from '@livedesign/design';
 import { Glyph, LinkIcon } from '@livedesign/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { OptionRows, type OptionRow } from '@/components/primitives/OptionRows';
-import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
+import {
+  OptionRows,
+  type OptionRow,
+} from '@liveworkspace/workbench/components/primitives/OptionRows';
+import { FinishMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {
   flexible: 'Flexible',

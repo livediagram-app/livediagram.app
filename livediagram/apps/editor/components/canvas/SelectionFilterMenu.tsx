@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { elementKindLabel, type Element } from '@livediagram/document';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { HoverCard, Glyph } from '@livediagram/ui';
 import {
   TOOLBAR_BTN,

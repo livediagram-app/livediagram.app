@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { Button, Glyph } from '@livediagram/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
-import { Spinner } from '@/components/palette/template-picker-icons';
+import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The offer to move a document in This Browser onto livediagram (docs/specs/006-document/offline-mode.md "Sharing a
 // document in This Browser"), drawn inside a dialog: the document Share dialog's gate. It says the document is offline and offers Sync

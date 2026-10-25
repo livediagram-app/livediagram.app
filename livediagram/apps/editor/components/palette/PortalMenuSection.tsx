@@ -14,7 +14,7 @@
 
 import type { ShapeElement, Tab } from '@livediagram/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
 import { PlusIcon } from '@livediagram/ui';

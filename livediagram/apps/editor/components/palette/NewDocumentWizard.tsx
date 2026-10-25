@@ -9,7 +9,11 @@ import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';
 import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { NewDocumentModeStep } from './NewDocumentModeStep';
-import { FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
+import {
+  FolderOpenIcon,
+  SparkleIcon,
+  Spinner,
+} from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The New Document wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"): one question, what you are
 // making, answered by choosing a mode, which creates the document at once. It asks nothing about where the document

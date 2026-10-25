@@ -15,7 +15,7 @@ import type { TextAlignX, TextAlignY } from '@livedocuments/document';
 import { lucideFileDown, lucideFileUp } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livedocuments/ui';
 
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.

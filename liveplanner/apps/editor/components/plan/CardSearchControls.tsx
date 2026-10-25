@@ -20,7 +20,7 @@ import {
   type Item,
   type SwimlaneBy,
 } from '@liveplanner/items';
-import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
+import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
 import { AddFilterPicker } from './AddFilterPicker';
 import type { PlanContextValue } from './PlanContext';
 

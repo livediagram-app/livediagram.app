@@ -32,7 +32,7 @@ import {
   MenuToolButton,
 } from '@/components/primitives/MenuTiles';
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
-import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
+import { NoteMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // Add / remove the current selection to a slide.
 const SelectionIcon = lucideGlyph(lucideGroup, 14);

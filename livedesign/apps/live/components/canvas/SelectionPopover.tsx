@@ -12,7 +12,7 @@ import {
   EllipsisIcon,
   SendToBackIcon,
   TextIcon,
-} from '@/components/canvas/selection-popover-icons';
+} from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import type { Rect } from '@livedesign/design';

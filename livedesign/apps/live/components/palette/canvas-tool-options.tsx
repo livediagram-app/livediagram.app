@@ -7,7 +7,7 @@ import {
   SpotlightIcon,
   ZenIcon,
 } from '@/components/palette/palette-icons';
-import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
+import type { PaletteDropdownOption } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
 // Laser / Spotlight / Zen), grouped (group index drives

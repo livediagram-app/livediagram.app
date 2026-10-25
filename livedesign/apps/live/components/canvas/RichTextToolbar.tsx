@@ -9,7 +9,7 @@
 // focus-preservation detail.
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
-import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import {
   runToggles,
@@ -18,13 +18,7 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import type {
-  ListStyle,
-  RunBoolKey,
-  RunHeading,
-  TextAlignX,
-  TextAlignY,
-} from '@livedesign/design';
+import type { ListStyle, RunBoolKey, RunHeading, TextAlignX, TextAlignY } from '@livedesign/design';
 import { HoverCard } from '@livedesign/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';

@@ -20,7 +20,7 @@ import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hov
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
-import { ShadowMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ShadowMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // A preset tile's swatch: a small rounded chip carrying the preset's own
 // shadow at half scale (opacity boosted so the effect reads at 16px).

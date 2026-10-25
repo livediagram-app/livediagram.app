@@ -44,7 +44,7 @@ import {
   RotationMenuIcon,
   SizeMenuIcon,
   SquareMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,

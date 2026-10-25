@@ -10,7 +10,7 @@ import { slideName, type Slide } from '@livedocuments/document';
 import { lucideFileText } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
-import { PlayIcon } from '@/components/primitives/PlayIcon';
+import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
 
 const NotesIcon = lucideGlyph(lucideFileText, 11);
 

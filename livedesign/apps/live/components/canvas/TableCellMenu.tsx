@@ -10,14 +10,17 @@ import {
   TextGlyph,
   PaletteMenuIcon,
   RemoveIconGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
-import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
+import {
+  FillColourIcon,
+  TextColourIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { AlignIcon, CellLinkIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 
 // The per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md Table): right-click / long-press a cell
 // opens THIS at the pointer — the same accordion-category menu language as

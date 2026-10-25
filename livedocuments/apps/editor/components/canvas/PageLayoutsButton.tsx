@@ -14,7 +14,7 @@ import type { PageLayoutId } from '@livedocuments/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
-import { ChangeThemeButton } from './ChangeThemeButton';
+import { ChangeThemeButton } from '@liveworkspace/workbench/components/canvas/ChangeThemeButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 

@@ -6,7 +6,7 @@
 import { tabWindowOffers, type Tab } from '@livedocuments/document';
 import { CompactEmptyState, lucideGlyph } from '@livedocuments/ui';
 import { lucideAppWindow } from '@liveworkspace/icons/lucide';
-import { OptionRows } from '@/components/primitives/OptionRows';
+import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 
 const WindowIcon = lucideGlyph(lucideAppWindow, 16);
 

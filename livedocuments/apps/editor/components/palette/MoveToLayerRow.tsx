@@ -1,6 +1,6 @@
 import { trustedHtml } from '@livedocuments/ui';
 import type { Element, Layer } from '@livedocuments/document';
-import { LayersGlyph } from '@/components/palette/context-menu-icons';
+import { LayersGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 

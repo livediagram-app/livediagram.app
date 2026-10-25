@@ -5,7 +5,7 @@ import type { EditorMode, Element } from '@livedesign/design';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livedesign/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
-import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
+import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';

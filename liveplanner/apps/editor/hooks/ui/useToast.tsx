@@ -2,7 +2,10 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { readUserPreferences } from '@/lib/user-preferences';
-import { ToastStack, type ToastAnswers } from '@/components/toast/ToastStack';
+import {
+  ToastStack,
+  type ToastAnswers,
+} from '@liveworkspace/workbench/components/toast/ToastStack';
 import {
   pushToast,
   retireToasts,

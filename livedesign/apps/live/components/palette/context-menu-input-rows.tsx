@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Glyph, Switch } from '@livedesign/ui';
-import { DirArrow } from '@/components/palette/context-menu-icons';
+import { DirArrow } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { type IconPosition, type StandardTone } from '@livedesign/design';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

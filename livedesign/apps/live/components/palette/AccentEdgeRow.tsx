@@ -13,7 +13,7 @@ import { Glyph } from '@livedesign/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
-import { BorderColourIcon } from '@/components/palette/context-menu-icons';
+import { BorderColourIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
