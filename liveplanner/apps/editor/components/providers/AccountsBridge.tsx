@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import {
   DEFERRED_AUTH_DEFAULT,
   type DeferredAuthState,
@@ -26,6 +27,9 @@ type SessionUser = {
   givenName: string | null;
   familyName: string | null;
   name: string | null;
+  // The account's Google picture and whether Show My Google Picture is off (the api's AuthUser).
+  picture?: string | null;
+  pictureHidden?: boolean;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -121,6 +125,9 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      // Checked again here: only a Google picture URL is ever drawn.
+      picture: profilePictureOf(user.picture),
+      pictureHidden: user.pictureHidden === true,
     },
     getToken,
     // The landing page sign-out returns to must not show the account's recent diagrams

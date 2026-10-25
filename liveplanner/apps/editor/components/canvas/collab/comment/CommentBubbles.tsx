@@ -4,7 +4,8 @@
 // name, the way a chat does, so a three-part remark reads as one voice.
 
 import type { Comment } from '@liveplanner/project';
-import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
+import { Glyph, GlyphDisc, IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
+import { useOwnPicture } from '@/lib/own-picture';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
 import { tint } from '../collab-chrome';
@@ -50,6 +51,7 @@ export function CommentBubbles({
   freshFrom: number;
   onDelete?: (commentId: string) => void;
 }) {
+  const { picture: ownPicture } = useOwnPicture();
   let index = 0;
   return (
     <ul className="flex flex-col gap-2.5">
@@ -62,14 +64,18 @@ export function CommentBubbles({
             className={`flex min-w-0 gap-1.5 ${mine ? 'flex-row-reverse' : 'flex-row'}`}
           >
             <span className="mt-0.5 inline-flex shrink-0">
-              <GlyphDisc
+              {/* Your own group wears your Google picture; others' stay their initial (the comment keeps no
+                  picture, only the room's presence carries one). */}
+              <PictureDisc
                 size={20}
                 aria-hidden
+                pictureUrl={mine ? ownPicture : null}
+                name={first.authorName}
                 className={`font-bold text-white ${IDENTITY_FILL}`}
                 style={{ ...identityVars(first.authorColor), fontSize: 10 }}
               >
                 {first.authorName.trim().charAt(0).toUpperCase() || '?'}
-              </GlyphDisc>
+              </PictureDisc>
             </span>
             <div className={`flex min-w-0 flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
               <span

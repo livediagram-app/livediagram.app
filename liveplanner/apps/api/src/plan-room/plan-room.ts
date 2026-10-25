@@ -748,6 +748,7 @@ export class PlanRoom extends DurableObject<Env> {
       v.adderKey,
       v.projectId,
       v.grantExp ?? null,
+      v.account,
     );
     if (v.projectId) {
       this.bindPlan(v.projectId);
@@ -849,6 +850,7 @@ export class PlanRoom extends DurableObject<Env> {
     adderKey: string | null = null,
     projectId: string | null = null,
     grantExp: number | null = null,
+    account = false,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -861,6 +863,7 @@ export class PlanRoom extends DurableObject<Env> {
           adderKey,
           projectId,
           grantExp,
+          account,
         },
         crypto.randomUUID(),
       ),
@@ -1050,6 +1053,18 @@ export class PlanRoom extends DurableObject<Env> {
     if (!session) return;
     if (msg.kind === 'grant') {
       this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
+      return;
+    }
+    if (msg.kind === 'identity') {
+      // An identity update (Show My Google Picture switched): the hello rules again, keeping the tab this session
+      // is on, then a fresh roster. Not a join, so none of the join's side effects run; before hello, nothing.
+      if (!session.presence) return;
+      const next = helloPresence(msg.participant, session);
+      if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
+      if (session.presence.besideTabId !== undefined)
+        next.besideTabId = session.presence.besideTabId;
+      ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
+      this.broadcastPresence();
       return;
     }
     if (msg.kind === 'hello') {
@@ -1329,6 +1344,7 @@ export class PlanRoom extends DurableObject<Env> {
         ws,
         presence: session?.presence ?? null,
         personTag: session?.personTag ?? null,
+        account: session?.account === true,
       });
     }
     // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).

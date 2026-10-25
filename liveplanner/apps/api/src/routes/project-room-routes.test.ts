@@ -73,6 +73,7 @@ const SPOOFED = {
   'X-Verified-Tab-Scope': 'tab-evil',
   'X-Verified-Share-Code': 'evil',
   'X-Verified-Person': 'evil',
+  'X-Verified-Account': '1',
   'X-Verified-Workbench-Pairing': 'evil',
   'X-Verified-Adder': 'evil',
   'X-Verified-Project': 'evil',
@@ -98,6 +99,8 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('');
     expect(h.get('X-Verified-Share-Code')).toBe('');
     expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
+    // A signed-in account: it may show and see Google pictures.
+    expect(h.get('X-Verified-Account')).toBe('1');
     expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
     expect(h.get('X-Verified-Adder')).toBe('');
     expect(h.get('X-Verified-Project')).toBe('p1');
@@ -134,6 +137,15 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('tab-2');
     expect(h.get('X-Verified-Share-Code')).toBe('abc');
     expect(h.get('X-Verified-Person')).toBe('');
+    expect(h.get('X-Verified-Account')).toBe('0');
+  });
+
+  it('marks a guest session as no account, whatever the client claimed', async () => {
+    const { env, seen } = roomEnv();
+    const guest = 'guest_12345678-1234-1234-1234-123456789abc';
+    const t = grantFor({ item: 'p1', sub: guest, level: 'edit' });
+    await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(t)}`);
+    expect(seen[0]!.headers.get('X-Verified-Account')).toBe('0');
   });
 
   it('takes the share code a signed-in link opener names on ?s=', async () => {

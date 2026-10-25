@@ -20,6 +20,7 @@ import {
   type AccessLevel,
   type ParticipantPresence,
 } from '@liveplanner/api-schema';
+import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 
 // A tabId is clamped like the name and colour so a hostile hello can't push an
 // oversize string into the socket attachment.
@@ -45,7 +46,7 @@ export function helloPresence(
   // verifiedRole is optional on the attachment (it is absent for a session
   // that upgraded before the role was stamped), and ParticipantPresence.role
   // is optional for the same reason. Passed straight through, as before.
-  session: { presenceId: string; verifiedRole?: AccessLevel },
+  session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
 ): ParticipantPresence {
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
@@ -68,6 +69,10 @@ export function helloPresence(
   if (typeof c.key === 'string' && c.key.length > 0) {
     presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
   }
+  // The Google picture (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"): kept only
+  // from a session a signed-in account holds, and only when it is a Google picture URL. Refused whole, never cut:
+  // a cut URL is a broken image.
+  if (session.account && isProfilePictureUrl(c.picture)) presence.picture = c.picture;
   return presence;
 }
 

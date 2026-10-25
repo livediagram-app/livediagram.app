@@ -24,11 +24,40 @@ retired and its three parts redistributed:
 - **Identity** (avatar, name, email, joined) is the `identity` row in the
   **Account** category. Read from the liveworkspace account on the client, never written: names
   and emails belong to the liveworkspace account, so it is a card, not a form. The
-  avatar is the account's initial. A guest sees a card explaining that they are working as a guest.
+  avatar is the account's Google picture over its initial ([Profile pictures](#profile-pictures)). A guest sees a
+  card explaining that they are working as a guest.
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless email is configured AND the reader is signed in, since
   a guest has no address to send to.
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
+
+### Profile pictures
+
+An account that signed in with Google wears its Google picture wherever liveplanner draws that person's avatar,
+over the initials it always had (liveworkspace/docs/accounts.md "Profile pictures" is the platform's rule; this is
+liveplanner's half). One avatar does it, `PictureDisc` from `@liveworkspace/ui`: fixed size so nothing moves, lazy,
+sent with no referrer, sized with Google's `=s<px>-c`, and the initials again while it loads or if it fails. Only a
+Google picture URL is ever drawn (`isProfilePictureUrl`, `@liveworkspace/sites/picture`).
+
+- **Where it comes from.** The session: the api reads the ID token's `picture` and `picture_hidden` claims
+  (`apps/api/src/routes/auth.ts`, `AuthUser.picture` / `pictureHidden`); the readable picture cookie carries the
+  same for the account menu.
+- **Show My Google Picture**, in Settings › Profile (liveworkspace's switch, one for every app). Off keeps the
+  picture from everyone else; your own screen still shows it (the header's account button, your own presence
+  entry, your own comments). A switch saved on the page takes effect at once: the open room is sent an `identity`
+  frame and updates the roster in place.
+- **Who sees others' pictures: signed-in accounts only.** The room keeps a `picture` from a `hello` or `identity`
+  only from a session a signed-in account holds (the api stamps `X-Verified-Account` on the upgrade; a guest or a
+  link visitor is `0`), and refuses one that is not a Google picture URL, whole. Each roster frame to a guest or link
+  visitor has every picture taken out, so the URL never reaches them. `GET /api/participants/<id>` answers the
+  picture only to a reader who is a signed-in account; every other read of a participant (a plan's owner, a
+  comment's writer) leaves it out, and a picture is never written into a plan.
+- **Where it shows today:** the presence stack and Collaborators dialog (`ParticipantAvatar`), the account button
+  (`AuthControls`), a peer's cursor pill (`RemoteCursor`), your own comment composer and your own comment bubbles. A card's assignee, a swimlane and
+  others' comments keep their initials: those people are named in the plan by id only, and fetching each one's
+  picture would cost a request the page doesn't make yet.
+- **Cost.** No request of its own: the picture rides the session, the room's existing frames and the participant
+  read already made. One image per distinct picture, cached by the browser.
 
 ### `/explorer/profile` still resolves, deliberately
 

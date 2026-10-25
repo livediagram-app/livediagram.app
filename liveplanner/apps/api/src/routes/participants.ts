@@ -8,6 +8,7 @@ import { getParticipant, saveParticipant } from '../person/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
+import { isAccountId } from '@liveworkspace/auth-client';
 
 // GET stays open — participant ids are already broadcast through
 // the WS room and embedded in comment authors, so anyone in a
@@ -27,12 +28,15 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   if (segments.length !== 3) return notFound();
   const id = segments[2]!;
   if (request.method === 'GET') {
-    const p = await getParticipant(env, id);
+    // The Google picture only to a reader who is a signed-in account (docs/specs/014-identity/
+    // profile-and-email-notifications.md "Profile pictures"): a guest or a link visitor reads the name and colour.
+    const reader = ctx.resolveOwner();
+    const p = await getParticipant(env, id, { pictures: Boolean(reader && isAccountId(reader)) });
     if (!p) {
       // Your own profile, not saved yet (a fresh visitor): expected state, so a 200 with no
       // participant rather than a 404 every browser logs as an error (docs/specs/015-api/api.md).
       // Says nothing a 404 would not: the id is absent either way.
-      if (ctx.resolveOwner() === id) {
+      if (reader === id) {
         console.info('[participants] self_absent');
         return json({ participant: null });
       }

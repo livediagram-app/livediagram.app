@@ -3,7 +3,7 @@
 // Header sign-in / sign-out pill. Shows:
 //
 //   - signed out → "Sign in" link to /live/sign-in/
-//   - signed in  → account avatar (initial) + dropdown with "Profile" + "Sign out"
+//   - signed in  → account avatar (Google picture over the initial) + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
 // auth controls). Pure presentational — it reads the deferred auth
@@ -23,7 +23,7 @@ import {
   Glyph,
   useMenu,
   useMenuButton,
-  GlyphDisc,
+  PictureDisc,
 } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -105,13 +105,17 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          <GlyphDisc
+          {/* The account's Google picture over the initial; your own chrome shows it even with Show My Google
+              Picture off, which only keeps it from others. */}
+          <PictureDisc
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
+            pictureUrl={user?.picture}
+            name={displayName}
             className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </GlyphDisc>
+          </PictureDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>

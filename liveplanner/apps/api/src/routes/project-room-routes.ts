@@ -16,6 +16,7 @@ import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/
 import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import { personTagFor } from '../person-tag';
+import { isAccountId } from '@liveworkspace/auth-client';
 
 // Returns null when the request isn't a room route.
 export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -66,6 +67,9 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // A signed-in account's session (not a guest's, not a link visitor's): only it may show its Google picture to
+    // the room and see others' (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures").
+    forwarded.headers.set('X-Verified-Account', person && isAccountId(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set(
       'X-Verified-Adder',

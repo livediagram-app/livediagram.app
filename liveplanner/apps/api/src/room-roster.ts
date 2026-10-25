@@ -20,6 +20,8 @@ export type RosterEntry = {
   ws: WebSocket;
   presence: ParticipantPresence | null;
   personTag: string | null;
+  // A signed-in account holds this socket: only it is sent the others' Google pictures.
+  account?: boolean;
 };
 
 type RosterFrame = {
@@ -36,7 +38,7 @@ export function* rosterFrames(
   const sessions: RosterSession[] = entries.flatMap(({ presence, personTag }) =>
     presence ? [{ presenceId: presence.id, personTag }] : [],
   );
-  for (const { ws, presence: self, personTag } of entries) {
+  for (const { ws, presence: self, personTag, account } of entries) {
     const agents = agentRosterFor(
       self ? { presenceId: self.id, personTag } : null,
       sessions,
@@ -45,7 +47,12 @@ export function* rosterFrames(
     const participants: ParticipantPresence[] = [];
     for (const { ws: peer, presence } of entries) {
       if (peer === ws || !presence) continue;
-      participants.push(presence);
+      // A guest or link visitor gets the same roster with every picture taken out, so the URL never reaches them.
+      if (account || presence.picture === undefined) participants.push(presence);
+      else {
+        const { picture: _hidden, ...withoutPicture } = presence;
+        participants.push(withoutPicture);
+      }
     }
     yield { ws, participants, agents };
   }

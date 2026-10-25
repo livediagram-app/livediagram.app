@@ -11,6 +11,7 @@ import {
   CheckIcon,
   GlyphDisc,
   IDENTITY_FILL,
+  PictureDisc,
   TrashIcon,
   Tooltip,
   identityVars,
@@ -21,6 +22,7 @@ import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';
+import { useOwnPicture } from '@/lib/own-picture';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 
 type CommentDensity = 'compact' | 'comfortable';
@@ -157,6 +159,8 @@ export function CommentComposer({
     fieldRef: ref,
   });
   const comfortable = density === 'comfortable';
+  // Your own avatar beside the composer wears your Google picture, on your own screen always.
+  const { picture: ownPicture } = useOwnPicture();
   // Grows with its text up to COMPOSER_MAX_PX, then scrolls (useAutoHeight).
   useAutoHeight(ref, draft, COMPOSER_MAX);
   const submit = () => {
@@ -183,13 +187,16 @@ export function CommentComposer({
         />
       ) : null}
       {self ? (
-        <span
+        <PictureDisc
+          size={28}
           aria-hidden
+          pictureUrl={ownPicture}
+          name={self.name}
           style={identityVars(self.color)}
-          className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
+          className={`mt-1 text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
         >
-          <span className="text-optical-centre">{initialsOf(self.name)}</span>
-        </span>
+          {initialsOf(self.name)}
+        </PictureDisc>
       ) : null}
       <div className="min-w-0 flex-1">
         <textarea

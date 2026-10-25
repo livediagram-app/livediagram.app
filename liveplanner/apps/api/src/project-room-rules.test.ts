@@ -196,3 +196,33 @@ describe('answersAsSelf', () => {
     expect(answersAsSelf(null, 'k')).toBe(false);
   });
 });
+
+describe('helloPresence and the Google picture', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ada=s96-c';
+  it('keeps a Google picture from an account session', () => {
+    const p = helloPresence({ name: 'Ada', picture: PICTURE }, { ...SESSION, account: true });
+    expect(p.picture).toBe(PICTURE);
+  });
+
+  it('drops a picture from a guest or link visitor session', () => {
+    expect(helloPresence({ name: 'Ada', picture: PICTURE }, SESSION).picture).toBeUndefined();
+    expect(
+      helloPresence({ name: 'Ada', picture: PICTURE }, { ...SESSION, account: false }).picture,
+    ).toBeUndefined();
+  });
+
+  it('refuses a picture that is not a Google one, whole', () => {
+    for (const picture of [
+      'https://evil.example/ada.png',
+      'http://lh3.googleusercontent.com/a/ada',
+      `${PICTURE}${'x'.repeat(600)}`,
+      42,
+    ]) {
+      const p = helloPresence(
+        { name: 'Ada', picture: picture as string },
+        { ...SESSION, account: true },
+      );
+      expect(p.picture).toBeUndefined();
+    }
+  });
+});

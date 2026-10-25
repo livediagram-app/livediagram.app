@@ -11,6 +11,7 @@ import {
 } from '@liveworkspace/workbench/lib/split-presence';
 import type { Tab } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
+import { useOwnPicture } from '@/lib/own-picture';
 import type { PresenceClock } from './usePresenceState';
 import type { AgentPresence } from '@liveplanner/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
@@ -48,7 +49,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     projectShareable,
     projectTeamId,
     activeId,
-    selfParticipant,
+    selfParticipant: self,
     tabs,
     livePresence,
     liveAgents,
@@ -58,6 +59,12 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteSelections,
     cursorsHidden,
   } = deps;
+  // Our own entry shows our Google picture to us whatever Show My Google Picture says: it is our screen.
+  const { picture: ownPicture } = useOwnPicture();
+  const selfParticipant = useMemo(
+    () => (ownPicture ? { ...self, picture: ownPicture } : self),
+    [self, ownPicture],
+  );
 
   // Per-element remote-selection map. Looks up each participant id
   // against the current `livePresence` so we can render their colour +

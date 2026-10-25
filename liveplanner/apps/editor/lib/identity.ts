@@ -56,6 +56,9 @@ export type Participant = {
   statusLine?: string;
   // A row standing for an agent whose owner is not on the tab: never counted as a person, never followed.
   agent?: true;
+  // Their Google picture (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"): a peer's
+  // only when the room sent it (an account session), our own always on our own screen. Drawn over the initials.
+  picture?: string;
 };
 
 // How this participant is recorded in the project (docs/specs/012-collaboration/participant-responses.md). Falls back

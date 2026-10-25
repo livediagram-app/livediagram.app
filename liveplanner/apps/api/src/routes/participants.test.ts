@@ -49,6 +49,22 @@ describe('handleParticipants', () => {
     expect(res.status).toBe(200);
   });
 
+  it('GET asks for the Google picture only for a signed-in account reader', async () => {
+    db.getParticipant.mockResolvedValue({ id: 'p1', name: 'Ann', color: '#fff', createdAt: 0 });
+    await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner: 'user_reader' }));
+    await handleParticipants(
+      makeCtx('GET', '/api/participants/p1', {
+        owner: 'guest_12345678-1234-1234-1234-123456789abc',
+      }),
+    );
+    await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner: null }));
+    expect(db.getParticipant.mock.calls.map((c: unknown[]) => c[2])).toEqual([
+      { pictures: true },
+      { pictures: false },
+      { pictures: false },
+    ]);
+  });
+
   it('GET 404 for an unknown participant', async () => {
     db.getParticipant.mockResolvedValue(null);
     const res = await handleParticipants(makeCtx('GET', '/api/participants/p9'));

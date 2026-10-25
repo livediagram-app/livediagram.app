@@ -41,6 +41,22 @@ describe('getParticipants', () => {
     expect(people.has('user_gone')).toBe(false);
   });
 
+  it('carries the Google picture only when asked, from the same one read', async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ada';
+    accounts.profiles.set('user_a', { ...profileOf('user_a', 'Ada', null), picture });
+    accounts.profiles.set('user_b', {
+      ...profileOf('user_b', 'Bea', null),
+      picture: 'https://evil.example/b.png',
+    });
+    const plain = await getParticipants(env, ['user_a']);
+    expect(plain.get('user_a')).not.toHaveProperty('picture');
+    const people = await getParticipants(env, ['user_a', 'user_b'], { pictures: true });
+    expect(people.get('user_a')?.picture).toBe(picture);
+    expect(people.get('user_b')).not.toHaveProperty('picture');
+    // user_a was remembered from the first read: two reads in all, never one per person.
+    expect(accounts.calls).toHaveLength(2);
+  });
+
   it('splits a list past 100 ids into batches, sent together', async () => {
     const ids = Array.from({ length: 250 }, (_, i) => `user_${i}`);
     await getParticipants(env, ids);

@@ -18,3 +18,17 @@ describe('rosterFrames', () => {
     expect(frames.map((f) => f.participants.map((p) => p.id))).toEqual([['b'], ['a'], ['a', 'b']]);
   });
 });
+
+describe('Google pictures on the roster', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ada';
+  it('sends a picture only to account sessions; a guest gets the roster without it', () => {
+    const ada = { ...entry({ ...person('ada'), picture: PICTURE }), account: true };
+    const bea = { ...entry(person('bea')), account: true };
+    const guest = entry(person('guest'));
+    const [, toBea, toGuest] = [...rosterFrames([ada, bea, guest], [])];
+    expect(toBea!.participants.find((p) => p.id === 'ada')?.picture).toBe(PICTURE);
+    const seen = toGuest!.participants.find((p) => p.id === 'ada')!;
+    expect(seen).toEqual({ id: 'ada', name: 'ada', color: '#000' });
+    expect(JSON.stringify(toGuest!.participants)).not.toContain('googleusercontent');
+  });
+});

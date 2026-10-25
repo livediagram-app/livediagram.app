@@ -21,6 +21,7 @@ import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsOwnerOf } from './owner';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 
 // The colour shown for someone whose profile has a name but no colour of its own: the shared
 // presence palette's first (sky).
@@ -48,14 +49,22 @@ export function __forgetProfiles(): void {
 }
 
 // A profile as the participant the api has always answered: a person with no name has no participant
-// yet, and one with no colour of their own takes the default.
-function toParticipant(ownerId: string, profile: Profile | null): ParticipantDTO | null {
+// yet, and one with no colour of their own takes the default. With `pictures`, the person's published Google
+// picture too (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"): only for a reader
+// who is a signed-in account, and never written into a plan, so it is off unless a route asks.
+function toParticipant(
+  ownerId: string,
+  profile: Profile | null,
+  pictures = false,
+): ParticipantDTO | null {
   if (!profile?.name) return null;
+  const picture = pictures ? profilePictureOf(profile.picture) : null;
   return {
     id: ownerId,
     name: profile.name,
     color: profile.color ?? DEFAULT_PARTICIPANT_COLOR,
     createdAt: profile.createdAt ?? profile.updatedAt ?? 0,
+    ...(picture ? { picture } : {}),
   };
 }
 
@@ -94,6 +103,7 @@ async function profilesOf(
 export async function getParticipants(
   env: Env,
   ownerIds: readonly (string | null | undefined)[],
+  { pictures = false }: { pictures?: boolean } = {},
 ): Promise<Map<string, ParticipantDTO>> {
   const credentials = accountCredentials(env);
   const ids = ownerIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
@@ -101,7 +111,7 @@ export async function getParticipants(
   if (!credentials || ids.length === 0) return participants;
   try {
     for (const [ownerId, profile] of await profilesOf(credentials, ids)) {
-      const participant = toParticipant(ownerId, profile);
+      const participant = toParticipant(ownerId, profile, pictures);
       if (participant) participants.set(ownerId, participant);
     }
   } catch (error) {
@@ -110,8 +120,12 @@ export async function getParticipants(
   return participants;
 }
 
-export async function getParticipant(env: Env, ownerId: string): Promise<ParticipantDTO | null> {
-  return (await getParticipants(env, [ownerId])).get(ownerId) ?? null;
+export async function getParticipant(
+  env: Env,
+  ownerId: string,
+  options: { pictures?: boolean } = {},
+): Promise<ParticipantDTO | null> {
+  return (await getParticipants(env, [ownerId], options)).get(ownerId) ?? null;
 }
 
 // Sets an owner's own name and colour (the caller has checked the owner is the one asking). Answers the

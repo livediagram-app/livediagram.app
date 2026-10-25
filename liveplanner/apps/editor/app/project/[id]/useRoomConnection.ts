@@ -22,6 +22,7 @@ import {
   type SheetsRoomOp,
 } from '@liveplanner/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
+import { useOwnPicture } from '@/lib/own-picture';
 import {
   apiCreateRoomTicket,
   connectRoom,
@@ -180,15 +181,28 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
+  // With the published Google picture (docs/specs/014-identity/profile-and-email-notifications.md "Profile
+  // pictures"): null while Show My Google Picture is off; the room keeps it only from an account session.
+  const { published: picture } = useOwnPicture();
+  const selfForRoom = () => ({
+    id: selfParticipant.id,
+    key: selfParticipant.key,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    ...(picture ? { picture } : {}),
+  });
   const connectAs = useEffectEvent(() => ({
-    self: {
-      id: selfParticipant.id,
-      key: selfParticipant.key,
-      name: selfParticipant.name,
-      color: selfParticipant.color,
-    },
+    self: selfForRoom(),
     shareCode: sessionShareCode,
   }));
+  // The switch flipped, or the picture changed: tell the open room, which updates the roster in place.
+  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
+  const announcedPicture = useRef(picture);
+  useEffect(() => {
+    if (announcedPicture.current === picture) return;
+    announcedPicture.current = picture;
+    announceSelf();
+  }, [picture]);
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
@@ -223,6 +237,8 @@ export function useRoomConnection(opts: {
           ...(p.key ? { key: p.key } : {}),
           name: p.name,
           color: p.color,
+          // Only ever present when the room judged us an account session.
+          ...(p.picture ? { picture: p.picture } : {}),
           // Status + lastActiveAt are derived locally rather than
           // carried on the wire — the server doesn't track idle
           // time. Seed any peer we haven't seen with `now` so the

@@ -45,6 +45,10 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
+  //   - `account`: a signed-in account (not a guest, not a link visitor) holds this session, from
+  //     X-Verified-Account (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"). Only such
+  //     a session may put a Google picture on the roster, and only such a session is sent the pictures on it.
+  account?: boolean;
   //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
@@ -74,6 +78,7 @@ type VerifiedSession = {
   tabScope: string | null;
   shareCode: string | null;
   personTag: string | null;
+  account: boolean;
   workbenchPairing: string | null;
   adderKey: string | null;
   projectId: string | null;
@@ -103,6 +108,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    account: request.headers.get('X-Verified-Account') === '1',
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     projectId: header('X-Verified-Project'),
@@ -128,6 +134,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     tabScope: v.tabScope,
     shareCode: v.shareCode,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
+    account: v.account,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     projectId: v.projectId?.slice(0, MAX_PROJECT_ID_LEN) ?? null,

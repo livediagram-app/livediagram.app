@@ -117,8 +117,10 @@ export const ROOM_KEEPALIVE_TIMEOUT_MS = 10_000;
 const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
-/** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-type RoomSelf = { id: string; key?: string; name: string; color: string };
+/** Who this client says it is to the room: the room overrides `id` (see connectRoom). `picture` is the person's
+ *  published Google picture, which the room keeps only from an account session
+ *  (docs/specs/014-identity/profile-and-email-notifications.md "Profile pictures"). */
+type RoomSelf = { id: string; key?: string; name: string; color: string; picture?: string };
 
 export function connectRoom(
   projectId: string,
@@ -126,15 +128,18 @@ export function connectRoom(
   // an answer saved on the project can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
   // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
-  participant: RoomSelf,
+  initialParticipant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomConnectOptions = {},
 ): {
   send: (msg: RoomOutgoing) => void;
+  updateSelf: (participant: RoomSelf) => void;
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
   sequence: (op: RoomOp) => Promise<boolean>;
 } {
+  // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
+  let participant = initialParticipant;
   // The ticket rides the query string (see roomQueryString); every reconnect mints a fresh one,
   // even after a mint that failed.
   let ticket = options.ticket ?? null;
@@ -400,6 +405,14 @@ export function connectRoom(
 
   return {
     send,
+    // An identity change over the open socket (Show My Google Picture switched): the room updates the roster in
+    // place. A closed socket just remembers it for the next hello.
+    updateSelf: (next) => {
+      participant = next;
+      if (ws && isOpen()) {
+        ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
+      }
+    },
     // Send one op and learn whether the room sequenced it (docs/specs/012-collaboration/collab-race-hardening.md
     // phase 6): true once the room's `cursor` frame echoes the op's `ref`; false when the socket is down
     // (the op waits in the outbox, unconfirmed), drops, or the room stays silent past the timeout.
