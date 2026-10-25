@@ -169,6 +169,22 @@ describe('worker refusal of an unknown API token', () => {
     }
   });
 
+  it('takes an lvd_ bearer carried over from the old livediagram.app down the token path too', async () => {
+    const legacy = `lvd_${'x'.repeat(43)}`;
+    resolveApiTokenMock.mockClear();
+    for (const bearer of [legacy, 'lvd_short']) {
+      const res = await worker.fetch(
+        get('/api/tokens/current', { Authorization: `Bearer ${bearer}` }),
+        noEnforcement(),
+      );
+      expect(res.status, bearer).toBe(401);
+      expect(await res.json(), bearer).toEqual({ error: 'invalid_token' });
+    }
+    // Only the well-formed one is looked up.
+    expect(resolveApiTokenMock).toHaveBeenCalledTimes(1);
+    expect(resolveApiTokenMock.mock.calls[0]![1]).toBe(legacy);
+  });
+
   it('leaves a bearer that is not token-shaped to the account path', async () => {
     const res = await worker.fetch(
       get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),

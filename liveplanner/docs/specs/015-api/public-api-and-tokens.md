@@ -111,6 +111,11 @@ storing tokens itself, the account-level design below supersedes it.
 - An opaque secret with a visible prefix for greppability + leak-scanning:
   `lwt_<base64url(32 random bytes)>`. The prefix also disambiguates it from a
   account access token (a JWT) in the same `Authorization: Bearer` header.
+- Tokens carried over from the old livediagram.app keep their `lvd_` prefix (`docs/migration.md` step 1 at the
+  monorepo root): liveworkspace holds them exactly as it holds `lwt_` ones, so every check here that reads the
+  prefix (`isApiTokenFormat` and `hasApiTokenPrefix` from `@liveworkspace/api-kit`, re-exported by api-schema)
+  takes `lvd_` beside `lwt_`: the api routes a `Bearer lvd_…` to the token path, and the CLI accepts one. Nothing
+  mints `lvd_`.
 - Shown **once** at creation; never retrievable again.
 - Stored **hashed** (SHA-256), never in plaintext. Auth hashes the presented
   token and looks the hash up by its UNIQUE-indexed column — an indexed
@@ -155,7 +160,7 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lwt_…` → checked with liveworkspace (`resolveApiToken` in
+2. Else `Authorization: Bearer lwt_…` (or `lvd_…`, §3.1) → checked with liveworkspace (`resolveApiToken` in
    `apps/api/src/db/api-tokens.ts`, cached a minute per isolate) → the request's owner id is the token's account.
    (A token and a JWT can't both be the bearer.) An `lwt_`
    bearer liveworkspace does not accept (unknown, revoked or expired), or one too short to be a token at all (cut short or

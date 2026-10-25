@@ -5,7 +5,7 @@ import { reportServerEvent, telemetryEnabled } from './server-telemetry';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@liveplanner/api-schema';
 import {
-  API_TOKEN_PREFIX,
+  hasApiTokenPrefix,
   isApiTokenFormat,
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_PREFIX,
@@ -99,7 +99,8 @@ async function routeApiRequest(
   // The caller's address. ONLY the verified `email` claim from the checked access token is trusted, never a
   // client-supplied header.
   const accountEmail = account?.email ?? null;
-  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
+  // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` (or an `lvd_…` carried over from the old
+  // livediagram.app) resolves to its owner — always a
   // account — via the hashed-token lookup. Only consulted when no account
   // access token verified (a token and a JWT can't both be the bearer). The resolved
   // owner is the token's account id, so a token request flows through the
@@ -109,7 +110,7 @@ async function routeApiRequest(
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
     // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
-    if (bearer?.startsWith(API_TOKEN_PREFIX)) {
+    if (bearer && hasApiTokenPrefix(bearer)) {
       // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
       // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
       // than drops its credential.

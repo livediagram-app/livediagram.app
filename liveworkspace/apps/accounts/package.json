@@ -22,6 +22,7 @@
     "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/email": "workspace:*",
     "@liveworkspace/index-client": "workspace:^",
+    "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:*",
     "better-auth": "1.7.12"
   },

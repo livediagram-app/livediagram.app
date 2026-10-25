@@ -3,7 +3,8 @@
 //   - an app's server acting for an account it checked itself (an API token's), by its key, X-Index-App and
 //     X-Index-Person: that account, for that app's items only;
 //   - a link visitor, by a share code (and its password), with or without a person;
-//   - an app's server, by its key and X-Index-App;
+//   - an app's server, by its key and X-Index-App (and livediagram's, for the migration's handoff, naming a guest or
+//     an account in X-Index-Person: handoffPersonOf);
 //   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
 //     token) as an app's server does, for the app X-Index-App names;
 //   - the Google Drive mirror's service, by its key, X-Index-App: drive and X-Index-Person: that account, for
@@ -143,6 +144,20 @@ async function mergeDelegateApp(request: Request, env: Env): Promise<App | null>
   const app = request.headers.get(INDEX_APP_HEADER);
   if (!isApp(app)) return null;
   return (await isMergeCaller(request, env)) ? app : null;
+}
+
+// A new guest's id, as accounts mints it: `guest_` and a lowercase UUID.
+const GUEST_ID = /^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+// The person livediagram's api hands a migration part off for (migration-handoff.ts), from X-Index-Person: an
+// account, or on that route alone a guest, since a browser's Local only documents are usually a guest's. The
+// caller has already been checked for an app's key; X-Index-Teams is ignored (the item goes in no team). Null for
+// a missing or malformed id.
+export function handoffPersonOf(request: Request): string | null {
+  const personId = request.headers.get(INDEX_PERSON_HEADER);
+  if (!isId(personId) || personId.includes(':')) return null;
+  if (personId.startsWith('guest_')) return GUEST_ID.test(personId) ? personId : null;
+  return personId;
 }
 
 // Whether a request carries the Drive mirror's key (INDEX_KEY_DRIVE).

@@ -21,6 +21,7 @@
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:^",
     "jose": "^6.2.12"
   },

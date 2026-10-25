@@ -6,6 +6,9 @@
 import { timelineStatement, type TimelineEvent } from './index-timeline.ts';
 
 export const API_TOKEN_PREFIX = 'lwt_';
+// Tokens carried over from the old livediagram.app (docs/migration.md step 1): their rows were copied in as they
+// were, hashed the same way, so they verify, revoke and expire like any other. Nothing mints one.
+export const LEGACY_API_TOKEN_PREFIX = 'lvd_';
 const TOKEN_RANDOM_BYTES = 32;
 // Live tokens one account can hold.
 export const MAX_API_TOKENS_PER_ACCOUNT = 20;
@@ -13,8 +16,14 @@ export const TOKEN_NAME_MAX_LENGTH = 80;
 // last_used is stamped at most this often, so a burst of MCP calls costs one write a minute.
 export const LAST_USED_STAMP_WINDOW_MS = 60_000;
 
+/** Whether a bearer claims to be an API token (either prefix), however short. */
+export function hasApiTokenPrefix(value: string): boolean {
+  return value.startsWith(API_TOKEN_PREFIX) || value.startsWith(LEGACY_API_TOKEN_PREFIX);
+}
+
 export function isApiTokenFormat(value: string): boolean {
-  return value.startsWith(API_TOKEN_PREFIX) && value.length > API_TOKEN_PREFIX.length + 20;
+  // Both prefixes are four characters.
+  return hasApiTokenPrefix(value) && value.length > API_TOKEN_PREFIX.length + 20;
 }
 
 function base64Url(bytes: Uint8Array): string {

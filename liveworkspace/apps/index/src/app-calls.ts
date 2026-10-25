@@ -1,5 +1,6 @@
 // The index calling an app's internal routes (liveworkspace/docs/one-explorer-contracts.md): copy an
-// item's content, drop a purged item's content, and tell an item a link was revoked. Each carries the
+// item's content, drop a purged item's content, tell an item a link was revoked, and the migration's handoff
+// (migration-handoff.ts). Each carries the
 // app's key and name, the same pair the app pushes with.
 
 import { INDEX_APP_HEADER, type App } from '@liveworkspace/index-client';
@@ -11,9 +12,10 @@ export type AppCallResult = { ok: true } | { ok: false; error: string };
 export async function callApp(
   env: Env,
   app: App,
-  method: 'POST' | 'DELETE',
+  method: 'POST' | 'PUT' | 'DELETE',
   path: string,
   body?: unknown,
+  timeoutMs = APP_CALL_TIMEOUT_MS,
 ): Promise<AppCallResult> {
   const origin = appOrigin(env, app);
   const key = appKey(env, app);
@@ -28,7 +30,7 @@ export async function callApp(
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.timeout(APP_CALL_TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     // The body isn't needed; release it.
     await res.body?.cancel();

@@ -4685,6 +4685,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:^
         version: link:../../../packages/index-client
+      '@liveworkspace/migration':
+        specifier: workspace:^
+        version: link:../../../packages/migration
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -4820,6 +4823,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/migration':
+        specifier: workspace:^
+        version: link:../../../packages/migration
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../../../packages/sites

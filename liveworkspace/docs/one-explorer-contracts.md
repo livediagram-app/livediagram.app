@@ -73,6 +73,18 @@ cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
 
+**A returning guest of the old livediagram.app** ([docs/migration.md](../../docs/migration.md) step 6). Their
+copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
+([accounts.md](accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
+merge has a second form, `{guestId, userId, legacy: true}`: `userId` may then be a guest (`guest_…`) too, and
+everything else is the same (items, folders, favourites, opens, use days, the Timeline, Shared with me, placement
+defaults, the Inbox's rows, one batch); an item or folder outside a team lands in `p:<userId>`, the target's own
+space, guest or account. Without `legacy: true` a guest target is still refused (400). The apps hear it as
+`POST /api/internal/people/:guest/merge {into, legacy: true}`, so an app can tell a legacy merge (whose `into` may
+be a guest) from an ordinary one, which keeps its `{into}` shape. The index keeps the flag on each
+`person_app_merges` row until the app confirms. An app's door that takes only an account refuses a guest `into`
+until it is taught the legacy form; the index retries it like any other refusal, for up to a week.
+
 A guest's things stay until the guest deletes them, or becomes an account; nothing expires on its own.
 
 ## Items
@@ -344,6 +356,28 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `PUT /app/people/events` — `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
+
+## The migration's handoff
+
+For a browser's Local only documents from the old livediagram.app ([docs/migration.md](../../docs/migration.md)
+step 6): livediagram's api splits one and hands each part that belongs to another app to the index, which makes
+the item for the person and has that app write it.
+
+- `POST /app/migration/handoff`, with **livediagram's** key (`X-Index-App: livediagram`; any other app's key is
+  403 `wrong_app`) and `X-Index-Person: <the caller>`. On this route alone the person may be a guest
+  (`guest_<uuid>`) as well as an account, since a Local only document's owner usually is one; `X-Index-Teams` is
+  ignored. A missing or malformed person is 401.
+- The body is `HandoffRequest` (`@liveworkspace/migration`): `{app, title, payload}`, where `app` is
+  `liveplanner`, `livedocuments` or `livedesign`, `title` an item title, and `payload` a `MigrationRoomPayload` for
+  that app (`v: 1`, `payload.app === app`, `payload.id` an id). Up to 32 MiB (413 `payload_too_large`); anything
+  else is 400. Limited to 60 a minute per person (`MIGRATION_LIMITER`; absent, not limited): 429 `rate_limited`.
+- The index makes the item as `POST /items` would: `id` the payload's, the given app's kind, owned by the person,
+  no team, no folder (the top of their space, `p:<person>`), `source: 'import'`, created and updated now, with
+  its `created` Timeline event in the same batch. An id already taken is 409 `item_exists`.
+- Then it calls the app's migration door, `PUT ${APP_ORIGIN_<APP>}/api/internal/items/:id/migration`, with that
+  app's key, the payload as the body (`ownerId` set to the person and `teamId` to null, whatever was sent), and
+  30 seconds to answer. If the app fails, the item row is deleted again (its Timeline rows go with it) and the
+  answer is 502 `migration_failed`. Otherwise `{id, app}` (201).
 
 ## The Google Drive mirror
 

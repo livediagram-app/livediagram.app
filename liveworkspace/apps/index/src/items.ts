@@ -322,8 +322,9 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
 }
 
-// The row, and its `created` event (`synced` for an offline item put back) in the same batch.
-async function insertItem(
+// The row, and its `created` event (`synced` for an offline item put back) in the same batch. The migration's
+// handoff makes its items with it too (migration-handoff.ts).
+export async function insertItem(
   env: Env,
   row: ItemRow,
   detail: Record<string, string | null> | null = null,

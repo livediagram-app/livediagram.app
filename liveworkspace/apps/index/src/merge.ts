@@ -3,6 +3,10 @@
 // app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
 // Where the account already has the same thing (a favourite, a default), the
 // account's stays. Running it again finds nothing left to move.
+//
+// `legacy: true` is the migration's returning guest of the old livediagram.app (docs/migration.md step 6), claimed
+// through accounts: its target may be a guest as well as an account, everything else the same. Without it a guest
+// target is refused, as before.
 
 import { isMergeCaller } from './auth';
 import { sendDriveSignals } from './drive';
@@ -21,11 +25,12 @@ export async function handleMerge(
   const body = await readObject(request);
   const guest = body?.guestId;
   const user = body?.userId;
+  const legacy = body?.legacy === true;
   if (
     !isId(guest) ||
     !guest.startsWith('guest_') ||
     !isId(user) ||
-    user.startsWith('guest_') ||
+    (user.startsWith('guest_') && !legacy) ||
     guest === user
   ) {
     return badRequest();
@@ -34,7 +39,7 @@ export async function handleMerge(
   const personal = `p:${user}`;
   const results = await db.batch([
     // First, so the apps hear of it however the rest goes.
-    recordPersonMerges(db, guest, user, Date.now()),
+    recordPersonMerges(db, guest, user, Date.now(), legacy),
     db
       .prepare(
         `UPDATE items SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
@@ -136,6 +141,10 @@ export async function handleMerge(
       console.warn('[index] person merges failed', { error: String(err) });
     }),
   );
-  console.log('[index] merged a guest into an account', { items });
+  console.log('[index] merged a guest', {
+    items,
+    legacy,
+    into: user.startsWith('guest_') ? 'guest' : 'account',
+  });
   return json({ items });
 }

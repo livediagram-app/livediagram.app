@@ -28,6 +28,8 @@ export interface Env {
   INDEX_KEY_DRIVE?: string;
   DRIVE_KEY_INDEX?: string;
   DRIVE?: Fetcher;
+  // The migration's handoff (migration-handoff.ts), per person. Absent (tests, local), not limited.
+  MIGRATION_LIMITER?: RateLimit;
   // Where each app's internal routes live (copy, purge, revoke).
   APP_ORIGIN_LIVEDIAGRAM?: string;
   APP_ORIGIN_LIVEPLANNER?: string;

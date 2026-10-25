@@ -22,7 +22,7 @@ import { bearerOf, bearerPerson } from '../bearer.ts';
 import type { Env } from '../env.ts';
 import { readProfiles } from '../profiles.ts';
 import { teamsClaim } from '../teams.ts';
-import { verifyApiToken, type VerifiedToken } from '../tokens.ts';
+import { hasApiTokenPrefix, verifyApiToken, type VerifiedToken } from '../tokens.ts';
 import {
   appBaseUrl,
   appOfRequest,
@@ -144,7 +144,7 @@ export type WorkbenchContext = {
 // The API token a request presents, checked in accounts' own table (one indexed read).
 async function apiTokenOf(ctx: WorkbenchContext): Promise<VerifiedToken | null> {
   const bearer = bearerOf(ctx.request);
-  if (!bearer?.startsWith('lwt_')) return null;
+  if (!bearer || !hasApiTokenPrefix(bearer)) return null;
   return verifyApiToken(ctx.env.AUTH_DB, bearer, ctx.now);
 }
 
@@ -153,7 +153,7 @@ async function apiTokenOf(ctx: WorkbenchContext): Promise<VerifiedToken | null> 
 async function signedInAccount(ctx: WorkbenchContext): Promise<string | null> {
   const bearer = bearerOf(ctx.request);
   if (bearer) {
-    if (bearer.startsWith('lwt_') || bearer.startsWith('lvw_')) return null;
+    if (hasApiTokenPrefix(bearer) || bearer.startsWith('lvw_')) return null;
     const person = await bearerPerson(bearer, ctx.env, ctx.auth, ctx.now);
     return person?.kind === 'account' ? person.userId : null;
   }

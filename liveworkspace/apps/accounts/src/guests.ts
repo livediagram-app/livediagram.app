@@ -212,14 +212,18 @@ export function guestMergeConfig(env: Env): MergeConfig {
 // Hands a guest's things to an account: settings and profile here, then the index. True once the index
 // has them, so the cookie can go; false keeps it, and the next sign-in tries again (every step is
 // idempotent). Never throws.
-async function mergeGuestInto(
+//
+// `legacy`: a returning guest of the old livediagram.app (legacy-guests.ts), whose target may be a guest too. The
+// index is told so (`legacy: true`), and a guest target takes no settings or profile here.
+export async function mergeGuestInto(
   config: MergeConfig,
   guestId: string,
   userId: string,
+  options: { legacy?: boolean } = {},
 ): Promise<boolean> {
   // Settings and profiles live here, not in the index, so they move whatever the index says. Idempotent, and a
   // failure is only logged: the guest's rows stay for the next sign-in to try again.
-  if (config.db) {
+  if (config.db && !userId.startsWith('guest_')) {
     await mergeGuestSettings(config.db, guestId, userId).catch((error: unknown) =>
       console.error('Guest settings merge failed:', error),
     );
@@ -245,7 +249,7 @@ async function mergeGuestInto(
       'content-type': 'application/json',
       authorization: `Bearer ${config.indexMergeKey}`,
     },
-    body: JSON.stringify({ guestId, userId }),
+    body: JSON.stringify(options.legacy ? { guestId, userId, legacy: true } : { guestId, userId }),
     signal: AbortSignal.timeout(MERGE_TIMEOUT_MS),
   }).then(
     (response) => {
