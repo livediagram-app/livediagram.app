@@ -143,7 +143,7 @@ describe('sendEmail timeout', () => {
     try {
       vi.spyOn(console, 'error').mockImplementation(() => {});
       const binding = { send: vi.fn(() => new Promise<never>(() => {})) };
-      const sent = sendEmail(withBinding(binding as never), {
+      const sent = sendEmail(withBinding(binding), {
         kind: 'AccountDeleted',
         to: 'a@b.com',
         subject: 's',
