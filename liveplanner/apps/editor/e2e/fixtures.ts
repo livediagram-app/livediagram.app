@@ -174,9 +174,16 @@ export async function startBlankProject(page: Page): Promise<void> {
 // names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
 // where the app keeps it, so /new never leaves for the guest handoff) and the folder is one of theirs, made at the
 // index. For a spec that writes the plan through the api (seedTab), watches the api's saves, or shares it.
+// One guest per page, so a spec that makes a second plan (or comes back to the first) stays its owner.
+const serverGuests = new WeakMap<Page, string>();
+
 export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
-  const owner = await mintGuest(page.request);
-  await adoptGuest(page, owner);
+  let owner = serverGuests.get(page);
+  if (!owner) {
+    owner = await mintGuest(page.request);
+    await adoptGuest(page, owner);
+    serverGuests.set(page, owner);
+  }
   const res = await page.request.post('/api/index/folders', {
     headers: ownerHeaders(owner),
     data: { name: 'e2e' },
