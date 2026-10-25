@@ -24,9 +24,9 @@ import { AppMark } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 import {
   appendHistory,
+  CHECK_COOLDOWN_MS,
   type CheckResult,
   OVERALL_COPY,
-  REFRESH_MS,
   runRound,
   summarise,
   viewServices,
@@ -41,9 +41,9 @@ const HistoryIcon = lucideGlyph(lucideHistory, 16);
 
 const noSubscription = () => () => {};
 
-// The status page's live board (liveworkspace/docs/site.md "Status"). A round of checks runs on load, then every
-// REFRESH_MS while the tab is visible; a hidden tab pauses and checks again on its return. Check now runs one at
-// once. Beside them, liveworkspace's hourly checks and their 90 days (liveworkspace/docs/status.md): read once on load
+// The status page's live board (liveworkspace/docs/site.md "Status"). A round of checks runs on load, and after that
+// only when Check now is pressed, which then rests for CHECK_COOLDOWN_MS: each round asks every service at once, so
+// the page never checks on its own or faster than that. Beside them, liveworkspace's hourly checks and their 90 days (liveworkspace/docs/status.md): read once on load
 // and again every HISTORY_REFRESH_MS while visible. Without them (no Worker, no runs yet) it shows this visit's alone.
 export function StatusBoard({
   fetchImpl,
@@ -66,9 +66,11 @@ export function StatusBoard({
   const [history, setHistory] = useState<ReadonlyMap<string, readonly CheckResult[]>>(new Map());
   const [running, setRunning] = useState(false);
   const [now, setNow] = useState<number | null>(null);
-  const [nextAt, setNextAt] = useState<number | null>(null);
+  // When Check now may run again; the ref guards run() itself, so nothing gets past the rest.
+  const [readyAt, setReadyAt] = useState<number | null>(null);
   const [visible, setVisible] = useState(true);
   const runningRef = useRef(false);
+  const readyAtRef = useRef(0);
   // The stored history: undefined while the first read is out, null when there is none to show.
   const [stored, setStored] = useState<StatusHistory | null | undefined>(undefined);
   const [storedAt, setStoredAt] = useState<number | null>(null);
@@ -78,7 +80,7 @@ export function StatusBoard({
   const summary = useMemo(() => summarise(services, views), [services, views]);
 
   const run = useCallback(async () => {
-    if (runningRef.current) return;
+    if (runningRef.current || Date.now() < readyAtRef.current) return;
     runningRef.current = true;
     setRunning(true);
     try {
@@ -87,8 +89,9 @@ export function StatusBoard({
     } finally {
       runningRef.current = false;
       setRunning(false);
+      readyAtRef.current = Date.now() + CHECK_COOLDOWN_MS;
       setNow(Date.now());
-      setNextAt(Date.now() + REFRESH_MS);
+      setReadyAt(readyAtRef.current);
     }
   }, [groups, fetchImpl]);
 
@@ -121,7 +124,7 @@ export function StatusBoard({
     if (env !== null) void run();
   }, [env, run]);
 
-  // A hidden tab checks nothing; coming back runs a round if one is due.
+  // A hidden tab ticks nothing and reads no history.
   useEffect(() => {
     const onVisibility = () => setVisible(document.visibilityState !== 'hidden');
     onVisibility();
@@ -129,22 +132,20 @@ export function StatusBoard({
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
-  // A one-second tick for the countdown and the "checked … ago" line, only while visible.
+  // A one-second tick for Check now's rest and the "checked … ago" line, only while visible.
   useEffect(() => {
     if (!visible) return;
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [visible]);
 
-  useEffect(() => {
-    if (visible && !running && nextAt !== null && now !== null && now >= nextAt) void run();
-  }, [visible, running, nextAt, now, run]);
-
   const copy = OVERALL_COPY[summary.overall];
   const look = OVERALL_LOOK[summary.overall];
   const OverallIcon = look.icon;
+  // Seconds until Check now may run again: 0 when it may.
   const remaining =
-    nextAt !== null && now !== null ? Math.max(0, Math.ceil((nextAt - now) / 1000)) : null;
+    readyAt !== null && now !== null ? Math.max(0, Math.ceil((readyAt - now) / 1000)) : null;
+  const resting = remaining !== null && remaining > 0;
 
   // Announced when the overall state changes: the words stay the same from round to round, so a live region
   // says nothing new until they do.
@@ -181,8 +182,9 @@ export function StatusBoard({
               {copy.line}
             </p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              Every check runs live from your browser, every minute while this page is open. Beside
-              them, liveworkspace checks every service from Cloudflare each hour and keeps 90 days.
+              Every check runs live from your browser, once when you open this page and again when
+              you press Check now. Beside them, liveworkspace checks every service from Cloudflare
+              each hour and keeps 90 days.
             </p>
           </div>
 
@@ -237,22 +239,22 @@ export function StatusBoard({
               }
             />
             <div className="flex flex-col justify-between gap-2 rounded-2xl border border-slate-200 bg-white/80 p-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
-              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">Next check</dt>
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Check again
+              </dt>
               <dd className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-white">
-                  {running
-                    ? 'Now'
-                    : remaining !== null
-                      ? visible
-                        ? `${remaining} s`
-                        : 'Paused'
-                      : '—'}
+                <span
+                  id="lw-status-rest"
+                  className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-white"
+                >
+                  {running || remaining === null ? 'Now' : resting ? `in ${remaining} s` : 'Ready'}
                 </span>
                 <button
                   type="button"
                   onClick={() => void run()}
-                  disabled={running}
-                  className="relative touch-target-y inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-micro hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:cursor-progress disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:outline-white"
+                  disabled={running || resting || remaining === null}
+                  aria-describedby="lw-status-rest"
+                  className={`relative touch-target-y inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-micro hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-60 disabled:hover:bg-slate-900 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:outline-white dark:disabled:hover:bg-white ${running ? 'disabled:cursor-progress' : 'disabled:cursor-not-allowed'}`}
                 >
                   <span className={running ? 'lw-status-spin inline-flex' : 'inline-flex'}>
                     <RefreshIcon />
@@ -388,11 +390,11 @@ function Stat({ label, value, hint }: { label: string; value: string; hint: Reac
   );
 }
 
-// The time to the next round, as a ring that empties over the minute.
+// Check now's rest, as a ring that empties over it: full while a round runs, empty once it may run again.
 function CountdownRing({ remaining, running }: { remaining: number | null; running: boolean }) {
   const r = 46;
   const circumference = 2 * Math.PI * r;
-  const fraction = running || remaining === null ? 1 : remaining / (REFRESH_MS / 1000);
+  const fraction = running || remaining === null ? 1 : remaining / (CHECK_COOLDOWN_MS / 1000);
   return (
     <svg aria-hidden viewBox="0 0 100 100" className="absolute inset-0 size-full -rotate-90">
       <circle

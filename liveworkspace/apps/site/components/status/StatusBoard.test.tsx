@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StatusHistory } from '@liveworkspace/status';
 import { StatusBoard } from './StatusBoard';
 
@@ -259,5 +259,52 @@ describe('StatusBoard with the hourly history', () => {
     root = createRoot(host!);
     await render(withHistory({ ...HISTORY, at: null, latest: {}, services: {}, incidents: [] }));
     expect(host!.querySelector('[data-history="unavailable"]')).not.toBeNull();
+  });
+});
+
+describe('Check now', () => {
+  // The clock and the board's tick are faked; the checks' own timeouts stay real.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('checks once on load, never again on its own, and rests 30 s after each round', async () => {
+    const answer = fetchWhere(/$^/);
+    let checks = 0;
+    await render(async (input, init) => {
+      if (!String(input instanceof Request ? input.url : input).includes('/history')) checks++;
+      return answer(input, init);
+    });
+    const first = checks;
+    expect(first).toBeGreaterThan(0);
+    const button = [...host!.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Check now'),
+    )!;
+    expect(button.disabled).toBe(true);
+    expect(host!.textContent).toContain('in 30 s');
+
+    // Ten minutes open: no round of its own, and Check now is ready.
+    await act(async () => {
+      vi.advanceTimersByTime(10 * 60_000);
+    });
+    expect(checks).toBe(first);
+    expect(button.disabled).toBe(false);
+    expect(host!.textContent).toContain('Ready');
+
+    // One press, one round, then the rest again; a second press inside it does nothing.
+    await act(async () => {
+      button.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(checks).toBe(first * 2);
+    expect(button.disabled).toBe(true);
+    await act(async () => {
+      button.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(checks).toBe(first * 2);
   });
 });

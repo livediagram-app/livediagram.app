@@ -245,9 +245,11 @@ it faster. When the Worker can't be reached or has nothing yet (a dev server wit
 deploy), the page shows its live checks alone and says so quietly, once, above the groups.
 
 On top, the overall state (all operational, some slow, or some down), how many services answered, the median
-answer time, when the last round finished and a countdown to the next. A round runs on load and then every 60
-seconds while the tab is visible (a hidden tab pauses, and checks again on return), and **Check now** runs one at
-once. A change of overall state is announced politely to screen readers. A legend explains every state.
+answer time, when the last round finished and when the next may run. A round runs once on load; after that the page
+never checks on its own, and **Check now** runs the next. Each round asks every service at once, so after one ends
+**Check now** rests for 30 seconds, showing the seconds left in words and on the ring, so that an open tab or a
+restless finger can't load the services. The rest is the browser's only (a reload starts afresh, with its one round).
+A change of overall state is announced politely to screen readers. A legend explains every state.
 
 Groups: liveworkspace first (its wordmark), then each app in `@liveworkspace/sites` order under its own logo,
 never a coloured dot, each with its own summary and an anchor (`#livediagram`). Under the summary, a jump link per

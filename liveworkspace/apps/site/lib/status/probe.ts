@@ -22,7 +22,8 @@ export { SLOW_MS, TIMEOUT_MS };
 //  - skipped: not checked here, with the reason.
 export type ServiceState = 'up' | 'reached' | 'slow' | 'down' | 'checking' | 'skipped';
 
-export const REFRESH_MS = 60_000;
+// After a round, Check now rests this long before it runs another: every round asks every service at once.
+export const CHECK_COOLDOWN_MS = 30_000;
 // How many past checks each service keeps for its strip: this visit's only, in memory.
 export const HISTORY_MAX = 30;
 
