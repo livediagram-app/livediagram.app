@@ -77,8 +77,10 @@ export function platformEmitters(vocabulary?: Vocabulary, noun?: ItemNoun): Emit
 // The shared browser client (@liveworkspace/telemetry-client) sends every app's client errors
 // (Error·Client) and timings (Timing·Measured) through one site each, so each app's scan adds them as
 // its own, with paths from the monorepo root. Only its literal sites: the rest of it forwards an
-// app's own events, which are scanned where the app sends them.
-export const SHARED_CLIENT_ROOTS = ['packages/telemetry-client/src'];
+// app's own events, which are scanned where the app sends them. The editors' shared code
+// (@liveworkspace/workbench) sends through each editor's bound `track` the same way (a stale chunk's
+// reload, the zoom controls), so its literal sites count for every app too.
+export const SHARED_CLIENT_ROOTS = ['packages/telemetry-client/src', 'packages/workbench/src'];
 
 let clientCached: Emit[] | undefined;
 
