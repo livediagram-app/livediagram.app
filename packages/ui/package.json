@@ -11,7 +11,9 @@
     ".": "./src/index.ts",
     "./relative-time": "./src/relative-time.ts",
     "./build-animation-kit": "./src/build-animation-kit.tsx",
-    "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts"
+    "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts",
+    "./appearance-storage": "./src/appearance/appearance-storage.ts",
+    "./appearance-store": "./src/appearance/appearance-store.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -24,7 +26,9 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*"
   },
   "devDependencies": {
