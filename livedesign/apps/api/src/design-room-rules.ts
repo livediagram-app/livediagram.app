@@ -13,6 +13,7 @@
 // seq, trimming the log, serialising the attachment, broadcasting.
 
 import { isSafeColourValue } from '@livedesign/design';
+import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 import {
   MAX_COLOR_LEN,
@@ -45,7 +46,7 @@ export function helloPresence(
   // verifiedRole is optional on the attachment (it is absent for a session
   // that upgraded before the role was stamped), and ParticipantPresence.role
   // is optional for the same reason. Passed straight through, as before.
-  session: { presenceId: string; verifiedRole?: AccessLevel },
+  session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
 ): ParticipantPresence {
   const c = claimed ?? {};
   const presence: ParticipantPresence = {
@@ -67,6 +68,14 @@ export function helloPresence(
   // it claimable adds no reach; it is clamped like every other string here.
   if (typeof c.key === 'string' && c.key.length > 0) {
     presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
+  }
+  // The Google picture (liveworkspace/docs/accounts.md "Profile pictures"): kept only from a session an account
+  // holds, and only when it is a Google picture URL. Refused whole, never clamped: a cut URL is a broken image.
+  if (typeof c.picture === 'string' && c.picture !== '') {
+    if (!session.account) console.info('[profile-picture] rejected', 'not_account');
+    else if (!isProfilePictureUrl(c.picture))
+      console.info('[profile-picture] rejected', 'invalid_url');
+    else presence.picture = c.picture;
   }
   return presence;
 }

@@ -45,6 +45,10 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
+  //   - `account`: an account holds this session, from X-Verified-Account (liveworkspace/docs/accounts.md "Profile
+  //     pictures"). Only such a session may put a Google picture on the roster, and only such a session is sent
+  //     the pictures on it.
+  account?: boolean;
   //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
   //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
   following?: string;
@@ -77,6 +81,7 @@ type VerifiedSession = {
   tabScope: string | null;
   shareCode: string | null;
   personTag: string | null;
+  account?: boolean;
   workbenchPairing: string | null;
   adderKey: string | null;
   designId: string | null;
@@ -106,6 +111,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    account: request.headers.get('X-Verified-Account') === '1',
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     designId: header('X-Verified-Design'),
@@ -131,6 +137,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     tabScope: v.tabScope,
     shareCode: v.shareCode,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
+    account: v.account === true,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     designId: v.designId?.slice(0, MAX_DESIGN_ID_LEN) ?? null,

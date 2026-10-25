@@ -6,7 +6,7 @@ import {
   type Participant,
 } from '@/lib/identity';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { GlyphDisc, HoverCard, IDENTITY_FILL, identityVars } from '@livedesign/ui';
+import { HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livedesign/ui';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
 //
@@ -33,8 +33,9 @@ type ParticipantAvatarProps = {
   badges?: string[];
 };
 
-// Round avatar showing the participant's initials over their assigned
-// colour, framed by a coloured "presence" ring (green / orange / red).
+// Round avatar showing the participant's Google picture where they have one (liveworkspace/docs/accounts.md
+// "Profile pictures"), over their initials on their assigned colour, framed by a coloured "presence" ring
+// (green / orange / red).
 // Used in the editor header today; will appear next to comments and
 // inside the collab cursor stack later.
 export function ParticipantAvatar({
@@ -52,9 +53,12 @@ export function ParticipantAvatar({
   const ringColor = statusRingColor(participant.status);
   // The ring is drawn as a 2px box-shadow with a 1px white gap inside.
   const avatar = (
-    <GlyphDisc
+    <PictureDisc
       as="div"
       size={size}
+      pictureUrl={participant.picture}
+      // The disc names them (role="img"); the picture inside is decorative.
+      name=""
       role="img"
       aria-label={participantAccessibleName(participant)}
       style={{
@@ -65,7 +69,7 @@ export function ParticipantAvatar({
       className={`font-semibold text-white ${IDENTITY_FILL}`}
     >
       {initialsOf(participant.name)}
-    </GlyphDisc>
+    </PictureDisc>
   );
   if (!withHoverCard) return avatar;
   // HoverCard description: status + idle duration. Surfaces both at

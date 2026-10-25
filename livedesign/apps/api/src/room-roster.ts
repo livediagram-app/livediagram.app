@@ -15,11 +15,14 @@ import {
 } from '@liveworkspace/api-kit/room-agent-presence';
 import type { ParticipantPresence } from './types';
 
-/** One connected socket as the roster reads it: its hello'd presence (null before hello). */
+/** One connected socket as the roster reads it: its hello'd presence (null before hello), and whether an account
+ *  holds it (only an account session is sent other people's Google pictures, liveworkspace/docs/accounts.md
+ *  "Profile pictures"; a guest or link visitor gets the same roster with every picture taken out). */
 export type RosterEntry = {
   ws: WebSocket;
   presence: ParticipantPresence | null;
   personTag: string | null;
+  account?: boolean;
 };
 
 type RosterFrame = {
@@ -36,7 +39,7 @@ export function* rosterFrames(
   const sessions: RosterSession[] = entries.flatMap(({ presence, personTag }) =>
     presence ? [{ presenceId: presence.id, personTag }] : [],
   );
-  for (const { ws, presence: self, personTag } of entries) {
+  for (const { ws, presence: self, personTag, account } of entries) {
     const agents = agentRosterFor(
       self ? { presenceId: self.id, personTag } : null,
       sessions,
@@ -45,7 +48,12 @@ export function* rosterFrames(
     const participants: ParticipantPresence[] = [];
     for (const { ws: peer, presence } of entries) {
       if (peer === ws || !presence) continue;
-      participants.push(presence);
+      if (account || presence.picture === undefined) {
+        participants.push(presence);
+        continue;
+      }
+      const { picture: _hidden, ...withoutPicture } = presence;
+      participants.push(withoutPicture);
     }
     yield { ws, participants, agents };
   }

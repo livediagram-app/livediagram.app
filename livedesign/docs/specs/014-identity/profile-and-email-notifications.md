@@ -24,11 +24,37 @@ retired and its three parts redistributed:
 - **Identity** (avatar, name, email, joined) is the `identity` row in the
   **Account** category. Read from the liveworkspace account on the client, never written: names
   and emails belong to the liveworkspace account, so it is a card, not a form. The
-  avatar is the account's initial. A guest sees a card explaining that they are working as a guest.
+  avatar is the account's Google picture over its initial (see "Avatars" below). A guest sees a card
+  explaining that they are working as a guest.
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless email is configured AND the reader is signed in, since
   a guest has no address to send to.
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
+
+### Avatars
+
+Every avatar of a person in livedesign is the one shared `PictureDisc` (`@liveworkspace/ui`, through
+`@livedesign/ui`): their Google picture over their initials on their colour, the initials alone when there is no
+picture or it fails to load. The rules are liveworkspace's, the same in every app (liveworkspace/docs/accounts.md
+"Profile pictures"):
+
+- **Source.** The picture is the one Google gave the account at its last Google sign-in; an account made with an
+  email code has none, and so does every guest.
+- **Show My Google Picture.** A switch in Settings › Profile, on by default. Off, other people see the initials;
+  the person's own chrome (the header's account button, their own presence avatar, the composer beside their
+  comments) still shows their picture, since it is their own screen.
+- **Who sees it.** Only signed-in people see other people's pictures. A guest or a link visitor gets the same
+  roster and participant reads with every picture taken out.
+- **In the room.** The editor says `hello` with its published picture (`picture`, only while the switch is on),
+  and an `identity` frame when the switch flips, so the roster changes in place without a rejoin. The api stamps
+  `X-Verified-Account` on the socket (an account, not a guest or link visitor); the room keeps a picture only from
+  such a session and only when it is a Google picture URL (`isProfilePictureUrl`, `@liveworkspace/sites/picture`),
+  refused whole, never clamped, and strips every picture from the roster it sends a non-account session.
+- **Participant reads.** `GET /api/participants/:id` answers `picture` only to a signed-in caller.
+- **Where it shows.** Presence avatars (the tab stack, Collaborators), the cursor's name pill, the selection
+  strip on an element, the header's account button and the comment composer's own avatar. Comment authors
+  and team members keep their initials for now: livedesign has no batched read of their pictures yet, and an
+  avatar must never cost a request of its own.
 
 ### `/explorer/profile` still resolves, deliberately
 

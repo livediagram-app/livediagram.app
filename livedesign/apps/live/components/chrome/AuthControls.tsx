@@ -23,8 +23,9 @@ import {
   Glyph,
   useMenu,
   useMenuButton,
-  GlyphDisc,
+  PictureDisc,
 } from '@livedesign/ui';
+import { useOwnPicture } from '@/lib/own-picture';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { accountInitial } from '@liveworkspace/workbench/lib/account-avatar';
@@ -49,6 +50,7 @@ type AuthControlsProps = {
 
 export function AuthControls({ onOpenAccount }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
+  const ownPicture = useOwnPicture().picture;
   // A menu button (docs/specs/004-interface-design/menus.md): the menu keyboard comes from the hooks.
   const {
     open: menuOpen,
@@ -105,13 +107,16 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          <GlyphDisc
+          {/* Their Google picture whatever Show My Google Picture says: it is their own screen. */}
+          <PictureDisc
             size={HEADER_ICON_SLOT_PX}
+            pictureUrl={ownPicture}
+            name=""
             aria-hidden
             className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </GlyphDisc>
+          </PictureDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>

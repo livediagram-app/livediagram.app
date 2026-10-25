@@ -1104,6 +1104,19 @@ export class DesignRoom extends DurableObject<Env> {
       this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
       return;
     }
+    if (msg.kind === 'identity') {
+      // An identity update over the open socket (liveworkspace/docs/accounts.md "Profile pictures"): Show My Google
+      // Picture flipped. The hello rules again, keeping the tab this session is on, then a fresh roster. Not a
+      // join, so none of the join's side effects run, and a session that never said hello has nothing to update.
+      if (!session.presence) return;
+      const next = helloPresence(msg.participant, session);
+      if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
+      if (session.presence.besideTabId !== undefined)
+        next.besideTabId = session.presence.besideTabId;
+      ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
+      this.broadcastPresence();
+      return;
+    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -1454,6 +1467,7 @@ export class DesignRoom extends DurableObject<Env> {
         ws,
         presence: session?.presence ?? null,
         personTag: session?.personTag ?? null,
+        account: session?.account === true,
       });
     }
     // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).

@@ -23,7 +23,12 @@ export function resetProfiles(): void {
 
 function stored(id: string): StoredProfile {
   const participant = seeded.get(id) ?? null;
-  return { participant, ownSet: participant !== null, createdAt: participant?.createdAt ?? null };
+  return {
+    participant,
+    ownSet: participant !== null,
+    createdAt: participant?.createdAt ?? null,
+    picture: null,
+  };
 }
 
 export function fakeProfilesModule() {

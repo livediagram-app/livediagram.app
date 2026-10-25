@@ -42,6 +42,10 @@ export type Participant = {
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
+  // Their Google picture (liveworkspace/docs/accounts.md "Profile pictures"), as the room relayed it: absent for
+  // guests, for anyone who turned Show My Google Picture off, and on a guest's or link visitor's screen. Our own
+  // entry carries our picture whatever the switch says: it is our screen.
+  picture?: string;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
   statusLine?: string;

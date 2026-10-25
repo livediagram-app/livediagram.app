@@ -15,6 +15,8 @@ import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedesign/design';
 import type { AgentPresence, ChangesetRoomOp } from '@livedesign/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
+import { publishedPicture, useOwnPicture } from '@/lib/own-picture';
+import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
 import {
   apiCreateRoomTicket,
   connectRoom,
@@ -183,15 +185,30 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
+  //
+  // A signed-in person says hello with their Google picture while Show My Google Picture is on; the room keeps it
+  // only from an account session (liveworkspace/docs/accounts.md "Profile pictures").
+  const picture = publishedPicture(useOwnPicture());
+  const selfForRoom = () => ({
+    id: selfParticipant.id,
+    key: selfParticipant.key,
+    name: selfParticipant.name,
+    color: selfParticipant.color,
+    ...(picture ? { picture } : {}),
+  });
   const connectAs = useEffectEvent(() => ({
-    self: {
-      id: selfParticipant.id,
-      key: selfParticipant.key,
-      name: selfParticipant.name,
-      color: selfParticipant.color,
-    },
+    self: selfForRoom(),
     shareCode: sessionShareCode,
   }));
+  // The switch flipped, or the picture changed: tell the open room, which updates the roster in place (off =
+  // initials for everyone from this update on).
+  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
+  const announcedPicture = useRef(picture);
+  useEffect(() => {
+    if (announcedPicture.current === picture) return;
+    announcedPicture.current = picture;
+    announceSelf();
+  }, [picture]);
   const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
@@ -237,6 +254,8 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
+          // Only ever present when the room judged us an account session; checked again before it is drawn.
+          ...(isProfilePictureUrl(p.picture) ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next

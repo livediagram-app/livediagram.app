@@ -31,6 +31,8 @@ type StoredProfile = {
   color: string | null;
   createdAt: number;
   updatedAt: number;
+  // The published Google picture the accounts Worker answers (liveworkspace/docs/accounts.md "Profile pictures").
+  picture?: string | null;
 };
 
 export type FakeAccounts = {
@@ -101,6 +103,7 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
       color: own?.color ?? null,
       createdAt: own?.createdAt ?? null,
       updatedAt: own?.updatedAt ?? null,
+      picture: own?.picture ?? null,
     };
   };
 

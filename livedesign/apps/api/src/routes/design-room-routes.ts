@@ -16,6 +16,7 @@ import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/
 import { type RouteContext } from './context';
 import { resolveDesignGrant } from './design-grant';
 import { personTagFor } from '../person-tag';
+import { isAccountOwner } from '../accounts/client';
 
 // Returns null when the request isn't a room route.
 export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -67,6 +68,10 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // Whether an account holds this session (not a guest, not a link visitor): only such a session may put a
+    // Google picture on the roster, and only such a session is sent the pictures on it
+    // (liveworkspace/docs/accounts.md "Profile pictures"). Stamped on every leg, like the headers above.
+    forwarded.headers.set('X-Verified-Account', person && isAccountOwner(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set(
       'X-Verified-Adder',

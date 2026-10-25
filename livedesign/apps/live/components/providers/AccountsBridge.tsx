@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDesigns } from '@/lib/recent-designs-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
+import { setOwnPicture } from '@/lib/own-picture';
 import {
   DEFERRED_AUTH_DEFAULT,
   type DeferredAuthState,
@@ -24,6 +25,10 @@ type SessionUser = {
   id: string;
   email: string | null;
   name: string | null;
+  // The account's Google picture and Show My Google Picture off (apps/api/src/routes/auth.ts AuthUser), for the
+  // person's own avatar and what their presence publishes (lib/own-picture.ts).
+  picture?: string | null;
+  pictureHidden?: boolean;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -57,6 +62,7 @@ function refresh(): Promise<Session | null> {
   inflight ??= requestSession().then((session) => {
     current = session;
     inflight = null;
+    setOwnPicture(session?.user.picture ?? null, session?.user.pictureHidden === true);
     return session;
   });
   return inflight;
@@ -71,6 +77,7 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
 
 async function endSession(): Promise<void> {
   current = null;
+  setOwnPicture(null, false);
   await forgetRecentDesigns();
   await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
     () => {},

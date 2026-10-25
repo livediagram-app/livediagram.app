@@ -10,7 +10,7 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
+import { HoverCard, PictureDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { RemoteSelector } from '@/lib/presence-rows';
 
@@ -55,15 +55,17 @@ export function RemoteSelectorsStrip({ selectors }: { selectors: RemoteSelector[
           }}
         >
           <HoverCard {...remoteSelectorCopy(p)}>
-            <GlyphDisc
+            <PictureDisc
               size={20}
               as="div"
+              pictureUrl={p.picture}
+              name=""
               aria-label={remoteSelectorCopy(p).title}
               style={identityVars(p.color)}
               className={`border border-white text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
             >
               {initialsOf(p.name)}
-            </GlyphDisc>
+            </PictureDisc>
           </HoverCard>
         </div>
       ))}

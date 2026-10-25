@@ -14,6 +14,7 @@
 
 import { ProfileError, readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsClient, accountsOwner } from './client';
 
@@ -35,11 +36,20 @@ export type StoredProfile = {
   ownSet: boolean;
   // When the accounts Worker first stored something they set: null when they never have.
   createdAt: number | null;
+  // Their published Google picture (liveworkspace/docs/accounts.md "Profile pictures"): null for none, for a
+  // guest and when Show My Google Picture is off. Kept beside the participant, never in it, so only a route that
+  // knows its reader is signed in hands it on (routes/participants.ts).
+  picture: string | null;
 };
 
 const remembered = new Map<string, { profile: StoredProfile; until: number }>();
 
-const NO_PROFILE: StoredProfile = { participant: null, ownSet: false, createdAt: null };
+const NO_PROFILE: StoredProfile = {
+  participant: null,
+  ownSet: false,
+  createdAt: null,
+  picture: null,
+};
 
 function remember(id: string, profile: StoredProfile, now: number): void {
   remembered.delete(id);
@@ -66,6 +76,7 @@ export function participantOf(id: string, profile: Profile | undefined): StoredP
       : null,
     ownSet,
     createdAt: profile.createdAt,
+    picture: profilePictureOf(profile.picture),
   };
 }
 

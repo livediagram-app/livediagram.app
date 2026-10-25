@@ -1,6 +1,7 @@
 'use client';
 
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
+import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useWorkbenchDesignSession } from '@/components/providers/workbench-session-context';
@@ -816,6 +817,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(
     () =>
       onProfileSaved((saved) => {
+        // Show My Google Picture (liveworkspace/docs/accounts.md "Profile pictures"): the room hears it at once
+        // (useRoomConnection's identity update), whoever this editor is.
+        if (saved.showPicture !== undefined) setOwnPictureShown(saved.showPicture);
         const current = selfParticipantRef.current;
         if (current.id === 'self') return;
         const next = participantWithProfile(current, saved);
