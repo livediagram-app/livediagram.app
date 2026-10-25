@@ -8,11 +8,11 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 ## Three deployment modes
 
-| Mode                 | Configuration                                                                                                                               | Frontend                                                                                                    | API worker                                      |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Hybrid (production)  | `NEXT_PUBLIC_SIGN_IN_ENABLED=true` + the api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`               | The accounts bridge asks for the session. Guests + signed-in users coexist.                                 | Verifies Bearer, falls through to `X-Owner-Id`. |
-| Guest-only           | The flag unset (local development, or any deployment without sign-in) | No bridge. Auth routes show "not enabled" notice. Editor unchanged.                                         | Falls through to `X-Owner-Id` on every request. |
-| Guest-only (partial) | Frontend flag on, api unconfigured                                                                                                          | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles as a guest and cannot sign in. | `X-Owner-Id` only.                              |
+| Mode                 | Configuration                                                                                                                 | Frontend                                                                                                    | API worker                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Hybrid (production)  | `NEXT_PUBLIC_SIGN_IN_ENABLED=true` + the api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | The accounts bridge asks for the session. Guests + signed-in users coexist.                                 | Verifies Bearer, falls through to `X-Owner-Id`. |
+| Guest-only           | The flag unset (local development, or any deployment without sign-in)                                                         | No bridge. Auth routes show "not enabled" notice. Editor unchanged.                                         | Falls through to `X-Owner-Id` on every request. |
+| Guest-only (partial) | Frontend flag on, api unconfigured                                                                                            | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles as a guest and cannot sign in. | `X-Owner-Id` only.                              |
 
 The first two are the supported modes. The third is a misconfiguration — useful for debugging, not for prod.
 

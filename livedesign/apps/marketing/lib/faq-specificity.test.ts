@@ -10,7 +10,7 @@ import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
 const OTHER_PRODUCTS: { name: string; pattern: RegExp }[] = [
   { name: 'livediagram', pattern: /\blivediagram\b/i },
   { name: 'liveplanner', pattern: /\bliveplanner\b/i },
-  { name: 'livedocuments', pattern: /\blive(?:documents|pages)\b/i },
+  { name: 'livedocuments', pattern: /\blive(?:doc(?:ument)?s|pages)\b/i },
   { name: 'liveworkspace', pattern: /\bliveworkspace\b/i },
   // livediagram's kinds of work and features.
   { name: 'diagrams', pattern: /\bdiagram(?:s|ming)?\b/i },

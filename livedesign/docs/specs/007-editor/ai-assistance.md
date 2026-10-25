@@ -169,7 +169,7 @@ exactly six:
 | `method_not_allowed` | 405    | Anything but a `POST`.                                     |
 | `rate_limited`       | 429    | The caller's per-owner request budget is spent.            |
 | `ai_error`           | 502    | The upstream model call failed.                            |
-| `ai_not_configured`  | 503    | No model key on this deployment (the default when unset).   |
+| `ai_not_configured`  | 503    | No model key on this deployment (the default when unset).  |
 
 A request with no identity at all (neither a signed-in session nor an `X-Owner-Id`)
 gets the worker-wide `bad_request` 400 every owner-scoped route sends.
