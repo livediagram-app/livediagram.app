@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    // A Node command, run from a laptop: Node 22's own globals, plus DOM for the shared packages it reads
+    // (@livediagram/document is written for the browser and the Workers too).
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    // The command runs straight under Node's type stripping, which needs the `.ts` on its own imports.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules"]
+}
