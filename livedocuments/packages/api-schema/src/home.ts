@@ -1,7 +1,7 @@
 // The use window Jump back in counts most used over (docs/specs/013-workspace/explorer-home.md): the editor's
 // This Browser opens are kept to it (apps/editor/lib/offline/offline-opens.ts).
 
-import { DAY_MS, utcDay } from './within-reach';
+import { DAY_MS, utcDay } from '@liveworkspace/api-schema/within-reach';
 
 /** How many UTC days back, today included, a use day counts towards most used (spec). */
 export const WITHIN_REACH_USE_WINDOW_DAYS = 90;

@@ -3,7 +3,7 @@
 // /api/workbench route, the one origin rule, and the confinement allow-list a workbench session lives
 // inside. Shared by the api worker, the live editor and the CLI, so all three decide alike.
 
-import { lowerLevel, type AccessLevel } from './access-levels';
+import { lowerLevel, type AccessLevel } from '@liveworkspace/api-schema/access-levels';
 
 // ---------------------------------------------------------------------
 // Constants (blueprint "Constants and configuration")

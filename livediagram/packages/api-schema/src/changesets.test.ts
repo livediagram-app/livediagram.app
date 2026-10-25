@@ -9,7 +9,7 @@ import {
   revOfEtag,
   tabEtag,
 } from './changesets';
-import { MAX_TAB_BYTES } from './tab-size';
+import { MAX_TAB_BYTES } from '@liveworkspace/api-schema/tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
 describe('changeset ids', () => {

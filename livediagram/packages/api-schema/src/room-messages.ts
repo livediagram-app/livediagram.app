@@ -1,4 +1,4 @@
-import type { AgentPresence } from './agent-presence';
+import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';

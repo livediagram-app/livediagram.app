@@ -1,17 +1,18 @@
 // Comment threads as the api lists them across a design (docs/specs/024-agents/agent-presence.md "Comments",
 // blueprint "REST"): one thread per element, with the element's ref and label, so an agent can read the
-// conversation without reading the tab.
+// conversation without reading the tab. The statuses and the text cap are liveworkspace's
+// (@liveworkspace/api-schema/comment-threads). The thread is the same shape as every product's
+// (DocumentCommentThread there), declared here so the api's OpenAPI document keeps naming it
+// `DesignCommentThread`.
 
 import type { CommentMention } from '@livedesign/design';
 
-export const COMMENT_TEXT_MAX = 2000;
-
-export const COMMENT_LIST_STATUSES = ['open', 'resolved', 'all'] as const;
-export type CommentListStatus = (typeof COMMENT_LIST_STATUSES)[number];
-
-export function isCommentListStatus(value: unknown): value is CommentListStatus {
-  return COMMENT_LIST_STATUSES.some((status) => status === value);
-}
+export {
+  COMMENT_LIST_STATUSES,
+  COMMENT_TEXT_MAX,
+  isCommentListStatus,
+  type CommentListStatus,
+} from '@liveworkspace/api-schema/comment-threads';
 
 export type DesignCommentThread = {
   tabId: string;

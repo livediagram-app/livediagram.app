@@ -277,6 +277,23 @@ Each step is its own PR, and both products build and pass their tests after ever
      livedesign but moves only once the union is shared; and what is its own vocabulary or refusals
      (`vocabulary`, `types`, `parse-line`, `parse-json`, `rejections`, `format-operation`), its `pages` slice
      and liveplanner's Plan bodies. No stored document or wire shape changed.
+   - `api-schema`: `@liveworkspace/api-schema` (`packages/api-schema`) holds the wire shapes and validators the
+     four `api-schema` packages had in common and that name no product: access levels, agent presence, API tokens,
+     the build id and document format parsers, the template and icon catalogues, comment threads, creation use, the
+     Offline Mode conversion, document dates and sources, folders, reading an api error, the image limits, sniffing
+     and size, the gallery row, the MCP origin resolver, participants, placement, ref errors, share-link levels and
+     lifetimes, the signed-in hint reader, the snapshot SVG helpers, the tab size cap, teams, title case, the Trash
+     clock and within reach: 30 modules and 21 tests, about 1,900 lines. Every difference between copies was a
+     comment or one side behind (livediagram's `importMarksUse`, the room ticket's `adderKey`, `IconSearchResponse`);
+     the newer side won. What carries a product's name became a binding it keeps: its build, format and conversion
+     headers, its MCP origin (`createMcpOriginResolver`), its hint cookie (`createSignedInHintReader`) and its Trash
+     tokens; liveplanner and livedesign re-export under their nouns (`projectDates`, `DesignPlacement`). Types the
+     api's OpenAPI document names (`TrashedProject`, `ProjectSource`, `DesignCommentThread`, …) keep a local
+     declaration, so `/api/openapi.json` did not change. The SHA-256 digest four packages each held is one copy in
+     `@liveworkspace/model-core/sha256`. Each module is a subpath and each product's `api-schema` re-exports it, so
+     no caller changed. Still per product: what is typed on its element model (`drag-preview`, `embed-images`), its
+     vocabularies (telemetry, lint, room ops, changesets, views, CTA surfaces, page views), the workbench messages
+     (their types carry the product's prefix) and its envelopes, which name its noun.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

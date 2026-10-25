@@ -5,7 +5,7 @@
 // shapes live here too and the engine re-exports them.
 
 import type { Element, ElementOp, Finish, Tab } from '@liveplanner/project';
-import { MAX_TAB_BYTES } from './tab-size';
+import { MAX_TAB_BYTES } from '@liveworkspace/api-schema/tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
 // ---------------------------------------------------------------------

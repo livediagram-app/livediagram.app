@@ -19,7 +19,7 @@ socket) are not derived here.
 
 | File                                                                                                                                                            | Role                                                                                                                                        |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/access-levels.ts` (new)                                                                                                                | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`                                                      |
+| `../packages/api-schema/src/access-levels.ts` (new)                                                                                                             | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`                                                      |
 | `packages/api-schema/src/index.ts`                                                                                                                              | `ShareRole` becomes an alias of `AccessLevel`                                                                                               |
 | `packages/api-schema/src/room-messages.ts`                                                                                                                      | `isPresenceOpKind`, `isSystemOpKind`: the op classes the gate reads; the `article` frame's `grow`                                           |
 | `packages/document/src/participant-content.ts` (new)                                                                                                            | The participant content rule: `applyParticipantOp`, `PARTICIPANT_TEXT_FIELDS`, `participantTabChange`                                       |
@@ -204,7 +204,7 @@ Invariants:
 
 ## Interfaces and contracts
 
-`packages/api-schema/src/access-levels.ts`:
+`../packages/api-schema/src/access-levels.ts`:
 
 ```ts
 export const ACCESS_LEVELS = ['view', 'participate', 'edit'] as const;

@@ -7,13 +7,5 @@ export const DESIGN_FORMAT = 2;
 // Every api response carries the server's number in this header.
 export const DESIGN_FORMAT_HEADER = 'X-Livedesign-Format';
 
-/** A safe positive integer (a number, or the digits of one), else null. */
-export function parseDesignFormat(value: unknown): number | null {
-  const n =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string' && /^\d+$/.test(value)
-        ? Number(value)
-        : NaN;
-  return Number.isSafeInteger(n) && n > 0 ? n : null;
-}
+// Reading the number off the wire is liveworkspace's.
+export { parseDocumentFormat as parseDesignFormat } from '@liveworkspace/api-schema/document-format';

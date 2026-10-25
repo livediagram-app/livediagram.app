@@ -18,7 +18,7 @@ packages/
   templates/      template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
-  api-schema/     wire-format DTOs the api worker emits + the live editor consumes
+  api-schema/     wire-format DTOs the api worker emits + the live editor consumes (over @liveworkspace/api-schema)
   agent-verbs/    the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides, the skill
   edit-operations/ the engine agent changesets run on: edit operations and replace into element ops
   document-views/ read-only text views of a tab (outline, graph, layout, ...) for agents and scripts

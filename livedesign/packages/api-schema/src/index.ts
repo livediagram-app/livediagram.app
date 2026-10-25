@@ -12,7 +12,7 @@
 // The api worker re-exports some under its own aliases (`DesignDTO` etc.);
 // new code should prefer the canonical names here.
 
-import type { AccessLevel } from './access-levels';
+import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DesignSource } from './design-source';
 import type { EditorMode, Tab } from '@livedesign/design';
 import type { CreationTabKind } from './placement-defaults';
@@ -155,138 +155,8 @@ export type TabRecord = Tab & {
 };
 
 // ---------------------------------------------------------------------
-// Folders (docs/specs/013-workspace/folders.md)
-// ---------------------------------------------------------------------
-
-// A folder row. `parentId === null` means the folder lives at the
-// tree root. `teamId` (docs/specs/013-workspace/team-shared-designs.md): null = a personal folder gated on
-// `ownerId`; non-null = a folder in that team's shared library,
-// gated on joined membership (ownerId then records the creator for
-// audit only).
-export type Folder = {
-  id: string;
-  ownerId: string;
-  parentId: string | null;
-  teamId: string | null;
-  name: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// ---------------------------------------------------------------------
-// API tokens (docs/specs/015-api/public-api-and-tokens.md)
-// ---------------------------------------------------------------------
-
-// An external API credential, owner-scoped to an account. The wire
-// shape NEVER carries the secret or its hash — only the public id +
-// metadata shown in the management list. The plaintext is returned once,
-// at creation, on a separate response field (see the /api/tokens route).
-export type ApiToken = {
-  id: string;
-  name: string | null;
-  createdAt: number;
-  // Null until the token is first used to authenticate a request.
-  lastUsedAt: number | null;
-  // Fixed at createdAt + 6 months (docs/specs/015-api/public-api-and-tokens.md).
-  expiresAt: number;
-  // Read-only token (docs/specs/015-api/mcp-server.md §4.11): may only make GET/HEAD requests; the api
-  // rejects its writes. Minted read-only via the MCP consent screen.
-  readOnly: boolean;
-};
-
-// ---------------------------------------------------------------------
-// Teams (docs/specs/013-workspace/teams.md)
-// ---------------------------------------------------------------------
-
-export type TeamRole = 'admin' | 'member';
-
-// A team row. No owner column: ownership is expressed through the
-// Admin role on the member link rows, so a team survives its creator
-// leaving. `organisation` is free text (docs/specs/013-workspace/teams.md), not a foreign key.
-export type Team = {
-  id: string;
-  name: string;
-  organisation: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// `GET /api/teams` list projection: the team plus the caller's own
-// role (drives which management controls the UI shows) and a member
-// count for the sidebar badge, both joined server-side so the list
-// doesn't need N member fetches.
-export type TeamListItem = Team & {
-  myRole: TeamRole;
-  memberCount: number;
-};
-
-// The invite's state (docs/specs/013-workspace/teams.md). An 'invited' row grants no membership: it
-// waits in the invitee's Invites section until they accept ('joined'). The two rejected states are
-// records, not memberships: 'declined' (they said no, in the app or from the email) and 'expired'
-// (nobody answered within 28 days). Both stay on the list, as Rejected, until an Admin removes them.
-export type TeamMemberStatus = 'invited' | 'joined' | 'declined' | 'expired';
-
-// True for a row that is (or may become) a membership. A rejected row ('declined' / 'expired') is only a
-// record for the admins' list: never a mention, an assignee, or anyone to email.
-export function isOpenTeamMember(member: { status: TeamMemberStatus }): boolean {
-  return member.status === 'invited' || member.status === 'joined';
-}
-
-// One member link row. `userId` is the account id, null while the
-// invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
-// connecting identifies the person, it does NOT accept for them).
-// `email` is the lowercased invite address; null only on a creator
-// row minted when the deployment's JWT carries no email claim. One of
-// the two is always set.
-export type TeamMember = {
-  id: string;
-  teamId: string;
-  userId: string | null;
-  email: string | null;
-  role: TeamRole;
-  status: TeamMemberStatus;
-  // The member's display name (docs/specs/013-workspace/teams.md), resolved from their
-  // participant profile once they've joined and used the app. Null on
-  // a pending invite or a member with no profile yet; the client then
-  // falls back to the invite email's local part.
-  name: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
-// One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
-// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
-// its name and organisation, how many people have joined, the role offered, who invited them and when.
-export type TeamInvite = {
-  memberId: string;
-  team: Team;
-  memberCount: number;
-  invitedAt: number;
-  role: TeamRole;
-  invitedByName: string | null;
-};
-
-// ---------------------------------------------------------------------
 // Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------
-
-// A share link's access level (docs/specs/013-workspace/share-roles.md): Viewer, Participant or Editor.
-export type ShareRole = AccessLevel;
-
-// Lifetime chosen at link creation (docs/specs/013-workspace/share-link-expiry.md). 'never' is the default
-// and the pre-expiry behaviour: the link works until revoked.
-export type ShareLinkExpiry = 'never' | 'week' | 'month' | 'sixMonths';
-
-// The fixed lifetimes in ms, shared by the api worker (computing
-// `expiresAt` at create/extend time) and the live editor (rendering
-// "6d left" countdowns) so the two sides can't disagree on what a
-// "month" is. Calendar-ish approximations on purpose: share-link
-// expiry is a security bound, not a billing period.
-export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, number> = {
-  week: 7 * 24 * 60 * 60 * 1000,
-  month: 30 * 24 * 60 * 60 * 1000,
-  sixMonths: 183 * 24 * 60 * 60 * 1000,
-};
 
 export type ShareLink = {
   code: string;
@@ -306,81 +176,13 @@ export type ShareLink = {
 };
 
 // ---------------------------------------------------------------------
-// Participants
-// ---------------------------------------------------------------------
-
-// A persisted participant row, returned by `POST /api/participants`
-// when the editor registers identity. The live app wraps this in its
-// own `Participant` type that adds presence status (`online` / `away`
-// / `stale`) on top — that status is purely client-derived from idle
-// time and never crosses the wire.
-export type ParticipantRecord = {
-  id: string;
-  name: string;
-  color: string;
-  createdAt: number;
-};
-
-// Realtime presence identity, broadcast to every connected peer: the room and the participant route clamp to
-// these, and the editor clamps what it reads to them too.
-export const MAX_PARTICIPANT_NAME_LEN = 120;
-export const MAX_COLOR_LEN = 64;
-
-// What the realtime room broadcasts as presence. Identical shape to
-// `ParticipantRecord` minus `createdAt` — presence is concerned with
-// "who is connected right now", not when they first registered.
-export type ParticipantPresence = {
-  id: string;
-  name: string;
-  color: string;
-  // Server-resolved role inside this design. Set by the api worker
-  // at WebSocket upgrade time before the request reaches the Durable
-  // Object — derived from owner-id match (always 'edit') or the
-  // share-code the visitor used to join. Optional so existing
-  // hello frames keep parsing while clients catch up; missing value
-  // is treated as "unknown role" by the UI (no badge surfaced). An access level
-  // (docs/specs/013-workspace/share-roles.md); readers parse it with parseStoredLevel.
-  role?: AccessLevel;
-  // Id of the tab this participant is currently focused on. The room
-  // remembers it from their `tab-focus` ops and echoes it in the
-  // presence list so a LATE joiner learns where everyone already is —
-  // tab-focus ops only fire on a switch, so without this a joiner would
-  // default existing peers to the first tab until they happened to move.
-  // Undefined until the participant's first tab-focus op lands.
-  tabId?: string;
-  // The tab in their other pane while they work side by side (docs/specs/007-editor/split-view.md
-  // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
-  // no split.
-  besideTabId?: string;
-  // A per-browser random the client mints and keeps (`livedesign:v2:collab-key`), shared by every tab in that browser
-  // so the roster shows one avatar per person (docs/specs/012-collaboration/collaborator-enhancements.md). `id` above
-  // can't do it: the room mints that per socket. Relayed VERBATIM: claimed, not verified, and it grants nothing.
-  // Optional, so a hello without one still parses (the roster falls back to `id`).
-  key?: string;
-};
-
-// ---------------------------------------------------------------------
 // Images (docs/specs/009-elements/images.md)
 // ---------------------------------------------------------------------
 
-// One row returned by `GET /api/images` (the gallery list) + the
-// inner shape of the `POST /api/images` response (`{ image, deduped }`).
-// The bytes themselves are fetched separately via
-// `GET /api/images/<id>?d=<designId>` (owner or share-code gated).
-export type ImageSummary = {
-  id: string;
-  contentType: string;
-  byteSize: number;
-  width: number;
-  height: number;
-  originalName?: string;
-  createdAt: number;
-};
-
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
-// (see ./sha256.ts for the rationale).
-export { sha256Hex } from './sha256';
+// (see @liveworkspace/api-schema/sha256 for the rationale).
+export { sha256Hex } from '@liveworkspace/api-schema/sha256';
 export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 // The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
 export { sha256 } from './sha256-digest';
@@ -395,16 +197,16 @@ export {
 } from '@liveworkspace/api-kit/bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
-// workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
-// ./image-size.ts).
-export { sniffImageType } from './image-sniff';
-export { imagePixelSize } from './image-size';
+// workers render tabs with, and the header size it budgets pixels by (see @liveworkspace/api-schema/image-sniff, ./embed-images.ts,
+// @liveworkspace/api-schema/image-size).
+export { sniffImageType } from '@liveworkspace/api-schema/image-sniff';
+export { imagePixelSize } from '@liveworkspace/api-schema/image-size';
 export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
-// the telemetry dashboard can't drift (see ./title-case.ts).
-export { headlineCase, titleCase } from './title-case';
+// the telemetry dashboard can't drift (see @liveworkspace/api-schema/title-case).
+export { headlineCase, titleCase } from '@liveworkspace/api-schema/title-case';
 export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The design format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DESIGN_FORMAT, DESIGN_FORMAT_HEADER, parseDesignFormat } from './design-format';
@@ -446,8 +248,8 @@ export type CapabilitiesResponse = {
 // A link card's unfurl (GET /api/unfurl), every product's (@liveworkspace/api-kit/unfurl).
 export type { UnfurlResult } from '@liveworkspace/api-kit/unfurl';
 
-export * from './access-levels';
-export * from './image-limits';
+export * from '@liveworkspace/api-schema/access-levels';
+export * from '@liveworkspace/api-schema/image-limits';
 export * from './cta-sources';
 export * from './page-views';
 export * from './room-messages';
@@ -465,7 +267,7 @@ export * from './trash';
 export * from './design-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
-export * from './tab-size';
+export * from '@liveworkspace/api-schema/tab-size';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).
 export {
@@ -482,35 +284,25 @@ export * from './placement-defaults';
 export * from './home';
 export * from './drag-preview';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
-export * from './within-reach';
+export * from '@liveworkspace/api-schema/within-reach';
 // Making a design is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
-export * from './creation-use';
+export * from '@liveworkspace/api-schema/creation-use';
 // Design views and ref refusals (docs/specs/024-agents/design-views.md).
 export * from './design-views';
 // The page lint's report (docs/specs/024-agents/page-lint.md).
 export * from './lint';
-export * from './ref-errors';
+export * from '@liveworkspace/api-schema/ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
 export * from './recent-designs';
-export * from './snapshot-svg';
+export * from '@liveworkspace/api-schema/snapshot-svg';
 
-// GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
-// presented, for `livedesign auth status`. `role` is `full` or `read-only`.
-export type CurrentTokenResponse = {
-  accountId: string;
-  accountName: string | null;
-  tokenId: string;
-  tokenName: string | null;
-  role: 'full' | 'read-only';
-  expiresAt: number | null;
-};
 export * from '@liveworkspace/api-kit/api-token';
 export * from './design-source';
-export * from './catalogues';
+export * from '@liveworkspace/api-schema/catalogues';
 export * from './comment-threads';
-export * from './agent-presence';
+export * from '@liveworkspace/api-schema/agent-presence';
 export * from './design-paths';
-export * from './http-errors';
+export * from '@liveworkspace/api-schema/http-errors';
 export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
@@ -523,3 +315,12 @@ export * from './mcp-origin';
 
 // The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
 export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';
+
+// The wire shapes every product shares, liveworkspace's (@liveworkspace/api-schema): folders, API tokens, teams,
+// share-link levels and lifetimes, participants and the image gallery's row.
+export * from '@liveworkspace/api-schema/folders';
+export * from '@liveworkspace/api-schema/api-tokens';
+export * from '@liveworkspace/api-schema/teams';
+export * from '@liveworkspace/api-schema/share-links';
+export * from '@liveworkspace/api-schema/participants';
+export * from '@liveworkspace/api-schema/image-summary';

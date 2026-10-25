@@ -1,34 +1,23 @@
-import { DAY_MS } from '@liveplanner/items';
-// The Trash (docs/specs/013-workspace/trash.md): a deleted project waits 30
-// days before it is purged. One clock for the api's daily purge, the Trash
-// view's "days left" and the Offline Mode local Trash.
+// The Trash (docs/specs/013-workspace/trash.md): a deleted project waits 30 days before it is purged. The
+// clock, the reasons and the row are liveworkspace's (@liveworkspace/api-schema/trash); what carries
+// this product's noun is here.
 
-// How long a project stays restorable. Operator decision; changing it changes
-// what the Trash view and the help article promise.
-export const TRASH_RETENTION_DAYS = 30;
-export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * DAY_MS;
+import type { TrashReason } from '@liveworkspace/api-schema/trash';
+import { DAY_MS } from '@liveworkspace/api-schema/within-reach';
 
-// How long a project must sit empty and unsaved before the daily clean-up
-// moves it to the Trash (docs/specs/013-workspace/empty-project-cleanup.md).
-// Operator decision; the help article promises it.
-export const EMPTY_PROJECT_STALE_DAYS = 30;
-export const EMPTY_PROJECT_STALE_MS = EMPTY_PROJECT_STALE_DAYS * DAY_MS;
+export {
+  TRASH_REASONS,
+  TRASH_RETENTION_DAYS,
+  TRASH_RETENTION_MS,
+  isTrashExpired,
+  trashDaysLeft,
+  trashPurgeDueAt,
+  type TrashReason,
+} from '@liveworkspace/api-schema/trash';
 
-// Why a project is in the Trash: someone deleted it, or the clean-up moved it
-// because it stayed empty. The database stores NULL for `deleted`.
-export const TRASH_REASONS = ['deleted', 'empty'] as const;
-export type TrashReason = (typeof TRASH_REASONS)[number];
-
-// The error every door answers for a project that is in the Trash, to a
-// caller who could have opened it (HTTP 410).
-export const PROJECT_TRASHED_ERROR = 'project_trashed';
-
-// The WebSocket close code the realtime room ends a session with when its
-// project is trashed. In the 4000-4999 application range, beside 4003
-// (a share link changed).
-export const PROJECT_TRASHED_CLOSE = 4004;
-
-// One row of `GET /api/trash`: a project the caller may restore or purge.
+// One row of `GET /api/trash`: a project the caller may restore or purge. The row is every product's
+// (TrashedDocument in @liveworkspace/api-schema/trash); it is declared here so the api's OpenAPI
+// document keeps naming it `TrashedProject`.
 export type TrashedProject = {
   id: string;
   name: string;
@@ -41,16 +30,17 @@ export type TrashedProject = {
   reason: TrashReason;
 };
 
-export function trashPurgeDueAt(trashedAt: number): number {
-  return trashedAt + TRASH_RETENTION_MS;
-}
+// How long a project must sit empty and unsaved before the daily clean-up
+// moves it to the Trash (docs/specs/013-workspace/empty-project-cleanup.md).
+// Operator decision; the help article promises it.
+export const EMPTY_PROJECT_STALE_DAYS = 30;
+export const EMPTY_PROJECT_STALE_MS = EMPTY_PROJECT_STALE_DAYS * DAY_MS;
 
-export function isTrashExpired(trashedAt: number, now: number): boolean {
-  return now >= trashPurgeDueAt(trashedAt);
-}
+// The error every door answers for a project that is in the Trash, to a
+// caller who could have opened it (HTTP 410).
+export const PROJECT_TRASHED_ERROR = 'project_trashed';
 
-// Whole days until the purge is due, rounded up and never below zero: 30 the
-// moment a project is deleted, 1 on its last day.
-export function trashDaysLeft(trashedAt: number, now: number): number {
-  return Math.max(0, Math.ceil((trashPurgeDueAt(trashedAt) - now) / DAY_MS));
-}
+// The WebSocket close code the realtime room ends a session with when its
+// project is trashed. In the 4000-4999 application range, beside 4003
+// (a share link changed).
+export const PROJECT_TRASHED_CLOSE = 4004;

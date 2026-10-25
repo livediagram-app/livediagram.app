@@ -363,7 +363,7 @@ are images, losses, failures or new documents.
 
 ### Document dates (api)
 
-`documentDates(body, now)` (`packages/api-schema/src/document-dates.ts`, used by the worker's
+`documentDates(body, now)` (`../packages/api-schema/src/document-dates.ts`, used by the worker's
 `POST /api/documents` and by the editor): `DOCUMENT_DATE_MIN` = 1 January 2000 UTC,
 `DOCUMENT_DATE_SKEW_MS` = one day; rules per [the api spec](../../015-api/api.md#document-dates).
 The worker refuses invalid dates with 400 "invalid document dates" before any write; a genuine
