@@ -1523,8 +1523,7 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description:
-      'Your own library: the folders you create, your unfiled items and Favourites.',
+    description: 'Your own library: the folders you create, your unfiled items and Favourites.',
     keywords:
       'my designs personal space library my work your designs your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',

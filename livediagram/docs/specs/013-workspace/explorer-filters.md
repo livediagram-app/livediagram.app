@@ -33,12 +33,12 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
 
 ## Views
 
-| View                                                         | Route                                                                                                    | Lens                              |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| My Work, and each of its folders                             | `/explorer/all`, `/explorer/folder?id=<id>`                                                              | Scoped                            |
-| A team, at its root or in one of its folders                 | `/explorer/team?id=<id>`                                                                                 | Scoped                            |
+| View                                               | Route                                                                              | Lens                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| My Work, and each of its folders                   | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | Recent, Favourites, Shared With Me, Search results | `/explorer/recent`, `/explorer/favourites`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
-| Home, Inbox, Timeline, Trash                                 | Their own                                                                                                | None: typing opens Search results |
+| Home, Inbox, Timeline, Trash                       | Their own                                                                          | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every item the reader can open: their own, every team's they have
   joined, and Shared With Me, newest first (the index's `view=search`). It has no sidebar row.
