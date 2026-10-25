@@ -4,26 +4,24 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Avatar Tour',
   description:
-    'Take the Avatar tour: dressing up your character, its moves, speech bubbles and pushing, offered the first time you use Avatar mode.',
+    'Take the Avatar tour: dressing up your character, its moves, speech bubbles and pushing, started from the Start Avatar Tour button in the bottom bar.',
   path: '/help/selection-modes/avatar-mode/avatar-tour/',
 });
 
 <ArticleLayout
   title="The Avatar Tour"
-  description="A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings."
+  description="A short, optional walkthrough of Avatar mode, started from the Start Avatar Tour button in the bottom bar."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes/avatar-mode"
 >
 
 The Avatar tour shows you everything your character can do. It works on the real editor rather than screenshots: it spotlights each part with a highlight ring and a short explanation, opening the Avatar panel to show it and closing it again after. It changes nothing on your canvas or your character, takes under a minute, and you can leave at any point.
 
-## When It's Offered
+## Starting the Tour
 
-The first time you use [Avatar mode](/help/selection-modes/avatar-mode/), a **Meet Your Avatar** banner at the bottom of the screen asks whether you'd like a look: **Yes** starts it, **No** dismisses it.
+The tour never starts or pops up on its own. While you're in [Avatar mode](/help/selection-modes/avatar-mode/), press Start Avatar Tour in the bar along the bottom of the editor, just left of **Settings**. On a phone the button shows only its play icon.
 
-It's offered whatever your role, including a view-only link, since Avatar mode is yours too. It isn't offered in an embed.
-
-The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+The button is there whatever your role, including a view-only link, since Avatar mode is yours too. It isn't there in an embed. It stays after you've taken the tour, so you can press it again whenever you like.
 
 ## What It Covers
 
@@ -37,13 +35,15 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're Read
 
 ## Replaying the Tour
 
+Press Start Avatar Tour again, or start it from Settings:
+
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
 <Step n={2}>Switch **Avatar Tour** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Avatar mode the tour's welcome banner shows straight away; otherwise
-  it's offered the next time you walk as an avatar.
+  Close Settings. If you're in Avatar mode the tour starts straight away; otherwise the Start Avatar
+  Tour button is there the next time you walk as an avatar.
 </Step>
 
 </ArticleLayout>

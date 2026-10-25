@@ -388,33 +388,3 @@ export function KeyboardEssentials() {
     </Scene>
   );
 }
-
-/** The Diagram tour's offer card: a short welcome, then No or Yes. */
-export function DiagramTourCard() {
-  return (
-    <Scene w={420} h={170} bg="plain">
-      <rect
-        x={70}
-        y={12}
-        width={280}
-        height={146}
-        rx={14}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
-      />
-      <Label x={210} y={34} anchor="middle" size={10} weight={700} tone="accent">
-        DIAGRAM TOUR
-      </Label>
-      <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
-        Getting started with Diagrams?
-      </Label>
-      <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
-      <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
-      {/* No is a plain text button, beside the primary. */}
-      <Label x={156} y={130} anchor="middle" size={11} weight={600} tone="body">
-        No
-      </Label>
-      <Button x={210} y={116} w={104} h={26} label="Yes" variant="primary" />
-    </Scene>
-  );
-}

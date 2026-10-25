@@ -4,26 +4,24 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Workshop Tour',
   description:
-    'The Workshop tour walks you through the Collaborate categories, the Session strip and Share, offered on first use and replayable from Settings.',
+    'The Workshop tour walks you through the Collaborate categories, the Session strip and Share, started from the Start Workshop Tour button in the bottom bar.',
   path: '/help/canvas/workshop-mode/workshop-tour/',
 });
 
 <ArticleLayout
   title="The Workshop Tour"
-  description="A short, optional walkthrough of Workshop mode, offered the first time you work in Workshop and replayable from Settings."
+  description="A short, optional walkthrough of Workshop mode, started from the Start Workshop Tour button in the bottom bar."
   categoryTitle="Canvas"
   categorySlug="canvas/workshop-mode"
 >
 
 The Workshop tour shows you where everything for running a session lives. Like the [Diagram Tour](/help/getting-started/diagram-tour/), it works on the real editor rather than screenshots: it spotlights each part with a highlight ring and a short explanation. It adds nothing to your canvas, takes under a minute, and you can leave at any point.
 
-## When It's Offered
+## Starting the Tour
 
-The first time you work in [Workshop mode](/help/canvas/workshop-mode/) on a tab you can edit (switching a tab to Workshop, opening a canvas whose tab opens in Workshop, or making a retro or a Blank Workshop), a **Getting started with Workshop?** banner at the bottom of the screen asks whether you'd like a look: **Yes** starts it, **No** dismisses it.
+The tour never starts or pops up on its own. When you're in [Workshop mode](/help/canvas/workshop-mode/) on a tab you can edit, press Start Workshop Tour in the bar along the bottom of the editor, just left of **Settings**. On a phone the button shows only its play icon.
 
-It's offered on its own, whether or not you've taken the [Diagram Tour](/help/getting-started/diagram-tour/), which belongs to Diagram mode and never shows in Workshop. The tour isn't offered on a locked tab, in an embed, or to someone who can only view or take part.
-
-The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+The button doesn't appear on a locked tab, in an embed, or for someone who can only view or take part. If you have a complex element selected, the button offers that element's tour instead; select nothing to get the Workshop tour back. It stays there after you've taken the tour, so you can press it again whenever you like.
 
 ## What It Covers
 
@@ -35,13 +33,15 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're read
 
 ## Replaying the Tour
 
+Press Start Workshop Tour again, or start it from Settings:
+
 <Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
 
 <Step n={2}>Switch **Workshop Tour** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Workshop mode the tour's welcome banner shows straight away;
-  otherwise it's offered the next time you work in Workshop.
+  Close Settings. If you're in Workshop mode the tour starts straight away; otherwise the Start
+  Workshop Tour button is there the next time you work in Workshop.
 </Step>
 
 </ArticleLayout>
