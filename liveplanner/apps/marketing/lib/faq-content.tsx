@@ -278,15 +278,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I set up a team with shared plans?',
         a: (
           <>
-            Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams
-            in the Explorer sidebar to create one and invite people by email on liveworkspace.app.
-            Each team then shows in the Explorer as a space with its own shared folders of plans.
-            Teams have Admin and Member roles: admins manage membership, everyone else just gets to
-            work. See <a href="/help/collaboration/teams/">teams</a>.
+            Yes, once you sign in. Choose New Team in the Explorer sidebar, invite people by email,
+            and everyone gets a shared library of plans. Teams belong to your liveworkspace account,
+            so a team is the same wherever you sign in. Teams have Admin and Member roles: admins
+            manage membership, everyone else just gets to work. See{' '}
+            <a href="/help/collaboration/teams/">teams</a>.
           </>
         ),
         aText:
-          'Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams in the Explorer sidebar to create one and invite people by email on liveworkspace.app. Each team then shows in the Explorer as a space with its own shared folders of plans. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
+          'Yes, once you sign in. Choose New Team in the Explorer sidebar, invite people by email, and everyone gets a shared library of plans. Teams belong to your liveworkspace account, so a team is the same wherever you sign in. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
       },
       {
         q: 'How do I keep my plans organised?',
