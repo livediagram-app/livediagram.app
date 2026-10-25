@@ -224,11 +224,11 @@ Each step is its own PR, and both products build and pass their tests after ever
      of the four copies; each is a named export marked pure, so an app bundles only the glyphs it draws),
      `Select`, `DialogCloseButton`, `CompactEmptyState`, `PageNotFound`, `SnapCarousel`, `BuildWithAiLink`,
      the appearance machinery (`AppearanceIcon`, the cycle, `createAppearanceStore`, `appearanceBootScript`,
-     `useAppearanceStore` and the toggle), `browser-repair`'s checks, its repair walk and its panel, and the
-     site chrome drawn from a product's facts: `SiteSwitcher` (the app), `ShareRail` (the URL, pitch and
+     `useAppearanceStore` and the toggle), `browser-repair`'s checks, its repair walk and its panel (each
+     bound to a product's probe name, kept keys and words), and the site chrome drawn from a product's facts: `SiteSwitcher` (the app), `ShareRail` (the URL, pitch and
      Appearance card), `SiteFooter` (the tagline, the first link, the Community and GitHub links, the credits),
-     `ProductNavLinks` (the Community link, when there is one), `ExplorerLink` and `SiteAccount` (whether the
-     hint cookie says signed in). Where copies differed it was a comment, or one side behind: livediagram's
+     `ProductNavLinks` (the Community link, when there is one) and `ExplorerLink` (its Explorer Home, and whether
+     the hint cookie says signed in). Where copies differed it was a comment, or one side behind: livediagram's
      `SiteAppearanceToggle` `labelFrom`, livediagram's and livedesign's extra glyphs, livediagram's
      `SnapCarousel` `itemNoun`; the newer side won. The real differences became parameters, so every product
      renders what it did: liveplanner's footer still has no GitHub link and no credits, only livediagram's
@@ -243,8 +243,8 @@ Each step is its own PR, and both products build and pass their tests after ever
      to the account: a real difference left for its own change); `EDITOR_MODE_ICONS`, typed on the product's
      modes; `identity-fill`, which needs its model package's `shade`; and the pieces bound to its `api-schema`
      and `telemetry-client`: `SiteHeader`, `HeaderPrimaryCta` and `StartBlankLink` (its CTA surfaces and
-     `ctaHref`), `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`, and the web-vitals
-     reporter. They follow as those packages move.
+     `ctaHref`), `SiteAccount` and `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`,
+     and the web-vitals reporter. They follow as those packages move.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    both apps.

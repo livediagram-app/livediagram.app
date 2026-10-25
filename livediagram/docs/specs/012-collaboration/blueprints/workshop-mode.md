@@ -10,7 +10,7 @@ this blueprint adds only what the fifth mode changes.
 | -------------------------- | --------------------------------------------------------------------------------------------- |
 | The mode                   | `'workshop'`, a member of `EditorMode` (`packages/document/src/editor-mode.ts`)               |
 | Its catalogue entry        | `EDITOR_MODE_CATALOGUE` row `{ id: 'workshop', label: 'Workshop', description }` (D2)         |
-| Its mark                   | `FlipchartIcon` in `packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`    |
+| Its mark                   | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
 | Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
 | The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
 | Its blank                  | template kind `'blank-session'`, label "Blank Workshop", document name "Untitled Workshop"    |

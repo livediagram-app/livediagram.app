@@ -175,7 +175,7 @@ after …`, `[browser-repair] cleared N keys`. Telemetry as listed in the spec.
 | Diagnostics contents and redaction         | `apps/editor/lib/load-diagnostics.test.ts`                                                                             |
 | Kept list covers the guest identity        | `apps/editor/lib/local-identity-repair.test.ts`                                                                        |
 | Clear / keep rules, blocked storage        | `packages/ui/src/browser-repair/repair.test.ts`                                                                        |
-| Browser checks                             | `packages/ui/src/browser-repair/checks.test.ts`                                                                        |
+| Browser checks                             | `../packages/ui/src/browser-repair/checks.test.ts`                                                                     |
 | Identity lines, cookie hint, not-yet-moved | `packages/ui/src/browser-repair/identity.test.ts`                                                                      |
 | Copy, fallback, confirm, cancel            | `packages/ui/src/browser-repair/BrowserRepairPanel.test.tsx`                                                           |
 | Opening screen messages                    | `apps/editor/components/chrome/DocumentLoading.test.tsx`                                                               |
