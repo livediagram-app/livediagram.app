@@ -1,5 +1,4 @@
-import { CopyIcon } from '../icons/actions';
-import { HeartIcon } from '../icons/community';
+import { CopyIcon, HeartIcon } from '@liveworkspace/ui';
 import { formatCommunityCount } from './format-count';
 import { plural, pluralWord } from '@livediagram/document';
 
