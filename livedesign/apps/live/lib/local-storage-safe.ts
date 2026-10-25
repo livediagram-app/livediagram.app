@@ -1,5 +1,5 @@
 // Tiny safe wrappers around window.localStorage for the three (and
-// counting) persistence modules in the live app that previously
+// counting) persistence modules in the editor app that previously
 // open-coded the same boilerplate: useAppearance, useShortcutsEnabled,
 // user-preferences. Each was doing the same `typeof window` guard +
 // the same try/catch around setItem with the same "quota / private

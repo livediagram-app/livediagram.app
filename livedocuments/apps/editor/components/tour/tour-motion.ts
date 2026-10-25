@@ -1,4 +1,4 @@
-// How a running tour moves between steps (docs/specs/007-editor/pages-tour.md "Look and motion"), shared by TourStage,
+// How a running tour moves between steps (docs/specs/007-editor/editor-tour.md "Motion"), shared by TourStage,
 // TourSpotlight and TourPopover.
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 

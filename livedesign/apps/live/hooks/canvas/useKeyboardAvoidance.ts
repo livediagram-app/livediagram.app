@@ -10,7 +10,7 @@ import {
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 
-// Keep the caret above a phone's on-screen keyboard (docs/specs/007-editor/live-app.md "Mobile
+// Keep the caret above a phone's on-screen keyboard (docs/specs/007-editor/editor-app.md "Mobile
 // chrome"). The keyboard shrinks the VISUAL viewport, not the page, and the canvas never scrolls,
 // so editing a label low on the screen typed behind the keyboard. While a text field inside the
 // canvas has focus, every visual-viewport change re-checks the caret, and if it sits below the

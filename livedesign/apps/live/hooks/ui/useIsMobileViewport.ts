@@ -13,7 +13,7 @@ export function useIsMobileViewport(): boolean {
   return useMediaQuery(QUERY);
 }
 
-// Reactive "is this a phone held sideways?" (docs/specs/007-editor/live-app.md "A phone held sideways"),
+// Reactive "is this a phone held sideways?" (docs/specs/007-editor/editor-app.md "A phone held sideways"),
 // for what is withheld there rather than folded: the CSS `landscape-phone:` variant hides, this removes.
 export function useIsLandscapePhone(): boolean {
   return useMediaQuery(LANDSCAPE_PHONE_MEDIA_QUERY);

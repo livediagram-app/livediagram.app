@@ -1,8 +1,8 @@
 // DOM-based canvas hit-testing. The canvas marks every element wrapper (and
 // each arrow's hit band) with a `data-element-id`, so `document.elementsFromPoint`
 // resolves what's under a screen point without re-deriving per-element geometry.
-// Lives in its own module (no `@liveplanner/project` import) so the DOM `Element`
-// type isn't shadowed by the project model's `Element`.
+// Lives in its own module (no import of the product's model package) so the DOM `Element`
+// type isn't shadowed by the document model's `Element`.
 
 // The `[data-element-id]` wrappers under a screen point, topmost first, as
 // { id, host } pairs. Shared by the eraser and the icon-drop-on-shape gesture.

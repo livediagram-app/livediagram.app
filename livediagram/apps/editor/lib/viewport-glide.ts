@@ -1,6 +1,6 @@
-// A view moved somewhere by the app rather than by a hand (a double-tap zoom, a board's column framed, an
+// A view moved somewhere by the app rather than by a hand (a page framed from its navigator, an
 // element scrolled into view): it glides there, an ease-out over VIEW_GLIDE_MS, so the eye follows
-// where it went (docs/specs/008-canvas/canvas-and-palette.md, `glideViewport`). Under reduced
+// where it went (docs/specs/007-editor/pages-mode.md "The page navigator"). Under reduced
 // motion (the OS setting or the app's Reduce Motion, the `.reduce-motion` class) it lands at once.
 
 import { prefersReducedMotion } from './motion-preference';

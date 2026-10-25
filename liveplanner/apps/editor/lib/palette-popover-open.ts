@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Whether one of the palette's popovers is open: a category's flyout, More or Search
-// (docs/specs/007-editor/start-panel.md "When it shows"). The template start steps aside while one is, so the
+// (docs/specs/007-editor/start-diagramming.md "When it shows"). The template start steps aside while one is, so the
 // tiles hang over a clear canvas. A module store, like the active tour: one editor per page.
 let open = false;
 const listeners = createListeners();

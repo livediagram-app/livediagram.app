@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
 
-// A menu tile's miniature runs the real animation classes (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"), so it shows exactly what picking it does. At rest it is frozen on a telling frame,
+// A menu tile's miniature runs the real animation classes (docs/specs/028-animation/element-animations.md
+// "The menu"), so it shows exactly what picking it does. At rest it is frozen on a telling frame,
 // `frame` (0 to 1 of a cycle), so the options read apart at a glance without a grid of loops
 // competing for attention; hovering plays it, leaving freezes it again. All through the Web
 // Animations API on the CSS animations already there: one call on mount, no loop, no timers.

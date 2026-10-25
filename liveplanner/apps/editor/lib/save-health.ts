@@ -1,6 +1,6 @@
-// Whether the open project's last save failed and is waiting on its retry (docs/specs/007-editor/load-recovery.md
+// Whether the open document's last save failed and is waiting on its retry (docs/specs/007-editor/load-recovery.md
 // "A failing save stays on screen" and "Leaving with unsaved changes asks first"). The autosave writes it; the
-// failing-save banner and the leave prompt read it. A module store, as the page has one open project, so neither
+// failing-save banner and the leave prompt read it. A module store, as the page has one open document, so neither
 // reader needs it threaded through the canvas's props.
 import { useSyncExternalStore } from 'react';
 
@@ -26,7 +26,7 @@ const subscribe = (l: () => void) => {
 export const useSaveFailing = (): boolean =>
   useSyncExternalStore(subscribe, isSaveFailing, () => false);
 
-// A tab over the server's row cap (docs/specs/006-project/per-tab-storage.md "A tab too big to save says so"): not
+// A tab over the server's row cap (docs/specs/006-document/per-tab-storage.md "A tab too big to save says so"): not
 // retried, so not the banner's "Retrying", but its changes are as unsaved, so leaving asks first all the same.
 let tooLarge = false;
 

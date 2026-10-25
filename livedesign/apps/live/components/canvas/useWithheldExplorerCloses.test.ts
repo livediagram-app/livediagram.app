@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/007-editor/live-app.md "A phone held sideways": the Explorer is withheld there, and an open one closes.
+// docs/specs/007-editor/editor-app.md "A phone held sideways": the Explorer is withheld there, and an open one closes.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';

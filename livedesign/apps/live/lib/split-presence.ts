@@ -65,7 +65,7 @@ export function useRemoteBesideTabs(): ReadonlyMap<string, string> {
   return useSyncExternalStore(remote.subscribe, remote.get, () => EMPTY);
 }
 
-// Tests, and leaving a design: start from nobody beside anything.
+// Tests, and leaving a document: start from nobody beside anything.
 export function resetSplitPresence(): void {
   local.set(null);
   remote.set(new Map());

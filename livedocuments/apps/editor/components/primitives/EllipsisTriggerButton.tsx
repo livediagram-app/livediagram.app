@@ -39,7 +39,7 @@ export const EllipsisTriggerButton = forwardRef<
   {
     label: string;
     onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-    // Down / Up Arrow open the menu (useRowMenu supplies it).
+    // Down / Up Arrow open the menu.
     onKeyDown?: (e: KeyboardEvent<HTMLButtonElement>) => void;
     expanded?: boolean;
     size?: keyof typeof SIZE_CLASS;

@@ -3,7 +3,7 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
 import { Portal, SheetHandle, useSheetDrag, safeInset } from '@livedesign/ui';
 
-// A menu as a bottom sheet on a phone (docs/specs/007-editor/live-app.md "Menus are bottom sheets on
+// A menu as a bottom sheet on a phone (docs/specs/007-editor/editor-app.md "Menus are bottom sheets on
 // a phone"): the width of the screen (up to 32rem), docked to the bottom edge, at most 60% of its
 // height with its own scroll, clear of the home indicator, rising in. A grab handle across its top
 // drags it up to fill the screen below the top bar (and back down), or, from rest, down to close it

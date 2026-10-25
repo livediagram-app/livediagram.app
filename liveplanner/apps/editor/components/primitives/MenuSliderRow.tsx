@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-// A labelled slider row for the element menus (shadow, percentages): the
+// A labelled slider row for the element menus (shadow, percentages, wordmark tracking and arc): the
 // label over a range input and its value. `onRelease` hears the thumb let go (pointer, key or
 // focus leaving), for a row that previews while it moves and commits once; `action` sits at the
 // label's end (a reset); `trailing` sits after the readout, on the slider's own line (the Text

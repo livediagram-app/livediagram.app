@@ -38,7 +38,7 @@ export function SearchInput({
   // the box while the highlight moves, which is the combobox pattern.
   activeDescendantId?: string;
   // The results list this box drives, when it is always shown beneath it: the box becomes a
-  // combobox controlling that listbox.
+  // combobox controlling that listbox (the whiteboard's More shapes search).
   listboxId?: string;
   // Focus the box on mount (a popover whose first job is the search, like Plan's Cards panel).
   autoFocus?: boolean;

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 // The presses a shield stops before anything else sees them: an open menu's outside-press close listens for these on
-// the design, and the canvas for the wheel.
+// the document, and the canvas for the wheel.
 const STOPPED = [
   'pointerdown',
   'mousedown',
@@ -14,9 +14,9 @@ const STOPPED = [
   'wheel',
 ] as const;
 
-// A tour step's click shield (docs/specs/007-editor/pages-tour.md "The page waits"): over everything the tour shows
+// A tour step's click shield (docs/specs/007-editor/editor-tour.md "The page waits"): over everything the tour shows
 // (menus included), under its card. A press on the page goes nowhere: stopped on the window in the capture phase, ahead
-// of every design listener, since a menu the step opened read a press on the shield as an outside press, closed, and
+// of every document listener, since a menu the step opened read a press on the shield as an outside press, closed, and
 // was reopened by the step, flickering the page. The keyboard still reaches the card (Escape, the arrows).
 export function TourShield() {
   const ref = useRef<HTMLDivElement>(null);

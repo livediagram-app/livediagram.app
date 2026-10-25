@@ -1,7 +1,7 @@
 import { createElementKeyedStore } from '@liveworkspace/workbench/lib/element-keyed-store';
 
 // What an element tour step shows on the concept graphic or chart it is on (docs/specs/007-editor/element-tours.md),
-// never stored, so nothing changes in the design: an animation previewed (`run` restarts it), or one chevron stage's
+// never stored, so nothing changes in the document: an animation previewed (`run` restarts it), or one chevron stage's
 // bar held open as if the stage were pointed at.
 
 // A concept graphic's Build, Pulse and Flow; a chart's Grow.

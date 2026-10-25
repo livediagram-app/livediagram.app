@@ -9,8 +9,9 @@ import {
 import { useDockNames } from '@/hooks/ui/useDockNames';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers
-// button does, and shows pressed while it is open. Two or more can share one frame, as Undo and Redo
-// do (ClusterStrip of ClusterPopoverSegments).
+// button does, and shows pressed while it is open: Slides in Pages mode, Card Types in Plan
+// mode, each where Layers sits in the other modes. Two or more can share one frame, as Undo and Redo
+// do (ClusterStrip of ClusterPopoverSegments): Plan's Find a Card and Card Types.
 //
 // `data-dock-button` makes a second press close the popover through the toggle rather than the
 // panel's outside-click closing it on pointer-down and the click reopening it.
@@ -24,7 +25,7 @@ type SegmentProps = {
   onTogglePopover: (button: HTMLElement) => void;
   // The button itself, for a caller that opens its popover from elsewhere.
   buttonRef?: React.Ref<HTMLButtonElement>;
-  // A guided tour's anchor (docs/specs/007-editor/editor-tour.md).
+  // A guided tour's anchor.
   dataTourId?: string;
   // A segment after the first in a strip: a hairline parts it from the one before.
   divided?: boolean;

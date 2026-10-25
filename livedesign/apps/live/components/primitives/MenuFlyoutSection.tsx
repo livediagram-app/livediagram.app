@@ -69,7 +69,7 @@ const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
 // `MenuAccordionSection` written inline, but a session button's Session is a
 // `SessionMenuSection` that RENDERS one and takes its scaffold state as
 // `sectionProps` — a different prop shape for the same thing, so the record
-// lost its TOOLS row and the session button kept one. Every child of a flyout is
+// lost its TOOLS row and the poll button kept one. Every child of a flyout is
 // a section by construction (that is what the callers put there), so the
 // element being there is the whole test.
 function loneSection(children: ReactNode): ReactNode | null {

@@ -4,8 +4,7 @@ import { Button } from '@livediagram/ui';
 export type ImportChecklistRow = { key: string; name: string; detail: string };
 
 /**
- * The list step every many-file import shares (docs/specs/020-import-export/board-import.md), and the
- * move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md): what
+ * The move prompt's list after signing in (docs/specs/014-identity/auth-and-guest-access.md): what
  * was found, each with a checkbox, all ticked, under the name it will get and a one-line detail;
  * Select all; a note about what will be left out; Back and Import.
  */

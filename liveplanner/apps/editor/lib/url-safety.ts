@@ -1,6 +1,6 @@
 // URL safety for user-entered link addresses (docs/specs/014-identity/auth-and-guest-access.md — security). A `url`
 // link is stored on an element / table cell / link-card and FOLLOWED by other
-// viewers of a shared project, so an unsafe scheme is a stored-XSS vector:
+// viewers of a shared document, so an unsafe scheme is a stored-XSS vector:
 // `window.open('javascript:...')` executes in our origin (noopener doesn't stop
 // it). We allow only http / https / mailto, refusing javascript:, data:,
 // vbscript:, file:, etc. — enforced both at store time (normaliseUrl) and at
@@ -11,7 +11,7 @@ const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:']);
 // Normalise a user-entered address for storage. Prepends `https://` to a bare
 // host (no scheme), then returns the address only when its scheme is allowed;
 // null for an empty or unsafe-scheme input. Preserves the entered string (so
-// a stored link compares equal to what was typed) rather than re-serialising via URL.href.
+// the unfurl cache keys stay stable) rather than re-serialising via URL.href.
 export function normaliseUrl(raw: string): string | null {
   const t = raw.trim();
   if (!t) return null;

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/007-editor/live-app.md "A phone held sideways": the hook answers LANDSCAPE_PHONE_MEDIA_QUERY.
+// docs/specs/007-editor/editor-app.md "A phone held sideways": the hook answers LANDSCAPE_PHONE_MEDIA_QUERY.
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LANDSCAPE_PHONE_MEDIA_QUERY } from '@/lib/responsive';

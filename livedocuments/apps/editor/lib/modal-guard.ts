@@ -10,7 +10,7 @@ import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 // isn't reliable across the portal boundary, so the dialogs count
 // themselves in here and the global listeners consult the count.
 //
-// The guided tours read it too, through the hook below (docs/specs/007-editor/pages-tour.md "Dialogs come
+// The guided tours read it too, through the hook below (docs/specs/007-editor/editor-tour.md "Dialogs come
 // first"): an offer waits while any dialog is open, and a running tour steps aside while one opens over it.
 //
 // A counter (not a boolean) because dialogs can stack (a confirm on

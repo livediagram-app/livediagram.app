@@ -8,7 +8,7 @@ import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/Dialog
 // Branded confirmation modal. Visual sibling of DeleteAccountDialog
 // (same fly-up animation, same border/shadow stack, same button
 // rhythm) but generalised: title + body + a single yes/no choice.
-// Drives every "are you sure?" gesture in the live app via the
+// Drives every "are you sure?" gesture in the editor app via the
 // useConfirm hook so we don't fall back to the OS-default
 // window.confirm chrome (which feels out of place against the rest
 // of the editor's UI).

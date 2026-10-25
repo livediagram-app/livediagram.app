@@ -1,5 +1,5 @@
 // A short vibration on a touch screen for the gestures a finger cannot see land
-// (docs/specs/007-editor/live-app.md "Mobile chrome"): a long-press that opened a menu, a drag that
+// (docs/specs/007-editor/editor-app.md "Mobile chrome"): a long-press that opened a menu, a drag that
 // caught an alignment snap, a delete. Android only: Safari has no Vibration API, so it is a no-op
 // there, as it is on any device without a motor or a fine pointer (a mouse never buzzes).
 type HapticKind = 'press' | 'snap' | 'delete';

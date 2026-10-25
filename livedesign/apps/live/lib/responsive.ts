@@ -22,14 +22,14 @@ export const MOBILE_BREAKPOINT_PX = 640;
 
 // A phone held sideways is wide (844px) but short, and was laid out as a desktop: the floating
 // panels covered its 286px of canvas. So a phone is also a touch screen under 500px tall
-// (docs/specs/007-editor/live-app.md "Mobile chrome"). A desktop window that short has a fine
+// (docs/specs/007-editor/editor-app.md "Mobile chrome"). A desktop window that short has a fine
 // pointer, and a tablet is taller, so neither is caught. The CSS twin is the `phone:` variant
 // (app/globals.css), which must state the same query.
 export const PHONE_MAX_HEIGHT_PX = 500;
 export const PHONE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT_PX - 1}px), (pointer: coarse) and (max-height: ${PHONE_MAX_HEIGHT_PX - 1}px)`;
 
 // A phone held sideways, alone: the short-touch half of PHONE_MEDIA_QUERY, in landscape. There the
-// header and the tab bar fold away so the canvas fills the screen (docs/specs/007-editor/live-app.md
+// header and the tab bar fold away so the canvas fills the screen (docs/specs/007-editor/editor-app.md
 // "A phone held sideways"). `orientation: landscape` keeps an upright phone whose layout shrinks for
 // its keyboard from folding mid-typing. The CSS twin is the `landscape-phone:` variant (app/globals.css).
 export const LANDSCAPE_PHONE_MEDIA_QUERY = `(pointer: coarse) and (orientation: landscape) and (max-height: ${PHONE_MAX_HEIGHT_PX - 1}px)`;

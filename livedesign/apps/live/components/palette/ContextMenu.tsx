@@ -14,7 +14,7 @@ import { BottomSheet } from '@/components/primitives/BottomSheet';
 // Auto-clamps to the viewport so a click in the bottom-right corner
 // still surfaces a usable menu instead of clipping off-screen.
 //
-// On a phone it is a BottomSheet instead (docs/specs/007-editor/live-app.md "Menus are bottom
+// On a phone it is a BottomSheet instead (docs/specs/007-editor/editor-app.md "Menus are bottom
 // sheets on a phone"): a card hung off a long-press point covered the element it was about and ran
 // under the tab bar. Outside taps, Escape and the long-press grace work the same either way.
 
@@ -133,13 +133,13 @@ export function ContextMenu({
     // release opens replaces it — nothing can stack. Listening for
     // `contextmenu` here used to close it on the PRESS (X11 fires that event
     // on mouse-down), and an element's stopPropagation can't prevent it:
-    // Next's App Router hydrates on `design`, so React's listeners are
-    // design-level siblings of this one and both run regardless.
+    // Next's App Router hydrates on `document`, so React's listeners are
+    // document-level siblings of this one and both run regardless.
     // pointerdown carries pointerType, so a mouse click can dismiss the
     // menu the instant it opens while a touch long-press keeps its grace.
     // CAPTURE phase: an element's own pointerdown handler calls
     // stopPropagation, and React's root listener would swallow the event
-    // before it ever reached design — capture runs first, so the click
+    // before it ever reached document — capture runs first, so the click
     // that selects is also the click that dismisses.
     document.addEventListener('pointerdown', onPointer, true);
     return () => document.removeEventListener('pointerdown', onPointer, true);

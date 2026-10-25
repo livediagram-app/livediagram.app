@@ -6,7 +6,7 @@
 // implementation does.
 //
 // Runs in the node test environment (`window` undefined by default),
-// matching the rest of apps/live's lib tests. Tests that need a
+// matching the rest of apps/editor's lib tests. Tests that need a
 // "real" localStorage stub `globalThis.window` with the same
 // memoryStorage shim the user-preferences test uses, so the SSR
 // path and the browser-with-storage path are both covered without

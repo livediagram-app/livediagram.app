@@ -231,7 +231,8 @@ export function MenuAccordionSection({
 // A plain ACTION row: the same shape and rhythm as an accordion header
 // (fixed icon slot, uppercase label, full width) but it performs a verb
 // instead of expanding. For menus whose entries are things to DO rather than
-// settings to open — e.g. a project row's menu. Horizontal bars rather than a tile grid:
+// settings to open — e.g. the event-storming note menu (docs/specs/021-event-storming/event-storming.md), which is
+// six verbs and no styling at all. Horizontal bars rather than a tile grid:
 // a verb list reads down the menu like every other row here.
 export function MenuActionRow({
   label,
@@ -248,7 +249,7 @@ export function MenuActionRow({
   // The label's own look (a font menu draws each font's name in that font).
   labelStyle?: CSSProperties;
   // Sentence-case, 13px, full-contrast: the reading size for a menu
-  // that IS the list (the project actions menu), where the uppercase
+  // that IS the list (the document actions menu), where the uppercase
   // label rhythm of a category header is too quiet to scan eight verbs
   // by. A Delete or Trash row looks like every other row (never red).
   plain?: boolean;
@@ -318,7 +319,7 @@ export function MenuActionRow({
   );
 }
 
-// A quiet first row naming what the menu is FOR: the project's name and
+// A quiet first row naming what the menu is FOR: the document's name and
 // its visibility badge. A ⋯ menu opens away from its trigger (below a
 // card, beside a row), and on a grid of near-identical cards the reader
 // needs the menu itself to say which one they opened.

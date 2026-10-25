@@ -14,7 +14,7 @@ export function isTypingTarget(
   );
 }
 
-// An empty text box that hands Cmd/Ctrl+Z and redo to the editor (docs/specs/007-editor/start-panel.md "Undo and
+// An empty text box that hands Cmd/Ctrl+Z and redo to the editor (docs/specs/007-editor/start-diagramming.md "Undo and
 // redo reach the editor through an empty search"): it opts in with `data-editor-history`, and only while empty, since a
 // box holding text has typing of its own to undo.
 export function passesHistoryChords(target: EventTarget | null): boolean {

@@ -1,4 +1,4 @@
-// The tab strip's scroll that brings the active tab into view (docs/specs/007-editor/live-app.md "Tabs"): the
+// The tab strip's scroll that brings the active tab into view (docs/specs/007-editor/editor-app.md "Tabs"): the
 // least movement that shows all of it, `pad` px clear of the strip's edges; unchanged when it already shows. Rects
 // are on-screen (getBoundingClientRect), the result a scrollLeft.
 export function scrollLeftToReveal(
