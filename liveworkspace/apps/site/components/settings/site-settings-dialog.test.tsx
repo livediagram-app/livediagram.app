@@ -120,7 +120,8 @@ describe('the Settings panel, filtered to an app', () => {
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-label')).toBe('Settings');
     expect(scopeButton('liveplanner').getAttribute('aria-pressed')).toBe('true');
-    expect(dialog.textContent).toContain('More in liveplanner Settings');
+    // The footer only says how settings save: it has no link into the app's own Settings.
+    expect(dialog.textContent).not.toContain('More in liveplanner Settings');
     // Account and Common shape this app too; the other apps' own groups stay under All.
     expect(headings()).toEqual(['Account', 'Common', 'liveplanner']);
     const paths = fetchMock.mock.calls.map(([url]) => url);

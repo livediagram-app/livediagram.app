@@ -1,9 +1,8 @@
 'use client';
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { BrandMark, lucideGlyph } from '@livediagram/ui';
+import { BrandMark } from '@livediagram/ui';
 import { Dialog, useMediaQuery } from '@liveworkspace/ui';
-import { lucideExternalLink } from '@liveworkspace/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {
   createDeviceSettingsStore,
@@ -30,15 +29,12 @@ import {
   type AppAccount,
 } from '@/lib/explorer/app-session';
 import { setSessionColour, signOut, useSession } from '@/lib/session';
-import { appSettingsLinks } from '@/lib/account-settings';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
 import { setExplorerConsent } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
 import { settingsErrorMessage } from './settings-ui';
-
-const OutIcon = lucideGlyph(lucideExternalLink, 14);
 
 // The API Tokens category's own code: fetched when it is first shown, not with the panel.
 const TokensPanel = lazy(() => import('./TokensPanel').then((m) => ({ default: m.TokensPanel })));
@@ -89,7 +85,6 @@ export default function SiteSettingsDialog({
   const isMobile = useMediaQuery(PHONE_QUERY);
   const [scope, setScope] = useSettingsScope(SCOPE_KEY, initialScope);
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
-  const link = app ? appSettingsLinks().find((l) => l.id === app) : undefined;
   // The Profile's header is whoever is signed in here. Its Name and Colour is edited in place on either address: over
   // this site's session on liveworkspace.app, over the app's token on an app's own (accountApi goes through the app's
   // router there). Sessions, sign-in methods and the API tokens are liveworkspace.app's session's, so on an app's
@@ -159,7 +154,6 @@ export default function SiteSettingsDialog({
     };
   }, []);
 
-  const showsApp = Boolean(site) && (scope === 'app' || Boolean(guest));
   return (
     <Dialog
       open
@@ -211,15 +205,6 @@ export default function SiteSettingsDialog({
                   Saved to your account as you change them. Each app uses them the next time it
                   opens.
                 </p>
-                {showsApp && site && link ? (
-                  <a
-                    href={link.href}
-                    className="relative touch-target-y inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-slate-700 underline-offset-2 hover:underline dark:text-slate-200"
-                  >
-                    More in {site.name} Settings
-                    <OutIcon aria-hidden className="size-3.5" />
-                  </a>
-                ) : null}
               </div>
             )
           }
