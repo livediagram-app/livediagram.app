@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { EmptyState } from '@liveworkspace/ui';
 import { Brand } from '@liveworkspace/brand';
 import {
+  ALL_TELEMETRY_APPS,
   type TelemetryAppFilter,
   type TelemetryDisabled,
   type TelemetrySummary,
@@ -14,6 +15,7 @@ import { AppLogo, brandAppOf } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 import { Header } from '@/components/Header';
 import { AllApps } from './AllApps';
+import { DashboardSkeleton } from './DashboardSkeleton';
 import {
   APP_CHOICES,
   appFilterServerSnapshot,
@@ -25,18 +27,25 @@ import {
 import { ActivityGlyph } from './_shared/glyphs';
 
 // Each app's own dashboard loads only when it is picked, so "All apps" ships none of the apps'
-// catalogues of event names and explanations.
+// catalogues of event names and explanations. While its code downloads, the app's skeleton holds its
+// place (without one, `dynamic` draws nothing and the page empties under the chips).
+// Next needs each call's options written out in place.
+const appSkeleton = () => <DashboardSkeleton variant="app" />;
 const LivediagramBody = dynamic(() => import('./livediagram/Body').then((m) => m.Body), {
   ssr: false,
+  loading: appSkeleton,
 });
 const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m.Body), {
   ssr: false,
+  loading: appSkeleton,
 });
 const LivedocumentsBody = dynamic(() => import('./livedocuments/Body').then((m) => m.Body), {
   ssr: false,
+  loading: appSkeleton,
 });
 const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.Body), {
   ssr: false,
+  loading: appSkeleton,
 });
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
@@ -138,7 +147,9 @@ export default function TelemetryDashboard() {
               />
             </div>
           ) : !loaded ? (
-            <p className="mt-12 text-slate-500 dark:text-slate-400">Loading…</p>
+            // The first visit and a switch to an app not fetched yet: the shapes the numbers will
+            // take, never an empty page (liveworkspace/docs/telemetry.md "The dashboard", Loading).
+            <DashboardSkeleton variant={app === ALL_TELEMETRY_APPS ? 'all' : 'app'} />
           ) : !loaded.enabled ? (
             <div className="mt-12">
               <EmptyState

@@ -166,6 +166,19 @@ which gives it to every view through context. The views draw with the shared des
 icons and brand marks the apps' UI packages do not share yet. The shared views are tested against
 every app's config (`_shared/test-apps.ts`).
 
+**Loading.** The page never goes blank while numbers load: on the first visit, on picking an app
+whose summary hasn't come yet, and while that app's own dashboard code downloads. The header, the
+app chips and the closing note stay put, and where the numbers go a skeleton holds their shapes in
+the layout they will take: the three window tiles and the trend chart, then for All apps the "By
+app" cards and the busiest-event rows under their real titles, and for one app the tab row and a
+grid of metric cards. The skeleton reserves the heights of the panel and tabs above the fold, so
+nothing above the cards moves when the data lands. It is static markup with a gentle pulse that
+stops under reduced motion, and it is marked busy for assistive tech. An app's earlier numbers are
+not kept on screen dimmed in the meantime: the two dashboards are different shapes, and another
+app's numbers under the new app's chip would read as the new app's. A summary already fetched shows
+at once, and changing the window or tab never fetches, so neither shows the skeleton. A failed fetch
+keeps its own message.
+
 The numbers come from `GET /api/telemetry/summary?app=all|<an app in TELEMETRY_APPS>`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
 arrows). Each window carries `byApp`, and the daily series carries `byApp` too. The response is
