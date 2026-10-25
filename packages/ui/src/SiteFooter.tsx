@@ -1,4 +1,4 @@
-import { Brand, type BrandApp } from '@liveworkspace/brand';
+import { Brand, WorkspaceWordmark, type BrandApp } from '@liveworkspace/brand';
 import { lucideBookOpen, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, TERMS_LABEL } from '@liveworkspace/sites';
 import { Fragment, type ComponentType, type ReactNode } from 'react';
@@ -157,10 +157,21 @@ export function SiteFooter({
       </div>
       <div className="border-t border-slate-100 dark:border-slate-800">
         <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-6 py-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400 sm:items-center sm:justify-between">
-          <p>
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
             {/* The build's year, inlined at build (@liveworkspace/next-config), never the clock: the prerender and
                 the browser render the same text whatever the date. */}
             <span>{`© ${buildYear() ? `${buildYear()} ` : ''}${app}. MIT licensed.`}</span>
+            {/* The platform the app belongs to (each product's marketing-site.md "Footer"). */}
+            <span className="inline-flex items-center gap-1.5">
+              Part of
+              <a
+                href={PLATFORM_SITE.url}
+                aria-label="liveworkspace"
+                className="relative touch-target-y inline-flex rounded-sm transition-opacity duration-micro hover:opacity-80"
+              >
+                <WorkspaceWordmark size="xs" />
+              </a>
+            </span>
           </p>
           {credits ? (
             <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">

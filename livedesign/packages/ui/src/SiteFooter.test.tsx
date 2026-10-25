@@ -58,6 +58,13 @@ describe('SiteFooter columns', () => {
 });
 
 describe('SiteFooter legal strip', () => {
+  it('names the platform the app is part of, with the liveworkspace logo linking to it', () => {
+    const strip = html.slice(html.indexOf('</nav>'));
+    expect(strip).toMatch(/Part of<a href="[^"]*" aria-label="liveworkspace"/);
+    expect(strip).toContain('workspace</span>');
+    expect(strip).toContain('<svg');
+  });
+
   // WCAG 1.4.3: slate 400 is 2.6:1 on white; slate 500 is 4.8:1, the nav's own colour.
   it('sets its small print in a colour that meets AA on white', () => {
     const strip = /<div class="([^"]*text-xs[^"]*)">/

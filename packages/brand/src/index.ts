@@ -3,4 +3,5 @@
 // the social card) come from ./svg, which needs no React.
 export { BRAND_APPS, type BrandApp, type BrandIdentity, type BrandStep } from './apps';
 export { Brand, BrandGlyph, BrandMark, type BrandProps } from './Brand';
+export { WorkspaceWordmark } from './WorkspaceWordmark';
 export * from './svg';
