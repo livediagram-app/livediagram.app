@@ -13,6 +13,7 @@ import {
 import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
+import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { PLAN_TOUR_TRACKS, planTrackSeen, requestPlanTourRelaunch } from '@/lib/plan-tour';
@@ -69,6 +70,7 @@ export function SettingsDialog({
   const { emailEnabled } = useCapabilities();
   const { accountUserId, isSignedIn } = useAccountBootstrap();
   const signedIn = Boolean(isSignedIn && accountUserId);
+  const { user } = useDeferredAuth();
   // A workbench's Settings reach nothing beyond its one project (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
@@ -112,10 +114,21 @@ export function SettingsDialog({
         all: settings,
         set: ownToggleSetter(model, (key, value) => onChange({ ...settings, [key]: value })),
       },
+      // The Profile's header card: who is signed in, as this editor's session has them.
+      identity:
+        signedIn && user
+          ? {
+              name: user.fullName ?? user.username ?? user.email ?? 'Your account',
+              email: user.email,
+              joined: user.createdAt,
+            }
+          : null,
       profileHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
+      // Sign-in methods and devices are liveworkspace.app's session's.
+      securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
       emails: emailEnabled,
     }),
-    [settings, model, onChange, emailEnabled],
+    [settings, model, onChange, emailEnabled, signedIn, user],
   );
 
   // Which categories people actually open is the signal for whether this
