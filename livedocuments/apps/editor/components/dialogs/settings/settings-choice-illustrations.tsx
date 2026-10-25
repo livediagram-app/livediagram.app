@@ -44,7 +44,7 @@ function ModeWindow({ dark }: { dark: boolean }) {
         width="22"
         height="13"
         rx="2"
-        className="fill-sky-500/25 stroke-sky-500"
+        className="fill-brand-500/25 stroke-brand-500"
       />
       <rect
         x="72"
@@ -52,7 +52,7 @@ function ModeWindow({ dark }: { dark: boolean }) {
         width="18"
         height="11"
         rx="2"
-        className="fill-sky-500/25 stroke-sky-500"
+        className="fill-brand-500/25 stroke-brand-500"
       />
     </g>
   );

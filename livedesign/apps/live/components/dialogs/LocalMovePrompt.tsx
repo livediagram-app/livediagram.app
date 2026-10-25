@@ -27,7 +27,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
           role="status"
           className="flex items-center justify-center gap-2 px-6 py-8 text-sm text-slate-600 dark:text-slate-300"
         >
-          <span className="text-sky-600 dark:text-sky-400">
+          <span className="text-brand-700 dark:text-brand-400">
             <Spinner />
           </span>
           Moving {phase.done + 1} of {phase.total}…

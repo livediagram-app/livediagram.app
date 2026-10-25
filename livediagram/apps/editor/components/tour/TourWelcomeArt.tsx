@@ -99,7 +99,7 @@ export function TourWelcomeArt() {
           cx="214"
           cy="60"
           r="21"
-          className="tour-art-el tour-art-circle fill-sky-100 stroke-sky-500 dark:fill-sky-500/20 dark:stroke-sky-400"
+          className="tour-art-el tour-art-circle fill-brand-100 stroke-brand-500 dark:fill-brand-500/20 dark:stroke-brand-400"
           strokeWidth="2"
         />
 
@@ -120,7 +120,7 @@ export function TourWelcomeArt() {
         />
         <path
           d="M 246 82 c 0.7 3.4 2 4.7 5.4 5.4 -3.4 0.7 -4.7 2 -5.4 5.4 -0.7 -3.4 -2 -4.7 -5.4 -5.4 3.4 -0.7 4.7 -2 5.4 -5.4 Z"
-          className="tour-art-el tour-art-spark-2 fill-sky-400 dark:fill-sky-300"
+          className="tour-art-el tour-art-spark-2 fill-brand-400 dark:fill-brand-300"
         />
       </svg>
     </div>

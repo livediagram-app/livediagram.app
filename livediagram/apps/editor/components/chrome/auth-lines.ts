@@ -13,7 +13,7 @@ const INSET_Y = 80;
 // Light inks at about half strength, dark ones a touch softer; never the whole colour, the lines sit behind copy.
 export const TRACE_TONES = [
   'stroke-emerald-500/50 dark:stroke-emerald-400/50',
-  'stroke-sky-500/45 dark:stroke-sky-400/45',
+  'stroke-brand-500/45 dark:stroke-brand-400/45',
   'stroke-violet-500/40 dark:stroke-violet-400/45',
   'stroke-amber-500/45 dark:stroke-amber-400/40',
   'stroke-rose-400/45 dark:stroke-rose-400/40',

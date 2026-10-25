@@ -104,7 +104,7 @@ export function PageKindCard({
 
 // A square artboard: faint construction guides (centre lines, a keyline circle) behind a mark.
 function LogoMiniature() {
-  const guide = 'stroke-sky-400/60 dark:stroke-sky-300/50';
+  const guide = 'stroke-brand-400/60 dark:stroke-brand-300/50';
   return (
     <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden className="drop-shadow-sm">
       <rect width="64" height="64" rx="3" className="fill-white dark:fill-slate-700" />

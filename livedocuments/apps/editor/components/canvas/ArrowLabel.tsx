@@ -149,7 +149,7 @@ export function ArrowLabel({
             fontStyle: textItalic ? 'italic' : undefined,
             color,
           }}
-          className="block h-full w-full resize-none overflow-hidden whitespace-pre-wrap rounded bg-white text-center shadow-sm outline-none ring-2 ring-sky-400 dark:bg-slate-900"
+          className="block h-full w-full resize-none overflow-hidden whitespace-pre-wrap rounded bg-white text-center shadow-sm outline-none ring-2 ring-brand-400 dark:bg-slate-900"
         />
       </foreignObject>
     );

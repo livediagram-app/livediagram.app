@@ -104,7 +104,7 @@ export function TourHelpArt() {
             cx="118"
             cy="42"
             r="14"
-            className="fill-sky-100/60 stroke-sky-500 dark:fill-sky-500/15 dark:stroke-sky-400"
+            className="fill-brand-100/60 stroke-brand-500 dark:fill-brand-500/15 dark:stroke-brand-400"
             strokeWidth="2.5"
           />
           <line
@@ -112,7 +112,7 @@ export function TourHelpArt() {
             y1="52"
             x2="138"
             y2="62"
-            className="stroke-sky-500 dark:stroke-sky-400"
+            className="stroke-brand-500 dark:stroke-brand-400"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -125,7 +125,7 @@ export function TourHelpArt() {
         />
         <path
           d="M 240 70 c 0.7 3.4 2 4.7 5.4 5.4 -3.4 0.7 -4.7 2 -5.4 5.4 -0.7 -3.4 -2 -4.7 -5.4 -5.4 3.4 -0.7 4.7 -2 5.4 -5.4 Z"
-          className="tour-help-el tour-help-spark-2 fill-sky-400 dark:fill-sky-300"
+          className="tour-help-el tour-help-spark-2 fill-brand-400 dark:fill-brand-300"
         />
       </svg>
     </div>
