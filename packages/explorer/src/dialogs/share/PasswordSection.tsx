@@ -7,7 +7,7 @@
 
 import { useRef, useState } from 'react';
 import { SHARE_PASSWORD_MAX } from '@liveworkspace/index-client';
-import { Button } from '@liveworkspace/ui';
+import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
 import type { ShareHelpHref } from './types';
@@ -92,21 +92,14 @@ export function PasswordSection({
               : 'Everyone opening a pass must enter it first, embeds included.'}
           </p>
         </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={on}
-          aria-label="Password Protection"
+        <Switch
+          size="sm"
+          checked={on}
+          label="Password Protection"
           disabled={busy || (!!lockedReason && !on)}
-          onClick={toggle}
-          className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition disabled:opacity-50 ${
-            on ? 'bg-brand-700 dark:bg-brand-600' : 'bg-slate-300 dark:bg-slate-600'
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 rounded-full bg-white shadow transition ${on ? 'translate-x-4' : 'translate-x-0.5'}`}
-          />
-        </button>
+          onChange={toggle}
+          className="mt-0.5"
+        />
       </div>
       {on && showSet ? (
         <div className={DETAIL}>
