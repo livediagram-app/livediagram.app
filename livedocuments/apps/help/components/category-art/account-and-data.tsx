@@ -8,7 +8,7 @@ export function AccountAndDataArt() {
   return (
     <Scene
       formats={['PDF', 'PNG', 'SVG', 'JSON']}
-      documents={
+      work={
         <>
           <DocThumb x={226} y={28} w={56} h={68} accent="amber" lines />
           <DocThumb

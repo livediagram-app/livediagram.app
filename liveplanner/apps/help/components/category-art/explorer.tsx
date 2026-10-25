@@ -206,7 +206,7 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
               x={x + 37 + b * 6}
               y={y + 25 - [8, 14, 11][b]!}
               width={4}
-              height={[8, 14, 11][b]!}
+              height={[8, 14, 11][b]}
               rx={1}
               className={['fill-emerald-300', 'fill-brand-400', 'fill-amber-300'][b]}
             />

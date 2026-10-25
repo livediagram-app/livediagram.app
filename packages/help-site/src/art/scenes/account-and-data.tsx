@@ -4,13 +4,13 @@ import { Card, Chip, Stage } from '../parts';
 
 // Account and Data: who you are and what is yours. A signed-in profile, your work synced to it, and every way to
 // take it with you. The profile, the sync and the export row are the same in every product; the product hands in
-// its own work (`documents`, drawn in the box x 222 to 352, y 26 to 136, usually three DocThumbs) and the four
+// its own work (`work`, drawn in the box x 222 to 352, y 26 to 136, usually three DocThumbs) and the four
 // export formats it really offers.
 export function AccountAndDataArt({
-  documents,
+  work,
   formats,
 }: {
-  documents: ReactNode;
+  work: ReactNode;
   formats: readonly [string, string, string, string];
 }) {
   return (
@@ -32,7 +32,7 @@ export function AccountAndDataArt({
 
       {/* Synced work. */}
       <Arrow from={[178, 104]} to={[214, 104]} dashed tone="muted" width={2} />
-      {documents}
+      {work}
       <path
         d="M352 112 a10 10 0 0 1 19 -4 a7 7 0 1 1 3 13 h-21 a5 5 0 0 1 -1 -9 Z"
         className="fill-white stroke-brand-400"
