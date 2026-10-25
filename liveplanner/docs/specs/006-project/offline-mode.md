@@ -86,7 +86,7 @@ _require the server_, which are hidden or gated (not broken) for an offline proj
 | Duplicate                                                               | Makes **another offline project** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
 | Folders                                                                 | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                       |
 | Add to Plan ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) | Unavailable in either direction: a shared tab is kept in step between plans on the server.                                                                                                                                                                                         |
-| Thumbnails                                                              | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                     |
+| Thumbnails                                                              | The **browser it lives in**, on a wash of the accent of the app that owns it (the Explorer's `LocalPreview`), never the pill's teal — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                  |
 
 Autosave still runs for an offline project ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
@@ -144,7 +144,7 @@ Explorer lists follow after the paint.
   (the `SharedBadge` in `EditorHeader`). For an offline project it reads
   **"This Browser"** (a state that supersedes "Private" for these projects),
   matching the [This Browser pill](#this-browser-pill): the same words, the same
-  browser-window icon, the same amber tone and contrast, and the same sentence,
+  browser-window icon, the same teal tone and contrast, and the same sentence,
   "Lives only in this browser. Clearing this browser's site data deletes it.",
   shown in the badge's visibility legend on hover and focus and given to
   assistive technology as the badge's description. It stays a status, not a
@@ -156,9 +156,9 @@ Explorer lists follow after the paint.
   rings, centred, and the hero keeps one height whichever audience it shows. Under it, the audiences on one
   scale, **Just you** (a lock), **Link** (a link), **Team** (people), the track filled to the current stop, which is larger, filled in its tone and
   bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
-  leaving the scale puts the current state back. **This Browser** (its browser-window icon, amber) stands
+  leaving the scale puts the current state back. **This Browser** (its browser-window icon, teal) stands
   apart below as "Or This Browser: never leaves this browser." (when current: "This Browser: saved only here,
-  never on our servers.", tinted amber). For someone who may share, **Change Who Can See This** at the
+  never on our servers.", tinted teal). For someone who may share, **Change Who Can See This** at the
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
@@ -192,8 +192,14 @@ are pictures, not rows), the search panel's results, the editor's Explorer
 rows, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
-  "This Browser", in an amber tone whose text meets 4.5:1 on its fill in light and
-  dark mode; the ring meets 3:1 against the row.
+  "This Browser", in a teal tone whose text meets 4.5:1 on its fill in light and
+  dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
+  (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
+  slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
+  as whose an item is, or as fine or failing. Until October 2026 it was amber, livedocuments'
+  accent and the warning tone. One pill for every editor and the Explorer
+  (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
+  `@liveworkspace/explorer/this-browser`).
 - **What it means, on hover and focus.** Its hover card reads "This Browser" over
   "Lives only in this browser. Clearing this browser's site data deletes it."
   The same sentence is the pill's accessible description (`aria-describedby`),

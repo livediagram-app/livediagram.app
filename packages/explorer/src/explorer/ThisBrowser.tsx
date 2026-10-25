@@ -11,13 +11,11 @@
 // and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
 import {
-  memo,
   useCallback,
   useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
-  type CSSProperties,
   type ReactNode,
 } from 'react';
 import type { App } from '@liveworkspace/index-client';
@@ -26,15 +24,19 @@ import {
   readThisBrowserConversion,
   subscribeThisBrowser,
   thisBrowserKey,
+  THIS_BROWSER_COPY,
+  THIS_BROWSER_FOCUS,
+  THIS_BROWSER_HOVER,
+  THIS_BROWSER_TONE,
   type ThisBrowserConversion,
   type ThisBrowserItem,
 } from '../this-browser';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
-import { siteOf } from '../words';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
+import { LocalPreview } from './LocalPreview';
 import { PaneHeader } from './PaneHeader';
 import { daysLeftLabel } from './TrashPane';
 
@@ -59,10 +61,8 @@ export type ThisBrowserHost = {
   handOverHref?: (conversion: ThisBrowserConversion, id: string) => string;
 };
 
-export const THIS_BROWSER_COPY = {
-  label: 'This Browser',
-  sentence: 'Lives only in this browser. Clearing this browser’s site data deletes it.',
-} as const;
+export { THIS_BROWSER_COPY };
+export { LocalPreview };
 
 // A host's verb that moved an item (Sync, Take Offline) without a page load: the lists load again once it settles,
 // whether it moved or not, so they show where the item is now.
@@ -132,36 +132,9 @@ export function mergeOpened<T extends { lastOpenedAt: number | null }>(
 
 let pillSeq = 0;
 
-/**
- * A This Browser item's picture where a server item shows its snapshot (none leaves the browser): the browser it lives
- * in, tinted in the accent of the app that owns it, a wash of the accent behind the glyph in its deep shade (the
- * accent on dark). Fills its box; the caller sizes and rounds it.
- */
-export const LocalPreview = memo(function LocalPreview({
-  app,
-  iconSize,
-  className = '',
-}: {
-  app: App;
-  iconSize: number;
-  className?: string;
-}) {
-  const site = siteOf(app);
-  return (
-    <span
-      aria-hidden
-      data-local-preview={app}
-      style={{ '--local-accent': site.accent, '--local-deep': site.deep } as CSSProperties}
-      className={`flex items-center justify-center bg-[color-mix(in_srgb,var(--local-accent)_12%,white)] text-[var(--local-deep)] dark:bg-[color-mix(in_srgb,var(--local-accent)_18%,transparent)] dark:text-[var(--local-accent)] ${className}`}
-    >
-      <BrowserIcon size={iconSize} />
-    </span>
-  );
-});
-
 /** The teal pill every local row and card carries: not colour alone (an icon and the words), its sentence as its
- *  description, and a link to the app's help where the row is not itself a link. Teal is no app's accent (livedocuments'
- *  is amber) and no status colour, so it never reads as whose an item is, or as fine or failing. */
+ *  description, and a link to the app's help where the row is not itself a link. Its tone (THIS_BROWSER_TONE) is the
+ *  editors' pill's too (@liveworkspace/workbench ThisBrowserPill). */
 export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
   const { thisBrowser } = useHostExtras();
   const [id] = useState(() => `this-browser-pill-${++pillSeq}`);
@@ -174,8 +147,7 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
       </span>
     </>
   );
-  const className =
-    'inline-flex shrink-0 items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-900 ring-1 ring-teal-700/40 dark:bg-teal-900/40 dark:text-teal-100 dark:ring-teal-300/40';
+  const className = `inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${THIS_BROWSER_TONE}`;
   if (inLink || !thisBrowser?.helpHref)
     return (
       <span
@@ -195,7 +167,7 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
       rel="noreferrer"
       aria-describedby={id}
       title={THIS_BROWSER_COPY.sentence}
-      className={`${className} hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600`}
+      className={`${className} hover:underline ${THIS_BROWSER_HOVER} ${THIS_BROWSER_FOCUS}`}
     >
       {body}
     </a>

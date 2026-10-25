@@ -46,7 +46,7 @@ export function SyncDesignPrompt({
 
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-7 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-700 ring-1 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-500/30">
         <Glyph size={24} units={24}>
           <path d="M6 16.5h10a3.5 3.5 0 0 0 .4-6.98 5 5 0 0 0-9.2-1.1A3.4 3.4 0 0 0 6 16.5Z" />
           <path d="M3.5 3.5l17 17" />

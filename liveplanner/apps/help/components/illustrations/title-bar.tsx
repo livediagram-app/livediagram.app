@@ -390,8 +390,8 @@ export function VisibilityLegendFigure() {
 
       {/* This Browser, apart from the scale. */}
       <rect x={82} y={212} width={256} height={28} rx={8} className="fill-slate-50" />
-      <circle cx={97} cy={226} r={9} className="fill-white stroke-amber-200" strokeWidth={1} />
-      <BrowserGlyph x={97} y={226} cls="stroke-amber-600" />
+      <circle cx={97} cy={226} r={9} className="fill-white stroke-teal-200" strokeWidth={1} />
+      <BrowserGlyph x={97} y={226} cls="stroke-teal-700" />
       <Label x={112} y={227} size={9} tone="body">
         <tspan fontWeight={700} className="fill-slate-800">
           Or This Browser

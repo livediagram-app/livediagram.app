@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   THIS_BROWSER_DESCRIPTION,
   THIS_BROWSER_LABEL,
-} from '@/components/primitives/ThisBrowserPill';
+} from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
 import { SharedBadge } from './SharedBadge';
 
 afterEach(cleanup);

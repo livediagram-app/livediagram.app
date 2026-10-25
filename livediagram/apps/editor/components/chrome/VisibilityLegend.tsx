@@ -60,10 +60,10 @@ const LOOK: Record<
   offline: {
     icon: <ThisBrowserIcon size={14} />,
     reach: 'This Browser',
-    stop: 'bg-amber-500 text-white ring-amber-200 dark:bg-amber-400 dark:text-amber-950 dark:ring-amber-500/40',
-    hero: 'from-amber-50 to-white dark:from-amber-500/15 dark:to-slate-900',
-    ink: 'text-amber-600 dark:text-amber-300',
-    eyebrow: 'text-amber-700 dark:text-amber-300',
+    stop: 'bg-teal-600 text-white ring-teal-200 dark:bg-teal-400 dark:text-teal-950 dark:ring-teal-500/40',
+    hero: 'from-teal-50 to-white dark:from-teal-500/15 dark:to-slate-900',
+    ink: 'text-teal-600 dark:text-teal-300',
+    eyebrow: 'text-teal-700 dark:text-teal-300',
   },
 };
 
@@ -252,15 +252,15 @@ function ThisBrowserRow({
       onMouseLeave={() => onPeek(null)}
       className={`mx-3 mt-3 flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors ${
         current
-          ? 'bg-amber-50 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30'
-          : 'bg-slate-50 hover:bg-amber-50/60 dark:bg-slate-800/50 dark:hover:bg-amber-500/10'
+          ? 'bg-teal-50 ring-1 ring-teal-200 dark:bg-teal-500/10 dark:ring-teal-500/30'
+          : 'bg-slate-50 hover:bg-teal-50/60 dark:bg-slate-800/50 dark:hover:bg-teal-500/10'
       }`}
     >
       <span
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
           current
             ? LOOK.offline.stop
-            : 'bg-white text-amber-600 ring-1 ring-amber-200 dark:bg-slate-900 dark:text-amber-300 dark:ring-amber-500/30'
+            : 'bg-white text-teal-700 ring-1 ring-teal-200 dark:bg-slate-900 dark:text-teal-300 dark:ring-teal-500/30'
         }`}
       >
         {LOOK.offline.icon}

@@ -25,6 +25,26 @@ export type ThisBrowserItem = {
   favourite: boolean;
 };
 
+/** The This Browser pill's words: its label, and the sentence it gives on hover and to assistive technology. */
+export const THIS_BROWSER_COPY = {
+  label: 'This Browser',
+  sentence: 'Lives only in this browser. Clearing this browser’s site data deletes it.',
+} as const;
+
+/**
+ * The This Browser pill's tone, the Explorer's and every editor's: teal, which is no app's accent (livedocuments' is
+ * amber) and no status colour, so it never reads as whose an item is, or as fine or failing. The words meet 4.5:1 on
+ * the fill (light 9.1:1, dark 12.8:1 over slate-900) and the ring 3:1 against the row (teal-600 on white 3.7:1,
+ * teal-400 on slate-900 9.6:1). The picture of a local item is not teal: it takes its own app's accent (LocalPreview).
+ */
+export const THIS_BROWSER_TONE =
+  'bg-teal-50 text-teal-900 ring-1 ring-teal-600 dark:bg-teal-900/40 dark:text-teal-100 dark:ring-teal-400';
+/** Its hover fill, where the pill is a link. */
+export const THIS_BROWSER_HOVER = 'hover:bg-teal-100 dark:hover:bg-teal-900/60';
+/** Its focus outline, where the pill is a link. */
+export const THIS_BROWSER_FOCUS =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:focus-visible:outline-teal-400';
+
 // The list is cut at this many, newest change first: a few dozen offline items is a heavy user, and the whole list
 // is parsed on every change.
 export const THIS_BROWSER_MAX = 500;

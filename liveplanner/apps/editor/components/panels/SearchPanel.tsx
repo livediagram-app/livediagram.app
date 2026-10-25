@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
+import { ThisBrowserPill } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
 import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@liveplanner/ui';
 import type { Tab } from '@liveplanner/project';
 import type { CardSearchSource } from '@/lib/search-plan';

@@ -6,7 +6,7 @@ import {
   THIS_BROWSER_DESCRIPTION,
   THIS_BROWSER_LABEL,
   THIS_BROWSER_TONE,
-} from '@/components/primitives/ThisBrowserPill';
+} from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
 
 // A document's visibility states (docs/specs/006-document/offline-mode.md, 025-community/community.md): their
 // words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
@@ -49,7 +49,8 @@ export const SHARE_STATE_META: Record<
     dot: 'text-pink-500',
   },
   // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
-  // server. The This Browser pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
+  // server. The This Browser pill's words, sentence and teal tone (text 4.5:1 on its fill, ring 3:1):
+  // teal is no app's accent and no status colour.
   offline: {
     label: THIS_BROWSER_LABEL,
     description: THIS_BROWSER_DESCRIPTION,
