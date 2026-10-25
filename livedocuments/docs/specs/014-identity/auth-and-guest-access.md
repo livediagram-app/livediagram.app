@@ -163,6 +163,8 @@ When a guest signs in or signs up, what they made as a guest **becomes the accou
 
 Settings > Account > Delete Account deletes the whole account: the person's livedocuments data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
+The dialog says so before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only livedocuments. It lists what goes (every canvas, plan, document and design, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that documents in This Browser stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#closing-an-account)), so naming only this app's would understate it.
+
 1. **Delete the server data, then close the account** (`DELETE /api/account`, [API](../015-api/api.md)). The worker deletes the person's own documents for good through the index (up to 1,000 a request; a person with more is answered 409 `documents_remaining` and asks again), and the participant row and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials and the caller's access token). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
 2. **End the session** (`POST /api/auth/sign-out`), then a full load to the landing page.
 

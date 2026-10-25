@@ -142,11 +142,32 @@ export function DeleteAccountDialog({
             >
               Delete Account
             </h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your canvases (including any in the Trash), folders, and
-              participant record from the livediagram server, and closes your liveworkspace account,
-              which also signs you in to the other liveworkspace apps. This cannot be undone.
-            </p>
+            {/* Closing the account deletes what the person owns in every app, not just this one
+                (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"), so it says so first. */}
+            <div className="mt-2 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <p>
+                This permanently deletes your liveworkspace account and{' '}
+                <strong className="font-semibold text-slate-900 dark:text-slate-100">
+                  everything you own in every liveworkspace app
+                </strong>
+                , not just livediagram:
+              </p>
+              <ul className="list-disc space-y-1 pl-5">
+                <li>
+                  every canvas, plan, document and design in livediagram, liveplanner, livedocuments
+                  and livedesign, including the Trash
+                </li>
+                <li>your folders, settings and API tokens</li>
+                <li>any team you run on your own</li>
+              </ul>
+              <p>
+                You will be signed out of every app.{' '}
+                <strong className="font-semibold text-slate-900 dark:text-slate-100">
+                  This can’t be undone.
+                </strong>{' '}
+                Canvases in This Browser stay on this device.
+              </p>
+            </div>
           </div>
 
           <div className="px-6 py-5">
