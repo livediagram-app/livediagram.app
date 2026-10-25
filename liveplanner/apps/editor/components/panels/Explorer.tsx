@@ -12,8 +12,9 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
-import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
@@ -50,7 +51,10 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
-  const { isSignedIn, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  // The plans kept only in this browser, as the person (an account, or this browser's guest).
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
@@ -142,6 +146,8 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        // The plans kept only in this browser, which no index list holds: This Browser on the rail, in place.
+        thisBrowser={thisBrowser}
         onOrganise={trackOrganise}
         // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
         layout={sheet ? 'sheet' : 'side'}
@@ -149,16 +155,12 @@ function ExplorerImpl({
         divider={minimalChrome ? 'lines' : 'titles'}
         // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
         notice={minimalChrome ? null : <SignInPrompt bar />}
+        // The product's surfaces, which the editor header no longer carries as a menu.
         footer={
-          <>
-            {/* The plans kept only in this browser, which no Explorer list holds. */}
-            <ThisBrowserRow />
-            {/* The product's surfaces, which the editor header no longer carries as a menu. */}
-            <ProductNavLinks
-              current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-            />
-          </>
+          <ProductNavLinks
+            current="editor"
+            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+          />
         }
       />
     </MovablePanel>
