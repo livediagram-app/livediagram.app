@@ -1,0 +1,62 @@
+name: Deploy Staging
+
+# Staging follows main (docs/ci.md "Deploys"): each push whose CI passes deploys what it changed. A run
+# for a commit main has already moved past is skipped; the newer commit's run deploys both, since the
+# plan diffs against what staging last deployed. Runs queue rather than cancel, so a deploy is never cut
+# off halfway.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      all:
+        description: Deploy every Worker, whatever changed.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  tip:
+    name: Still main's tip
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      ref: ${{ steps.tip.outputs.ref }}
+    steps:
+      - id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          tip="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)"
+          if [ "${GITHUB_EVENT_NAME}" = 'workflow_dispatch' ] || [ "${tip}" = "${SHA}" ]; then
+            echo "ref=${SHA}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "[deploy-staging] skipped ${SHA}: main is at ${tip}, whose own CI run deploys it"
+          fi
+
+  deploy:
+    name: Staging
+    needs: tip
+    if: needs.tip.outputs.ref != ''
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+      ref: ${{ needs.tip.outputs.ref }}
+      all: ${{ inputs.all || false }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

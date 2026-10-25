@@ -60,7 +60,35 @@ groups they reach), the CLI publishing and the MCP Registry listing.
 
 ## Deploys
 
-The monorepo doesn't deploy. Moving the deploys here needs a choice per product of Cloudflare account,
-GitHub environments and secrets, and livediagram.app keeps deploying from its own repository until
-the migration's switch (docs/migration.md, step 7). When they move, they should use the same plan:
-deploy only the Workers and sites a change reaches.
+Every Worker deploys from here, to the liveworkspace Cloudflare account its `wrangler.toml` pins:
+each product's api, sites, MCP and router, and the platform's services, site and gateway.
+
+- **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, that commit
+  deploys to every Worker's `[env.staging]`. A run for a commit `main` has already moved past is skipped,
+  and the newer commit's run deploys both. Runs queue rather than cancel, so a deploy is never cut off
+  halfway. It can also be run by hand, with **all** to redeploy every Worker.
+- **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
+  tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs. A
+  `ref` ships another commit; one older than production's own (a rollback) redeploys every Worker, as
+  **all** does. Required reviewers on the `production` environment, if set in the repository's
+  settings, add a second gate before anything deploys.
+
+**Only what changed.** Each environment remembers the commit it last deployed in full, as the tag
+`deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since
+then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
+The Workers among them build and deploy, and the rest are left as they are. A Worker none of whose
+files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
+config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
+failed one is retried by the next deploy. With no tag yet, everything deploys.
+
+**Order.** Three tiers, each waiting for the one before: the services and apis (with D1, migrations
+apply before the code: `wrangler d1 migrations apply`), then the sites and MCP Workers, then the routers
+and the gateway in front of them. A failing tier stops the ones after it.
+
+**What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
+product's hosted build vars, and on staging its product's staging MCP address), and a product api's
+hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
+written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
+credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account
+with Workers Scripts and D1 edit rights. livediagram.app itself, on its old account, still deploys from
+its own repository until the migration's switch (docs/migration.md, step 7).

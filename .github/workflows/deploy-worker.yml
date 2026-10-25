@@ -1,0 +1,93 @@
+name: Deploy one Worker
+
+# One Worker's deploy for deploy.yml: its build when it serves one (a static site's `out/`), its D1
+# migrations when it has a database, and `wrangler deploy` to the environment, with a product api's
+# hosted vars (each product's docs/specs/016-platform/deployment.md "Hosted profile").
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      ref:
+        type: string
+        required: true
+      worker:
+        description: >-
+          The plan's entry as JSON: name, dir, product, tier, d1 (the database's binding, when it has
+          migrations), build (a static site), hosted (the product whose api hosted-vars to apply).
+        type: string
+        required: true
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ fromJSON(inputs.worker).name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURBO_TELEMETRY_DISABLED: '1'
+      WRANGLER_ENV: ${{ inputs.environment == 'staging' && 'staging' || '' }}
+      NAME: ${{ fromJSON(inputs.worker).name }}
+      DIR: ${{ fromJSON(inputs.worker).dir }}
+      PRODUCT: ${{ fromJSON(inputs.worker).product }}
+      D1: ${{ fromJSON(inputs.worker).d1 }}
+      HOSTED: ${{ fromJSON(inputs.worker).hosted }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      # A site's build bakes in its environment: the build id (the stale-build check), its product's
+      # hosted build vars (telemetry and community addresses) and, on staging, its product's MCP Worker.
+      - name: Build
+        if: fromJSON(inputs.worker).build
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          export NEXT_PUBLIC_BUILD_ID="${REF}"
+          hosted="${PRODUCT}/apps/api/scripts/hosted-vars.mjs"
+          if [ -f "${hosted}" ]; then
+            while IFS= read -r line; do [ -n "${line}" ] && export "${line?}"; done \
+              < <(cd "${PRODUCT}/apps/api" && node scripts/hosted-vars.mjs build-env ${WRANGLER_ENV:+--env "${WRANGLER_ENV}"})
+            if [ "${WRANGLER_ENV}" = 'staging' ]; then
+              export NEXT_PUBLIC_MCP_ORIGIN="https://${PRODUCT}-mcp-staging.liveworkspace-easing509.workers.dev"
+            fi
+          fi
+          pnpm turbo run build --filter="${NAME}"
+
+      # Before the code that reads them. Applied migrations are skipped; a failing one stops the deploy.
+      - name: Apply D1 migrations
+        if: fromJSON(inputs.worker).d1 != ''
+        working-directory: ${{ fromJSON(inputs.worker).dir }}
+        run: pnpm exec wrangler d1 migrations apply "${D1}" --remote ${WRANGLER_ENV:+--env "${WRANGLER_ENV}"}
+
+      - name: Deploy
+        working-directory: ${{ fromJSON(inputs.worker).dir }}
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          extra=()
+          if [ -n "${HOSTED}" ]; then
+            mapfile -t extra < <(node scripts/hosted-vars.mjs flags ${WRANGLER_ENV:+--env "${WRANGLER_ENV}"})
+            extra+=(--var "BUILD_ID:${REF}")
+          fi
+          pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "${WRANGLER_ENV}"} "${extra[@]}"
+
+      # A product api's hosted vars are checked on the live deployment, since a wrong one fails quietly.
+      - name: Verify hosted vars are live
+        if: fromJSON(inputs.worker).hosted != ''
+        working-directory: ${{ fromJSON(inputs.worker).dir }}
+        run: node scripts/hosted-vars.mjs verify ${WRANGLER_ENV:+--env "${WRANGLER_ENV}"}

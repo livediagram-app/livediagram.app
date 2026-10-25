@@ -30,8 +30,8 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 
 In the liveworkspace monorepo these run from the root's `.github/` ([docs/ci.md](../../../../docs/ci.md)): one CI,
 E2E, CodeQL and canvas performance workflow for every product, running liveplanner's jobs only when a change reaches it.
-The `liveplanner/.github/` copies are inert there, deploys included: the monorepo doesn't deploy yet (docs/ci.md
-"Deploys").
+The `liveplanner/.github/` copies are inert there, deploys included: the monorepo deploys every Worker itself, staging
+on each green `main` and production by hand, only what a change reaches (docs/ci.md "Deploys").
 
 `.github/workflows/ci.yml` runs on **every PR** and **every push to `main`**.
 

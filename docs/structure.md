@@ -451,9 +451,8 @@ So the sharing work should start just after the switch. The switch needs:
   `livediagram-app/livediagram.app` into this monorepo. The second keeps livediagram's PRs,
   issues, Actions secrets and history links. livediagram's open branches and worktrees would
   need merging or rebasing onto the new layout first.
-- **Deploys moved to the root `.github/`**, where CI already is ([ci.md](ci.md)): each product's
-  deploys run only for what a change reaches. liveplanner deploys to the liveworkspace Cloudflare
-  account, with its own secrets and environments. Until then, the `.github/` folders under each
-  product are inert here, and livediagram keeps deploying from its current repo.
+- **CI and deploys in the root `.github/`** ([ci.md](ci.md)), running only what a change reaches.
+  The `.github/` folders under each product are inert here, and livediagram.app keeps deploying from
+  its current repo until the switch.
 - **The pre-push hook** rewritten for the new paths. It assumed `apps/…` at the root, so it isn't
   installed here yet.

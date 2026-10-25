@@ -1,0 +1,69 @@
+name: Deploy Production
+
+# Production is a manual gate (docs/ci.md "Deploys"): run it from the Actions tab (or
+# `gh workflow run deploy-production.yml`) when staging looks right. By default it ships exactly what
+# staging runs (the `deployed/staging` tag), and of that only what changed since production's own last
+# deploy. `ref` ships another commit instead; one older than production's (a rollback) redeploys every
+# Worker, as `all` does.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit to ship. Empty ships what staging runs.
+        type: string
+        default: ''
+      all:
+        description: Deploy every Worker, whatever changed.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: What to ship
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: ref
+        env:
+          INPUT: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT}" ]; then
+            ref="$(git rev-parse --verify "${INPUT}^{commit}")"
+          else
+            ref="$(git rev-parse -q --verify 'refs/tags/deployed/staging^{commit}' || true)"
+            if [ -z "${ref}" ]; then
+              echo "::error::Staging has never deployed (no deployed/staging tag); ship a ref, or deploy staging first"
+              exit 1
+            fi
+          fi
+          echo "[deploy-production] shipping ${ref}"
+          echo "ref=${ref}" >> "${GITHUB_OUTPUT}"
+
+  deploy:
+    name: Production
+    needs: resolve
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      ref: ${{ needs.resolve.outputs.ref }}
+      all: ${{ inputs.all }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

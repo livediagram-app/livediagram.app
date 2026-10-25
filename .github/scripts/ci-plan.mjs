@@ -11,11 +11,16 @@
 //   BASE=<sha or empty> HEAD=<sha> node .github/scripts/ci-plan.mjs
 //
 // With no BASE (a manual run, the nightly run, a new branch's first push) or a change to CI itself
-// or to the root's shared config, everything runs. Writes `groups`, `editors`, `e2e` and `any` to
-// $GITHUB_OUTPUT when it is set, and prints the plan either way.
+// or to the root's shared config, everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
+// `any` to $GITHUB_OUTPUT when it is set, and prints the plan either way.
+//
+// The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
+// commit the environment last deployed: every affected workspace with a wrangler.toml is a Worker to
+// build and deploy, in three tiers (services and apis, then the sites, then the routers in front).
+// A change to .github/ or the format config alone redeploys nothing.
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
 // TURBO_CMD='corepack pnpm exec turbo'.
@@ -76,6 +81,10 @@ const RUN_ALL = [
   /^(livediagram|liveplanner|livedesign|livedocuments)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
 ];
 
+// Deploys ignore what only CI and formatting read.
+const DEPLOY_IGNORES = [/^\.github\//, /prettier\.config\.js$/, /\.prettierignore$/];
+const deployMode = process.env.PLAN_MODE === 'deploy';
+
 const base = (process.env.BASE ?? '').trim();
 const head = (process.env.HEAD ?? '').trim() || 'HEAD';
 const noBase = !base || /^0+$/.test(base);
@@ -102,7 +111,11 @@ let reason;
 let all = noBase;
 if (noBase) reason = 'no base commit: everything';
 else {
-  const forcing = changedFiles().filter((file) => RUN_ALL.some((re) => re.test(file)));
+  const forcing = changedFiles().filter(
+    (file) =>
+      RUN_ALL.some((re) => re.test(file)) &&
+      !(deployMode && DEPLOY_IGNORES.some((re) => re.test(file))),
+  );
   if (forcing.length) {
     all = true;
     reason = `shared config changed (${forcing.slice(0, 5).join(', ')}${forcing.length > 5 ? ', …' : ''}): everything`;
@@ -160,9 +173,42 @@ for (const spec of GROUPS) {
   }
 }
 
-const plan = { reason, groups, editors, e2e, any: groups.length > 0 };
+// The Workers among the affected workspaces. Tier 0: the services and apis everything else calls
+// (and the only ones with D1, whose migrations apply before their code); tier 2: the routers and the
+// gateway in front of the rest; tier 1: the sites between.
+function deployOf(p) {
+  const toml = `${p.path}/wrangler.toml`;
+  if (!existsSync(toml)) return null;
+  const config = readFileSync(toml, 'utf8');
+  const product = p.path.split('/')[0];
+  const app = p.path.split('/').pop();
+  const d1 = existsSync(`${p.path}/migrations`)
+    ? (config.match(/^\[\[d1_databases\]\][^[]*?^binding\s*=\s*"([^"]+)"/ms)?.[1] ?? '')
+    : '';
+  const tier = /^(router|gateway)$/.test(app)
+    ? 2
+    : app === 'api' || (product === 'liveworkspace' && app !== 'site')
+      ? 0
+      : 1;
+  const hosted = existsSync(`${p.path}/scripts/hosted-vars.mjs`) ? product : '';
+  return {
+    name: p.name,
+    dir: p.path,
+    product,
+    tier,
+    d1,
+    // A static site serves its build (`[assets]`); a Worker's own build is the bundle wrangler makes anyway.
+    build: /^\[assets\]/m.test(config),
+    hosted,
+  };
+}
+const deploys = packages.map(deployOf).filter(Boolean);
+
+const plan = { reason, groups, editors, e2e, deploys, any: groups.length > 0 };
 console.error(`[ci-plan] ${reason}; ${packages.length} workspaces`);
 for (const g of groups) console.error(`[ci-plan]   ${g.group}: ${g.count}${g.cli ? ', CLI' : ''}`);
+if (deployMode)
+  console.error(`[ci-plan]   Workers: ${deploys.map((d) => d.name).join(', ') || 'none'}`);
 console.error(
   `[ci-plan]   editor shards: ${[...new Set(editors.map((e) => e.group))].join(', ') || 'none'}`,
 );
@@ -173,6 +219,9 @@ if (process.env.GITHUB_OUTPUT) {
     `groups=${JSON.stringify(groups)}`,
     `editors=${JSON.stringify(editors)}`,
     `e2e=${JSON.stringify(e2e)}`,
+    ...[0, 1, 2].map(
+      (tier) => `deploys${tier}=${JSON.stringify(deploys.filter((d) => d.tier === tier))}`,
+    ),
     `any=${plan.any}`,
   ];
   appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);

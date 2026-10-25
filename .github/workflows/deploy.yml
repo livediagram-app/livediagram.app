@@ -1,0 +1,176 @@
+name: Deploy (reusable)
+
+# Deploys one environment (docs/ci.md "Deploys"), called by deploy-staging.yml and
+# deploy-production.yml. Only the Workers a change reaches are built and deployed: the plan compares
+# the commit being deployed with the one this environment last deployed (the `deployed/<environment>`
+# tag), asks Turborepo which workspaces that reaches, dependencies included, and keeps the ones with a
+# wrangler.toml. They deploy in three tiers, each waiting for the one before: the services and apis
+# (D1 migrations first), then the sites, then the routers and the gateway in front. When every tier has
+# succeeded, the tag moves to the deployed commit, so a failed or skipped Worker is retried next time.
+#
+# Deploys write code and plain vars only. Each Worker's secrets were set on it with `wrangler secret
+# put` and survive a deploy; the only credential here is CLOUDFLARE_API_TOKEN (every wrangler.toml
+# pins the account).
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: staging or production.
+        type: string
+        required: true
+      ref:
+        description: The commit to deploy.
+        type: string
+        required: true
+      all:
+        description: Deploy every Worker, whatever changed (a first deploy, or a rollback).
+        type: boolean
+        default: false
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  # wrangler's --env: staging's `[env.staging]` blocks; production is the top-level config.
+  WRANGLER_ENV: ${{ inputs.environment == 'staging' && 'staging' || '' }}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # The environment's gate, once per deploy: production's required reviewers, if it has any, approve
+    # here. GitHub records the deployment against it.
+    environment:
+      name: ${{ inputs.environment }}
+    outputs:
+      tier0: ${{ steps.plan.outputs.deploys0 }}
+      tier1: ${{ steps.plan.outputs.deploys1 }}
+      tier2: ${{ steps.plan.outputs.deploys2 }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # The commit this environment last deployed. With none, with `all`, or when it isn't an ancestor
+      # of the commit being deployed (a rollback), every Worker deploys.
+      - name: Find the last deploy
+        id: base
+        env:
+          TAG: deployed/${{ inputs.environment }}
+          ALL: ${{ inputs.all }}
+        run: |
+          set -euo pipefail
+          base="$(git rev-parse -q --verify "refs/tags/${TAG}^{commit}" || true)"
+          if [ "${ALL}" = 'true' ] || [ -z "${base}" ] || ! git merge-base --is-ancestor "${base}" HEAD; then
+            echo "[deploy] ${TAG}: ${base:-none}; deploying every Worker"
+            base=''
+          else
+            echo "[deploy] ${TAG}: ${base}; deploying what changed since"
+          fi
+          echo "sha=${base}" >> "${GITHUB_OUTPUT}"
+
+      - name: Plan
+        id: plan
+        env:
+          PLAN_MODE: deploy
+          BASE: ${{ steps.base.outputs.sha }}
+          HEAD: ${{ inputs.ref }}
+        run: node .github/scripts/ci-plan.mjs > /dev/null
+
+  tier0:
+    name: Services and apis (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.tier0 != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.tier0) }}
+    uses: ./.github/workflows/deploy-worker.yml
+    with:
+      environment: ${{ inputs.environment }}
+      ref: ${{ inputs.ref }}
+      worker: ${{ toJSON(matrix) }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  tier1:
+    name: Sites (${{ matrix.name }})
+    needs: [plan, tier0]
+    if: >-
+      always() && needs.plan.result == 'success' && needs.plan.outputs.tier1 != '[]' &&
+      (needs.tier0.result == 'success' || needs.tier0.result == 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.tier1) }}
+    uses: ./.github/workflows/deploy-worker.yml
+    with:
+      environment: ${{ inputs.environment }}
+      ref: ${{ inputs.ref }}
+      worker: ${{ toJSON(matrix) }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  tier2:
+    name: Routers (${{ matrix.name }})
+    needs: [plan, tier0, tier1]
+    if: >-
+      always() && needs.plan.result == 'success' && needs.plan.outputs.tier2 != '[]' &&
+      (needs.tier0.result == 'success' || needs.tier0.result == 'skipped') &&
+      (needs.tier1.result == 'success' || needs.tier1.result == 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.tier2) }}
+    uses: ./.github/workflows/deploy-worker.yml
+    with:
+      environment: ${{ inputs.environment }}
+      ref: ${{ inputs.ref }}
+      worker: ${{ toJSON(matrix) }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  # Every tier succeeded or had nothing to do: this environment now runs `ref`.
+  record:
+    name: Record the deploy
+    needs: [plan, tier0, tier1, tier2]
+    if: >-
+      always() && needs.plan.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Move the tag
+        env:
+          TAG: deployed/${{ inputs.environment }}
+          REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          git tag -f "${TAG}" "${REF}"
+          git push -f origin "refs/tags/${TAG}"
+          echo "${{ inputs.environment }} runs \`${REF}\`." >> "${GITHUB_STEP_SUMMARY}"
