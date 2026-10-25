@@ -120,10 +120,6 @@ Authorization: Bearer lvd_...
 
 A token you create in Settings always has full read and write access, so there is no read-only option on this path: approve the connection in the browser instead when you want **Read-only access**. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
 
-## Self-Hosted livedesign
-
-On your own deployment, use your own MCP host in place of `mcp.livedesign.app`, still ending in `/mcp`: for example `https://mcp.example.com/mcp`. The approval page and the tokens come from your own deployment. The MCP server is optional and needs accounts (sign-in) configured, so if your administrator hasn't set it up there is nothing to connect to; see [Configuration and Optional Auth](/help/self-hosting/configuration/).
-
 ## If It Doesn't Connect
 
 - **The page says "This link has expired" or "This request has expired"**: a connection request lasts ten minutes. Start the connection again from your tool.

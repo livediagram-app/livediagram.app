@@ -43,9 +43,9 @@ export const HOME_SECTIONS: HomeSection[] = [
   {
     id: 'build',
     eyebrow: 'Build and Run',
-    heading: 'Developers and self-hosting',
-    lede: 'Drive livedesign from your own code, or run your own copy of it.',
-    categories: ['developers', 'self-hosting'],
+    heading: 'Developers',
+    lede: 'Drive livedesign from your own code: the API, the CLI and workbenches.',
+    categories: ['developers'],
   },
 ];
 

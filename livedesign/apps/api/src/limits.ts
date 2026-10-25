@@ -134,7 +134,7 @@ export function bodyExceedsCap(request: Request, body: unknown, cap: number): bo
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
 // Returns null when the string is missing, blank, non-numeric, or
 // not strictly positive, so callers treat "unset" and "0" and
-// "garbage" identically as "no cap" (the OSS self-host default per
+// "garbage" identically as "no cap" (the default when unset per
 // docs/specs/009-elements/images.md, docs/specs/031-photo/photo-store.md "Limits").
 export function parsePositiveCap(raw: string | undefined): number | null {
   if (!raw) return null;

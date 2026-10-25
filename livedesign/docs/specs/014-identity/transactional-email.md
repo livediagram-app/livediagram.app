@@ -217,8 +217,8 @@ name, or a recipient count.
   have no account: that is why they carry no account footer, and why their only
   credential is the single-purpose decline token, stored hashed
   ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
-- Off by default; self-hosters opt in by providing their own Resend key + domain
-  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
+- Off by default; a deployment opts in by providing a Resend key + domain
+  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) intact — no required SaaS call).
 
 ## 8. Out of scope (for now)
 

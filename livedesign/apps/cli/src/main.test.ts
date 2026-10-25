@@ -207,11 +207,11 @@ describe('run', () => {
   });
 });
 
-describe('a self-hosted profile', () => {
+describe('a profile for another host', () => {
   it('never contacts livedesign.app across a session of commands', async () => {
     const SELF = 'https://diagrams.example';
     const config = '/home/agent/.config/livedesign/config.toml';
-    const selfHost: Route = (request, url) => {
+    const otherHost: Route = (request, url) => {
       if (url.origin !== SELF) return undefined;
       const path = url.pathname;
       if (path === '/api/capabilities')
@@ -224,7 +224,7 @@ describe('a self-hosted profile', () => {
     const files = {
       [config]: 'default_profile = "self"\n[profiles.self]\nhost = "https://diagrams.example"',
     };
-    const io = fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes: [selfHost], files });
+    const io = fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes: [otherHost], files });
     for (const argv of [
       ['design', 'ls'],
       ['tab', 'ls', 'Auth flow'],

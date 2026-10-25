@@ -7,7 +7,7 @@
 // any other — no parallel credential model.
 //
 // Gated exactly like /api/tokens: a guest (X-Owner-Id only) or a no-auth
-// self-host has no verified account identity, so nothing can be minted.
+// deployment has no verified account identity, so nothing can be minted.
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 import { mintApiToken } from '../db';

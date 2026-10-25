@@ -18,11 +18,11 @@ Status: shipped
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
 5. **What it can do**: a grid of the MCP's capabilities in plain words (logos and wireframes, templates, find and read with a picture, share links, live changes on an open design with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, livedesign runs no AI model of its own.
-7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
+7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) and a link to the full help article.
 
 ## The clients
 
-`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@livedesign/api-schema`), so a self-hosted build shows its own address and the hosted one shows `https://mcp.livedesign.app/mcp`.
+`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@livedesign/api-schema`), so a staging or local build shows its own address and the hosted one shows `https://mcp.livedesign.app/mcp`.
 
 | id            | Name        | Group         | The way in                                                                                                                                                                                                       |
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

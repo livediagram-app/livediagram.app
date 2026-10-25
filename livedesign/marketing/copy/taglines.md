@@ -49,7 +49,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 Meta-description-adjacent fields, longer banner copy.
 
 - A collaborative diagram and mindmap canvas with live cursors and comments. No sign-in wall. [92]
-- Open a link and start drawing with your team. Real-time, MIT-licensed, free, self-hostable. [92]
+- Open a link and start drawing with your team. Real-time, MIT-licensed and free. [92]
 
 ## Pick-list by use
 

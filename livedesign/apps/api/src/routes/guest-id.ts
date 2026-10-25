@@ -8,7 +8,7 @@
 // the worker can prove the caller actually owns the guest data it's
 // claiming (see auth/owner-signature.ts + docs/specs/014-identity/auth-and-guest-access.md).
 //
-// When GUEST_ID_HMAC_SECRET is unset (self-host that hasn't configured
+// When GUEST_ID_HMAC_SECRET is unset (deployment that hasn't configured
 // it), the endpoint still mints an id but with a null signature, and
 // /api/migrate keeps its legacy unsigned behaviour.
 

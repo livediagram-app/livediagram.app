@@ -24,7 +24,7 @@ keeps tokens off the spoofable guest-identity path entirely (the guest REST
 hardening in [§4](#4-x-owner-id-trust-change) is a separate track).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+or the optional-services rule ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## 2. Why the API wasn't safe to expose as-is (history)
 
@@ -324,11 +324,11 @@ out cleanly:
 
 Every other `/api/tokens` route stays session-only.
 
-### 3.7 Self-hosting
+### 3.7 Without sign-in
 
 API tokens are gated on **auth being enabled**, exactly as teams and sign-in
 are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-self-host that hasn't configured sign-in runs in pure-guest mode, and in that
+deployment that hasn't configured sign-in runs in pure-guest mode, and in that
 mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
@@ -345,7 +345,7 @@ open and no way to mint one:
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
 cleanly — no orphaned page, no half-working endpoint. This takes nothing away
-from a guest-only self-host, because the whole canvas / guest model stays fully
+from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
 
@@ -388,7 +388,7 @@ its signature, so wiring it onto REST requests is incremental. API tokens
 external callers.
 
 **Compatibility — legacy unsigned guests (recommended approach).**
-`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so self-hosts
+`verifyOwnerId` returns true when `GUEST_ID_HMAC_SECRET` is unset, so deployments
 without the secret opt out of the guard entirely (as today). Where the secret
 IS set, the migration follows from one hard truth: **an unsigned id can't be
 retroactively secured** — there is no proof bound to it, so the server cannot
@@ -486,7 +486,7 @@ hardening landed first:
 1. ✅ Input hardening (done).
 2. ✅ **The `X-Owner-Id` HMAC requirement ([§4](#4-x-owner-id-trust-change)).**
    Shipped behind the grace switch; the operator arms it by setting
-   `GUEST_SIG_ENFORCE_AFTER` ([Self-hosting](../../operations/self-hosting.md)).
+   `GUEST_SIG_ENFORCE_AFTER` (`apps/api/wrangler.toml`).
    **Not armed.** It is stated in `apps/api/wrangler.toml` `[vars]` (a
    dashboard-only value is wiped by every deploy), blank. It was armed in
    production on 2026-10-06 and un-armed the same day: `/new` mints a local
@@ -533,8 +533,8 @@ hardening landed first:
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page,
-   rendered only when `signInEnabled` so it's absent on a no-auth self-host
-   ([§3.7](#37-self-hosting)).
+   rendered only when `signInEnabled` so it's absent on a deployment without sign-in
+   ([§3.7](#37-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
@@ -547,8 +547,7 @@ hardening landed first:
    - Add API tokens to the "what signing in unlocks" list in the
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
-     requirement in `docs/development/architecture.md`, and the signed-in-only nature in
-     `docs/operations/self-hosting.md` (tokens need sign-in, like teams).
+     requirement in `docs/development/architecture.md` (tokens need sign-in, like teams).
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**

@@ -12,7 +12,6 @@ import { PoliciesArt } from './policies';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
 import { SearchPanelArt } from './search-panel';
 import { SelectionModesArt } from './selection-modes';
-import { SelfHostingArt } from './self-hosting';
 import { SupportedDevicesArt } from './supported-devices';
 import { TabsArt } from './tabs';
 import { TipsAndTricksArt } from './tips-and-tricks';
@@ -36,7 +35,6 @@ export const CATEGORY_ART: Record<string, ComponentType> = {
   'privacy-and-security': PrivacyAndSecurityArt,
   'search-panel': SearchPanelArt,
   'selection-modes': SelectionModesArt,
-  'self-hosting': SelfHostingArt,
   'supported-devices': SupportedDevicesArt,
   tabs: TabsArt,
   'tips-and-tricks': TipsAndTricksArt,

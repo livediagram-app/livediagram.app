@@ -2,7 +2,7 @@
 
 A collaborative editor for logos, wireframes and photos that works without signing in. What you make is a **design**: tabs of pages, each page a logo artboard, a wireframe of a screen, or a photo edited in layers. Open a link, design, share, present the pages, export them (PDF, PNG, SVG, JSON, a Logo Kit, or a photo as PNG, JPEG, WebP or PSD). Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start designing."
 
-**Live at [livedesign.app](https://livedesign.app).** MIT-licensed and self-hostable end-to-end.
+**Live at [livedesign.app](https://livedesign.app).** MIT-licensed and publicly viewable.
 
 ```
 apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router + cli
@@ -18,7 +18,6 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Understand what livedesign does and where it's going | [docs/README.md](docs/README.md)                                               |
 | Run it on your machine                               | [docs/development/local-development.md](docs/development/local-development.md) |
-| Host it on your own Cloudflare account               | [docs/operations/self-hosting.md](docs/operations/self-hosting.md)             |
 | See the repo's shape (apps, packages, deploy)        | [docs/development/architecture.md](docs/development/architecture.md)           |
 | Propose a change                                     | [docs/development/contributing.md](docs/development/contributing.md)           |
 | Read the spec for a specific behaviour               | [docs/specs/README.md](docs/specs/README.md)                                   |
@@ -50,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livedesign.app](https://livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
+[MIT](LICENSE). It runs free at [livedesign.app](https://livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedesign.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

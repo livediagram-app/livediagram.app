@@ -32,7 +32,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       limiter from the design write limiter, so it never
   //       touches real users; the IP is a transient key, never
   //       stored. Both degrade to "allow" when unconfigured, so
-  //       self-host / OSS forks still work. Cloudflare's edge DDoS
+  //       deployments without it still work. Cloudflare's edge DDoS
   //       + an optional WAF rate-limit rule on /api/events sit in
   //       front of all this (see docs/specs/017-telemetry/telemetry.md). Always 204 — telemetry
   //       must never surface an error.
@@ -46,7 +46,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   // abuse of a public endpoint, and a caller holding a worker secret is
   // neither anonymous nor unbounded (it's bounded by its own OAuth'd
   // traffic). Unset on either side = nobody is exempt, exactly as before,
-  // so self-hosting needs no configuration.
+  // so a deployment needs no configuration.
   if (!(await isInternalCaller(request, env))) {
     if (env.EVENTS_RATE_LIMITER) {
       const ip = clientRateKey(request);

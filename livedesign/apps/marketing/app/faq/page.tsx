@@ -10,7 +10,7 @@ import { FAQ_CATEGORIES, faqAnswerText } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · livedesign';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about livedesign: getting started, collaboration, sharing, AI and MCP, import and export, privacy, and self-hosting.';
+  'Answers to common questions about livedesign: getting started, collaboration, sharing, AI and MCP, import and export, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -45,7 +45,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about livedesign, from your first design to running your own copy."
+          lede="Everything you might want to know about livedesign, from your first design to sharing, AI and your data."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">

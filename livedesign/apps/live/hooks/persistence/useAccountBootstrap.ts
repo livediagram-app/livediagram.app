@@ -40,7 +40,7 @@ import {
 // destructure them — there's exactly one place those values come from
 // per page.
 //
-// When sign-in isn't configured for the deployment (docs/specs/002-project-scope/open-source-and-business-model.md self-host
+// When sign-in isn't configured for the deployment (docs/specs/002-project-scope/open-source-and-business-model.md
 // path, `NEXT_PUBLIC_SIGN_IN_ENABLED` unset), the hook returns
 // a stable stub. The choice between the real session and the stub is
 // made at module load, then frozen — React's

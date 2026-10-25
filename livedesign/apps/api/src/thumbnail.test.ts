@@ -84,7 +84,7 @@ beforeEach(() => {
 });
 
 describe('getDesignThumbnailSvg', () => {
-  it('returns null without an R2 binding (self-host without storage)', async () => {
+  it('returns null without an R2 binding (deployment without storage)', async () => {
     const out = await getDesignThumbnailSvg({} as Env, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();

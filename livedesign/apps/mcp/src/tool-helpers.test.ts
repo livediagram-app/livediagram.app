@@ -100,7 +100,7 @@ describe('deepLink', () => {
     expect(deepLink({}, 'abc-123')).toBe('https://livedesign.app/design/abc-123');
   });
 
-  it("points at this server's own app on staging or a self-host", () => {
+  it("points at this server's own app on staging or another host", () => {
     const staging = { CONSENT_BASE_URL: 'https://staging.livedesign.app' };
     expect(deepLink(staging, 'abc')).toBe('https://staging.livedesign.app/design/abc');
     expect(shareUrl(staging, 'AB')).toBe('https://staging.livedesign.app/design/shared?s=AB');

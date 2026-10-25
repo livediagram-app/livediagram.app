@@ -37,7 +37,7 @@ gave nobody a reason to tell them apart or click.
   first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
   never stretched or cropped, on the drawing's own background colour. A small drawing grows to
   at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on a self-host): the request is redirected (302) to the
+- **Nothing to draw** (an empty first tab, no image store on the deployment): the request is redirected (302) to the
   brand card, so the preview still has a picture.
 - **Withheld exactly where the live image is**: a password-protected design, an unknown, revoked or expired code
   and a trashed design answer 404, and the page names none of them.
@@ -57,7 +57,7 @@ The live app's worker fills in the shell's `<head>` for `/design/shared?s=<code>
 other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a self-host without the `API` service binding): the
+- **The api has 1.5 s.** Slower, failing, or not bound at all (a deployment without the `API` service binding): the
   shell goes out as built, with the brand card, and the editor works as before.
 - **The editor still sets its own title** once the design loads; the worker only decides what a crawler reads.
 

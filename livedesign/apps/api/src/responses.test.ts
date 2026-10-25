@@ -121,7 +121,7 @@ describe('forbidden', () => {
 
 describe('imagesUnavailable', () => {
   it('returns a 503 with the canonical { error: "images_unavailable" } envelope', async () => {
-    // Surfaced when the R2 binding is unset (self-host without
+    // Surfaced when the R2 binding is unset (deployment without
     // R2). The 503 lets clients fall back gracefully rather than
     // treating it as a permanent server error.
     const res = imagesUnavailable();
@@ -198,7 +198,7 @@ describe('CORS_HEADERS', () => {
   });
 
   it('allows the conversion header Take Offline and Sync Design send', () => {
-    // Missing, a cross-origin editor (dev on its own port, or a self-host
+    // Missing, a cross-origin editor (dev on its own port, or a deployment
     // with the api elsewhere) had both conversions fail at the preflight.
     expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DESIGN_CONVERSION_HEADER);
   });

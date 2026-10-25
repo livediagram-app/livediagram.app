@@ -134,9 +134,9 @@ function emailSwitch(
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 // `authEnabled` is whether this deployment offers sign-in at all
-// (`signInEnabled`): API tokens are signed-in only, so on a no-auth self-host they
+// (`signInEnabled`): API tokens are signed-in only, so on a deployment without sign-in they
 // are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
+// (docs/specs/015-api/public-api-and-tokens.md#37-without-sign-in).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
@@ -287,7 +287,7 @@ export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
 // The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and self-hosts without accounts included, because
+// Here for everyone, guests and deployments without accounts included, because
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
@@ -1503,7 +1503,7 @@ export function settingsSectionId(section: string): string {
 
 // The categories actually offered right now, with each one's rows filtered to
 // those that apply. AI only appears when the api worker advertises the
-// capability, so a self-hosted deploy without it never shows an empty group ,
+// capability, so a deploy without it never shows an empty group ,
 // and a category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
 export function visibleCategories(

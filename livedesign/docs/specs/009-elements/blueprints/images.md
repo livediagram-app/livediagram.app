@@ -471,7 +471,7 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 | Rule                                                 | Test                                                      | File                                           |
 | ---------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| 503 without the media service                        | `503 without the media service (self-host without …)`     | `apps/api/src/routes/images.test.ts`           |
+| 503 without the media service                        | `503 without the media service (a deployment without …)`     | `apps/api/src/routes/images.test.ts`           |
 | Owner required                                       | `400 listing the gallery with no owner`, usage            | `apps/api/src/routes/images.test.ts`           |
 | Gallery is owner-scoped                              | `200 lists the owner-scoped gallery`                      | `apps/api/src/routes/images.test.ts`           |
 | Upload, dedupe, guest hash, refusals passed on       | upload tests and `the hash-only dedupe shortcut`          | `apps/api/src/routes/images.test.ts`           |

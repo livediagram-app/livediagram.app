@@ -36,7 +36,7 @@ on a link card, the editor that set it calls `apiUnfurl(url)` **once** and
 commits the result into `meta`; peers receive it via the tab op. It fails
 soft (null → the card shows the bare URL).
 
-The endpoint is **SSRF-safe** (public, self-hostable repo):
+The endpoint is **SSRF-safe** (public repo):
 
 - Accepts only `http:` / `https:`; rejects everything else.
 - Blocks non-public hosts before fetching: `localhost` / `*.local`, loopback,
@@ -49,7 +49,7 @@ The endpoint is **SSRF-safe** (public, self-hostable repo):
   `name="description"`, and the favicon `<link rel="…icon…">` (relative URLs
   resolved against the final URL, `/favicon.ico` fallback).
 - Per-IP `UNFURL_RATE_LIMITER` (60/60s; absent binding → allowed, for
-  self-host). Always returns 200 with at least the resolved `url`.
+  a deployment without it). Always returns 200 with at least the resolved `url`.
 
 The pure helpers (`isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`)
 are unit-tested. `UnfurlResult` is a shared `@livedesign/api-schema` DTO.

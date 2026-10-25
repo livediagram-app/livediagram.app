@@ -2,7 +2,6 @@ import {
   lucideArrowUpDown,
   lucideGift,
   lucideMessagesSquare,
-  lucidePackage,
   lucideShapes,
   lucideShare2,
   lucideShieldCheck,
@@ -136,15 +135,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               public on GitHub
             </a>
-            . You can read it, run your own copy, or contribute.
+            . You can read it, fork it, or contribute.
           </>
         ),
         aText:
-          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, run your own copy, or contribute.',
+          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, fork it, or contribute.',
       },
       {
         q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. The free hosted version and a self-hosted copy run the same software.',
+        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is free for everyone.',
       },
     ],
   },
@@ -469,34 +468,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Delete any design you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
-      },
-    ],
-  },
-  {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host livedesign?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livedesign/">deploying livedesign</a>.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedesign.',
-      },
-      {
-        q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key, and email once sign-in and its own key are set up.',
       },
     ],
   },

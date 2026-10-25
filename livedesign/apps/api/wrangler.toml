@@ -112,7 +112,7 @@ bucket_name = "livedesign-photo-blobs"
 # `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
 # endpoint; over-limit requests get a 429. Namespace ids are
 # arbitrary local identifiers (Cloudflare scopes by binding name +
-# script). Self-host: when this binding is absent the rate-limit
+# script). When this binding is absent the rate-limit
 # helper falls through to "allow" so deployments without the
 # feature still work.
 [[unsafe.bindings]]
@@ -128,7 +128,7 @@ simple = { limit = 300, period = 60 }
 # session (which flushes a handful of batches a minute) while bounding
 # how fast one source can flood D1 / inflate the public dashboard.
 # Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
-# helper allows, so self-host still works.
+# helper allows, so the worker still works.
 [[unsafe.bindings]]
 name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
@@ -173,7 +173,7 @@ crons = ["0 3 * * *", "* * * * *"]
 # docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into design-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
-# → helper allows, so self-host still works without this feature.
+# → helper allows, so the worker still works without this feature.
 [[unsafe.bindings]]
 name = "AI_RATE_LIMITER"
 type = "ratelimit"
@@ -185,7 +185,7 @@ simple = { limit = 20, period = 60 }
 # exempt from the write limiter, so without this an attacker holding a
 # code could brute-force the password unbounded. 30 resolves / 60s per IP
 # is ample for legit visitors. Separate namespace. Absent binding → the
-# index.ts check is skipped, so self-host still works.
+# index.ts check is skipped, so the worker still works.
 [[unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
 type = "ratelimit"
@@ -194,7 +194,7 @@ simple = { limit = 30, period = 60 }
 
 # Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
 # page fetch for link-card previews. 60/60s is plenty for a user dropping
-# bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
+# bookmark cards. Separate namespace. Absent binding → check skipped (when unbound).
 [[unsafe.bindings]]
 name = "UNFURL_RATE_LIMITER"
 type = "ratelimit"
@@ -214,7 +214,7 @@ simple = { limit = 120, period = 60 }
 # Per-owner limiter for Explorer Home's reads (GET /api/home and /api/home/timeline,
 # docs/specs/013-workspace/explorer-home.md): one read answers a whole screen, and a healthy client
 # reads on mount, on return to the tab and after its own writes, a handful a minute. 60 / 60s bounds a
-# looping client. Separate namespace. Absent binding → allow (self-host).
+# looping client. Separate namespace. Absent binding → allow (when unbound).
 [[unsafe.bindings]]
 name = "HOME_RATE_LIMITER"
 type = "ratelimit"
@@ -223,7 +223,7 @@ simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few designs, never a stream.
-# Separate namespace. Absent binding → allow (self-host).
+# Separate namespace. Absent binding → allow (when unbound).
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
 type = "ratelimit"
@@ -233,7 +233,7 @@ simple = { limit = 30, period = 60 }
 # Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
 # email"): GET and POST /api/teams/invite-decline/<token>, keyed invite-decline:<network> (an IPv4 /24 or IPv6 /56).
 # Open doors, so the owner-keyed write limiter would put every caller on one key. 20 / 60s is far above one
-# person declining. Separate namespace. Absent binding → allow (self-host).
+# person declining. Separate namespace. Absent binding → allow (when unbound).
 [[unsafe.bindings]]
 name = "TEAM_INVITE_RATE_LIMITER"
 type = "ratelimit"
@@ -258,7 +258,7 @@ simple = { limit = 20, period = 60 }
 #
 # With no key the whole surface is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no AI panel, and
-# the AI routes answer 503. That is the self-host default.
+# the AI routes answer 503. That is the default when unset.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -309,7 +309,7 @@ simple = { limit = 20, period = 60 }
 # worker mints signed guest ids and /api/migrate requires a valid
 # signature, closing the "observe a guest id, claim its data" hole
 # (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest / single-user self-host).
+# migrate (pure-guest / local development).
 
 # INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
 # OWN workers over a service binding, rather than from the open internet
@@ -333,7 +333,7 @@ simple = { limit = 20, period = 60 }
 # and was never aimed at us.
 #
 # Unset on either side = nobody is exempt, which is the pre-existing
-# behaviour and needs no configuration, so a self-host can ignore this.
+# behaviour and needs no configuration, so a deployment can ignore this.
 # The two sides MUST match: a mismatch is silent (the caller simply lands
 # back in the shared bucket), so check `wrangler secret list` on both if
 # Mcp·Used counts look flat.

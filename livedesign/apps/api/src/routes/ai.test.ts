@@ -12,7 +12,7 @@ import type { Env } from '../types';
 //      X-Owner-Id guest path with 401 sign_in_required.
 //
 // Both gates have safe defaults (unset = old open behaviour) so the OSS
-// self-host story stays intact. Each test sets OPENAI_API_KEY to a
+// open default stays intact. Each test sets OPENAI_API_KEY to a
 // non-empty stub so we never reach the ai_not_configured short-circuit
 // at the top of handleAi; the gates we care about run between that
 // check and the rate-limiter, and we assert they never proceed past

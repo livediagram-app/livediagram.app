@@ -25,7 +25,7 @@ Two D1 tables, owned by the api worker (the baseline migration, `0001_livedesign
 Teams are keyed by account user ids and invites are keyed by email, so the whole feature requires a verified signed-in session:
 
 - Every `/api/teams*` endpoint requires a verified account access token (`Authorization: Bearer`). The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate [Auth + guest access](../014-identity/auth-and-guest-access.md)'s no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). Self-host deployments without sign-in ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)) show neither.
+- In the Explorer sidebar, guests see the sign-in nudge ("Sign in to access Teams") at the end of the Spaces group instead of team rows and New Team ([Explorer structure](explorer-structure.md)). A deployment without sign-in shows neither.
 
 ### Email claim
 
@@ -67,7 +67,7 @@ The invite email (and every reminder) carries a **Decline invite** link, so some
   - **Invalid** (unknown token, removed or replaced invite): "This invite link isn't valid".
 - **Idempotent.** Declining an already-declined invite answers `200 { status: 'declined' }` again and changes nothing; an expired one answers `200 { status: 'expired' }`; a joined one answers `409 already_joined`. Only the request that flips `invited` to `declined` (guarded in the write) tells anyone.
 - **What a decline does**: the row becomes `declined` and reminders stop. Its links keep working only to say it was declined. The team's admins get the same Timeline card and invite-response email (opt-out per admin) an in-app decline sends.
-- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the api's other unauthenticated doors. Absent binding: allowed (self-host). The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
+- **Rate limits.** Both the read and the decline sit outside the owner-keyed write limiter and are limited per network (`TEAM_INVITE_RATE_LIMITER`, 20 a minute per IPv4 /24 or IPv6 /56, keyed `invite-decline:<network>`), like the api's other unauthenticated doors. Absent binding: allowed. The 256-bit secret makes guessing hopeless either way; the limit bounds D1 reads.
 
 ## Reminders and expiry
 

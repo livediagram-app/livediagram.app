@@ -103,14 +103,13 @@ who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
 
-### Self-host degradation
+### Degradation without the api
 
-When the api worker is unset (pure-guest self-host without a D1
+When the api worker is unset (a pure-guest deployment without a D1
 binding configured) the client treats the fetch as a no-op
 failure: the localStorage cache acts as the only persistence,
 which is the same behaviour as the original v1 design and works
-exactly like it did before. No required SaaS calls, self-hosting
-stays viable.
+exactly like it did before. No required SaaS calls.
 
 ## Schema
 

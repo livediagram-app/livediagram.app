@@ -35,9 +35,9 @@ Each pass in the ShareDialog ([Live app → Share dialog](../007-editor/live-app
 - `track('Session', 'Opened', 'Embed')` once when the embed route hydrates.
 - `track('UI', 'Copied', 'EmbedCode')` when the snippet is copied (sibling of the existing `UI / Copied / ShareLink`).
 
-## Self-hosting
+## No outside services
 
-Works with zero external services: the embed page is part of the live app's static export, and the snippet builds its URL from the live origin at copy time, so self-hosted instances emit self-hosted embed URLs.
+Works with zero external services: the embed page is part of the live app's static export, and the snippet builds its URL from the live origin at copy time, so each origin (production, staging, local) emits its own embed URLs.
 
 ## Out of scope
 

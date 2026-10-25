@@ -654,7 +654,7 @@ must settle.
 - **Comment writes** go through the tab today. A thread endpoint (add, reply, resolve) would let `comment add`
   avoid touching anything else on the tab.
 - **Rendering.** `tab render` can rasterise locally (resvg in Node, the shared `svg-render.ts`), or use a server
-  endpoint. Doing it locally keeps it working offline and on self-hosts.
+  endpoint. Doing it locally keeps it working offline and on any host.
 - **Design lookup by name across team libraries**, without the client sweeping every team, would make
   `doc ls` and name refs a single call (the MCP sweeps today, `find-designs.ts`).
 - **Short ids.** If evals show prefixes still produce wrong refs, the alternative is server-issued short element

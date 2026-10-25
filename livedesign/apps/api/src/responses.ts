@@ -35,7 +35,7 @@ export const CORS_HEADERS = {
   'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DESIGN_CONVERSION_HEADER}, ${DESIGN_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
-  // by an editor on another origin (local dev, a self-host with a separate api host).
+  // by an editor on another origin (local dev, a deployment with a separate api host).
   // The tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
   'Access-Control-Expose-Headers': `${DESIGN_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
 };

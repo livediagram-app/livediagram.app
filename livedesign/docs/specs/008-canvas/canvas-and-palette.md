@@ -27,7 +27,7 @@ Sections, top to bottom:
 - **Current Design** — the active design's row. Click to rename in place; the row's ellipsis menu surfaces Rename, Duplicate, and Delete for the current design (moved here from the editor header).
 - **Overview, Spaces and More** — the Explorer sidebar's three groups, built from the same rows, layout rules and keyboard model at the panel's width; rows with designs open in place, the rest go to their Explorer page ([Explorer structure](../013-workspace/explorer-structure.md#the-editors-explorer)).
 - **Sign-in nudge** — a dashed-border card at the bottom of the Explorer body that surfaces the value of accounts (cross-device persistence) where the user is looking at their library. Three states driven by the deployment + session:
-  - **Sign-in disabled** (self-host without auth): "No sign-in on this deployment" with the body "Your designs are saved, but only this browser can open them. Clear its site data and you lose them." The designs are on the server; it is the guest id that lives in the browser. No button.
+  - **Sign-in disabled** (a deployment without auth): "No sign-in on this deployment" with the body "Your designs are saved, but only this browser can open them. Clear its site data and you lose them." The designs are on the server; it is the guest id that lives in the browser. No button.
   - **Sign-in enabled, signed out**: "Sign in to keep your content" with body "A free account keeps your designs and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
   - **Sign-in enabled, signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 

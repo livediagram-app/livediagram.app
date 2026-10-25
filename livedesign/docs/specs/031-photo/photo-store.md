@@ -55,7 +55,7 @@ Under a design's tab, on the api worker ([API app](../015-api/api.md)):
   matches its id (400 `blob_mismatch`); the tab's stored bytes plus the new ones stay within the tab's cap (403
   `photo_full`, with `limit` and `current`). A blob already stored is not written again, but its bytes are always
   sent and checked: holding a ref means having had the bytes, never just knowing an id.
-- **Self-host**: without the `PHOTO_BLOBS` binding every route answers 503 `photos_unavailable`; the editor then offers
+- **No binding**: without the `PHOTO_BLOBS` binding every route answers 503 `photos_unavailable`; the editor then offers
   photo pages only in Offline Mode designs ("Photo editing needs image storage on this server."), and hides the
   Photo card elsewhere.
 - **Refusals log** `[photo-blobs] refused <reason>` with the design and tab ids, never an owner id.
@@ -129,7 +129,7 @@ deleted <m> blobs`, and `photo sweep: R2 delete failed` with the ids where R2 re
 ## Limits
 
 - **Per tab**: `PHOTO_MAX_BYTES_PER_TAB` (decimal bytes, api env; hosted 536,870,912, 512 MB; unset, blank or `0`
-  means no limit, the self-host default).
+  means no limit, the default when unset).
 - **Per blob**: 10 MB. **Per batch**: 64 blobs, 24 MB. **`photo-blobs-held`**: 500 ids. **`photo-blobs-adopt`**: 2000 ids.
 - **Tab size**: a photo's stack is small (a full 40-megapixel layer's tile map is about 6 KB), well inside the 2 MB
   tab cap at 100 layers.

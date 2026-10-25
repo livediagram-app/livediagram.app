@@ -100,13 +100,6 @@ export const categories: Category[] = [
     articleCount: 5,
   },
   {
-    slug: 'self-hosting',
-    title: 'Self-Hosting',
-    description:
-      'Run livedesign on your own infrastructure, with the full feature set, free and open source.',
-    articleCount: 3,
-  },
-  {
     slug: 'developers',
     title: 'Developers',
     description:
@@ -629,9 +622,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The livedesign CLI',
     description:
-      'Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and self-hosting.',
+      'Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and profiles.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile host',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -763,47 +756,6 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-  },
-
-  // ---- Self-Hosting ----
-  {
-    slug: 'self-hosting-overview',
-    title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own livedesign, and why you might.',
-    keywords: 'host yourself own server on premise deploy install run',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'deploying-livedesign',
-    title: 'Deploying livedesign',
-    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords:
-      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'configuration',
-    title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional sign-in, and guest-only mode.',
-    keywords:
-      'env vars environment sign-in accounts setup secrets settings configure resend email ai openai mcp telemetry r2',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'mcp-server',
-    title: 'The MCP Server on a Self-Hosted Instance',
-    description: 'Set up the MCP server for AI tools on your own deployment.',
-    keywords:
-      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting/configuration',
-    parentSlug: 'configuration',
   },
 
   // ---- Troubleshooting ----

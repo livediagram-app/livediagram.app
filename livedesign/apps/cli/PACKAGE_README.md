@@ -28,7 +28,7 @@ or store it for this machine:
 printf %s "$TOKEN" | livedesign auth login --with-token
 ```
 
-The CLI never prompts. A self-hosted livedesign is reached with `--host https://…` or `LIVEDESIGN_HOST`.
+The CLI never prompts. Another livedesign server, such as local development, is reached with `--host https://…` or `LIVEDESIGN_HOST`.
 
 ## Start
 

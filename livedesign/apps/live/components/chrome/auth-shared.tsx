@@ -102,7 +102,7 @@ export function RedirectingCard() {
 
 // ---------------------------------------------------------------------
 // Notice shown on the auth routes when sign-in isn't configured for the
-// deployment (self-host path, NEXT_PUBLIC_SIGN_IN_ENABLED unset).
+// deployment (NEXT_PUBLIC_SIGN_IN_ENABLED unset).
 // The editor still works — only sign-up / sign-in are off — so the
 // CTA points back to the editor's welcome flow.
 // ---------------------------------------------------------------------

@@ -32,7 +32,7 @@ marketing/
 - **Don't overclaim.** Team workspaces, transactional email, and CRDT editing
   are not shipped yet (see "What's still ahead" in the fact sheet). Never imply
   they are.
-- **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
+- **Free means free.** MIT-licensed, no paid tier, no plan for
   one. Say so where the format allows.
 - **Brand color** is rose, `#f43f5e` ("livedesign rose"); text and fills in it use `#be123c`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

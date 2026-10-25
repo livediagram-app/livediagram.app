@@ -17,7 +17,7 @@ workspaces, transactional email, CRDT / conflict-free editing): that means no
 
 **Tier 2, strong supporting**
 
-`canvas` · `visualization` · `brainstorming` · `opensource` · `selfhosted` ·
+`canvas` · `visualization` · `brainstorming` · `opensource` ·
 `free`
 
 **Tier 3, context-dependent (when a directory wants more, or is dev-focused)**
@@ -43,7 +43,7 @@ tags belong here):
 
 ```
 diagrams diagramming flowcharts mindmaps whiteboard collaboration
-multiplayer realtime canvas open-source self-hosted nextjs cloudflare
+multiplayer realtime canvas open-source nextjs cloudflare
 typescript durable-objects
 ```
 
@@ -58,7 +58,6 @@ Design Tools · Productivity · Open Source · Developer Tools · SaaS
 ```
 diagrams diagramming flowcharts mindmaps whiteboard collaboration
 multiplayer realtime brainstorming visualization free open source
-self-hosted
 ```
 
 **App store / short keyword field** (tightest, highest-fit only):

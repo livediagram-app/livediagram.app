@@ -118,7 +118,7 @@ export default function TelemetryDashboard() {
             <EmptyState
               icon={<ActivityGlyph />}
               title="Telemetry isn’t enabled here"
-              description="This deployment hasn’t turned telemetry on, so there’s nothing to show yet. Self-hosters opt in with a single env var."
+              description="This deployment hasn’t turned telemetry on, so there’s nothing to show yet. A deployment opts in with a single env var."
             />
           </div>
         ) : (

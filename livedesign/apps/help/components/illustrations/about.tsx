@@ -49,8 +49,8 @@ export function OpenCanvas() {
   );
 }
 
-/** Open source motif: a code window whose contents flow out to a self-hosted
- *  copy you can run, with an MIT-licence tag. */
+/** Open source motif: a code window whose contents flow out to a fork
+ *  you can build on, with an MIT-licence tag. */
 export function OpenSource() {
   return (
     <Scene w={420} h={210} bg="plain">
@@ -89,10 +89,10 @@ export function OpenSource() {
         ))}
       </g>
 
-      {/* Flow to a runnable copy */}
+      {/* Flow to a fork */}
       <Arrow from={[214, 105]} to={[268, 105]} tone="accent" />
 
-      {/* Self-hosted copy */}
+      {/* The fork */}
       <rect
         x={276}
         y={56}
@@ -104,7 +104,7 @@ export function OpenSource() {
       />
       <rect x={276} y={56} width={120} height={20} rx={10} className="fill-brand-100" />
       <Label x={336} y={67} anchor="middle" size={10} weight={700} tone="accent">
-        Your copy
+        Your fork
       </Label>
       <Shape x={288} y={90} w={36} h={24} kind="rect" label="A" />
       <Shape x={352} y={90} w={36} h={24} kind="circle" accent />
