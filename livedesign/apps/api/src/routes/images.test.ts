@@ -22,6 +22,13 @@ vi.mock('../index-service', async (importOriginal) => ({
   indexAppClient: () => ({ pushPersonEvents }),
 }));
 
+// The index as the caller reaches it, for the Gallery's usage names.
+const { clientFor } = vi.hoisted(() => ({ clientFor: vi.fn() }));
+vi.mock('./index-adapters', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./index-adapters')>()),
+  clientFor,
+}));
+
 // The index's grant to read a design, the whole design or one tab of it.
 const viewGrant = (tab: string | null = null) => ({ level: 'view', tab });
 
@@ -281,6 +288,58 @@ describe('handleImages', () => {
         resolveDesignGrant.mockResolvedValue(viewGrant());
         expect((await call('GET', `/api/images/${id}?d=d1`, { workbench })).status).toBe(200);
       });
+    });
+  });
+
+  describe('usage', () => {
+    // Images the owner keeps in the service, and the items, in any app, that place them.
+    const placed = (refs: [app: string, document: string, image: string][]) => {
+      const image = media.sql.prepare(
+        `INSERT OR IGNORE INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+         VALUES (?, 'user_ada', 'livedesign.app', 'image/png', 4, 1, 1, ?, 1)`,
+      );
+      const ref = media.sql.prepare('INSERT INTO refs (app, document, image_id) VALUES (?, ?, ?)');
+      for (const [app, document, id] of refs) {
+        image.run(id, `sha-${id}`);
+        ref.run(app, document, id);
+      }
+    };
+    const index = (items: Record<string, { title: string; app: string; trashedAt?: number }>) =>
+      clientFor.mockReturnValue({
+        getItem: async (id: string) => {
+          const found = items[id];
+          if (!found) throw new Error('not_found');
+          return { item: { id, trashedAt: null, ...found } };
+        },
+      });
+
+    // An image placed only in a livedocuments document read "Not used": the gallery lists every app's images but
+    // counted only designs.
+    it("names each image's items in every app, by name", async () => {
+      placed([
+        ['livedesign.app', 'P', 'a'],
+        ['livedocuments.app', 'D', 'a'],
+        ['livedocuments.app', 'gone', 'b'],
+        ['livediagram.app', 'T', 'b'],
+      ]);
+      index({
+        P: { title: 'Poster', app: 'livedesign' },
+        D: { title: 'Brief', app: 'livedocuments' },
+        T: { title: 'Board', app: 'livediagram', trashedAt: 1 },
+      });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {
+          a: [
+            { id: 'D', name: 'Brief', app: 'livedocuments' },
+            { id: 'P', name: 'Poster', app: 'livedesign' },
+          ],
+        },
+      });
+    });
+
+    it('answers an empty map, without the index, when nothing places them', async () => {
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({ usage: {} });
+      expect(clientFor).not.toHaveBeenCalled();
     });
   });
 

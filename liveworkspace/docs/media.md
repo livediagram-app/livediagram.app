@@ -109,6 +109,20 @@ to the images, so a reference to a deleted image is harmless.
 `complete: true` says the app has now sent every document it holds at least once. Until every app with
 a key has said so, the sweep deletes nothing: an app that hasn't reported reads as placing nothing.
 
+### Usage
+
+An image is **used** when any app's document places it, as the apps last reported. The Explorer's Image
+Gallery lists the owner's images from every app, so its "Used in" badge counts every app's documents too:
+an image uploaded in livediagram and placed only in a livedocuments document reads "Used in 1 item" in any
+app's Gallery, never "Not used". `GET /usage` answers every app's references; each app's
+`GET /api/images/usage` names them through the index (one index holds every app's items) with
+`@liveworkspace/media`'s `galleryUsage`, as `{ id, name, app }`, keeping its own rule on whose and which
+items show (at most 200 named per answer). An item saved only in This Browser has no references: its
+pictures are embedded in it, not placed from the gallery, so it never makes a gallery image used.
+
+A document reports its set from its outbox on idle, at most once a minute, so an image placed a moment
+ago can read "Not used" until that push lands. The Gallery reads the usage each time it opens.
+
 ## Retention
 
 Once a day (03:41 UTC) the service deletes the images that are **older than 30 days** and **placed by no

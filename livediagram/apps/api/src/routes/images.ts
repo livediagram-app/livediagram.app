@@ -4,12 +4,11 @@
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
 import { reportImagesUploaded } from '@liveworkspace/index-app';
-import type { MediaClient } from '@liveworkspace/media';
+import { galleryUsage, type ImageUsage, type MediaClient } from '@liveworkspace/media';
 import { documentRoom } from '../document-client';
 import { indexAppClient, indexFor } from '../index-service';
 import {
   imageSummary,
-  MEDIA_APP,
   mediaClient,
   mediaImageOwner,
   mediaOwner,
@@ -99,9 +98,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // GET /api/images/usage: owner-only. Returns the inverse
   // index used by the Explorer Image Gallery: imageId →
-  // [{ id, name }] for every owned document that references
-  // it. Empty arrays for images that aren't placed on any
-  // canvas yet (the entry simply doesn't appear in the map).
+  // [{ id, name, app }] for every owned item, in any app, that
+  // places it. An image placed nowhere has no entry.
   // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
@@ -198,51 +196,28 @@ export function originalNameOf(header: string | null): string | null {
   return Array.from(name).slice(0, ORIGINAL_NAME_MAX).join('');
 }
 
-// The Gallery's usage map: the canvases of this app the media service says place each of the owner's images, kept to
-// those the index answers as theirs and not in the Trash, named as the index has them. At most USAGE_DOCUMENTS_MAX
-// canvases are looked up (USAGE_LOOKUPS_IN_FLIGHT at a time); one past that, or one the index cannot answer, is left
-// out of the badge rather than failing the Gallery.
-async function usageOf(
-  ctx: RouteContext,
-  media: MediaClient,
-  owner: string,
-): Promise<Record<string, { id: string; name: string }[]>> {
-  const usage: Record<string, { id: string; name: string }[]> = {};
+// The Gallery's usage map (@liveworkspace/media galleryUsage): the items, in every app, the media service says
+// place each of the owner's images, kept to those the index answers as theirs and not in the Trash, named as the
+// index has them. The gallery lists every app's images, so an image placed only in another app's items is used
+// there, not "Not used". At most USAGE_DOCUMENTS_MAX items are looked up (USAGE_LOOKUPS_IN_FLIGHT at a time); one
+// past that, or one the index cannot answer, is left out of the badge rather than failing the Gallery.
+async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) {
     console.error('[images] media usage answered', answered.status);
-    return usage;
+    return {};
   }
-  const placed = Object.entries(answered.value.usage);
-  const documents = [
-    ...new Set(
-      placed.flatMap(([, refs]) => refs.filter((r) => r.app === MEDIA_APP).map((r) => r.document)),
-    ),
-  ].slice(0, USAGE_DOCUMENTS_MAX);
   const client = indexFor(ctx.env, grantCallerOf(ctx));
-  if (!client || documents.length === 0) return usage;
-  const names = new Map<string, string>();
-  for (let i = 0; i < documents.length; i += USAGE_LOOKUPS_IN_FLIGHT) {
-    await Promise.all(
-      documents.slice(i, i + USAGE_LOOKUPS_IN_FLIGHT).map(async (id) => {
-        try {
-          const { item } = await client.getItem(id);
-          if (item.ownerId === owner && item.trashedAt === null) names.set(id, item.title);
-        } catch {
-          // Gone, or not theirs to read: not in the badge.
-        }
-      }),
-    );
-  }
-  for (const [imageId, refs] of placed) {
-    const docs = refs
-      .filter((r) => r.app === MEDIA_APP && names.has(r.document))
-      .map((r) => ({ id: r.document, name: names.get(r.document)! }));
-    if (docs.length === 0) continue;
-    const seen = new Set<string>();
-    usage[imageId] = docs
-      .filter((doc) => (seen.has(doc.id) ? false : (seen.add(doc.id), true)))
-      .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
-  }
-  return usage;
+  if (!client) return {};
+  return galleryUsage(
+    answered.value.usage,
+    async (app, id) => {
+      const { item } = await client.getItem(id);
+      // Gone, another app's id, not theirs or in the Trash: not in the badge.
+      return item.app === app && item.ownerId === owner && item.trashedAt === null
+        ? item.title
+        : null;
+    },
+    { max: USAGE_DOCUMENTS_MAX, inFlight: USAGE_LOOKUPS_IN_FLIGHT },
+  );
 }

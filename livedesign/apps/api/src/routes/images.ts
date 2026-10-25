@@ -3,11 +3,11 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import type { MediaClient } from '@liveworkspace/media';
+import { galleryUsage, type MediaClient } from '@liveworkspace/media';
 import { reportImagesUploaded } from '@liveworkspace/index-app';
 import { designRoom } from '../design-client';
 import { indexAppClient } from '../index-service';
-import { imageSummary, MEDIA_APP, mediaClient, mediaImageOwnerFor, mediaOwner } from '../media';
+import { imageSummary, mediaClient, mediaImageOwnerFor, mediaOwner } from '../media';
 import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { resolveDesignGrant } from './design-grant';
@@ -82,8 +82,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   }
 
   // GET /api/images/usage: owner-only. The inverse index the Explorer's Image Gallery shows: imageId →
-  // [{ id, name }] for every design the caller can open that places it, from the media service's references
-  // (each design sends its own) with the names from the index. An image no design places has no entry.
+  // [{ id, name, app }] for every item, in any app, the caller can open that places it, from the media service's
+  // references (each item sends its own) with the names from the index. An image nothing places has no entry.
   // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
   if (segments.length === 3 && segments[2] === 'usage' && request.method === 'GET') {
     const owner = requireOwner(ctx);
@@ -155,43 +155,23 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 export const IMAGE_USAGE_DESIGNS_MAX = 200;
 const IMAGE_USAGE_READS = 8;
 
+// The items, in every app, that place each image (@liveworkspace/media galleryUsage): the gallery lists every app's
+// images, so an image placed only in another app's items is used there, not "Not used".
 async function imageUsage(ctx: RouteContext, media: MediaClient, owner: string): Promise<Response> {
   const answered = await media.usage(await mediaOwner(owner));
   if (!answered.ok) return serviceAnswer(answered);
-  const byImage = new Map<string, string[]>();
-  const designs = new Set<string>();
-  for (const [imageId, places] of Object.entries(answered.value.usage)) {
-    const ids = places.filter((d) => d.app === MEDIA_APP).map((d) => d.document);
-    if (ids.length === 0) continue;
-    byImage.set(imageId, ids);
-    for (const id of ids) designs.add(id);
-  }
-  const names = new Map<string, string>();
-  const wanted = [...designs].slice(0, IMAGE_USAGE_DESIGNS_MAX);
-  if (wanted.length > 0) {
-    const client = clientFor(ctx);
-    if (client instanceof Response) return client;
-    for (let i = 0; i < wanted.length; i += IMAGE_USAGE_READS) {
-      await Promise.all(
-        wanted.slice(i, i + IMAGE_USAGE_READS).map(async (id) => {
-          try {
-            const { item } = await client.getItem(id);
-            if (!item.trashedAt) names.set(id, item.title);
-          } catch {
-            // Gone, trashed or not the caller's to open: not shown.
-          }
-        }),
-      );
-    }
-  }
-  const usage: Record<string, { id: string; name: string }[]> = {};
-  for (const [imageId, ids] of byImage) {
-    const placed = ids.flatMap((id) => {
-      const name = names.get(id);
-      return name === undefined ? [] : [{ id, name }];
-    });
-    if (placed.length > 0) usage[imageId] = placed;
-  }
+  if (Object.keys(answered.value.usage).length === 0) return json({ usage: {} });
+  const client = clientFor(ctx);
+  if (client instanceof Response) return client;
+  const usage = await galleryUsage(
+    answered.value.usage,
+    async (app, id) => {
+      const { item } = await client.getItem(id);
+      // Gone, another app's id, trashed or not the caller's to open: not shown.
+      return item.app === app && !item.trashedAt ? item.title : null;
+    },
+    { max: IMAGE_USAGE_DESIGNS_MAX, inFlight: IMAGE_USAGE_READS },
+  );
   return json({ usage });
 }
 

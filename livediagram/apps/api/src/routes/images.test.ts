@@ -271,12 +271,22 @@ describe('handleImages', () => {
       title: string,
       ownerId = 'user_ada',
       trashedAt: number | null = null,
+      app = 'livediagram',
     ) => ({
       id,
       title,
       ownerId,
       trashedAt,
+      app,
     });
+    const index = (items: Record<string, ReturnType<typeof item>>) =>
+      indexFor.mockReturnValue({
+        getItem: async (id: string) => {
+          const found = items[id];
+          if (!found) throw new Error('not_found');
+          return { item: found };
+        },
+      });
 
     it("maps each image to the owner's documents that place it, once each, by name", async () => {
       mediaImages(media, 'user_ada', ['a', 'b']);
@@ -294,27 +304,46 @@ describe('handleImages', () => {
           { document: 'trashed', images: ['b'] },
         ],
       });
-      const items: Record<string, ReturnType<typeof item>> = {
+      index({
         Z: item('Z', 'Zebra'),
         A: item('A', 'Apple'),
         theirs: item('theirs', 'Theirs', 'user_bob'),
         trashed: item('trashed', 'Gone', 'user_ada', 1),
-      };
-      indexFor.mockReturnValue({
-        getItem: async (id: string) => {
-          const found = items[id];
-          if (!found) throw new Error('not_found');
-          return { item: found };
-        },
       });
       const res = await call('GET', '/api/images/usage');
       expect(await res.json()).toEqual({
         usage: {
           a: [
-            { id: 'A', name: 'Apple' },
-            { id: 'Z', name: 'Zebra' },
+            { id: 'A', name: 'Apple', app: 'livediagram' },
+            { id: 'Z', name: 'Zebra', app: 'livediagram' },
           ],
-          b: [{ id: 'A', name: 'Apple' }],
+          b: [{ id: 'A', name: 'Apple', app: 'livediagram' }],
+        },
+      });
+    });
+
+    // The owner's report: an image placed in a livedocuments document read "Not used" in this gallery, which lists
+    // every app's images but counted only canvases.
+    it("counts another app's items: the gallery lists every app's images", async () => {
+      mediaImages(media, 'user_ada', ['a', 'b']);
+      media.sql
+        .prepare(
+          `INSERT INTO refs (app, document, image_id) VALUES
+             ('livedocuments.app', 'D', 'a'), ('livedesign.app', 'P', 'b'), ('livediagram.app', 'C', 'b')`,
+        )
+        .run();
+      index({
+        D: item('D', 'Brief', 'user_ada', null, 'livedocuments'),
+        P: item('P', 'Poster', 'user_ada', null, 'livedesign'),
+        C: item('C', 'Board'),
+      });
+      expect(await (await call('GET', '/api/images/usage')).json()).toEqual({
+        usage: {
+          a: [{ id: 'D', name: 'Brief', app: 'livedocuments' }],
+          b: [
+            { id: 'C', name: 'Board', app: 'livediagram' },
+            { id: 'P', name: 'Poster', app: 'livedesign' },
+          ],
         },
       });
     });

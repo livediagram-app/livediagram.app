@@ -166,9 +166,11 @@ max-age=86400`.
   unreachable bytes). Then the memo forgets the id; 200 `{ ok: true }`.
 - `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, newest first, from every app;
   `rememberMediaOwner` for the listed ids.
-- `GET /api/images/usage`: owner only; `usageOf` asks the service for the owner's references, keeps
-  this app's documents and names each from the index ([Image reference index](image-reference-index.md#readers)),
-  no tab body read, each document once per image.
+- `GET /api/images/usage`: owner only; `usageOf` asks the service for the owner's references in every app and
+  names each item through `@liveworkspace/media`'s `galleryUsage` from the index
+  ([Image reference index](image-reference-index.md#readers)), keeping those whose `app` matches, the owner's and
+  not in the Trash, at most `USAGE_DOCUMENTS_MAX` (200), `USAGE_LOOKUPS_IN_FLIGHT` (10) at a time. No tab body read,
+  each item once per image, as `{ id, name, app }` ordered by name.
 
 ### Retention
 
@@ -254,11 +256,7 @@ export function embedTabImages(
 ): Promise<Map<string, string>>;
 
 // apps/api/src/routes/images.ts (GET /api/images/usage)
-async function usageOf(
-  ctx: RouteContext,
-  media: MediaClient,
-  owner: string,
-): Promise<Record<string, { id: string; name: string }[]>>;
+async function usageOf(ctx: RouteContext, media: MediaClient, owner: string): Promise<ImageUsage>; // @liveworkspace/media: Record<imageId, { id; name; app }[]>, via galleryUsage
 
 // apps/api/src/db/image-grants.ts
 export function documentMayServeImage(
@@ -294,13 +292,13 @@ export function addImageFileForDocument(
 
 Routes (error bodies are `{ error: <token>, ... }`, `[QB10]`):
 
-| Route                    | Success                                   | Rejections                                                                                                                                                                                                                                                |
-| ------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/images`        | 200 `{ images: ImageSummary[] }`          | 400 no owner; 503 `images_unavailable` (no key, or the service refused it or failed)                                                                                                                                                                      |
-| `POST /api/images`       | 200 `{ image, deduped }`                  | 400 (`invalid_dimensions` from the service); 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429; 503 |
-| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name}[]> }` | 400; 503                                                                                                                                                                                                                                                  |
-| `GET /api/images/:id`    | 200 bytes                                 | 404 (never 403, no existence leak); 503                                                                                                                                                                                                                   |
-| `DELETE /api/images/:id` | 200 `{ ok: true }`                        | 400; 403 `forbidden` not the owner (the service's); 429; 503                                                                                                                                                                                              |
+| Route                    | Success                                        | Rejections                                                                                                                                                                                                                                                |
+| ------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/images`        | 200 `{ images: ImageSummary[] }`               | 400 no owner; 503 `images_unavailable` (no key, or the service refused it or failed)                                                                                                                                                                      |
+| `POST /api/images`       | 200 `{ image, deduped }`                       | 400 (`invalid_dimensions` from the service); 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429; 503 |
+| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name, app}[]> }` | 400; 503                                                                                                                                                                                                                                                  |
+| `GET /api/images/:id`    | 200 bytes                                      | 404 (never 403, no existence leak); 503                                                                                                                                                                                                                   |
+| `DELETE /api/images/:id` | 200 `{ ok: true }`                             | 400; 403 `forbidden` not the owner (the service's); 429; 503                                                                                                                                                                                              |
 
 Upload request headers: `Content-Type`, `Content-Length`, `X-Image-Sha256` (optional, 64 lower
 hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).

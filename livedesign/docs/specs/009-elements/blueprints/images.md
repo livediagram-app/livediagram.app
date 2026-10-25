@@ -167,9 +167,10 @@ Invariants:
   newest first. Whose an image is is the service's answer, so a design of theirs placing an image
   uploaded in another app serves it.
 - `GET /api/images/usage`: owner only; `imageUsage` reads the service's references for the
-  owner's images (`media.usage`), keeps this app's designs and names each from the index (at most
-  `IMAGE_USAGE_DESIGNS_MAX`, 200), no tab body read, each design once per image. A design in the Trash still counts
-  ([Trash](../../013-workspace/trash.md)).
+  owner's images in every app (`media.usage`) and names each item through `@liveworkspace/media`'s `galleryUsage`
+  from the index (at most `IMAGE_USAGE_DESIGNS_MAX`, 200, `IMAGE_USAGE_READS`, 8, at a time), keeping those whose
+  `app` matches that the caller can open and that are not in the Trash; no tab body read, each item once per image,
+  as `{ id, name, app }` ordered by name. With no references it answers `{ usage: {} }` without asking the index.
 
 ### Retention
 
@@ -289,13 +290,13 @@ export function addImageFileForDesign(
 
 Routes (error bodies are `{ error: <token>, ... }`, `[QB10]`):
 
-| Route                    | Success                                   | Rejections                                                                                                                                                                                                        |
-| ------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/images`        | 200 `{ images: ImageSummary[] }`          | 400 no owner; 503 `images_unavailable`                                                                                                                                                                            |
-| `POST /api/images`       | 200 `{ image, deduped }`                  | 400; 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429; 503 |
-| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name}[]> }` | 400; 503                                                                                                                                                                                                          |
-| `GET /api/images/:id`    | 200 bytes                                 | 404 (never 403, no existence leak); 503                                                                                                                                                                           |
-| `DELETE /api/images/:id` | 200 `{ ok: true }`                        | 400; 403 not the owner; 429; 503                                                                                                                                                                                  |
+| Route                    | Success                                        | Rejections                                                                                                                                                                                                        |
+| ------------------------ | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/images`        | 200 `{ images: ImageSummary[] }`               | 400 no owner; 503 `images_unavailable`                                                                                                                                                                            |
+| `POST /api/images`       | 200 `{ image, deduped }`                       | 400; 403 `gallery_full` `{ reason, limit, current }`; 409 `upload_conflict`; 413 `payload_too_large` / `file_too_large` `{ limitBytes }`; 415 `unsupported_type` `{ acceptedTypes }` / `malformed_jpeg`; 429; 503 |
+| `GET /api/images/usage`  | 200 `{ usage: Record<id, {id, name, app}[]> }` | 400; 503                                                                                                                                                                                                          |
+| `GET /api/images/:id`    | 200 bytes                                      | 404 (never 403, no existence leak); 503                                                                                                                                                                           |
+| `DELETE /api/images/:id` | 200 `{ ok: true }`                             | 400; 403 not the owner; 429; 503                                                                                                                                                                                  |
 
 Upload request headers: `Content-Type`, `Content-Length`, `X-Image-Sha256` (optional, 64 lower
 hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).

@@ -27,6 +27,13 @@ export function formatBytes(n: number): string {
 
 const imageName = (image: GalleryImage) => image.name || 'Untitled image';
 
+// "3 canvases" when every use is the host's kind; "3 items" once another app's item is among them.
+function countOf(usage: GalleryUse[], kindMany: { one: string; many: string }): string {
+  const n = usage.length;
+  const words = usage.some((u) => u.app) ? { one: 'item', many: 'items' } : kindMany;
+  return `${n} ${n === 1 ? words.one : words.many}`;
+}
+
 /** The gallery's list and usage, read once and again after an upload. */
 function useGallery(host: GalleryHost) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
@@ -144,7 +151,7 @@ export function GalleryPane({
           title={`Delete “${imageName(deleting)}”?`}
           message={
             usageOf(deleting.id).length
-              ? `It’s still in ${usageOf(deleting.id).length} ${usageOf(deleting.id).length === 1 ? kindMany.one : kindMany.many}: those will show a broken picture.`
+              ? `It’s still in ${countOf(usageOf(deleting.id), kindMany)}: those will show a broken picture.`
               : 'This image will be removed from your gallery for good. This can’t be undone.'
           }
           confirmLabel="Delete Image"
@@ -233,14 +240,14 @@ function GalleryCard({
             aria-expanded={open}
             className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
           >
-            Used in {usage.length} {usage.length === 1 ? kindMany.one : kindMany.many}
+            Used in {countOf(usage, kindMany)}
           </button>
         )}
       </div>
       {open && usage.length > 0 ? (
         <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
           {usage.map((d) => (
-            <li key={d.id} className="truncate text-[11px]">
+            <li key={`${d.app ?? ''} ${d.id}`} className="truncate text-[11px]">
               {d.href ? (
                 <a
                   href={d.href}
@@ -251,6 +258,9 @@ function GalleryCard({
               ) : (
                 <span className="text-slate-600 dark:text-slate-300">{d.title || 'Untitled'}</span>
               )}
+              {d.app ? (
+                <span className="text-slate-500 dark:text-slate-400"> in {d.app}</span>
+              ) : null}
             </li>
           ))}
         </ul>
