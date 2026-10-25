@@ -358,6 +358,10 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   out to livedocuments (and logo, wireframe and photo pages to livedesign) from the old site's raw rows, and a
   browser's Local only documents are split before the editor reads them
   ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6). The same object comes back when there is nothing to drop.
+  The migration's own upgrade is `migrateStoredTabKeepingRetired` (beside `migrateStoredTab` in
+  `packages/document/src/stored-tab.ts`): every other stored-tab upgrade, without `dropRetiredPages` and
+  `dropRetiredPlan`, so a tab reaches liveplanner, livedocuments and livedesign in today's shape with its Pages and
+  Plan content intact. livediagram never reads its own tabs through it.
 - A former Pages tab's ordinary elements keep what Pages gave them, and livediagram still draws and exports it, though
   it no longer offers the controls that set it: a text's **wordmark type** (its tracking, weight, case and arc,
   `packages/document/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours (Combine's

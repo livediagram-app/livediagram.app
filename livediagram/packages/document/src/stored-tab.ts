@@ -20,17 +20,32 @@ import { isRecord } from '@liveworkspace/model-core/is-record';
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
-  // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
-  // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
   // A former Pages tab (./retired-pages) opens in Diagram, its pages, articles and page-only elements dropped, and a
   // former Plan tab (./retired-plan) as an ordinary one, its dashboard, form and Plan-only elements dropped.
+  return upgradeStoredTab(dropRetiredPlan(dropRetiredPages(tab)));
+}
+
+/**
+ * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livediagram.app
+ * (docs/migration.md at the monorepo root, step 3): its migrate tool hands a tab's Pages and Plan content to
+ * livedocuments, livedesign and liveplanner, which don't run livediagram's older read migrations, so the tab comes
+ * back in today's shape with its pages, articles, dashboard, form and their elements still in it. Never for a tab
+ * livediagram itself opens.
+ */
+export function migrateStoredTabKeepingRetired<
+  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
+>(tab: T): T {
+  return upgradeStoredTab(tab);
+}
+
+function upgradeStoredTab<
+  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
+>(tab: T): T {
+  // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
+  // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
   // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
   const schemed = dropCustomTheme(
-    migrateRetiredTheme(
-      migrateRetiredScheme(
-        migrateWhiteboardKind(settleTabFields(dropRetiredPlan(dropRetiredPages(tab)))),
-      ),
-    ),
+    migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.

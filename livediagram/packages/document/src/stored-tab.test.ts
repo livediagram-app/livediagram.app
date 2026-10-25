@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
+import {
+  migrateIncomingElements,
+  migrateIncomingTab,
+  migrateStoredTab,
+  migrateStoredTabKeepingRetired,
+} from './stored-tab';
 import type { Tab } from './index';
 
 // Every tab-level migration on the way in, in one call (docs/specs/011-theme/retired-schemes.md): the api's
@@ -40,6 +45,65 @@ describe('migrateStoredTab', () => {
       elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 }],
     };
     expect(migrateStoredTab(tab)).toBe(tab);
+  });
+});
+
+// docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments": the migration's upgrade keeps what the
+// Pages and Plan drops would take, and still runs every other upgrade.
+describe('migrateStoredTabKeepingRetired', () => {
+  const retired = {
+    id: 't',
+    name: 'T',
+    theme: 'charcoal',
+    opensIn: 'pages',
+    kind: 'board',
+    pages: [{ id: 'p1', orientation: 'portrait', kind: 'logo' }],
+    articles: { p1: { blocks: [] } },
+    dashboard: { widgets: [] },
+    form: { fields: [] },
+    elements: [
+      { id: 'w', type: 'shape', shape: 'tab-window', x: 0, y: 0, width: 1, height: 1 },
+      { id: 'b', type: 'shape', shape: 'plan-board', x: 0, y: 0, width: 1, height: 1 },
+      {
+        id: 'c',
+        type: 'shape',
+        shape: 'square',
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        chartSource: { sheetId: 's' },
+        groupId: 'g',
+      },
+    ],
+  } as unknown as Tab;
+
+  it('keeps the Pages and Plan content the read path drops', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = migrateStoredTabKeepingRetired(retired) as unknown as Record<string, unknown>;
+    expect(out).toMatchObject({ opensIn: 'pages', kind: 'board' });
+    expect(out.pages).toEqual([{ id: 'p1', orientation: 'portrait', kind: 'logo' }]);
+    expect(out).toHaveProperty('articles');
+    expect(out).toHaveProperty('dashboard');
+    expect(out).toHaveProperty('form');
+    const elements = out.elements as Record<string, unknown>[];
+    expect(elements.map((el) => el.id)).toEqual(['w', 'b', 'c']);
+    expect(elements[2]).toHaveProperty('chartSource');
+  });
+
+  it('runs every other upgrade', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const out = migrateStoredTabKeepingRetired(retired);
+    expect(out.theme).toBe('brand');
+    expect(out.elements[2]).not.toHaveProperty('groupId');
+  });
+
+  it('is what the read path gives, less the drops', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const read = migrateStoredTab(retired) as unknown as Record<string, unknown>;
+    expect(read).not.toHaveProperty('pages');
+    expect(read).not.toHaveProperty('dashboard');
+    expect((read.elements as unknown[]).length).toBe(1);
   });
 });
 

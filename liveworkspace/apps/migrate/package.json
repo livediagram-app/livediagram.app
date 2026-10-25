@@ -1,0 +1,40 @@
+{
+  "name": "@liveworkspace/migrate",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The one-off move from the historical livediagram.app onto liveworkspace (docs/migration.md). Runs from a laptop; nothing here is deployed.",
+  "bin": {
+    "migrate": "./src/cli.ts"
+  },
+  "scripts": {
+    "migrate": "node --disable-warning=ExperimentalWarning --import ./ts-hooks.mjs src/cli.ts",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@livediagram/document": "workspace:*",
+    "@liveplanner/items": "workspace:*",
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/migration": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2"
+  },
+  "devDependencies": {
+    "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

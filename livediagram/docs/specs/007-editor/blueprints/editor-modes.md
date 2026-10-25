@@ -266,6 +266,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Unknown `opensIn` value                                             | Read as Diagram                                                                                                                          |
 | Retired `opensIn: 'pages'` (or `'illustrate'`, `'infographic'`)     | Read as Diagram (`parseEditorMode`, `LEGACY_EDITOR_MODES`); `dropRetiredPages` drops its pages, articles and Pages-only elements on read |
 | Retired `opensIn: 'plan'`, or a Board, Sheet, Dashboard or Form tab | Read as Diagram; `dropRetiredPlan` drops its `kind`, Plan-only fields, Plan board and Sheet elements on read                             |
+| A tab upgraded for the migration (`migrateStoredTabKeepingRetired`) | Every other stored-tab upgrade runs; `opensIn`, `kind`, pages, articles, dashboard, form and their elements are kept                     |
 | Switch by a visitor, on a locked tab or ES board                    | `setMode` returns early: nothing written, no telemetry                                                                                   |
 | Switch to the mode the tab is in                                    | No commit                                                                                                                                |
 | Shift+D on a tab with content                                       | `editorModeShortcut` returns null: nothing written, no telemetry                                                                         |
