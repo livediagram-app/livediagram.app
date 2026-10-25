@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedocuments/document';
-import { checkoutFlow } from './fixtures/checkout-flow';
 import { editDistanceWithin, nearestElements, nearestName } from './nearest';
 
 describe('editDistanceWithin', () => {
@@ -27,7 +25,16 @@ describe('nearestName', () => {
 });
 
 describe('nearestElements', () => {
-  const elements = checkoutFlow().elements;
+  const elements = [
+    { id: 'n1', type: 'shape', label: 'Start' },
+    { id: 'n2', type: 'shape', label: 'Cart' },
+    { id: 'n3', type: 'shape', label: 'Sign in' },
+    { id: 'n4', type: 'shape', label: 'Checkout' },
+    { id: 'n5', type: 'shape', label: 'Card details' },
+    { id: 'n6', type: 'shape', label: 'Valid?' },
+    { id: 't1', type: 'text', label: 'Checkout flow' },
+    { id: 'a1', type: 'arrow' },
+  ];
 
   it('finds elements by a near id, nearest first', () => {
     expect(nearestElements('n33', elements).map((el) => el.id)[0]).toBe('n3');
@@ -46,8 +53,16 @@ describe('nearestElements', () => {
     expect(nearestElements('zzzzzzzzzz', elements)).toEqual([]);
   });
 
+  it('compares a quoted selector with labels only', () => {
+    expect(nearestElements('n3', elements, { labelsOnly: true })).toEqual([]);
+    expect(nearestElements('cart', elements, { labelsOnly: true }).map((el) => el.id)).toEqual([
+      'n2',
+      'n1',
+    ]);
+  });
+
   it('reads an element without a label by its id alone', () => {
-    const bare = [{ id: 'x1', type: 'arrow' }] as unknown as Element[];
+    const bare = [{ id: 'x1', type: 'arrow' }];
     expect(nearestElements('x2', bare).map((el) => el.id)).toEqual(['x1']);
   });
 });

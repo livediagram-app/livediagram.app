@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { hasQuotes, isQuotedWord, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
+import {
+  arrowParts,
+  hasQuotes,
+  isQuotedWord,
+  tokeniseLine,
+  unquotedPrefix,
+  type Word,
+} from './tokenise';
 
 const words = (line: string): Word[] => {
   const out = tokeniseLine(line);
@@ -60,16 +67,32 @@ describe('tokeniseLine', () => {
 });
 
 describe('word helpers', () => {
-  const [plain, quoted, mixed] = words('label~pay "Pay" label="Sprint board"');
+  const [plain, quoted, mixed] = words('label~pay "Pay" right-of:"Orders service"');
 
   it('find the unquoted prefix', () => {
     expect(unquotedPrefix(plain!)).toBe('label~pay');
     expect(unquotedPrefix(quoted!)).toBe('');
-    expect(unquotedPrefix(mixed!)).toBe('label=');
+    expect(unquotedPrefix(mixed!)).toBe('right-of:');
   });
 
   it('tell a quoted label from a word with quotes', () => {
     expect([plain, quoted, mixed].map((w) => isQuotedWord(w!))).toEqual([false, true, false]);
     expect([plain, quoted, mixed].map((w) => hasQuotes(w!))).toEqual([false, true, true]);
+  });
+});
+
+describe('arrowParts', () => {
+  it('splits a word at each arrow outside quotes, keeping each part raw', () => {
+    expect(arrowParts(words('"Sign in"->"Pay"->n3')[0]!)).toEqual(['"Sign in"', '"Pay"', 'n3']);
+  });
+
+  it('reads an arrow inside quotes, escapes included, as text', () => {
+    expect(arrowParts(words('"a->b"')[0]!)).toBeNull();
+    expect(arrowParts(words('"x\\"->y"->z')[0]!)).toEqual(['"x\\"->y"', 'z']);
+    expect(arrowParts(words("'c->d'->e")[0]!)).toEqual(["'c->d'", 'e']);
+  });
+
+  it('answers null for a word with no arrow', () => {
+    expect(arrowParts(words('n3')[0]!)).toBeNull();
   });
 });

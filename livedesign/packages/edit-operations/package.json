@@ -21,6 +21,7 @@
     "@livedesign/design": "workspace:*",
     "@livedesign/photo-engine": "workspace:*",
     "@livedesign/templates": "workspace:*",
+    "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {

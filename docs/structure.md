@@ -165,7 +165,7 @@ Each step is its own PR, and both products build and pass their tests after ever
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
    behaviour, which becomes config, or just one side being behind, where the newer side wins.
-   Then move. **Done** for `page-background`, `help-registry`, `tailwind-config`, `icons` and `licences`:
+   Then move. **Done** for `diagram-lint`, `document-views`, `page-background`, `help-registry`, `tailwind-config`, `icons` and `licences`:
    - `page-background` and `icons` were one side behind (livedesign's and livediagram's copies were the
      supersets), so each is one copy with no product binding. The Lucide manifest is the union of the
      four products' glyphs; each glyph is a named export, so no bundle grows.
@@ -260,6 +260,23 @@ Each step is its own PR, and both products build and pass their tests after ever
      and `telemetry-client`: `SiteHeader`, `HeaderPrimaryCta` and `StartBlankLink` (its CTA surfaces and
      `ctaHref`), `SiteAccount` and `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`,
      and the web-vitals reporter. They follow as those packages move.
+   - `edit-operations`, first slice: `@liveworkspace/edit-operations` (`packages/edit-operations`) holds the
+     engine code the four copies had in common that reads no product's element union: the bounds every
+     vocabulary had (`limits`: cuts, caps, distances, `PROTOTYPE_KEYS`), `equality`, the line form's
+     `tokenise` (liveplanner's was behind and gains `arrowParts`), `nearest` (generic over `{ id }`),
+     `graph-walk` (over arrow ends), `element-text`'s `labelOf`, `quoteCut` and `endRef`, the result lines'
+     printer, and the line walk of `parse`. The real differences became bindings: each product's `parse.ts`
+     binds `createParseEditOperations` to its operations, word parser and refusals, and livediagram,
+     livedocuments and livedesign bind `createFormatResultFooter` with their CLI's revert command
+     (liveplanner keeps its own printer: it quotes only labels and its footer has no lint). Each module is
+     a subpath, so a product's file became `export * from '@liveworkspace/edit-operations/x'` (or a binding)
+     and no caller changed; the shared package is at full coverage. About 600 lines fewer in each product.
+   - Still in each product's `edit-operations`: everything on its element union and `EditState`
+     (`state`, `selectors`, `placement`, `fields`, `colours`, `labels`, `locks`, `ids`, every operation,
+     `finalise`, `replace`, `results`, `apply`), which reads the same in livediagram, livedocuments and
+     livedesign but moves only once the union is shared; and what is its own vocabulary or refusals
+     (`vocabulary`, `types`, `parse-line`, `parse-json`, `rejections`, `format-operation`), its `pages` slice
+     and liveplanner's Plan bodies. No stored document or wire shape changed.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

@@ -20,6 +20,7 @@
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
     "@livedocuments/templates": "workspace:*",
+    "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
