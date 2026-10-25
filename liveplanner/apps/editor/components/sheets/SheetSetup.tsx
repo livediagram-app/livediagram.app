@@ -1,9 +1,10 @@
 'use client';
 
-// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): a sheet placed from the palette shows this in place of
-// its grid while it awaits setup and has no cells. Steps Start From and Style, with Cards and Columns between them for
-// Plan Cards; Create Sheet writes the start, the look, the freeze and the sizes as one change. Start Blank and Import
-// CSV end setup without a style.
+// Setup Sheet (docs/specs/029-sheets/sheet.md "Setup Sheet"): the dialog a sheet awaiting setup with no cells opens
+// (SetupSheetHost), for this person only. Steps Start From and Style, with Cards and Columns between them for Plan
+// Cards; Create Sheet writes the start, the look, the freeze and the sizes as one change. Start Blank and Import CSV
+// end setup without a style. Closed before it finishes, its step and picks are kept for when it opens again
+// (lib/setup-dialog-store.ts drafts). Loaded on its own, only when opened.
 import { useEffect, useMemo, useState } from 'react';
 import { Button, CheckIcon, ChevronLeftIcon } from '@liveplanner/ui';
 import { chartTypeOf } from '@liveplanner/project';
@@ -22,8 +23,9 @@ import {
 import { usePlan } from '@/components/plan/PlanContext';
 import { forgetSetupStart, setupStartOf } from '@/lib/sheet-seeds';
 import { useCardSearch } from '@/components/plan/CardSearchControls';
-import { SetupCard } from '@/components/plan/SetupCard';
+import { SetupDialog, useSetupPalette } from '@/components/plan/SetupDialog';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { dropSetupDraft, readSetupDraft, saveSetupDraft } from '@/lib/setup-dialog-store';
 import { track } from '@/lib/telemetry';
 import { useSheetController } from './sheet-controller';
 import { SheetArt } from './sheet-art';
@@ -45,6 +47,16 @@ const STEP_LABELS: Record<StepId, string> = {
   columns: 'Columns',
   style: 'Style',
 };
+// What the dialog keeps when closed before it finishes.
+type SheetDraft = {
+  step: number;
+  start: SetupStart;
+  look: SheetLook;
+  freeze: boolean;
+  size: SheetCellSize;
+  columns: string[];
+};
+
 const stepsFor = (start: SetupStart): StepId[] =>
   start === 'cards' ? ['start', 'cards', 'columns', 'style'] : ['start', 'style'];
 
@@ -92,25 +104,48 @@ export function importType(
   return [...count].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'task';
 }
 
-export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
+export function SheetSetup({
+  onImportCsv,
+  onClose,
+  onFinish,
+  returnFocus,
+  open = true,
+}: {
+  onImportCsv: () => void;
+  // Not now, Close, Escape or the backdrop: the sheet stays awaiting setup.
+  onClose: () => void;
+  // Called just before this person's own write that ends setup; the dialog closes with it.
+  onFinish: () => void;
+  returnFocus?: () => void;
+  open?: boolean;
+}) {
   const c = useSheetController();
   const plan = usePlan();
+  const palette = useSetupPalette();
+  // The tints follow the canvas surface at the moment of setup, whatever the app's look.
   const dark = useCanvasSurface() === 'dark';
+  const sheetId = c.sheet.id;
+  const [draft] = useState(() => readSetupDraft<SheetDraft>(sheetId));
   // Placed from Start Planning as a sheet type (Card Table, Budget, Tracker): that start, a step in.
-  const preset = setupStartOf(c.sheet.id);
-  const [step, setStep] = useState(preset ? 1 : 0);
-  const [start, setStartOnly] = useState<SetupStart>(preset ?? 'blank');
-  const [look, setLook] = useState<SheetLook>(lookFor(preset));
+  const preset = draft ? undefined : setupStartOf(sheetId);
+  const [step, setStep] = useState(draft?.step ?? (preset ? 1 : 0));
+  const [start, setStartOnly] = useState<SetupStart>(draft?.start ?? preset ?? 'blank');
+  const [look, setLook] = useState<SheetLook>(draft?.look ?? lookFor(preset));
   // A new start brings its own first look (a template's Banded).
   const setStart = (s: SetupStart) => {
     setStartOnly(s);
     setLook(lookFor(s));
   };
-  const [freeze, setFreeze] = useState(!!preset);
-  const sheetId = c.sheet.id;
+  const [freeze, setFreeze] = useState(draft?.freeze ?? !!preset);
   useEffect(() => forgetSetupStart(sheetId), [sheetId]);
-  const [size, setSize] = useState<SheetCellSize>('default');
-  const [columns, setColumns] = useState<string[]>([...CARD_COLUMNS_REQUIRED]);
+  const [size, setSize] = useState<SheetCellSize>(draft?.size ?? 'default');
+  const [columns, setColumns] = useState<string[]>(
+    () => draft?.columns ?? [...CARD_COLUMNS_REQUIRED],
+  );
+  // Kept as it changes, so a close by any way leaves it ready for next time.
+  useEffect(() => {
+    saveSetupDraft(sheetId, { step, start, look, freeze, size, columns } satisfies SheetDraft);
+  }, [sheetId, step, start, look, freeze, size, columns]);
   const boardStatuses = plan?.statusTypes ?? NO_STATUS_TYPES;
   const live = useMemo(
     () => findCards(plan?.items.values() ?? [], { query: '', show: 'all', boardStatuses }),
@@ -122,13 +157,20 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
     { boardStatuses },
   );
 
+  // This person ends setup: no draft to keep, and no news when the sheet stops awaiting it.
+  const finish = () => {
+    dropSetupDraft(sheetId);
+    onFinish();
+  };
   // Setup ends without a style: the sheet no longer awaits it (not an undo step; nothing on the grid changed).
-  const done = () =>
+  const done = () => {
+    finish();
     c.store.write(
       c.sheet.id,
       { kind: 'layout', changes: [{ k: 'options', setupPending: false }] },
       { undoable: false },
     );
+  };
   const create = () => {
     if (isSheetTemplateId(start)) {
       const made = designWrite(c.workbook, c.sheet.id, sheetTemplate(start, todayMs()), {
@@ -137,7 +179,9 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
         size,
         dark,
       });
-      if (!made || !c.write(made.write, 'Setup')) return;
+      if (!made) return;
+      finish();
+      if (!c.write(made.write, 'Setup')) return;
       track('Sheet', 'Created', TELEMETRY[start]);
       // The template's charts, over its cells (each one undo step, as Insert Chart's).
       for (const ch of made.charts)
@@ -176,6 +220,7 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
       dark,
     });
     if (!write) return;
+    finish();
     if (c.write(write, 'Setup')) {
       track('Sheet', 'Created', TELEMETRY[start]);
       c.setSelection(single({ r: 0, c: 0 }));
@@ -208,18 +253,29 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
       ? 'Choose File…'
       : `Next: ${STEP_LABELS[steps[at + 1] ?? 'style']}`;
 
+  const primary = current === 'style' ? create : cardsEmpty ? undefined : next;
+  const startBlank = () => {
+    track('Sheet', 'Created', TELEMETRY.blank);
+    done();
+    c.focusGrid();
+  };
+
   return (
-    <SetupCard
-      titleId={`setup-sheet-${c.sheet.id}`}
-      title="Setup Sheet"
+    <SetupDialog
+      open={open}
+      onClose={onClose}
+      returnFocus={returnFocus}
+      titleId={`setup-sheet-${sheetId}`}
+      title="Set up your sheet"
       line="Start from a layout, your cards or a blank grid. Everything can change later from its cog."
       icon={<SheetArt size={20} />}
       help="planSheets"
-      palette={c.palette}
+      palette={palette}
       wide
       steps={steps.map((id) => ({ label: STEP_LABELS[id] }))}
       at={at}
       onStep={setStep}
+      onPrimary={primary}
       footer={
         <>
           {at > 0 ? (
@@ -228,51 +284,48 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
               Back
             </Button>
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                track('Sheet', 'Created', TELEMETRY.blank);
-                done();
-                c.focusGrid();
-              }}
-            >
+            <Button variant="ghost" size="sm" onClick={startBlank}>
               Start Blank
             </Button>
           )}
-          {current !== 'style' ? (
-            <Button variant="primary" size="sm" disabled={cardsEmpty} onClick={next}>
-              {nextLabel}
+          <span className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              Not now
             </Button>
-          ) : (
-            <Button variant="primary" size="sm" onClick={create}>
-              <CheckIcon size={12} />
-              Create Sheet
-            </Button>
-          )}
+            {current !== 'style' ? (
+              <Button variant="primary" size="sm" disabled={cardsEmpty} onClick={next}>
+                {nextLabel}
+              </Button>
+            ) : (
+              <Button variant="primary" size="sm" onClick={create}>
+                <CheckIcon size={12} />
+                Create Sheet
+              </Button>
+            )}
+          </span>
         </>
       }
     >
       {current === 'start' ? (
         <SheetSetupStart
-          palette={c.palette}
+          palette={palette}
           start={start}
           onStart={setStart}
           plan={plan}
           live={live}
         />
       ) : current === 'cards' && plan ? (
-        <SheetSetupCards palette={c.palette} plan={plan} live={live} search={search} />
+        <SheetSetupCards palette={palette} plan={plan} live={live} search={search} />
       ) : current === 'columns' ? (
         <SheetSetupColumns
-          palette={c.palette}
+          palette={palette}
           offered={offered}
           columns={chosen}
           onColumns={setColumns}
         />
       ) : (
         <SheetSetupStyle
-          palette={c.palette}
+          palette={palette}
           look={look}
           onLook={setLook}
           freeze={freeze}
@@ -282,6 +335,6 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
           hasRows={start !== 'blank'}
         />
       )}
-    </SetupCard>
+    </SetupDialog>
   );
 }

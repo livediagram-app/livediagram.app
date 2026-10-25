@@ -25,7 +25,6 @@ import {
   normaliseBoardSetup,
   projectBoard,
   type Item,
-  type PlanBoardSetup,
   type QuickFilter,
   boardAddTypes,
   newItemId,
@@ -45,8 +44,7 @@ import {
 } from '@/hooks/plan/status-refusal';
 import { PlanColumnHeader } from './PlanColumnHeader';
 import { boardRowTemplate } from './plan-board-rows';
-import { PlanSetupBoard } from './PlanSetupBoard';
-import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
+import { SetupBoardHost } from './SetupBoardHost';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from '@liveplanner/plan-art';
 import { trackSetup } from './track-board-setup';
@@ -253,8 +251,6 @@ export function PlanBoardView({
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
-  // Setup Board asked for again from the board's Board Setup (a board that has columns), for this person only.
-  const settingUp = canEdit && plan?.setupBoardId === element.id;
   // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
   // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
   const createType =
@@ -407,39 +403,16 @@ export function PlanBoardView({
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
-        {setup.columns.length === 0 || settingUp ? (
-          <PlanSetupBoard
-            // Remounted when it is asked for again, so it starts from the board as it is then.
-            key={settingUp ? 'again' : 'first'}
-            palette={palette}
-            canEdit={canEdit}
-            types={plan?.types ?? []}
-            statusNames={pickable}
-            {...(settingUp
-              ? {
-                  initial: setupFromBoard(
-                    setup,
-                    boardAddTypes(setup, plan?.types ?? []).map((t) => t.id),
-                  ),
-                  onCancel: () => plan?.openBoardSetup(null),
-                }
-              : {})}
-            {...(plan && mayCreateCardType(plan)
-              ? { onCreateType: () => plan.editType('new') }
-              : {})}
-            layout={setupLayoutOf(setup)}
-            onSetUp={(columns, typeIds, layout) => {
-              if (!plan) return;
-              const all = plan.types.map((t) => t.id);
-              const build = (from: PlanBoardSetup) =>
-                withSetupLayout(setUpBoard(from, columns, typeIds, all), layout);
-              // No Fill Tab to change (plan-board.md "Fill Tab"): an old board's stored flag rides through the layout.
-              plan.updateBoard(element.id, build(setup));
-              trackSetup('BoardSetUp');
-              if (settingUp) plan.openBoardSetup(null);
-            }}
-          />
-        ) : (
+        {/* Not set up yet: the placeholder; and Setup Board's dialog, for this person only, when open (new, or Board
+            Setup's Setup Board run again over a set-up board). */}
+        <SetupBoardHost
+          elementId={element.id}
+          setup={setup}
+          palette={palette}
+          canEdit={canEdit}
+          pickable={pickable}
+        />
+        {setup.columns.length === 0 ? null : (
           <div
             ref={gridRef}
             className="grid min-h-full gap-3"

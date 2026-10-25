@@ -348,12 +348,16 @@ describe('Import CSV', () => {
       req.write.kind === 'cells' ? req.write.cells : [],
     );
 
-  it('shows Setup Sheet for a placed sheet awaiting setup, and ends setup once cells arrive', async () => {
+  it('shows the setup placeholder for a sheet awaiting setup, and ends setup once cells arrive', async () => {
     const layout = { ...emptyLayout(rand, 5, 3), setupPending: true as const };
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA', { layout })]);
     draw(element({ sheetId: 'sheetAAAA' }), bridge());
-    expect(await screen.findByRole('heading', { name: 'Setup Sheet' })).toBeTruthy();
+    expect(await screen.findByText('Not set up yet')).toBeTruthy();
     expect(screen.queryByRole('grid')).toBeNull();
+    // Not placed by this person: the dialog waits for Set up sheet.
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Set up sheet' }));
+    expect(await screen.findByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
     // A sheet with cells (an agent filled it) puts it away and is no longer pending.
     cleanup();
     forgetSheetStores();
@@ -365,7 +369,7 @@ describe('Import CSV', () => {
     ]);
     draw(element({ sheetId: 'sheetAAAA' }), bridge());
     await screen.findByText('Budget');
-    expect(screen.queryByRole('heading', { name: 'Setup Sheet' })).toBeNull();
+    expect(screen.queryByText('Not set up yet')).toBeNull();
     await waitFor(() =>
       expect(
         writeSheet.mock.calls.some(
@@ -375,20 +379,6 @@ describe('Import CSV', () => {
         ),
       ).toBe(true),
     );
-  });
-
-  // docs/specs/026-plan/plan-board.md "On a phone": covering the canvas, the card ends clear of the bottom controls,
-  // whose undo and dock rows hid its footer's Next.
-  it('keeps Setup Sheet clear of a phone’s bottom controls while it covers the canvas', async () => {
-    phone = true;
-    const layout = { ...emptyLayout(rand, 5, 3), setupPending: true as const };
-    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA', { layout })]);
-    draw(element({ sheetId: 'sheetAAAA' }), bridge());
-    const card = await screen.findByRole('heading', { name: 'Setup Sheet' });
-    const wrap = () => card.closest('section')!.parentElement!.closest('div.flex-1')!;
-    expect(wrap().className).not.toContain('4.5rem');
-    act(() => maximisePlanElement('el1', 'Sheet'));
-    await waitFor(() => expect(wrap().className).toContain('4.5rem'));
   });
 
   it('opens the file picker from the header menu', async () => {
@@ -545,7 +535,8 @@ describe('a template set up in a slot showing another tab’s Sheet', () => {
         </PlanProvider>
       </CanvasSurfaceProvider>,
     );
-    await screen.findByRole('heading', { name: 'Setup Sheet' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Set up sheet' }));
+    await screen.findByRole('dialog', { name: 'Set up your sheet' });
     fireEvent.click(screen.getByRole('radio', { name: /^Budget/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Style' }));
     fireEvent.click(screen.getByRole('button', { name: /Create Sheet/ }));

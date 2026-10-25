@@ -37,6 +37,7 @@ import { retitleSheets } from './sheet-rename';
 import { sheetPresenceFor } from './sheet-presence-store';
 import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
+import { markPlacedHere } from '@/lib/setup-dialog-store';
 
 type SheetModel = {
   store: SheetStore;
@@ -170,6 +171,8 @@ export function useSheetModel(
       });
       if (placed.setUp) setUpNow(store, tabId, sheetId, placed.setUp, dark);
       if (placed.start) rememberSetupStart(sheetId, placed.start);
+      // Awaiting setup, made by this person: Setup Sheet's dialog opens for them (lib/setup-dialog-store.ts).
+      if (!placed.csv && !placed.setUp && !placed.blank) markPlacedHere(sheetId);
       // A dropped CSV file: its rows, read as typed, from A1.
       if (placed.csv) fillFromCsv(store, tabId, sheetId, placed.csv, bridge.toast);
       return;
