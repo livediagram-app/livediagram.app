@@ -1,8 +1,8 @@
 'use client';
 
 // Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (four large cards,
-// the items opened on the most days of the last 90, "Used on N days") then Recent (four compact ones, the latest
-// opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
+// the items opened on the most days of the last 90, "Used on N days") then Recent (four more of the same size, the
+// latest opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
 // alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
 // and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
 // Timeline. With the hero hidden, Home takes the ordinary page header. Three requests, each one small page: Recent
@@ -209,12 +209,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
                 large
                 showApp={showApp}
               />
-              <CardGroup
-                label={HOME_COPY.recent}
-                items={recentRest}
-                large={false}
-                showApp={showApp}
-              />
+              <CardGroup label={HOME_COPY.recent} items={recentRest} large showApp={showApp} />
             </div>
           )}
         </HomeSection>

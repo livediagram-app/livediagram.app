@@ -193,7 +193,7 @@ the **4 most used** and the **4 most recent**, no design twice.
 
 - **Most Used** first: up to 4 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
   inside it, the name in semibold and the quiet line under it), most used first from the left.
-- **Recent** under it: up to 4 compact cards (a 64 × 44 thumbnail beside the name and the quiet line), newest first.
+- **Recent** under it: up to 4 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in Jump Back In reads, opens and drags alike.
 - Four across from the `lg` breakpoint; two across below it. Nothing scrolls sideways.
 - A card lifts a little on hover (a rose edge and a soft rose shadow), within the motion budget.
 

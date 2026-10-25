@@ -249,9 +249,10 @@ describe('This Browser in the Explorer', () => {
     await waitFor(() =>
       expect(document.querySelectorAll('[data-this-browser-card]').length).toBeGreaterThan(0),
     );
-    const cards = [
-      ...document.querySelectorAll('[data-jump-back-in-group="compact"] [data-item-card]'),
-    ];
+    // Recent, the group after Most Used, its cards the same size.
+    const recent = [...document.querySelectorAll('[data-jump-back-in-group]')].at(-1)!;
+    expect(recent.getAttribute('data-jump-back-in-group')).toBe('large');
+    const cards = [...recent.querySelectorAll('[data-item-card]')];
     expect(cards.map((c) => c.getAttribute('data-item-card'))).toEqual([
       'local-1',
       'item-1',
