@@ -90,3 +90,22 @@ export function heroTemplate(kind: TemplateKind): HeroMatch {
   if (!t) throw new Error(`hero template not listed: ${kind}`);
   return t;
 }
+
+// The kanban wall's cards from `xl` (components/HeroKanban.tsx): six from the same pool, in the order
+// Backlog top, Backlog below, Done top, Done below, To do's foot, then the card being dragged from Doing.
+// The static HTML shows this opening hand; once script runs this visit's shuffle replaces it, and then it
+// holds still.
+export const HERO_BOARD_SLOTS = 6;
+export const HERO_BOARD_OPENING: readonly TemplateKind[] = [
+  'kanban',
+  'team-retro',
+  'okrs',
+  'rsvp-form',
+  'budget-planner',
+  'project-planner',
+];
+
+// This visit's six: the first HERO_BOARD_SLOTS of a shuffled pool (fewer if the pool is smaller).
+export function boardHand(random: () => number): TemplateKind[] {
+  return shuffleFan(random).slice(0, HERO_BOARD_SLOTS);
+}

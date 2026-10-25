@@ -36,6 +36,7 @@ describe('CTA_SOURCES', () => {
       'Home.HeroBlankIllustration',
       'Home.HeroBlankPlan',
       'Home.HeroFan',
+      'Home.HeroBoard',
       'Home.Gallery',
       'Home.GalleryDraw',
       'Home.Closing',

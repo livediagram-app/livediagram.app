@@ -6,10 +6,10 @@ import { useId } from 'react';
 import type { App } from '@liveworkspace/index-client';
 import type { AppFilter } from '../words';
 
-export type HeroBackdropKind = 'dots' | 'blueprint' | 'typesetter' | 'shapes';
+export type HeroBackdropKind = 'dots' | 'lanes' | 'blueprint' | 'typesetter' | 'shapes';
 
 const BY_APP: Record<App, HeroBackdropKind> = {
-  liveplanner: 'dots',
+  liveplanner: 'lanes',
   livediagram: 'blueprint',
   livedocuments: 'typesetter',
   livedesign: 'shapes',
@@ -36,6 +36,7 @@ export function HeroBackdrop({ kind }: { kind: HeroBackdropKind }) {
   if (kind === 'blueprint') return <Blueprint id={id} />;
   if (kind === 'typesetter') return <Typesetter />;
   if (kind === 'shapes') return <Shapes />;
+  if (kind === 'lanes') return <Lanes />;
   return <Dots />;
 }
 
@@ -47,6 +48,67 @@ function Dots() {
       className={`${LAYER} bg-brand-50/70 bg-[radial-gradient(var(--color-brand-200)_1px,transparent_1px)] bg-[length:22px_22px] dark:bg-slate-900 dark:bg-[radial-gradient(color-mix(in_oklab,var(--color-brand-800)_45%,var(--color-slate-900))_1px,transparent_1px)]`}
     >
       <span className="absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--color-brand-600)_30%,transparent),transparent)] dark:block" />
+    </div>
+  );
+}
+
+const LANES = ['To do · 4', 'Doing · 2/3', 'Review · 1', 'Done · 12'];
+
+function Lanes() {
+  return (
+    <div
+      aria-hidden
+      data-hero-backdrop="lanes"
+      className={`${LAYER} bg-[color:color-mix(in_oklab,var(--color-brand-50)_60%,white)] dark:bg-slate-900`}
+    >
+      <div className="absolute inset-1.5 flex gap-3">
+        {LANES.map((lane, i) => (
+          <div
+            key={lane}
+            className={`relative min-w-0 flex-1 rounded-[14px] ${i % 2 ? 'bg-brand-100/60 dark:bg-brand-900/30' : 'bg-brand-100/35 dark:bg-brand-900/15'}`}
+          >
+            <span className="absolute bottom-3 left-3.5 hidden font-mono text-[11px] uppercase tracking-[0.13em] text-brand-600 md:block dark:text-brand-400">
+              {lane}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="relative mx-auto h-full max-w-7xl">
+        <svg className={XL_ART}>
+          {/* The slot the card will drop into, then the card itself, tilted mid-drag. */}
+          <rect
+            x="812"
+            y="186"
+            width="96"
+            height="62"
+            rx="10"
+            fill="none"
+            strokeWidth="2"
+            strokeDasharray="6 5"
+            className="stroke-brand-300 dark:stroke-brand-700"
+          />
+          <g transform="rotate(5 858 116)">
+            <rect
+              x="808"
+              y="86"
+              width="100"
+              height="64"
+              rx="10"
+              className="fill-white stroke-brand-100 dark:fill-slate-800 dark:stroke-slate-700"
+            />
+            <rect x="818" y="98" width="60" height="7" rx="3.5" className="fill-brand-400" />
+            <rect
+              x="818"
+              y="112"
+              width="76"
+              height="5"
+              rx="2.5"
+              className="fill-brand-200 dark:fill-brand-800"
+            />
+            <circle cx="894" cy="136" r="7" className="fill-brand-600" />
+          </g>
+        </svg>
+      </div>
     </div>
   );
 }

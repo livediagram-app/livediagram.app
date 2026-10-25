@@ -86,7 +86,8 @@ function measure(root: HTMLElement): Layout | null {
   };
 }
 
-export function HeroConnectors() {
+// `wide` hides it from `xl`, where the hero's wide layout has no room for it.
+export function HeroConnectors({ wide = true }: { wide?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<Layout | null>(null);
 
@@ -111,7 +112,11 @@ export function HeroConnectors() {
   // The head points along the straight run, so it sits square on the line.
   const angle = (Math.atan2(d[1] - e[1], d[0] - e[0]) * 180) / Math.PI;
   return (
-    <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
+    <div
+      ref={ref}
+      aria-hidden
+      className={`pointer-events-none absolute inset-0 hidden lg:block ${wide ? '' : 'xl:hidden'}`}
+    >
       <svg className="absolute inset-0 overflow-visible" width={layout.w} height={layout.h}>
         <defs>
           <linearGradient

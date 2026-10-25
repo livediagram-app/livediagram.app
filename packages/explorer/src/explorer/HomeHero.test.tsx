@@ -238,7 +238,7 @@ describe('Home’s hero', () => {
   });
 
   it.each([
-    ['liveplanner', 'dots'],
+    ['liveplanner', 'lanes'],
     ['livediagram', 'blueprint'],
     ['livedocuments', 'typesetter'],
     ['livedesign', 'shapes'],

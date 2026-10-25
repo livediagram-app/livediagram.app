@@ -23,9 +23,7 @@ export function Hero() {
         {/* The card from `xl`; plain below. */}
         <div className="relative flex flex-col xl:pointer-events-auto xl:mx-auto xl:min-h-[33.75rem] xl:w-full xl:max-w-[42.5rem] 2xl:max-w-[50rem] xl:justify-center xl:rounded-[1.75rem] xl:border xl:border-rose-100 xl:bg-white/95 xl:px-[3.75rem] xl:py-10 xl:shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] xl:dark:border-slate-800 xl:dark:bg-slate-900/95">
           {/* An arrow drawn on load from the end of the question down onto the search; the card has no room for it. */}
-          <div className="xl:hidden">
-            <HeroConnectors />
-          </div>
+          <HeroConnectors wide={false} />
           {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A
             phone keeps the first only, so the row stays one line. */}
           <ul aria-label="Our promises" className="flex justify-center gap-2.5">

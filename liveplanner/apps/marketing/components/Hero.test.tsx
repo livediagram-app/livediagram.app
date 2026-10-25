@@ -5,6 +5,8 @@ import { RECENT_DIAGRAMS_KEY } from '@liveplanner/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@liveplanner/project';
 import {
+  HERO_BOARD_OPENING,
+  HERO_BOARD_SLOTS,
   HERO_FAN_FULL_MIN_PX,
   HERO_FAN_OPENING,
   HERO_FAN_SLOTS,
@@ -264,5 +266,35 @@ describe('the fan', () => {
       vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
     });
     expect(fanTitles()).toEqual(first);
+  });
+});
+
+describe('the kanban wall', () => {
+  const boardLinks = () =>
+    screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroBoard'));
+
+  it('serves a fixed opening hand, then deals this visit’s six into the lanes as links', () => {
+    const html = renderToStaticMarkup(<Hero />);
+    for (const kind of HERO_BOARD_OPENING) expect(html).toContain(`template=${kind}`);
+    render(<Hero />);
+    expect(boardLinks()).toHaveLength(HERO_BOARD_SLOTS);
+  });
+
+  it('heads its five lanes, shows its cards only from xl, and keeps its decoration from assistive technology', () => {
+    const { container } = render(<Hero />);
+    const lanes = container.querySelector('.hero-kanban-lanes')!;
+    expect([...lanes.children].map((l) => l.textContent)).toEqual([
+      'Backlog7',
+      'To do4',
+      'Doing2/3',
+      'Review1',
+      'Done12',
+    ]);
+    expect(lanes.querySelector('p')?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('.hero-kanban-cards')!.className).toContain('xl:flex');
+    // The fan hides where the wall's cards show.
+    expect(container.querySelector('.hero-fan')!.parentElement?.className).toContain('xl:hidden');
   });
 });

@@ -221,3 +221,54 @@
     animation: none;
   }
 }
+
+/* The landing hero's kanban wall (components/HeroKanban.tsx). The lanes fade out behind the copy, so the
+   words sit on plain ground and the lanes read at the band's edges. */
+.hero-kanban-lanes {
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 46%, rgb(0 0 0 / 0.18) 45%, #000 100%);
+}
+
+/* The cards' columns are a size container, so the dragged card crosses exactly one lane (a column and
+   the 1rem gap) at any width, by transform alone. It pauses under the pointer or focus. */
+.hero-kanban-cards {
+  container-type: inline-size;
+  --pitch: calc((100cqw - 4rem) / 5 + 1rem);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-kanban-drag {
+    animation: hero-kanban-drag 6s ease-in-out infinite alternate;
+  }
+  .hero-kanban-drag:hover,
+  .hero-kanban-drag:focus-within {
+    animation-play-state: paused;
+  }
+  .hero-kanban-cursor {
+    animation: hero-kanban-bob 5s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-kanban-drag {
+  0%,
+  20% {
+    transform: translate(0, 0) rotate(4deg);
+  }
+  70%,
+  100% {
+    transform: translate(var(--pitch), 0.375rem) rotate(1deg);
+  }
+}
+
+@keyframes hero-kanban-bob {
+  50% {
+    transform: translateY(-0.5rem);
+  }
+}
+
+/* Like the fan: with script, the static opening hand stays hidden until this visit's shuffled six are in
+   (data-dealt); should the page's script never arrive, it shows anyway after a moment (hero-fan-show, in
+   the shared hero-fan.css). */
+[data-hero-deal] .hero-kanban:not([data-dealt]) .hero-kanban-cards {
+  opacity: 0;
+  animation: hero-fan-show 0s 1.5s forwards;
+}

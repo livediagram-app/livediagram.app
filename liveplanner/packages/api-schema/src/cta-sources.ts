@@ -28,7 +28,7 @@ export const CTA_SOURCES = {
     'HeroCanvas',
     'HeroBuild',
     // The intent-led hero (docs/specs/019-marketing/marketing-site.md "Hero"): its search, Start Blank in
-    // its bar, and its card fan. The HeroBlank<Blank> slots are the Start Blank menu's rows the bar held until
+    // its bar, its card fan and (from `xl`) its kanban wall. The HeroBlank<Blank> slots are the Start Blank menu's rows the bar held until
     // October 2026, retired with it.
     'HeroSearch',
     'HeroBlank',
@@ -38,6 +38,8 @@ export const CTA_SOURCES = {
     'HeroBlankIllustration',
     'HeroBlankPlan',
     'HeroFan',
+    // The kanban wall the hero's band becomes from `xl`: one of its template cards.
+    'HeroBoard',
     'Gallery',
     // Retired when the gallery's search moved to the hero (October 2026): its no-match blank link.
     'GalleryDraw',
