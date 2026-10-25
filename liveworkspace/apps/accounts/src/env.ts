@@ -52,4 +52,9 @@ export interface Env {
   // The doors that need no session: a team join link's preview and an invitation's Decline link.
   // Absent (tests), they are not limited.
   TEAM_LINK_LIMITER?: RateLimit;
+  // Returning guests of the old livediagram.app (legacy-guests.ts): the old site's GUEST_ID_HMAC_SECRET, which
+  // checks their signatures (unset, the claim route is a plain 404), and the claims' limit per caller (absent, as in
+  // tests, not limited).
+  LEGACY_GUEST_ID_HMAC_SECRET?: string;
+  LEGACY_GUEST_LIMITER?: RateLimit;
 }

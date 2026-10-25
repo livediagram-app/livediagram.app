@@ -8,8 +8,13 @@ import {
   MAX_API_TOKENS_PER_ACCOUNT,
   mintApiToken,
   revokeApiToken,
+  revokeApiTokenBySecret,
   verifyApiToken,
+  API_TOKEN_PREFIX,
+  generateApiToken,
+  hashApiToken,
 } from './tokens.ts';
+import { tokenBySecret } from './workbench/revoke.ts';
 import type { DatabaseSync } from 'node:sqlite';
 
 let db: D1Database;
@@ -81,5 +86,40 @@ describe('API tokens', () => {
     await mintApiToken(db, 'user_ada', { name: 'x', readOnly: false });
     sql.prepare(`DELETE FROM "user" WHERE id = 'user_ada'`).run();
     expect(sql.prepare('SELECT COUNT(*) AS n FROM api_token').get()).toEqual({ n: 0 });
+  });
+});
+
+describe('tokens carried over from the old livediagram.app', () => {
+  // The migrate tool copies the old row as it was: the lowercase SHA-256 hex of the whole `lvd_` token.
+  const legacy = `lvd_${'Q'.repeat(43)}`;
+  const importRow = async (expiresAt = Date.now() + 86_400_000) =>
+    sql
+      .prepare(
+        `INSERT INTO api_token (id, userId, tokenHash, name, readOnly, createdAt, expiresAt)
+         VALUES ('tok_old', 'user_ada', ?, 'Old script', 1, 1, ?)`,
+      )
+      .run(await hashApiToken(legacy), expiresAt);
+
+  it('verifies an imported lvd_ row to its account', async () => {
+    expect(isApiTokenFormat(legacy)).toBe(true);
+    await importRow();
+    expect(await verifyApiToken(db, legacy)).toMatchObject({
+      userId: 'user_ada',
+      readOnly: true,
+    });
+    expect(await tokenBySecret(db, legacy)).toEqual({ id: 'tok_old', userId: 'user_ada' });
+  });
+
+  it('stops an imported token once it expires or is revoked by its secret', async () => {
+    await importRow();
+    expect(await verifyApiToken(db, legacy, Date.now() + 2 * 86_400_000)).toBeNull();
+    expect(await revokeApiTokenBySecret(db, legacy)).toBe(true);
+    expect(await verifyApiToken(db, legacy)).toBeNull();
+  });
+
+  it('still mints only lwt_', async () => {
+    const token = await mintApiToken(db, 'user_bea', { name: 'New', readOnly: false });
+    expect(token!.secret.startsWith(API_TOKEN_PREFIX)).toBe(true);
+    for (let i = 0; i < 20; i++) expect(generateApiToken().startsWith('lwt_')).toBe(true);
   });
 });

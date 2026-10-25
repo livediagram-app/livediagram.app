@@ -5,6 +5,8 @@
 // The merge (merge.ts) records one row per app in its own batch. The merge request itself (at once, off its path)
 // and the frequent cron send each app `POST /api/internal/people/:guest/merge {into}`; the row goes when the app
 // confirms. An app that can't be reached is tried again an hour later, and given up on after NOTICE_GIVE_UP_MS.
+// A legacy merge (the migration's returning guest, merge.ts) is sent as `{into, legacy: true}`, since its `into` may
+// be a guest; the row keeps the flag until the app confirms.
 
 import { APPS, type App } from '@liveworkspace/index-client';
 import { callApp } from './app-calls';
@@ -21,18 +23,19 @@ export function recordPersonMerges(
   guest: string,
   user: string,
   now: number,
+  legacy = false,
 ): D1PreparedStatement {
   return db
     .prepare(
-      `INSERT INTO person_app_merges (guest_id, user_id, app, created_at)
-       SELECT ?1, ?2, value, ?3 FROM json_each(?4) WHERE true
+      `INSERT INTO person_app_merges (guest_id, user_id, app, created_at, legacy)
+       SELECT ?1, ?2, value, ?3, ?5 FROM json_each(?4) WHERE true
        ON CONFLICT (guest_id, app) DO UPDATE
-         SET user_id = excluded.user_id, attempts = 0, last_attempt_at = NULL`,
+         SET user_id = excluded.user_id, legacy = excluded.legacy, attempts = 0, last_attempt_at = NULL`,
     )
-    .bind(guest, user, now, JSON.stringify(APPS));
+    .bind(guest, user, now, JSON.stringify(APPS), legacy ? 1 : 0);
 }
 
-type MergeRow = { guest_id: string; user_id: string; app: App };
+type MergeRow = { guest_id: string; user_id: string; app: App; legacy: number };
 
 // One run: up to MERGES_PER_RUN due rows, one call each. Returns the rows confirmed.
 export async function drainPersonMerges(env: Env, now = Date.now()): Promise<number> {
@@ -46,7 +49,7 @@ export async function drainPersonMerges(env: Env, now = Date.now()): Promise<num
   }
   const { results } = await db
     .prepare(
-      `SELECT guest_id, user_id, app FROM person_app_merges
+      `SELECT guest_id, user_id, app, legacy FROM person_app_merges
         WHERE last_attempt_at IS NULL OR last_attempt_at < ? LIMIT ?`,
     )
     .bind(now - NOTICE_RETRY_AFTER_MS, MERGES_PER_RUN)
@@ -58,7 +61,7 @@ export async function drainPersonMerges(env: Env, now = Date.now()): Promise<num
       row.app,
       'POST',
       `/people/${encodeURIComponent(row.guest_id)}/merge`,
-      { into: row.user_id },
+      row.legacy ? { into: row.user_id, legacy: true } : { into: row.user_id },
     );
     // An app this deployment does not run has nothing to hear.
     if (outcome.ok || outcome.error === 'app_not_configured') {

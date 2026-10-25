@@ -24,7 +24,8 @@ apps/index/src/app-routes.ts  what an item pushes: its summary, each tab's comme
 apps/index/src/inbox.ts       the Inbox query
 apps/index/src/timeline.ts    the Timeline: recording events, and a person's feed
 apps/index/src/purge.ts       purging, tombstones and the daily sweep
-apps/index/src/merge.ts       a guest becoming an account
+apps/index/src/merge.ts       a guest becoming an account (and the migration's legacy guest merge)
+apps/index/src/migration-handoff.ts  the migration's handoff of a browser's Local only parts to another app
 apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
 apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
 ```
@@ -44,10 +45,16 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
   item's summary and its comments and actions. The index calls the app back with the same key, at
   `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`. The same doors take
   `…/export` (an item's drawing), on that key or the app's media key, for the previews ([previews.md](previews.md)).
+- **livediagram's api, for the migration**, with its key: `POST /api/index/app/migration/handoff` makes an item in
+  another app for the person `X-Index-Person` names (a guest allowed on this route alone) and calls that app's
+  `${APP_ORIGIN_<APP>}/api/internal/items/:id/migration` with the app's key
+  ([one-explorer-contracts.md](one-explorer-contracts.md#the-migrations-handoff)).
 - **The media service's previews**, reading an item as the person asking (`GET /items/:id`, side-effect free) or a
   link anonymously (`GET /share/:code`), through its service binding: the index's answer is who may see a preview
   ([previews.md](previews.md)).
-- **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge` (a guest signing in) and
+- **Accounts**, with `MERGE_KEY`, at `POST /api/index/internal/merge` (a guest signing in, or with `legacy: true`
+  a returning guest of the old livediagram.app claimed into a guest or an account,
+  [one-explorer-contracts.md](one-explorer-contracts.md#guests)) and
   `POST /api/index/internal/purge-person` (an account closing). For workbenches ([workbench.md](workbench.md))
   accounts also acts for an account it checked itself, as an app's server does, with `MERGE_KEY` in place of the
   app's key beside `X-Index-App`, `X-Index-Person` and `X-Index-Teams` (that app's items only), and asks
@@ -109,6 +116,7 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
 | `INDEX_AUDIENCES`   | var: every app's API resource, comma-separated                                                                           |
 | `APP_ORIGIN_<APP>`  | var: where each app's internal routes are                                                                                |
 | `INDEX_ENABLED`     | var: `off` answers every route as missing                                                                                |
+| `MIGRATION_LIMITER` | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                         |
 
 Without `GRANT_SIGNING_KEY` outside development, `/jwks` and grants answer 503 `grants_unavailable`, and
 nothing can be made (there would be no grant to open it with).
@@ -138,6 +146,11 @@ statements more. Each list sorts the person's matching rows to
 page them, so a page's cost grows with what that person holds (a few milliseconds at 2,000). The Drive mirror's
 change signal costs a write request nothing before it answers: afterwards, one primary-key read of `drive_people`
 for the people it touched (usually one), and a call per flagged person; without the `DRIVE` binding, nothing.
+The legacy guest merge is the ordinary merge's one batch, with the same statements (each driven by an index on
+`owner_id`, `person_id`, `scope` or `actor_id`); its flag rides the `person_app_merges` rows it already writes.
+The migration's handoff is one rate-limit check, one batch (the item and its event), the app call, and on a
+failure one delete by primary key. Its body can be up to 32 MiB, parsed once and sent on once, so a request
+holds about three copies of it in memory at worst (well under a Worker's 128 MB at the cap).
 
 ## Running it locally
 

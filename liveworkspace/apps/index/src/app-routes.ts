@@ -9,6 +9,7 @@ import { isId } from './codec';
 import { handleDriveFlag, sendDriveSignals } from './drive';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
+import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
 import { pushAppEvents, pushPersonEvents } from './timeline';
 
@@ -27,6 +28,10 @@ export async function handleApp(
   }
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
+  // /app/migration/handoff: a browser's Local only part, made in another app (migration-handoff.ts).
+  if (segments[1] === 'migration' && segments[2] === 'handoff' && segments.length === 3) {
+    return handleMigrationHandoff(request, env, app, waitUntil);
+  }
   // /app/people/events: the Timeline's events about people (images uploaded), timeline.ts.
   if (segments[1] === 'people' && segments[2] === 'events' && segments.length === 3) {
     if (request.method !== 'PUT') return notFound();

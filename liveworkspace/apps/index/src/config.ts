@@ -31,6 +31,12 @@ export const APP_CALL_CONCURRENCY = 6;
 // How long one call to an app may take.
 export const APP_CALL_TIMEOUT_MS = 10_000;
 
+// The migration's handoff (migration-handoff.ts): the largest body it takes, a browser's Local only part with its
+// images' references and changesets; how long the app's migration door may take to write it; and how many a
+// person may hand off a minute (MIGRATION_LIMITER's own setting, wrangler.toml).
+export const HANDOFF_MAX_BYTES = 32 * 1024 * 1024;
+export const HANDOFF_APP_TIMEOUT_MS = 30_000;
+
 // How many Inbox rows of each kind one answer holds.
 export const INBOX_LIMIT_DEFAULT = 100;
 

@@ -32,6 +32,10 @@ workers_dev = false
 #                         each app's key on the telemetry service (the telemetry Worker's values), to
 #                         count Email·Sent for the onboarding emails under the app each speaks for;
 #                         optional, an app without one isn't counted
+#   LEGACY_GUEST_ID_HMAC_SECRET
+#                         the old livediagram.app's GUEST_ID_HMAC_SECRET (from its repository's GitHub secrets), for
+#                         the migration's returning guests (src/legacy-guests.ts); unset, that route is a plain 404.
+#                         Set for the migration and removed after it (docs/migration.md step 6)
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
@@ -102,6 +106,13 @@ name = "WORKBENCH_LIMITER"
 # 11xx: the platform Workers' own (telemetry 1101, community 1102), clear of the apps' 10xx.
 namespace_id = "1103"
 simple = { limit = 30, period = 60 }
+
+# The migration's returning-guest claims (src/legacy-guests.ts), per caller: one per browser that finds an old id,
+# so a few a minute is plenty.
+[[ratelimits]]
+name = "LEGACY_GUEST_LIMITER"
+namespace_id = "1105"
+simple = { limit = 10, period = 60 }
 
 # Workbench pairings, tickets and sessions, one SQLite-backed store per person
 # (liveworkspace/docs/workbench.md). Its alarm runs only while something will lapse.
@@ -182,6 +193,11 @@ simple = { limit = 20, period = 60 }
 name = "WORKBENCH_LIMITER"
 namespace_id = "2103"
 simple = { limit = 30, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "LEGACY_GUEST_LIMITER"
+namespace_id = "2105"
+simple = { limit = 10, period = 60 }
 
 [[env.staging.durable_objects.bindings]]
 name = "WORKBENCH"

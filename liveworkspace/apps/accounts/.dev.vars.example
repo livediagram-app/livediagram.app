@@ -30,3 +30,6 @@ TELEMETRY_KEY_LIVEDIAGRAM=dev-livediagram-key
 TELEMETRY_KEY_LIVEPLANNER=dev-liveplanner-key
 TELEMETRY_KEY_LIVEDOCUMENTS=dev-livedocuments-key
 TELEMETRY_KEY_LIVEDESIGN=dev-livedesign-key
+# The migration's returning guests (src/legacy-guests.ts): the old livediagram.app's GUEST_ID_HMAC_SECRET. Optional:
+# without it, POST /api/account/internal/legacy-guests/claim is a plain 404.
+LEGACY_GUEST_ID_HMAC_SECRET=

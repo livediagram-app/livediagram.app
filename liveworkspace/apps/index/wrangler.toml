@@ -48,6 +48,13 @@ migrations_dir = "migrations"
 [triggers]
 crons = ["23 4 * * *", "*/15 * * * *"]
 
+# The migration's handoff (src/migration-handoff.ts, docs/migration.md step 6), per person: a browser's Local only
+# documents, a few parts each. 11xx: the platform Workers' own (accounts' 1103 and 1105, status 1104).
+[[ratelimits]]
+name = "MIGRATION_LIMITER"
+namespace_id = "1106"
+simple = { limit = 60, period = 60 }
+
 # The Google Drive mirror's service, which the change signal goes through (src/drive.ts). A deploy is refused
 # while a service binding's target Worker doesn't exist, so it stays off until liveworkspace-drive is deployed;
 # without it the index sends no signal and nothing else changes. Uncomment then:
@@ -81,6 +88,11 @@ migrations_dir = "migrations"
 
 [env.staging.triggers]
 crons = ["23 4 * * *", "*/15 * * * *"]
+
+[[env.staging.ratelimits]]
+name = "MIGRATION_LIMITER"
+namespace_id = "2106"
+simple = { limit = 60, period = 60 }
 
 # As production's: uncomment once liveworkspace-drive-staging is deployed.
 # [[env.staging.services]]

@@ -244,6 +244,10 @@ export const INDEX_ERRORS = [
   'wrong_app',
   'copy_failed',
   'grants_unavailable',
+  // The migration's handoff (POST /app/migration/handoff): too many a minute, a body over 32 MiB, the app's door failed.
+  'rate_limited',
+  'payload_too_large',
+  'migration_failed',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 
