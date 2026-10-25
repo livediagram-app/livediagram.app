@@ -88,7 +88,7 @@ const ICON_MOVES = new Set<IconAnimation>([
 /** A line-art star wearing the icon animation. */
 export function IconAnimationPreview({ animation }: { animation: IconAnimation | null }) {
   return (
-    <span className="relative block h-[24px] w-[24px] text-brand-500">
+    <span className="relative block h-[24px] w-[24px]" style={{ color: ACCENT }}>
       {animation && ICON_MOVES.has(animation) ? (
         <span className="absolute inset-0 opacity-25">
           <IconGlyph iconId="star" stroke="currentColor" />
