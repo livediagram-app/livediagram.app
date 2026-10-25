@@ -1,6 +1,7 @@
-// The Inbox's performance guard: 300 rows of every kind (actions, cards, threads, forms) mount within a budget.
+// The Inbox's performance guards, at 300 rows of every kind (actions, cards, threads, forms): mounting, switching
+// the filter, and running the selection down the whole list, each within a budget, with the times logged.
 
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { InboxAction, InboxForm, InboxThread } from '@liveworkspace/index-client';
 import { createFakeIndex } from '../test/fakeClient';
@@ -111,17 +112,17 @@ async function mount() {
   await act(async () => {});
   const ms = performance.now() - t0;
   const mounted = view.container.querySelectorAll('[data-inbox-row]').length;
-  view.unmount();
-  return { ms, mounted };
+  return { ms, mounted, view };
 }
 
 describe(`${N} Inbox rows`, () => {
   it('mount within budget', async () => {
     const runs: number[] = [];
     for (let i = 0; i < 5; i++) {
-      const { ms, mounted } = await mount();
+      const { ms, mounted, view } = await mount();
       expect(mounted).toBe(N);
       runs.push(ms);
+      view.unmount();
     }
     const sorted = [...runs].sort((a, b) => a - b);
     const median = sorted[2]!;
@@ -130,5 +131,36 @@ describe(`${N} Inbox rows`, () => {
     );
     expect(runs[0]).toBeLessThan(BUDGET_MS);
     expect(median).toBeLessThan(BUDGET_MS);
-  });
+  }, 30_000);
+
+  it('switches the filter within budget, every filter and back', async () => {
+    const { view } = await mount();
+    const filters = [...view.container.querySelectorAll<HTMLElement>('[data-inbox-filter]')];
+    const t0 = performance.now();
+    for (let round = 0; round < 2; round++)
+      for (const f of [...filters.slice(1), filters[0]!]) act(() => fireEvent.click(f));
+    const per = (performance.now() - t0) / (2 * filters.length);
+    console.info(`inbox: ${N} rows, a filter change ${per.toFixed(1)} ms`);
+    expect(view.container.querySelectorAll('[data-inbox-row]')).toHaveLength(N);
+    // At most one mount's work (rows leaving and arriving), so it shares the mount's generous budget's half.
+    expect(per).toBeLessThan(BUDGET_MS / 2);
+    view.unmount();
+  }, 30_000);
+
+  it('moves the selection down all the rows within budget, focus staying on the list', async () => {
+    const { view } = await mount();
+    const list = screen.getByRole('listbox');
+    list.focus();
+    const t0 = performance.now();
+    for (let i = 0; i < N - 1; i++) fireEvent.keyDown(list, { key: 'j' });
+    const per = (performance.now() - t0) / (N - 1);
+    console.info(`inbox: ${N} rows, one step of the selection ${per.toFixed(2)} ms`);
+    const last = view.container.querySelectorAll('[data-inbox-row]')[N - 1]!;
+    expect(list.getAttribute('aria-activedescendant')).toBe(last.id);
+    expect(document.activeElement).toBe(list);
+    // A held j repeats about every 30 ms; one step must keep up. The pane is patched in place, not remounted:
+    // remounting it per row cost about 30 ms a step here.
+    expect(per).toBeLessThan(30);
+    view.unmount();
+  }, 30_000);
 });

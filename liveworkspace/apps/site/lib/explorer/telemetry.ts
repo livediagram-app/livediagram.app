@@ -189,6 +189,12 @@ export const trackInbox: InboxTelemetry = (action, type) => {
       return track('Activity', 'Selected', type);
     case 'Loaded':
       return track('Activity', 'Loaded', type);
+    case 'Changed':
+      return track('Activity', 'Changed', type);
+    case 'Added':
+      return track('Activity', 'Added', type);
+    case 'Resolved':
+      return track('Activity', 'Resolved', type);
   }
 };
 
