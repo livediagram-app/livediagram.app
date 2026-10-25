@@ -177,6 +177,24 @@ describe('This Browser in the Explorer', () => {
     expect(screen.queryByRole('link', { name: /^Sync/ })).toBeNull();
   });
 
+  it('deletes a live row for good where the host can, asking first', async () => {
+    const remove = vi.fn();
+    page({ kind: 'offline' }, { ...host([local(2), local(1, { trashedAt: 5 })]), remove });
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Local 2' }));
+    expect(remove).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog.textContent).toContain('removes it for good');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'local-2' }));
+    expect(screen.queryByRole('button', { name: 'Delete Local 1' })).toBeNull();
+  });
+
+  it('has no Delete where the host offers none', async () => {
+    page({ kind: 'offline' }, host([local(1)]));
+    await screen.findAllByRole('link', { name: /Local 1/ });
+    expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+  });
+
   it('sends a Take Offline or Sync asked of it by its address on to the app, once', async () => {
     const replace = vi.fn();
     const real = window.location;

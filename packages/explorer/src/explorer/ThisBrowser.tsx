@@ -36,6 +36,7 @@ import { OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
+import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
 import { PaneHeader } from './PaneHeader';
 import { daysLeftLabel } from './TrashPane';
@@ -186,11 +187,11 @@ function LocalRow({
 }: {
   item: ThisBrowserItem;
   detail: ReactNode;
-  // Offer Sync beside it (a live row, where the host can).
+  // Offer Sync and Delete beside it (a live row, where the host can).
   sync?: boolean;
 }) {
   const { thisBrowser } = useHostExtras();
-  const { app, kind, reloadLists } = useExplorer();
+  const { app, kind, reloadLists, openDialog } = useExplorer();
   const name = item.title || 'Untitled';
   const syncHref = sync ? thisBrowser?.syncHref?.(item) : undefined;
   return (
@@ -223,6 +224,18 @@ function LocalRow({
         >
           Sync {kind.one}
         </button>
+      ) : null}
+      {sync && thisBrowser?.remove ? (
+        // For good, asked first: the panel's This Browser rows do the same (liveworkspace/docs/one-explorer.md "This Browser").
+        <span className="mr-3 shrink-0">
+          <PaneIconButton
+            label={`Delete ${name}`}
+            tone="danger"
+            onClick={() => openDialog({ kind: 'delete-local', item })}
+          >
+            <TrashIcon />
+          </PaneIconButton>
+        </span>
       ) : null}
     </li>
   );

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useThisBrowserList, type ThisBrowserHost } from '@liveworkspace/explorer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
+import { offlineDeleteProject } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the plans kept only in this browser, from the
@@ -27,6 +28,8 @@ export function useThisBrowserHost(ownerId: string | null, signedIn: boolean): T
               conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
           }
         : {}),
+      // Nothing else holds one, so Delete removes it for good (the Explorer asks first).
+      remove: (item) => void offlineDeleteProject(item.id),
     }),
     [items, signedIn, conversions, router],
   );

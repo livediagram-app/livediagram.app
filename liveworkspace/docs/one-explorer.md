@@ -197,7 +197,10 @@ The page reads where it is from its own address and there is that app's page:
   Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
   liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
   to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
-  apps' old `/offline` pages only redirect to it, their query kept.
+  apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and
+  **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
+  panel's This Browser rows. Every app's host deletes in place (`remove`, its offline store's delete), so Delete is
+  never missing in one app and there in another.
 - **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
   index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store
   directly; for the page, the app also keeps a snapshot of them in localStorage under
