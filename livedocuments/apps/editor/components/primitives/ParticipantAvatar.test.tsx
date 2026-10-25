@@ -21,6 +21,22 @@ function hoverText(participant: Participant): string {
 describe('ParticipantAvatar', () => {
   afterEach(cleanup);
 
+  // docs/specs/014-identity/profile-picture.md §4: the Google picture over the initials, the initials alone without.
+  it('draws the Google picture the room relayed over the initials, and the initials without one', () => {
+    const picture = 'https://lh3.googleusercontent.com/a/webber';
+    const { container, unmount } = render(
+      <ParticipantAvatar participant={{ ...webber, picture }} size={28} />,
+    );
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe(`${picture}=s28-c`);
+    expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+    expect(container.textContent).toBe('WE');
+    unmount();
+    const plain = render(<ParticipantAvatar participant={webber} />);
+    expect(plain.container.querySelector('img')).toBeNull();
+    expect(plain.container.textContent).toBe('WE');
+  });
+
   it('reads an owner’s agent status in the accessible name', () => {
     render(<ParticipantAvatar participant={{ ...webber, statusLine: 'adding payment service' }} />);
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe(

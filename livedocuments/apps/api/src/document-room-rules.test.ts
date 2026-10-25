@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   admitFrame,
   helloPresence,
@@ -12,6 +12,29 @@ import { MAX_PARTICIPANT_KEY_LEN } from './limits';
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
 
 describe('helloPresence', () => {
+  // docs/specs/014-identity/profile-picture.md §2.
+  it('keeps a Google picture only from an account session, and only a Google one', () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ACg8oc=s96-c';
+    const account = { ...SESSION, account: true };
+    expect(helloPresence({ name: 'Ada', color: '#f00', picture }, account).picture).toBe(picture);
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    expect('picture' in helloPresence({ name: 'Ada', color: '#f00', picture }, SESSION)).toBe(
+      false,
+    );
+    for (const bad of [
+      'https://evil.example/a.png',
+      'javascript:alert(1)',
+      `${picture}${'x'.repeat(600)}`,
+    ]) {
+      expect(
+        'picture' in helloPresence({ name: 'Ada', color: '#f00', picture: bad }, account),
+      ).toBe(false);
+    }
+    expect(info).toHaveBeenCalledWith('[profile-picture] rejected', 'not_account');
+    expect(info).toHaveBeenCalledWith('[profile-picture] rejected', 'invalid_url');
+    info.mockRestore();
+  });
+
   it('overrides the id and role the client claimed', () => {
     // The trust boundary (docs/specs/015-api/public-api-and-tokens.md §6): a joiner must not be able to announce
     // itself as somebody else, nor promote itself to an editor.

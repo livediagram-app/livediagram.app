@@ -11,6 +11,16 @@ export const DEFAULT_PARTICIPANT_COLOR = '#0ea5e9';
 export const PROFILE_CACHE_MS = 60_000;
 
 const people = new Map<string, ParticipantDTO>();
+const pictures = new Map<string, string>();
+
+/** A person's published Google picture, for the suites that read one. */
+export function setTestPicture(id: string, picture: string): void {
+  pictures.set(id, picture);
+}
+
+export async function participantPicture(_env: Env, id: string): Promise<string | null> {
+  return pictures.get(id) ?? null;
+}
 
 export function setTestProfile(
   id: string,
@@ -23,6 +33,7 @@ export function setTestProfile(
 
 export function clearTestProfiles(): void {
   people.clear();
+  pictures.clear();
 }
 
 export function __forgetProfiles(): void {}

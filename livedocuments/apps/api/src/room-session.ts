@@ -44,6 +44,11 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
+  //   - `account`: a signed-in account holds this session, from X-Verified-Account
+  //     (docs/specs/014-identity/profile-picture.md §2). Only such a session may put a Google picture on the
+  //     roster, and only such a session receives the pictures on it. A guest has a person tag too, so the tag
+  //     alone cannot say it.
+  account?: boolean;
   //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
   //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
   following?: string;
@@ -76,6 +81,7 @@ type VerifiedSession = {
   workbenchPairing: string | null;
   documentId: string | null;
   grantExp?: number | null;
+  account?: boolean;
   // The document's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
   // session: the room takes them as its own copy (document-room.ts takeHead).
   head?: { owner: string | null; team: string | null };
@@ -101,6 +107,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    account: request.headers.get('X-Verified-Account') === '1',
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     documentId: header('X-Verified-Document'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
@@ -128,6 +135,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
     grantExp: v.grantExp ?? null,
+    account: v.account === true,
   };
 }
 

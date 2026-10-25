@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
+import { setOwnPicture } from '@/lib/own-picture';
 import {
   DEFERRED_AUTH_DEFAULT,
   type DeferredAuthState,
@@ -24,6 +25,10 @@ type SessionUser = {
   id: string;
   email: string | null;
   name: string | null;
+  // The account's Google picture and whether Show My Google Picture is off (apps/api/src/routes/auth.ts AuthUser;
+  // docs/specs/014-identity/profile-picture.md §1).
+  picture?: string | null;
+  pictureHidden?: boolean;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -71,6 +76,7 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
 
 async function endSession(): Promise<void> {
   current = null;
+  setOwnPicture(null);
   await forgetRecentDiagrams();
   await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
     () => {},
@@ -98,6 +104,9 @@ export function namesOf(user: SessionUser): {
 }
 
 function stateOf(session: Session | null): DeferredAuthState {
+  setOwnPicture(
+    session ? { picture: session.user.picture, hidden: session.user.pictureHidden === true } : null,
+  );
   if (!session) return { ...DEFERRED_AUTH_DEFAULT, authLoaded: true };
   const { user } = session;
   return {
@@ -110,6 +119,8 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      picture: user.picture ?? null,
+      pictureHidden: user.pictureHidden === true,
     },
     getToken,
     // A full load, so nothing keeps the old session.

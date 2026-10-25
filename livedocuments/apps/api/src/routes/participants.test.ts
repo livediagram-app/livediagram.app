@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { db } = vi.hoisted(() => ({
   db: {
     getParticipant: vi.fn(),
+    participantPicture: vi.fn(),
     saveParticipant: vi.fn(),
   },
 }));
@@ -47,6 +48,27 @@ describe('handleParticipants', () => {
     });
     const res = await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner: null }));
     expect(res.status).toBe(200);
+  });
+
+  // docs/specs/014-identity/profile-picture.md §3: the Google picture goes to a signed-in account alone.
+  it('GET answers the picture to a signed-in account, and never to a guest or a link visitor', async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ann';
+    db.getParticipant.mockResolvedValue({ id: 'p1', name: 'Ann', color: '#fff', createdAt: 0 });
+    db.participantPicture.mockResolvedValue(picture);
+    const account = await handleParticipants(
+      makeTestRouteContext('GET', '/api/participants/p1', {
+        owner: 'user_me',
+        accountUserId: 'user_me',
+      }),
+    );
+    const answered: { participant: { picture?: string } } = await account.json();
+    expect(answered.participant.picture).toBe(picture);
+    for (const owner of ['owner-1', null]) {
+      const res = await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner }));
+      const body = (await res.json()) as { participant: Record<string, unknown> };
+      expect(body.participant).not.toHaveProperty('picture');
+    }
+    expect(db.participantPicture).toHaveBeenCalledTimes(1);
   });
 
   it('GET 404 for an unknown participant', async () => {

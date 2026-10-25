@@ -11,6 +11,7 @@ import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import { personTagFor } from '../person-tag';
+import { isAccountOwner } from '../person/owner';
 
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -56,6 +57,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
     forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // Whether a signed-in account holds the session (not a guest, not a link visitor): only such a session may show
+    // a Google picture in the room and see others' (docs/specs/014-identity/profile-picture.md §2).
+    forwarded.headers.set('X-Verified-Account', person && isAccountOwner(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set('X-Verified-Document', id);
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket

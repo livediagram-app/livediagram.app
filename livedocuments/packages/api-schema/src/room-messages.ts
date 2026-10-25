@@ -212,6 +212,10 @@ export type ClientMessage =
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  // An identity update over an open socket (docs/specs/014-identity/profile-picture.md §2): the hello's participant
+  // again, read by the same rules, without re-joining. Today it carries a picture switched on or off. Ignored
+  // before the session's hello.
+  | { kind: 'identity'; participant: ParticipantPresence }
   | GrantMessage;
 
 // The session's grant is about to lapse (liveworkspace/docs/one-explorer-contracts.md "Grants"): the room asks
@@ -411,6 +415,7 @@ export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction)
   | GrantMessage;
 

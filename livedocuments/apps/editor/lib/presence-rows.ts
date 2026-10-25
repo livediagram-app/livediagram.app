@@ -18,6 +18,7 @@ type CursorRow = {
   color: string;
   x: number;
   y: number;
+  picture?: string;
 };
 type LaserTrailRow = {
   participantId: string;
@@ -155,7 +156,14 @@ export function buildRemoteCursorRows(
     if (pos.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+    rows.push({
+      id,
+      name: p.name,
+      color: p.color,
+      x: pos.x,
+      y: pos.y,
+      ...(p.picture ? { picture: p.picture } : {}),
+    });
   }
   return rows;
 }

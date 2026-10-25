@@ -17,6 +17,7 @@ import {
   type Profile,
 } from '@liveworkspace/auth-client';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsOwnerOf, ownerFromAccounts } from './owner';
@@ -112,6 +113,19 @@ export async function getParticipants(
 
 export async function getParticipant(env: Env, ownerId: string): Promise<ParticipantDTO | null> {
   return (await getParticipants(env, [ownerId])).get(ownerId) ?? null;
+}
+
+// This owner's published Google picture (docs/specs/014-identity/profile-picture.md §3): the profile's `picture`,
+// null when they have none or switched Show My Google Picture off. Read with the name (the same remembered profile),
+// so after getParticipant it costs nothing. Only for a signed-in account caller; the route decides that.
+export async function participantPicture(env: Env, ownerId: string): Promise<string | null> {
+  const credentials = accountCredentials(env);
+  if (!credentials) return null;
+  try {
+    return profilePictureOf((await profilesOf(credentials, [ownerId])).get(ownerId)?.picture);
+  } catch {
+    return null;
+  }
 }
 
 // When this owner's profile was first written at the accounts Worker, or null when it never was (or

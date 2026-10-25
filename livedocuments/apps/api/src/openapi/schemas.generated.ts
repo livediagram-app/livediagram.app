@@ -4924,6 +4924,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "picture": {
+        "type": "string"
       }
     },
     "required": [

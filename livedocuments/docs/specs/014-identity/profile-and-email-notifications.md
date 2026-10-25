@@ -24,7 +24,7 @@ retired and its three parts redistributed:
 - **Identity** (avatar, name, email, joined) is the `identity` row in the
   **Account** category. Read from the liveworkspace account on the client, never written: names
   and emails belong to the liveworkspace account, so it is a card, not a form. The
-  avatar is the account's initial. A guest sees a card explaining that they are working as a guest.
+  avatar is the account's Google picture over its initial, or the initial alone ([Profile pictures](profile-picture.md)). A guest sees a card explaining that they are working as a guest.
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless email is configured (the `EMAIL` binding) AND the reader is signed in, since
   a guest has no address to send to.

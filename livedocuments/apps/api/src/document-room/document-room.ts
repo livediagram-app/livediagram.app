@@ -777,6 +777,7 @@ export class DocumentRoom extends DurableObject<Env> {
       v.workbenchPairing,
       v.documentId,
       v.grantExp ?? null,
+      v.account === true,
     );
     if (v.documentId) {
       this.bindDocument(v.documentId);
@@ -877,6 +878,8 @@ export class DocumentRoom extends DurableObject<Env> {
     workbenchPairing: string | null = null,
     documentId: string | null = null,
     grantExp: number | null = null,
+    // A signed-in account's session (room-session.ts `account`): it may show a Google picture and see others'.
+    account = false,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -888,6 +891,7 @@ export class DocumentRoom extends DurableObject<Env> {
           workbenchPairing,
           documentId,
           grantExp,
+          account,
         },
         crypto.randomUUID(),
       ),
@@ -1097,6 +1101,19 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!session) return;
     if (msg.kind === 'grant') {
       this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
+      return;
+    }
+    if (msg.kind === 'identity') {
+      // An identity update (docs/specs/014-identity/profile-picture.md §2): the hello rules again, keeping the tabs
+      // this session is on, then a fresh roster. Not a join, so none of the join's side effects run, and a session
+      // that never said hello has nothing to update.
+      if (!session.presence) return;
+      const next = helloPresence(msg.participant, session);
+      if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
+      if (session.presence.besideTabId !== undefined)
+        next.besideTabId = session.presence.besideTabId;
+      ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
+      this.broadcastPresence();
       return;
     }
     if (msg.kind === 'hello') {
@@ -1443,6 +1460,7 @@ export class DocumentRoom extends DurableObject<Env> {
         ws,
         presence: session?.presence ?? null,
         personTag: session?.personTag ?? null,
+        account: session?.account === true,
       });
     }
     // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).

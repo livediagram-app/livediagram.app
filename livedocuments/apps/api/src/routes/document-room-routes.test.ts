@@ -70,6 +70,7 @@ const SPOOFED = {
   'X-Verified-Tab-Scope': 'tab-evil',
   'X-Verified-Share-Code': 'evil',
   'X-Verified-Person': 'evil',
+  'X-Verified-Account': '1',
   'X-Verified-Workbench-Pairing': 'evil',
   'X-Verified-Document': 'evil',
   'X-Verified-Grant-Exp': '99999999999',
@@ -94,6 +95,8 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('');
     expect(h.get('X-Verified-Share-Code')).toBe('');
     expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
+    // A signed-in account: it may show its Google picture and see others' (profile-picture.md §2).
+    expect(h.get('X-Verified-Account')).toBe('1');
     expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
     expect(h.get('X-Verified-Document')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
@@ -129,6 +132,7 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('tab-2');
     expect(h.get('X-Verified-Share-Code')).toBe('abc');
     expect(h.get('X-Verified-Person')).toBe('');
+    expect(h.get('X-Verified-Account')).toBe('0');
   });
 
   it('takes the share code a signed-in link opener names on ?s=', async () => {
@@ -138,6 +142,8 @@ describe('WebSocket upgrade', () => {
     const h = seen[0]!.headers;
     expect(h.get('X-Verified-Share-Code')).toBe('code1');
     expect(h.get('X-Verified-Role')).toBe('participate');
+    // A guest has a person tag but is no account.
+    expect(h.get('X-Verified-Account')).toBe('0');
   });
 
   it('caps a workbench ticket at its sealed level and stamps its pairing', async () => {

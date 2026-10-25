@@ -486,6 +486,42 @@ describe('DocumentRoom hello frame role forcing', () => {
   });
 });
 
+// docs/specs/014-identity/profile-picture.md §2: a picture switched on or off over the open socket.
+describe('DocumentRoom identity frame', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ann';
+  const ann = (picture?: string) => ({
+    id: 'x',
+    name: 'Ann',
+    color: '#000',
+    ...(picture ? { picture } : {}),
+  });
+
+  it('updates an account session’s picture in place, keeping its tab, and only after hello', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), 'edit', null, null, 'tag', null, null, null, true);
+    sendFrame(room, ws, { kind: 'identity', participant: ann(PICTURE) });
+    expect(storedPresence(ws)).toBeNull();
+    sendFrame(room, ws, { kind: 'hello', participant: { ...ann(), tabId: 't1' } });
+    sendFrame(room, ws, { kind: 'identity', participant: ann(PICTURE) });
+    expect(storedPresence(ws)?.picture).toBe(PICTURE);
+    expect(storedPresence(ws)?.tabId).toBe('t1');
+    sendFrame(room, ws, { kind: 'identity', participant: ann() });
+    expect(storedPresence(ws)).not.toHaveProperty('picture');
+  });
+
+  it('keeps no picture from a session that is not an account', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    room.acceptSession(asWs(ws), 'edit', null, null, 'tag');
+    sendFrame(room, ws, { kind: 'hello', participant: ann(PICTURE) });
+    sendFrame(room, ws, { kind: 'identity', participant: ann(PICTURE) });
+    expect(storedPresence(ws)).not.toHaveProperty('picture');
+    info.mockRestore();
+  });
+});
+
 describe('DocumentRoom op-role enforcement', () => {
   // Drive a fully-connected session (hello sent) at a given verified
   // role, returning a `sendOp` that pushes an op frame from it.

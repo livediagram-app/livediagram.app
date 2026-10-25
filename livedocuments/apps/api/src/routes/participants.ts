@@ -4,7 +4,7 @@
 import { ProfileError } from '@liveworkspace/auth-client';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livedocuments/api-schema';
 import { isSafeColourValue } from '@livedocuments/document';
-import { getParticipant, saveParticipant } from '../person/profiles';
+import { getParticipant, participantPicture, saveParticipant } from '../person/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
@@ -37,6 +37,11 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
         return json({ participant: null });
       }
       return notFound();
+    }
+    // Their Google picture goes only to a signed-in account (docs/specs/014-identity/profile-picture.md §3): a guest
+    // or a link visitor gets the name and colour alone.
+    if (ctx.accountUserId) {
+      return json({ participant: { ...p, picture: await participantPicture(env, id) } });
     }
     return json({ participant: p });
   }
