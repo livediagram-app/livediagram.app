@@ -37,7 +37,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
-│  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks
+│  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks,
+│  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  └─ vitest-config            the Vitest defaults and test helpers every workspace extends
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
@@ -217,13 +218,33 @@ Each step is its own PR, and both products build and pass their tests after ever
      import those types. They move only once the union is shared or the files become generic over it, which is
      a change to the element model rather than a move. The parsers and migrations of stored data stay per
      product too, so no stored document changes shape.
-   - Still in each product's `ui`: the brand files (Brand, the mark's geometry, prism and motion, the
-     social card), which move to `@liveworkspace/brand`; anything drawing a chrome icon (`icons/`,
-     `Glyph`, `Select`, `DialogCloseButton`, `SiteSwitcher`, `SiteHeader`, `SiteFooter`, `PageNotFound`,
-     the appearance toggle), which waits on `@liveworkspace/icons`; and what is a product's own data:
-     `site.ts` and `seo.ts` (its name, URLs and pitch), `trusted-types` (its CSP), the appearance key,
-     `browser-repair` (its storage keys), and the page-view, web-vitals and CTA pieces bound to its
-     `api-schema` and `telemetry-client`. They follow as those packages move.
+   - `ui`, second slice: the chrome that only waited on `@liveworkspace/icons`, and the site pieces that take
+     their product as a parameter. `@liveworkspace/ui` now also holds the chrome icons (`icons/`: actions,
+     navigation, status, badges, editor chrome, the drawing kinds' glyphs and the Community heart, the union
+     of the four copies; each is a named export marked pure, so an app bundles only the glyphs it draws),
+     `Select`, `DialogCloseButton`, `CompactEmptyState`, `PageNotFound`, `SnapCarousel`, `BuildWithAiLink`,
+     the appearance machinery (`AppearanceIcon`, the cycle, `createAppearanceStore`, `appearanceBootScript`,
+     `useAppearanceStore` and the toggle), `browser-repair`'s checks, its repair walk and its panel, and the
+     site chrome drawn from a product's facts: `SiteSwitcher` (the app), `ShareRail` (the URL, pitch and
+     Appearance card), `SiteFooter` (the tagline, the first link, the Community and GitHub links, the credits),
+     `ProductNavLinks` (the Community link, when there is one), `ExplorerLink` and `SiteAccount` (whether the
+     hint cookie says signed in). Where copies differed it was a comment, or one side behind: livediagram's
+     `SiteAppearanceToggle` `labelFrom`, livediagram's and livedesign's extra glyphs, livediagram's
+     `SnapCarousel` `itemNoun`; the newer side won. The real differences became parameters, so every product
+     renders what it did: liveplanner's footer still has no GitHub link and no credits, only livediagram's
+     has the Community link, and each footer keeps its own tagline and first link. `ProductNavLinks` lost
+     its unused `desc` lines. Each `@<product>/ui` keeps a thin binding of the same name for each of these
+     (`export *` would otherwise hand callers the parameterised one), so callers did not change.
+   - Still in each product's `ui`: the bindings above and the brand ones (`Brand.tsx`, `brand-app.ts`, over
+     `@liveworkspace/brand`); the social card, whose colours and copy are the product's own; what is a
+     product's own data: `site.ts` and `seo.ts` (its name, URLs and pitch), `trusted-types` (its CSP), the
+     appearance key, `browser-repair`'s kept keys and its identity report (livediagram's reads the guest
+     token's expiry through `@liveworkspace/index-client`, the others flag a guest whose work has not moved
+     to the account: a real difference left for its own change); `EDITOR_MODE_ICONS`, typed on the product's
+     modes; `identity-fill`, which needs its model package's `shade`; and the pieces bound to its `api-schema`
+     and `telemetry-client`: `SiteHeader`, `HeaderPrimaryCta` and `StartBlankLink` (its CTA surfaces and
+     `ctaHref`), `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`, and the web-vitals
+     reporter. They follow as those packages move.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    both apps.
