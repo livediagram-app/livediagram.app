@@ -29,7 +29,7 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 ## CI
 
 In the liveworkspace monorepo these run from the root's `.github/` ([docs/ci.md](../../../../docs/ci.md)): one CI,
-E2E, CodeQL and canvas performance workflow for every product, running livedesign's jobs only when a change reaches it.
+E2E and canvas performance workflow for every product (CodeQL waits on GitHub Advanced Security), running livedesign's jobs only when a change reaches it.
 The `livedesign/.github/` copies are inert there, deploys included: the monorepo deploys every Worker itself, staging
 on each green `main` and production by hand, only what a change reaches (docs/ci.md "Deploys").
 

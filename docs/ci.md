@@ -48,13 +48,13 @@ result.
   `main`, for each product whose editor a change reaches: six smoke shards, the sites audit and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
-- **CodeQL** (`codeql.yml`): the whole repository, on every pull request, every push to `main` and
-  weekly. It needs the repository's CodeQL default setup turned off.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
   opens or updates that product's issue, **Canvas performance budget: <product>**.
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
 
-Not carried over yet: the coverage report written into each pull request's description (it needs
+Not carried over yet: CodeQL, which needs GitHub Advanced Security on this private repository (until then
+GitHub refuses its upload; the workflow is in git history, removed in the commit "CI: CodeQL out until
+Advanced Security is on"), the coverage report written into each pull request's description (it needs
 Codecov set up for this repository, and its fixed upload count doesn't fit runs that upload only the
 groups they reach), the CLI publishing and the MCP Registry listing.
 
