@@ -173,10 +173,10 @@ service = "liveworkspace-index-staging"
 binding = "TELEMETRY"
 service = "liveworkspace-telemetry-staging"
 
-# As above: uncomment once liveworkspace-drive-staging is deployed.
-# [[env.staging.services]]
-# binding = "DRIVE"
-# service = "liveworkspace-drive-staging"
+# The Google Drive mirror on staging (liveworkspace/docs/drive.md).
+[[env.staging.services]]
+binding = "DRIVE"
+service = "liveworkspace-drive-staging"
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"

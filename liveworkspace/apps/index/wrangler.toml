@@ -94,7 +94,7 @@ name = "MIGRATION_LIMITER"
 namespace_id = "2106"
 simple = { limit = 60, period = 60 }
 
-# As production's: uncomment once liveworkspace-drive-staging is deployed.
-# [[env.staging.services]]
-# binding = "DRIVE"
-# service = "liveworkspace-drive-staging"
+# The Google Drive mirror on staging (liveworkspace/docs/drive.md).
+[[env.staging.services]]
+binding = "DRIVE"
+service = "liveworkspace-drive-staging"

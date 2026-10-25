@@ -38,9 +38,9 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   INDEX_KEY_DRIVE        the index's INDEX_KEY_DRIVE: acting for a person, and their drive_mirrored flag.
 [vars]
 ENVIRONMENT = "production"
-# Set by the owner once the Google Cloud project is carried over (liveworkspace/docs/drive.md "Google"):
-# 1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2.apps.googleusercontent.com. Empty: no Drive.
-GOOGLE_CLIENT_ID = ""
+# The liveworkspace Google Cloud project's web client (liveworkspace/docs/drive.md "Google"); one client for
+# every environment while the app is in Testing. Empty: no Drive.
+GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
 # liveworkspace's origin (the gateway's, docs/gateway.md): the consent's redirect URI (<this>/drive/connected), the
 # files' lwOrigin, Google's push address (<this>/api/drive/push), and where a refused return page goes.
 DRIVE_PUBLIC_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
@@ -77,8 +77,8 @@ workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
-# Staging's client: 1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com, set by the owner.
-GOOGLE_CLIENT_ID = ""
+# Production's client, which lists staging's addresses too.
+GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
 DRIVE_PUBLIC_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
