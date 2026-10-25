@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, type CSSProperties, type ReactNode } from 'react';
 import type { CatalogueBinding, StoredValue } from '@liveworkspace/settings/catalogue';
 import type { AccountHost, CatalogueSettingsViewProps } from './CatalogueSettingsView';
 import type { SettingsCategory } from './model';
@@ -18,7 +18,23 @@ export function preloadSettingsPanel(): void {
   void loadCatalogueView();
 }
 
-export type SettingsPanelApp = { id: SettingsAppId; name: string };
+// `live`: "live" in the app's wordmark in the header, on light and on dark (site.md "Settings" "The app's name").
+export type SettingsPanelApp = {
+  id: SettingsAppId;
+  name: string;
+  live?: { light: string; dark: string };
+};
+
+/** The panel's app from its entry in `@liveworkspace/sites`: its id, name and wordmark colours ("live" in its deep
+ *  shade on light, its accent on dark). */
+export function settingsPanelApp(site: {
+  id: SettingsAppId;
+  name: string;
+  deep: string;
+  accent: string;
+}): SettingsPanelApp {
+  return { id: site.id, name: site.name, live: { light: site.deep, dark: site.accent } };
+}
 
 // The one Settings panel (each app's docs/specs/007-editor/user-preferences.md "This app or All";
 // liveworkspace/docs/site.md "Settings"): every app's Settings and liveworkspace.app's render it, inside their own
@@ -86,8 +102,13 @@ export function SettingsPanel({
         allLogo={renderLogo('all')}
       />
     ) : undefined;
+  // Opened for an app, the title reads as the app's: its logo and wordmark, then "Settings".
+  const leading =
+    view.leading ??
+    (app ? <AppWordmark name={app.name} logo={renderLogo(app.id)} live={app.live} /> : undefined);
   const common = {
     ...view,
+    leading,
     switcher,
     focus,
     initialCategoryId,
@@ -124,5 +145,44 @@ export function SettingsPanel({
     >
       <CatalogueSettingsView key={shown} {...catalogueProps} />
     </Suspense>
+  );
+}
+
+// The app's logo and name, "live" in its accent as its own wordmark has it. A logotype: WCAG 1.4.3 sets text that is
+// part of a logo no contrast minimum, and the contrast audits skip it by this mark.
+function AppWordmark({
+  name,
+  logo,
+  live: colours,
+}: {
+  name: string;
+  logo: ReactNode;
+  live?: { light: string; dark: string } | undefined;
+}) {
+  const live = name.startsWith('live') ? 'live' : '';
+  return (
+    <span
+      data-settings-app-title=""
+      className="flex shrink-0 items-center gap-1.5 text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100 [&_svg]:size-5"
+    >
+      {logo}
+      <span data-logotype="">
+        {live ? (
+          <span
+            className={
+              colours ? 'text-[var(--live-light)] dark:text-[var(--live-dark)]' : undefined
+            }
+            style={
+              colours
+                ? ({ '--live-light': colours.light, '--live-dark': colours.dark } as CSSProperties)
+                : undefined
+            }
+          >
+            {live}
+          </span>
+        ) : null}
+        {name.slice(live.length)}
+      </span>
+    </span>
   );
 }

@@ -10,6 +10,7 @@ import {
   SETTINGS_DIALOG_CLASS,
   SETTINGS_DIALOG_SIZE,
   SettingsPanel,
+  settingsPanelApp,
   SettingsUiKitProvider,
   useSettingsScope,
   type AccountHost,
@@ -132,7 +133,7 @@ export default function SiteSettingsDialog({
     >
       <SettingsUiKitProvider kit={APP_SETTINGS_KIT}>
         <SettingsPanel
-          app={site && app ? { id: app, name: site.name } : null}
+          app={site && app ? settingsPanelApp({ ...site, id: app }) : null}
           scope={guest ? 'app' : scope}
           onScopeChange={setScope}
           allowAll={!guest}

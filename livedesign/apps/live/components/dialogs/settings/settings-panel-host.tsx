@@ -1,8 +1,12 @@
 'use client';
 
-import { bearerSettingsRequest, type SettingsAppId } from '@liveworkspace/settings-ui';
+import {
+  bearerSettingsRequest,
+  settingsPanelApp,
+  type SettingsAppId,
+} from '@liveworkspace/settings-ui';
 import { BrandMark } from '@livedesign/ui';
-import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
+import { APP_SITES, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
 import { currentBearer } from '@/lib/api/core';
 
 // What this editor hands the shared Settings panel (@liveworkspace/settings-ui SettingsPanel;
@@ -10,7 +14,7 @@ import { currentBearer } from '@/lib/api/core';
 // account's other settings. The other apps' settings are read and written over liveworkspace's account API through
 // this app's router (`/api/workspace/account`), with the person's access token, as the Explorer panel's teams are;
 // nothing is asked (or loaded) until All is first chosen, and what is read is kept for the page's lifetime.
-export const SETTINGS_APP = { id: 'livedesign.app', name: 'livedesign' } as const;
+export const SETTINGS_APP = settingsPanelApp({ ...siteOfApp('livedesign'), id: 'livedesign.app' });
 
 export const settingsRequest = bearerSettingsRequest({
   baseUrl: '/api/workspace/account',
