@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { LintFinding, LintReport } from '@livediagram/api-schema';
 import { LINT_MAX_LINES_PER_CODE } from './constants';
+import type { LintFindingOf, LintReportOf } from './findings';
 import { formatLintReport, lintFooterPart, lintSummaryLine, lintVerdict } from './format';
 import { quoteLabel } from './quote';
+
+type LintFinding = LintFindingOf<string>;
+type LintReport = LintReportOf<string>;
 
 const report = (
   over: Partial<LintReport> = {},

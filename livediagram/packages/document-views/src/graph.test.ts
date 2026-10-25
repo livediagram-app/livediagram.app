@@ -3,7 +3,7 @@ import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
-import { estimateTokens } from './budget';
+import { estimateTokens } from '@liveworkspace/document-views/budget';
 import { graphView } from './graph';
 import { buildViewModel } from './model';
 

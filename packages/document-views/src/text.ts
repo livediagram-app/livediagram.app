@@ -39,4 +39,4 @@ export function cellText(text: string, inEntity = false): string {
 }
 
 // `1 element`, `2 elements`: the shared wording, re-exported for this package's views.
-export { plural } from '@livediagram/document';
+export { plural } from '@liveworkspace/model-core/plural';

@@ -2,8 +2,8 @@
 // grammar", VW8, VW9, VW11).
 import type { Element } from '@livediagram/document';
 import type { ViewHeader, ViewName } from '@livediagram/api-schema';
-import { threadOf } from './fields';
-import { jsonString, plural } from './text';
+import { threadOf } from '@liveworkspace/document-views/fields';
+import { jsonString, plural } from '@liveworkspace/document-views/text';
 
 type ElementCounts = ViewHeader['counts'];
 export type HeaderFacts = Omit<ViewHeader, 'view'>;

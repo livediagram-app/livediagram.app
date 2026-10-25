@@ -9,9 +9,9 @@ import {
   type ViewDoor,
 } from '@livediagram/api-schema';
 import { resolveRef, type Element, type Tab } from '@livediagram/document';
-import type { ViewFit, ViewResult } from './budget';
+import type { ViewFit, ViewResult } from '@liveworkspace/document-views/budget';
 import { commentsView } from './comments';
-import { textField } from './fields';
+import { textField } from '@liveworkspace/document-views/fields';
 import { findView } from './find';
 import { graphView } from './graph';
 import { layoutView } from './layout';

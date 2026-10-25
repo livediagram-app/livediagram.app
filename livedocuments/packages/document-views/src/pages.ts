@@ -19,13 +19,18 @@ import {
   type PageKind,
 } from '@livedocuments/document';
 import { layoutCatalogueFor } from '@livedocuments/templates';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
-import { isObject } from './fields';
+import { isObject } from '@liveworkspace/document-views/fields';
 import { outlineLine } from './outline';
 import { shownFields } from './show';
-import { jsonString } from './text';
+import { jsonString } from '@liveworkspace/document-views/text';
 import { depthFirst } from './tree';
 
 type PagesOptions = { budget?: number; door?: ViewDoor };

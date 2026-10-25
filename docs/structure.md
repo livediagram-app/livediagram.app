@@ -185,7 +185,17 @@ Each step is its own PR, and both products build and pass their tests after ever
      client provider. It keeps its articles and illustrations, catalogue, card art, header and footer,
      home layout and page copy. The help pages' tints now follow each product's brand (livedocuments and
      livedesign had kept livediagram's sky).
-   - `diagram-lint` and `document-views` are not done yet.
+   - `diagram-lint` and `document-views` were mostly typed on each product's element union, so only what reads no
+     product's elements moved. `@liveworkspace/document-views` holds the view text helpers (`text`, with livediagram's
+     newer `cellText`), field reads, view attributes, budgets and elision (with the `ViewDoor` and `Elision` shapes they
+     read, the same as each `api-schema`'s), reading order and freehand runs over any element, and the shared view
+     constants. `@liveworkspace/diagram-lint` holds the report text over a product's own codes, label quoting, the
+     logger, the shared `LINT_*` numbers and `createSortFindings`: 22 files, about 1,200 lines with their tests, about
+     1,100 lines fewer in each product. Each product's package keeps its name and surface, binds `Placed` and
+     `FreehandRun` to its `Element` and `sortFindings` to its `LINT_CODES` and `LINT_SEVERITY`. Still in each product:
+     the views, the lint context and checks, typed on its `Element` and `Tab`, and the wire types in its `api-schema`,
+     whose lint codes and view names really differ (livediagram's group, aspect and colour checks, livedocuments'
+     `pages` view).
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
    - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`

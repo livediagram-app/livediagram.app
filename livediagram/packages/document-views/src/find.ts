@@ -2,14 +2,26 @@
 // holds the query, each under its container chain. Substring only, so no pattern reaches a regex engine.
 import { FIND_FIELDS, type FindField, type FindView, type ViewDoor } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { ownLineText, type ViewEdge } from './edges';
-import { arrayField, isObject, listOf, stringField, textField, threadOf } from './fields';
+import {
+  arrayField,
+  isObject,
+  listOf,
+  stringField,
+  textField,
+  threadOf,
+} from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { outlineLine } from './outline';
-import { jsonString, plural } from './text';
+import { jsonString, plural } from '@liveworkspace/document-views/text';
 import { depthFirst, type ViewNode } from './tree';
 
 export type FindOptions = { budget?: number; door?: ViewDoor };

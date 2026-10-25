@@ -2,9 +2,14 @@
 // line per tab, built from each tab's header facts so the caller never holds every tab body at once.
 import type { OverviewView, ViewDoor } from '@livediagram/api-schema';
 import { computeRefs } from '@livediagram/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { headerSegments, type HeaderFacts } from './header';
-import { jsonString, plural } from './text';
+import { jsonString, plural } from '@liveworkspace/document-views/text';
 
 type OverviewDocument = { id: string; name: string; savedAt: number };
 // A tab outside a tab-scoped visitor's scope is named by its id alone; its body is never read.

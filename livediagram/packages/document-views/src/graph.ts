@@ -1,13 +1,18 @@
 // The graph view (docs/specs/024-agents/blueprints/document-views.md "graph", VW30): the elements an
 // arrow touches, then every arrow in its stored direction with its ref.
 import type { GraphView, ViewDoor } from '@livediagram/api-schema';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
-import { textField } from './fields';
+import { textField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
-import { jsonString } from './text';
+import { jsonString } from '@liveworkspace/document-views/text';
 import { depthFirst, type ViewNode } from './tree';
 import { pinnedIds } from './visibility';
 

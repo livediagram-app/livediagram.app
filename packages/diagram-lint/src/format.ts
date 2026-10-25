@@ -1,12 +1,17 @@
 // The lint as text (blueprint "Presentation and UX", LN19 to LN22): one summary line, then one finding a
 // line, refs first and the fix last; the verdict a changeset's footer carries.
 
-import type { LintCode, LintFinding, LintReport, LintSeverity } from '@livedocuments/api-schema';
+// It reads any product's report: the codes are only printed and counted.
+
+import { plural } from '@liveworkspace/model-core/plural';
 import { LINT_MAX_LINES_PER_CODE, LINT_MESSAGE_COLUMN_MAX } from './constants';
-import { plural } from '@livedocuments/document';
+import type { LintFindingOf, LintReportOf, LintSeverity } from './findings';
+
+type LintReport = LintReportOf<string>;
+type LintFinding = LintFindingOf<string>;
 
 const LETTER: Readonly<Record<LintSeverity, string>> = { error: 'E', warning: 'W', info: 'I' };
-// The longest code.
+// The longest code any product has (`group-split-edges`).
 const CODE_COLUMN = 17;
 
 // `clean`, or the non-zero severity counts.
@@ -38,11 +43,11 @@ export function lintFooterPart(report: LintReport | null): string {
 // The findings each code prints, at most LINT_MAX_LINES_PER_CODE, and how many more there are (LN20).
 function printed(findings: readonly LintFinding[]): {
   shown: LintFinding[];
-  more: Map<LintCode, number>;
+  more: Map<string, number>;
 } {
-  const seen = new Map<LintCode, number>();
+  const seen = new Map<string, number>();
   const shown: LintFinding[] = [];
-  const more = new Map<LintCode, number>();
+  const more = new Map<string, number>();
   for (const finding of findings) {
     const n = (seen.get(finding.code) ?? 0) + 1;
     seen.set(finding.code, n);

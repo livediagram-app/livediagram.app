@@ -2,12 +2,22 @@
 // in the outline's order, every comment in full; resolved threads counted, or shown with `all`.
 import type { CommentsView, ViewDoor } from '@livedocuments/api-schema';
 import type { Element } from '@livedocuments/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
-import { numberField, stringField, textField, threadOf } from './fields';
+import {
+  numberField,
+  stringField,
+  textField,
+  threadOf,
+} from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
-import { attrValue, jsonString } from './text';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
 import { depthFirst } from './tree';
 
 type CommentsOptions = { budget?: number; door?: ViewDoor; all?: boolean };

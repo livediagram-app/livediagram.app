@@ -10,10 +10,14 @@ import {
   stringField,
   textField,
   threadOf,
-} from './fields';
+} from '@liveworkspace/document-views/fields';
 import { styleAttributesOf, type StyleBaselines } from './style-attributes';
-import { attrValue, jsonString } from './text';
-import { countAttribute, flagAttribute, type ViewAttribute } from './view-attribute';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
+import {
+  countAttribute,
+  flagAttribute,
+  type ViewAttribute,
+} from '@liveworkspace/document-views/view-attribute';
 
 export type AttributeContext = {
   tabRefOf: (tabId: string) => string;

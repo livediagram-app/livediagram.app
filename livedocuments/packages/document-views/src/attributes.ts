@@ -2,10 +2,20 @@
 // "Attributes", VW14): draft, icon, link, alt, locked, action, note, comments, then style.
 import type { Element } from '@livedocuments/document';
 import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
-import { flagField, objectField, stringField, textField, threadOf } from './fields';
+import {
+  flagField,
+  objectField,
+  stringField,
+  textField,
+  threadOf,
+} from '@liveworkspace/document-views/fields';
 import { styleAttributesOf, type StyleBaselines } from './style-attributes';
-import { attrValue, jsonString } from './text';
-import { countAttribute, flagAttribute, type ViewAttribute } from './view-attribute';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
+import {
+  countAttribute,
+  flagAttribute,
+  type ViewAttribute,
+} from '@liveworkspace/document-views/view-attribute';
 
 export type AttributeContext = {
   tabRefOf: (tabId: string) => string;

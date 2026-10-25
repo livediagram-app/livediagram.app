@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livedocuments/document';
 import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
-import { estimateTokens } from './budget';
+import { estimateTokens } from '@liveworkspace/document-views/budget';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 

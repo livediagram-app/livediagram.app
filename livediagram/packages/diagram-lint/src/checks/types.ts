@@ -4,7 +4,7 @@
 import type { LintCode } from '@livediagram/api-schema';
 import type { Point } from '@livediagram/document';
 import type { LintContext } from '../context';
-import type { LintLogger } from '../log';
+import type { LintLogger } from '@liveworkspace/diagram-lint/log';
 import type { Crossings } from '../measures';
 
 export type RawFinding = {

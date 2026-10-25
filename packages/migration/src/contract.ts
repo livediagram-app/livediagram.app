@@ -219,3 +219,81 @@ export type LegacyGuestClaimAnswer =
 
 /** The signing rule's cut-over on the old site (its GUEST_SIGNING_LIVE_AT): 2026-09-25 12:00 UTC. */
 export const LEGACY_GUEST_SIGNING_LIVE_AT = 1790337600000;
+
+// ---- The splitter's input and hooks (./split) ------------------------------------------------------------------------
+
+/** One old document as the migrate tool reads it from the snapshot: its `documents` row, its tabs through
+ *  `document_tabs` (in order), its Plan rows, changesets and image grants. Times are epoch ms, as stored. */
+export type OldDocumentInput = {
+  document: {
+    id: string;
+    /** The old owner id (a Clerk id, or a guest's bare UUID). */
+    ownerId: string;
+    name: string;
+    teamId: string | null;
+    source: string | null;
+    presentation: string | null;
+    savedAt: number;
+    createdAt: number;
+    trashedAt: number | null;
+    opensIn: string | null;
+    tabKind: string | null;
+    templateFamily: string | null;
+  };
+  tabs: {
+    id: string;
+    name: string;
+    /** The stored body JSON (`tabs.data`: the tab without `id`, `name` and `folder`), raw. */
+    data: string;
+    updatedAt: number;
+    orderIndex: number;
+    addedAt: number;
+    folder: string | null;
+    elementCount: number | null;
+  }[];
+  /** The document's Plan rows (items are the document's, sheets and form links name their tab), or null. */
+  plan: MigrationPlanData | null;
+  changesets: MigrationChangeset[];
+  imageGrants: { imageId: string; createdAt: number }[];
+};
+
+/** What the splitter needs of the products, handed in so it imports none of them. */
+export type SplitHooks = {
+  /** A fresh id for a part made by the split (a UUID). Deterministic in the tool, so a bundle can be planned twice
+   *  with the same answer. */
+  newId(seed: string): string;
+  /** The owner map: an old owner id to its new one. */
+  ownerOf(oldOwnerId: string): string;
+  /** livediagram's stored-tab upgrades, without its Pages and Plan drops: an old body in, the same content in
+   *  today's shape out. */
+  upgradeTab(body: Record<string, unknown>): Record<string, unknown>;
+  /** Each page's rectangle on the tab's canvas, in canvas units, for a Pages tab (empty when it has none). */
+  pageRects(
+    body: Record<string, unknown>,
+  ): { pageId: string; x: number; y: number; width: number; height: number }[];
+  /** The media owner of an image the document places, for `imageOwners` (null when the image is unknown). */
+  imageOwner(imageId: string): string | null;
+};
+
+export type SplitResult = {
+  /** One payload per app the document had content for. The first keeps the old id. */
+  parts: MigrationRoomPayload[];
+  /** Where the parts went, or null when the whole document went to one app under its old id. */
+  moved: MovedParts | null;
+  crossReferences: CrossReference[];
+  /** Anything the report should show: content that had nowhere to go, a page kind that was guessed. */
+  notes: string[];
+};
+
+/** A browser's Local only document, as the old editor kept it in IndexedDB (`livediagram-offline`, store
+ *  `documents`): tabs inline, each with its `id` and `name`. */
+export type LocalDocumentInput = { id: string; name: string; tabs: unknown[] };
+
+export type LocalSplitResult = {
+  /** The tabs the local document keeps (livediagram's), raw. */
+  keep: unknown[];
+  /** One payload per other app; their ids are fresh, their owner is set by the api to the caller. */
+  parts: MigrationRoomPayload[];
+  crossReferences: CrossReference[];
+  notes: string[];
+};

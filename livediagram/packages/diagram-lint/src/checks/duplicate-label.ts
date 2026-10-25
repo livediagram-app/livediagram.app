@@ -6,7 +6,7 @@
 import type { BoxedElement } from '@livediagram/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
-import { quoteLabel } from '../quote';
+import { quoteLabel } from '@liveworkspace/diagram-lint/quote';
 import type { Check } from './types';
 
 const keyOf = (label: string) => label.trim().replace(/\s+/g, ' ').toLowerCase();
