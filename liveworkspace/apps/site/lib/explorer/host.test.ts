@@ -74,7 +74,7 @@ describe("every app's addresses", () => {
     expect(helpHrefFor('livediagram')({ kind: 'home' })).toBe(
       'https://www.livediagram.app/help/explorer/explorer-page/',
     );
-    expect(offlineHref('liveplanner')).toBe('https://www.liveplanner.app/offline');
+    expect(offlineHref('liveplanner')).toBe('https://www.liveplanner.app/explorer/offline');
   });
 });
 

@@ -112,7 +112,7 @@ import {
 } from '@/lib/explorer/telemetry';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { heroHasRoom, loadHeroArt } from '@/lib/explorer/hero';
-import { loadWelcome } from '@/lib/explorer/welcome';
+import { loadPlatformWelcome, loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { loadCatalogue, type AppId } from '@/lib/app-settings';
 import { preloadSettingsPanel } from '@liveworkspace/settings-ui';
@@ -127,8 +127,7 @@ const SiteSettingsDialog = lazy(loadSettings);
 // The toasts and a guest's sign-in banner stand on the bottom bar.
 const FLOOR = { '--explorer-floor': EXPLORER_FLOOR } as CSSProperties;
 
-// The kind New makes, and "this app", for a person who came from no app and has used none here: the first app on the
-// index.
+// The kind New makes, and "this app", for a person who came from no app and has used none here.
 const FALLBACK_APP: AppName = 'liveplanner';
 // The filter's logos: the app's prism in its accent, and liveworkspace's own (the Wordmark's) for All Apps.
 const renderAppLogo: RenderAppLogo = (app) => (
@@ -342,11 +341,16 @@ export function ExplorerShell() {
   // Its "Import from" sources, each opening the app's /import page (stable per app).
   const imports = importsHost(app);
 
+  // In no app (liveworkspace.app reached from no app) the page is liveworkspace's own: its first run greets to
+  // liveworkspace and offers every app's starts (one-explorer.md).
+  const inNoApp = !arrived.app;
   // Home's first run: the app's starts, loaded only once Home finds nothing.
   const [loaded, setLoaded] = useState<{ app: AppName; manifest: WelcomeManifest } | null>(null);
   const onFirstRun = useCallback(() => {
-    void loadWelcome(app).then((manifest) => manifest && setLoaded({ app, manifest }));
-  }, [app]);
+    void (inNoApp ? loadPlatformWelcome(app) : loadWelcome(app)).then(
+      (manifest) => manifest && setLoaded({ app, manifest }),
+    );
+  }, [app, inNoApp]);
   const signedIn = identity?.kind === 'account';
   // Signing in comes back here: through the app's own sign-in on its address.
   const explorerSignInHref = host

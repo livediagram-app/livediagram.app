@@ -90,7 +90,8 @@ at each app's own `/explorer` (see [The Explorer on each app's address](#the-exp
 The page wears the colours of the app the person came from, its header shows the
 liveworkspace logo and then that app's logo (which leads back), and a filter shows "this app's items" or
 "All Apps". Reached on liveworkspace.app from no app (its account menu's **Explorer**, say), it is in no app and
-shows every app's items, All Apps. Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
+shows every app's items, All Apps, and a first run there greets the person to liveworkspace ("Welcome to
+liveworkspace."), never to the app whose starts it shows. Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
 
 Under All Apps each row, card and Timeline entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
 rest in the app's accent with each face at its own opacity (`BrandGlyph` from `@liveworkspace/brand`), never a
@@ -162,6 +163,8 @@ The page reads where it is from its own address and there is that app's page:
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
   Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
+  liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
+  to the app's own `/explorer/offline`, never the app's bare `offlinePath` page, which only takes hand-overs.
 - **Take Offline and Sync.** Where the app's This Browser page runs them (the registry's `offlineConversions`),
   each of the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live
   This Browser row has **Sync** for a person signed in. Only the app can write its offline store, so both hand over

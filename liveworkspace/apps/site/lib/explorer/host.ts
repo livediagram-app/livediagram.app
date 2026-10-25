@@ -116,10 +116,11 @@ export function newItemHref(app: App, placement: Placement | null): string {
   return `${appUrl(app)}${APP_ITEMS[app].newPath}${query ? `?${query}` : ''}`;
 }
 
-/** The app's view of what it keeps only in this browser, or null when it has none. */
+/** The app's view of what it keeps only in this browser: This Browser in the Explorer on the app's address, which can
+ *  read the app's list (one-explorer.md "This Browser"). Null for an app that keeps nothing there. The bare
+ *  `offlinePath` page is only the hand-over for Take Offline and Sync. */
 export function offlineHref(app: App): string | null {
-  const path = APP_ITEMS[app].offlinePath;
-  return path ? `${appUrl(app)}${path}` : null;
+  return APP_ITEMS[app].offlinePath ? `${appUrl(app)}/explorer/offline` : null;
 }
 
 // Each view's Help article, in the app's own help centre (every app's has the Explorer's articles).
