@@ -45,21 +45,25 @@ facts, and workbench code reads them through `workbench` (`workbench.track(…)`
 | Binding             | What it is                                                                                   | Read by                                                                          |
 | ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `debugKey`          | the localStorage key of the debug flag (`<product>:debug`)                                   | `lib/debug-log`                                                                  |
-| `track`             | the product's telemetry `track`, typed on the events workbench code sends                    | `lib/stale-build-navigation`                                                     |
+| `track`             | the product's telemetry `track`, typed on the events workbench code sends                    | `lib/stale-build-navigation`, `hooks/canvas/useZoomControls`                     |
 | `reloadGuardKey`    | the sessionStorage key of the one reload guard (`<product>:stale-chunk-reloads`)             | `lib/reload-guard`                                                               |
 | `appRecoveryFlag`   | the window flag the app's chunk recovery sets (`__<product>ChunkRecovery`)                   | `lib/stale-build-navigation`                                                     |
 | `formatLogScope`    | the fingerprint of the stored format (`document-format`, `project-format`, …)                | `lib/reload-when-saved`                                                          |
 | `runningStaleBuild` | whether this page runs an older build than the live one (the product's server-release)       | `lib/stale-build-navigation`                                                     |
 | `readPreferences`   | the person's preferences, as far as workbench code reads them (`reduceMotion`)               | `hooks/ui/useReduceMotion`                                                       |
 | `api`               | the product's api transport: `fetch`, `headers`, `expectOk`, `expectOkVoid`, `currentBearer` | `lib/api/oauth`, `lib/api/tokens`, `lib/index-client`, `lib/explorer-teams-host` |
-| `zoomMax`           | the canvas's zoom ceiling now (livedesign raises it for a photo page)                        | `lib/double-tap-zoom`                                                            |
+| `zoomMax`           | the canvas's zoom ceiling now (livedesign raises it for a photo page)                        | `lib/double-tap-zoom`, `hooks/canvas/useZoomControls`                            |
 
 The rules:
 
 - **Types stay precise.** `track` takes the narrow subset of events workbench code sends
   (`WorkbenchTelemetryCategory`, `WorkbenchTelemetryAction`), so a product's wider `track` binds as it
   is and typecheck fails if its vocabulary ever drops one. `readPreferences` answers the subset type
-  it reads. No `any`.
+  it reads. No `any`. Where a module was the same but for a type or a constant every product
+  shares, that moved here instead and the product re-exports it: `ApiError` (`lib/api/api-error`,
+  re-exported by each `lib/api/core.ts`), `QuickConnectDirection` (`lib/quick-connect`) and the zoom
+  bounds (`lib/zoom-range`, re-exported by each `lib/canvas.ts`); UI scale is typed on
+  `UiScalePreferences`, the four keys it reads.
 - **Configured before it is read.** The editor calls its `bindWorkbench()` at module scope in its
   root providers (`components/providers/AuthProvider.tsx`) and in `app/global-error.tsx`, the one
   page outside the root layout. Both evaluate before any component renders, and workbench code
@@ -67,8 +71,9 @@ The rules:
   module-level singleton reads it lazily (`getToken: () => workbench.api.currentBearer()`).
 - **Safe when unconfigured.** Every binding has a typed default: `track` does nothing, the keys
   are `workbench:`-prefixed, `api` refuses with an error rather than sending an anonymous request.
-  Tests run on the defaults unless they configure their own, and a development build warns once
-  if workbench code reads a binding before `configureWorkbench`.
+  Tests run on the defaults unless they configure their own (`lib/testing/bindings` builds a full
+  set from a few), and a development build warns once if workbench code reads a binding before
+  `configureWorkbench`.
 - **A product's facts stay the product's.** Its keys are constants in its `lib/workbench-keys.ts`
   (no imports, so its pre-boot scripts and e2e fixtures read them too); never change one in place,
   since people's saved flags live under it. A product difference becomes a binding value, never a
