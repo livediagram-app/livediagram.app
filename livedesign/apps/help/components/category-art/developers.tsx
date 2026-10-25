@@ -1,5 +1,5 @@
 import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
-import { MiniWireframe } from './design-parts';
+import { MiniWireframe } from '@liveworkspace/help-site/art/work';
 
 // Developers: the shared scene (docs/specs/018-help/help-pages.md "Category art"). `POST /api/designs` with one tab
 // from the `wireframe-mobile-app` template (the CLI article's `design create "Coffee app" --template

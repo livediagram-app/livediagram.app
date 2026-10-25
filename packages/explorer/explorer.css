@@ -161,3 +161,42 @@
     animation: none;
   }
 }
+
+/* Home's hero tiles (src/hero/WorkKinds.tsx): each picture draws in its own app's brand ramp, whatever the host's,
+   from the `--wk-*` steps its tile sets. In dark the picture turns as the help centres' art does (help-art.css): the
+   paper goes dark, the ink light, pale tints become tinted wells. Literal colours, never the tokens being redefined,
+   so nothing refers to itself. `help-art-as-drawn` keeps a part's colours in both appearances. */
+.lw-work-art {
+  --color-brand-50: var(--wk-50);
+  --color-brand-100: var(--wk-100);
+  --color-brand-200: var(--wk-200);
+  --color-brand-300: var(--wk-300);
+  --color-brand-400: var(--wk-400);
+  --color-brand-500: var(--wk-500);
+  --color-brand-600: var(--wk-600);
+  --color-brand-700: var(--wk-700);
+}
+.dark .lw-work-art {
+  --color-white: #0f172a;
+  --color-slate-50: #020617;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-brand-50: color-mix(in oklab, var(--wk-500) 16%, #1e293b);
+  --color-brand-100: color-mix(in oklab, var(--wk-500) 28%, #0f172a);
+  --color-brand-200: color-mix(in oklab, var(--wk-500) 45%, #0f172a);
+  --color-brand-300: var(--wk-400);
+  --color-amber-100: color-mix(in oklab, #f59e0b 22%, #0f172a);
+  --color-amber-200: color-mix(in oklab, #f59e0b 40%, #0f172a);
+  --color-emerald-100: color-mix(in oklab, #10b981 22%, #0f172a);
+  --color-emerald-200: color-mix(in oklab, #10b981 40%, #0f172a);
+  --color-sky-200: color-mix(in oklab, #0ea5e9 40%, #0f172a);
+  --color-violet-100: color-mix(in oklab, #8b5cf6 22%, #0f172a);
+}
+.dark .lw-work-art .help-art-as-drawn {
+  --color-white: #ffffff;
+}

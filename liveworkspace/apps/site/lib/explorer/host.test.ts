@@ -14,6 +14,7 @@ import {
   retiredTarget,
   settingsOpening,
   shareUrl,
+  templateHref,
 } from './host';
 
 const item = (over: Partial<Item>): Item => ({ id: 'p1', app: 'liveplanner', ...over }) as Item;
@@ -65,6 +66,9 @@ describe("every app's addresses", () => {
       'https://www.liveplanner.app/new?folder=f1&team=t1',
     );
     expect(newItemHref('livedesign', null)).toBe('https://www.livedesign.app/new');
+    expect(templateHref('livedesign', 'blank-logo')).toBe(
+      'https://www.livedesign.app/new?template=blank-logo',
+    );
     expect(shareUrl({ code: 'xyz' } as never, item({}))).toBe(
       'https://www.liveplanner.app/project/shared?s=xyz',
     );

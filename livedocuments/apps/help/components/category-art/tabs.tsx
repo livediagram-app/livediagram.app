@@ -1,6 +1,6 @@
 import { Label } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
-import { MiniSlide } from './page-parts';
+import { MiniSlide } from '@liveworkspace/help-site/art/work';
 
 const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Overview', x: 52, w: 72 },

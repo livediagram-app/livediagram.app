@@ -1,5 +1,5 @@
 import { SupportedDevicesArt as Scene } from '@liveworkspace/help-site/art/scenes/supported-devices';
-import { MiniLogo } from './design-parts';
+import { MiniLogo } from '@liveworkspace/help-site/art/work';
 
 // Supported Devices: the shared scene (docs/specs/018-help/help-pages.md "Category art"), one logo artboard on a
 // computer, a tablet and a phone, on the canvas's grey.

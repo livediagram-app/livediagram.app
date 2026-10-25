@@ -14,7 +14,7 @@ brings, in one screen: "what was I working on?" and "what happened while I was a
 ## Layout
 
 Home reads as the front page of the person's work, in the marketing site's visual language: the dotted
-backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and fanned sheets
+backdrop, a heavy display heading, pills with a coloured dot, the glowing search field and the pictures of what it makes
 ([Design principles](../004-interface-design/design-principles.md)).
 
 - **The hero** opens the page ([The hero](#the-hero)): a full-width band under the Explorer header, above the
@@ -56,17 +56,10 @@ Top to bottom, left column:
   Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
   after what was typed, so the typing carries on uninterrupted.
 
-The right column, on a wide screen only (`lg` and up), shows **fanned sheets**: three template previews
-(`HERO_FAN` in `apps/live/components/panels/home/HeroTemplateFan.tsx`: a logo in front, a mobile-app and a website
-wireframe behind, turned out to either side), each on a white sheet with a soft shadow. **Nothing is fetched** to
-draw them. They are decoration (hidden from assistive technology, not links): Jump Back In is the way in.
-
-On liveworkspace.app, which carries none of the editor's code, the same previews ship as data in
-`packages/templates/hero.json` (the templates package's `hero.json` export), written from these components by
-[`hero-manifest.test.tsx`](../../../apps/live/components/panels/home/hero-manifest.test.tsx) through
-`@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx`
-in `apps/live`; without it the test fails when the file has drifted), and drawn there by the Explorer's `HeroArt`,
-loaded only on a wide screen.
+Beside the field (from `lg` up) or under it, the hero shows **what livedesign makes**: a **Logo**, an **App
+Wireframe**, a **Web Wireframe** and a **Photo**, each a small picture in livedesign's rose with its name, laid out
+as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-logo`, `blank-wireframe-phone`,
+`blank-wireframe-browser`, `photo-edit`). **Nothing is fetched** to draw them.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again. Each runs over the `long` motion token
@@ -122,7 +115,7 @@ The hero speaks to a beginning:
 - **The field searches templates**, not designs (there are none): its placeholder is "Search templates", and
   Enter opens the New Design wizard with the words in its template search (`/new?q=`). Inside its right end,
   **Start Blank** makes a blank Pages design with its start closed (`/new?start=blank`).
-- **The fanned sheets** show three Pages template previews, the marketing hero's fan, so the page shows what can be made.
+- **What it makes**: the same four pictures as the ordinary hero, so a first run shows what can be made.
 
 Under it, beside the sidebar, Home holds three sections in place of Jump Back In and What Happened:
 

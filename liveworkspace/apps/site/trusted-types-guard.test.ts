@@ -40,9 +40,6 @@ const files = [
 ].map((f) => f.slice(root.length));
 const text = (f: string) => read(`${root}${f}`);
 
-// Never in a page: the hero manifest's builder runs only in the apps' tests, under jsdom (its own entry).
-const TEST_ONLY = new Set(['packages/explorer/src/hero/manifest.tsx']);
-
 const htmlExpressions = (source: string) =>
   [...source.matchAll(/dangerouslySetInnerHTML=\{\{\s*__html:\s*/g)].map((m) =>
     source.slice(m.index + m[0].length, m.index + m[0].length + 40),
@@ -59,18 +56,16 @@ describe('Trusted Types sinks', () => {
   });
 
   it('write markup straight into the DOM only through trustedHtml', () => {
-    const raw = files
-      .filter((f) => !TEST_ONLY.has(f))
-      .flatMap((f) =>
-        [...text(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
-          .filter((m) => {
-            const rest = text(f).slice(m.index + m[0].length);
-            return m[0].startsWith('insertAdjacentHTML')
-              ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
-              : !rest.startsWith('trustedHtml(');
-          })
-          .map((m) => `${f}: ${m[0]}`),
-      );
+    const raw = files.flatMap((f) =>
+      [...text(f).matchAll(/\.(?:innerHTML|outerHTML)\s*=(?!=)\s*|\binsertAdjacentHTML\(/g)]
+        .filter((m) => {
+          const rest = text(f).slice(m.index + m[0].length);
+          return m[0].startsWith('insertAdjacentHTML')
+            ? !/^[^,]*,\s*trustedHtml\(/.test(rest)
+            : !rest.startsWith('trustedHtml(');
+        })
+        .map((m) => `${f}: ${m[0]}`),
+    );
     expect(raw).toEqual([]);
   });
 

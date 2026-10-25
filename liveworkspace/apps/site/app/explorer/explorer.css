@@ -9,11 +9,6 @@
 @source './';
 @source '../../components/explorer';
 /* The bottom bar's Appearance switch, so its wide-screen label's classes sort with this sheet's own. */
-/* Home's hero art: the classes an app's hero manifest draws with (lib/explorer/hero.ts). */
-@source '../../node_modules/@liveplanner/templates/hero.json';
-@source '../../node_modules/@livedocuments/templates/hero.json';
-@source '../../node_modules/@livediagram/templates/hero.json';
-@source '../../node_modules/@livedesign/templates/hero.json';
 
 /* The Explorer wears the colours of the app the person came from: its brand ramp, light and dark, as that app's
  * tailwind-config has it. Arrived directly, the platform's slate. */

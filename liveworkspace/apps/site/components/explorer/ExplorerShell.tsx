@@ -37,11 +37,9 @@ import {
   createExplorerAccounts,
   createTeamsHost,
   Explorer,
-  HeroArt,
   viewFromLocation,
   type AppFilter,
   type ExplorerView,
-  type HeroArtManifest,
   type LinkComponent,
   type NavigateOptions,
   type Placement,
@@ -68,6 +66,7 @@ import {
   defaultFolderOptionsFor,
   lensTemplatesFor,
   newItemHref,
+  templateHref,
   offlineHref,
   readLastApp,
   rememberApp,
@@ -106,7 +105,6 @@ import {
   trackWelcomeOpened,
 } from '@/lib/explorer/telemetry';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
-import { heroHasRoom, loadHeroArt } from '@/lib/explorer/hero';
 import { loadPlatformWelcome, loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { loadCatalogue, type AppId } from '@/lib/app-settings';
@@ -357,21 +355,6 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
-  // Home's hero art: the app's pictures, loaded once Home shows its hero with room for them.
-  const [art, setArt] = useState<{ app: AppName; art: HeroArtManifest } | null>(null);
-  const wantsArt = view.kind === 'home' && !settings.heroHidden;
-  useEffect(() => {
-    if (!wantsArt || !heroHasRoom()) return;
-    let live = true;
-    void loadHeroArt(app).then((loadedArt) => live && loadedArt && setArt({ app, art: loadedArt }));
-    return () => {
-      live = false;
-    };
-  }, [app, wantsArt]);
-  const heroArt = useMemo(
-    () => (art?.app === app ? <HeroArt art={art.art} /> : undefined),
-    [art, app],
-  );
   const share = useMemo(() => shareHostFor(app), [app]);
   const inbox = useMemo(() => ({ ...inboxHost, onTelemetry: trackInbox }), []);
   const signInBanner = useMemo(
@@ -551,7 +534,7 @@ export function ExplorerShell() {
           helpHref={helpHref}
           trashedOnArrival={trashed}
           welcome={welcome}
-          heroArt={heroArt}
+          templateHref={templateHref}
           sidebarLinks={sidebarLinks}
           thisBrowser={thisBrowser}
           allLabel="All Apps"

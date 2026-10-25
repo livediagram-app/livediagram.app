@@ -298,33 +298,3 @@ export function WelcomeSearch() {
     </form>
   );
 }
-
-/** The hero's art on a first run: three of the starts' previews fanned, the front one first. */
-export function WelcomeFan() {
-  const { welcome } = useFirstRun();
-  const m = welcome?.manifest;
-  if (!m) return null;
-  const all = [...m.blanks, ...m.popular];
-  const fan = m.fan.flatMap((id) => all.filter((s) => s.id === id)).slice(0, 3);
-  // Back to front: the last drawn sits on top.
-  const places = [
-    'left-[4%] top-[14%] -rotate-6',
-    'right-[2%] top-[2%] rotate-6',
-    'left-[20%] top-[22%] rotate-0',
-  ];
-  const order = [fan[1], fan[2], fan[0]];
-  return (
-    <div aria-hidden className="relative h-full w-full" data-welcome-fan="">
-      {order.map((s, i) =>
-        s ? (
-          <span
-            key={s.id}
-            className={`absolute h-[62%] w-[58%] rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_48px_-24px_color-mix(in_oklab,var(--color-brand-700)_45%,transparent)] dark:border-slate-700 dark:bg-slate-800 ${places[i]}`}
-          >
-            <StartPicture start={s} />
-          </span>
-        ) : null,
-      )}
-    </div>
-  );
-}

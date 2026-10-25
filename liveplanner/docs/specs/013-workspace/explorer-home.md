@@ -24,21 +24,11 @@ Top to bottom, left column:
   drawn, so the page never shows two. Typing in it opens Search results, and the header's field there takes the
   focus with the caret after what was typed, so the typing carries on uninterrupted.
 
-The right column, on a wide screen only (`lg` and up), shows **fanned previews** of what a plan holds
-([`apps/editor/components/panels/home/HeroFeatureFan.tsx`](../../../apps/editor/components/panels/home/HeroFeatureFan.tsx), the Explorer's `heroArt`): a **Board**, a **Sheet**, a **Dashboard** and a **Form**, the Board and the Sheet behind
-turned out to either side, the Dashboard and the Form in front, each on a white sheet with a soft shadow and its name
-in a small pill. They are the same for everyone: static art drawn from the pictures Start Planning offers
-([Plan mode](../026-plan/plan-mode.md) "Starting a board"), in the page's light or dark look, and **nothing is
-fetched** to draw them. They are not links: Jump Back In is the way in. For assistive technology they are one group,
-"What a plan can hold", of four images named Board, Sheet, Dashboard and Form. Their one motion is a short fade as
-they land, and none under reduced motion. On a phone or a tablet the column is not drawn.
-
-The Explorer lays the sheets out (`HeroSheets` in `@liveworkspace/explorer`); the editor hands it the pictures. For
-liveworkspace.app, which carries none of the editor's code, the same pictures ship as data in
-`packages/templates/hero.json` (the templates package's `hero.json` export), written from these components by
-[`hero-manifest.test.tsx`](../../../apps/editor/components/panels/home/hero-manifest.test.tsx)
-(`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx` in `apps/editor`; without it the test
-fails when the file has drifted), and drawn there by the Explorer's `HeroArt`, loaded only on a wide screen.
+Beside the field (from `lg` up) or under it, the hero shows **what a plan can hold**: a **Board**, a **Sheet**, a
+**Dashboard** and a **Form**, each a small picture in liveplanner's violet with its name, laid out as every app's are
+([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one: the Board a Kanban board (`/new?template=kanban`), the Sheet a blank spreadsheet
+(`blank-spreadsheet`), the Dashboard the Project Planner, whose Overview tab is a dashboard (`project-planner`), and the
+Form a blank form (`blank-form`). **Nothing is fetched** to draw them.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again, over the `long` motion token

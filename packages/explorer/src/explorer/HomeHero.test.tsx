@@ -203,9 +203,38 @@ describe('Home’s hero', () => {
     expect(onCreate).toHaveBeenCalledWith({ folderId: null, teamId: null });
   });
 
-  it('draws the host’s art on its right', async () => {
-    renderHome(createFakeIndex(), { heroArt: <div role="img" aria-label="Previews" /> });
-    expect(await screen.findByRole('img', { name: 'Previews' })).toBeTruthy();
+  it('shows what the app makes, each kind starting its template through the host', async () => {
+    renderHome(createFakeIndex(), {
+      templateHref: (app, template) => `https://${app}.test/new?template=${template}`,
+    });
+    const set = await screen.findByRole('region', { name: 'What you can make' });
+    expect(within(set).getByRole('link', { name: 'New Board' }).getAttribute('href')).toBe(
+      'https://liveplanner.test/new?template=kanban',
+    );
+    expect(set.closest('[data-home-hero]')).toBeTruthy();
+  });
+
+  it('shows the same set on a first run', async () => {
+    renderHome(createFakeIndex(), {
+      welcome: {
+        manifest: {
+          name: 'liveplanner',
+          pillFree: 'Free',
+          blanks: [],
+          popular: [],
+          fan: [],
+          startBlankHref: '/new?start=blank',
+          allTemplatesHref: '/new',
+          searchHref: (q) => `/new?q=${q}`,
+        },
+        signedIn: false,
+      },
+    });
+    await screen.findByRole('heading', { name: 'Start Blank' });
+    const set = screen.getByRole('region', { name: 'What you can make' });
+    expect(
+      [...set.querySelectorAll('[data-work-kind]')].map((t) => t.getAttribute('data-work-kind')),
+    ).toEqual(['board', 'sheet', 'dashboard', 'form']);
   });
 
   it('pairs Help with a close wherever it draws them, and the close hides the banner', async () => {
