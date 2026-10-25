@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 
 // The house on/off switch, iOS style (docs/specs/004-interface-design/design-principles.md): a rounded track, brand
 // when on and slate when off, with a white knob that slides across. One `role="switch"` button, named by `label`
@@ -81,7 +81,7 @@ export function Switch({
               ? 'bg-brand-500 dark:bg-brand-500'
               : 'bg-slate-300 dark:bg-slate-600'
         }`}
-        style={trackColour ? ({ backgroundColor: trackColour } as CSSProperties) : undefined}
+        style={trackColour ? { backgroundColor: trackColour } : undefined}
       >
         <span
           data-switch-knob=""

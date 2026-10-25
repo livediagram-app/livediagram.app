@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type CSSProperties } from 'react';
+import { useId, useState } from 'react';
 import { lucideAppWindow, lucideCloud } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '../icons/lucide-glyph';
 import { Switch } from '../Switch';
@@ -107,10 +107,7 @@ export function SaveSwitchRow({
         }`}
         style={
           ink
-            ? ({
-                backgroundColor: ink.surface,
-                color: checked ? ink.accent : ink.muted,
-              } as CSSProperties)
+            ? { backgroundColor: ink.surface, color: checked ? ink.accent : ink.muted }
             : undefined
         }
       >
