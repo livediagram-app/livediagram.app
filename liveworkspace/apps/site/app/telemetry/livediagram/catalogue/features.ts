@@ -392,9 +392,10 @@ export const TABS_FILED: Metric = {
 export const DOCUMENTS_FILED: Metric = {
   category: 'Document',
   action: 'Moved',
-  // The Offline Mode conversions are Document·Moved too, charted in their own
-  // stack (Taken Offline, Saved to Cloud).
-  typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
+  // The Offline Mode conversions and the retired parts moved to the other apps are
+  // Document·Moved too, charted in Offline Mode (Taken Offline, Saved to Cloud,
+  // Retired Parts Moved).
+  typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud' && type !== 'RetiredParts',
   title: 'Documents Filed',
   blurb: 'A document moved into a folder, or back to the top level.',
 };
@@ -823,6 +824,14 @@ export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',
   'Someone signed in with documents kept only in this browser and was offered to move them to the account.',
   (t) => t === 'LocalMovePrompt',
+);
+
+// The offer to move retired parts to the other apps (docs/specs/006-document/offline-mode.md "Moving retired parts to
+// the other apps"); charted with Offline Mode on the Dashboard.
+export const RETIRED_PARTS_OFFERED = opened(
+  'Retired Parts Offered',
+  'Someone opened the editor with parts of their documents that now belong to the other apps, and was offered to move them there.',
+  (t) => t === 'RetiredPartsOffer',
 );
 
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);

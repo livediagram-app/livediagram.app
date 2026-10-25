@@ -631,6 +631,42 @@ export const ALL_VISITORS: MetricStack = {
   headline: [NEW_VISITORS, RETURNING_VISITORS],
 };
 
+// Returning guests of the old livediagram.app, claimed in this browser for the person now here
+// (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site"). At most once per browser,
+// so these count browsers, kept for the months after the migration.
+export const OLD_SITE_GUESTS_MERGED = chart(
+  'Participant',
+  'Moved',
+  'Merged',
+  'A guest of the old livediagram.app came back, and what they made there moved into the person now here.',
+  { types: ['LegacyGuest'] },
+);
+
+export const OLD_SITE_GUESTS_CLAIMED = chart(
+  'Participant',
+  'Moved',
+  'Already Claimed',
+  'The old guest this browser held had already been claimed by someone, so nothing moved.',
+  { types: ['LegacyGuestClaimed'], rising: 'neutral' },
+);
+
+export const OLD_SITE_GUESTS_UNKNOWN = chart(
+  'Participant',
+  'Moved',
+  'Not Found',
+  'The old guest this browser held was never migrated, or could not be verified, so nothing moved.',
+  { types: ['LegacyGuestUnknown'], rising: 'neutral' },
+);
+
+export const OLD_SITE_GUESTS: MetricStack = {
+  stack: true,
+  title: 'Old-Site Guests',
+  blurb:
+    'Browsers that still held a guest from the old livediagram.app, and what became of it: merged into the person now here, already claimed, or not found. Counted once per browser.',
+  members: [OLD_SITE_GUESTS_MERGED, OLD_SITE_GUESTS_CLAIMED, OLD_SITE_GUESTS_UNKNOWN],
+  headline: OLD_SITE_GUESTS_MERGED,
+};
+
 export const PAGE_VIEWS_BY_APP: MetricStack = {
   stack: true,
   title: 'Page Views by App',

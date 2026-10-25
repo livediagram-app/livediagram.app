@@ -5,7 +5,7 @@ import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
-import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
+import { LOCAL_MOVE_OFFERED, RETIRED_PARTS_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -205,11 +205,37 @@ export const LOCAL_MOVE_DISMISSED = chart(
   { types: ['LocalMovePrompt'], rising: 'neutral' },
 );
 
+// The offer to move retired parts to the other apps (docs/specs/006-document/offline-mode.md "Moving retired parts to
+// the other apps"): offered (homed with the other opens, features.ts), taken, or put off, and the documents it moved.
+export const RETIRED_PARTS_ACCEPTED = chart(
+  'UI',
+  'Selected',
+  'Retired Parts Accepted',
+  'Move Them, pressed on that offer.',
+  { types: ['RetiredPartsOffer'] },
+);
+
+export const RETIRED_PARTS_DISMISSED = chart(
+  'UI',
+  'Closed',
+  'Retired Parts Put Off',
+  'Not Now on that offer.',
+  { types: ['RetiredPartsOffer'], rising: 'neutral' },
+);
+
+export const RETIRED_PARTS_MOVED = chart(
+  'Document',
+  'Moved',
+  'Retired Parts Moved',
+  'A document whose retired parts moved to the other apps, one per document.',
+  { types: ['RetiredParts'] },
+);
+
 export const OFFLINE_MODE: MetricStack = {
   stack: true,
   title: 'Offline Mode',
   blurb:
-    'Documents kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in.',
+    'Documents kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in, and the offer to move parts that now belong to the other apps.',
   members: [
     CREATED_OFFLINE,
     TAKEN_OFFLINE,
@@ -217,6 +243,10 @@ export const OFFLINE_MODE: MetricStack = {
     LOCAL_MOVE_OFFERED,
     LOCAL_MOVE_ACCEPTED,
     LOCAL_MOVE_DISMISSED,
+    RETIRED_PARTS_OFFERED,
+    RETIRED_PARTS_ACCEPTED,
+    RETIRED_PARTS_DISMISSED,
+    RETIRED_PARTS_MOVED,
   ],
 };
 

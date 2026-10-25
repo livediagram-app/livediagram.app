@@ -801,6 +801,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
+  'Participant|Moved|LegacyGuest':
+    'A browser that still held a guest from the old livediagram.app came back, and what that guest made moved into the person now here. At most once per browser.',
+  'Participant|Moved|LegacyGuestClaimed':
+    'A browser still held a guest from the old livediagram.app, but someone had already claimed it, so nothing moved. At most once per browser.',
+  'Participant|Moved|LegacyGuestUnknown':
+    'A browser still held a guest from the old livediagram.app that was never migrated or could not be verified, so nothing moved. At most once per browser.',
   'Form|Created|Blank': 'Someone started a form from Start Planning: a blank one.',
   'Form|Created|BugReport': 'Someone started a form from the Bug Report starter.',
   'Form|Created|Feedback': 'Someone started a form from the Feedback starter.',
@@ -2605,6 +2611,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone visited livediagram for the first time in this browser, and a new anonymous guest identity was created for them. Counted once per browser, ever.',
   'Participant|Returned':
     'A returning visitor reopened the app on a later day than their first visit, counted once per day.',
+  'Participant|Moved':
+    'A browser that still held a guest from the old livediagram.app tried to claim it for the person now here. At most once per browser.',
   'Search|Opened': 'The global search panel was opened.',
   'Search|Searched':
     'A query was typed into search. Counted once per session, not on every keystroke.',
