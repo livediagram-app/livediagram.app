@@ -92,6 +92,45 @@ describe('Home’s first run', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
+  it('shows each start’s whole name and description, wrapped rather than clamped', async () => {
+    const long =
+      'An empty form to share by link: add your questions, then choose a board or a sheet for the answers.';
+    const index = createFakeIndex();
+    renderHome(index, {
+      welcome: {
+        manifest: {
+          ...MANIFEST,
+          blanks: [{ ...MANIFEST.blanks[0]!, description: long }],
+          popular: [
+            {
+              ...MANIFEST.popular[0]!,
+              name: 'Sailboat Retrospective With A Long Name',
+              description: long,
+            },
+          ],
+        },
+        signedIn: true,
+      },
+    });
+    expect(await screen.findByRole('heading', { name: 'Start Blank' })).toBeTruthy();
+    const texts = [
+      ...document.querySelectorAll<HTMLElement>(
+        '[data-welcome-start-name], [data-welcome-start-description]',
+      ),
+    ];
+    expect(texts).toHaveLength(4);
+    expect(texts.filter((t) => t.textContent === long)).toHaveLength(2);
+    for (const t of texts) {
+      expect(t.className).not.toMatch(
+        /\b(truncate|line-clamp-\S+|text-ellipsis|whitespace-nowrap)\b/,
+      );
+      expect(t.className).toMatch(/\bbreak-words\b/);
+    }
+    // Each card fills its grid cell, so a row's cards stand as tall as its tallest.
+    for (const card of document.querySelectorAll('[data-welcome-start]'))
+      expect(card.className).toMatch(/\bh-full\b/);
+  });
+
   it('shows the ordinary Home to someone with anything to open', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     renderHome(index);

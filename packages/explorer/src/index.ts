@@ -76,14 +76,8 @@ export type {
 export type { SidebarLink } from './explorer/host';
 export { useThisBrowserList, type ThisBrowserHost } from './explorer/ThisBrowser';
 export type { ThisBrowserItem } from './this-browser';
-export {
-  HeroArt,
-  HeroSheets,
-  renderHeroArtNode,
-  type HeroArtManifest,
-  type HeroArtNode,
-  type HeroSheet,
-} from './hero/HeroSheets';
+export { WorkKinds, defaultTemplateHref, type TemplateHref } from './hero/WorkKinds';
+export { WORK_KINDS, workTiles, type WorkKind, type WorkTile } from './hero/work-kinds';
 export {
   createExplorerAccounts,
   AccountsError,

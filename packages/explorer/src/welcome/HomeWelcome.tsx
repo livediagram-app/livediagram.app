@@ -92,15 +92,21 @@ function StartCard({ start, size }: { start: WelcomeStart; size: 'blank' | 'temp
         <StartPicture start={start} />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5 px-1">
+        {/* The whole name and description, wrapped rather than cut short: a template is chosen by what it says
+            it is. The grid's rows stretch every card in a row to the tallest one's height. */}
         <span
-          className={`truncate font-semibold text-[#17153a] dark:text-slate-100 ${
+          data-welcome-start-name=""
+          className={`break-words font-semibold text-[#17153a] dark:text-slate-100 ${
             blank ? 'text-sm' : 'text-[15px]'
           }`}
         >
           {start.name}
         </span>
         {start.description ? (
-          <span className={`line-clamp-2 text-xs leading-[18px] ${MUTED}`}>
+          <span
+            data-welcome-start-description=""
+            className={`break-words text-xs leading-[18px] ${MUTED}`}
+          >
             {start.description}
           </span>
         ) : null}
@@ -290,35 +296,5 @@ export function WelcomeSearch() {
         )}
       </div>
     </form>
-  );
-}
-
-/** The hero's art on a first run: three of the starts' previews fanned, the front one first. */
-export function WelcomeFan() {
-  const { welcome } = useFirstRun();
-  const m = welcome?.manifest;
-  if (!m) return null;
-  const all = [...m.blanks, ...m.popular];
-  const fan = m.fan.flatMap((id) => all.filter((s) => s.id === id)).slice(0, 3);
-  // Back to front: the last drawn sits on top.
-  const places = [
-    'left-[4%] top-[14%] -rotate-6',
-    'right-[2%] top-[2%] rotate-6',
-    'left-[20%] top-[22%] rotate-0',
-  ];
-  const order = [fan[1], fan[2], fan[0]];
-  return (
-    <div aria-hidden className="relative h-full w-full" data-welcome-fan="">
-      {order.map((s, i) =>
-        s ? (
-          <span
-            key={s.id}
-            className={`absolute h-[62%] w-[58%] rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_48px_-24px_color-mix(in_oklab,var(--color-brand-700)_45%,transparent)] dark:border-slate-700 dark:bg-slate-800 ${places[i]}`}
-          >
-            <StartPicture start={s} />
-          </span>
-        ) : null,
-      )}
-    </div>
   );
 }

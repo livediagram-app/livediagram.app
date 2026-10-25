@@ -11,8 +11,7 @@
     ".": "./src/index.ts",
     "./template-sheets": "./src/template-sheets.ts",
     "./plan-template-seeds": "./src/plan-template-seeds.ts",
-    "./welcome.json": "./welcome.json",
-    "./hero.json": "./hero.json"
+    "./welcome.json": "./welcome.json"
   },
   "scripts": {
     "lint": "oxlint",

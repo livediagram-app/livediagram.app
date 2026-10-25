@@ -1,6 +1,6 @@
 import { DocThumb } from '@liveworkspace/help-site/art/parts';
 import { AccountAndDataArt as Scene } from '@liveworkspace/help-site/art/scenes/account-and-data';
-import { MiniSlide } from './page-parts';
+import { MiniSlide } from '@liveworkspace/help-site/art/work';
 
 // Account and Data: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livedocuments's
 // documents (an article, a deck and a report) and its export formats (Exporting Documents).

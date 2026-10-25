@@ -204,10 +204,10 @@ built once here. It is shown here and, through each switched-on app's router, at
   from. Help links go to the app's help centre.
 - **First run.** An empty Home shows the app's welcome and starts, from that app's templates manifest
   (`@<app>/templates/welcome.json`, loaded only when Home is empty).
-- **Hero art.** The picture on the right of Home's hero is the app's own, from its hero manifest
-  (`@<app>/templates/hero.json`, generated from the components the app's Home draws), drawn by the Explorer's
-  `HeroArt` as React elements (no HTML parsed, only boxes and shapes). It is loaded once per page, only on Home
-  with the hero shown and room for it (`lg` and up). Every app ships one.
+- **What you can make.** Home's hero pictures the kinds of work the filtered app makes (one per app under All
+  Apps), drawn by the Explorer itself from `@liveworkspace/ui/work-art`, so nothing is loaded for them. Each starts
+  its template in its app: the page hands the Explorer `templateHref` (`lib/explorer/host.ts`), the app's own
+  `/new?template=` ([one-explorer.md](one-explorer.md) "What you can make, on Home's hero").
 - **Previews.** Every app's items have one, from liveworkspace's previews on the page's own origin
   (`/api/previews/items/<id>?v=<updatedAt>`, [previews.md](previews.md)), asked with the person's workspace token
   and the item's share code. They are asked for only as a card nears the screen or a row is pointed at, at most

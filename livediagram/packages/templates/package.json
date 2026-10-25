@@ -8,8 +8,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./welcome.json": "./welcome.json",
-    "./hero.json": "./hero.json"
+    "./welcome.json": "./welcome.json"
   },
   "scripts": {
     "lint": "oxlint",

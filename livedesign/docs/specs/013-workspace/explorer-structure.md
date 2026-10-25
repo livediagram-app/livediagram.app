@@ -33,7 +33,9 @@ The sidebar holds navigation only. It carries no greeting, no search field, no N
 - **Search** lives in the top bar: the lens field of [Explorer filters](explorer-filters.md#the-field), left of the
   account control, searches and filters the designs of the current view. On Home it sits in the
   [hero](explorer-home.md#the-hero) instead. The bottom bar's Search opens the app-wide search panel.
-- **New folder** and **New Design** live in the page header of the view they create in (Home's hero on Home).
+- **New folder** and **New Design** live in the page header of the view they create in (Home's hero on Home). Home's
+  hero also pictures what livedesign makes (Logo, App Wireframe, Web Wireframe, Photo), each starting its template
+  ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
 - The account is reached from the header's account menu.
 
 ## Look

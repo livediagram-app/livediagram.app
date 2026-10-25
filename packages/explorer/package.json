@@ -8,7 +8,6 @@
   ],
   "exports": {
     ".": "./src/index.ts",
-    "./hero-manifest": "./src/hero/manifest.tsx",
     "./this-browser": "./src/this-browser.ts",
     "./conversion-handoff": "./src/conversion-handoff.ts",
     "./offline-redirect": "./src/offline-redirect.tsx",

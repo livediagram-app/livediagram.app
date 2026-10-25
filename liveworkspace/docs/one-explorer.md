@@ -107,6 +107,31 @@ files", "Keep your files safe"), and the hero asks "what are you working on toda
 app's kind. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
+#### What you can make, on Home's hero
+
+Home's hero shows **what the app makes**: four small pictures, one per kind of work, each drawn in its app's brand
+colour with its name under it (`WorkKinds` in `@liveworkspace/explorer`, fed per app from its `WORK_KINDS`; the
+pictures are `@liveworkspace/ui/work-art`, the same miniatures every help centre draws a product's work with). Filtered
+to an app it shows that app's four. Under All Apps it shows one per app, that app's first kind in that app's colour,
+named by the app's kind (Canvas, Plan, Document, Design). Every set has the same layout, size and spacing: from `lg`
+up the tiles stand two by two in the hero's right column; below `lg` they sit under the search field, four across, a
+phone included (smaller there, so the hero stays short), inside the page's 16 px gutter. The same set shows on a first run, in the welcome's hero.
+
+Each tile starts that kind of work: it is a link to the app's own New route with the template that makes it
+(`/new?template=<template>`, the address the app's welcome uses), on the app's address (the host's `templateHref`;
+without one, the host app's own `/new` on the same origin and another app's on that app's site). Hover lifts its edge
+in the app's colour over `duration-micro`. The pictures are static SVG drawn in the page's light or dark look; nothing
+is fetched to draw them. They took the place of each app's fan of template previews (`heroArt`, from the apps' hero
+manifests), which differed in number and kind from app to app, showed only on a wide screen, and showed nothing under
+All Apps.
+
+| App           | Its kinds, and the template each starts                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| livediagram   | Flowchart (`flowchart`), Mind Map (`mindmap`), Whiteboard (`whiteboard`), Workshop (`blank-session`)                          |
+| liveplanner   | Board (`kanban`), Sheet (`blank-spreadsheet`), Dashboard (`project-planner`, whose Overview tab is one), Form (`blank-form`)  |
+| livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)        |
+| livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`) |
+
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
 Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
 that view on the app's own address.

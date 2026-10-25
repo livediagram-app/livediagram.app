@@ -13,7 +13,8 @@
     "./build-animation-kit": "./src/build-animation-kit.tsx",
     "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts",
     "./appearance-storage": "./src/appearance/appearance-storage.ts",
-    "./appearance-store": "./src/appearance/appearance-store.ts"
+    "./appearance-store": "./src/appearance/appearance-store.ts",
+    "./work-art": "./src/work-art.tsx"
   },
   "scripts": {
     "lint": "oxlint",

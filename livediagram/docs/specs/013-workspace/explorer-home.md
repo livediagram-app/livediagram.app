@@ -13,13 +13,9 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
 - **Its words.** On livediagram's address the hero greets by the reader's local hour, then asks "what are you
   drawing today?" (`heroWords` for the Canvas kind), its status pill counts canvases, and its search field's button
   is **New Canvas**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livediagram-lends-it)).
-- **Its hero art.** Three template previews (`HERO_FAN`: a flowchart in front, a mind map and a retrospective
-  behind). In a workbench's workspace frame (`apps/editor/app/embed/workbench/ExplorerHost.tsx`) the hero draws them
-  from the editor's own components, loaded with Home's hero rather than with every Explorer page. On
-  liveworkspace's page they ship as data in `packages/templates/hero.json` (the package's `./hero.json` export),
-  written by `apps/editor/components/panels/home/hero-manifest.test.tsx` through
-  `@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1` writes it; without it the test fails when the file has
-  drifted), and drawn by the Explorer's `HeroArt` from `lg` up.
+- **What it makes.** The hero shows livediagram's four kinds of work, a **Flowchart**, a **Mind Map**, a
+  **Whiteboard** and a **Workshop**, each a small picture in livediagram's blue that starts one (`/new?template=`
+  `flowchart`, `mindmap`, `whiteboard`, `blank-session`), laid out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
 - **The first run.** When Home finds nothing yet, the shared Explorer shows its welcome in place of empty lists, from
   livediagram's welcome manifest (`packages/templates/welcome.json`, the package's `./welcome.json` export: the blanks and Popular templates it offers
   to start from), loaded once, only then. The manifest is written beside the template catalogue by
