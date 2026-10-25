@@ -43,6 +43,7 @@
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/workbench": "workspace:*",
     "next": "^16.4.1",
     "polygon-clipping": "0.15.7",
     "react": "^19.3.1",

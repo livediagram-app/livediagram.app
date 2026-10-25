@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     '@livedocuments/ui',
     '@liveworkspace/ui',
+    '@liveworkspace/workbench',
     '@livedocuments/document',
     '@livedocuments/api-schema',
   ],

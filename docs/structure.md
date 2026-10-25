@@ -39,7 +39,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
 │  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
-│  └─ vitest-config            the Vitest defaults and test helpers every workspace extends
+│  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
+│  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
@@ -247,7 +248,17 @@ Each step is its own PR, and both products build and pass their tests after ever
      and the web-vitals reporter. They follow as those packages move.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
-   both apps.
+   every editor.
+   - First slice: `@liveworkspace/workbench` (`packages/workbench`) holds the editor code that reads
+     the same in all four editors (`livediagram/apps/editor`, `liveplanner/apps/editor`,
+     `livedocuments/apps/editor`, `livedesign/apps/live`) and whose imports stay inside it, the shared
+     `@liveworkspace/*` packages and npm: no `@<product>/*` and no editor file. It keeps the editor's
+     folders (`lib/…`, `hooks/ui/…`, `hooks/canvas/…`, `components/primitives/…`), and its tests came
+     with it. Every module is a subpath (`@liveworkspace/workbench/lib/listeners`) with no barrel, so
+     an editor bundles only what it imports. What a product needs to differ is handed in as props, or
+     as a small module the workbench exports for each editor to bind (`createX(config)`), never as a
+     product import. The editors' repo-scan guards read `packages/workbench/src` beside their own
+     folders, and each editor's stylesheet scans it with `@source '../../../../packages/workbench/src'`.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

@@ -42,6 +42,7 @@
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
+    "@liveworkspace/workbench": "workspace:*",
     "gifenc": "1.0.3",
     "next": "^16.4.1",
     "prosemirror-commands": "^1.7.2",

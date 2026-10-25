@@ -62,6 +62,8 @@
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 /* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
 @source '../../../../packages/settings-ui/src';
+/* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
+@source '../../../../packages/workbench/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
