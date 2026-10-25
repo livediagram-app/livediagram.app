@@ -19,8 +19,8 @@ describe('SiteFooter', () => {
   });
 
   it("links liveworkspace's terms and privacy policy, the security policy and third-party licences", () => {
-    expect(labels.slice(labels.indexOf('Terms'))).toEqual([
-      'Terms',
+    expect(labels.slice(labels.indexOf('Terms of Use'))).toEqual([
+      'Terms of Use',
       'Privacy Policy',
       'Data &amp; Security',
       'Report a Vulnerability',

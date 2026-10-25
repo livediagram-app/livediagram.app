@@ -339,3 +339,7 @@ export {
   type AppEnvironment,
   type AppSiteId,
 } from './app-origins';
+
+// The label every footer gives the platform-wide terms (liveworkspace/docs/site.md "Privacy and
+// terms"): one document for liveworkspace.app and every app, so each footer names it the same way.
+export const TERMS_LABEL = 'Terms of Use';

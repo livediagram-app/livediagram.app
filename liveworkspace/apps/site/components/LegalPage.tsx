@@ -1,5 +1,5 @@
 import { BrandMark } from '@livediagram/ui';
-import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
+import { PLATFORM_SITE, TERMS_LABEL, type SiteId } from '@liveworkspace/sites';
 import type { CSSProperties, ReactNode } from 'react';
 import { listedApps, type ListedApp } from '@/lib/apps';
 import { Footer } from './Footer';
@@ -15,7 +15,7 @@ export type LegalHighlight = { icon: ReactNode; title: string; body: string };
 
 const PAGES = [
   { href: '/privacy', label: 'Privacy Policy' },
-  { href: '/terms', label: 'Terms of Use' },
+  { href: '/terms', label: TERMS_LABEL },
 ];
 
 // Reading styles for the text the pages pass in, which is plain HTML.

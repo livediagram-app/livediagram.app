@@ -8,15 +8,15 @@ import { LicenceTexts } from './LicenceTexts';
 // are client-side, and they load when an entry opens. The product hands over
 // its title, its lede and what sends code to the browser.
 
+const PRODUCT_SERVER_INTRO =
+  'Bundled into the API, MCP server and router, which run on Cloudflare rather than on your device.';
+
 const sectionCopy = (
   browserIntro: string,
+  serverIntro: string,
 ): Record<LicencesSection['side'], { title: string; intro: string }> => ({
   browser: { title: 'In your browser', intro: browserIntro },
-  server: {
-    title: 'On our servers',
-    intro:
-      'Bundled into the API, MCP server and router, which run on Cloudflare rather than on your device.',
-  },
+  server: { title: 'On our servers', intro: serverIntro },
 });
 
 export function LicencesView({
@@ -24,14 +24,17 @@ export function LicencesView({
   title,
   lede,
   browserIntro,
+  serverIntro = PRODUCT_SERVER_INTRO,
 }: {
   manifest: LicencesManifest;
   title: string;
   lede: ReactNode;
   /** Who sends code to the browser ("the editor, this website and the help centre"). */
   browserIntro: string;
+  /** What runs the server side; every product's is its API, MCP server and router. */
+  serverIntro?: string;
 }) {
-  const copy = sectionCopy(browserIntro);
+  const copy = sectionCopy(browserIntro, serverIntro);
   return (
     <>
       <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">

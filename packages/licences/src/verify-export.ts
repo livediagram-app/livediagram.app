@@ -17,6 +17,11 @@ export function checkExport({ manifest, htmlBytes, exportedTexts }: Export): str
   const problems: string[] = [];
   const hashes = Object.keys(manifest.texts);
   if (hashes.length === 0) problems.push('the manifest lists no texts');
+  // Every static export ships React at least, so an empty browser side is a broken analysis.
+  const browser = manifest.sections.find((s) => s.side === 'browser');
+  if (browser && browser.apps.length > 0 && browser.works.length === 0) {
+    problems.push('the browser section lists no works');
+  }
   if (htmlBytes === undefined) problems.push('licences.html was not exported');
   else if (htmlBytes > LICENCES_HTML_BUDGET_BYTES) {
     problems.push(`licences.html is ${htmlBytes} bytes, over ${LICENCES_HTML_BUDGET_BYTES}`);

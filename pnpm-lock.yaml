@@ -4835,6 +4835,12 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/licences':
+        specifier: workspace:*
+        version: link:../../../packages/licences
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../../../packages/marketing-site
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
