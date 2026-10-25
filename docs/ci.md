@@ -86,7 +86,7 @@ apply before the code: `wrangler d1 migrations apply`), then the sites and MCP W
 and the gateway in front of them. A failing tier stops the ones after it.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
-product's hosted build vars, and on staging its product's staging MCP address), and a product api's
+product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's
 hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account

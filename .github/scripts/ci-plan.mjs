@@ -199,6 +199,9 @@ function deployOf(p) {
     d1,
     // A static site serves its build (`[assets]`); a Worker's own build is the bundle wrangler makes anyway.
     build: /^\[assets\]/m.test(config),
+    // A help site dates each article by its last commit (packages/help-site article-dates.ts), so it
+    // builds from full history; every other Worker builds from the one commit.
+    history: app === 'help',
     hosted,
   };
 }
