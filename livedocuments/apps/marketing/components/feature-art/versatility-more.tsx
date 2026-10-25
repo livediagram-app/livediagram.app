@@ -3,7 +3,7 @@
 // keep each file a readable size; built from the same parts, on the same 300 by 96 stage, with the
 // same fa-c-* loops.
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   ArrowHead,
   Chip,
@@ -16,7 +16,7 @@ import {
   STAGE,
   Selection,
   delay,
-} from './versatility-parts';
+} from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
 
 /* ──────────────── Zen, fonts ──────────────── */
 

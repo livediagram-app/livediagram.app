@@ -26,7 +26,15 @@ import {
   to,
   VIEW,
 } from './features-parts';
-import { AMBER, EMERALD, Frame, PINK, ROSE, SKY, VIOLET } from './shared';
+import {
+  AMBER,
+  EMERALD,
+  Frame,
+  PINK,
+  ROSE,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The tab accents the editor's colour-coded tabs take, legible on its light and dark bars.
 const TAB = {

@@ -1,19 +1,11 @@
-import type { Metadata } from 'next';
 import { Redirect } from '@liveworkspace/help-site/components/Redirect';
+import { unsortedMoved } from '@liveworkspace/help-site/lib/moved';
 
-// Unsorted is gone (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets): projects
-// with no folder sit at the root of My Work, and the article went with it. This stub keeps
-// the old help URL alive (it redirects there) but is noindex, so search engines consolidate on the
-// canonical article rather than this thin redirect.
-const NEW_URL = '/help/explorer/personal-space/';
+// Unsorted is gone; its guide is personal-space: this stub keeps the old URL alive, noindex (@liveworkspace/help-site/lib/moved).
+const moved = unsortedMoved('plans');
 
-export const metadata: Metadata = {
-  title: 'My Work and Folders',
-  description: 'Unsorted is gone: plans with no folder sit at the root of My Work.',
-  robots: { index: false, follow: true },
-  alternates: { canonical: NEW_URL },
-};
+export const metadata = moved.metadata;
 
 export default function UnsortedRedirectPage() {
-  return <Redirect href={NEW_URL} label="My Work guide" />;
+  return <Redirect href={moved.href} label={moved.label} />;
 }

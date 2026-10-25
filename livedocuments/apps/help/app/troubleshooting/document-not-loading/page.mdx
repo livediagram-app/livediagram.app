@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { StuckCanvas } from '@/components/illustrations/troubleshooting';
+import { StuckCanvas } from '@liveworkspace/help-site/art/illustrations/troubleshooting';
 
 export const metadata = helpMetadata({
   title: 'A Document Will Not Load',
@@ -14,7 +14,7 @@ export const metadata = helpMetadata({
 When a document does not open, the cause is usually access-related rather than data loss. livedocuments deliberately returns the same "not found" surface for a document you cannot reach as for one that truly does not exist, so a blank or "not found" screen does not mean your work is gone. Work through the checks below in order.
 
 <Figure caption="A document stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
-  <StuckCanvas />
+  <StuckCanvas noun="document" />
 </Figure>
 
 ## Quick checks

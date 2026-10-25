@@ -1,9 +1,15 @@
 // Feature illustration for Draw mode's dock (docs/specs/023-draw-mode/draw-mode.md): the drawing tools on their keys
 // and the shapes you pin beside them.
 
-import { PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED } from './canvas-marks';
+import {
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Keycap } from './mode-parts';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The Draw dock: the drawing tools with their keys, then the pinned shapes, one being dragged in from
 // the Shapes flyout to pin it.

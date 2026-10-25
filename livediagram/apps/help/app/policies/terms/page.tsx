@@ -1,17 +1,11 @@
-import type { Metadata } from 'next';
 import { Redirect } from '@liveworkspace/help-site/components/Redirect';
+import { termsMoved } from '@liveworkspace/help-site/lib/moved';
 
-// The terms covers every liveworkspace app, livediagram included, so it lives on liveworkspace.app. This stub
-// keeps the old help URL alive (it redirects there) but is noindex so search engines consolidate on that page.
-const NEW_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/terms';
+// The terms are liveworkspace's, on liveworkspace.app: this stub keeps the old URL alive, noindex (@liveworkspace/help-site/lib/moved).
+const moved = termsMoved('livediagram');
 
-export const metadata: Metadata = {
-  title: 'Terms of Service',
-  description: "The terms for livediagram is liveworkspace's, on liveworkspace.app.",
-  robots: { index: false, follow: true },
-  alternates: { canonical: NEW_URL },
-};
+export const metadata = moved.metadata;
 
 export default function TermsRedirectPage() {
-  return <Redirect href={NEW_URL} label="terms" />;
+  return <Redirect href={moved.href} label={moved.label} />;
 }

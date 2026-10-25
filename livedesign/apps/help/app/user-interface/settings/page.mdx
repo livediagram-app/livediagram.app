@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SettingsDialogScene } from '@/components/illustrations/settings-dialog';
+import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Settings',
@@ -21,7 +21,7 @@ export const metadata = helpMetadata({
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
 <Figure caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
-  <SettingsDialogScene />
+  <SettingsDialogScene noun="design" />
 </Figure>
 
 Some categories hold **sub-categories** (Editor holds Pages and Presenting; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.

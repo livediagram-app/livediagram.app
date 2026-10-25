@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamSharedTree } from '@/components/illustrations/collaboration';
+import { TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Team Shared Designs',
@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
 Every team has a shared library: a folder tree plus designs that all joined members can see and manage. It works just like your personal folder tree, only shared. It appears as a **Team designs** card on the team page in the Explorer.
 
 <Figure caption="A team's library shows one folder level at a time, under the Team designs breadcrumb, with the view toggle and Create.">
-  <TeamSharedTree />
+  <TeamSharedTree noun="design" />
 </Figure>
 
 ## What everyone can do

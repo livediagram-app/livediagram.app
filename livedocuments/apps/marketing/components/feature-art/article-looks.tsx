@@ -2,7 +2,10 @@
 // Clean, Classic, Report, Notebook and Bold. Split from ./documents; built on ./mode-parts like it.
 
 import { at, BAR_SOFT, INK, MUTED, SERIF, Stage, SURFACE, TextLines } from './mode-parts';
-import { AMBER as WARM, SKY as ACCENT } from './shared';
+import {
+  AMBER as WARM,
+  SKY as ACCENT,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** The five article looks, one page in each: Clean, Classic, Report, Notebook and Bold. */
 export function ArticleLooksArt() {

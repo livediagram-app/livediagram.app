@@ -11,10 +11,10 @@ import {
   TEXT_BODY,
   TEXT_MUTED,
   TEXT_STRONG,
-} from './canvas-marks';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Avatar, Pill } from './mode-parts';
 import { AK, ColumnHead, JR, PlanCard, SM, TM, TYPE } from './plan-parts';
-import { Frame, MONO } from './shared';
+import { Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // A card's panel: the title over its description and a checklist ticking towards done, and Details
 // down the right (status, assignee, priority, labels, due), a red flag by the number and the

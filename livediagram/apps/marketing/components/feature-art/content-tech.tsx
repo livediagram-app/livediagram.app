@@ -2,9 +2,17 @@
 // Shared marks live in ./canvas-marks; ./shared holds Frame.
 
 import type { ReactNode } from 'react';
-import { HAIRLINE, INK, INK_TEXT, SHADOW, Scene, Selection, TEXT_STRONG } from './canvas-marks';
+import {
+  HAIRLINE,
+  INK,
+  INK_TEXT,
+  SHADOW,
+  Scene,
+  Selection,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Glyph, ICON_PATHS } from './content-parts';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // A full-colour technology tile: the brand's own square, its mark in white, its name under it.
 function TechTile({

@@ -1,7 +1,15 @@
 // Feature illustrations: embeds on the canvas and the Timeline feed, split from ./structure.
 
-import { HAIRLINE, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
-import { Frame } from './shared';
+import {
+  HAIRLINE,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Embeds on the canvas: a video, unplayed (nothing loads until someone presses play), beside a
 // Figma file and a Google Doc, and a sticky pointing at the moment that matters.

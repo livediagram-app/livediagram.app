@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { DotVoting } from '@/components/illustrations/collaboration';
+import { DotVoting } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Casting Dots',
@@ -26,7 +26,7 @@ While a [vote](/help/collaboration/session-tools/voting/) is open, every card th
 Press **+** to add one of your dots and **−** to take one back. Stacking several dots on one card is allowed, each counting separately, unless the vote was started with **One each** under **Dots per item**: then each of your dots must go on a different card. For an Editor, the **Vote** button in the bottom-right cluster keeps count: its badge shows how many dots you have left, and the Vote panel above it says so in words, like "2 of 3 dots left".
 
 <Figure caption="Each card carries a tally counter, and the Vote button counts the dots you have left.">
-  <DotVoting />
+  <DotVoting poll={false} />
 </Figure>
 
 The counter starts at zero, so you can always see which cards are in play and how many dots each has. **−** greys out when none of the dots on it are yours, and **+** once your budget is spent (or, under **One each**, once you have a dot on that card), rather than disappearing, so the buttons stay where your pointer expects them.

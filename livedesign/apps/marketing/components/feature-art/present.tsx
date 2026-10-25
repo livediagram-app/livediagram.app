@@ -4,7 +4,7 @@
 // light and in dark.
 
 import type { CSSProperties } from 'react';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   AMBER,
   at,
@@ -18,7 +18,7 @@ import {
   SKY,
   SKY_DEEP,
   VIOLET,
-} from './page-kit';
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // A phone wireframe page on the canvas in miniature: its frame, a title bar, a picture and a button.
 function PhoneScreen({ x, y, accent = SKY }: { x: number; y: number; accent?: string }) {

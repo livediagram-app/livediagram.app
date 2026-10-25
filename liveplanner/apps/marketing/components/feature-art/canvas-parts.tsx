@@ -7,7 +7,7 @@
 // participant colours (who is who) stay fixed, as they do in the editor.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Cursor, Frame } from './shared';
+import { Cursor, Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Participant colours, as the editor hands them out: you first, then each teammate.
 export { YOU } from '@/components/art-tokens';

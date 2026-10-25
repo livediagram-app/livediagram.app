@@ -17,8 +17,8 @@ import {
   TEXT_BODY,
   TEXT_MUTED,
   TEXT_STRONG,
-} from './canvas-marks';
-import { Cursor, Frame, MONO } from './shared';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Cursor, Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The search panel: "logo" typed after ⌘K, a matching tab above, then the Actions group with the
 // Logo Kit export and the Laser Pointer tool, the first action highlighted to run on Enter.

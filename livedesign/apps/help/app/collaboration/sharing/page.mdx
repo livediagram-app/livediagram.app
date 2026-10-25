@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { EmbeddedDesign } from '@/components/illustrations/collaboration';
+import { EmbeddedWork } from '@liveworkspace/help-site/art/illustrations/collaboration';
 import { SharePassesDialog } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
@@ -61,7 +61,7 @@ These are independent: you can use either, both, or neither. They are layered on
 An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a design inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the design is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 <Figure caption="A design embedded in another page, alongside the iframe snippet that places it.">
-  <EmbeddedDesign />
+  <EmbeddedWork product="livedesign" />
 </Figure>
 
 Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/help/collaboration/sharing/live-image/) from the pass's **Live image** menu instead.

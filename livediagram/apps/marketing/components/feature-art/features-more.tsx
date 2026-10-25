@@ -17,7 +17,14 @@ import {
   to,
   VIEW,
 } from './features-parts';
-import { AMBER, EMERALD, Frame, PINK, SKY, VIOLET } from './shared';
+import {
+  AMBER,
+  EMERALD,
+  Frame,
+  PINK,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** Images: a photo placed and selected on the canvas, and one dragged in from your gallery. */
 export function ImagesArt() {

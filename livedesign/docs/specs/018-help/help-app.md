@@ -35,7 +35,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedesign API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Designs_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
+**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them (each help stub binds `@liveworkspace/help-site/lib/moved`).
 
 | slug                   | title                | kind    |
 | ---------------------- | -------------------- | ------- |
@@ -200,15 +200,17 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   same in every product that shows it (the colour and border controls, the layers
   panel, undo and redo, the presentation tools): drawn once, and imported by an
   article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
-  the app while it shows that product's own work, words or palette.
+  the app while it shows that product's own work, words or palette. A figure whose only product words are its name or what it calls its work takes them as props
+  (`product`, `noun`), and the article passes them: `<StuckCanvas noun="design" />`,
+  `<CliConsent product="livedesign" noun="design" />`.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
 - **`components/illustrations/<surface>.tsx`**: an editor surface several
-  areas show (the Settings dialog in `settings-dialog.tsx`, with the shared
-  `Switch`), drawn once and imported wherever it recurs. Files are named after
+  areas show, drawn once and imported wherever it recurs (the Settings dialog, with the shared
+  `Switch`, is every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`). Files are named after
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the

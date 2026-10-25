@@ -19,7 +19,7 @@ import {
   TextLines,
   YOU,
 } from './mode-parts';
-import { SKY as ACCENT } from './shared';
+import { SKY as ACCENT } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** A page on the canvas, with the label the editor sets above it. */
 function Page({

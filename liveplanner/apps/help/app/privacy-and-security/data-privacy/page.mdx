@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ProjectStorage, AccessControl } from '@/components/illustrations/privacy';
+import { WorkStorage, AccessControl } from '@liveworkspace/help-site/art/illustrations/privacy';
 
 export const metadata = helpMetadata({
   title: 'Data Privacy',
@@ -29,7 +29,7 @@ liveplanner runs on Cloudflare. Your plan content goes to another company only w
 - **AI tools you connect** yourself, through [MCP](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/), read the plans you let them reach, under their own terms.
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
-  <ProjectStorage />
+  <WorkStorage blobs="Snapshots" />
 </Figure>
 
 ## What is stored, and who can read it
@@ -37,7 +37,7 @@ liveplanner runs on Cloudflare. Your plan content goes to another company only w
 A plan is owned by an identity. That identity is either a signed-in account or, for guests, a guest identity that liveworkspace gives your browser, which is the same in every liveworkspace app. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the plan is in can read a plan. Opening a plan you cannot access returns a plain "not found", so its contents and name are never revealed.
 
 <Figure caption="A plan is tied to its owner, so a request from anyone without access comes back as a plain not found.">
-  <AccessControl />
+  <AccessControl noun="plan" />
 </Figure>
 
 ## Staying in control

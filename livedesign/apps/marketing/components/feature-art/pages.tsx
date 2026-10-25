@@ -3,8 +3,18 @@
 // photo), and backgrounds painted from the theme (the export is in ./pages-export). Each is a small mock
 // of the real surface, built on ./page-kit so a page reads as paper on the canvas in light and in dark.
 
-import { Frame } from './shared';
-import { AMBER, at, INK, Lines, Page, PageLabel, SERIF, SKY, VIOLET } from './page-kit';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import {
+  AMBER,
+  at,
+  INK,
+  Lines,
+  Page,
+  PageLabel,
+  SERIF,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 const WIRE = 'fill-slate-200 dark:fill-slate-600';
 

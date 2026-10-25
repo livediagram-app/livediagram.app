@@ -1,7 +1,15 @@
 // Feature illustration: a day of activity, as Home and each project's History show it.
 
-import { HAIRLINE, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
-import { Frame } from './shared';
+import {
+  HAIRLINE,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The activity record (docs/specs/013-workspace/timeline.md): a day of activity on a spine,
 // each event with who did it and what, colour saying what happened; the newest is marked New.

@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TrashView } from '@/components/illustrations/account-settings';
+import { TrashView } from '@liveworkspace/help-site/art/illustrations/account-settings';
 
 export const metadata = helpMetadata({
   title: 'Trash',
@@ -31,7 +31,7 @@ Choose **Trash**, the last row of the **More** group at the bottom of the Explor
 Each design shows when it was deleted and how many days it has left. One that is past its 30 days but not yet removed reads "Removed at the next clean-up": removal runs once a day, so a design usually stays for up to a day longer.
 
 <Figure caption="The Trash groups what you can restore. Each row has Restore and Delete permanently; each group has Empty Trash.">
-  <TrashView />
+  <TrashView noun="design" />
 </Figure>
 
 ## Restoring a design

@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { GalleryCards } from '@/components/illustrations/explorer-imports';
+import { GalleryCards } from '@liveworkspace/help-site/art/illustrations/explorer-imports';
 
 export const metadata = helpMetadata({
   title: 'Image Gallery',
@@ -26,7 +26,7 @@ Each image appears as a card with its name, its size in pixels and on disk, and 
 - **Not used** means none of your canvases points at it, so it is usually safe to delete.
 
 <Figure caption="Each card shows the image, its size, a delete button and a badge saying where it is used.">
-  <GalleryCards />
+  <GalleryCards noun="canvas" />
 </Figure>
 
 To add an image, drop it, paste it, or click the **Drop, paste, or click to upload an image** area at the top. It uses the same checks as uploading from the canvas: one image can be up to 10 MB, and an image you already have is not stored twice.

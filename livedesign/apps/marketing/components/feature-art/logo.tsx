@@ -4,8 +4,16 @@
 // app/feature-art/pages.css); under reduced motion it shows the finished mark.
 
 import type { CSSProperties } from 'react';
-import { Frame } from './shared';
-import { at, INK, INK_SOFT, Page, Panel, SKY, VIOLET } from './page-kit';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import {
+  at,
+  INK,
+  INK_SOFT,
+  Page,
+  Panel,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // The artboard: a square page, its centre, and the keyline circle the mark is built on.
 const BOARD = { x: 24, y: 10, size: 76 };

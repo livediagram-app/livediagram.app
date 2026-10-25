@@ -1,26 +1,12 @@
-import type { Metadata } from 'next';
-
 import { LegalRedirect } from '@liveworkspace/marketing-site/components/LegalRedirect';
+import { termsMoved } from '@liveworkspace/marketing-site/lib/legal-moved';
 
-// The terms of service cover every liveworkspace app, livedesign included, so they live on liveworkspace.app.
-// This page keeps the historical /terms URL alive (it redirects there) but is noindex so search engines
-// consolidate on that page.
-const TERMS_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/terms';
+// The terms of service live on liveworkspace.app: this stub keeps the historical /terms URL alive, noindex
+// (@liveworkspace/marketing-site/lib/legal-moved).
+const moved = termsMoved('livedesign');
 
-export const metadata: Metadata = {
-  title: 'Terms of Service · livedesign',
-  description: "The terms of service for livedesign are liveworkspace's, on liveworkspace.app.",
-  robots: { index: false, follow: true },
-  alternates: { canonical: TERMS_URL },
-};
+export const metadata = moved.metadata;
 
 export default function TermsPage() {
-  return (
-    <LegalRedirect
-      href={TERMS_URL}
-      heading="Our terms of service have moved"
-      linkText="read the terms of service here"
-      lead="They now live on liveworkspace.app and cover every liveworkspace app."
-    />
-  );
+  return <LegalRedirect {...moved.redirect} />;
 }
