@@ -23,7 +23,7 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The shared Explorer's Share dialog (@liveworkspace/explorer), with livediagram's Community band
+// The shared Explorer's Share dialog (@liveworkspace/explorer), with livediagram's Community tab
 // (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
 const ShareDialog = dynamic(
   () =>

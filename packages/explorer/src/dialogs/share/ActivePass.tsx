@@ -2,18 +2,20 @@
 
 // One live share link, drawn as a pass. Its body: the link with Copy inside the field; what the pass is printed with
 // (the tabs it opens, how long it is valid, ticking down, and the password tag); and the other ways to hand it over
-// (Embed, Live image, where the host serves them) with Revoke at the far edge, which asks first.
+// (Embed, Live image, where the host serves them) with Revoke at the far edge, which asks first in a popover beside
+// the bin. livediagram's ActiveSharePass from before the Explorer split, with hover cards on its controls.
 
 import { useState } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
 import { timeLeftCompact } from '../../time';
-import { Button } from '@liveworkspace/ui';
+import { HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
+import { ConfirmPopover } from './ConfirmPopover';
 import { CopyMenu } from './CopyMenu';
 import { CodeGlyph, ImageGlyph, MarkdownGlyph, SmallClockGlyph } from './glyphs';
 import { embedSnippet, liveImageHtml, liveImageMarkdown, type ShareHandOver } from './handover';
 import { PassTicket, usePassExit } from './PassTicket';
-import { LIFETIMES, PASS_BIN, SELECT, ScopeOptions, type ShareTab } from './parts';
+import { LIFETIMES, LEVEL_PASS, PASS_BIN, ScopeOptions, type ShareTab } from './parts';
 import type { ShareNotify, ShareTelemetry } from './types';
 
 const META =
@@ -60,7 +62,8 @@ export function ActivePass({
   // Null where the item has one tab, so there is nothing to choose between.
   onRescope: ((tabId: string | null) => void) | null;
 }) {
-  const [confirming, setConfirming] = useState(false);
+  // The bin the revoke confirmation points at while it is open.
+  const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
   const exit = usePassExit(onRevoke);
   // A link of one tab draws that tab: the server picks it, so the image's address names none.
   const imageTab = link.tabId !== null ? undefined : (imageTabId ?? undefined);
@@ -81,22 +84,23 @@ export function ActivePass({
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          aria-label="Pass link"
+          aria-label={`${LEVEL_PASS[link.level].title} pass link`}
           className="min-w-0 flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-2.5 pr-10 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
         />
-        <button
-          type="button"
-          onClick={onCopy}
-          aria-label={copied ? 'Copied' : 'Copy link'}
-          title={copied ? 'Copied' : 'Copy link'}
-          className={`absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition ${
-            copied
-              ? 'text-emerald-600 dark:text-emerald-400'
-              : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-700 dark:hover:bg-slate-700 dark:hover:text-brand-300'
-          }`}
-        >
-          {copied ? <CheckIcon size={14} /> : <CopyIcon />}
-        </button>
+        <Tooltip label={copied ? 'Copied' : 'Copy link'}>
+          <button
+            type="button"
+            onClick={onCopy}
+            aria-label={copied ? 'Copied' : 'Copy link'}
+            className={`absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition duration-micro ${
+              copied
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-slate-400 hover:bg-slate-200/70 hover:text-brand-700 dark:hover:bg-slate-700 dark:hover:text-brand-300'
+            }`}
+          >
+            {copied ? <CheckIcon size={14} /> : <CopyIcon />}
+          </button>
+        </Tooltip>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -104,29 +108,41 @@ export function ActivePass({
           {onRescope ? (
             <span className="inline-flex items-center gap-1.5">
               <span className={META}>Opens</span>
-              <select
-                className={`${SELECT} max-w-36`}
-                value={link.tabId ?? ''}
-                onChange={(e) => onRescope(e.target.value || null)}
-                disabled={busy}
-                aria-label="Tabs this pass opens"
-                title="Which tabs this pass opens. A change takes effect at once."
+              <HoverCard
+                title="Tabs"
+                description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
               >
-                <ScopeOptions tabs={tabs} />
-              </select>
+                <Select
+                  size="sm"
+                  variant="ghost"
+                  value={link.tabId ?? ''}
+                  onChange={(e) => onRescope(e.target.value || null)}
+                  disabled={busy}
+                  aria-label="Tabs this pass opens"
+                  className="max-w-36"
+                  // Sized to the chosen tab, not the longest option, so the caret sits by the name.
+                  selectClassName="[field-sizing:content]"
+                >
+                  <ScopeOptions tabs={tabs} />
+                </Select>
+              </HoverCard>
             </span>
           ) : null}
           <span className="inline-flex items-center gap-1.5">
             <span className={META}>Valid</span>
             {link.expiresAt !== null ? (
-              <span
-                data-share-countdown=""
-                title={`Issued for ${LIFETIMES[link.expiry]}. When it runs out the link stops working and moves to Expired, where you can extend it.`}
-                className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
+              <HoverCard
+                title="Expiring pass"
+                description={`Issued for ${LIFETIMES[link.expiry]}. When it runs out the link stops working and moves to Expired, where you can extend it.`}
               >
-                <SmallClockGlyph />
-                {timeLeftCompact(link.expiresAt - now)}
-              </span>
+                <span
+                  data-share-countdown=""
+                  className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
+                >
+                  <SmallClockGlyph />
+                  {timeLeftCompact(link.expiresAt - now)}
+                </span>
+              </HoverCard>
             ) : (
               <span className="font-medium">{LIFETIMES.never}</span>
             )}
@@ -176,8 +192,9 @@ export function ActivePass({
                 tabs.length > 1 && link.tabId === null ? (
                   <label className="flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                     Tab
-                    <select
-                      className={`${SELECT} min-w-0 flex-1`}
+                    <Select
+                      size="sm"
+                      className="min-w-0 flex-1"
                       value={imageTabId ?? firstTabId ?? ''}
                       onChange={(e) => {
                         const next = e.target.value === firstTabId ? null : e.target.value;
@@ -190,7 +207,7 @@ export function ActivePass({
                           {t.name}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                 ) : null
               }
@@ -216,44 +233,37 @@ export function ActivePass({
               ]}
             />
           ) : null}
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            disabled={busy || exit.leaving}
-            aria-label="Revoke link"
-            aria-expanded={confirming}
-            title="Revoke link: it stops working at once for everyone holding it."
-            className={PASS_BIN}
+          <HoverCard
+            title="Revoke link"
+            description="The link stops working at once for everyone holding it."
           >
-            <TrashIcon />
-          </button>
+            <button
+              type="button"
+              onClick={(e) => setRevokeAnchor(e.currentTarget)}
+              disabled={busy || exit.leaving}
+              aria-label="Revoke link"
+              aria-expanded={revokeAnchor !== null}
+              className={PASS_BIN}
+            >
+              <TrashIcon />
+            </button>
+          </HoverCard>
+          {/* Revoking cuts off everyone holding the pass and can't be undone (a new pass is a new address), so it
+              asks right beside the bin. */}
+          {revokeAnchor ? (
+            <ConfirmPopover
+              anchor={revokeAnchor}
+              message="Revoke this pass? The link stops working at once for everyone holding it."
+              confirmLabel="Revoke"
+              onConfirm={() => {
+                setRevokeAnchor(null);
+                exit.leave();
+              }}
+              onCancel={() => setRevokeAnchor(null)}
+            />
+          ) : null}
         </div>
       </div>
-      {confirming ? (
-        // Revoking cuts off everyone holding the pass and can't be undone (a new pass is a new address), so it asks
-        // right beside the bin.
-        <div
-          role="alertdialog"
-          aria-label="Revoke this pass?"
-          className="flex flex-wrap items-center gap-2 rounded-lg bg-rose-50 px-2.5 py-2 text-xs text-rose-800 dark:bg-rose-500/10 dark:text-rose-200"
-        >
-          <span className="min-w-0 flex-1">
-            Revoke this pass? The link stops working at once for everyone holding it.
-          </span>
-          <Button variant="secondary" size="xs" onClick={() => setConfirming(false)}>
-            Cancel
-          </Button>
-          <Button
-            size="xs"
-            onClick={() => {
-              setConfirming(false);
-              exit.leave();
-            }}
-          >
-            Revoke
-          </Button>
-        </div>
-      ) : null}
     </PassTicket>
   );
 }

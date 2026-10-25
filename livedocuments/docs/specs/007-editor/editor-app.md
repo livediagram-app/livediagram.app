@@ -139,7 +139,7 @@ The header Share button opens the shared Share dialog, `ShareDialog` from
 Explorer's item menu use, for the owner and, on a team document, every joined member
 ([Team shared documents](../013-workspace/team-shared-documents.md)). It talks to liveworkspace's index directly:
 share links, their levels and the password are the index's
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access").
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access"). Its look is livediagram's Share dialog from before the Explorer split, the same in every app ([livediagram's Share dialog](../../../../livediagram/docs/specs/007-editor/editor-app.md#share-dialog)).
 
 It draws every link as a **pass**, a ticket that admits whoever holds it. Top to bottom:
 
@@ -147,7 +147,7 @@ It draws every link as a **pass**, a ticket that admits whoever holds it. Top to
    open this document.", "Team: every member of the team can open this document." or "Shared: anyone holding the
    pass can get in" (", with the password" while one is set), with **Show Me** for a guided tour.
 2. **Issue a pass**: the level picker, **Editor**, **Participant** or **Viewer** ([Share roles](../013-workspace/share-roles.md)),
-   **Opens** (Every tab, or one tab, on a multi-tab document, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)),
+   **Opens** (All tabs, or one tab, on a multi-tab document, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)),
    **Valid** (Forever, 1 week, 1 month, 6 months, [Share-link expiry](../013-workspace/share-link-expiry.md)) and
    **Create Pass**, which also copies the new link.
 3. **Passes**, newest first, with their count: each with its link and copy button, which tabs it **Opens** (changeable),

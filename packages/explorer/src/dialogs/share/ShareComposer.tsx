@@ -1,23 +1,22 @@
 'use client';
 
-// "Issue a pass": the level cards (Editor first, and chosen), then the fine print, Opens (when the item has more
-// than one tab) and Valid, ending in Create Pass, which also copies the new link. It owns the draft pass; the
-// dialog issues it.
+// "Issue a pass": the level picker (one card, Editor to start, that unfolds the three levels), then the fine print,
+// Opens (when the item has more than one tab) and Valid, a sliding segmented control ending in Create Pass, which also
+// copies the new link. It owns the draft pass; the dialog issues it.
 
 import { useState, type KeyboardEvent } from 'react';
 import { SHARE_LINK_EXPIRIES, type Level, type ShareLinkExpiry } from '@liveworkspace/index-client';
-import { Button } from '@liveworkspace/ui';
+import { Button, Select } from '@liveworkspace/ui';
 import { HelpLink } from './HelpLink';
 import {
   DEFAULT_LEVEL,
-  LEVEL_ORDER,
   LEVEL_PASS,
   LIFETIMES,
   SECTION_LABEL,
-  SELECT,
   ScopeOptions,
   type ShareTab,
 } from './parts';
+import { RolePicker, SegmentSlider } from './RolePicker';
 import type { ShareHelpHref } from './types';
 
 export function ShareComposer({
@@ -36,20 +35,9 @@ export function ShareComposer({
   const [scope, setScope] = useState('');
   const multiTab = tabs.length > 1;
 
-  // Arrow keys walk a radio group, wrapping.
+  // Arrow keys walk the lifetimes, wrapping, as in any radio group.
   const step = (e: KeyboardEvent<HTMLButtonElement>) =>
     ({ ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 })[e.key];
-  const onLevelKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const by = step(e);
-    if (!by) return;
-    e.preventDefault();
-    const i = LEVEL_ORDER.indexOf(level);
-    const next = LEVEL_ORDER[(i + by + LEVEL_ORDER.length) % LEVEL_ORDER.length]!;
-    setLevel(next);
-    e.currentTarget.parentElement
-      ?.querySelector<HTMLButtonElement>(`[data-level="${next}"]`)
-      ?.focus();
-  };
   const onLifetimeKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     const by = step(e);
     if (!by) return;
@@ -68,41 +56,12 @@ export function ShareComposer({
       <p id="share-issue-heading" className={SECTION_LABEL}>
         Issue a pass
       </p>
+      {/* The level and the fine print share one tinted panel, so the pass being made reads as one thing. */}
       <div className="flex flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-        <div
-          role="radiogroup"
-          aria-label="Level"
-          data-tour-id="share-role"
-          className="grid grid-cols-1 gap-2 sm:grid-cols-3"
-        >
-          {LEVEL_ORDER.map((l) => {
-            const pass = LEVEL_PASS[l];
-            const on = level === l;
-            return (
-              <button
-                key={l}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                tabIndex={on ? 0 : -1}
-                data-level={l}
-                onClick={() => setLevel(l)}
-                onKeyDown={onLevelKey}
-                className={`flex flex-col items-start gap-1 rounded-lg border bg-white p-2.5 text-left transition dark:bg-slate-900 ${
-                  on
-                    ? pass.selected
-                    : 'border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800'
-                }`}
-              >
-                <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  <pass.Icon />
-                  {pass.title}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">{pass.blurb}</span>
-              </button>
-            );
-          })}
+        <div data-tour-id="share-role">
+          <RolePicker level={level} onChange={setLevel} />
         </div>
+        {/* The fine print: one labelled row per term, labels in one column, Create Pass ending the Valid row. */}
         <div className="grid grid-cols-1 items-center gap-x-3 gap-y-1.5 px-0.5 sm:grid-cols-[3.5rem_1fr_auto] sm:gap-y-2">
           {multiTab ? (
             <>
@@ -112,28 +71,39 @@ export function ShareComposer({
               >
                 Opens
               </label>
-              <select
+              <Select
                 id="share-new-scope"
                 data-tour-id="share-scope"
-                className={`${SELECT} sm:col-span-2`}
+                className="sm:col-span-2"
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
                 aria-label="Tabs this link opens"
               >
                 <ScopeOptions tabs={tabs} />
-              </select>
+              </Select>
             </>
           ) : null}
           <span className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
             Valid
-            <HelpLink href={helpHref?.('shareLinkExpiry')} label="How link lifetimes work" />
+            <HelpLink
+              href={helpHref?.('shareLinkExpiry')}
+              label="How link lifetimes work"
+              description="When a pass stops working, and how to extend it."
+            />
           </span>
           <div
             role="radiogroup"
             aria-label="Link lifetime"
             data-tour-id="share-valid"
-            className="grid h-9 grid-cols-4 gap-0.5 rounded-lg bg-white p-0.5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
+            // A ring, not a border, so the selection fills the track: the height of Create Pass beside it.
+            className="relative grid h-9 grid-cols-4 rounded-lg bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
           >
+            {/* The selection slides to the picked lifetime. */}
+            <SegmentSlider
+              count={SHARE_LINK_EXPIRIES.length}
+              index={SHARE_LINK_EXPIRIES.indexOf(expiry)}
+              className={`${LEVEL_PASS[level].solid} shadow-sm`}
+            />
             {SHARE_LINK_EXPIRIES.map((value) => {
               const active = expiry === value;
               return (
@@ -146,13 +116,13 @@ export function ShareComposer({
                   data-lifetime={value}
                   onClick={() => setExpiry(value)}
                   onKeyDown={onLifetimeKey}
-                  className={`h-full whitespace-nowrap rounded-md px-1 text-xs font-medium transition-colors ${
+                  className={`relative z-10 h-full whitespace-nowrap rounded-md px-1 text-xs font-medium transition-colors duration-micro ${
                     active
-                      ? `${LEVEL_PASS[level].solid} shadow-sm`
+                      ? 'text-white'
                       : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
                   }`}
                 >
-                  {LIFETIMES[value]}
+                  <span className="text-optical-line">{LIFETIMES[value]}</span>
                 </button>
               );
             })}

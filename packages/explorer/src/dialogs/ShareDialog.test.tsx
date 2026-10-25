@@ -324,6 +324,28 @@ describe('ShareDialog', () => {
     expect(onTelemetry).toHaveBeenCalledWith('Ended', 'ShareTourCompleted');
   });
 
+  it("is titled in the app's words: Share This Plan", async () => {
+    renderDialog();
+    expect(await screen.findByRole('heading', { name: 'Share This Plan' })).toBeTruthy();
+  });
+
+  it("puts the host's tab beside Passes, with its badge, and Show Me comes back to the passes", async () => {
+    renderDialog({
+      appTab: { label: 'Community', badge: <span>Public</span>, panel: <p>Community panel</p> },
+      initialView: 'app',
+    });
+    const tab = await screen.findByRole('tab', { name: /Community/ });
+    expect(tab.getAttribute('aria-selected')).toBe('true');
+    expect(within(tab).getByText('Public')).toBeTruthy();
+    expect(screen.getByText('Community panel')).toBeTruthy();
+    fireEvent.keyDown(tab, { key: 'ArrowLeft' });
+    expect(screen.getByRole('tab', { name: 'Passes' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.queryByText('Community panel')).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: /Community/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
+    expect(screen.getByRole('tab', { name: 'Passes' }).getAttribute('aria-selected')).toBe('true');
+  });
+
   it('says Public on the status line while the host says the item is public, over any pass', async () => {
     renderDialog(
       { publicNote: 'in the Community, where anyone can find it.' },

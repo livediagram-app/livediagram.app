@@ -4,7 +4,7 @@
 // view without leading the dialog with a form. Controlled: the dialog holds the draft and saves it.
 
 import { avatarFill } from '../../ui/avatar-fill';
-import { ShuffleGlyph } from './glyphs';
+import { GlyphDisc, HoverCard, RefreshIcon } from '@liveworkspace/ui';
 import type { ShareIdentity } from './types';
 
 export function initialsOf(name: string): string {
@@ -30,14 +30,16 @@ export function IdentityRow({
   const color = identity.color ? avatarFill(identity.color) : null;
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2" data-share-identity="">
-      <span
+      <GlyphDisc
+        size={28}
+        as="div"
         role="img"
         aria-label="Your avatar"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-500 text-[11px] font-semibold text-white"
+        className="shrink-0 bg-slate-500 text-[11px] font-semibold text-white"
         style={color ? { backgroundColor: color } : undefined}
       >
         {initialsOf(shown)}
-      </span>
+      </GlyphDisc>
       <div className="flex min-w-0 flex-1 flex-col">
         <label
           htmlFor="share-name"
@@ -45,17 +47,19 @@ export function IdentityRow({
         >
           Sharing as
         </label>
+        {/* Shuffle sits right against the name it changes, not out by Done. */}
         <div className="-ml-1 flex min-w-0 items-center">
           {identity.randomName ? (
-            <button
-              type="button"
-              onClick={() => onChange(identity.randomName!())}
-              aria-label="Pick a different name"
-              title="Pick a different random name"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <ShuffleGlyph />
-            </button>
+            <HoverCard title="Shuffle name" description="Pick a different random name.">
+              <button
+                type="button"
+                onClick={() => onChange(identity.randomName!())}
+                aria-label="Pick a different name"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition duration-micro hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <RefreshIcon size={13} />
+              </button>
+            </HoverCard>
           ) : null}
           <input
             id="share-name"

@@ -8,16 +8,17 @@ import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { useCommunityPost } from '@/hooks/persistence/useCommunityPost';
 import { communityCodeMessage } from '@/lib/community-errors';
 import { CommunityPublishDialog } from './CommunityPublishDialog';
-import { CommunitySection } from './CommunitySection';
+import { CommunityGuide } from './CommunityGuide';
+import { CommunityPublicBadge, CommunitySection } from './CommunitySection';
 
 // The status line's words while the canvas is listed (docs/specs/007-editor/editor-app.md "Layout, top to bottom").
 export const COMMUNITY_PUBLIC_NOTE =
   'in the Community, where anyone can find it, view it and make a copy.';
 
-// The shared Share dialog (@liveworkspace/explorer) with livediagram's Community band below it
+// The shared Share dialog (@liveworkspace/explorer) with livediagram's Community tab beside Passes
 // (docs/specs/025-community/community.md "Publishing"). Owns the owner's post (read as the dialog opens) and swaps the
-// Share dialog for the publish dialog while a listing is being written, coming back to it afterwards, so two modals
-// never stack. Also carries the rule that a post and a share password exclude each other, in both directions: a
+// Share dialog for the publish dialog while a listing is being written, coming back to it, on the Community tab,
+// afterwards, so two modals never stack. Also carries the rule that a post and a share password exclude each other, in both directions: a
 // listed post locks Password Protection, and a canvas behind a password cannot be published.
 export function ShareDialogWithCommunity({
   ownerId,
@@ -47,6 +48,8 @@ export function ShareDialogWithCommunity({
   // Whether the canvas's links ask for a password, as the Share dialog reads and changes them.
   const [passwordSet, setPasswordSet] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  // Back from the publish dialog, the Share dialog opens on the Community tab it was left from.
+  const [backFromPublish, setBackFromPublish] = useState(false);
 
   if (!eligible) return <ShareDialog {...share} />;
 
@@ -59,7 +62,10 @@ export function ShareDialogWithCommunity({
         documentId={documentId}
         author={{ ...author, picture: null }}
         onPublish={community.publish}
-        onClose={() => setPublishing(false)}
+        onClose={() => {
+          setPublishing(false);
+          setBackFromPublish(true);
+        }}
       />
     );
   }
@@ -72,21 +78,29 @@ export function ShareDialogWithCommunity({
         community.post?.state === 'listed' ? communityCodeMessage('community_published') : null
       }
       publicNote={community.post?.state === 'listed' ? COMMUNITY_PUBLIC_NOTE : null}
-      appSection={
-        <CommunitySection
-          signedIn={signedIn}
-          signInHref={authHrefWithReturn('/sign-in/', `/document/${documentId}`)}
-          teamDocument={teamDocument}
-          sharePasswordSet={passwordSet}
-          firstTabEmpty={firstTabEmpty}
-          post={community.post}
-          loading={community.loading}
-          error={community.error}
-          onPublish={() => setPublishing(true)}
-          onEdit={() => setPublishing(true)}
-          onRemove={community.remove}
-        />
-      }
+      initialView={backFromPublish ? 'app' : 'passes'}
+      appTab={{
+        label: 'Community',
+        badge: community.post?.state === 'listed' ? <CommunityPublicBadge /> : null,
+        panel: (
+          <>
+            <CommunityGuide />
+            <CommunitySection
+              signedIn={signedIn}
+              signInHref={authHrefWithReturn('/sign-in/', `/document/${documentId}`)}
+              teamDocument={teamDocument}
+              sharePasswordSet={passwordSet}
+              firstTabEmpty={firstTabEmpty}
+              post={community.post}
+              loading={community.loading}
+              error={community.error}
+              onPublish={() => setPublishing(true)}
+              onEdit={() => setPublishing(true)}
+              onRemove={community.remove}
+            />
+          </>
+        ),
+      }}
     />
   );
 }

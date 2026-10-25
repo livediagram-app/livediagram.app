@@ -35,7 +35,7 @@ export function PassTicket({
     >
       <div className="min-h-0 overflow-hidden px-0.5 pb-2 pt-0.5">
         <div
-          className={`relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] duration-300 ${
+          className={`relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-[border-color,box-shadow] duration-long ${
             expired
               ? 'border-slate-200 bg-slate-50/70 dark:border-slate-700 dark:bg-slate-800/40'
               : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/70'
