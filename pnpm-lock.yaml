@@ -4739,6 +4739,52 @@ importers:
         specifier: ^4.148.0
         version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
 
+  liveworkspace/apps/drive:
+    dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
+      '@liveworkspace/drive':
+        specifier: workspace:*
+        version: link:../../../packages/drive
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../../../packages/render-png
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261007.1
+        version: 5.20261021.1
+      '@liveworkspace/fake-google':
+        specifier: workspace:*
+        version: link:../../../packages/fake-google
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      jose:
+        specifier: ^6.2.12
+        version: 6.2.13
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      wrangler:
+        specifier: ^4.148.0
+        version: 4.151.3(@cloudflare/workers-types@5.20261021.1)(@types/node@26.6.5)
+
   liveworkspace/apps/gateway:
     devDependencies:
       '@cloudflare/workers-types':
@@ -4872,6 +4918,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/drive':
+        specifier: workspace:*
+        version: link:../../../packages/drive
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
@@ -5508,6 +5557,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/drive':
+        specifier: workspace:*
+        version: link:../drive
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
@@ -6007,6 +6059,12 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:^
         version: link:../account-menu
+      '@liveworkspace/drive':
+        specifier: workspace:*
+        version: link:../drive
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings

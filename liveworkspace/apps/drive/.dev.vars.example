@@ -1,0 +1,29 @@
+# Local development: `wrangler dev` reads .dev.vars (liveworkspace/docs/drive.md "Configuration"). Without
+# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY every route but /api/drive/config answers 503.
+ENVIRONMENT=development
+# The local liveworkspace site: the consent's redirect URI (<this>/drive/connected), the files' lwOrigin, and the
+# push address (Google refuses a non-https one, so locally the fallback check does Drive's side).
+DRIVE_PUBLIC_URL=http://localhost:3000
+ACCOUNTS_URL=http://localhost:3000
+# The API resource every local app's api Worker uses (API_RESOURCE in its .dev.vars).
+INDEX_AUDIENCES=http://localhost/api
+# The local index (`pnpm dev` in liveworkspace/apps/index), used when the INDEX binding isn't running.
+INDEX_URL=http://localhost:8793/api/index
+APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
+APP_ORIGIN_LIVEPLANNER=http://localhost:3200
+APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
+APP_ORIGIN_LIVEDESIGN=http://localhost:3400
+# Staging's Google client allows localhost (liveworkspace/docs/drive.md "Google").
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_PICKER_KEY=
+# base64 of 32 random bytes: `openssl rand -base64 32`.
+DRIVE_TOKEN_KEY=
+# The same as the index's INDEX_KEY_DRIVE and DRIVE_KEY_INDEX, accounts' DRIVE_KEY_ACCOUNTS, and each app's DRIVE_KEY.
+INDEX_KEY_DRIVE=dev-index-drive-key
+DRIVE_KEY_INDEX=dev-drive-index-key
+DRIVE_KEY_ACCOUNTS=dev-drive-accounts-key
+DRIVE_KEY_LIVEDIAGRAM=dev-livediagram-drive-key
+DRIVE_KEY_LIVEPLANNER=dev-liveplanner-drive-key
+DRIVE_KEY_LIVEDOCUMENTS=dev-livedocuments-drive-key
+DRIVE_KEY_LIVEDESIGN=dev-livedesign-drive-key

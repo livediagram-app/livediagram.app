@@ -15,6 +15,9 @@ describe('targetFor', () => {
     ['/api/community', 'COMMUNITY'],
     ['/api/status', 'STATUS'],
     ['/api/status/history', 'STATUS'],
+    ['/api/drive', 'DRIVE'],
+    ['/api/drive/push', 'DRIVE'],
+    ['/drive/connected', 'SITE'],
     ['/status', 'SITE'],
     ['/', 'SITE'],
     ['/explorer/home', 'SITE'],
@@ -37,5 +40,15 @@ describe('fetch', () => {
     const res = await worker.fetch(new Request(url), env);
     expect(await res.text()).toBe('INDEX');
     expect(seen).toEqual([['INDEX', url]]);
+  });
+
+  it('answers 404 for /api/drive while the Drive binding is off', async () => {
+    const env = Object.fromEntries(
+      (['ACCOUNTS', 'INDEX', 'MEDIA', 'TELEMETRY', 'COMMUNITY', 'STATUS', 'SITE'] as const).map(
+        (t) => [t, { fetch: async () => new Response(t) }],
+      ),
+    ) as unknown as Env;
+    const res = await worker.fetch(new Request('https://gw.example/api/drive/config'), env);
+    expect(res.status).toBe(404);
   });
 });

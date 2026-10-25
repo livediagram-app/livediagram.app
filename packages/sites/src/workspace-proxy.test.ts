@@ -18,6 +18,9 @@ import {
   SITE_ASSETS_ROUTE,
   WORKSPACE_CLIENT_IP_HEADER,
   forwardToIndex,
+  forwardToDrive,
+  isDrivePath,
+  PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   WORKBENCH_ROUTE,
 } from './workspace-proxy';
@@ -481,4 +484,33 @@ describe('each router names its environment’s liveworkspace.app', () => {
       expect(originIn(varsOf(toml, 'vars'))).toBeUndefined();
     },
   );
+});
+
+describe('forwardToDrive', () => {
+  it('forwards /api/drive/* to the Drive origin without the site cookies', async () => {
+    const seen: Request[] = [];
+    const doFetch = (async (req: Request) => {
+      seen.push(req);
+      return new Response('ok');
+    }) as unknown as typeof fetch;
+    const request = new Request('https://liveplanner.app/api/drive/config?x=1', {
+      headers: { Cookie: 'session=1', Authorization: 'Bearer t' },
+    });
+    await forwardToDrive(request, new URL(request.url), PRODUCTION_DRIVE_ORIGIN, doFetch);
+    expect(seen[0]!.url).toBe(`${PRODUCTION_DRIVE_ORIGIN}/api/drive/config?x=1`);
+    expect(seen[0]!.headers.get('Cookie')).toBeNull();
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
+  });
+
+  it('refuses to forward to itself', async () => {
+    const request = new Request('https://drive.test/api/drive/config');
+    const res = await forwardToDrive(request, new URL(request.url), 'https://drive.test');
+    expect(res.status).toBe(508);
+  });
+
+  it('knows its paths', () => {
+    expect(isDrivePath('/api/drive')).toBe(true);
+    expect(isDrivePath('/api/drive/marks')).toBe(true);
+    expect(isDrivePath('/api/drivex')).toBe(false);
+  });
 });

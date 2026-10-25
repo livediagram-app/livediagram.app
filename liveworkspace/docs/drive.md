@@ -237,6 +237,44 @@ and comes back to the same file.
   channel, and leaves every Drive file in place.
 - **Account deletion** does the same (accounts calls `DELETE /app/people/<id>` on the service).
 
+## The UI
+
+What the browser draws, beyond what the sections above pin (`@liveworkspace/settings-ui` `cloud-sync/`,
+`@liveworkspace/explorer` `drive/`, the site's `app/drive/*`; the browser client is `@liveworkspace/drive/client`).
+
+- **One client.** `createDriveClient({ getToken })` calls this origin's `/api/drive` (the gateway on liveworkspace.app,
+  the router's proxy on an app's address) with the person's account token, and answers every call as a result, never
+  a throw. A host makes one only for an account: a guest's page asks nothing.
+- **The section appears** once `GET /api/drive/config` (asked each time Settings opens) says `enabled`. It sits in the
+  Profile, after Sign-in Methods and before Your Account. Opening it, someone connected asks for a pass
+  (`POST /check`) and reads `GET /connection`, and again once the pass is asked for; while a pass or a first copy runs
+  (or the first pass of a connection just made hasn't reported) the row reads the connection every 5 s
+  (`DRIVE_ROW_REFRESH_MS`), and only while it is open. A failing pass is the service's to retry: the row stops.
+- **The way back.** Connect first rewrites this page's own history entry to name Settings on Cloud Sync
+  (`?settings=<host's Profile>&section=cloud-sync`: `profile` on liveworkspace.app's Explorer, `account:account` in an
+  editor), then goes to `<liveworkspace>/drive/connect?return=<that page>`. `/drive/connect` keeps the return page in
+  the tab's `sessionStorage` against the state it was issued, so a cancel at Google (state, no code) still returns
+  there. `/drive/connected` sends the browser back with `drive=connected` or `drive=cancelled` added; the row reads it
+  once (Connecting… until the connection shows, or the calm cancel line) and takes it out of the address.
+  `/drive/connect` refuses a return page that isn't liveworkspace's or an app's in this environment, or is one of the
+  connect pages, and uses liveworkspace.app's Explorer on Cloud Sync instead; Open with's `/drive/open` is allowed,
+  so Allow access comes back to the same file.
+- **Disconnect** asks first, neutrally: "Disconnect Google Drive?", "Your work stops syncing to Google Drive. The files
+  already there stay where they are, and you can connect again any time.", **Disconnect** / **Cancel** (the shared
+  ConfirmDialog).
+- **Switch Google Account?** treats a `409`, `410` or `404` (or `invalid_state`) from `/account-switch` as the 30
+  minutes having passed: the dialog says the request timed out, with **Back to Cloud Sync**. Keep Current Account on
+  a switch already gone simply returns.
+- **Show folder** (the Picker) is not in the shared row yet: Google's Picker loads `apis.google.com`, which no page's
+  CSP or Trusted Types policy outside livediagram allows. Until it is, the notice line says what happened, and moving
+  the item again, from either side, clears it.
+- **The Explorer's marks** come from the service's answer alone (it names only the person's mirrored items), so an
+  item made since the last read shows nothing until the next. Config first; marks and the connection (for the banner)
+  only for someone connected; read once per Explorer mount and on window focus at most every 30 s
+  (`DRIVE_MARKS_MIN_GAP_MS`); no polling. The banner ("Google Drive sync is paused.", **Reconnect**) sits bottom-left
+  and closes for the tab's session. The page Explorer and the editors' Explorer panel both take the host
+  (`drive`); the site's Explorer passes it, and an editor's panel can (it draws only the name's mark).
+
 ## The service
 
 `liveworkspace/apps/drive` (`liveworkspace-drive`, `-staging`), behind the gateway at `/api/drive`, and on each app's
@@ -268,6 +306,27 @@ push channel id and expiry, back-off) and `drive_items` (`kind` `item` | `folder
 liveworkspace id, the Drive file id, the last written name / parent / trashed / md5 / head revision, the `updatedAt`
 last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs passes. A D1-free service: the index's
 `drive_mirrored` flag (below) is the only cross-person record.
+
+**As built** (where the service settles what the above leaves open):
+
+- A guest, an API token or no token answers `401 unauthorised` (the wire's code). `config` answers a guest
+  `connected: false`.
+- `config` reads the index's flag (`GET /app/people/:id/drive`) and asks the person's object only when the index
+  can't answer, so a page view never wakes an object.
+- `POST /api/drive/account-switch` with nothing pending, or one past its deadline, answers `404 not_found`.
+  `DELETE /app/people/<id>` for someone who never connected answers `404`, which accounts takes as done.
+- `/api/drive/push` always answers `200`, even for a channel token it didn't make (logged), so Google never backs
+  off the address. A `sync` notification is ignored.
+- The push channel opens on connect, from the page token taken then. A failed flag write on connect is logged, and
+  the fallback check covers it.
+- Check now sets the next pass to write every changed item regardless of the per-item interval.
+- An import lands in the person's root (`folderId: null`). An import door that refuses the envelope answers
+  `400 invalid_request`. Any other door failure answers `502 google_failed`.
+- Marks cover the mirrored rows and failed writes. An item not yet mirrored carries no mark until its first pass.
+- The Durable Object's RPC for consent is `connectGoogle` (`connect` is the runtime's own name).
+- Locally the service runs on port 3011 (`corepack pnpm dev:drive`). The site's dev server and each router's
+  `DRIVE_ORIGIN` forward `/api/drive` there. The gateway's `DRIVE` binding stays commented out until
+  `liveworkspace-drive` is deployed, and `/api/drive` answers `404` there until then.
 
 ## Contracts
 

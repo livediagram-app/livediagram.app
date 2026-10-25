@@ -23,6 +23,7 @@ service binding. Its table is the zone's routes, most specific first:
 | `/api/telemetry*`                                                                                                 | telemetry |
 | `/api/community*`                                                                                                 | community |
 | `/api/status*`                                                                                                    | status    |
+| `/api/drive*` (once its binding is on, [drive.md](drive.md))                                                       | drive     |
 | everything else                                                                                                   | site      |
 
 So liveworkspace stays one origin: the pages still call `/api/auth/…` same-origin, sign-in cookies are the

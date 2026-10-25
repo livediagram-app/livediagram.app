@@ -1,0 +1,101 @@
+name = "liveworkspace-drive"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["global_fetch_strictly_public"]
+# The Google Drive mirror (liveworkspace/docs/drive.md): /api/drive on liveworkspace.app, and on each app's address
+# through its router. Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md);
+# put these back then:
+# routes = [{ pattern = "liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+# A pass writes up to DRIVE_PASS_MAX_WRITES files, each maybe with a thumbnail drawn by resvg: more CPU than the
+# default 30 s allows in the worst case. Inheritable, so staging takes it too.
+[limits]
+cpu_ms = 120000
+
+# The thumbnails' rasteriser (@liveworkspace/render-png/worker) imports its fonts as raw bytes: a Worker has no
+# system fonts. Inheritable, so staging takes it too.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf", "**/*.otf"]
+
+# Secrets (wrangler secret put):
+#   GOOGLE_CLIENT_SECRET   the OAuth client's secret. Without it (or GOOGLE_CLIENT_ID, or a valid DRIVE_TOKEN_KEY)
+#                          the deployment offers no Drive: every route but /api/drive/config answers 503.
+#   GOOGLE_PICKER_KEY      the Picker's API key, handed to the browser by /api/drive/config.
+#   GOOGLE_APP_ID          optional: the Cloud project number, the Picker's app id.
+#   DRIVE_TOKEN_KEY        base64 of 32 random bytes: seals refresh tokens (AES-GCM); the consent state and the push
+#                          channel tokens are signed with keys derived from it (HKDF), never with it.
+#   DRIVE_KEY_LIVEDIAGRAM, DRIVE_KEY_LIVEPLANNER, DRIVE_KEY_LIVEDOCUMENTS, DRIVE_KEY_LIVEDESIGN
+#                          each shared with that app's api Worker as DRIVE_KEY: its export (format=file, svg) and
+#                          import doors.
+#   DRIVE_KEY_INDEX        the index's DRIVE_KEY_INDEX: its change signal (POST /app/changes) carries it.
+#   DRIVE_KEY_ACCOUNTS     accounts' DRIVE_KEY_ACCOUNTS: account deletion (DELETE /app/people/<id>).
+#   INDEX_KEY_DRIVE        the index's INDEX_KEY_DRIVE: acting for a person, and their drive_mirrored flag.
+[vars]
+ENVIRONMENT = "production"
+# Set by the owner once the Google Cloud project is carried over (liveworkspace/docs/drive.md "Google"):
+# 1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2.apps.googleusercontent.com. Empty: no Drive.
+GOOGLE_CLIENT_ID = ""
+# liveworkspace's origin (the gateway's, docs/gateway.md): the consent's redirect URI (<this>/drive/connected), the
+# files' lwOrigin, Google's push address (<this>/api/drive/push), and where a refused return page goes.
+DRIVE_PUBLIC_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+# The accounts origin: access tokens are checked against `${ACCOUNTS_URL}/api/auth`.
+ACCOUNTS_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+# Every app's API resource: an access token addressed to any of them is let in (as the index does).
+INDEX_AUDIENCES = "https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+# Where the service calls each app's export and import doors, and where an item opens.
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router.liveworkspace-easing509.workers.dev"
+APP_ORIGIN_LIVEPLANNER = "https://liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://livedesign.app"
+
+# The index: acting for a person, and their drive_mirrored flag (a Worker's fetch to another Worker's route on its
+# own zone isn't routed to it).
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
+
+# One mirror per connected person (src/mirror/durable-object.ts), by account id.
+[[durable_objects.bindings]]
+name = "DRIVE_MIRROR"
+class_name = "DriveMirror"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DriveMirror"]
+
+[env.staging]
+name = "liveworkspace-drive-staging"
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "staging.liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+# Staging's client: 1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com, set by the owner.
+GOOGLE_CLIENT_ID = ""
+DRIVE_PUBLIC_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
+APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
+
+# `durable_objects` and `migrations` are non-inheritable: restated for staging.
+[[env.staging.durable_objects.bindings]]
+name = "DRIVE_MIRROR"
+class_name = "DriveMirror"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DriveMirror"]

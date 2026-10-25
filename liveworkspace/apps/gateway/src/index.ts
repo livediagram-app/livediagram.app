@@ -2,9 +2,12 @@
 // one workers.dev Worker that does what the zone's path routes do, forwarding each request unchanged to the
 // Worker that owns its path, so liveworkspace stays one origin.
 
-export type Target = 'ACCOUNTS' | 'INDEX' | 'MEDIA' | 'TELEMETRY' | 'COMMUNITY' | 'STATUS' | 'SITE';
+export type Target =
+  'ACCOUNTS' | 'INDEX' | 'MEDIA' | 'TELEMETRY' | 'COMMUNITY' | 'STATUS' | 'DRIVE' | 'SITE';
 
-export type Env = Record<Target, Fetcher>;
+// DRIVE is optional: its binding stays off until liveworkspace-drive is deployed (wrangler.toml), and /api/drive is
+// missing meanwhile.
+export type Env = Record<Exclude<Target, 'DRIVE'>, Fetcher> & { DRIVE?: Fetcher };
 
 // The zone's routes, most specific first; anything else is the static site's.
 const ROUTES: ReadonlyArray<readonly [prefix: string, target: Target]> = [
@@ -18,6 +21,7 @@ const ROUTES: ReadonlyArray<readonly [prefix: string, target: Target]> = [
   ['/api/telemetry', 'TELEMETRY'],
   ['/api/community', 'COMMUNITY'],
   ['/api/status', 'STATUS'],
+  ['/api/drive', 'DRIVE'],
 ];
 
 export function targetFor(pathname: string): Target {
@@ -26,8 +30,9 @@ export function targetFor(pathname: string): Target {
 }
 
 const worker = {
-  fetch(request: Request, env: Env): Promise<Response> {
-    return env[targetFor(new URL(request.url).pathname)].fetch(request);
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const owner = env[targetFor(new URL(request.url).pathname)];
+    return owner ? owner.fetch(request) : new Response('Not found', { status: 404 });
   },
 };
 

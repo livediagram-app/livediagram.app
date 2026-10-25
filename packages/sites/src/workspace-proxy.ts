@@ -350,6 +350,35 @@ export function forwardToIndex(
   return doFetch(forwarded);
 }
 
+// ---------- Google Drive, on the app's address -----------------------------------------------------------------------
+
+/** Where liveworkspace's Google Drive mirror lives when the router names no other (`DRIVE_ORIGIN`). */
+export const PRODUCTION_DRIVE_ORIGIN = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+export const DRIVE_PATH = '/api/drive';
+
+/** Whether `pathname` is the Drive mirror's (`/api/drive` or under it). */
+export const isDrivePath = (pathname: string): boolean =>
+  pathname === DRIVE_PATH || pathname.startsWith(`${DRIVE_PATH}/`);
+
+/**
+ * `/api/drive/*` on an app's address (liveworkspace/docs/drive.md "The service"): the same request at the Drive
+ * mirror's origin, minus this site's cookies, as the index's calls are forwarded. The person's access token goes
+ * along; the service reads nothing else.
+ */
+export function forwardToDrive(
+  request: Request,
+  url: URL,
+  origin: string,
+  doFetch: typeof fetch = fetch,
+): Promise<Response> {
+  const target = new URL(`${url.pathname}${url.search}`, origin);
+  if (target.host === url.host) return Promise.resolve(loop('DRIVE_ORIGIN is this site'));
+  const forwarded = new Request(target.toString(), request);
+  forwarded.headers.delete('Cookie');
+  carryVisitorAddress(request, forwarded.headers);
+  return doFetch(forwarded);
+}
+
 // The visitor's address, as the platform's services count it (@liveworkspace/sites/network visitorAddress): the
 // connection's own, never one the caller sent.
 function carryVisitorAddress(request: Request, headers: Headers): void {
