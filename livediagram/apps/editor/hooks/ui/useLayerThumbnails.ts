@@ -15,8 +15,11 @@ import {
   type Element,
   type Layer,
 } from '@livediagram/document';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 

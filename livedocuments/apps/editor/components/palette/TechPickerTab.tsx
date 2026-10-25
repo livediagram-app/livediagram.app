@@ -1,9 +1,9 @@
 import {
-  TECH_ICON_DND_MIME,
   TECH_PROVIDERS,
   searchTechIcons,
   type TechIconDef,
-} from '@/lib/tech-icons';
+} from '@liveworkspace/workbench/lib/tech-icons';
+import { TECH_ICON_DND_MIME } from '@/lib/icons';
 import { IconButton } from '@/components/palette/palette-controls';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import {

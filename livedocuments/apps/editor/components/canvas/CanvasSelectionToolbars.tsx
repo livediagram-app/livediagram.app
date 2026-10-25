@@ -15,7 +15,7 @@ import {
   useCanvasSelectionView,
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';

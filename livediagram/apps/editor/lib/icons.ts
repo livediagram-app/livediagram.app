@@ -12,7 +12,7 @@
 //
 // This module is the SYNCHRONOUS API surface only. The catalogue data
 // (@liveworkspace/icons icon-catalog-1/2, ~36 kB of glyph geometry) loads as an async chunk
-// through lib/icon-registry.ts, keeping it out of the editor's first-load
+// through @liveworkspace/workbench/lib/icon-registry.ts, keeping it out of the editor's first-load
 // JS. Nothing here may import those data modules statically; until the
 // chunk lands, lookups fall back to PLACEHOLDER_ICON and list views come
 // back empty (the consumers subscribe via useIconCatalogs and re-render
@@ -28,7 +28,7 @@ import {
 } from '@livediagram/document';
 
 import type { IconDef, IconPrim } from '@liveworkspace/workbench/lib/icon-types';
-import { getIconLoaded, getLoadedIconCatalog } from './icon-registry';
+import { getIconLoaded, getLoadedIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 
 export type { IconDef, IconPrim };
 
@@ -40,6 +40,12 @@ export const ICON_DND_MIME = 'application/x-livediagram-icon';
 // Drag-from-palette MIME: a palette tile dragged onto the canvas drops a new
 // element at that point. Value carried = the ShapeKind (shapes + devices).
 export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
+
+// A sticker tile dragged from the palette: its own type, so a drop on a shape cannot read it as an icon.
+export const STICKER_DND_MIME = 'application/x-livediagram-sticker';
+
+// A technology-icon tile dragged from the palette: distinct from ICON_DND_MIME, so the tile makes a standalone icon.
+export const TECH_ICON_DND_MIME = 'application/x-livediagram-tech-icon';
 
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation
@@ -131,7 +137,7 @@ export function getLineArtIconCatalog(): IconDef[] {
 //
 // Stickers are deliberately absent: they used to sit here as an "Emoji"
 // category (docs/specs/010-palette/emoji-icons.md) and moved out to their own palette category in
-// docs/specs/010-palette/stickers.md. See lib/stickers.ts for their groups.
+// docs/specs/010-palette/stickers.md. See @liveworkspace/workbench/lib/stickers.ts for their groups.
 type IconCategory = { id: string; label: string; iconIds: string[] };
 
 export const ICON_CATEGORIES: IconCategory[] = [

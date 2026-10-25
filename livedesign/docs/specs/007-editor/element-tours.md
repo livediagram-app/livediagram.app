@@ -340,7 +340,7 @@ help article's tour section; and a section here.
 - `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind what a step shows.
 - `apps/live/components/tour/ElementTourHost.tsx`: puts the tour on the Start Tour button (`useOfferTour`), runs it, ends it.
 - `apps/live/components/tour/element-tour-defs.ts`: one definition per toured kind.
-- `apps/live/components/tour/element-tour-api.ts`: what a step may do on its element.
+- `../packages/workbench/src/components/tour/element-tour-api.ts`: what a step may do on its element.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`, `timeline-tour-steps.ts`: each kind's own.

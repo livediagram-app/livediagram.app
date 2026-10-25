@@ -11,7 +11,7 @@ import {
   type ShapeElement,
   type TabTimer,
 } from '@livediagram/document';
-import { useNow } from '@/hooks/ui/useNow';
+import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,

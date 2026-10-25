@@ -13,8 +13,11 @@ import {
 } from 'react';
 import { Portal, atLeastInset, safeInset } from '@livediagram/ui';
 import { ToastCard, type ToastCardAction } from './ToastCard';
-import { toastTimeout, type ToastEntry } from './toast-queue';
-import { useToastFloor } from './useToastFloor';
+import {
+  toastTimeout,
+  type ToastEntry,
+} from '@liveworkspace/workbench/components/toast/toast-queue';
+import { useToastFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
 import { useToastTimer } from '@liveworkspace/workbench/components/toast/useToastTimer';
 
 /** The exit hold: `toast-out` runs at `micro`; removed then even where `animationend` never fires. */

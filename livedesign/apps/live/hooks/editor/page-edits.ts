@@ -53,7 +53,7 @@ import { lastWireframeDevice } from '@/lib/wireframe-device-memory';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
-import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits, type BackgroundCopyEdits } from './pages-background-copy-edits';
 

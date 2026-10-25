@@ -15,11 +15,11 @@ import {
 import { GlyphDisc } from '@livediagram/ui';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 
 // The card's media (docs/specs/009-elements/card.md "The slots"): a badge disc, a soft tile, or an initial.

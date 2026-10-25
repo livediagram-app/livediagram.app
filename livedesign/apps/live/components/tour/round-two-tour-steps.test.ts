@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livedesign/design';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import { stackTourSteps } from './stack-tour-steps';
 import { tabWindowTourSteps } from './tab-window-tour-steps';

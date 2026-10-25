@@ -31,7 +31,7 @@ import {
 } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';

@@ -11,7 +11,7 @@ import { tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
 import { tileEnterAnimation } from './palette-tile-finish';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
-import { PointerWords } from './PointerWords';
+import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';
 
 // The category flyout's tiles (CategoryFlyout, CategoryFlyoutSide): a picture tile for the grid categories, a card
 // with its blurb for the rest, and the footer that describes the pointed-at one. Each places, drags and tints as the

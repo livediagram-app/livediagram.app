@@ -3,7 +3,10 @@ import { ApiError } from '../api/core';
 import { createImportImageSession, type ImportImageSessionDeps } from './session';
 import { fakeCodec, PNG_HEAD } from './test-fakes';
 import type { ImportImageSource } from './types';
-import { IMPORT_IMAGE_CONCURRENCY, OFFLINE_IMPORT_EMBED_BUDGET_CHARS } from './constants';
+import {
+  IMPORT_IMAGE_CONCURRENCY,
+  OFFLINE_IMPORT_EMBED_BUDGET_CHARS,
+} from '@liveworkspace/workbench/lib/import-images/constants';
 
 const pngSource = (fill = 1): ImportImageSource => {
   const bytes = new Uint8Array(64).fill(fill);

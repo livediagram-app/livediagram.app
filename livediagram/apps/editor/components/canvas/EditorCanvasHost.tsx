@@ -6,7 +6,7 @@ import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorS
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
-import { dropThenDisarm } from '@/lib/palette-drop';
+import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import {
   canvasSurface,
@@ -32,7 +32,7 @@ import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useStableObject } from '@/hooks/ui/useStableObject';
+import { useStableObject } from '@liveworkspace/workbench/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';

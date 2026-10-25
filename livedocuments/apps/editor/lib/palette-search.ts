@@ -17,7 +17,7 @@ import {
   getLoadedIconCatalog,
   getLoadedStickerCatalog,
   getLoadedTechIconCatalog,
-} from '@/lib/icon-registry';
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { isLegacyEmojiIconId } from '@liveworkspace/icons';
 
 // The shape-placing tiles, in palette order. Derived from the shared

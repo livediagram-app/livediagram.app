@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Element } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -17,15 +17,15 @@ import {
 import { helpArticleHref } from '@/lib/help-articles';
 import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import { chartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
-import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { sankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import { setSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import type { ElementTourApi } from './element-tour-api';
-import { CONTEXT_MENU } from './element-menu-tour';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
+import { CONTEXT_MENU } from '@liveworkspace/workbench/components/tour/element-menu-tour';
 import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';

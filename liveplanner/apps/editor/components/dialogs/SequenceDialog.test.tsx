@@ -6,7 +6,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@liveplanner/project';
 import { SequenceDialog, type SequenceRows } from './SequenceDialog';
-import { sequenceDialog } from '@/lib/sequence-dialog-handle';
+import { sequenceDialog } from '@liveworkspace/workbench/lib/sequence-dialog-handle';
 
 afterEach(cleanup);
 
@@ -156,7 +156,7 @@ describe('SequenceDialog', () => {
   });
 });
 
-// The marks and the handle a tour drives this dialog through (lib/sequence-dialog-handle.ts).
+// The marks and the handle a tour drives this dialog through (@liveworkspace/workbench/lib/sequence-dialog-handle.ts).
 describe('SequenceDialog tour marks and handle', () => {
   it('marks what the tour points at', () => {
     open();

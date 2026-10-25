@@ -1,8 +1,8 @@
 'use client';
 
 // What the shared Share dialog (@liveworkspace/explorer `ShareDialog`) needs from liveplanner beyond a link's
-// address: a plan's tabs (a link can open one), its embed (`/embed?s=<code>`, lib/embed.ts) and live image
-// (`/api/share/<code>/image.svg`, lib/live-image.ts), the Help articles, and telemetry. The editor's Share and the
+// address: a plan's tabs (a link can open one), its embed (`/embed?s=<code>`, @liveworkspace/workbench/lib/embed.ts) and live image
+// (`/api/share/<code>/image.svg`, @liveworkspace/workbench/lib/live-image.ts), the Help articles, and telemetry. The editor's Share and the
 // Explorer's both use it; the Explorer asks per item, and another app's item gets no embed or live image here.
 
 import type {
@@ -13,9 +13,9 @@ import type {
   ShareTelemetry,
 } from '@liveworkspace/explorer';
 import { apiLoadProject } from './api/projects';
-import { embedUrlFor } from './embed';
+import { embedUrlFor } from '@liveworkspace/workbench/lib/embed';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
-import { liveImageUrlFor } from './live-image';
+import { liveImageUrlFor } from '@liveworkspace/workbench/lib/live-image';
 import { track } from './telemetry';
 
 const origin = () => (typeof window === 'undefined' ? '' : window.location.origin);

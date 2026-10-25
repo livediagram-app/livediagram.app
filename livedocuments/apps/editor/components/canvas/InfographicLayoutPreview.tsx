@@ -22,7 +22,10 @@ import {
   type LaidOutPage,
 } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livedocuments/templates';

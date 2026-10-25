@@ -6,7 +6,7 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import type { renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
 import type { SvgMotion } from '@/lib/export-tab';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';

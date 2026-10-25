@@ -706,7 +706,7 @@
    The caster is drawn as a picture of itself already blurred, never as a live
    `filter: blur()`: Safari re-ran the blur for every note on screen on every
    frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
-   picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
+   picture is computed from the same recipe (@liveworkspace/workbench/lib/sticky-peel-image.ts) and its
    border-image and inset arrive as custom properties on the canvas root; the
    sides stretch to the note's height, so the ramp keeps its proportions.
 

@@ -3,8 +3,8 @@ import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const ensure = vi.hoisted(() => vi.fn(() => Promise.resolve()));
-vi.mock('@/lib/icon-registry', async (real) => ({
-  ...(await real<typeof import('@/lib/icon-registry')>()),
+vi.mock('@liveworkspace/workbench/lib/icon-registry', async (real) => ({
+  ...(await real<typeof import('@liveworkspace/workbench/lib/icon-registry')>()),
   ensureIconCatalogs: ensure,
 }));
 

@@ -6,7 +6,7 @@ import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvid
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { replaceAppLocation } from '@liveworkspace/workbench/lib/app-location';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { useImportDialogs } from './useImportDialogs';
 import { importReturnUrl, importRequestOf, type ImportRequest } from './import-request';
 

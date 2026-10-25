@@ -4,7 +4,7 @@
 // the spokes, and Pulse previewed round them.
 
 import { describe, expect, it, vi } from 'vitest';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { hubTourSteps } from './hub-tour-steps';
 import type { ConceptTourContext } from './concept-element-tour-steps';
 

@@ -9,8 +9,8 @@ import { createShape, pagesOf, layOutPages, type Tab } from '@livedocuments/docu
 import { ExportTabDialog } from './ExportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/icon-registry', async (orig) => ({
-  ...(await orig<typeof import('@/lib/icon-registry')>()),
+vi.mock('@liveworkspace/workbench/lib/icon-registry', async (orig) => ({
+  ...(await orig<typeof import('@liveworkspace/workbench/lib/icon-registry')>()),
   ensureIconCatalogs: vi.fn(async () => {}),
 }));
 

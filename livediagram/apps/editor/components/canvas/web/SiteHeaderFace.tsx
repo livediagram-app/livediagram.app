@@ -5,7 +5,7 @@ import {
   WEB_TEXT_MAX,
 } from '@livediagram/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { GlyphDisc } from '@livediagram/ui';

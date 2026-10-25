@@ -6,7 +6,7 @@
 
 import { TEMPERATURE_COLORS, temperaturePosition } from '@liveplanner/project';
 import { tint } from '../collab-chrome';
-import { MOOD_GRID } from './mood-grid';
+import { MOOD_GRID } from '@liveworkspace/workbench/components/canvas/collab/temperature/mood-grid';
 
 const TRACK = `linear-gradient(90deg, ${TEMPERATURE_COLORS.join(', ')})`;
 

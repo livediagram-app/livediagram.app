@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livediagram/ui';
 import { EMPTY_DOCUMENT_STALE_DAYS } from '@livediagram/api-schema';
 import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // A canvas in the Trash, as the index says: when it went, and why (deleted, or empty for too long).
 export type TrashedDocument = { trashedAt: number; reason: TrashReason | null };

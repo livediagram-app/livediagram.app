@@ -19,7 +19,7 @@ import {
   setTokenProvider,
 } from './api-client';
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
-import { resetDisplayCacheForTests } from './image-display';
+import { resetDisplayCacheForTests } from '@liveworkspace/workbench/lib/image-display';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { guestTokenFor } from './testing/guest-token';
 

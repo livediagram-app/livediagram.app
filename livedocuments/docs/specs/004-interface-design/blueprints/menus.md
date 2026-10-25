@@ -23,7 +23,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
 | `../packages/workbench/src/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
 | `../packages/workbench/src/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                                     |
-| `apps/editor/components/primitives/useRowMenu.ts`                           | Built on `useMenuButton`                                                                                     |
+| `../packages/workbench/src/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                                     |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                           |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu                                                                                  |
@@ -258,7 +258,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |
 | Locked element menu focus and Escape                                                       | `apps/editor/components/canvas/LockedElementMenu.test.tsx`                                                |
-| Row ⋯ opens on Down / Up Arrow                                                             | `apps/editor/components/primitives/useRowMenu.test.tsx`                                                   |
+| Row ⋯ opens on Down / Up Arrow                                                             | `../packages/workbench/src/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                                   |
 | Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`                     |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                                     |

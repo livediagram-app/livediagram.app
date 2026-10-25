@@ -3,7 +3,10 @@
 // across the whole import (docs/specs/020-import-export/import-image-pipeline.md "One import session").
 // Bulk import will run many files through one session.
 
-import { IMPORT_IMAGE_CONCURRENCY, OFFLINE_IMPORT_EMBED_BUDGET_CHARS } from './constants';
+import {
+  IMPORT_IMAGE_CONCURRENCY,
+  OFFLINE_IMPORT_EMBED_BUDGET_CHARS,
+} from '@liveworkspace/workbench/lib/import-images/constants';
 import { prepareImportImage } from './prepare';
 import { readImportImageSource } from './source';
 import { ApiError } from '../api/core';

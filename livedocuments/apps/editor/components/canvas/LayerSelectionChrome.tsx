@@ -12,7 +12,7 @@ import {
   useCanvasSelectionView,
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 

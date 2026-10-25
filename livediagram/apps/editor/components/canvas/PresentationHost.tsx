@@ -15,9 +15,9 @@ import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useFocusReturn } from '@/hooks/ui/useFocusReturn';
+import { useFocusReturn } from '@liveworkspace/workbench/hooks/ui/useFocusReturn';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
-import { startTypedTransition } from '@/lib/view-transition';
+import { startTypedTransition } from '@liveworkspace/workbench/lib/view-transition';
 import { slideTransitionType, whenScreenSettles } from './slide-transition';
 
 // Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts), and a deck

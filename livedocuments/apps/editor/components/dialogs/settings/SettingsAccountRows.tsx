@@ -6,7 +6,7 @@ import { Button } from '@livedocuments/ui';
 import { ProfileHeaderCard, SettingsRowShell } from '@liveworkspace/settings-ui';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { SettingsSignInLink } from './SettingsSignInLink';
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page

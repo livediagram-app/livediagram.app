@@ -3,10 +3,13 @@
 import { useCallback, type ComponentProps } from 'react';
 import type { Element } from '@livedesign/design';
 import type { DragState } from '@/lib/canvas';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
+import {
+  PaletteTray,
+  usePaletteStripBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 
 // The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what

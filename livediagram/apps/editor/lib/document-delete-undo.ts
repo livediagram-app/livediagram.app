@@ -7,7 +7,7 @@
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { track } from '@/lib/telemetry';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 const HANDOFF_KEY = 'livediagram:deleted-document';
 const HANDOFF_MAX_AGE_MS = 30_000;

@@ -2,7 +2,7 @@
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
 // charts / ui / furniture / animated), plus the LEGACY emoji entries appended
 // at the end. See icon-catalog-1.ts for why this is split and why it loads
-// async; concatenated after part 1 by the editor's lib/icon-registry.ts (or
+// async; concatenated after part 1 by the editors' @liveworkspace/workbench/lib/icon-registry.ts (or
 // the Workers' ./resolve).
 //
 // The legacy entries are the compatibility half of docs/specs/010-palette/stickers.md. Emoji shipped as

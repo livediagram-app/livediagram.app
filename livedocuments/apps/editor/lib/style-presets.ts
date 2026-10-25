@@ -49,7 +49,7 @@ import {
   withInlineIcon,
 } from '@livedocuments/document';
 import type { ShapeColorPreset } from './themes';
-import { isTechIconId } from './tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import type { TablePreset } from '@livedocuments/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +

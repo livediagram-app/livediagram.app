@@ -4,7 +4,7 @@ import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
-import { dropThenDisarm } from '@/lib/palette-drop';
+import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { canvasSurface, PEN_INK } from '@livedesign/design';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
@@ -21,7 +21,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import {
@@ -29,8 +29,12 @@ import {
   useTabWindowContextValue,
 } from '@/components/canvas/tab-window/tab-window-context';
 import { useSelectTab } from '@/app/design/[id]/useSelectTab';
-import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
-import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
+import {
+  brushPageId,
+  pageBrushPreview,
+  pagePaintPress,
+} from '@liveworkspace/workbench/lib/format-page-brush';
+import { useDeadPageBrush } from '@liveworkspace/workbench/hooks/editor/useDeadPageBrush';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried

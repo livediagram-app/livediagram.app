@@ -23,7 +23,7 @@ import {
   useActiveTabName,
   useActiveTabRename,
   type TabRename,
-} from '@/hooks/editor/active-tab-name-store';
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { NAME_MAX_LENGTH } from '@liveplanner/project';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 

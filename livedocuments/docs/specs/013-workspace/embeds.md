@@ -28,7 +28,7 @@ only from a ticket minted with the person's own API token, and the page mounts o
 
 ## Getting the code
 
-The Share dialog is the shared one from `@liveworkspace/explorer` ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)), which offers no embed menu. An embed is built from a link by hand: `/embed?s=<code>` on livedocuments's origin (`embedUrlFor`), in an `<iframe>` of a sensible size. `buildEmbedSnippet` (`apps/editor/lib/embed.ts`, unit-tested) still builds that snippet (800×500, a hairline border, `allowfullscreen`) for any surface that offers it again. A password-protected link prompts for its password inside the embed.
+The Share dialog is the shared one from `@liveworkspace/explorer` ([Editor app → Share dialog](../007-editor/editor-app.md#share-dialog)), which offers no embed menu. An embed is built from a link by hand: `/embed?s=<code>` on livedocuments's origin (`embedUrlFor`, `../packages/workbench/src/lib/embed.ts`), in an `<iframe>` of a sensible size. A password-protected link prompts for its password inside the embed.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

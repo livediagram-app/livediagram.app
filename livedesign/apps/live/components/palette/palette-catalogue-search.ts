@@ -5,9 +5,9 @@
 import type { EditorMode, Element } from '@livedesign/design';
 import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveworkspace/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
-import { getStickerCatalog } from '@/lib/stickers';
-import { getLoadedTechIconCatalog } from '@/lib/icon-registry';
-import { isTechIconId } from '@/lib/tech-icons';
+import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
+import { getLoadedTechIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { paletteCategoryOffered } from './palette-layouts';
 import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
 import type { PaletteTileDef } from './palette-tile-defs';

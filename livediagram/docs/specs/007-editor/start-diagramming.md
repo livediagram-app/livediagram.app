@@ -206,8 +206,8 @@ results also fires `UI · Used · StartOtherMode`, so how often a search crosses
 - `components/start/StartPanel.test.tsx`: the In Other Modes section, its cap and Show All, the one-line no-match,
   Down from the search, choosing a card from another mode, Best Match leading, the arrow keys
   among the cards.
-- `components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
-- `components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
+- `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
+- `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: titles per mode, choosing, the blank closing, the per-mode close,
   scroll to top.

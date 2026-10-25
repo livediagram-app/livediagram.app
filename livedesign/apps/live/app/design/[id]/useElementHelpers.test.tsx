@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createArrow, type Element, type StickyElement, type Tab } from '@livedesign/design';
-import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
+import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
 
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));

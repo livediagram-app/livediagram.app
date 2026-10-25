@@ -21,8 +21,8 @@ import {
 } from '@livedesign/design';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import type { ThemeDefinition } from '@livedesign/design';
-import { isTechIconId } from '@/lib/tech-icons';
-import { getSticker, stickerDropSize } from '@/lib/stickers';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
+import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),

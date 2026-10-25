@@ -1,9 +1,9 @@
 import {
-  TECH_ICON_DND_MIME,
   TECH_PROVIDERS,
   searchTechIcons,
   type TechIconDef,
-} from '@/lib/tech-icons';
+} from '@liveworkspace/workbench/lib/tech-icons';
+import { TECH_ICON_DND_MIME } from '@/lib/icons';
 import { IconButton } from '@/components/palette/palette-controls';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import {
@@ -22,7 +22,7 @@ type TechPickerTabProps = {
   // Every brand mark matching the query, across all providers. The tab
   // derives its per-provider slices itself.
   techResults: TechIconDef[];
-  // True while the async icon-catalogue chunk (lib/icon-registry.ts) is still
+  // True while the async icon-catalogue chunk (@liveworkspace/workbench/lib/icon-registry.ts) is still
   // in flight — the grid is empty then, so show a loading note instead of the
   // misleading "no matches" empty state.
   loading?: boolean;

@@ -10,7 +10,7 @@ who re-renders when it changes.
 | File                                                                       | Role                                                                     |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`                             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
+| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
 | `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable         |
 | `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props            |
 | `apps/live/app/design/[id]/editor-ui-state.ts`                             | Creates the store; `selectedId` / setters come from it                   |
@@ -163,7 +163,7 @@ export function elementGrips(
 export type CanvasSelectionInput = Omit<DeriveInput, 'selectedId' | 'multiSelectedIds'>;
 export function useCanvasSelectionView(input: CanvasSelectionInput): CanvasSelection;
 
-// apps/live/hooks/canvas/useSelectionStore.tsx
+// ../packages/workbench/src/hooks/canvas/useSelectionStore.tsx
 export function SelectionStoreProvider(props: {
   store: SelectionStore;
   children: ReactNode;

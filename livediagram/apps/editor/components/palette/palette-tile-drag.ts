@@ -1,8 +1,6 @@
 import { eventStormingNoteSize, SHAPE_DEFAULT_SIZE } from '@livediagram/document';
-import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
+import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
-import { STICKER_DND_MIME } from '@/lib/stickers';
-import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The drag payload of a catalogue tile (docs/specs/010-palette/palette-drag-ghost.md), one definition for every

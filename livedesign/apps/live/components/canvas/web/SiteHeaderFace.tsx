@@ -1,6 +1,6 @@
 import { BORDER_RADIUS_PX, cornerRadiusPx, headerLayout, WEB_TEXT_MAX } from '@livedesign/design';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { GlyphDisc } from '@livedesign/ui';

@@ -4,7 +4,7 @@
 // wait run out. The store is the lazily loaded sheet chunk's, so it is fetched only when a sheet is made.
 import { emptyLayout } from '@liveplanner/sheets';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
-import { whenTabSaved } from '@/lib/tab-saved';
+import { whenTabSaved } from '@liveworkspace/workbench/lib/tab-saved';
 
 export function makeFormSheet(
   bridge: SheetsBridge,

@@ -380,6 +380,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      erase gesture) and the drag, long-task and selection code on `DragState`, which is typed on each
      product's element union; and the identical tests of modules that differ. Those are product
      differences or a change to the element model, not a missing binding.
+   - Third slice: the editor code two or more editors carried in the same words, 99 modules, each at its editor
+     path as its own subpath, with its tests: about 10,200 lines in `packages/workbench` and about 24,900 fewer across
+     the editors. Where copies differed, the newer one won. Where a module held a product key or event name, it now
+     reads a binding (`openSettingsEvent`, `panelPresenceEvent`, `panelLayoutEvent`, `startQueryKey`,
+     `localMoveDismissedPrefix`, and the optional `emptyCardDismissedKey`, `formatConfigKey` and `spotlightConfigKey`),
+     with the values unchanged in each `lib/workbench-keys.ts`. A value only one component reads became a prop
+     (`E2EAuthBridge`'s `sessionKey`). A drag type that a product's drop targets match lives beside `ICON_DND_MIME` in
+     that product's `lib/icons.ts`. `useCanvasLongTaskLog` takes the editor's gesture reader, and livediagram's `crc32`
+     is the one copy the zip writer and the PNG encoder share. Still in the products: routes, product copy and ids,
+     the phone toolbar, the gesture reader, the modules whose names carry the product noun (share state, tombstones,
+     visibility stores, which could move after a neutral rename), and the few variants with real behaviour of their
+     own: livediagram's isometric grips, indicators and tour API, and liveplanner's select handlers and settings art.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

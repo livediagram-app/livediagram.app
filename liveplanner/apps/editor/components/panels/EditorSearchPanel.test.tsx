@@ -38,7 +38,9 @@ vi.mock('@/app/project/[id]/EditorContext', () => ({
 vi.mock('@/hooks/canvas/useEditorCommands', () => ({
   useEditorCommands: () => ({ commandItems: [], runCommand: vi.fn() }),
 }));
-vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => undefined }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIconCatalogs', () => ({
+  useIconCatalogs: () => undefined,
+}));
 
 import { EditorSearchPanel } from './EditorSearchPanel';
 

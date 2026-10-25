@@ -1,5 +1,5 @@
 /* A face drawn by hand under Sketch (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too";
- * components/canvas/SketchFace.tsx). The live face keeps its words and controls with its ink hidden; a still copy
+ * @liveworkspace/workbench/components/canvas/SketchFace.tsx). The live face keeps its words and controls with its ink hidden; a still copy
  * of it underneath keeps the ink, hides the words, and goes through the face wobble (SKETCH_FACE_FILTER, defined
  * by SketchFilterDefs). */
 

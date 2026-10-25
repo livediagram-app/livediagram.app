@@ -61,7 +61,7 @@ import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { handStartQuery } from '@/components/start/start-query';
+import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { isBlankTemplate } from '@livediagram/templates';
 import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';

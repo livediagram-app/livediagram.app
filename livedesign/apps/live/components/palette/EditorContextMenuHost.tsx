@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
 import { logoPageAt, resolveLayerId, tagColoursOf } from '@livedesign/design';

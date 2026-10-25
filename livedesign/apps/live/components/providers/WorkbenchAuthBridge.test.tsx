@@ -10,7 +10,7 @@ import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WorkbenchSession } from './workbench-session-context';
 
-vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
+vi.mock('@liveworkspace/workbench/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/embed/workbench/' }));
 const bridges = vi.hoisted(() => ({ mounted: 0 }));
 vi.mock('next/dynamic', () => ({
@@ -51,7 +51,7 @@ async function load() {
   const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core] = await Promise.all([
     import('./AuthProvider'),
     import('./WorkbenchAuthBridge'),
-    import('./deferred-auth'),
+    import('@liveworkspace/workbench/components/providers/deferred-auth'),
     import('@/hooks/persistence/useAccountBootstrap'),
     import('@/lib/api/core'),
   ]);

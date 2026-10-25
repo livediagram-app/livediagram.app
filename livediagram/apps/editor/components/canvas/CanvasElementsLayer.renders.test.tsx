@@ -79,7 +79,8 @@ import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
-const { SelectionStoreProvider } = await import('@/hooks/canvas/useSelectionStore');
+const { SelectionStoreProvider } =
+  await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
 let store = createSelectionStore();
 
 const a = createShape('square', 0, 0);

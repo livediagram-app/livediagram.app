@@ -150,10 +150,10 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `components/start/start-template-items.test.ts`: Recommended, groups and search, and every listed template
   reachable from the start.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
-- `components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
-- `components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
+- `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
+- `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when the start shows.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `components/canvas/empty-card-dismissed.test.ts` (bringing the start
+- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
   back), `hooks/editor/page-edits.test.ts` (the last page).

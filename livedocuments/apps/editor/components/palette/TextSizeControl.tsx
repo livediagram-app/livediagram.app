@@ -19,7 +19,7 @@ import {
 } from '@livedocuments/document';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { Tooltip } from '@livedocuments/ui';
-import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';
+import { PreviewSliderRow } from '@liveworkspace/workbench/components/primitives/PreviewSliderRow';
 import { ScaleIcon } from './palette-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 

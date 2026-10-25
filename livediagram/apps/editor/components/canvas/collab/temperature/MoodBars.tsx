@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/document';
 import { tint } from '../collab-chrome';
-import { MOOD_GRID } from './mood-grid';
+import { MOOD_GRID } from '@liveworkspace/workbench/components/canvas/collab/temperature/mood-grid';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';
 
 export function MoodBars({ tally, textColor }: { tally: number[]; textColor: string }) {

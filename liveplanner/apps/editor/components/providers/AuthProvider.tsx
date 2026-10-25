@@ -12,9 +12,14 @@
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { e2eAuthEnabled } from '@/lib/auth-config';
-import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
+import { e2eAuthEnabled } from '@liveworkspace/workbench/lib/auth-config';
+import {
+  DEFERRED_AUTH_DEFAULT,
+  DEFERRED_AUTH_PENDING,
+  DeferredAuthContext,
+} from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { bindWorkbench } from '@/lib/workbench-bindings';
+import { E2E_SESSION_KEY } from '@/lib/workbench-keys';
 
 // This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).
 bindWorkbench();
@@ -22,10 +27,16 @@ bindWorkbench();
 // Test builds only (see e2eAuthEnabled): never part of a real bundle. It stands in for the accounts
 // bridge, so a test build with sign-in on shows every sign-in surface while the test picks the session.
 const LazyE2EAuthBridge = e2eAuthEnabled
-  ? dynamic(() => import('./E2EAuthBridge').then((m) => m.E2EAuthBridge), {
-      ssr: false,
-      loading: () => null,
-    })
+  ? dynamic(
+      () =>
+        import('@liveworkspace/workbench/components/providers/E2EAuthBridge').then(
+          (m) => m.E2EAuthBridge,
+        ),
+      {
+        ssr: false,
+        loading: () => null,
+      },
+    )
   : null;
 
 const LazyAccountsBridge = dynamic(() => import('./AccountsBridge').then((m) => m.AccountsBridge), {
@@ -48,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <DeferredAuthContext.Provider value={workbenchRoute ? DEFERRED_AUTH_PENDING : authState}>
       {children}
       {workbenchRoute ? null : LazyE2EAuthBridge ? (
-        <LazyE2EAuthBridge onState={setAuthState} />
+        <LazyE2EAuthBridge sessionKey={E2E_SESSION_KEY} onState={setAuthState} />
       ) : (
         <LazyAccountsBridge onState={setAuthState} />
       )}

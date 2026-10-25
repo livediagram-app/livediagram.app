@@ -21,7 +21,7 @@ import {
   SPOTLIGHT_SHAPES,
   SPOTLIGHT_SIZES,
   type SpotlightConfig,
-} from '@/lib/spotlight-config';
+} from '@liveworkspace/workbench/lib/spotlight-config';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 

@@ -12,7 +12,7 @@ import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
-import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
+import type { useSpotlight } from '@liveworkspace/workbench/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';

@@ -56,7 +56,7 @@ import { presetPxFor } from './TextSizeControl';
 import { WordmarkSection } from './WordmarkSection';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { hasStylePresets, TargetPresetsSection } from '@/components/palette/PresetSections';

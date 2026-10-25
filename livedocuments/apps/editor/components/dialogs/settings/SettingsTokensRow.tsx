@@ -4,7 +4,7 @@ import { ButtonContent, buttonClassName } from '@livedocuments/ui';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { manageTokensUrl } from '@/lib/auth-config';
+import { manageTokensUrl } from '@liveworkspace/workbench/lib/auth-config';
 import { useRelativeNow } from '@/lib/relative-time';
 import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';

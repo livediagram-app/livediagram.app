@@ -21,7 +21,7 @@ import {
 } from '@/components/palette/palette-controls';
 import { ShowMoreButton } from '@liveworkspace/workbench/components/primitives/ShowMoreButton';
 import { HoverCard } from '@livedesign/ui';
-import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
+import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';
 
 // Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled
 // sections so the catalogue reads clearly. Computed once from the single

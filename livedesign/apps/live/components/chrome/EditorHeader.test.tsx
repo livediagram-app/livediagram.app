@@ -6,8 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
-vi.mock('@/components/providers/deferred-auth', () => ({
+vi.mock('@liveworkspace/workbench/lib/auth-config', () => ({ e2eAuthEnabled: false }));
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
     isSignedIn: true,

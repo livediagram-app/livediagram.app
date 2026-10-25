@@ -13,7 +13,7 @@ type IconPickerTabProps = {
   // Every icon matching the query, across all categories. The tab derives its
   // per-category slices itself from ICON_CATEGORIES.
   iconResults: IconDef[];
-  // True while the async icon-catalogue chunk (lib/icon-registry.ts) is still
+  // True while the async icon-catalogue chunk (@liveworkspace/workbench/lib/icon-registry.ts) is still
   // in flight — the grid is empty then, so show a loading note instead of the
   // misleading "no icons match" empty state.
   loading?: boolean;

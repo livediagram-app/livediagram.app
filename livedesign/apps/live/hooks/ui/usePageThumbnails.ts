@@ -9,7 +9,7 @@
 // elements and page are unchanged keeps its picture: an edit redraws the page it touched, not the tab.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { pagesOf, layOutPages, type Element, type LaidOutPage, type Tab } from '@livedesign/design';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pageThumbFor, tabArrowLabels, type PageThumb } from '@/lib/page-thumb';

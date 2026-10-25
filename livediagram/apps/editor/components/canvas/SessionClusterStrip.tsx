@@ -4,7 +4,7 @@ import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@liv
 import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
-import { useNow } from '@/hooks/ui/useNow';
+import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import {
   ClusterPopoverSegment,

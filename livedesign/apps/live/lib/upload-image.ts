@@ -10,7 +10,7 @@ import {
   MAX_IMAGE_MB,
   type AcceptedImageType,
 } from '@livedesign/api-schema';
-import { blobToDataUrl } from '@/lib/blob-data-url';
+import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side

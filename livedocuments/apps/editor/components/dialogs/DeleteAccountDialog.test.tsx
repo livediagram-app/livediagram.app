@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const calls: string[] = [];
 const auth = vi.hoisted(() => ({ confirmed: true }));
 const server = vi.hoisted(() => ({ result: { deleted: {} } as unknown }));
-vi.mock('@/components/providers/deferred-auth', () => ({
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     user: { email: 'a@example.com' },
     confirmIdentity: async () => {

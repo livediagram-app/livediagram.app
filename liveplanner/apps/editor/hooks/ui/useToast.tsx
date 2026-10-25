@@ -11,14 +11,14 @@ import {
   type ToastEntry,
   type ToastOffer,
   type ToastTone,
-} from '@/components/toast/toast-queue';
+} from '@liveworkspace/workbench/components/toast/toast-queue';
 
 export type {
   ToastAction,
   ToastActionSpec,
   ToastOffer,
   ToastTone,
-} from '@/components/toast/toast-queue';
+} from '@liveworkspace/workbench/components/toast/toast-queue';
 
 // The toast surface (docs/specs/004-interface-design/toasts.md). Two jobs: (1) make otherwise-silent
 // failures visible (a background save, a copy, an upload), and (2) confirm consequential, otherwise

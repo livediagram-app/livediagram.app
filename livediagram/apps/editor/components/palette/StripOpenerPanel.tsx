@@ -5,7 +5,7 @@ import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { tileDragStart } from './palette-tile-drag';
-import { PointerWords } from './PointerWords';
+import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';
 
 // What a category opener (palette-openers: Workshop's Ask, Tools, Record, React) opens on the Toolbar strip
 // (docs/specs/007-editor/editor-modes.md "Popular"): the category named, then its tiles as cards, two to a row, each

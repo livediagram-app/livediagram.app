@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
-import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
+import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { StartAgainTray } from './StartAgainTray';
 
 // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty tab's Show Templates steps aside while a

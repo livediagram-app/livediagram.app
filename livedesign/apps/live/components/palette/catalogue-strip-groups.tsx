@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livedesign/ui';
-import { isIconCatalogsLoaded } from '@/lib/icon-registry';
+import { isIconCatalogsLoaded } from '@liveworkspace/workbench/lib/icon-registry';
 import { iconBrowseGroups } from './IconPickerTab';
 import { stickerBrowseGroups } from './StickerPickerTab';
 import { techBrowseGroups } from './TechPickerTab';

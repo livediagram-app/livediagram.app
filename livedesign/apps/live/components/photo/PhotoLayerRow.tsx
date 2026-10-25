@@ -48,7 +48,7 @@ import {
   MenuGroupSeparator,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { useRowMenu } from '@/components/primitives/useRowMenu';
+import { useRowMenu } from '@liveworkspace/workbench/components/primitives/useRowMenu';
 import type { PhotoSession } from '@/lib/photo-editor/session';
 import { layerThumbnail } from '@/lib/photo-editor/thumbnails';
 import { RasterThumb } from './RasterThumb';

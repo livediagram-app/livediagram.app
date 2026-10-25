@@ -19,7 +19,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
 import { tileDragStart } from './palette-tile-drag';
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
-import { PointerWords } from './PointerWords';
+import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';
 
 export function PaletteToolRow({
   def,

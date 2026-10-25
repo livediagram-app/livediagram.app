@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { TourHost } from '@/components/tour/TourHost';
-import { useEverTrue } from '@/hooks/ui/useEverTrue';
+import { useEverTrue } from '@liveworkspace/workbench/hooks/ui/useEverTrue';
 
 // The Workshop tour (docs/specs/012-collaboration/workshop-tour.md) loads the first time the person
 // enters Workshop, and stays mounted after, so leaving Workshop mid-tour still runs its clean-up.

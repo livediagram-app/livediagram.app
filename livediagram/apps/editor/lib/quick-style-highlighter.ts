@@ -8,7 +8,7 @@ import {
   highlighterWidthId,
   highlighterWidthPx,
   type HighlighterWidthId,
-} from './highlighter-config';
+} from '@liveworkspace/workbench/lib/highlighter-config';
 
 export type QuickHighlighterStyle = {
   // What the rows style: the selected highlights, or the next stroke of the armed tile.

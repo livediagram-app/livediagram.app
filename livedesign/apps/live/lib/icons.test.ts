@@ -7,9 +7,12 @@ import {
   getIcon,
   iconsInCategory,
 } from './icons';
-import { ensureIconCatalogs, getLoadedIconCatalog } from './icon-registry';
+import {
+  ensureIconCatalogs,
+  getLoadedIconCatalog,
+} from '@liveworkspace/workbench/lib/icon-registry';
 
-// The catalogue data lives in an async chunk (lib/icon-registry.ts); load it
+// The catalogue data lives in an async chunk (@liveworkspace/workbench/lib/icon-registry.ts); load it
 // once up front so these tests exercise the loaded state. The pre-load
 // (placeholder) behaviour is covered in icon-registry.test.ts, which runs in
 // its own module graph and can observe the not-yet-loaded registry.

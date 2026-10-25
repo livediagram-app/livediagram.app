@@ -8,7 +8,7 @@ import {
   type FormatConfig,
   type FormatGroup,
   type FormatMode,
-} from '@/lib/format-config';
+} from '@liveworkspace/workbench/lib/format-config';
 import { track } from '@/lib/telemetry';
 
 export function useFormatConfig() {

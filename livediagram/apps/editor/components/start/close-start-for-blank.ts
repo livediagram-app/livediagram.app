@@ -4,7 +4,7 @@
 // blank but keeps the start, since it asked for templates next, unless the visit came from a Start Blank link
 // (`/new?start=blank`), which already said no templates.
 import { isBlankTemplate, templateEditorMode, type TemplateKind } from '@livediagram/templates';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from './start-closed-key';
 
 export function closeStartForBlank(tabId: string, kind: TemplateKind | null): boolean {

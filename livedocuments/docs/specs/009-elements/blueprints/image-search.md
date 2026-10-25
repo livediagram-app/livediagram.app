@@ -17,7 +17,7 @@ Scope, by file:
 | `apps/editor/lib/image-search/search.ts`                                       | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
 | `apps/editor/lib/image-search/telemetry.ts`                                    | `searchWarningType`, `pickWarningType`: failure → `Error·Warning` token |
 | `apps/editor/lib/image-search/pick.ts`                                         | `storeSearchResult`: download (full, else thumbnail) and store          |
-| `apps/editor/lib/image-search/read-capped.ts`                                  | `readCapped`: read a body, refusing past a byte cap                     |
+| `../packages/workbench/src/lib/image-search/read-capped.ts`                    | `readCapped`: read a body, refusing past a byte cap                     |
 | `apps/editor/hooks/ui/useImageSearch.ts`                                       | Search tab state: query, pages, status, picking                         |
 | `apps/editor/components/panels/ImageSearchPane.tsx`                            | The Search tab's form, grid, states and footer credit                   |
 | `apps/editor/components/panels/ImagePicker.tsx`                                | Third tab; `onSelect(image: PickedImage)` carries the credit            |
@@ -246,23 +246,23 @@ dropped as stale sends nothing.
 
 ## Testing
 
-| Rule                                                         | Test file                                                |
-| ------------------------------------------------------------ | -------------------------------------------------------- |
-| URL carries q, page, page_size 20, licence filter, mature    | `apps/editor/lib/image-search/openverse.test.ts`         |
-| Parse keeps valid results, drops broken ones, rejects junk   | `apps/editor/lib/image-search/openverse.test.ts`         |
-| Credit text, licence labels, no landing URL → no credit      | `apps/editor/lib/image-search/openverse.test.ts`         |
-| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/editor/lib/image-search/search.test.ts`            |
-| Full image stored; CORS / non-image / unsupported → thumb    | `apps/editor/lib/image-search/pick.test.ts`              |
-| Gallery-full is final; both downloads fail → download-failed | `apps/editor/lib/image-search/pick.test.ts`              |
-| Warning token per search kind and pick failure               | `apps/editor/lib/image-search/telemetry.test.ts`         |
-| Thumbnail fallback reported once, not on a direct store      | `apps/editor/lib/image-search/pick.test.ts`              |
-| Over the source cap: refused, no thumbnail, nothing stored   | `apps/editor/lib/image-search/pick.test.ts`              |
-| Cap by Content-Length, mid-stream cancel, under-cap join     | `apps/editor/lib/image-search/read-capped.test.ts`       |
-| Stages: downloading, saving; again for the thumbnail         | `apps/editor/lib/image-search/pick.test.ts`              |
-| Placeholders while searching; a tile's until it loads        | `apps/editor/components/panels/ImageSearchPane.test.tsx` |
-| Picked tile busy, stage copy, others disabled, hand-off      | `apps/editor/components/panels/ImageSearchPane.test.tsx` |
-| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`                 |
-| Search tab end to end                                        | Browser verification (no e2e: external network)          |
+| Rule                                                         | Test file                                                        |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| URL carries q, page, page_size 20, licence filter, mature    | `apps/editor/lib/image-search/openverse.test.ts`                 |
+| Parse keeps valid results, drops broken ones, rejects junk   | `apps/editor/lib/image-search/openverse.test.ts`                 |
+| Credit text, licence labels, no landing URL → no credit      | `apps/editor/lib/image-search/openverse.test.ts`                 |
+| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/editor/lib/image-search/search.test.ts`                    |
+| Full image stored; CORS / non-image / unsupported → thumb    | `apps/editor/lib/image-search/pick.test.ts`                      |
+| Gallery-full is final; both downloads fail → download-failed | `apps/editor/lib/image-search/pick.test.ts`                      |
+| Warning token per search kind and pick failure               | `apps/editor/lib/image-search/telemetry.test.ts`                 |
+| Thumbnail fallback reported once, not on a direct store      | `apps/editor/lib/image-search/pick.test.ts`                      |
+| Over the source cap: refused, no thumbnail, nothing stored   | `apps/editor/lib/image-search/pick.test.ts`                      |
+| Cap by Content-Length, mid-stream cancel, under-cap join     | `../packages/workbench/src/lib/image-search/read-capped.test.ts` |
+| Stages: downloading, saving; again for the thumbnail         | `apps/editor/lib/image-search/pick.test.ts`                      |
+| Placeholders while searching; a tile's until it loads        | `apps/editor/components/panels/ImageSearchPane.test.tsx`         |
+| Picked tile busy, stage copy, others disabled, hand-off      | `apps/editor/components/panels/ImageSearchPane.test.tsx`         |
+| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`                         |
+| Search tab end to end                                        | Browser verification (no e2e: external network)                  |
 
 ## Constants and configuration
 

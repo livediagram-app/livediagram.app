@@ -9,7 +9,7 @@ import {
   type ShapePartRole,
 } from '@livediagram/document';
 import { useRef, type CSSProperties, type SVGAttributes } from 'react';
-import { useTraceDashes } from './useTraceDashes';
+import { useTraceDashes } from '@liveworkspace/workbench/components/canvas/useTraceDashes';
 import {
   isEdgeRole,
   useShapeSvgAnimation,

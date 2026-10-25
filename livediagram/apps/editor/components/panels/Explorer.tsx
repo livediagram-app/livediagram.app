@@ -166,7 +166,7 @@ function ExplorerImpl({
             ? onNewDocument()
             : go(newDocumentHref(placement))
         }
-        // The whole Explorer, on this address (lib/explorer-href.ts), on the same view. A full load: the editor
+        // The whole Explorer, on this address (@liveworkspace/workbench/lib/explorer-href.ts), on the same view. A full load: the editor
         // serves no /explorer page; the router answers it with liveworkspace's.
         onOpenExplorer={(view) => window.location.assign(explorerPath(view))}
         onOpenItem={(href) => go(href)}

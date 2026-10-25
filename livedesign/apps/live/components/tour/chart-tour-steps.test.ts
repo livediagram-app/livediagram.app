@@ -4,7 +4,7 @@
 // previewed on it, its menu, and a line chart's Chart Data dialog, opened by the tour, step by step.
 
 import { describe, expect, it, vi } from 'vitest';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { chartTourSteps, type ChartTourContext } from './chart-tour-steps';
 
 vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({

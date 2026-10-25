@@ -4,7 +4,7 @@
 // the page.
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { useStripPopover } from './ToolbarStripPopover';
+import { useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 
 afterEach(() => {
   document.body.innerHTML = '';

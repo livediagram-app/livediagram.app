@@ -82,11 +82,11 @@ unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the re
 - `apps/editor/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
   `constrainedBounds`, `leadingAxis`, `minUniformScale`, `snapLeadingAxis(candidate, handle, lead,
 snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
-- `apps/editor/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts, isoDepth,
+- `../packages/workbench/src/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts,
 children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
-SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId, children })` (wraps
-  its children in `<g transform="translate(shiftX 0)">` from `useInsertShift().xFor(arrowId)`),
-  `SELECTION_GRIPS_Z_INDEX`.
+SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ children })`,
+  `SELECTION_GRIPS_Z_INDEX`. One module for every editor but livediagram, whose own copy lifts the layer
+  for isometric view and shifts an arrow's grips for the insert-between preview.
 - `SelectionChromeLayer({ elementId, box, zoom, rotation, shiftX?, showHandles, showAnchors,
 onBeginDrag })` in `element-parts.tsx`.
 - `MenuFlyoutSection` treats a press inside `[data-grips-for]` as a press on the element, as it

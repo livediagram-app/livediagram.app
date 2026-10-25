@@ -15,7 +15,10 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { exportChartInk } from '@/lib/export-chart-ink';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 
 export type SlideThumb = { markup: string; viewBox: string };
 

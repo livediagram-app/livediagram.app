@@ -19,7 +19,7 @@ const { getToken } = vi.hoisted(() => ({
     opts?.skipCache ? 'jwt-fresh' : 'jwt-1',
   ),
 }));
-vi.mock('@/components/providers/deferred-auth', () => {
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => {
   return {
     DEFERRED_AUTH_PENDING: { authLoaded: false },
     useDeferredAuth: () => ({

@@ -1,7 +1,7 @@
 'use client';
 
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
-import { pageStep } from '@/lib/page-step';
+import { pageStep } from '@liveworkspace/workbench/lib/page-step';
 import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -54,7 +54,7 @@ import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
-import { useShowFollowersMyView } from '@/hooks/collab/useShowFollowersMyView';
+import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
 import { useReleaseSelectionLock } from '@/hooks/collab/useReleaseSelectionLock';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
@@ -127,7 +127,7 @@ import { usePresenceRows } from './usePresenceRows';
 import { usePresenceState } from './usePresenceState';
 import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
-import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
+import { usePruneInertSelection } from '@liveworkspace/workbench/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';

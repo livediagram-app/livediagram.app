@@ -765,7 +765,7 @@
    The caster is drawn as a picture of itself already blurred, never as a live
    `filter: blur()`: Safari re-ran the blur for every note on screen on every
    frame of a pan or zoom (docs/specs/008-canvas/canvas-performance.md). The
-   picture is computed from the same recipe (lib/sticky-peel-image.ts) and its
+   picture is computed from the same recipe (@liveworkspace/workbench/lib/sticky-peel-image.ts) and its
    border-image and inset arrive as custom properties on the canvas root; the
    sides stretch to the note's height, so the ramp keeps its proportions.
 
@@ -1012,7 +1012,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 
 /* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
    so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
-   motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
+   motion adds nothing here: the handlers start no View Transition then (@liveworkspace/workbench/lib/view-transition.ts). */
 html {
   view-transition-name: none;
 }

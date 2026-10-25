@@ -1,6 +1,6 @@
 import { handTemplatePick, readTemplatePick } from '@liveworkspace/explorer';
 import { SyncStillSavingError, takeCloudOffline } from '@/lib/offline/offline-convert';
-import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
+import { dismissLocalMove } from '@liveworkspace/workbench/lib/offline/local-move-dismissal';
 import { offlineListDocuments } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

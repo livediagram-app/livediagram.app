@@ -7,7 +7,7 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
+import type { useSpotlight } from '@liveworkspace/workbench/hooks/canvas/useSpotlight';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

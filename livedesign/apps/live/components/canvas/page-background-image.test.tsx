@@ -23,7 +23,9 @@ vi.mock('@/components/panels/ImageSearchPane', () => ({
     return <div data-testid="search-pane" />;
   },
 }));
-vi.mock('@/lib/page-image-tone', () => ({ sampleImageTone: vi.fn(async () => '#203040') }));
+vi.mock('@liveworkspace/workbench/lib/page-image-tone', () => ({
+  sampleImageTone: vi.fn(async () => '#203040'),
+}));
 vi.mock('@/hooks/persistence/useImageBlobUrl', () => ({
   useImageBlobUrl: () => ({ status: 'loading' }),
 }));

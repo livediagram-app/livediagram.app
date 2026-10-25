@@ -9,7 +9,7 @@ import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,

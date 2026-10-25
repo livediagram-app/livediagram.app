@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { applyShapeVariant, createShape, type Element } from '@livedesign/design';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
-import type { ElementTourApi } from './element-tour-api';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 
 const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
   sankey: createShape('sankey', 0, 0),

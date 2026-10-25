@@ -27,7 +27,7 @@ A short list of what-to-copy toggles turns the painter from one blunt action int
 
 ## Which field belongs to which toggle
 
-`lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group** — so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
+`lib/format-painter.ts` stays the single source of truth for **what CAN be painted**; the panel decides **which of it does**. The mapping from field to toggle lives beside it in `../packages/workbench/src/lib/format-config.ts`, and a test asserts that **every field either projection produces is assigned to a group** — so a field added to the painter later can't quietly escape the panel and always travel regardless of the toggles.
 
 ## The panel shows what is loaded
 

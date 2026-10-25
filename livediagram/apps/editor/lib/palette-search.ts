@@ -17,7 +17,7 @@ import {
   getLoadedIconCatalog,
   getLoadedStickerCatalog,
   getLoadedTechIconCatalog,
-} from '@/lib/icon-registry';
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { isLegacyEmojiIconId } from '@liveworkspace/icons';
 
 // The shape-placing tiles, in palette order. Derived from the shared
@@ -100,7 +100,7 @@ function otherTileItems(hasImage: boolean): PaletteSearchItem[] {
 }
 
 // A function, not a module-load constant: the icon catalogues load as an
-// async chunk (lib/icon-registry.ts), so the list must be rebuilt once they
+// async chunk (@liveworkspace/workbench/lib/icon-registry.ts), so the list must be rebuilt once they
 // land. The shape entries are always present; icon / tech entries appear as
 // soon as the chunk does. The caller (EditorSearchPanel) subscribes via
 // useIconCatalogs and passes its value as `catalogues`, so it rebuilds this list

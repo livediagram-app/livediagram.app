@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { PROJECT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
@@ -58,7 +58,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     if (surface === 'workbench' && !inWorkspaceFrame) track('Session', 'Opened', 'Workbench');
   }, [surface, inWorkspaceFrame]);
   // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
-  // the first-load JS, see lib/icon-registry.ts) as soon as the editor
+  // the first-load JS, see @liveworkspace/workbench/lib/icon-registry.ts) as soon as the editor
   // mounts, so it downloads in parallel with the project fetch / hydration.
   // By the time a project's icons render — or the user opens the Icons /
   // Technology palette tab — the data is almost always already in, keeping

@@ -19,7 +19,7 @@
 // no-op. Same module-load hook-swap pattern as `useAccountBootstrap`, chosen
 // from a compile-time constant.
 
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
 import {

@@ -2,7 +2,7 @@
 // a MIME type, or a named failure (docs/specs/020-import-export/blueprints/import-image-pipeline.md).
 
 import { sniffImageType } from '@livedocuments/api-schema';
-import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from './constants';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '@liveworkspace/workbench/lib/import-images/constants';
 import type { ImportImageFailure, ImportImageSource } from './types';
 
 type ReadImportImage =

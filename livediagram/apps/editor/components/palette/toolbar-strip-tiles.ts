@@ -1,6 +1,6 @@
 import { getLineArtIconCatalog } from '@/lib/icons';
-import { searchStickers } from '@/lib/stickers';
-import { searchTechIcons } from '@/lib/tech-icons';
+import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
+import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
 import { visibleTiles } from './PaletteTileGrid';

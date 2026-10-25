@@ -50,7 +50,7 @@ import {
   withContentsPlacement,
   type ContentsPlacement,
 } from '@/lib/contents-placement';
-import type { SettingsIllustrationId } from './settings-illustrations';
+import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.

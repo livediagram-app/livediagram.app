@@ -10,11 +10,11 @@ import {
 } from '@livediagram/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 
 // The boundary (docs/specs/009-elements/boundary.md): a tint under everything it holds (nested ones stack, so they
 // read deeper), and its title in a tab on the top edge, inside its corner, or at its bottom-left for C4, placed by boundaryLayout (the

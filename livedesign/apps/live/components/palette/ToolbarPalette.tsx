@@ -11,7 +11,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
+import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import {
   ChevronDownIcon,
   EllipsisIcon,
@@ -21,11 +21,11 @@ import {
 } from '@livedesign/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
-import { SnapWidth } from '@/components/primitives/SnapWidth';
+import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { BAND_STRIP_FLUSH, BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
-import { PaletteGroupProvider } from './palette-group-state';
+import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
@@ -39,7 +39,10 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { StripPopover, useStripPopover } from './ToolbarStripPopover';
+import {
+  StripPopover,
+  useStripPopover,
+} from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import { StripOpenerPanel } from './StripOpenerPanel';
 import {
@@ -53,8 +56,8 @@ import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
-import { useBarLabels } from './useBarLabels';
-import { useStripCrowded } from './useStripCrowded';
+import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
+import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';

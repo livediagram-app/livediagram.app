@@ -9,7 +9,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import {
   avatarTourStepTelemetryType,
   avatarTourSteps,

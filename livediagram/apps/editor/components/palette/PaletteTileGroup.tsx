@@ -5,7 +5,7 @@ import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/Chev
 import { PaletteToolRows } from './PaletteToolRows';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
-import { usePaletteGroup } from './palette-group-state';
+import { usePaletteGroup } from '@liveworkspace/workbench/components/palette/palette-group-state';
 
 // A collapsible group of tiles inside a palette category: one row that opens
 // in place to reveal its members.

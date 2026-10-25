@@ -13,7 +13,7 @@
 // for the highlighter pen.
 
 import type { ComponentKind, Element } from '@livedocuments/document';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { titleCaseType, track } from '@/lib/telemetry';
 
 // Telemetry for a copy gesture — duplicate, paste, shift-drag (docs/specs/017-telemetry/telemetry.md).

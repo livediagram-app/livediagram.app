@@ -4,10 +4,10 @@
 // pipeline, which resizes, dedupes and uploads (or embeds offline).
 
 import type { ImportImageFailure, ImportImageOutcome, ImportImageSource } from '../import-images';
-import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '@liveworkspace/workbench/lib/import-images/constants';
 import type { PickedImage } from '../upload-image';
 import { creditFor, galleryNameFor, type OpenverseImage } from './openverse';
-import { readCapped } from './read-capped';
+import { readCapped } from '@liveworkspace/workbench/lib/image-search/read-capped';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type PickFailure = ImportImageFailure | 'download-failed';

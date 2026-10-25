@@ -20,7 +20,7 @@ import {
   type ShapeElement,
   supportsFinish,
 } from '@liveplanner/project';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import {
   BorderGlyph,
   IconCategoryGlyph,

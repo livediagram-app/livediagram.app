@@ -13,8 +13,8 @@ import { trustedHtml } from '@livedocuments/ui';
 // takes an element colour.
 
 import { stickerArt, type StickerDef } from '@liveworkspace/icons';
-import { getSticker } from '@/lib/stickers';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { getSticker } from '@liveworkspace/workbench/lib/stickers';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 // The art in its own <svg>, sized by the caller. Shared with the palette
 // tile so a sticker looks the same in the picker as on the canvas.

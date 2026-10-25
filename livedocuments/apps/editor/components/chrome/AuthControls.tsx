@@ -14,7 +14,7 @@
 // request answers) we render nothing so the header doesn't flicker
 // a "Sign in" link only to swap it for the user pill a tick later.
 
-import { useDeferredAuth } from '@/components/providers/deferred-auth';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
 import {

@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livedocuments/document';
 import type { connectRoom } from '@/lib/api-client';
-import { whenTabSaved } from '@/lib/tab-saved';
+import { whenTabSaved } from '@liveworkspace/workbench/lib/tab-saved';
 
 type Room = ReturnType<typeof connectRoom>;
 

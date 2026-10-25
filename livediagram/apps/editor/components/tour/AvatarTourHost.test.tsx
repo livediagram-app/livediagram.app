@@ -8,7 +8,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { setStartPanelOpen } from '@/components/start/start-panel-open';
+import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import {
   publishTourOffer,
   resetTourOffersForTests,

@@ -26,12 +26,12 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                            |
 | `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                               |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                      |
-| `apps/editor/hooks/canvas/useCanvasLongTaskLog.ts`                     | The `[canvas-perf] long task` debug log                                                                         |
+| `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                         |
 | `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
 | `apps/editor/app/globals.css`                                          | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
-| `apps/editor/lib/sticky-peel-image.ts`                                 | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
-| `apps/editor/lib/png-encode.ts`                                        | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
+| `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
+| `../packages/workbench/src/lib/png-encode.ts`                          | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
 | `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                       | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`           |
 | `apps/editor/e2e/perf/interactive.ts`                                  | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                        |
 | `apps/editor/e2e/perf/reference-board.ts`                              | `buildReferenceBoard(seed, count)`                                                                              |

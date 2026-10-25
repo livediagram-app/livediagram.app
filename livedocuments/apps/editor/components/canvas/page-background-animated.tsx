@@ -13,7 +13,7 @@ import {
   type PageMotion,
 } from '@livedocuments/document';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
-import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
+import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@livedocuments/ui';
 import { fillCss, type ThemeBackgroundPreset } from '@/lib/page-paint';
 import {

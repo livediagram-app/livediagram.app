@@ -17,7 +17,7 @@ import {
   HeaderGlyph,
 } from '@liveworkspace/workbench/components/chrome/header-action';
 import { useFormShareHost } from '@/lib/form-share-store';
-import { explorerHref } from '@/lib/explorer-href';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // The autosave's sync state. No header pill shows it any more: the failure
 // states each raise a toast (editor-persistence.ts), so silent failures

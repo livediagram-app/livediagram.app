@@ -8,7 +8,7 @@ import {
   setActiveTabName,
   usePublishTabName,
   usePublishTabRename,
-} from '@/hooks/editor/active-tab-name-store';
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 
 afterEach(() => {
   cleanup();

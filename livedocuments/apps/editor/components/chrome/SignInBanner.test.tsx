@@ -10,7 +10,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { SignInBanner } = await import('./SignInBanner');
 const { TOAST_FLOOR_CHANGED_EVENT, TOAST_FLOOR_SELECTOR } =
-  await import('@/components/toast/toast-floor');
+  await import('@liveworkspace/workbench/components/toast/toast-floor');
 
 afterEach(cleanup);
 

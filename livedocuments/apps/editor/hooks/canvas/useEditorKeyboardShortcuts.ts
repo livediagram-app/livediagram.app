@@ -27,7 +27,7 @@ import {
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { arrowPageDir } from '@/lib/page-step';
+import { arrowPageDir } from '@liveworkspace/workbench/lib/page-step';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
 

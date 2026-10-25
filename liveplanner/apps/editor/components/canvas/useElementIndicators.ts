@@ -15,7 +15,10 @@ import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
-import { buildIndicatorItems, type IndicatorItem } from './indicator-items';
+import {
+  buildIndicatorItems,
+  type IndicatorItem,
+} from '@liveworkspace/workbench/components/canvas/indicator-items';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 

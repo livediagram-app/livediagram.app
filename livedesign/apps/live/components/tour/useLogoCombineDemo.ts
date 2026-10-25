@@ -9,7 +9,7 @@ import {
   type Element,
 } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
-import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
+import { useOptionalSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { combineElements } from '@/lib/combine/combine';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

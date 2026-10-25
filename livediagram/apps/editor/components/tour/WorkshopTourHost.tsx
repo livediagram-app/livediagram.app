@@ -24,7 +24,7 @@ import {
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
-import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 
 const WORKSHOP_TOUR_COPY = {
   helpHref: '/help/canvas/workshop-mode/',

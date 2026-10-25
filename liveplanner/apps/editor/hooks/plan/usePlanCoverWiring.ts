@@ -8,7 +8,7 @@ import { isPlanTabKind, type Tab } from '@liveplanner/project';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 import { isCanvasCovered, setPlanCover } from './plan-cover-store';
 import { planTabEntries, setPlanTabList } from './plan-tab-list-store';
-import { setActiveTabName } from '@/hooks/editor/active-tab-name-store';
+import { setActiveTabName } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 
 export function usePlanCoverWiring({
   activeTab,

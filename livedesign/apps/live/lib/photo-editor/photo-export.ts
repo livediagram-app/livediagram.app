@@ -14,7 +14,7 @@ import {
 } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
 import type { ExportImageMap } from '../export-tab-images';
-import { writeZip } from '../zip-writer';
+import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 import type { PixelsStore } from './pixels-store';
 import { PhotoSession } from './session';
 import { rasterizeText } from './text-raster';

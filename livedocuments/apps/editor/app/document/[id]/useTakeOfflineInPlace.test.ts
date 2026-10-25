@@ -19,7 +19,9 @@ vi.mock('@/lib/offline/offline-convert', async (orig) => ({
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineListDocuments: () => Promise.resolve([{ id: 'doc-1' }]),
 }));
-vi.mock('@/lib/offline/local-move-dismissal', () => ({ dismissLocalMove: dismiss }));
+vi.mock('@liveworkspace/workbench/lib/offline/local-move-dismissal', () => ({
+  dismissLocalMove: dismiss,
+}));
 vi.mock('@liveworkspace/explorer', async (orig) => ({
   ...(await orig<typeof import('@liveworkspace/explorer')>()),
   readTemplatePick: pick.read,

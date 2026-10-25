@@ -44,7 +44,10 @@ import {
   type ExportShape,
 } from '@livediagram/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 import {
   isoCanvasMatrix,
   isoDepthLayers,

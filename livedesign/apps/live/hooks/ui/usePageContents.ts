@@ -21,7 +21,7 @@ import {
 } from '@/lib/page-contents';
 import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
-import { useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
+import { useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 
 // How far beyond the list's visible part a row's picture is drawn ahead of a scroll, in px.
 const CONTENTS_DRAW_AHEAD_PX = 400;

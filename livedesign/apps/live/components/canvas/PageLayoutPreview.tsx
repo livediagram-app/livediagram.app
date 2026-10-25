@@ -25,7 +25,10 @@ import {
   type WireframeFrameTheme,
 } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayoutOver } from '@livedesign/templates';

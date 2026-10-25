@@ -10,7 +10,7 @@ import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 // docs/specs/026-plan/plan-board.md "Maximised board", "Fill Tab": the selection chrome reads whether a Plan board
 // covers the canvas, so no path (a press before, select-all, undo, a collaborator) brings its toolbar back.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('./useSelectionStore', () => ({
+vi.mock('@liveworkspace/workbench/hooks/canvas/useSelectionStore', () => ({
   useSelectionOf: (pick: (s: unknown) => unknown) =>
     pick({ selectedId: 'b', multiSelectedIds: new Set<string>() }),
 }));

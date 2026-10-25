@@ -37,7 +37,7 @@ import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 import { noteSaveFailing, noteTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
-import { noteTabSaved } from '@/lib/tab-saved';
+import { noteTabSaved } from '@liveworkspace/workbench/lib/tab-saved';
 
 // Per-tab autosave (docs/specs/006-project/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -342,7 +342,7 @@ export function useAutosave(opts: {
           )
           .then((rev) => {
             if (rev !== null) noteRevision(t.id, rev);
-            // A sheet made on this tab may be waiting for it to exist on the server (lib/tab-saved.ts).
+            // A sheet made on this tab may be waiting for it to exist on the server (@liveworkspace/workbench/lib/tab-saved.ts).
             noteTabSaved(projectId, t.id);
           });
         writes.push(write);

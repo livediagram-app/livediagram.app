@@ -12,7 +12,7 @@ import {
   syncFailureMessage,
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
-import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
+import { dismissLocalMove } from '@liveworkspace/workbench/lib/offline/local-move-dismissal';
 import { offlineListProjects } from '@/lib/offline/offline-store';
 
 // Offline Mode conversions (docs/specs/006-project/offline-mode.md) for the pages that offer them: This Browser's

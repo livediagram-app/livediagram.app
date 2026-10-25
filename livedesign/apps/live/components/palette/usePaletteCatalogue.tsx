@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
-import { searchStickers } from '@/lib/stickers';
-import { searchTechIcons } from '@/lib/tech-icons';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
+import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { paletteCategoryTabs } from './palette-category-tabs';
@@ -170,7 +170,7 @@ export function usePaletteCatalogue({
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
-  // Both icon catalogues load as one async chunk (lib/icon-registry.ts).
+  // Both icon catalogues load as one async chunk (@liveworkspace/workbench/lib/icon-registry.ts).
   // Subscribing here re-renders the palette when the data lands, so the two
   // result lists below re-derive from the populated catalogue; until then
   // they're empty and the picker tabs show a brief "Loading icons" note

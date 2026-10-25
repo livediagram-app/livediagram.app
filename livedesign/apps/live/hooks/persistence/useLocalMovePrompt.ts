@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { formatRelativeTime } from '@livedesign/ui';
 import { offlineIdCount, offlineListDesigns } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
-import { dismissLocalMove, shouldOfferLocalMove } from '@/lib/offline/local-move-dismissal';
+import {
+  dismissLocalMove,
+  shouldOfferLocalMove,
+} from '@liveworkspace/workbench/lib/offline/local-move-dismissal';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';

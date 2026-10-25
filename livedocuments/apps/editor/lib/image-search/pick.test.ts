@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ImportImageOutcome, ImportImageSource } from '../import-images';
-import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '@liveworkspace/workbench/lib/import-images/constants';
 import type { OpenverseImage } from './openverse';
 import { pickFailureMessage, storeSearchResult, type PickStore } from './pick';
 

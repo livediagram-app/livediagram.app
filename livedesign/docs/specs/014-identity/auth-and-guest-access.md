@@ -11,7 +11,7 @@ We don't put auth in front of the core experience. We add auth where it _enables
 The live app always offers sign-in; there is no build-time switch (Clerk and `NEXT_PUBLIC_SIGN_IN_ENABLED` are gone).
 `AuthProvider` always mounts the accounts bridge, `useAccountBootstrap` always reads the session, `AuthControls`
 always shows Sign in or the account, and `/sign-in/` and `/get-started/` always hand off to the accounts site. Only the
-test build differs: `NEXT_PUBLIC_E2E_AUTH=1` (`e2eAuthEnabled` in `apps/live/lib/auth-config.ts`) swaps the bridge for
+test build differs: `NEXT_PUBLIC_E2E_AUTH=1` (`e2eAuthEnabled` in `../packages/workbench/src/lib/auth-config.ts`) swaps the bridge for
 the test-only `E2EAuthBridge`.
 
 The api is what needs configuring: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET`.

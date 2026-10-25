@@ -33,8 +33,12 @@ import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { PageImageAccessProvider } from '@/components/canvas/page-image-access';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
-import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
+import { canvasGestureNow } from '@/lib/canvas-gesture';
+import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
+import {
+  useSelectionOf,
+  useSelectionStore,
+} from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -42,8 +46,8 @@ import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndica
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
-import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
+import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
+import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
@@ -57,7 +61,7 @@ import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
-import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
+import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
@@ -65,7 +69,7 @@ import {
   loadPhotoCanvasOverlays,
   loadPhotoPagesLayer,
 } from '@/lib/editor-deferred-code';
-import { useStickyPeelVars } from '@/lib/sticky-peel-image';
+import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // Pages mode's pages draw only on a tab that has pages, so their code loads on demand
 // (lib/editor-deferred-code.ts fetches it as the editor mounts).
@@ -126,7 +130,7 @@ function CanvasView(props: CanvasProps) {
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
-  useCanvasLongTaskLog();
+  useCanvasLongTaskLog(canvasGestureNow);
   const offscreenContent = useOffscreenContent(
     elements,
     viewportOffset,

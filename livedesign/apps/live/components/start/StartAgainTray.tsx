@@ -12,10 +12,10 @@ import {
   PaletteTray,
   PaletteTrayAction,
   usePaletteStripBox,
-} from '@/components/chrome/PaletteTray';
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
-import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
+import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
+import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 15);

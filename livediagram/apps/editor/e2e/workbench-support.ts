@@ -7,13 +7,13 @@ import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test';
+import { E2E_SESSION_KEY } from '../lib/workbench-keys';
 import { seedToken } from './accounts-stub';
 
 const FAKE_WORKBENCH_HTML = readFileSync(
   new URL('./fixtures/fake-workbench.html', import.meta.url),
   'utf8',
 );
-const E2E_SESSION_KEY = 'livediagram:e2e:session';
 
 export type FakeWorkbench = {
   origin: string;

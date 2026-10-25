@@ -8,7 +8,7 @@ import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';

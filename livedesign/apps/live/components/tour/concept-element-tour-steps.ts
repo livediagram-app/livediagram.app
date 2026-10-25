@@ -4,8 +4,12 @@
 // Each kind's own steps and words live in its own file (layer-stack-tour-steps.ts, ...).
 import type { ConceptRow } from '@livedesign/design';
 import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
-import type { ElementTourApi } from './element-tour-api';
-import { clearMenuPath, MENU_TARGET, openMenuPath } from './element-menu-tour';
+import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
+import {
+  clearMenuPath,
+  MENU_TARGET,
+  openMenuPath,
+} from '@liveworkspace/workbench/components/tour/element-menu-tour';
 import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 

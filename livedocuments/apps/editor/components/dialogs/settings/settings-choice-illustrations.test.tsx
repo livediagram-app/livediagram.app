@@ -6,8 +6,8 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
-import { CHOICE_ILLUSTRATIONS } from './settings-choice-illustrations';
-import { SettingsIllustration } from './settings-illustrations';
+import { CHOICE_ILLUSTRATIONS } from '@liveworkspace/workbench/components/dialogs/settings/settings-choice-illustrations';
+import { SettingsIllustration } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 
 afterEach(cleanup);
 

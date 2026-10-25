@@ -11,7 +11,7 @@
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
+import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import {
   parseSankeyText,

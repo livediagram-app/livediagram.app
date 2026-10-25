@@ -3,7 +3,9 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const auth = vi.hoisted(() => ({ authLoaded: true, isSignedIn: false }));
-vi.mock('@/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth }));
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
+  useDeferredAuth: () => auth,
+}));
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/' }),
 }));

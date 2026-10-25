@@ -6,7 +6,7 @@
 
 import { useMemo } from 'react';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
-import { useSelectionOf } from './useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 import { usePreviewedElements } from './usePreviewedElements';
 

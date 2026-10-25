@@ -10,7 +10,7 @@ import {
   type LaidOutPage,
   type PageKind,
 } from '@livedesign/design';
-import { rowDropIndex, type RowDrop } from '@/hooks/ui/useRowReorderDrag';
+import { rowDropIndex, type RowDrop } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 
 export type ContentsRow = {
   id: string;

@@ -8,29 +8,29 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                 | Role                                                                |
-| ---------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                | `ShapeKind` includes `'page'`                                       |
-| `packages/document/src/shape-factory.ts`             | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
-| `packages/document/src/element-types.ts`             | `ShapeElement.pageTitle`, `pageSubtitle`                            |
-| `packages/document/src/data-shapes.ts`               | `PAGE_HEADING_MAX`                                                  |
-| `packages/document/src/validate.ts`                  | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
-| `packages/document/src/svg-render-body.ts`           | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
-| `packages/document/src/svg-render-page.ts`           | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
-| `packages/document/src/svg-render.ts`                | Export box (`borderedRect`) and the fold over it                    |
-| `packages/document/src/svg-render-describe.ts`       | Export body label starts at `pageBodyTop`                           |
-| `packages/document/src/themes.ts`                    | `themeColourFields`: page exempt from theme applies [QD15]          |
-| `packages/document/src/colors.ts`                    | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
-| `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` returns a page's own colours                |
-| `apps/editor/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
-| `apps/editor/components/canvas/PageMasthead.tsx`       | The masthead: two `InlineTextLine`s over a hairline rule            |
-| `apps/editor/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
-| `apps/editor/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
-| `apps/editor/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
-| `packages/document/src/export-tab-text.ts`           | Markdown outline [QD13]                                             |
+| File                                                             | Role                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/document/src/shape-kind.ts`                            | `ShapeKind` includes `'page'`                                       |
+| `packages/document/src/shape-factory.ts`                         | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
+| `packages/document/src/element-types.ts`                         | `ShapeElement.pageTitle`, `pageSubtitle`                            |
+| `packages/document/src/data-shapes.ts`                           | `PAGE_HEADING_MAX`                                                  |
+| `packages/document/src/validate.ts`                              | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
+| `packages/document/src/svg-render-body.ts`                       | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
+| `packages/document/src/svg-render-page.ts`                       | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
+| `packages/document/src/svg-render.ts`                            | Export box (`borderedRect`) and the fold over it                    |
+| `packages/document/src/svg-render-describe.ts`                   | Export body label starts at `pageBodyTop`                           |
+| `packages/document/src/themes.ts`                                | `themeColourFields`: page exempt from theme applies [QD15]          |
+| `packages/document/src/colors.ts`                                | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
+| `apps/editor/lib/themes.ts`                                      | `deriveNewBoxedColours` returns a page's own colours                |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`            | `isSvgRenderedShape('page')` is false: CSS box path                 |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`            | Stacks `PageMasthead` over the body region                          |
+| `apps/editor/components/canvas/PageMasthead.tsx`                 | The masthead: two `InlineTextLine`s over a hairline rule            |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | One plain line edited in place                                      |
+| `../packages/workbench/src/components/canvas/PageCornerFold.tsx` | The turned-back corner                                              |
+| `apps/editor/components/canvas/BoxedElementView.tsx`             | Mounts the fold                                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:page`, `toolGroup: 'write'`                             |
+| `packages/document/src/export-tab-text.ts`                       | Markdown outline [QD13]                                             |
 
 ## Domain and naming
 
@@ -126,7 +126,7 @@ export function svgPageFold(el: Page, fill: string, stroke: string, paper: strin
 // apps/editor/hooks/canvas/useDataShapeSetters.ts
 setPageHeading(elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string): void;
 
-// apps/editor/components/canvas/InlineTextLine.tsx
+// ../packages/workbench/src/components/canvas/InlineTextLine.tsx
 export function InlineTextLine(props: {
   value: string;
   placeholder: string;
@@ -224,25 +224,25 @@ Telemetry: `Element` / `Added` / `Page`. Masthead edits emit nothing; the propos
 
 ## Testing
 
-| Rule                                            | Test                                            | File                                                        |
-| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`          |
+| Rule                                            | Test                                            | File                                                          |
+| ----------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`            |
 | Page is found in palette search                 | palette search kinds                            | `apps/editor/lib/palette-search.test.ts`                      |
 | Masthead line commits through `onSetHeading`    | web component heading commit (shared line)      | `apps/editor/components/canvas/web/WebComponentFace.test.tsx` |
-| Size 420 × 594, alignment, padding, colours     | none                                            | (GD7)                                                       |
-| Exempt from new-element colour derivation (I3)  | none                                            | (GD7)                                                       |
-| Exempt from theme applies [QD15]                | none                                            | (GD7)                                                       |
-| CSS box path                                    | none                                            | (GD7)                                                       |
-| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (GD7)                                                       |
-| Empty line stores `undefined`                   | none                                            | (GD7)                                                       |
-| Enter commits, Escape restores, keys stay local | none                                            | (GD7)                                                       |
-| Fold clamps and hides                           | none                                            | (GD7)                                                       |
-| Export body under the rule; fold cut is paper   | starts a page label under the masthead, ...     | `packages/document/src/svg-render-fidelity.test.ts`         |
-| Text align applies to a page                    | `supportsTextAlign` on for plain shapes ...     | `packages/document/src/collab-shapes.test.ts`               |
-| `svgPageMasthead` title / subtitle text, colour | none                                            | (GD7)                                                       |
-| Body ink reads on dark paper [QD17]             | none                                            | (GD15)                                                      |
-| Markdown title + indented body [QD13]           | none                                            | (GD7)                                                       |
-| Body clips / scrolls [QD12]                     | none                                            | (GD7)                                                       |
+| Size 420 × 594, alignment, padding, colours     | none                                            | (GD7)                                                         |
+| Exempt from new-element colour derivation (I3)  | none                                            | (GD7)                                                         |
+| Exempt from theme applies [QD15]                | none                                            | (GD7)                                                         |
+| CSS box path                                    | none                                            | (GD7)                                                         |
+| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (GD7)                                                         |
+| Empty line stores `undefined`                   | none                                            | (GD7)                                                         |
+| Enter commits, Escape restores, keys stay local | none                                            | (GD7)                                                         |
+| Fold clamps and hides                           | none                                            | (GD7)                                                         |
+| Export body under the rule; fold cut is paper   | starts a page label under the masthead, ...     | `packages/document/src/svg-render-fidelity.test.ts`           |
+| Text align applies to a page                    | `supportsTextAlign` on for plain shapes ...     | `packages/document/src/collab-shapes.test.ts`                 |
+| `svgPageMasthead` title / subtitle text, colour | none                                            | (GD7)                                                         |
+| Body ink reads on dark paper [QD17]             | none                                            | (GD15)                                                        |
+| Markdown title + indented body [QD13]           | none                                            | (GD7)                                                         |
+| Body clips / scrolls [QD12]                     | none                                            | (GD7)                                                         |
 
 ## Constants and configuration
 

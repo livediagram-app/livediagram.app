@@ -16,7 +16,7 @@ async function load() {
     made.push(b as Blob);
     return `blob:peel-${made.length}`;
   });
-  return { mod: await import('./sticky-peel-image'), made };
+  return { mod: await import('@liveworkspace/workbench/lib/sticky-peel-image'), made };
 }
 
 describe('stickyPeelVars in the browser', () => {

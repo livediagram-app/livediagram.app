@@ -243,7 +243,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   whose face is split: every shape kind outside `SKETCHED_BY_BODY` (the plain boxes whose sketched body is their
   whole drawing, icons and stickers), a plain box with an inline icon, tables, link cards,
   video and article margin notes. `BoxedElementView` wraps everything it draws over the body (accent edge to
-  `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
+  `ElementFaceRouter`) in `../packages/workbench/src/components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
   holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a
   `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. In a layout effect it fills the
   ink div with `sketchInkCopy(live)` (a `cloneNode` with `img, video, iframe, canvas, [data-sketch-skip]` removed and
@@ -508,7 +508,7 @@ per command letter.
 | Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                                  |
 | one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                                   |
 | export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                            |
-| ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                          |
+| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
 | face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |

@@ -7,7 +7,7 @@
 // imports so each consumer picks its loading strategy:
 //   - `@liveworkspace/icons/icon-catalog-1` / `icon-catalog-2` /
 //     `tech-icon-catalog` — the raw data modules; the editor dynamic-imports
-//     them (lib/icon-registry.ts) so they stay out of its first-load JS.
+//     them (@liveworkspace/workbench/lib/icon-registry.ts) so they stay out of its first-load JS.
 //   - `@liveworkspace/icons/sticker-catalog` — the sticker catalogue (docs/specs/010-palette/stickers.md);
 //     the editor loads it with the icon chunk, the Workers import it directly.
 //   - `@liveworkspace/icons/resolve` — a static-import resolver for the

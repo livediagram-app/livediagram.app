@@ -6,7 +6,7 @@ import type { LaidOutPage, Tab } from '@livedesign/design';
 import { sanitizeFilename } from './export-pages';
 import { encodeIco } from './ico-writer';
 import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';
-import { writeZip } from './zip-writer';
+import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export const LOGO_KIT_PNG_SIZES = [16, 32, 48, 64, 128, 180, 192, 256, 512, 1024] as const;
 export const LOGO_ICO_SIZES = [16, 32, 48] as const;
@@ -89,11 +89,7 @@ export async function exportLogoKit(
 
 /** The kit's file name: `<design> - <page name> - Logo Kit.zip`, the page by its name, else its
  *  place ("Page 2"), or no page at all while it is the only one. */
-export function logoKitFileName(
-  designName: string,
-  page: LaidOutPage,
-  pageCount: number,
-): string {
+export function logoKitFileName(designName: string, page: LaidOutPage, pageCount: number): string {
   const pageName = page.name ?? (pageCount > 1 ? `Page ${page.index + 1}` : '');
   const base = `${designName || 'design'}${pageName ? ` - ${pageName}` : ''}`;
   return `${sanitizeFilename(base)} - Logo Kit.zip`;

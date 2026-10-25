@@ -6,23 +6,23 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                        | Role                                                                                                             |
-| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/quick-swatches.ts`                                   | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
-| `packages/document/src/colors.ts`                                           | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
-| `packages/document/src/element-types.ts`, `arrow-types.ts`                  | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
-| `packages/document/src/validate.ts`                                         | Rejects a swatch field that is not a slot                                                                        |
-| `packages/document/src/quick-swatch-rederive.ts`                            | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/document/src/theme-graph.ts`                                      | The four theme walks call the re-derive last                                                                     |
+| File                                                                          | Role                                                                                                             |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/quick-swatches.ts`                                     | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `packages/document/src/colors.ts`                                             | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
+| `packages/document/src/element-types.ts`, `arrow-types.ts`                    | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
+| `packages/document/src/validate.ts`                                           | Rejects a swatch field that is not a slot                                                                        |
+| `packages/document/src/quick-swatch-rederive.ts`                              | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `packages/document/src/theme-graph.ts`                                        | The four theme walks call the re-derive last                                                                     |
 | `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
-| `apps/editor/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
+| `../packages/workbench/src/lib/quick-style-placement.ts`                      | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
 | `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-document memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
 | `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
-| `apps/editor/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
+| `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |

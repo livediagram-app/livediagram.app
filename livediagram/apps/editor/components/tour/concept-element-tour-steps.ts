@@ -5,7 +5,11 @@
 import type { ConceptRow } from '@livediagram/document';
 import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import type { ElementTourApi } from './element-tour-api';
-import { clearMenuPath, MENU_TARGET, openMenuPath } from './element-menu-tour';
+import {
+  clearMenuPath,
+  MENU_TARGET,
+  openMenuPath,
+} from '@liveworkspace/workbench/components/tour/element-menu-tour';
 import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 

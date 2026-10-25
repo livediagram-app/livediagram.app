@@ -50,7 +50,10 @@ import {
   xmlEscape,
 } from '@livedocuments/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
 import type { ExportImageMap } from './export-tab-images';

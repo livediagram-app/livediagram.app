@@ -1,6 +1,6 @@
 import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livedocuments/document';
 import { capBandBaselineY } from '@liveworkspace/icons';
-import { InlineTextLine } from '@/components/canvas/InlineTextLine';
+import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 

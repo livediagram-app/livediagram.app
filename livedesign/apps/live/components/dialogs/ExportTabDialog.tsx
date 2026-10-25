@@ -30,7 +30,7 @@ import {
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';

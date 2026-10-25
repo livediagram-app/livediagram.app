@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {

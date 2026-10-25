@@ -8,7 +8,7 @@ import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
@@ -45,7 +45,7 @@ export function EditorSearchPanel() {
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands(searchOpen);
   const tileActions = useEditorTileActions();
-  // The icon catalogues load async (lib/icon-registry.ts); subscribing here
+  // The icon catalogues load async (@liveworkspace/workbench/lib/icon-registry.ts); subscribing here
   // re-renders the panel — and rebuilds the palette items below — the moment
   // they land, so "Add to canvas" results go from shapes-only to the full
   // shapes + icons + tech list without a reopen. (In practice the editor page

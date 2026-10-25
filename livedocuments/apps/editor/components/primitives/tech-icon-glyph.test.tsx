@@ -6,7 +6,7 @@ import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { TechIconArt, TechIconGlyph } from './tech-icon-glyph';
 
 beforeAll(async () => {

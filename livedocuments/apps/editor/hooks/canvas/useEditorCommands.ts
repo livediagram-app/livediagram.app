@@ -9,7 +9,7 @@
 // get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
 import { isBoxed, renumberSteps, supportsRotation } from '@livedocuments/document';

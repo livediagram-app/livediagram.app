@@ -6,7 +6,10 @@ import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideX } from '@liveworkspace/icons/lucide';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { EmptyCanvasArt } from './EmptyCanvasArt';
-import { dismissEmptyCard, emptyCardDismissed } from './empty-card-dismissed';
+import {
+  dismissEmptyCard,
+  emptyCardDismissed,
+} from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 
 const CloseGlyph = lucideGlyph(lucideX, 16);
 

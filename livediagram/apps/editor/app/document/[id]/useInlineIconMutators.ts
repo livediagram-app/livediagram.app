@@ -1,6 +1,6 @@
 import { withInlineIcon, type Element } from '@livediagram/document';
 
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { track } from '@/lib/telemetry';
 
 interface InlineIconMutatorsDeps {
