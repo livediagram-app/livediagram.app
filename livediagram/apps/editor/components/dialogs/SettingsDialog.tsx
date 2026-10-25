@@ -35,6 +35,7 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDriveMirror } from '@/components/drive/drive-mirror-context';
 import type { CloudSyncProviderId } from '@/lib/cloud-sync/providers';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
+import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -90,6 +91,9 @@ export function SettingsDialog({
     () => (driveMode !== 'off' ? ['googleDrive'] : []),
     [driveMode],
   );
+  // Documents in This Browser with parts set aside: Account's way back to the offer
+  // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
+  const retiredParts = useRetiredPartsCount(!workbench);
   const categories = useMemo(
     () =>
       visibleCategories({
@@ -99,8 +103,9 @@ export function SettingsDialog({
         preferences: settings,
         cloudProviders,
         workbench,
+        retiredParts,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench],
+    [emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench, retiredParts],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt

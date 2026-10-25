@@ -122,6 +122,8 @@ cache, cached share passwords, and the stale-build reload guards.
 - the guest identity: `guest-token` and `name-confirmed` (under
   `livediagram:v2:`). Losing the guest token loses every document a guest
   owns;
+- the old site's guest, `self-id` and `self-sig` (under `livediagram:v2:`), until this editor has claimed it
+  ([Returning guests from the old site](../014-identity/auth-and-guest-access.md#returning-guests-from-the-old-site));
 - `collab-key`, its secret half `collab-secret`, and `community-key`, the
   per-browser keys that past answers, votes and
   likes are matched against;

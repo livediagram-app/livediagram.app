@@ -24,6 +24,10 @@ export type ApiWriteSignal = {
   /** A change made in Google Drive was applied here (docs/specs/022-drive-mirror/drive-mirror.md,
    *  "Other views follow"): views that list documents re-read. */
   drive?: true;
+  /** An old livediagram.app guest's work was just merged into the person
+   *  (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site"): views that list
+   *  documents re-read. */
+  claimed?: true;
 };
 
 type Listener = (signal: ApiWriteSignal) => void;

@@ -39,6 +39,8 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
+import { useLegacyGuestClaim } from '@/hooks/persistence/useLegacyGuestClaim';
+import { useSettledOwnerId } from '@/hooks/persistence/useSettledOwnerId';
 import { handTemplatePick } from '@liveworkspace/explorer';
 import {
   templateFamilyOf,
@@ -119,6 +121,9 @@ export default function NewDocumentPage() {
   // (docs/specs/014-identity/auth-and-guest-access.md): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
   const guestId = useGuestId(authLoaded, accountUserId);
+  // A returning old livediagram.app guest's work is claimed in the background
+  // (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site").
+  useLegacyGuestClaim(true, useSettledOwnerId(authLoaded, accountUserId));
   const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
   const [selfOverride, setSelf] = useState<Participant | null>(null);
   const baseId = authLoaded ? (accountUserId ?? guestId) : null;

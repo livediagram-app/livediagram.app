@@ -8,9 +8,11 @@ import type { OfflineDocumentRecord } from './offline-store';
 
 const DB_NAME = 'livediagram-offline';
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
-// ./legacy-offline-store moves every record across.
-const DB_VERSION = 2;
+// ./legacy-offline-store moves every record across. Version 3 added the `retired-parts` store and sets aside each
+// record holding Pages or Plan content before anything can read it (./retired-parts-upgrade).
+const DB_VERSION = 3;
 const STORE = 'documents';
+export const OFFLINE_DOCUMENTS_STORE = STORE;
 
 // What a read-modify-write gets: the stored record (undefined when there is none), and what it
 // answers: the record to store, 'delete' to remove it, or undefined to write nothing. Synchronous, because IndexedDB
@@ -51,7 +53,9 @@ export class OfflineStoreUnavailableError extends Error {
   }
 }
 
-function openDb(): Promise<IDBDatabase> {
+// One connection to the store, for one operation: callers close it when done. Exported for the retired-parts store
+// (./retired-parts), which shares the database and its upgrade.
+export function openOfflineDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new Error('IndexedDB unavailable'));
@@ -66,13 +70,16 @@ function openDb(): Promise<IDBDatabase> {
       reject(new OfflineStoreUnavailableError(reason));
     };
     const timer = setTimeout(() => giveUp('timeout'), OFFLINE_STORE_OPEN_TIMEOUT_MS);
-    req.onupgradeneeded = () => upgradeStores(req.result, req.transaction!, STORE);
+    req.onupgradeneeded = (event) =>
+      upgradeStores(req.result, req.transaction!, STORE, event.oldVersion);
     req.onblocked = () => giveUp('blocked');
     req.onsuccess = () => {
       // An open that lands after we gave up is closed at once, so it never holds a version lock.
       if (settled) return req.result.close();
       settled = true;
       clearTimeout(timer);
+      // Never the one holding up a later version's upgrade (another tab on newer code): let go at once.
+      req.result.onversionchange = () => req.result.close();
       resolve(req.result);
     };
     req.onerror = () => {
@@ -88,7 +95,7 @@ async function run<T>(
   mode: IDBTransactionMode,
   op: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> {
-  const db = await openDb();
+  const db = await openOfflineDb();
   try {
     const store = db.transaction(STORE, mode).objectStore(STORE);
     return await idbRequest(op(store));
@@ -100,7 +107,7 @@ async function run<T>(
 // The get and the put share one readwrite transaction; it settles when the transaction commits,
 // so a resolved update is on disk.
 async function idbUpdate(id: string, change: OfflineRecordChange): Promise<void> {
-  const db = await openDb();
+  const db = await openOfflineDb();
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');

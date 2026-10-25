@@ -51,6 +51,11 @@ const KEYS = {
   // the two: stable like the owner id, worthless like the presence id.
   collabKey: `${NS}collab-key`,
   collabSecret: `${NS}collab-secret`,
+  // The old livediagram.app's guest, left in this browser on the same address: its bare UUID and the signature
+  // the old api gave it. Read once to claim that guest's work, then removed (lib/legacy-guest-claim.ts,
+  // docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site").
+  legacyGuestId: `${NS}self-id`,
+  legacyGuestSig: `${NS}self-sig`,
 } as const;
 
 // The keys, for the guard that every one a browser repair must keep is on its kept list

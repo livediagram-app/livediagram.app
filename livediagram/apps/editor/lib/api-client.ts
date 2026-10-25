@@ -55,3 +55,5 @@ export * from './api/community';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
 export * from './api/team-people';
+// The move from the old livediagram.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests").
+export * from './api/migration';

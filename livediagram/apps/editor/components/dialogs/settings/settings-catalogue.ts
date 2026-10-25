@@ -119,6 +119,9 @@ type SettingsRowContext = {
   cloudProviders?: readonly CloudSyncProviderId[];
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
+  // Documents in This Browser with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
+  // to the other apps").
+  retiredParts?: number;
 };
 
 type RowBase = {
@@ -246,6 +249,10 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
+// Pages and boards set aside from documents in This Browser (docs/specs/006-document/offline-mode.md "Moving
+// retired parts to the other apps"): not a preference, the way back to the offer. Only while there are any.
+export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
+
 // Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases go when made without
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
@@ -275,6 +282,7 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
+  | SettingsRetiredPartsRowSpec
   | SettingsDefaultFoldersRowSpec
   | SettingsPresetSummaryRowSpec
   | SettingsCloudSyncRowSpec;
@@ -1240,6 +1248,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'trash bin recycle deleted undo undelete restore recover get back canvas document diagram permanently empty',
         description: 'Deleted canvases wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
+      },
+      {
+        kind: 'retiredParts',
+        key: 'retiredParts',
+        section: 'Your Data',
+        label: 'Pages and Boards in This Browser',
+        keywords:
+          'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
+        description:
+          'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
+        available: (ctx) => (ctx.retiredParts ?? 0) > 0 && !ctx.workbench,
       },
       // One row per provider, from the Cloud Sync catalogue.
       ...CLOUD_SYNC_PROVIDERS.map((p): SettingsCloudSyncRowSpec => ({

@@ -1,7 +1,10 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { offlineListDocuments, offlineLoadTab } from './offline-store';
+
+// The splitter's check is built elsewhere; these records hold nothing retired (./retired-parts-upgrade.test.ts).
+vi.mock('@liveworkspace/migration/split', () => ({ hasRetiredContent: () => false }));
 
 // A browser that stored offline documents before the rename holds them in version 1 of the
 // database, in the `diagrams` object store (docs/specs/006-document/offline-mode.md).
@@ -65,7 +68,7 @@ describe('offline store upgrade from the diagrams store', () => {
     await seedVersionOne([record('a'), record('b')]);
     const list = await offlineListDocuments();
     expect(list.map((d) => d.id).sort()).toEqual(['a', 'b']);
-    expect(await storeNames()).toEqual(['documents']);
+    expect(await storeNames()).toEqual(['documents', 'retired-parts']);
   });
 
   it('keeps the tab kind and upgrades the legacy link on load', async () => {
@@ -80,6 +83,6 @@ describe('offline store upgrade from the diagrams store', () => {
 
   it('starts empty on a browser that never stored anything', async () => {
     expect(await offlineListDocuments()).toEqual([]);
-    expect(await storeNames()).toEqual(['documents']);
+    expect(await storeNames()).toEqual(['documents', 'retired-parts']);
   });
 });
