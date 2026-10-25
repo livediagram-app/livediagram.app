@@ -63,7 +63,7 @@ import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
 import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import { useLibraryHost } from '../library/context';
 
-type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
+type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose' | 'teal';
 
 const TONES: Record<Tone, string> = {
   sky: 'bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
@@ -72,6 +72,8 @@ const TONES: Record<Tone, string> = {
   emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
   indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300',
   rose: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
+  // This Browser's, as its pill (THIS_BROWSER_TONE): no app's accent and no status colour.
+  teal: 'bg-teal-100 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
 };
 // liveplanner's current row and tile are violet, its brand; here they are each app's brand.
 const TILE_CURRENT = 'bg-brand-600 text-white dark:bg-brand-500';
@@ -635,6 +637,7 @@ export function Sidebar() {
           <SidebarRow
             key={link.id}
             icon={link.icon === 'browser' ? <BrowserIcon /> : <LibraryIcon />}
+            tone={link.icon === 'browser' ? 'teal' : undefined}
             label={link.label}
             selected={false}
             onActivate={() => window.location.assign(link.href)}
@@ -656,7 +659,7 @@ function ThisBrowserRow() {
   return (
     <SidebarRow
       icon={<BrowserIcon />}
-      tone="amber"
+      tone="teal"
       label={SIDEBAR_LABELS.thisBrowser}
       selected={view.kind === 'offline'}
       onActivate={() => navigate({ kind: 'offline' })}

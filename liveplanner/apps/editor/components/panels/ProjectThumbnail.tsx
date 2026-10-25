@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
+import { LocalPreview } from '@liveworkspace/explorer/local-preview';
 import {
   loadThumbnail,
   peekThumbnail,
@@ -61,7 +62,7 @@ export function ProjectThumbnail({
   // the share code instead of ownership / team membership.
   shareCode?: string | null;
   // Offline Mode (docs/specs/006-project/offline-mode.md): an offline project has no server snapshot, so
-  // show a fixed offline illustration instead of fetching a thumbnail.
+  // show the browser it lives in (LocalPreview) instead of fetching a thumbnail.
   offline?: boolean;
   // The list says nothing is drawn (docs/specs/006-project/project-snapshots.md): there is no snapshot to
   // ask for, so show the undrawn sketch at once and send no request.
@@ -145,15 +146,12 @@ export function ProjectThumbnail({
     };
   }, [offline, empty, visible, ownerId, projectId, version, shareCode, fetchKey]);
 
-  // Offline Mode (docs/specs/006-project/offline-mode.md): a fixed illustration, no fetch, no snapshot.
+  // Offline Mode (docs/specs/006-project/offline-mode.md): the browser it lives in, on a wash of
+  // the app's accent (the Explorer's LocalPreview, as its This Browser rows draw it), no fetch, no snapshot.
   if (offline) {
     return (
-      <span
-        ref={ref}
-        aria-hidden
-        className={`flex shrink-0 items-center justify-center overflow-hidden bg-amber-50 dark:bg-amber-500/10 ${className}`}
-      >
-        <OfflineIllustration />
+      <span ref={ref} aria-hidden className={`flex shrink-0 overflow-hidden ${className}`}>
+        <LocalPreview app="liveplanner" iconSize={16} className="h-full w-full" />
       </span>
     );
   }
@@ -213,33 +211,9 @@ export function ProjectThumbnail({
   );
 }
 
-// Fixed illustration for an offline project (docs/specs/006-project/offline-mode.md): a "cloud off" mark,
-// amber to match the Offline badge. h-full fits it to small row thumbs, but
-// the height cap keeps it a modest centred glyph inside the big explorer
-// cards — uncapped it scaled to fill the whole card, a giant heavy-stroked
-// cloud that shouted over every neighbouring thumbnail.
-function OfflineIllustration() {
-  return (
-    <svg
-      viewBox="0 0 48 32"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="h-full max-h-10 w-auto p-1 text-amber-500 dark:text-amber-400"
-    >
-      {/* A cloud with a slash through it — the universal "offline" mark. */}
-      <path d="M16.5 22h12a4.8 4.8 0 0 0 .5-9.55 6.8 6.8 0 0 0-12.7-1.7A4.55 4.55 0 0 0 16.5 22Z" />
-      <path d="M11.5 8.5l25 16.5" />
-    </svg>
-  );
-}
-
 // Placeholder shown when there's no snapshot: three columns of dashed
 // cards, the smallest thing that still says "board". Scales with the
-// box like the offline mark, capped so it stays a modest
+// box, capped so it stays a modest
 // centred sketch in a card. Inlined so the component carries no
 // cross-folder icon dependency (it's imported from both app/ and
 // components/ surfaces).

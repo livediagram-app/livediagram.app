@@ -66,6 +66,7 @@
     "./components/primitives/SearchInput": "./src/components/primitives/SearchInput.tsx",
     "./components/primitives/SegmentSlider": "./src/components/primitives/SegmentSlider.tsx",
     "./components/primitives/SegmentedRadio": "./src/components/primitives/SegmentedRadio.tsx",
+    "./components/primitives/ThisBrowserPill": "./src/components/primitives/ThisBrowserPill.tsx",
     "./components/primitives/ShowMoreButton": "./src/components/primitives/ShowMoreButton.tsx",
     "./components/primitives/background-pattern-icons": "./src/components/primitives/background-pattern-icons.tsx",
     "./components/primitives/beside-placement": "./src/components/primitives/beside-placement.ts",

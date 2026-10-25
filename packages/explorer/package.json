@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./this-browser": "./src/this-browser.ts",
+    "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",
     "./offline-redirect": "./src/offline-redirect.tsx",
     "./imports": "./src/library/app-imports.tsx",
