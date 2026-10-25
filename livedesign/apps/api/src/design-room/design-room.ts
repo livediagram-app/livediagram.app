@@ -96,6 +96,8 @@ import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
+import { importMigratedDesign } from './design-migration';
+import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { answerDesignRequest, type RouteIdentity } from './design-route';
 
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -604,6 +606,14 @@ export class DesignRoom extends DurableObject<Env> {
   async importCopy(designId: string, copy: DesignCopy): Promise<void> {
     this.bindDesign(designId);
     await importDesignCopy(this.requireEnv(), designId, copy);
+  }
+
+  // An old livediagram.app document's livedesign part (the migration door, design-migration.ts): one transaction,
+  // with its own times; the outbox pushes it to the index and the media service as any write.
+  async importMigrated(designId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer> {
+    this.bindDesign(designId);
+    this.requireEnv();
+    return importMigratedDesign(this.db, payload);
   }
 
   // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.

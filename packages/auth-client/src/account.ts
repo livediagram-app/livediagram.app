@@ -550,3 +550,44 @@ export async function readTeamPeople(
     members: TeamPerson[];
   };
 }
+
+// --- Returning guests of the old livediagram.app (docs/migration.md step 6) ---
+
+// What the accounts Worker answered a claim: merged, nothing to merge (`unknown`: never migrated, or a signature or
+// signing rule that refuses it; `claimed`: already merged), or a refusal that may clear on a retry (`unavailable`:
+// accounts could not answer, or refused this app's credentials).
+export type LegacyGuestClaimOutcome =
+  | { merged: true }
+  | { merged: false; reason: 'unknown' | 'claimed' }
+  | { merged: false; reason: 'unavailable'; status: number };
+
+// The accounts Worker's answers to a claim that will never clear: a malformed claim, a signature that does not check
+// out (403), an id never migrated (404), an unsigned id after the cut-over.
+const LEGACY_CLAIM_NEVER = new Set([400, 403, 404, 410, 422]);
+
+// Asks accounts to check an old guest id (its old signature, or the old site's rule for an unsigned one) and merge
+// what was migrated under it into `into`, the caller this app checked: a guest or an account. Every refusal that
+// will never clear reads as `unknown`, so the browser forgets the old keys.
+export async function claimLegacyGuest(
+  credentials: ClientCredentials,
+  claim: { legacyId: string; signature: string | null; into: string },
+  fetcher: typeof fetch = fetch,
+): Promise<LegacyGuestClaimOutcome> {
+  const response = await call(
+    credentials,
+    '/legacy-guests/claim',
+    { method: 'POST', body: claim },
+    fetcher,
+  );
+  if (response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      merged?: unknown;
+      reason?: unknown;
+    } | null;
+    if (body?.merged === true) return { merged: true };
+    return { merged: false, reason: body?.reason === 'claimed' ? 'claimed' : 'unknown' };
+  }
+  if (response.status === 409) return { merged: false, reason: 'claimed' };
+  if (LEGACY_CLAIM_NEVER.has(response.status)) return { merged: false, reason: 'unknown' };
+  return { merged: false, reason: 'unavailable', status: response.status };
+}

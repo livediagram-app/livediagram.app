@@ -11,7 +11,12 @@
 // calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps",
 // routes/internal-file.ts). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
-import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
+import {
+  JOINED_TELEMETRY_TYPE,
+  checkMigrationTabSizes,
+  handleInternalItems as handle,
+} from '@liveworkspace/index-app';
+import { MAX_TAB_BYTES } from '../limits';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgePlanPreviews } from '../db/projects';
@@ -30,6 +35,8 @@ export function handleInternalItems(
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    app: 'liveplanner',
+    migrationKey: env.MIGRATION_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -63,6 +70,12 @@ export function handleInternalItems(
       // liveworkspace is a rolling window not worth carrying over. The kit's merge door then just confirms.
       anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
+      // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab
+      // over the tab cap refuses the whole part (413) before the room is called.
+      migrate: async (payload) => {
+        checkMigrationTabSizes(payload, MAX_TAB_BYTES);
+        return planRoom(env, payload.id).importMigrated(payload);
+      },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId) => {
         const copy = await planRoom(env, from).exportCopy(tabId, null);

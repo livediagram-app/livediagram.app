@@ -52,6 +52,42 @@ export function nodeItemSql(db: DatabaseSync): ItemSql {
   };
 }
 
+/**
+ * A Durable Object's state for an app's node tests of one item's room: its SQLite on node:sqlite (foreign keys on, as
+ * in production), an in-memory key-value store, no sockets and no alarm. `transactions` counts the
+ * `transactionSync` calls, for a test that holds a write to one transaction.
+ */
+export function nodeDurableState(name: string, db = new DatabaseSync(':memory:')) {
+  db.exec('PRAGMA foreign_keys = ON');
+  const store = new Map<string, unknown>();
+  const transaction = nodeTransaction(db);
+  const counter = { transactions: 0 };
+  const state = {
+    id: { name, equals: (other: { name?: string }) => other?.name === name, toString: () => name },
+    storage: {
+      sql: nodeItemSql(db),
+      transactionSync: <T>(fn: () => T): T => {
+        counter.transactions += 1;
+        return transaction(fn);
+      },
+      get: async (key: string) => store.get(key),
+      put: async (key: string, value: unknown) => void store.set(key, value),
+      delete: async (key: string) => store.delete(key),
+      list: async ({ prefix }: { prefix: string }) =>
+        new Map([...store].filter(([key]) => key.startsWith(prefix))),
+      setAlarm: async () => {},
+      getAlarm: async () => null,
+      deleteAlarm: async () => {},
+      deleteAll: async () => store.clear(),
+    },
+    acceptWebSocket: () => {},
+    getWebSockets: () => [],
+    blockConcurrencyWhile: async (fn: () => Promise<void>) => fn(),
+    waitUntil: () => {},
+  };
+  return { state, db, counter };
+}
+
 // DurableObjectStorage.transactionSync over node:sqlite: a savepoint, so one may sit inside another.
 let depth = 0;
 export function nodeTransaction(db: DatabaseSync): <T>(fn: () => T) => T {

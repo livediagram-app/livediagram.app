@@ -39,6 +39,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                        |
 | `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                               |
 | `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export documents as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                |
+| `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 
 Email needs no secret: the api sends through Cloudflare Email Service's `send_email` binding `EMAIL`, declared in `wrangler.toml`, and without it all transactional email is inert ([64](../014-identity/transactional-email.md), [liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
 

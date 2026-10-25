@@ -11,7 +11,12 @@
 // door draws the design for liveworkspace's previews, which call it with MEDIA_KEY, and answers its whole file for
 // liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md
 // "Contracts > The apps", routes/internal-file.ts).
-import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
+import {
+  JOINED_TELEMETRY_TYPE,
+  checkMigrationTabSizes,
+  handleInternalItems as handle,
+} from '@liveworkspace/index-app';
+import { MAX_TAB_BYTES } from '../limits';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
@@ -31,6 +36,8 @@ export function handleInternalItems(
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    app: 'livedesign',
+    migrationKey: env.MIGRATION_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -57,6 +64,12 @@ export function handleInternalItems(
       personMerged: (guestId, userId) => mergeMediaOwner(env, guestId, userId),
       anonymise: (id, personId) => designRoom(env, id).anonymise(personId),
       // A workbench pairing's access ended at liveworkspace: its sockets in this design's room close.
+      // An old livediagram.app document's livedesign part, into its design's room (design-room/design-migration.ts). A tab
+      // over the tab cap refuses the whole part (413) before the room is called.
+      migrate: async (payload) => {
+        checkMigrationTabSizes(payload, MAX_TAB_BYTES);
+        return designRoom(env, payload.id).importMigrated(payload);
+      },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them.

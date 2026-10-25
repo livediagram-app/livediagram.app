@@ -10,7 +10,7 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
-import { tabSharesSchema } from '@liveworkspace/index-app';
+import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -344,7 +344,12 @@ END;
 // made in between, which has them, runs it harmlessly.
 const V5 = tabSharesSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
+// What the migration door wrote (@liveworkspace/index-app migration-room.ts; docs/migration.md "The apps' migration
+// door"): the revision it last wrote each tab and row at, so a re-run replaces only what nobody has saved since. Its
+// own step, appended: every statement is IF NOT EXISTS.
+const V6 = migrationSchema();
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 

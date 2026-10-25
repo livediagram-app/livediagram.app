@@ -521,7 +521,9 @@ export async function importPlanCopy(
   await db.batch(stmts);
 }
 
-function sheetRefsOfData(data: string): string[] {
+// The sheet ids a stored body's Sheet elements reference (db/sheet-refs.ts sheetRefIds): a copy's and the migration
+// door's `sheet_refs` rows.
+export function sheetRefsOfData(data: string): string[] {
   if (!data.includes('"plan-sheet"')) return [];
   try {
     const parsed = JSON.parse(data) as { elements?: Element[] };
