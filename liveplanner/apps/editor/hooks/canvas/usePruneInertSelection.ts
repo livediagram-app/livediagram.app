@@ -6,7 +6,7 @@
 // does not render for the selection (docs/specs/008-canvas/blueprints/selection-store.md).
 
 import { useLayoutEffect } from 'react';
-import type { SelectionStore } from '@/lib/selection-store';
+import type { SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // `kept`: inert ids that are selected another way and stay selected (a chart its Sheet draws, selected there to open
 // its element menu: docs/specs/029-sheets/sheet.md "Charts").

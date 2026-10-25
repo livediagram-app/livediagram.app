@@ -5,7 +5,7 @@ import { useElementIndicatorsSuppressed } from './ElementIndicatorStyleContext';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { LockIcon, SOLID_BRAND_DARK } from '@liveplanner/ui';
 import type { DragMode } from '@/lib/canvas';
-import { handlePressStarts } from '@/lib/double-press';
+import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 import {

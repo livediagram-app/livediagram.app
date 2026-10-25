@@ -1,7 +1,7 @@
 import { useState, type Ref } from 'react';
 import { computeDockAnchor, type DockAnchor } from '@/lib/canvas-chrome';
 import { track } from '@/lib/telemetry';
-import { useUiScale } from '@/components/providers/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 
 // The panels that open as popovers off a button: the Toolbar layout's
 // Explorer, from its menu button (docs/specs/007-editor/toolbar-layout.md), and Layers / Activity /

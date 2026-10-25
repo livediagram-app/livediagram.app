@@ -16,7 +16,7 @@ import { useCallback } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { withEditorModeSwitched, type EditorMode, type Tab } from '@livediagram/document';
 import { resolveEditorMode } from '@/lib/editor-mode-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export type EditorModeState = {

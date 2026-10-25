@@ -5,7 +5,7 @@
 // function names its source. `next` is the point the edge comes from; `orthogonal` asks for the
 // projection that keeps the edge's end segment horizontal or vertical.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   centreX,
   centreY,

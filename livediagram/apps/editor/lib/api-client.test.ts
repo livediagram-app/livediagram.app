@@ -38,7 +38,10 @@ const index = vi.hoisted(() => ({
   })),
   updateItem: vi.fn(async () => ({ item: {} })),
 }));
-vi.mock('./index-client', () => ({ indexClient: index, INDEX_BASE: '/api/index' }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: index,
+  INDEX_BASE: '/api/index',
+}));
 
 // A guest holds liveworkspace's guest token (lib/guest-token.ts), sent as the Bearer.
 vi.mock('./guest-token', () => ({
@@ -481,7 +484,11 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
   });
 
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' } as const;
+    const intent = {
+      mode: 'diagram',
+      tabKind: 'diagram',
+      templateFamily: 'retrospective',
+    } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
     // The index files by the intent's words (its default folders key on them).

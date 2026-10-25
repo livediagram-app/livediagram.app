@@ -15,7 +15,7 @@
 // so the slide simply resolves past the missing id and undo puts it back.
 
 import { slideHeadlines } from '@/lib/slide-headline';
-import { selectionIds, type Selection } from '@/lib/selection-store';
+import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 const idsOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

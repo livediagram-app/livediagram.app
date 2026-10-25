@@ -20,7 +20,7 @@ import {
   type StyleKindKey,
   type StyleMemory,
 } from '@/lib/style-memory';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 

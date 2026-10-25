@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/project';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';

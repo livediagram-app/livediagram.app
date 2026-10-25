@@ -5,7 +5,7 @@
 // getLegacyConnectionPoint and centerPerimeter override; Apache-2.0). Each function names its
 // source. Everything is in draw.io units at scale 1.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { DrawioStyle } from '../style';
 import { centreX, centreY, rotatedPoint, toRadians, type Box, type Pt } from './geometry';
 import {

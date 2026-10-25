@@ -43,7 +43,7 @@ describe('the Contents list', () => {
   it('marks the page at the middle of the screen, else the nearest', () => {
     const b = pages[1]!.rect;
     const screen = { width: 1000, height: 800 };
-    // Centre the view on page b at zoom 1 (the centred transform, lib/viewport.ts).
+    // Centre the view on page b at zoom 1 (the centred transform, @liveworkspace/workbench/lib/viewport.ts).
     const view = {
       zoom: 1,
       offset: { x: 500 - (b.x + b.width / 2), y: 400 - (b.y + b.height / 2) },
@@ -84,7 +84,7 @@ describe('the Contents list', () => {
     };
     expect(pageInView(pages, view, screen)).toBe('c');
     // b centred in the band right of a 240 px sidebar, zoomed far out (the framing's offset,
-    // lib/viewport.ts): read from the whole canvas the middle falls on a, left of it.
+    // @liveworkspace/workbench/lib/viewport.ts): read from the whole canvas the middle falls on a, left of it.
     const beside = {
       zoom: 0.1,
       offset: { x: 500 - (b.x + b.width / 2) + 240 / (2 * 0.1), y: 400 - (b.y + b.height / 2) },

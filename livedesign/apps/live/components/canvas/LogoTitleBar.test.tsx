@@ -8,7 +8,7 @@ import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { DEFAULT_MIRROR } from '@livedesign/design';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
 
 afterEach(() => cleanup());

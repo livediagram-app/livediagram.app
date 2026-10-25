@@ -36,7 +36,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedocuments/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
 import {
   articleHandleOf,

@@ -8,9 +8,9 @@
 // or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
 import { trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 
 type DocumentTrashedState = {

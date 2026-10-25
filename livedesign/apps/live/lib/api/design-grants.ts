@@ -4,7 +4,7 @@
 // a minute before it lapses, and apiFetch sends it with every request about the design as `X-Index-Grant`. The
 // boot script (app/pre-hydration-scripts.ts DESIGN_GRANT_BOOT_SCRIPT) leaves an early one on `window.__ldesGrant`.
 import { createItemGrants, type ItemShare } from '@liveworkspace/index-client/browser';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 export { GRANT_RENEW_BEFORE_MS } from '@liveworkspace/index-client/browser';
 export type DesignShare = ItemShare;

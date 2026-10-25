@@ -5,7 +5,7 @@ import { createShape, type Element } from '@liveplanner/project';
 import { presetSetup } from '@liveplanner/items';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';

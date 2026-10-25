@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { DRAW_TOUR_RELAUNCH_EVENT } from '@/lib/draw-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';

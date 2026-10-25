@@ -1,5 +1,5 @@
 // Canvas-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket.
-// Listing, copying, deleting and sharing canvases are the index's (lib/index-client.ts, the shared Explorer).
+// Listing, copying, deleting and sharing canvases are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
 import {
   DOCUMENT_CONVERSION_HEADER,
   indexIntentOf,
@@ -19,7 +19,7 @@ import {
   offlineLoadDocument,
   offlineSaveDocumentMeta,
 } from '../offline/offline-store';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
 import { seedDocumentGrant } from './document-grants';
 import {

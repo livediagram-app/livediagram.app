@@ -24,7 +24,10 @@ const index = vi.hoisted(() => ({
   listTrash: vi.fn(),
   getItem: vi.fn(),
 }));
-vi.mock('../index-client', () => ({ indexClient: index, INDEX_BASE: '/api/index' }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: index,
+  INDEX_BASE: '/api/index',
+}));
 const loads = vi.hoisted(() => ({ document: vi.fn(), tab: vi.fn() }));
 vi.mock('../api-client', async (importActual) => ({
   ...(await importActual<typeof import('../api-client')>()),

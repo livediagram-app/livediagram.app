@@ -7,7 +7,7 @@
 
 import { useEffect } from 'react';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
-import { debugLog, debugScopeOn } from '@/lib/debug-log';
+import { debugLog, debugScopeOn } from '@liveworkspace/workbench/lib/debug-log';
 
 export function useCanvasLongTaskLog(): void {
   useEffect(() => {

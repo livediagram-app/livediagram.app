@@ -25,7 +25,7 @@ import {
   type SheetMetricArt,
 } from '@liveplanner/plan-art';
 import { getTheme } from '@/lib/themes';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type PlanImageExport = {
   // The formats offered; undefined offers every one.

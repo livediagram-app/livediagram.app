@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { ProjectListItem } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { apiFetchProjectThumbnailSvg } from '@/lib/api-client';
 import { rememberRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 

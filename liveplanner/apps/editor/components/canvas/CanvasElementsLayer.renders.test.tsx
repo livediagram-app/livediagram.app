@@ -78,7 +78,7 @@ vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
-const { createSelectionStore } = await import('@/lib/selection-store');
+const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
 const { SelectionStoreProvider } = await import('@/hooks/canvas/useSelectionStore');
 let store = createSelectionStore();
 

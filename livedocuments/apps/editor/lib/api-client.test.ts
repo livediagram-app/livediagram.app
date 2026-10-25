@@ -45,7 +45,10 @@ const index = vi.hoisted(() => ({
   })),
   updateItem: vi.fn(async () => ({ item: {} })),
 }));
-vi.mock('./index-client', () => ({ indexClient: index, INDEX_BASE: '/api/index' }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: index,
+  INDEX_BASE: '/api/index',
+}));
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a

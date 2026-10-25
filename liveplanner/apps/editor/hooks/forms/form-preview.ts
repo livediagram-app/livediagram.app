@@ -6,7 +6,7 @@ import type { ItemCreate, ItemTypeDef } from '@liveplanner/items';
 import { checkResponse, responseCard, type FormDefinition } from '@liveplanner/forms';
 import type { FillState, SubmitOutcome } from '@/components/forms/respond/useFormFill';
 import type { PreviewSend } from '@/lib/api/forms';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export const PREVIEW_NO_DESTINATION =

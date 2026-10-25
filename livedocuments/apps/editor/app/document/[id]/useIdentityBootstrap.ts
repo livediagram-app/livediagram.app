@@ -18,7 +18,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveParticipant } from './resolve-participant';
 import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
@@ -27,7 +27,7 @@ import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { documentGrant } from '@/lib/api/document-grants';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // Whether the index has this document in its Trash, for the person (the deleted card rather than not found).
 async function isTrashedInIndex(id: string): Promise<boolean> {

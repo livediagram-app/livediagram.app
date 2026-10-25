@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { track } from '@/lib/telemetry';
-import { computeFitBelow } from '@/lib/viewport';
+import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import {
   createViewportStore,
   type ViewportStore,

@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { layOutPages, type LaidOutPage } from '@livedocuments/document';
-import { besideSideInsets, computeFitBelow } from './viewport';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import {
   SNAP_EDGE_ROOM,
   SNAP_FLICK_MIN_PX,

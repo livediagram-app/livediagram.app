@@ -50,7 +50,7 @@ import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';

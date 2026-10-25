@@ -5,7 +5,7 @@ import { markDesignDeleted, unmarkDesignDeleted } from '@/lib/design-tombstones'
 import { useDesignTrashed } from './useDesignTrashed';
 
 const index = vi.hoisted(() => ({ getItem: vi.fn(), restoreItem: vi.fn() }));
-vi.mock('@/lib/index-client', () => ({ indexClient: index }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 
 // docs/specs/013-workspace/trash.md: the open design turns to its deleted page when the room says it was
 // trashed, except when this page deleted it and is already leaving for the Explorer. Whether it can be restored
@@ -17,7 +17,14 @@ afterEach(() => {
 });
 
 const item = (over: Record<string, unknown>) => ({
-  item: { id: 'd1', trashedAt: 1_000, trashReason: 'deleted', access: 'edit', teamId: null, ...over },
+  item: {
+    id: 'd1',
+    trashedAt: 1_000,
+    trashReason: 'deleted',
+    access: 'edit',
+    teamId: null,
+    ...over,
+  },
 });
 
 const render = (viaShareLink = false) =>

@@ -3,7 +3,7 @@
 // applySheetWrite), validated the same way, serialised with the record's other writes. Loaded only for an offline
 // project (lib/api/sheets.ts), as it carries the engine.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type {
   SheetCreateRequest,
   SheetWriteRequest,

@@ -824,7 +824,7 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
   minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
-  leaves a live token counting towards the cap (`apps/editor/lib/oauth-handover.ts`, log `[oauth] handover refused;
+  leaves a live token counting towards the cap (`../packages/workbench/src/lib/oauth-handover.ts`, log `[oauth] handover refused;
 minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
 
 ## Security and trust

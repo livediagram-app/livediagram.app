@@ -46,8 +46,8 @@ import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadPhotoChrome } from '@/lib/editor-deferred-code';
 import { usePhotoStripTools } from './usePhotoStripTools';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // A photo page's chrome shows only while one is in focus, so its code loads on demand

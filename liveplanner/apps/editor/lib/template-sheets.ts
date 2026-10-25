@@ -5,7 +5,7 @@ import { hasTemplateSheets } from '@liveplanner/templates';
 import type { SheetCreateRequest } from '@liveplanner/api-schema';
 import type { SheetJson } from '@liveplanner/sheets';
 import type { Tab } from '@liveplanner/project';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Who a template's sheet was last changed by: nobody yet.
 const MADE_BY = { id: '', name: 'Someone', color: '#94a3b8' };

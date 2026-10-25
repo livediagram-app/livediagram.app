@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, type Ref } from 'react';
 import type { Element as CanvasElement } from '@livedocuments/document';
-import { doubleTapFitsTab, doubleTapFrameView, doubleTapZoomView } from '@/lib/double-tap-zoom';
+import {
+  doubleTapFitsTab,
+  doubleTapFrameView,
+  doubleTapZoomView,
+} from '@liveworkspace/workbench/lib/double-tap-zoom';
 import { tabFitView } from '@/lib/tab-fit-view';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';

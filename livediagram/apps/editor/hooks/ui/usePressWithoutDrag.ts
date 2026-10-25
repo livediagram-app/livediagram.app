@@ -18,7 +18,7 @@
 
 import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 'react';
 import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
-import { DOUBLE_PRESS_MS } from '@/lib/double-press';
+import { DOUBLE_PRESS_MS } from '@liveworkspace/workbench/lib/double-press';
 
 // Pure so the window itself is testable: was this press the second half of a
 // double? `last` is the previous press time, or null when there wasn't one.

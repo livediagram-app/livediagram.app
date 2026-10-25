@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MAX_SELECTION_IDS } from '@liveplanner/api-schema';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 
 // Selection and tab focus reach every server-stored project's room, personal ones included, so

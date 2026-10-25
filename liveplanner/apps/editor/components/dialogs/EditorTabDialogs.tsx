@@ -2,14 +2,14 @@
 
 import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { planHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';

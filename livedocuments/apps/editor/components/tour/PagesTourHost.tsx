@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { pageKindOf, pagesOf, type PageKind } from '@livedocuments/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { PAGES_TOUR_RELAUNCH_EVENT, pagesKindSeen, markPagesKindSeen } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';

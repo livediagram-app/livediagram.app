@@ -18,7 +18,7 @@ import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/
 import { track } from '@/lib/telemetry';
 import { brushPageId } from '@/lib/format-page-brush';
 import { patchTab } from './editor-page-helpers';
-import { selectionIds, type Selection } from '@/lib/selection-store';
+import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 

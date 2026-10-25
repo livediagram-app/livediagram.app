@@ -18,7 +18,7 @@ import {
   type Item,
   type ItemWrite,
 } from '@liveplanner/items';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { projectBoardSetups } from './usePlanStatusNames';
 
 export function useMergeDuplicateStatuses(opts: {

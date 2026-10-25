@@ -6,7 +6,7 @@ import {
   type Page,
 } from '@playwright/test';
 import type { StoredDocument, StoredTab } from './stored';
-import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
+import { DEBUG_STORAGE_KEY } from '../lib/workbench-keys';
 import { TOUR_PENDING_KEY } from '../lib/tour-pending';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught

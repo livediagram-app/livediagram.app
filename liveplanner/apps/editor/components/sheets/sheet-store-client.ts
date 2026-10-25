@@ -32,7 +32,7 @@ import {
   type SheetWrite,
   type WriteCheck,
 } from '@liveplanner/sheets';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';
 import { errorStatus, isTransientWriteError, sheetWriteRetryMs } from './sheet-write-retry';

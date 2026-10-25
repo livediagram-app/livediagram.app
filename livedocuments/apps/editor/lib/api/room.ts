@@ -23,7 +23,7 @@ import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { startEditorTiming } from '../timing';
 import { wsUrl } from './core';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").

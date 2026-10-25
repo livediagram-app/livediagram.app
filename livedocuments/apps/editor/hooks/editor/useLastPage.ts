@@ -4,8 +4,8 @@
 // pan or zoom only restarts a timer, and the page is worked out once the view has settled.
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedocuments/document';
-import { computeViewportCenter } from '@/lib/viewport';
-import { debugLog } from '@/lib/debug-log';
+import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   LAST_PAGE_SETTLE_MS,

@@ -1,8 +1,10 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { raiseZoomCeiling, zoomCeilingRaised, zoomMax, ZOOM_MAX } from './canvas';
-import { doubleTapZoomView } from './double-tap-zoom';
+import { doubleTapZoomView } from '@liveworkspace/workbench/lib/double-tap-zoom';
+import { bindWorkbench } from './workbench-bindings';
 
 // docs/specs/031-photo/photo-pages.md "Navigating": the zoom ceiling rises while a photo page is in focus.
+beforeAll(() => bindWorkbench());
 afterEach(() => raiseZoomCeiling(null));
 
 describe('the zoom ceiling', () => {

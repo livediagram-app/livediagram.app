@@ -5,7 +5,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { createLiveStroke, type LiveStroke } from '@/lib/live-stroke';
 import { flipStrokeRecognition } from '@/lib/recognition-flip';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

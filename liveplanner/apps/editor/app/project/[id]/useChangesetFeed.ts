@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 
 import { CHANGESET_REVEAL_MS, type ChangesetRoomOp } from '@liveplanner/api-schema';
 import type { Tab } from '@liveplanner/project';
 import { apiListChangesets, apiRevertChangeset } from '@/lib/api-client';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { createRevealStore, type RevealStore } from '@/lib/changeset-reveals';

@@ -17,7 +17,7 @@ vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { useEditorCommands } = await import('./useEditorCommands');
-const { createSelectionStore } = await import('@/lib/selection-store');
+const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
 const { SelectionStoreProvider } = await import('./useSelectionStore');
 
 // The commands read the selection from the store while search is open.

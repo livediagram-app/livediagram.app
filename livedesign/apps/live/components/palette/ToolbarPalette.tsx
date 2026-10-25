@@ -32,8 +32,8 @@ import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './too
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';

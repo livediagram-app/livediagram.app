@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { participantTabChange, type Tab } from '@livediagram/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 
 // A Participant's session in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state"):

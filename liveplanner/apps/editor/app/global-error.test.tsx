@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const recoverInBrowser = vi.fn(() => Promise.resolve('reloading'));
-vi.mock('@/lib/stale-build-navigation', () => ({
+vi.mock('@liveworkspace/workbench/lib/stale-build-navigation', () => ({
   browserNavigationDeps: () => ({}),
   recoverInBrowser: (...a: unknown[]) => recoverInBrowser(...(a as [])),
 }));

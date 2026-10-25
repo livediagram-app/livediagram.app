@@ -7,7 +7,7 @@ import type { Item } from '@liveworkspace/index-client';
 // your newest canvases and your teams', as the index lists them, merged by save, a team one marked with its team.
 
 const page = vi.hoisted(() => ({ items: [] as Partial<Item>[] }));
-vi.mock('@/lib/index-client', () => ({
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { listItems: async () => ({ items: page.items, nextCursor: null }) },
 }));
 // A token naming the Design team (its `teams` claim).

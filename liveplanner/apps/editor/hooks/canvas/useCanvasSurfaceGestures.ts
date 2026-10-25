@@ -4,12 +4,12 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
+import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;

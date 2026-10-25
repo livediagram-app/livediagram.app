@@ -2,7 +2,7 @@
 
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { isBoxed } from '@livedesign/design';
 
 import { track } from '@/lib/telemetry';

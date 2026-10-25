@@ -9,7 +9,7 @@
 // the page passes those setters in. Verbatim relocation — no
 // behaviour change.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   arrowReferencesAny,

@@ -7,7 +7,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@livedocuments/document';
-import { computeFitBelow } from '@/lib/viewport';
+import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 import {
   createViewportStore,
   type ViewportStore,

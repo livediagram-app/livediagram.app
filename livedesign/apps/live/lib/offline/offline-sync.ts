@@ -9,7 +9,7 @@
 
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { apiCreateDesign } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {

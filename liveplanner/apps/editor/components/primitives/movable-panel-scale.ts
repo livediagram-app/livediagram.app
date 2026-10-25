@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { toSurfacePx } from '@/lib/ui-scale';
+import { toSurfacePx } from '@liveworkspace/workbench/lib/ui-scale';
 import type { MovablePanelProps } from './MovablePanel.types';
 
 // A scaled panel (docs/specs/007-editor/ui-scale.md) is zoomed at its root, so

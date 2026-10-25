@@ -14,7 +14,11 @@ import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
-import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
+import {
+  handoverFailureCopy,
+  mintAndHandOver,
+  type HandoverFailure,
+} from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 
@@ -141,7 +145,7 @@ function Consent() {
     if (!session) return;
     setStatus('connecting');
     // Checks the session is still live before minting, and revokes a token the MCP did not take, so a failed
-    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    // Connect never leaves a six-month token behind (@liveworkspace/workbench/lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchConsentSession(session)) !== null,
       mint: () => apiExchangeOauthToken(accountUserId, client, readOnly),

@@ -12,7 +12,7 @@ import { useDriveFollow } from './useDriveFollow';
 
 // The index's answer for a canvas the api no longer finds.
 const getItem = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/index-client', () => ({ indexClient: { getItem } }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: { getItem } }));
 
 beforeEach(() => {
   getItem.mockReset();

@@ -7,7 +7,7 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';

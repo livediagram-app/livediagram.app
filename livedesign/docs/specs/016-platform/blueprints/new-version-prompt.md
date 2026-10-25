@@ -15,21 +15,21 @@ Derived from [New version prompt](../new-version-prompt.md).
 
 ## Modules
 
-| File                                               | Responsibility                                                                                        |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/design-format.ts`         | `DESIGN_FORMAT`, `DESIGN_FORMAT_HEADER`, `parseDesignFormat`                                          |
-| `apps/api/src/server-release-header.ts`            | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
-| `apps/api/src/index.ts`                            | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
-| `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
-| `apps/api/src/design-room/design-room.ts`          | Sends the room format message on `hello`                                                              |
-| `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
-| `apps/live/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
-| `apps/live/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
-| `apps/live/lib/api/room.ts`                        | The room client notes the message                                                                     |
-| `apps/live/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
-| `apps/live/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
-| `apps/live/app/design/[id]/useAutosave.ts`         | Returns `hasUnsavedChanges()`                                                                         |
-| `apps/live/app/design/[id]/EditorView.tsx`         | Mounts the prompt with `hasUnsavedChanges`                                                            |
+| File                                                 | Responsibility                                                                                        |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/design-format.ts`           | `DESIGN_FORMAT`, `DESIGN_FORMAT_HEADER`, `parseDesignFormat`                                          |
+| `apps/api/src/server-release-header.ts`              | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
+| `apps/api/src/index.ts`                              | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
+| `apps/api/src/responses.ts`                          | `CORS_HEADERS` exposes the header                                                                     |
+| `apps/api/src/design-room/design-room.ts`            | Sends the room format message on `hello`                                                              |
+| `packages/api-schema/src/room-messages.ts`           | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
+| `apps/live/lib/server-release.ts`                    | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
+| `apps/live/lib/api/core.ts`                          | `apiFetch` notes the header                                                                           |
+| `apps/live/lib/api/room.ts`                          | The room client notes the message                                                                     |
+| `../packages/workbench/src/lib/reload-when-saved.ts` | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
+| `apps/live/components/chrome/NewVersionPrompt.tsx`   | The prompt                                                                                            |
+| `apps/live/app/design/[id]/useAutosave.ts`           | Returns `hasUnsavedChanges()`                                                                         |
+| `apps/live/app/design/[id]/EditorView.tsx`           | Mounts the prompt with `hasUnsavedChanges`                                                            |
 
 ## Interfaces and contracts
 
@@ -49,7 +49,7 @@ export function newVersionAvailable(): boolean;
 export function subscribeServerRelease(listener: () => void): () => void;
 export function resetServerReleaseForTests(): void;
 
-// apps/live/lib/reload-when-saved.ts
+// ../packages/workbench/src/lib/reload-when-saved.ts
 export const RELOAD_SAVE_WAIT_MS = 10_000;
 export const RELOAD_SAVE_POLL_MS = 200;
 export function reloadWhenSaved(opts: {
@@ -142,7 +142,7 @@ The number is not a secret and grants nothing; a forged value can only show a re
 | Room sends its format on hello                           | `apps/api/src/design-room.test.ts`                                 |
 | Store keeps the maximum, notifies on rise, ignores junk  | `apps/live/lib/server-release.test.ts`                             |
 | `apiFetch` and the room client note the number           | `apps/live/lib/api/core.test.ts`, `apps/live/lib/api/room.test.ts` |
-| Reload waits for a settled save, gives up after the wait | `apps/live/lib/reload-when-saved.test.ts`                          |
+| Reload waits for a settled save, gives up after the wait | `../packages/workbench/src/lib/reload-when-saved.test.ts`          |
 | Prompt states, copy, role, keyboard, telemetry           | `apps/live/components/chrome/NewVersionPrompt.test.tsx`            |
 | `hasUnsavedChanges`                                      | `apps/live/app/design/[id]/useAutosave.test.tsx`                   |
 | An older editor against a newer server (Playwright)      | `apps/live/e2e/new-version-prompt.spec.ts`                         |

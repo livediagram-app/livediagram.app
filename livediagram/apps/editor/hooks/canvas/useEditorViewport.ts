@@ -12,7 +12,7 @@ import {
   createViewportStore,
   type ViewportStore,
 } from '@liveworkspace/workbench/lib/viewport-store';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { isBoxed, type Tab } from '@livediagram/document';
@@ -20,11 +20,11 @@ import {
   computeFitToScreen,
   computeViewportCanvasRect,
   computeViewportCenter,
-} from '@/lib/viewport';
+} from '@liveworkspace/workbench/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
-import { onMapShown } from '@/lib/fit-clear-of-panel';
+import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather

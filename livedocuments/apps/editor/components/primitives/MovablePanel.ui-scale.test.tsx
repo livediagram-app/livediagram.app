@@ -20,7 +20,10 @@ vi.stubGlobal(
 );
 
 import { MovablePanel } from './MovablePanel';
-import { UiScaleProvider, useUiScale } from '@/components/providers/ui-scale';
+import {
+  UiScaleProvider,
+  useUiScale,
+} from '@liveworkspace/workbench/components/providers/ui-scale';
 
 afterEach(cleanup);
 

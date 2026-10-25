@@ -17,7 +17,7 @@ import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
 import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
 // the project, with the old-to-new maps of the element ids and of the Sheets copied with them. Shared with

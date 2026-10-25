@@ -8,12 +8,7 @@
 // historically imported from here. The canonical definitions live in
 // `@livedesign/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
-export type {
-  ImageSummary,
-  ShareLink,
-  ShareLinkExpiry,
-  ShareRole,
-} from '@livedesign/api-schema';
+export type { ImageSummary, ShareLink, ShareLinkExpiry, ShareRole } from '@livedesign/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers
@@ -39,8 +34,8 @@ export * from './api/designs';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';
-export * from './api/tokens';
-export * from './api/oauth';
+export * from '@liveworkspace/workbench/lib/api/tokens';
+export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';

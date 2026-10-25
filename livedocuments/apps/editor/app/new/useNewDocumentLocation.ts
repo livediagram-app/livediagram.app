@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 const subscribeNever = () => () => {};
 // The prerender has no cookies: it reads as a guest, and the client snapshot follows at hydration.

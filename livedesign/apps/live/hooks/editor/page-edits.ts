@@ -50,7 +50,7 @@ import type { PageLayoutId } from '@livedesign/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { lastWireframeDevice } from '@/lib/wireframe-device-memory';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';

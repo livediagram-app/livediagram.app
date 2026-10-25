@@ -5,7 +5,7 @@
 // wiring; the unit test asserts the key -> action mapping against
 // these tables directly.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';

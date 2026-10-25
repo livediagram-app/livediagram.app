@@ -20,7 +20,7 @@ import {
 } from '@livediagram/document';
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type MindOutlineApi = {
   // The root whose outline is open in the dialog, or null.

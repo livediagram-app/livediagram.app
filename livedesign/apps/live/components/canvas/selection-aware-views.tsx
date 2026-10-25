@@ -14,7 +14,11 @@ import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { elementGrips } from '@/lib/canvas-selection';
-import { elementSelectionFlags, sameFlags, type Selection } from '@/lib/selection-store';
+import {
+  elementSelectionFlags,
+  sameFlags,
+  type Selection,
+} from '@liveworkspace/workbench/lib/selection-store';
 
 const useFlagsOf = (id: string) =>
   useSelectionOf((s: Selection) => elementSelectionFlags(s, id), sameFlags);

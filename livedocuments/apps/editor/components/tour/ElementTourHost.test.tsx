@@ -10,7 +10,10 @@ import { createShape, type Element } from '@livedocuments/document';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { elementTourOffer } from '@/lib/element-tour-offer';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
-import { createSelectionStore, type SelectionStore } from '@/lib/selection-store';
+import {
+  createSelectionStore,
+  type SelectionStore,
+} from '@liveworkspace/workbench/lib/selection-store';
 import { setActiveTour, activeTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
 import type { TourEngine } from './useTourEngine';

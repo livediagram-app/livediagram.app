@@ -7,7 +7,7 @@ import {
   useViewportStore,
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
-import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
+import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useEffect, useMemo, useRef } from 'react';
 import { isAnimatedPattern } from '@liveplanner/project';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -16,8 +16,8 @@ import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBack
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@/hooks/canvas/useQuickRing';
-import { useZoomControls } from '@/hooks/canvas/useZoomControls';
+import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
+import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';

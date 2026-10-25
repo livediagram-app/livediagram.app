@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { uiUnscaleStyle } from '@/lib/ui-scale';
+import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 
 // A popover hanging under the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): More
 // and Search. Both are strip menus, so they share how they open, where they hang and how they close.

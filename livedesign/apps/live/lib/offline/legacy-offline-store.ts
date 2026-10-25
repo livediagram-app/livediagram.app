@@ -3,7 +3,7 @@
 // record into the current store. Runs inside the version-change transaction, so a reader
 // never sees a half-moved store.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 const LEGACY_STORE = 'diagrams';
 
 export function upgradeStores(db: IDBDatabase, tx: IDBTransaction, store: string): void {

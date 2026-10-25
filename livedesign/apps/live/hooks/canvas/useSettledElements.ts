@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Element } from '@livedesign/design';
 import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export const MAP_REDRAW_MIN_MS = 250;
 

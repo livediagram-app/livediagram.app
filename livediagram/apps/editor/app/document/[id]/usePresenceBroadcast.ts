@@ -3,7 +3,7 @@ import { useLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 interface PresenceBroadcastDeps {
   hydrated: boolean;

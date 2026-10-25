@@ -43,7 +43,7 @@ import {
   readLocalStorageSafe,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move

@@ -45,7 +45,10 @@ const index = vi.hoisted(() => ({
   })),
   updateItem: vi.fn(async () => ({ item: {} })),
 }));
-vi.mock('./index-client', () => ({ indexClient: index, INDEX_BASE: '/api/index' }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: index,
+  INDEX_BASE: '/api/index',
+}));
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -130,7 +133,12 @@ describe('apiLoadShared', () => {
     grants.designGrantRefusal.mockReset().mockReturnValue(null);
   });
 
-  const GRANT = { grant: 'g', level: 'participate', tabId: 'tab-2', expiresAt: Date.now() + 600_000 };
+  const GRANT = {
+    grant: 'g',
+    level: 'participate',
+    tabId: 'tab-2',
+    expiresAt: Date.now() + 600_000,
+  };
 
   it('asks for a password the link needs', async () => {
     grants.designGrant.mockResolvedValue(null);
@@ -257,9 +265,7 @@ describe('response helpers (observed through api callers)', () => {
       // empty body. Asserting the promise resolves without value
       // pins both the no-throw + no-body contract.
       stubFetch(200);
-      await expect(
-        apiSaveDesignMeta('owner', { id: 'd-1', name: 'New' }),
-      ).resolves.toBeUndefined();
+      await expect(apiSaveDesignMeta('owner', { id: 'd-1', name: 'New' })).resolves.toBeUndefined();
     });
 
     it('throws "save design meta failed: <status>" on 500', async () => {
@@ -325,7 +331,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
       const headers = init.headers as Record<string, string>;
       expect(headers['X-Share-Code']).toBeUndefined();
     });
-
   });
 });
 
@@ -375,7 +380,13 @@ describe('apiCreateDesign persisted body (docs/specs/006-design/tab-folders.md)'
       teamId: 'team1',
     });
     expect(index.createItem).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'd2', app: 'livedesign', title: 'N', folderId: 'f1', teamId: 'team1' }),
+      expect.objectContaining({
+        id: 'd2',
+        app: 'livedesign',
+        title: 'N',
+        folderId: 'f1',
+        teamId: 'team1',
+      }),
     );
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(new Headers(init.headers).get('X-Index-Grant')).toBe('g');

@@ -1,6 +1,6 @@
 import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
 // Ephemeral, in-the-moment editing UI for the canvas: which tab is

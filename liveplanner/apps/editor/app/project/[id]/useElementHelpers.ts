@@ -3,7 +3,7 @@ import { takesTypedLabel, type BoxedElement, type Element, type Tab } from '@liv
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
 import { patchTab } from './editor-page-helpers';
-import { selectionIds, type Selection } from '@/lib/selection-store';
+import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 

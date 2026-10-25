@@ -26,6 +26,7 @@ import {
 import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 import { withDocumentGrant } from './document-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
@@ -60,6 +61,8 @@ import {
 // token (lib/guest-token.ts). The api resolves the owner from it.
 // Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
+// The error every non-2xx response throws (@liveworkspace/workbench/lib/api/api-error.ts).
+export { ApiError };
 
 // Hard cap on how long the Explorer's document-list spinner spins before
 // we give up and show whatever we have. Both mount paths that load the
@@ -389,31 +392,6 @@ export async function apiHeaders(
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
   return { ...h, ...opts.extra };
-}
-
-// The error every non-2xx response throws. Carries the HTTP `status`
-// AND the api worker's `error` token (`code`) so callers can branch on
-// the specific rule that fired (`forbidden` vs `admin_required`,
-// `password_invalid`, `gallery_full`, …) instead of re-fetching or
-// guessing from the status alone. Before this, every helper threw a
-// bare `Error` whose message embedded the status and DROPPED the
-// `error` field — the api worker's snake_case error envelope
-// (responses.ts) reached the client and went straight in the bin.
-//
-// `message` keeps the exact `${action} failed: ${status}` shape the
-// helpers always threw, so logs and any string-matching callers are
-// unaffected; `status` / `code` are purely additive.
-export class ApiError extends Error {
-  readonly action: string;
-  readonly status: number;
-  readonly code: string | null;
-  constructor(action: string, status: number, code: string | null) {
-    super(`${action} failed: ${status}`);
-    this.name = 'ApiError';
-    this.action = action;
-    this.status = status;
-    this.code = code;
-  }
 }
 
 // The ApiError for a non-2xx, reported to error telemetry on the way out.

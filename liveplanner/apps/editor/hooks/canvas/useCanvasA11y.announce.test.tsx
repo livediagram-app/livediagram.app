@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@liveplanner/project';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // docs/specs/004-interface-design/canvas-accessibility.md: a screen reader hears each selection change.
 // The hook follows the store, so the editor root does not render for it

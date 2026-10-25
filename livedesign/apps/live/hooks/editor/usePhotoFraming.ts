@@ -5,7 +5,7 @@
 // chrome held back, and was framed beside nothing.
 import { useEffect, useRef } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useRailShown } from '@/lib/photo-editor/rail-shown';
 
 // How long a framing waits for the tools and the room under the strip to load, ms.

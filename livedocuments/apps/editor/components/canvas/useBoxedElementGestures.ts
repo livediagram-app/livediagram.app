@@ -3,7 +3,7 @@ import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from '
 import { isSelfDrawingShape } from '@livedocuments/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
-import { pressLedger } from '@/lib/double-press';
+import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
 import { armPlainClick } from '@liveworkspace/workbench/lib/selection-click';
 import { fitsOnCanvas } from '@liveworkspace/workbench/lib/fits-on-screen';
 import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';

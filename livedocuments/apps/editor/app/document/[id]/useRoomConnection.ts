@@ -40,7 +40,7 @@ import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
   endPeerDragPreview,

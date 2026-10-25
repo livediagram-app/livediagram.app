@@ -8,7 +8,7 @@ import {
   useViewportStore,
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
-import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
+import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livedesign/design';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -19,8 +19,8 @@ import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@/hooks/canvas/useQuickRing';
-import { useZoomControls } from '@/hooks/canvas/useZoomControls';
+import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
+import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -36,7 +36,7 @@ import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/C
 import { useCanvasLongTaskLog } from '@/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionOf, useSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';

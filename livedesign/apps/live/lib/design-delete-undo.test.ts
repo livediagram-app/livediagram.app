@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const index = vi.hoisted(() => ({ deleteItem: vi.fn() }));
-vi.mock('@/lib/index-client', () => ({ indexClient: index }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { handOffDeleteUndo, takeDeleteUndo, trashOpenDesign } = await import('./design-delete-undo');

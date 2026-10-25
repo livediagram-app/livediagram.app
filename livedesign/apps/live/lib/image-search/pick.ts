@@ -8,7 +8,7 @@ import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
 import type { PickedImage } from '../upload-image';
 import { creditFor, galleryNameFor, type OpenverseImage } from './openverse';
 import { readCapped } from './read-capped';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type PickFailure = ImportImageFailure | 'download-failed';
 

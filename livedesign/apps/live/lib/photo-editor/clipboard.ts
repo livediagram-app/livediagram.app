@@ -14,7 +14,7 @@ import { extentOf, placePicture } from './layer-ops';
 import { photoWorkers } from './photo-worker-client';
 import type { PhotoSession } from './session';
 import { rasterizeText } from './text-raster';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type PhotoClip = { raster: Raster; x: number; y: number; pngBytes: number };
 

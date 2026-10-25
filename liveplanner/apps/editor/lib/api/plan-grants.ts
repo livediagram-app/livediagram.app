@@ -6,7 +6,7 @@
 // is fetched again a minute before it lapses, so a save never waits on it.
 
 import { createItemGrants } from '@liveworkspace/index-client/browser';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 export {
   GRANT_RENEW_BEFORE_MS,

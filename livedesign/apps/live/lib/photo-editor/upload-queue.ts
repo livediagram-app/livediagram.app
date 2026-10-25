@@ -4,7 +4,7 @@
 // are pending, so a save never names a blob the store lacks. Other tabs never wait.
 import type { PhotoBlobEntry } from '@livedesign/api-schema';
 import { PHOTO_BATCH_BLOBS, PHOTO_BATCH_BYTES } from '@livedesign/photo-engine';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { blobsHeld, uploadBlobs, type PhotoBlobScope } from './blob-client';
 
 export type UploadState = 'idle' | 'uploading' | 'failed';

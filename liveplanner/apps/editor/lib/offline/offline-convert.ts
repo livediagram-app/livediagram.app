@@ -8,7 +8,7 @@
 
 import { fetchItems } from '../api/items';
 import { apiLoadProject, apiLoadTab } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import {

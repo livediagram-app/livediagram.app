@@ -18,7 +18,7 @@ import {
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
 import { heldDesignGrant } from './design-grants';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import {
   API_BASE,
   apiDelete,

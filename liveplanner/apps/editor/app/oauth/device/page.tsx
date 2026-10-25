@@ -15,7 +15,11 @@ import {
   fetchDeviceSession,
   userCodeOf,
 } from '@/lib/mcp-device-session';
-import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
+import {
+  handoverFailureCopy,
+  mintAndHandOver,
+  type HandoverFailure,
+} from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { OAUTH_PRIMARY, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
@@ -114,7 +118,7 @@ function Device() {
   const approve = async (userCode: string, clientName: string) => {
     setStep({ kind: 'consent', userCode, clientName, working: true, failed: null });
     // Checks the code is still waiting before minting, and revokes a token the MCP did not take, so a failed
-    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    // Connect never leaves a six-month token behind (@liveworkspace/workbench/lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchDeviceSession(userCode)) !== null,
       mint: () => apiExchangeOauthToken(accountUserId, clientName, readOnly),

@@ -40,7 +40,7 @@ import {
 import { useElementGestureActive } from '@/lib/canvas-gesture';
 import { articleTextWidth } from '@/lib/article/article-flow-geometry';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 const textWidthOf = (pages: readonly LaidOutPage[], flow: string, doc: ArticleFlow): number =>

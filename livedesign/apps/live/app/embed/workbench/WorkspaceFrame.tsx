@@ -18,7 +18,7 @@ import {
   type WorkbenchSession,
 } from '@/components/providers/workbench-session-context';
 import { useToast } from '@/hooks/ui/useToast';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { workspacePlaceOf, type WorkspacePlace } from '@/lib/workbench/workspace-place';
 import { VIEW_TITLES, type ExplorerView } from '@liveworkspace/explorer';

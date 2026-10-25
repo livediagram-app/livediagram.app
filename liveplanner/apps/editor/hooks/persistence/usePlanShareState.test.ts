@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const index = vi.hoisted(() => ({ listShareLinks: vi.fn() }));
-vi.mock('@/lib/index-client', () => ({ indexClient: index }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 
 import { hasLiveLink, usePlanShareState } from './usePlanShareState';
 

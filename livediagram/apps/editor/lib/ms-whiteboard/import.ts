@@ -13,7 +13,7 @@ import { replayBoard, type ReplayedBoard } from './replay';
 import { boardDates, boardTitle, type BoardDates } from './board-identity';
 import { boardDocumentName } from '@/lib/board-scene/board-document';
 import { boardToScene, type BoardImage } from './to-scene';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type BoardSummary = {
   dir: string;

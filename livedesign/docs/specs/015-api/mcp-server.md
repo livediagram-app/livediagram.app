@@ -139,7 +139,7 @@ This implements the OAuth flow Manager Toolkit uses:
    (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
    Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
    else ("Something went wrong. Please try again."). The device page does the same
-   (`apps/live/lib/oauth-handover.ts`).
+   (`../packages/workbench/src/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's

@@ -2,7 +2,7 @@
 // "Errors and edge cases"): every decision point logs `[drive-mirror] <event>`,
 // so a failure is traceable from the browser console. Never a token.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type DriveLogFields = Record<string, string | number | boolean | null | undefined>;
 

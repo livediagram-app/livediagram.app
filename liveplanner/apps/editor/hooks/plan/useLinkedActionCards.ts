@@ -25,7 +25,7 @@ import {
 } from '@liveplanner/items';
 import { actionsBoardTab } from '@liveplanner/templates';
 import { colorForKey } from '@/lib/identity';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';

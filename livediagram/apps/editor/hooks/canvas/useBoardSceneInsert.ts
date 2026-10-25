@@ -23,7 +23,7 @@ import {
   type HugText,
 } from '@/lib/board-scene-browser';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type BoardSceneSource = BoardScene['source'];
 

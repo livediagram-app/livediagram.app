@@ -8,7 +8,7 @@
 // finger (a pinch) ends the pan: the pinch owns the view.
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 
 // Screen px a finger travels before its press is a pan rather than a tap.

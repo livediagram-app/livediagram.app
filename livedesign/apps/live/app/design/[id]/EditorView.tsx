@@ -58,9 +58,12 @@ import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
 import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
-import { UiScaleProvider, useUiScalePreview } from '@/components/providers/ui-scale';
+import {
+  UiScaleProvider,
+  useUiScalePreview,
+} from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
-import { resolveUiScales } from '@/lib/ui-scale';
+import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';

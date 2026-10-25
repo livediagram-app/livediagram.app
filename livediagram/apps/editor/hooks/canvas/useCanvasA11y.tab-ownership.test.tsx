@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import type { Element } from '@livediagram/document';
 import { useCanvasA11y } from './useCanvasA11y';
 

@@ -19,7 +19,11 @@
 // generated deck is one you have to read and prune before you can trust it.
 
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
+import {
+  sameMembers,
+  selectionIds,
+  type Selection,
+} from '@liveworkspace/workbench/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
 import { slideName } from '@livedesign/design';

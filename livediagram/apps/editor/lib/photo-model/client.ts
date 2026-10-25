@@ -1,4 +1,4 @@
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { BoundaryFailure, BoundaryOutcome, WorkerRequest, WorkerResponse } from './protocol';
 
 // The page's side of the boundary model (docs/specs/021-event-storming/event-storming.md Phase 9).

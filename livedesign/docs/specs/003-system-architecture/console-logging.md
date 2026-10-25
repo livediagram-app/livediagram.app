@@ -9,7 +9,7 @@ that matters.
 ## Three kinds of line
 
 - **Trace lines** (a decision taken, a step done: what used to be `console.info`, `console.log`
-  and `console.debug`) go through **`debugLog(message, ...details)`** (`apps/live/lib/debug-log.ts`),
+  and `console.debug`) go through **`debugLog(message, ...details)`** (`../packages/workbench/src/lib/debug-log.ts`),
   the editor's one logger. They show:
   - always in development and in tests (any build but production);
   - in a production build only when the **debug flag** is set for the browser:

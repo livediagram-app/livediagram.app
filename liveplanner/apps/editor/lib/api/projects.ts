@@ -1,5 +1,5 @@
 // Plan-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket. Listing,
-// copying, deleting and sharing plans are the index's (lib/index-client.ts, the shared Explorer).
+// copying, deleting and sharing plans are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
 import type { ItemCreate, ItemTypeCatalogue } from '@liveplanner/items';
 import {
   INDEX_GRANT_HEADER,
@@ -17,7 +17,7 @@ import type { Tab } from '@liveplanner/project';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadProject, offlineSaveProjectMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
 import { seedPlanGrant } from './plan-grants';
 import {

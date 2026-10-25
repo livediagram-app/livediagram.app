@@ -3,7 +3,7 @@
 // debounce nor the unload flush can write it back while it goes to the Trash; then the editor leaves for the
 // Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
 // moment, so a later visit offers nothing.
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { track } from '@/lib/telemetry';
 

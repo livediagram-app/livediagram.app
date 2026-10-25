@@ -11,7 +11,7 @@ import {
 } from '@liveworkspace/explorer';
 import { templateFamilyOf, type TemplateKind } from '@liveplanner/templates';
 import { useToast } from '@/hooks/ui/useToast';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
 
 // A template picked from Start Planning on a plan /new just made goes to the template's default folder

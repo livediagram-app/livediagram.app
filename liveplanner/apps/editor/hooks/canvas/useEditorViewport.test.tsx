@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element, type Tab } from '@liveplanner/project';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useEditorViewport } from './useEditorViewport';
 
 // On a phone, an element just added (and selected by the add) scrolls into view. The selection is read

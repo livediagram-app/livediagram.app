@@ -1,5 +1,5 @@
 import { isAllSetting, isAllSettingRow } from '@liveworkspace/settings';
-import { UI_SCALE_PARTS } from '@/lib/ui-scale';
+import { UI_SCALE_PARTS } from '@liveworkspace/workbench/lib/ui-scale';
 import { preferencesKeptLocally } from '@/lib/preferences-sync';
 
 // Whether a Settings row's value is one every liveworkspace app shares (ALL_SETTING_KEYS), so the

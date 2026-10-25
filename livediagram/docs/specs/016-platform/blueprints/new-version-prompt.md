@@ -26,7 +26,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 | `apps/editor/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
 | `apps/editor/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
 | `apps/editor/lib/api/room.ts`                        | The room client notes the message                                                                     |
-| `apps/editor/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
+| `../packages/workbench/src/lib/reload-when-saved.ts` | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
 | `apps/editor/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
 | `apps/editor/app/document/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                                                         |
 | `apps/editor/app/document/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                                                            |
@@ -49,7 +49,7 @@ export function newVersionAvailable(): boolean;
 export function subscribeServerRelease(listener: () => void): () => void;
 export function resetServerReleaseForTests(): void;
 
-// apps/editor/lib/reload-when-saved.ts
+// ../packages/workbench/src/lib/reload-when-saved.ts
 export const RELOAD_SAVE_WAIT_MS = 10_000;
 export const RELOAD_SAVE_POLL_MS = 200;
 export function reloadWhenSaved(opts: {
@@ -142,7 +142,7 @@ The number is not a secret and grants nothing; a forged value can only show a re
 | Room sends its format on hello                           | `apps/api/src/document-room.test.ts`                                   |
 | Store keeps the maximum, notifies on rise, ignores junk  | `apps/editor/lib/server-release.test.ts`                               |
 | `apiFetch` and the room client note the number           | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/api/room.test.ts` |
-| Reload waits for a settled save, gives up after the wait | `apps/editor/lib/reload-when-saved.test.ts`                            |
+| Reload waits for a settled save, gives up after the wait | `../packages/workbench/src/lib/reload-when-saved.test.ts`              |
 | Prompt states, copy, role, keyboard, telemetry           | `apps/editor/components/chrome/NewVersionPrompt.test.tsx`              |
 | `hasUnsavedChanges`                                      | `apps/editor/app/document/[id]/useAutosave.test.tsx`                   |
 | An older editor against a newer server (Playwright)      | `apps/editor/e2e/new-version-prompt.spec.ts`                           |

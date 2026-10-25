@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { LIST_LIMIT_MAX, type Item } from '@liveworkspace/index-client';
 import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from '@/lib/api/core';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph, TeamIcon } from '@livediagram/ui';

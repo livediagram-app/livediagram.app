@@ -14,7 +14,7 @@ import {
   type StickyElement,
   type TextElement,
 } from '@livediagram/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { inkOnFill } from './vertex-props';
 
 const holds = (outer: BoxedElement, inner: BoxedElement) =>

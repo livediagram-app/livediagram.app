@@ -13,7 +13,7 @@ import type { ImportedPlanItems } from '@/lib/import-tab';
 import { waitUntil } from '@/lib/wait-until';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PlanItemsStatus } from './usePlanItems';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // How long an import waits for the item store (blueprint DEFAULTS): a project with no Plan content until the
 // import starts loading it only once the imported board lands, which is a fetch away.

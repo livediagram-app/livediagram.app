@@ -14,7 +14,7 @@ import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livedi
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { useToast } from '@/hooks/ui/useToast';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // A template picked from a start screen on a canvas /new just made goes to the template's default folder, else the
 // default for new canvases (docs/specs/013-workspace/default-folders.md "A template picked after creation"). Once per

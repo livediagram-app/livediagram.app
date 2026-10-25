@@ -22,7 +22,7 @@ import {
 } from '@livedesign/photo-engine';
 import type { PixelsStore } from './pixels-store';
 import { photoWorkers } from './photo-worker-client';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** The set under `key`, made when missing. */
 function setIn<K, V>(map: Map<K, Set<V>>, key: K): Set<V> {

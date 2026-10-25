@@ -3,7 +3,7 @@ import { SyncStillSavingError, takeCloudOffline } from '@/lib/offline/offline-co
 import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
 import { offlineListDocuments } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { SYNC_SAVE_WAIT_MS } from './useSyncInPlace';
 

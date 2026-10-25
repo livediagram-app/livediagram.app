@@ -9,7 +9,7 @@ import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from './session';
 import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
 import { createWebpEncoder, type WasmWebpEncode } from './webp';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { blobToDataUrl } from '@/lib/blob-data-url';
 
 type Drawable = ImageBitmap | HTMLImageElement;

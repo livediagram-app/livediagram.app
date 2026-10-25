@@ -14,7 +14,7 @@ import {
   type SlotSource,
 } from '@/lib/whiteboard-shape-slots';
 import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Screen px of travel before a press becomes a drag (the spec's 6 px; wider than the chrome's
 // PRESS_DRAG_SLOP_PX so a press on a small dock button never turns into a drag by accident).

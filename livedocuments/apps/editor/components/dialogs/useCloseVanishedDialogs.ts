@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { Element } from '@livedocuments/document';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // An element dialog (the link picker, the cell link picker, line data, code, Sankey Flows, Sequence, the image
 // picker; the action popovers) is open "for" an element id, and renders only while it can be shown for it: the

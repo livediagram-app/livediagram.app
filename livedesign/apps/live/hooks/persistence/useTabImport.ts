@@ -6,7 +6,7 @@ import { remapElementRefs, savableElements, type Element, type Tab } from '@live
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
 // the design, with the old-to-new map of the element ids. Shared with remintTabElements, which a Duplicate goes

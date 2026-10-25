@@ -5,7 +5,7 @@
 import { IndexError } from '@liveworkspace/index-client';
 import { parseStoredLevel, type ProjectResponse } from '@liveplanner/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import {
   API_BASE,
   apiHeaders,

@@ -1,5 +1,5 @@
 // Design-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket. Listing,
-// copying, deleting and sharing designs are the index's (lib/index-client.ts, the shared Explorer).
+// copying, deleting and sharing designs are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
 import {
   INDEX_GRANT_HEADER,
   DESIGN_CONVERSION_HEADER,
@@ -14,7 +14,7 @@ import type { Tab } from '@livedesign/design';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadDesign, offlineSaveDesignMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
 import { seedDesignGrant } from './design-grants';
 import {

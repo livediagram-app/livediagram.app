@@ -8,8 +8,8 @@ import { useCanvasLongTaskLog } from './useCanvasLongTaskLog';
 // on, every long task logs its length and the gesture in progress.
 
 const scope = vi.hoisted(() => ({ on: true }));
-vi.mock('@/lib/debug-log', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@/lib/debug-log')>();
+vi.mock('@liveworkspace/workbench/lib/debug-log', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@liveworkspace/workbench/lib/debug-log')>();
   return { ...real, debugScopeOn: () => scope.on };
 });
 

@@ -5,7 +5,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@liveplanner/project';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useSheetChartMenuSelection } from './useSheetChartMenuSelection';
 
 const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };

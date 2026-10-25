@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the

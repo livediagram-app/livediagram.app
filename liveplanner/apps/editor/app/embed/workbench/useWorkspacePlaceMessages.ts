@@ -6,7 +6,7 @@
 // the one sender. Logged by view only, never a name.
 import { useCallback, useRef } from 'react';
 import type { PlaceMessage } from '@liveplanner/api-schema';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 
 export type PlaceFields = Omit<PlaceMessage, 'type' | 'v'>;

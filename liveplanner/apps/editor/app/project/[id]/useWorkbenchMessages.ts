@@ -18,7 +18,7 @@ import { selectionReference } from '@liveplanner/project-views';
 import { setAppearanceOverride } from '@liveplanner/ui';
 import type { WorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 import type { RevealStore } from '@/lib/changeset-reveals';
-import { selectionIds, type SelectionStore } from '@/lib/selection-store';
+import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 export function useWorkbenchMessages(opts: {
   workbench: WorkbenchProjectSession | null;

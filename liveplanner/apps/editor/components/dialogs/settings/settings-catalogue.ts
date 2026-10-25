@@ -15,8 +15,8 @@ import {
   uiScalePatch,
   withUiScalePatch,
   type UiScalePart,
-} from '@/lib/ui-scale';
-import { setUiScalePreview } from '@/lib/ui-scale-preview';
+} from '@liveworkspace/workbench/lib/ui-scale';
+import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import type { SettingsIllustrationId } from './settings-illustrations';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only

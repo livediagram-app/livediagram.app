@@ -1,5 +1,5 @@
 // Document-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket.
-// Listing, copying, deleting and sharing documents are the index's (lib/index-client.ts, the shared Explorer).
+// Listing, copying, deleting and sharing documents are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
 import {
   INDEX_GRANT_HEADER,
   indexIntentOf,
@@ -19,7 +19,7 @@ import {
   offlineSaveDocumentMeta,
 } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
 import { seedDocumentGrant } from './document-grants';
 import {
