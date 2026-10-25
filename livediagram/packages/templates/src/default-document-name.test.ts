@@ -9,13 +9,14 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('orgchart')).toBe('Untitled Org Chart');
     expect(untitledNameForTemplate('whiteboard')).toBe('Untitled Whiteboard');
     expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
+    expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
   });
 });
 
 describe('isDefaultDocumentName', () => {
   it("counts every template's untitled name, and the plain and legacy untitled", () => {
     for (const name of [
+      'Untitled canvas',
       'Untitled document',
       'Untitled diagram',
       'Untitled Session',

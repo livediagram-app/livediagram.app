@@ -14,7 +14,7 @@ export function BrowserRepairPanel(props: BrowserRepairPanelProps) {
   return (
     <SharedPanel
       product="livediagram"
-      noun="documents"
+      noun="canvases"
       repair={() => repairBrowserStorage()}
       {...props}
     />

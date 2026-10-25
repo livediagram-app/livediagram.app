@@ -56,7 +56,7 @@ export const categories: Category[] = [
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your documents are stored, what we collect, and how to keep shared links safe.',
+      'Know exactly how your canvases are stored, what we collect, and how to keep shared links safe.',
     articleCount: 5,
   },
   {
@@ -116,7 +116,7 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
+      'Organise everything you build: how the Explorer keeps your canvases, folders, teams, and assets easy to find and manage.',
     articleCount: 16,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
@@ -157,7 +157,7 @@ export const categories: Category[] = [
     slug: 'tabs',
     title: 'Tabs',
     description:
-      'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
+      'Keep a whole project in one canvas: organise, link, and move between multiple boards with tabs.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -181,7 +181,7 @@ export const categories: Category[] = [
     slug: 'search-panel',
     title: 'Search Panel',
     description:
-      'Find anything in seconds: jump to any document, folder, team, tab, or element, and add new elements to the canvas.',
+      'Find anything in seconds: jump to any canvas, folder, team, tab, or element, and add new elements to the canvas.',
     articleCount: 1,
     kind: 'feature',
   },
@@ -236,8 +236,8 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description:
-      'Switch between the boards in a document, add new ones, and group them into folders.',
-    keywords: 'tabs boards pages switch bottom bar sheets add rename',
+      'Switch between the boards in a canvas, add new ones, and group them into folders.',
+    keywords: 'tabs boards pages switch bottom bar sheets add rename document',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -256,7 +256,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go email api tokens trash delete',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go email api tokens trash delete canvas',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -273,9 +273,9 @@ export const articles: Article[] = [
   {
     slug: 'title-bar',
     title: 'The Title Bar',
-    description: 'Rename the document, see who can see it, preview as a viewer, and Share or Copy.',
+    description: 'Rename the canvas, see who can see it, preview as a viewer, and Share or Copy.',
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account canvas',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -324,7 +324,7 @@ export const articles: Article[] = [
     title: 'Your First Diagram',
     description: 'Create a diagram and add your first shapes in under a minute.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location',
+      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location canvas',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -356,9 +356,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'sharing-your-document',
-    title: 'Sharing Your Document',
+    title: 'Sharing Your Canvas',
     description: 'Hand a link to anyone and edit together in real time.',
-    keywords: 'share link collaborate invite send url realtime together diagram',
+    keywords: 'share link collaborate invite send url realtime together diagram document',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -428,9 +428,9 @@ export const articles: Article[] = [
   {
     slug: 'copy-and-paste',
     title: 'Copy and Paste',
-    description: 'Move elements between tabs, documents and windows through the system clipboard.',
+    description: 'Move elements between tabs, canvases and windows through the system clipboard.',
     keywords:
-      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard',
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard canvas',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -455,17 +455,17 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your documents when you are not signed in.',
-    keywords: 'anonymous browser id localstorage owner identity without account',
+    description: 'The per-browser id that owns your canvases when you are not signed in.',
+    keywords: 'anonymous browser id localstorage owner identity without account document',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest documents.',
+    description: 'Create an account, sign in, and migrate your guest canvases.',
     keywords:
-      'login log in sign up register email code google oauth account create migrate avatar initials',
+      'login log in sign up register email code google oauth account create migrate avatar initials document',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -481,17 +481,17 @@ export const articles: Article[] = [
   {
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
-    description: 'How to delete a document or your whole account, and what each removes.',
-    keywords: 'delete remove erase gdpr clear account wipe forget close trash',
+    description: 'How to delete a canvas or your whole account, and what each removes.',
+    keywords: 'delete remove erase gdpr clear account wipe forget close trash document',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'trash',
     title: 'Trash',
-    description: 'Deleted documents wait 30 days: restore one, or delete it for good.',
+    description: 'Deleted canvases wait 30 days: restore one, or delete it for good.',
     keywords:
-      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days',
+      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days document',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -506,9 +506,9 @@ export const articles: Article[] = [
   {
     slug: 'connect-ai-mcp',
     title: 'Connect an AI Tool (MCP)',
-    description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
+    description: 'Connect Claude or any MCP client to find, view, create, and edit your canvases.',
     keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore read-only',
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore read-only document',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -560,10 +560,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'working-with-documents',
-    title: 'Working with Documents',
-    description: 'Worked examples: list, read, create, and update documents, tabs, and folders.',
+    title: 'Working with Canvases',
+    description: 'Worked examples: list, read, create, and update canvases, tabs, and folders.',
     keywords:
-      'examples curl crud create update list read api requests diagrams outline view text agent',
+      'examples curl crud create update list read api requests diagrams outline view text agent document',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -598,9 +598,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The livediagram CLI',
     description:
-      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
+      'Read, build, edit and discuss canvases from a terminal: install, sign in, the commands, and self-hosting.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host document',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -618,9 +618,9 @@ export const articles: Article[] = [
     slug: 'workbenches',
     title: 'Diagrams in Your Developer Tools',
     description:
-      'Draw in a document inside a developer tool beside your agent, and talk about what you select.',
+      'Draw in a canvas inside a developer tool beside your agent, and talk about what you select.',
     keywords:
-      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace',
+      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace document',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -669,8 +669,8 @@ export const articles: Article[] = [
   {
     slug: 'data-privacy',
     title: 'Data Privacy',
-    description: 'Where your documents live and how they are handled.',
-    keywords: 'storage stored cloudflare security where data location safe',
+    description: 'Where your canvases live and how they are handled.',
+    keywords: 'storage stored cloudflare security where data location safe document',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -678,9 +678,9 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a document only in this browser, and move it to or from your account.',
+    description: 'Save a canvas only in this browser, and move it to or from your account.',
     keywords:
-      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload document',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -769,19 +769,19 @@ export const articles: Article[] = [
   // ---- Troubleshooting ----
   {
     slug: 'document-not-loading',
-    title: 'A Document Will Not Load',
-    description: 'What to check when a document is blank or stuck loading.',
+    title: 'A Canvas Will Not Load',
+    description: 'What to check when a canvas is blank or stuck loading.',
     keywords:
-      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others',
+      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others document',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
   {
     slug: 'repair-this-browser',
     title: 'Repair This Browser',
-    description: 'Clear stuck settings and caches, keeping your documents.',
+    description: 'Clear stuck settings and caches, keeping your canvases.',
     keywords:
-      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data',
+      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data document',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -928,9 +928,9 @@ export const articles: Article[] = [
   {
     slug: 'walking-together',
     title: 'Walking Together',
-    description: "Everyone on a shared document sees everyone else's walking character.",
+    description: "Everyone on a shared canvas sees everyone else's walking character.",
     keywords:
-      'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence',
+      'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence document',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
     parentSlug: 'avatar-mode',
@@ -1507,9 +1507,9 @@ export const articles: Article[] = [
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
+    description: 'Multiple boards in one canvas: add, name, reorder, and switch between them.',
     keywords:
-      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start',
+      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start document',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1525,8 +1525,8 @@ export const articles: Article[] = [
     slug: 'linking-tabs',
     title: 'Linking Across Tabs',
     description:
-      'Turn an element into a jump point to another tab, another document, or a web address.',
-    keywords: 'jump navigation cross reference hyperlink go to connect boards',
+      'Turn an element into a jump point to another tab, another canvas, or a web address.',
+    keywords: 'jump navigation cross reference hyperlink go to connect boards document',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1550,9 +1550,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'add-to-document',
-    title: 'Add a Tab to Another Document',
-    description: 'Add the active tab to another document you own; both share the same live tab.',
-    keywords: 'reuse share tab sync across documents diagrams move copy live',
+    title: 'Add a Tab to Another Canvas',
+    description: 'Add the active tab to another canvas you own; both share the same live tab.',
+    keywords: 'reuse share tab sync across documents diagrams move copy live canvas',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1562,7 +1562,7 @@ export const articles: Article[] = [
     description:
       'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
+      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1635,7 +1635,7 @@ export const articles: Article[] = [
     description:
       "The full-page library every liveworkspace app shares: Canvases or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
+      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree canvas',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1655,9 +1655,9 @@ export const articles: Article[] = [
     slug: 'drawio-import',
     title: 'Importing draw.io files',
     description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
+      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own canvas with a tab per page.',
     keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
+      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',
@@ -1666,9 +1666,9 @@ export const articles: Article[] = [
     slug: 'microsoft-whiteboard-import',
     title: 'Importing Microsoft Whiteboard boards',
     description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
+      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated canvas: ink with pressure, colours, notes, text, shapes and images.',
     keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
+      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',
@@ -1679,7 +1679,7 @@ export const articles: Article[] = [
     description:
       'The compact in-editor Explorer: a rail of sections beside a list, opening canvases in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github canvas',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1712,18 +1712,18 @@ export const articles: Article[] = [
     description:
       'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser canvas',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
   },
   {
     slug: 'recent',
-    title: 'Recent Documents',
+    title: 'Recent Canvases',
     description:
       'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1731,9 +1731,9 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Documents other people have shared with you, collected in one place.',
+    description: 'Canvases other people have shared with you, collected in one place.',
     keywords:
-      'shared with me received from others incoming shares collaborations dismiss role owner',
+      'shared with me received from others incoming shares collaborations dismiss role owner document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1741,8 +1741,8 @@ export const articles: Article[] = [
   {
     slug: 'folders',
     title: 'Folders',
-    description: 'Group documents into a nestable tree, and move them between folders.',
-    keywords: 'organise organize directory nest move tree group files',
+    description: 'Group canvases into a nestable tree, and move them between folders.',
+    keywords: 'organise organize directory nest move tree group files document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1752,7 +1752,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives event storming diagrams use as default settings documents new document wizard sessions',
+      'default folder where new documents go automatic placement file whiteboards retrospectives event storming diagrams use as default settings documents new document wizard sessions canvas',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1761,9 +1761,9 @@ export const articles: Article[] = [
     slug: 'filters',
     title: 'Search and Filter Canvases',
     description:
-      'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
+      'Narrow any canvas list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1771,10 +1771,9 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description:
-      'Your own library: the folders you create, and your unfiled documents at its root.',
+    description: 'Your own library: the folders you create, and your unfiled canvases at its root.',
     keywords:
-      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
+      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access canvas',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1811,8 +1810,8 @@ export const articles: Article[] = [
   {
     slug: 'teams',
     title: 'Teams',
-    description: 'Invite members, assign roles, and share documents across a team.',
-    keywords: 'workspace organisation organization members invite group company',
+    description: 'Invite members, assign roles, and share canvases across a team.',
+    keywords: 'workspace organisation organization members invite group company document',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -2415,9 +2414,9 @@ export const articles: Article[] = [
   {
     slug: 'roll-calls',
     title: 'Roll Calls',
-    description: 'Who was in the room, frozen into the document.',
+    description: 'Who was in the room, frozen into the canvas.',
     keywords:
-      'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record',
+      'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record document',
     category: 'Palette',
     categorySlug: 'palette/collaborate',
     parentSlug: 'collaborate',
@@ -2500,9 +2499,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'team-shared-documents',
-    title: 'Team Shared Documents',
+    title: 'Team Shared Canvases',
     description: 'A per-team folder tree every member can manage.',
-    keywords: 'shared library folder team files workspace common diagrams',
+    keywords: 'shared library folder team files workspace common diagrams document',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -2511,11 +2510,11 @@ export const articles: Article[] = [
   // ---- Sub-articles: Sharing ----
   {
     slug: 'finding-community-documents',
-    title: 'Finding Documents in the Community',
+    title: 'Finding Canvases in the Community',
     description:
-      'Search the Community by words, #tags, category and sort, then make a document your own.',
+      'Search the Community by words, #tags, category and sort, then make a canvas your own.',
     keywords:
-      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden',
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden document',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2523,9 +2522,9 @@ export const articles: Article[] = [
   {
     slug: 'community',
     title: 'Sharing to the Community',
-    description: 'Publish a document to the public gallery for others to view and copy.',
+    description: 'Publish a canvas to the public gallery for others to view and copy.',
     keywords:
-      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse',
+      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse canvas',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2561,8 +2560,8 @@ export const articles: Article[] = [
   {
     slug: 'embeds',
     title: 'Embeds',
-    description: 'Drop a live document into another page, read-only or editable by link role.',
-    keywords: 'iframe embed website notion confluence wiki blog integrate',
+    description: 'Drop a live canvas into another page, read-only or editable by link role.',
+    keywords: 'iframe embed website notion confluence wiki blog integrate document',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2570,8 +2569,8 @@ export const articles: Article[] = [
   {
     slug: 'live-image',
     title: 'Live Image',
-    description: 'Copy an always-current image of a document for READMEs and docs.',
-    keywords: 'readme badge always current screenshot png url auto updating',
+    description: 'Copy an always-current image of a canvas for READMEs and docs.',
+    keywords: 'readme badge always current screenshot png url auto updating document',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2754,9 +2753,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'search-documents',
-    title: 'Finding Documents and Folders',
-    description: 'Search across your documents, folders, and the documents shared with you.',
-    keywords: 'find lookup locate files library open diagrams',
+    title: 'Finding Canvases and Folders',
+    description: 'Search across your canvases, folders, and the canvases shared with you.',
+    keywords: 'find lookup locate files library open diagrams document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -2764,8 +2763,8 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and documents from the search panel.',
-    keywords: 'find team shared folders lookup locate',
+    description: 'Find teams and their shared folders and canvases from the search panel.',
+    keywords: 'find team shared folders lookup locate document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -2773,9 +2772,8 @@ export const articles: Article[] = [
   {
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Elements',
-    description:
-      'Inside a document, jump to any tab or element, including text inside table cells.',
-    keywords: 'find jump locate text label shape board lookup',
+    description: 'Inside a canvas, jump to any tab or element, including text inside table cells.',
+    keywords: 'find jump locate text label shape board lookup document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

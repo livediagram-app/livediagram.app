@@ -13,7 +13,7 @@ export function SiteFooter() {
     <SharedFooter
       app={BRAND_APP}
       tagline="Free diagrams, whiteboards and workshops for teams who think together."
-      newLabel="New Document"
+      newLabel="New Canvas"
       newIcon={NewIcon}
       community={<CommunityFooterLink className={SITE_FOOTER_LINK} />}
       repoUrl={REPO_URL}
