@@ -246,8 +246,9 @@ const ROW_LAYOUT = 'flex w-full items-center justify-between gap-3 rounded-md te
  * A row that is itself the switch: its words and the track (a presentational Switch) inside one `role="switch"`
  * button, named by its words (or `aria-label`), so it is one hit target and one announcement. `layout` replaces the
  * default row layout (a pill, a toolbar chip); `className` adds to it. `track` puts the switch before or after the
- * words, or leaves it out (see SwitchChip). An `onClick` the caller passes runs first (to stop a press reaching the
- * canvas); the row then flips, unless that handler called `preventDefault`. Enter and Space are the button's own.
+ * words (held in a `min-w-0` span, so they can shrink), or leaves it out (see SwitchChip). An `onClick` the caller
+ * passes runs first (to stop a press reaching the canvas); the row then flips, unless that handler called
+ * `preventDefault`. Enter and Space are the button's own.
  */
 export function SwitchRow({
   checked,
@@ -303,7 +304,7 @@ export function SwitchRow({
       className={`${layout} cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {track === 'start' ? picture : null}
-      {children}
+      {track === 'none' ? children : <span className="min-w-0">{children}</span>}
       {track === 'end' ? picture : null}
     </button>
   );
