@@ -15,7 +15,6 @@ export const MCP_URL = mcpEndpoint(resolveMcpOrigin(process.env.NEXT_PUBLIC_MCP_
 export const AI_PRODUCT: AiProduct = {
   name: 'liveplanner',
   mcpUrl: MCP_URL,
-  hostedMcpHost: 'mcp.liveplanner.app',
 };
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
