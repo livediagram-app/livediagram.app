@@ -81,5 +81,40 @@ is one per pane, drawn only while open.
 ## 6. Beyond the feed
 
 An item's own history is **History** on its menu in the Explorer: the item's own Timeline (`GET /timeline?item=`),
-paged. A team's events are on every member's Timeline. An API token's expiry warning is the liveworkspace account's,
+paged. It is a dialog rather than a page, because "what happened to this?" is asked while looking at the row
+(`packages/explorer/src/library/HistoryDialog.tsx`, the rules in `history.ts`). Every app's Explorer, the
+liveworkspace.app Explorer and the editors' Explorer panel open the same one.
+
+- **Whose history.** The header shows the item itself: its thumbnail (the host's `renderThumbnail`, else the item
+  glyph), its name as the dialog's heading, its app's mark (`AppMark`, never a coloured dot) with its kind word,
+  its owner ("You", the team, or the owner's name) and when it was made.
+- **At a glance.** A strip under the header: how many events are loaded ("30+" while older ones remain), how many
+  people took part (their avatars, up to three), when it was made and when it last changed.
+- **Filter.** One chip per kind of event present in what is loaded (the Timeline's categories: Edits, Renames,
+  Sharing, Organisation, Comments, ...), with **All** first; shown only when two or more kinds are present. One
+  chip at a time, each a toggle button (`aria-pressed`). With nothing matching, the list says so and offers Show
+  older events and Show all.
+- **The rail.** Events newest first on a vertical rail, one ordered list per day under a sticky day heading:
+  **Today**, **Yesterday**, the weekday within the last week, then the date ("Tue, 5 Aug", with its year when not
+  this year's). Each heading and time is a `<time datetime>`.
+- **An event.** Its kind's glyph in a disc on the rail, in its tone (red for the Trash, amber for renamed, moved and
+  sharing, green for made and edited), always with the reason line in words ("Canvas Renamed"), so colour is never
+  the only signal. Then who did it (an avatar with their initials, in a stable colour from the presence palette,
+  and their name or "You"), the detail ("Was “Q3”", "To Launches", "Anyone with the link can edit"), a comment's or
+  action's words quoted beneath, and the time.
+- **Runs.** Consecutive events of one kind by one person on one day fold into one entry ("Renamed 3 times · You ·
+  13:47–14:00"); **Show all 3** (`aria-expanded`) deals the run out beneath it.
+- **Paging.** Pages of 30. **Show older events** under the rail reads the next page and says how many are shown;
+  the button is gone at the end of the history. No other request is made: people's names come from the Explorer's
+  shared people store, the one that names the Owner column, gathered into one batch and cached.
+- **States.** Loading: a rail-shaped skeleton (`aria-busy`). Nothing yet: the shared empty state. A failed first
+  read says so with **Try again**, never "nothing has happened"; a failed later page keeps what is shown and
+  offers Try again beside the button.
+- **Fit.** A centred panel up to 36 rem wide on a desktop, its body scrolling under the fixed header; edge to edge
+  and full height on a phone. Light and dark. Hover transitions are `duration-micro`; a run dealt out fades in, not
+  under reduced motion. Escape closes and focus returns to the menu's row.
+- **Speed.** The days, runs, chips and summary are worked out once per loaded page and filter (memoised); 1,000
+  loaded events group in well under a frame (a test keeps a budget).
+
+A team's events are on every member's Timeline. An API token's expiry warning is the liveworkspace account's,
 sent by email ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), and is no Timeline row.
