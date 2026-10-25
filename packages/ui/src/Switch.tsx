@@ -10,7 +10,9 @@ import type { KeyboardEvent } from 'react';
 // Space flips it, as the switch pattern asks; Enter is the button's own. `busy` holds it where it is while what it
 // starts runs: still focusable and announced (`aria-busy`), but a press does nothing and the knob shows a spinner.
 // `disabled` greys it out. The colours default to the host's `brand-*` ramp and slate; a panel painted in its own
-// colours (a start panel in its tab's theme) passes `onColor` / `offColor`.
+// colours (a start panel in its tab's theme) passes `onColor` / `offColor`. `coversRow` stretches its hit area over
+// the nearest positioned ancestor (a row marked `relative`), so a press anywhere on that row flips it, as a Settings
+// row does; the row's other controls sit above that layer and keep their own presses.
 export function Switch({
   checked,
   onChange,
@@ -22,6 +24,7 @@ export function Switch({
   busy = false,
   onColor,
   offColor,
+  coversRow = false,
   className = '',
 }: {
   checked: boolean;
@@ -35,6 +38,7 @@ export function Switch({
   busy?: boolean;
   onColor?: string;
   offColor?: string;
+  coversRow?: boolean;
   // The caller's spacing only.
   className?: string;
 }) {
@@ -69,7 +73,7 @@ export function Switch({
       onClick={flip}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyUp}
-      className={`group relative inline-flex h-11 w-14 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none disabled:cursor-not-allowed aria-busy:cursor-progress ${className}`}
+      className={`group inline-flex h-11 w-14 ${coversRow ? "after:absolute after:inset-0 after:content-['']" : 'relative'} shrink-0 cursor-pointer items-center justify-center rounded-full outline-none disabled:cursor-not-allowed aria-busy:cursor-progress ${className}`}
     >
       <span
         aria-hidden

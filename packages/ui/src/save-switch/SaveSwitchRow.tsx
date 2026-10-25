@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useState, type CSSProperties } from 'react';
 import { lucideAppWindow, lucideCloud } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '../icons/lucide-glyph';
 import { Switch } from '../Switch';
@@ -65,7 +65,7 @@ export function useSaveSwitch({
 /**
  * "Sync <Kind> to Server": a quiet row under a start screen's choices. An icon that says where the item lives (a
  * cloud or a browser window), the label, one line of helper text that follows the state, and the switch. The label
- * names the switch and flips it when clicked; the helper line describes it.
+ * names the switch and the helper line describes it; a press anywhere on the row flips it, as on a Settings row.
  */
 export function SaveSwitchRow({
   kind,
@@ -95,7 +95,15 @@ export function SaveSwitchRow({
   const copy = saveSwitchCopy({ kind, onServer: checked, signedIn, moving });
   const Icon = checked ? CloudGlyph : BrowserGlyph;
   return (
-    <div data-save-switch="" className={`flex min-w-0 items-center gap-3 ${className}`}>
+    <div
+      data-save-switch=""
+      className={`relative -mx-2 flex min-w-0 cursor-pointer items-center gap-3 rounded-xl px-2 py-1 transition-colors duration-short motion-reduce:transition-none ${
+        ink
+          ? 'hover:bg-[var(--save-switch-hover)]'
+          : 'hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
+      } ${className}`}
+      style={ink ? ({ '--save-switch-hover': ink.surface } as CSSProperties) : undefined}
+    >
       <span
         aria-hidden
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-short motion-reduce:transition-none ${
@@ -141,6 +149,7 @@ export function SaveSwitchRow({
         onChange={onChange}
         onColor={ink?.accent}
         offColor={ink ? `color-mix(in srgb, ${ink.muted} 45%, transparent)` : undefined}
+        coversRow
         className="-mr-1.5"
       />
       {/* Polite: what a move is doing, then that it landed. A failure says so in the app's toast. */}

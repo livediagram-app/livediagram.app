@@ -129,6 +129,17 @@ describe('SaveSwitch', () => {
     expect(toServer).toHaveBeenCalledTimes(1);
   });
 
+  it('lays the switch’s hit area over the whole row, as a Settings row does', () => {
+    render(<Host start={false} toServer={vi.fn()} toBrowser={vi.fn()} />);
+    const sw = screen.getByRole('switch');
+    const row = sw.closest('[data-save-switch]')!;
+    // The switch is not positioned itself, so its ::after stretches over the row, which is.
+    expect(row.className).toMatch(/(^|\s)relative(\s|$)/);
+    expect(sw.className).toContain('after:inset-0');
+    expect(sw.className).not.toMatch(/(^|\s)relative(\s|$)/);
+    expect(screen.getAllByRole('switch')).toHaveLength(1);
+  });
+
   it('turned on, syncs: busy and announced while it runs, then on', async () => {
     const run = deferred();
     const toBrowser = vi.fn();

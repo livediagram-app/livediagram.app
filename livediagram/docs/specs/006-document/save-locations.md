@@ -49,6 +49,8 @@ Nobody is asked, but the start screen offers one switch, **Sync Canvas to Server
 where the canvas is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
 person (livediagram).
 
+- **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
+  it, and it tints on hover. Screen readers still hear one switch, named by the label and described by the line.
 - **Turned on** it syncs the canvas in place ([Offline Mode → Syncing in place](offline-mode.md#syncing-in-place)), a
   guest's as their guest id; **turned off** it takes it offline in place
   ([Offline Mode → Taking offline in place](offline-mode.md#taking-offline-in-place)). No confirmation: the canvas is
