@@ -2,8 +2,9 @@
 
 // The hero's connector (docs/specs/019-marketing/marketing-site.md "Hero"): on load, an arrow draws
 // from the end of the headline's question down to the template search, the gesture of the editor's
-// loading animation (DiagramBuildAnimation in apps/editor: a gradient connector draws, its head lands,
-// the target flashes a selection ring, a pulse of light runs along it). The question is wired to
+// loading animation (DiagramBuildAnimation in apps/editor: a connector draws, its head lands, the
+// target flashes a selection ring, a pulse of light runs along it), drawn in marker on the hero's
+// whiteboard, with "start here" scrawled under its tip where that fits. The question is wired to
 // where it is answered, as a diagram would wire them.
 //
 // The geometry is the page's own, so it is measured, not drawn to a fixed picture: the headline's
@@ -16,6 +17,7 @@
 // live in app/hero-animations.css (hero-conn-*).
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import { WHITEBOARD_COPY } from './hero-draw-copy';
 
 type Point = [number, number];
 type Layout = {
@@ -24,6 +26,8 @@ type Layout = {
   // The curve's start, its two controls and where it ends, then the tip the straight run reaches.
   p: [Point, Point, Point, Point, Point];
   ring: { x: number; y: number; w: number; h: number };
+  // Where "start here" is written, under the tip; null where the band has no room for it.
+  note: Point | null;
 };
 
 // How far the line starts clear of the text and stops clear of the bar, and the least it bows out past
@@ -39,10 +43,12 @@ const EDGE_CLEAR = 12;
 // The straight run into the bar after the curve, so the line meets the arrowhead level at its tip.
 const LEAD_IN = 28;
 
-// The brand mark's prism (packages/brand/src/apps.ts): its vivid sky out of the headline, its
-// primary blue into the search.
-const FROM = '#0284c7';
-const TO = '#2563eb';
+// The note under the tip: how far right of the tip and below the line it starts, and the room it needs.
+const NOTE_DX = 4;
+const NOTE_DY = 42;
+const NOTE_W = 120;
+// The marker (app/hero-whiteboard.css), the prism's sky, light or dark.
+const MARKER = { stroke: 'var(--wb-marker)' } as const;
 
 function measure(root: HTMLElement): Layout | null {
   const title = root.querySelector<HTMLElement>('[data-hero-anchor="title"]');
@@ -83,6 +89,10 @@ function measure(root: HTMLElement): Layout | null {
       w: t.width + RING_PAD * 2,
       h: t.height + RING_PAD * 2,
     },
+    note:
+      end[0] + NOTE_DX + NOTE_W <= o.width - EDGE_CLEAR
+        ? [end[0] + NOTE_DX, end[1] + NOTE_DY]
+        : null,
   };
 }
 
@@ -113,19 +123,6 @@ export function HeroConnectors() {
   return (
     <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
       <svg className="absolute inset-0 overflow-visible" width={layout.w} height={layout.h}>
-        <defs>
-          <linearGradient
-            id="hero-conn-grad"
-            gradientUnits="userSpaceOnUse"
-            x1={a[0]}
-            y1={a[1]}
-            x2={d[0]}
-            y2={d[1]}
-          >
-            <stop offset="0" stopColor={FROM} />
-            <stop offset="1" stopColor={TO} />
-          </linearGradient>
-        </defs>
         <rect
           className="hero-conn-ring"
           x={layout.ring.x}
@@ -134,18 +131,30 @@ export function HeroConnectors() {
           height={layout.ring.h}
           rx={22}
           fill="none"
-          stroke={TO}
+          style={MARKER}
           strokeOpacity={0.6}
-          strokeWidth={1.5}
-          strokeDasharray="6 5"
+          strokeWidth={2}
+          strokeDasharray="7 6"
+        />
+        {/* A marker leaves a fainter second pass beside its stroke; both draw on together. */}
+        <path
+          className="hero-conn-line"
+          d={path}
+          pathLength={1}
+          fill="none"
+          style={MARKER}
+          strokeOpacity={0.3}
+          strokeWidth={2}
+          strokeLinecap="round"
+          transform="translate(1.5 2)"
         />
         <path
           className="hero-conn-line"
           d={path}
           pathLength={1}
           fill="none"
-          stroke="url(#hero-conn-grad)"
-          strokeWidth={2.5}
+          style={MARKER}
+          strokeWidth={4.5}
           strokeLinecap="round"
         />
         <path
@@ -161,14 +170,26 @@ export function HeroConnectors() {
         <g transform={`rotate(${angle} ${d[0]} ${d[1]})`}>
           <path
             className="hero-conn-head"
-            d={`M ${d[0] - 9} ${d[1] - 6} L ${d[0]} ${d[1]} L ${d[0] - 9} ${d[1] + 6}`}
+            d={`M ${d[0] - 14} ${d[1] - 10} L ${d[0]} ${d[1]} L ${d[0] - 13} ${d[1] + 9}`}
             fill="none"
-            stroke={TO}
-            strokeWidth={2.5}
+            style={MARKER}
+            strokeWidth={4.5}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </g>
+        {layout.note ? (
+          <text
+            className="hero-conn-note hero-wb-note"
+            x={layout.note[0]}
+            y={layout.note[1]}
+            transform={`rotate(-6 ${layout.note[0]} ${layout.note[1]})`}
+            fontSize={30}
+            style={{ fill: 'var(--wb-marker)' }}
+          >
+            {WHITEBOARD_COPY.startHere}
+          </text>
+        ) : null}
       </svg>
     </div>
   );

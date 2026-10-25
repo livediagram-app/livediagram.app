@@ -16,9 +16,9 @@ import {
 import { createLabelPrefix } from '@/lib/create-label';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
-// each the editor picker's preview on a card, tilted out from the middle, its lower part running off
-// the band, and each a link that creates its template. Every few seconds one card flicks down and out
-// and the next template springs up in its place. It deals from every listed template in a fresh random
+// each the editor picker's preview on a card standing upright in a straight row at staggered heights, like
+// sheets rising out of a printer, its lower part running off the band, and each a link that creates its
+// template. Every few seconds one card drops straight down and out and the next template rises in its place. It deals from every listed template in a fresh random
 // order each visit, so a visitor keeps seeing something new: the static HTML is a fixed opening hand,
 // hidden once script runs (<html data-hero-deal>) until the shuffled hand deals in over it. It holds
 // still while the pointer or focus is on it, while the hero is off screen or the tab hidden, and under
@@ -26,27 +26,27 @@ import { createLabelPrefix } from '@/lib/create-label';
 // (clip-path, and overflow-x for a phone's width), so a card lifted on hover rises over its top
 // without losing its title.
 
-// How long each hand holds before the next card swaps, and how long a card takes to flick out.
+// How long each hand holds before the next card swaps, and how long a card takes to drop out.
 export const HERO_FAN_SWAP_MS = 3200;
 const HERO_FAN_OUT_MS = 380;
 // The shuffle button's whole new hand: each card leaves, then arrives, this long after its left neighbour.
 const SHUFFLE_STAGGER_MS = 55;
 const HERO_FAN_IN_MS = 640;
 
-// Each slot's resting pose, left to right, mirrored about the middle: the outer pair shows only on a
-// very wide screen (HERO_FAN_FULL_MIN_PX; Tailwind needs the width written out), the next pair hides
-// on a phone. The middle five keep the poses the five-card fan has always had.
+// Each slot's resting height, left to right, staggered as sheets leave a printer, never tilted: the outer pair
+// shows only on a very wide screen (HERO_FAN_FULL_MIN_PX; Tailwind needs the width written out), the next pair
+// hides on a phone. The shared swap (hero-fan.css) leans by --hero-flick, which is 0deg on the row, so a card
+// drops and rises straight.
 const POSE = [
-  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(-9.5deg)]',
-  'max-sm:hidden [transform:translateY(2.5rem)_rotate(-7deg)]',
-  '[transform:translateY(0.5rem)_rotate(-4deg)] sm:[transform:translateY(0.75rem)_rotate(-3.5deg)]',
-  '[transform:translateY(0)_rotate(0deg)]',
-  '[transform:translateY(0.5rem)_rotate(4deg)] sm:[transform:translateY(0.75rem)_rotate(3.5deg)]',
-  'max-sm:hidden [transform:translateY(2.5rem)_rotate(7deg)]',
-  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(9.5deg)]',
+  'max-[1800px]:hidden [transform:translateY(2.25rem)]',
+  'max-sm:hidden [transform:translateY(0.75rem)]',
+  '[transform:translateY(1.25rem)] sm:[transform:translateY(1.75rem)]',
+  '[transform:translateY(0)]',
+  '[transform:translateY(0.75rem)] sm:[transform:translateY(1.25rem)]',
+  'max-sm:hidden [transform:translateY(0.25rem)]',
+  'max-[1800px]:hidden [transform:translateY(1.75rem)]',
 ];
-// Which way each slot's card leans as it flicks out: away from the middle.
-const FLICK = ['-18deg', '-16deg', '-12deg', '12deg', '12deg', '16deg', '18deg'];
+const STRAIGHT = { '--hero-flick': '0deg' } as CSSProperties;
 // The order the slots swap in, by how many show: the middle first, then out to the sides, never two
 // neighbours running. A slot out of sight is never swapped, so nothing changes where nobody looks.
 const ORDER_FULL = [3, 1, 5, 0, 4, 2, 6];
@@ -62,7 +62,7 @@ export function HeroFan() {
   const [leaving, setLeaving] = useState<number | null>(null);
   const [entering, setEntering] = useState<number | null>(null);
   const [held, setHeld] = useState(false);
-  // The shuffle button's deal: the whole hand flicking out, then a new one springing in, card by card.
+  // The shuffle button's deal: the whole hand dropping out, then a new one rising in, card by card.
   const [shuffling, setShuffling] = useState<'out' | 'in' | null>(null);
   const shuffleTimers = useRef<number[]>([]);
   const [onScreen, setOnScreen] = useState(true);
@@ -177,6 +177,7 @@ export function HeroFan() {
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setHeld(false);
       }}
+      style={STRAIGHT}
       className="hero-fan mt-12 flex h-36 shrink-0 justify-center gap-2 overflow-x-clip px-4 pt-3 [clip-path:inset(-24rem_0_0_0)] sm:mt-28 sm:h-56 sm:gap-5"
     >
       {slots.map((kind, i) => {
@@ -189,11 +190,10 @@ export function HeroFan() {
               : '';
         return (
           // The pose sits on the slot, the swap's motion on the card inside it, so the two never fight
-          // over one transform; hovering or focusing a card straightens and lifts its slot.
+          // over one transform; hovering or focusing a card lifts its slot.
           <div
             key={i}
-            className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)_rotate(0deg)] has-[:focus-visible]:[transform:translateY(-0.5rem)_rotate(0deg)] motion-reduce:transition-none ${POSE[i]}`}
-            style={{ '--hero-flick': FLICK[i] } as CSSProperties}
+            className={`shrink-0 transition-transform duration-micro ease-out hover:[transform:translateY(-0.5rem)] has-[:focus-visible]:[transform:translateY(-0.5rem)] motion-reduce:transition-none ${POSE[i]}`}
           >
             <a
               key={kind}

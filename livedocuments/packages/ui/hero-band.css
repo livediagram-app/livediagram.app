@@ -2,7 +2,7 @@
    headers wear too (docs/specs/018-help/help-pages.md "Shared look"): its colours, drawn from
    the brand mark's prism (packages/brand/src/apps.ts), in one place for light and dark. Light is the
    prism's pale amber ground with its deep amber ink; dark is the page's deepest slate with the prism's light
-   amber for accents. The primary button is the header's brand-700 in light and the same deepened amber in dark
+   amber for accents. The landing hero lays ruled paper over it (hero-band-ruled), the help headers the dots. The primary button is the header's brand-700 in light and the same deepened amber in dark
    (white on it clears 4.5:1, where it would not on the prism's own amber or orange). */
 .hero-band {
   --hero-bg: #fffbeb;
@@ -22,6 +22,9 @@
   --hero-link: #a34a0c;
   --hero-thumb: #fef3c7;
   --hero-card-shadow: rgb(69 26 3 / 0.22);
+  /* The landing hero's ruled paper (hero-band-ruled): its lines and its red margin rule. */
+  --hero-rule: #fde68a;
+  --hero-margin-rule: rgb(239 68 68 / 0.38);
 }
 
 :where(.dark, .dark *):not(:where(.light, .light *)) .hero-band,
@@ -43,6 +46,8 @@
   --hero-link: #fcd34d;
   --hero-thumb: #1e293b;
   --hero-card-shadow: rgb(0 0 0 / 0.7);
+  --hero-rule: #1e293b;
+  --hero-margin-rule: rgb(248 113 113 / 0.3);
 }
 
 /* The canvas's dot grid, fading out towards the foot so the fan sits on plain ground. */
@@ -50,4 +55,31 @@
   background-image: radial-gradient(var(--hero-dots) 1px, transparent 1px);
   background-size: 22px 22px;
   mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+
+/* The landing hero's ruled paper (docs/specs/019-marketing/marketing-site.md "Hero"), in place of the dot
+   grid there only: a line every 40px and a red margin rule down the left, fading out towards the foot like
+   the dots. The help centre's headers keep the dots. */
+.hero-band-ruled {
+  --hero-margin: 24px;
+  background-image:
+    linear-gradient(
+      to right,
+      transparent calc(var(--hero-margin) - 1.5px),
+      var(--hero-margin-rule) calc(var(--hero-margin) - 1.5px),
+      var(--hero-margin-rule) var(--hero-margin),
+      transparent var(--hero-margin)
+    ),
+    repeating-linear-gradient(to bottom, transparent 0 39px, var(--hero-rule) 39px 40px);
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+}
+@media (min-width: 640px) {
+  .hero-band-ruled {
+    --hero-margin: 64px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-band-ruled {
+    --hero-margin: 96px;
+  }
 }

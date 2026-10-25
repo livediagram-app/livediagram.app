@@ -5,6 +5,7 @@
 @import '@livediagram/ui/hero-band.css';
 @import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import './hero-animations.css';
+@import './hero-whiteboard.css';
 @import './hero-mode-animations.css';
 @import './hero-scenes/diagram.css';
 @import './hero-scenes/draw.css';

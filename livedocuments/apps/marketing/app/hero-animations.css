@@ -216,3 +216,16 @@
     stroke-dashoffset: -1;
   }
 }
+
+/* The hero headline's caret (components/HeroVerb.tsx): it blinks while the verb is written; under reduced
+   motion it stays lit. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-caret {
+    animation: hero-caret 1060ms steps(1) infinite;
+  }
+}
+@keyframes hero-caret {
+  50% {
+    opacity: 0.15;
+  }
+}

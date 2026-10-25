@@ -32,6 +32,7 @@ describe('CTA_SOURCES', () => {
       'Home.HeroBlankSession',
       'Home.HeroBlankIllustration',
       'Home.HeroFan',
+      'Home.HeroBoard',
       'Home.Gallery',
       'Home.GalleryDraw',
       'Home.Closing',

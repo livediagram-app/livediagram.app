@@ -16,8 +16,9 @@ import {
 import { createLabelPrefix } from '@/lib/create-label';
 
 // The fan of template cards along the hero's foot (docs/specs/019-marketing/marketing-site.md "Hero"):
-// each the editor picker's preview on a card, tilted out from the middle, its lower part running off
-// the band, and each a link that creates its template. Every few seconds one card flicks down and out
+// snapshots taped to the hero's whiteboard, a level row of cards each at its own loose tilt with tape
+// across its top, the editor picker's preview over its title, its lower part running off the band, and
+// each a link that creates its template. Every few seconds one card flicks down and out
 // and the next template springs up in its place. It deals from every listed template in a fresh random
 // order each visit, so a visitor keeps seeing something new: the static HTML is a fixed opening hand,
 // hidden once script runs (<html data-hero-deal>) until the shuffled hand deals in over it. It holds
@@ -33,18 +34,20 @@ const HERO_FAN_OUT_MS = 380;
 const SHUFFLE_STAGGER_MS = 55;
 const HERO_FAN_IN_MS = 640;
 
-// Each slot's resting pose, left to right, mirrored about the middle: the outer pair shows only on a
-// very wide screen (HERO_FAN_FULL_MIN_PX; Tailwind needs the width written out), the next pair hides
-// on a phone. The middle five keep the poses the five-card fan has always had.
+// Each slot's resting pose, left to right: a level row, each card taped up at its own small tilt, as
+// hands put them up, not leaning out from the middle. The outer pair shows only on a very wide screen
+// (HERO_FAN_FULL_MIN_PX; Tailwind needs the width written out), the next pair hides on a phone.
 const POSE = [
-  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(-9.5deg)]',
-  'max-sm:hidden [transform:translateY(2.5rem)_rotate(-7deg)]',
-  '[transform:translateY(0.5rem)_rotate(-4deg)] sm:[transform:translateY(0.75rem)_rotate(-3.5deg)]',
-  '[transform:translateY(0)_rotate(0deg)]',
-  '[transform:translateY(0.5rem)_rotate(4deg)] sm:[transform:translateY(0.75rem)_rotate(3.5deg)]',
-  'max-sm:hidden [transform:translateY(2.5rem)_rotate(7deg)]',
-  'max-[1800px]:hidden [transform:translateY(4rem)_rotate(9.5deg)]',
+  'max-[1800px]:hidden [transform:translateY(1rem)_rotate(-4deg)]',
+  'max-sm:hidden [transform:translateY(0.25rem)_rotate(3deg)]',
+  '[transform:translateY(0.75rem)_rotate(-2.5deg)] sm:[transform:translateY(0.5rem)_rotate(-3deg)]',
+  '[transform:translateY(0)_rotate(1.5deg)]',
+  '[transform:translateY(0.5rem)_rotate(-1.5deg)] sm:[transform:translateY(0.25rem)_rotate(4deg)]',
+  'max-sm:hidden [transform:translateY(0.75rem)_rotate(-3.5deg)]',
+  'max-[1800px]:hidden [transform:translateY(0.25rem)_rotate(2.5deg)]',
 ];
+// The tape across each card's top, each strip at its own angle.
+const TAPE = ['3deg', '-4deg', '2deg', '-3deg', '4deg', '-2deg', '3deg'];
 // Which way each slot's card leans as it flicks out: away from the middle.
 const FLICK = ['-18deg', '-16deg', '-12deg', '12deg', '12deg', '16deg', '18deg'];
 // The order the slots swap in, by how many show: the middle first, then out to the sides, never two
@@ -199,9 +202,16 @@ export function HeroFan() {
               key={kind}
               href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
               style={shuffling ? { animationDelay: `${i * SHUFFLE_STAGGER_MS}ms` } : undefined}
-              className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
+              className={`relative flex h-56 w-[6.5rem] flex-col gap-2 rounded-md border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-lg sm:p-3 dark:border-transparent ${motion}`}
             >
-              <span className="truncate text-xs font-semibold sm:text-sm">
+              <span
+                aria-hidden
+                className="hero-wb-tape pointer-events-none absolute -top-2.5 left-1/2 h-4 w-12 -translate-x-1/2 sm:-top-3 sm:h-5 sm:w-20"
+                style={{ rotate: TAPE[i] }}
+              />
+              {/* The title is the snapshot's caption, under the preview; first in the markup so the
+                  link's name still reads title first. */}
+              <span className="order-last truncate text-xs font-semibold sm:text-sm">
                 <span className="sr-only">{createLabelPrefix(t.title)}</span>
                 {t.title}
               </span>

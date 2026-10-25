@@ -12,6 +12,7 @@ import {
 } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
+import { WHITEBOARD_COPY } from './hero-draw-copy';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
 // with Start Blank in its bar, and the dealing fan of templates.
@@ -78,6 +79,31 @@ describe('the hero', () => {
       'Free and open source',
       'No sign-up to start',
     ]);
+  });
+
+  it('draws the band as a whiteboard wall, its sticky notes decoration hung only from xl', () => {
+    const { container } = render(<Hero />);
+    const band = container.querySelector('section')!;
+    expect(band.className).toContain('hero-whiteboard');
+    expect(container.querySelector('.hero-band-dots')).toBeNull();
+    const board = container.querySelector('.hero-wb-board')!;
+    expect(board.getAttribute('aria-hidden')).toBe('true');
+    const notes = [...board.querySelectorAll('.hero-wb-sticky')];
+    expect(notes.map((n) => n.textContent)).toEqual([...WHITEBOARD_COPY.stickies]);
+    for (const n of notes)
+      expect(n.className.split(' ')).toEqual(expect.arrayContaining(['hidden', 'xl:flex']));
+  });
+
+  it('tapes each fan card up, the tape hidden from assistive tech', () => {
+    render(<Hero />);
+    const cards = screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
+    expect(cards.length).toBe(HERO_FAN_SLOTS);
+    for (const card of cards) {
+      const tape = card.querySelector('.hero-wb-tape');
+      expect(tape?.getAttribute('aria-hidden')).toBe('true');
+    }
   });
 
   it('lists the best matches as links that create them, once something is typed', () => {

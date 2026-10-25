@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DRAW_COPY, HAND_GLYPHS } from './hero-draw-copy';
+import { DRAW_COPY, HAND_GLYPHS, WHITEBOARD_COPY } from './hero-draw-copy';
 
 const FONT = join(__dirname, '..', 'public', 'fonts', 'caveat-hero.woff2');
 // The subset's budget: it loads with the hero (the overview draws the Draw scene on first paint).
@@ -15,13 +15,14 @@ function used(): Set<string> {
     else if (v && typeof v === 'object') Object.values(v).forEach(walk);
   };
   walk(DRAW_COPY);
+  walk(WHITEBOARD_COPY);
   return chars;
 }
 
 // The Draw window writes in a hand face subset to HAND_GLYPHS (hero-draw-copy.ts): a glyph the
 // subset lacks would fall back to a system face mid-word, and one it carries but no word uses is
 // font weight for nothing.
-describe('the Draw window hand face', () => {
+describe('the hero hand face (the Draw window and the whiteboard)', () => {
   it('carries every character the copy writes', () => {
     const missing = [...used()].filter((c) => !HAND_GLYPHS.includes(c));
     expect(missing).toEqual([]);

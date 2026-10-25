@@ -4,7 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RECENT_DESIGNS_KEY } from '@livedesign/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livedesign/design';
-import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
+import {
+  boardHand,
+  HERO_BOARD_OPENING,
+  HERO_BOARD_SLOTS,
+  HERO_FAN_OPENING,
+  HERO_FAN_POOL,
+  HERO_FAN_SLOTS,
+  heroTemplate,
+  shuffleFan,
+} from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
 
@@ -259,5 +268,52 @@ describe('the fan', () => {
       vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
     });
     expect(fanTitles()).toEqual(first);
+  });
+});
+
+describe('the moodboard', () => {
+  const boardLinks = (root: ParentNode = document) =>
+    [...root.querySelectorAll<HTMLAnchorElement>('a')].filter((a) =>
+      a.getAttribute('href')?.includes('via=Home.HeroBoard'),
+    );
+  const titleOf = (a: HTMLAnchorElement) => a.textContent?.replace(/^Create an? /, '');
+  const titles = (kinds: readonly string[]) => kinds.map((k) => heroTemplate(k as never).title);
+  beforeEach(() => {
+    const random = seededRandom(7);
+    vi.spyOn(Math, 'random').mockImplementation(random);
+  });
+
+  it('opens with six different listed templates', () => {
+    expect(HERO_BOARD_OPENING).toHaveLength(HERO_BOARD_SLOTS);
+    expect(new Set(HERO_BOARD_OPENING).size).toBe(HERO_BOARD_SLOTS);
+    for (const kind of HERO_BOARD_OPENING) expect(HERO_FAN_POOL).toContain(kind);
+  });
+
+  it("serves the opening hand, then this visit's shuffled six, after the fan's own deal", () => {
+    const host = document.createElement('div');
+    host.innerHTML = renderToStaticMarkup(<Hero />);
+    expect(boardLinks(host).map(titleOf)).toEqual(titles(HERO_BOARD_OPENING));
+    render(<Hero />);
+    // The fan shuffles first (it comes first in the tree), so its deal is unchanged by the board's.
+    const random = seededRandom(7);
+    shuffleFan(random);
+    expect(boardLinks().map(titleOf)).toEqual(titles(boardHand(random)));
+    expect(fanTitles()).toEqual(titles(shuffleFan(seededRandom(7)).slice(0, HERO_FAN_SLOTS)));
+  });
+
+  it('holds still once dealt, and keeps its decoration from assistive technology', () => {
+    vi.useFakeTimers();
+    const { container } = render(<Hero />);
+    const first = boardLinks().map(titleOf);
+    act(() => {
+      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 4);
+    });
+    expect(boardLinks().map(titleOf)).toEqual(first);
+    const board = container.querySelector('.hero-board')!;
+    expect(board.className).toContain('xl:block');
+    expect(board.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
+    // The fan hides where the board shows.
+    const fan = container.querySelector('.hero-fan')!;
+    expect(fan.parentElement?.className).toBe('xl:hidden');
   });
 });

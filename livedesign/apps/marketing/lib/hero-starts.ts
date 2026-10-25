@@ -85,3 +85,21 @@ export function heroTemplate(kind: TemplateKind): HeroMatch {
   if (!t) throw new Error(`hero template not listed: ${kind}`);
   return t;
 }
+
+// The moodboard round the hero's card from `xl` (components/HeroBoard.tsx): six cards from the same pool,
+// three a side. The static HTML shows this opening hand, top to bottom down the left then the right; once
+// script runs this visit's shuffle replaces it, and then it holds still.
+export const HERO_BOARD_SLOTS = 6;
+export const HERO_BOARD_OPENING: readonly TemplateKind[] = [
+  'logo-design',
+  'wireframe-mobile-app',
+  'photo-edit',
+  'wireframe-website',
+  'wireframe-tablet-app',
+  'wireframe-dashboard',
+];
+
+// This visit's six: the first HERO_BOARD_SLOTS of a shuffled pool (fewer if the pool is smaller).
+export function boardHand(random: () => number): TemplateKind[] {
+  return shuffleFan(random).slice(0, HERO_BOARD_SLOTS);
+}

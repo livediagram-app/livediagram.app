@@ -1,12 +1,13 @@
 import { HeroConnectors } from './HeroConnectors';
 import { HeroFan } from './HeroFan';
 import { HeroSearch } from './HeroSearch';
+import { HeroVerb } from './HeroVerb';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
-// what the visitor is making and takes them straight to a starting point, so it grows with the product
-// instead of naming one kind of page. A band in the brand mark's colours (@livedocuments/ui hero-band.css, shared with the help centre): the promise
-// badge, the question, the template search, then a fan along its foot:
-// templates dealt every few seconds, for every visitor.
+// what the visitor is writing and takes them straight to a starting point, so it grows with the product
+// instead of naming one kind of page. A band in the brand mark's colours (@livedocuments/ui hero-band.css, shared
+// with the help centre) under ruled paper: the promise badges, the question with its verb written live, the
+// template search, then upright cards along its foot, dealt every few seconds, for every visitor.
 const BADGE =
   'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 
@@ -15,7 +16,7 @@ export function Hero() {
     // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
     // screen under the header, the fan along its foot.
     <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
-      <div aria-hidden className="hero-band-dots pointer-events-none absolute inset-0" />
+      <div aria-hidden className="hero-band-ruled pointer-events-none absolute inset-0" />
       <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
         {/* An arrow drawn on load from the end of the question down onto the search. */}
         <HeroConnectors />
@@ -35,7 +36,7 @@ export function Hero() {
           data-hero-anchor="title"
           className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
         >
-          What are you making today?
+          What are you <HeroVerb /> today?
         </h1>
         <p
           data-hero-anchor="lead"

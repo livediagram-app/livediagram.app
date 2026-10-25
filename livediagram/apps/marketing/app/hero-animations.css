@@ -131,8 +131,8 @@
 
 /* The hero's connector (components/HeroConnectors.tsx, docs/specs/019-marketing/marketing-site.md):
    once, on load, an arrow draws from the end of the question round to the template search, its head
-   lands, the search bar flashes a dashed selection ring, and a pulse of light runs the line: the
-   editor's loading-animation gesture played once. The base is the settled picture (line drawn,
+   lands, the search bar flashes a dashed selection ring, a pulse of light runs the line, and "start
+   here" is written under the tip: the editor's loading-animation gesture played once, in marker. The base is the settled picture (line drawn,
    head in place, no ring or pulse), which reduced motion keeps. */
 .hero-conn-line {
   stroke-dasharray: 1;
@@ -145,7 +145,8 @@
   transition: d 800ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 .hero-conn-head,
-.hero-conn-ring {
+.hero-conn-ring,
+.hero-conn-note {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -168,6 +169,20 @@
   }
   .hero-conn-pulse {
     animation: hero-conn-pulse 900ms ease-in-out 2150ms both;
+  }
+  .hero-conn-note {
+    animation: hero-conn-note 500ms ease-out 1600ms both;
+  }
+}
+/* The note is written on from the left, as a pen moves along the line. */
+@keyframes hero-conn-note {
+  from {
+    opacity: 0;
+    clip-path: inset(-30% 100% -30% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-30% -2% -30% 0);
   }
 }
 @keyframes hero-conn-line {

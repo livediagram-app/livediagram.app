@@ -233,3 +233,11 @@
     animation: none;
   }
 }
+
+/* The hero's moodboard from `xl` (components/HeroBoard.tsx), like the fan: with script, its static
+   opening hand stays hidden until this visit's shuffled six are in (data-dealt); should the page's
+   script never arrive, it shows anyway after a moment (hero-fan-show, in the shared hero-fan.css). */
+[data-hero-deal] .hero-board:not([data-dealt]) {
+  opacity: 0;
+  animation: hero-fan-show 0s 1.5s forwards;
+}

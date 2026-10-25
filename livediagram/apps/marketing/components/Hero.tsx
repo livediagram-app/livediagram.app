@@ -1,12 +1,13 @@
 import { HeroConnectors } from './HeroConnectors';
 import { HeroFan } from './HeroFan';
 import { HeroSearch } from './HeroSearch';
+import { HeroWhiteboard } from './HeroWhiteboard';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
 // what the visitor is making and takes them straight to a starting point, so it grows with the product
-// instead of naming one mode. A band in the brand mark's colours (@livediagram/ui hero-band.css, shared with the help centre): the promise
-// badge, the question, the template search, then a fan along its foot:
-// templates dealt every few seconds, for every visitor.
+// instead of naming one mode. A band in the brand mark's colours (@livediagram/ui hero-band.css, shared with the help centre),
+// drawn here as a whiteboard wall (app/hero-whiteboard.css): the promise badge, the question, the template search,
+// then the fan along its foot: templates taped up and dealt every few seconds, for every visitor.
 const BADGE =
   'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 
@@ -14,8 +15,8 @@ export function Hero() {
   return (
     // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
     // screen under the header, the fan along its foot.
-    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
-      <div aria-hidden className="hero-band-dots pointer-events-none absolute inset-0" />
+    <section className="hero-band hero-whiteboard relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
+      <HeroWhiteboard />
       <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
         {/* An arrow drawn on load from the end of the question down onto the search. */}
         <HeroConnectors />

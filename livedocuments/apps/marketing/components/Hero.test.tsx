@@ -12,6 +12,7 @@ import {
 } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
+import { HERO_VERB_HOLD_MS, HERO_VERBS } from './HeroVerb';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
 // with Start Blank in its bar, and the dealing fan.
@@ -68,9 +69,9 @@ const fanTitles = () =>
 describe('the hero', () => {
   it('asks the question under its two promise badges', () => {
     render(<Hero />);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'What are you making today?',
-    );
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'What are you writing today?' }),
+    ).toBeTruthy();
     const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
       'listitem',
     );
@@ -183,6 +184,54 @@ describe('the hero', () => {
   });
 });
 
+describe('the headline, written live', () => {
+  const typed = () => document.querySelector('[data-hero-verb]')!.textContent;
+
+  it('serves the first verb in the static HTML, so the first frame is whole', () => {
+    const html = renderToStaticMarkup(<Hero />);
+    expect(html).toContain('data-hero-verb');
+    expect(html).toMatch(/>writing<\/span>/);
+  });
+
+  it('types the next verb after a rest, while screen readers keep one stable heading', () => {
+    vi.useFakeTimers();
+    render(<Hero />);
+    expect(typed()).toContain('writing');
+    act(() => {
+      vi.advanceTimersByTime(HERO_VERB_HOLD_MS + 2000);
+    });
+    expect(typed()).toContain(HERO_VERBS[1]);
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'What are you writing today?' }),
+    ).toBeTruthy();
+  });
+
+  it('keeps every verb in the slot, so the line never reflows as it types', () => {
+    render(<Hero />);
+    const h1 = screen.getByRole('heading', { level: 1 });
+    for (const v of HERO_VERBS) expect(h1.textContent).toContain(v);
+  });
+
+  it('stays on the first verb under reduced motion, and while the tab is hidden', () => {
+    reduceMotion = true;
+    vi.useFakeTimers();
+    const { unmount } = render(<Hero />);
+    act(() => {
+      vi.advanceTimersByTime(HERO_VERB_HOLD_MS * 4);
+    });
+    expect(typed()).toContain('writing');
+    unmount();
+
+    reduceMotion = false;
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    render(<Hero />);
+    act(() => {
+      vi.advanceTimersByTime(HERO_VERB_HOLD_MS * 4);
+    });
+    expect(typed()).toContain('writing');
+  });
+});
+
 describe('the fan', () => {
   // A fixed random source, so this visit's shuffle is known.
   const deck = () => shuffleFan(seededRandom(7));
@@ -253,6 +302,16 @@ describe('the fan', () => {
     const after = fanTitles();
     expect([after[0], after[6]]).toEqual([first[0], first[6]]);
     expect(after.slice(1, 6)).not.toEqual(first.slice(1, 6));
+  });
+
+  it('stands every card upright, never tilted', () => {
+    render(<Hero />);
+    const slots = screen
+      .getAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
+      .map((a) => a.parentElement!.className);
+    expect(slots).toHaveLength(HERO_FAN_SLOTS);
+    for (const c of slots) expect(c).not.toMatch(/rotate\(-?[1-9]/);
   });
 
   it('never swaps under reduced motion', () => {
