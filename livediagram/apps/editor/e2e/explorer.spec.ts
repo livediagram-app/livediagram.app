@@ -2,8 +2,8 @@ import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
 
 // What livediagram owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md): the
-// editor's Explorer panel around the open canvas, This Browser at /offline for the canvases the index never sees,
-// and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
+// editor's Explorer panel around the open canvas, This Browser in it for the canvases the index never sees (the old
+// /offline page only redirects to the Explorer's This Browser view), and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
 // index holds through /api/index on this origin).
 
 const CANVAS = '[data-canvas-a11y-root]';
@@ -101,27 +101,32 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   await startBlankDocument(page);
   await dismissQuickTour(page);
 
-  // The panel's This Browser row counts them and opens their page.
+  // The panel's rail has This Browser with their count, and its pane lists them in place: the editor stays.
   await openExplorerPanel(page);
-  const thisBrowser = page.locator('a[data-this-browser]');
-  await expect(thisBrowser).toContainText('1');
+  const rail = page.getByRole('navigation', { name: 'Explorer sections' });
+  const thisBrowser = rail.getByRole('button', { name: 'This Browser (1)' });
   await thisBrowser.click();
-  await page.waitForURL(/\/offline$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'This Browser' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'This Browser' })).toBeVisible();
+  expect(page.url()).not.toMatch(/\/offline/);
 
   // Each opens in the editor.
-  const kept = page.getByRole('link', { name: /Kept on this laptop/ });
-  await expect(kept).toBeVisible();
+  const kept = page.getByRole('button', { name: 'Kept on this laptop', exact: true });
   await kept.click();
   await page.waitForURL(/\/document\/offline-this-browser-1/);
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
 
-  // Nothing else holds it, so Delete asks first, then removes it for good.
-  await page.goto('/offline');
-  await page.getByRole('button', { name: 'Delete', exact: true }).click();
+  // Nothing else holds it, so Delete asks first, then removes it for good, and the section goes with it.
+  await openExplorerPanel(page);
+  await rail.getByRole('button', { name: 'This Browser (1)' }).click();
+  await page.getByRole('button', { name: 'Delete Kept on this laptop' }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete this canvas?' });
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(page.getByText('Nothing is kept only in this browser.')).toBeVisible();
+  await expect(rail.getByRole('button', { name: /^This Browser/ })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
+});
+
+test('the old This Browser page sends people to the Explorer, its query kept', async ({ page }) => {
+  await page.goto('/offline?convert=sync&item=x');
+  await page.waitForURL(/\/explorer\/offline\?convert=sync&item=x$/);
 });
