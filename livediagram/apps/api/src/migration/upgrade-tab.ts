@@ -11,7 +11,7 @@ type UpgradableTab = Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'e
 
 export function upgradeStoredTabKeepingRetired(body: Body): Body {
   try {
-    return migrateStoredTabKeepingRetired(body as unknown as UpgradableTab) as unknown as Body;
+    return migrateStoredTabKeepingRetired(body as unknown as UpgradableTab);
   } catch {
     console.warn('[migration] tab-unreadable', {
       elements: Array.isArray(body.elements) ? body.elements.length : 0,
