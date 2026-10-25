@@ -14,11 +14,15 @@ import {
   SettingsUiKitProvider,
   useSettingsScope,
   type AccountHost,
+  type AccountIdentity,
   type SettingsAppId,
   type SettingsScope,
 } from '@liveworkspace/settings-ui';
 import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
+import { accountSecurity } from '@/lib/account-security';
+import { appAccount, type AppAccount } from '@/lib/explorer/app-session';
+import { signOut, useSession } from '@/lib/session';
 import { appSettingsLinks } from '@/lib/account-settings';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
@@ -82,15 +86,33 @@ export default function SiteSettingsDialog({
   const link = app ? appSettingsLinks().find((l) => l.id === app) : undefined;
   // On an app's own address the page has the app's token, not this site's session: the profile and the API tokens
   // are set on liveworkspace.app, so they link to the panel there, on the same category.
+  // The Profile's header is whoever is signed in here; its sessions and sign-in methods, like the profile and the
+  // tokens, are liveworkspace.app's session's, so on an app's address they link there.
+  const identity = useSettingsIdentity();
+  const guestSignIn = guest?.signInHref ?? null;
   const account = useMemo<AccountHost>(
     () =>
-      pageApp()
-        ? {
-            profileHref: workspaceHref('/explorer?settings=profile'),
-            tokensHref: workspaceHref('/explorer?settings=tokens'),
-          }
-        : { renderProfile: () => <ProfileRow />, renderTokens: () => <TokensRow /> },
-    [],
+      guestSignIn
+        ? { guest: { signInHref: guestSignIn, things: 'work' } }
+        : pageApp()
+          ? {
+              identity,
+              profileHref: workspaceHref('/explorer?settings=profile'),
+              securityHref: workspaceHref('/explorer?settings=profile'),
+              tokensHref: workspaceHref('/explorer?settings=tokens'),
+            }
+          : {
+              identity,
+              renderProfile: () => <ProfileRow />,
+              security: accountSecurity,
+              onSignOut: async () => {
+                const left = await signOut();
+                if (left) window.location.assign('/');
+                return left;
+              },
+              renderTokens: () => <TokensRow />,
+            },
+    [identity, guestSignIn],
   );
   // A guest's: the browser copy the app's editor keeps, made once per opening.
   const isGuest = guest !== null;
@@ -247,4 +269,33 @@ function ProfileRow() {
       )}
     </div>
   );
+}
+
+// Who the Profile's header shows: liveworkspace.app's session here, the app's own on an app's address.
+function useSettingsIdentity(): AccountIdentity | null {
+  const session = useSession();
+  const [app, setApp] = useState<AppAccount | null>(null);
+  useEffect(() => {
+    if (!pageApp()) return;
+    let live = true;
+    void appAccount().then((found) => {
+      if (live) setApp(found);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return useMemo(() => {
+    if (pageApp()) {
+      return app ? { name: app.fullName ?? app.name, email: app.email, colour: app.colour } : null;
+    }
+    return session.state === 'in'
+      ? {
+          name: session.fullName ?? session.name,
+          email: session.email ?? null,
+          colour: session.colour,
+          joined: session.joined ?? null,
+        }
+      : null;
+  }, [app, session]);
 }

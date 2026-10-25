@@ -16,17 +16,27 @@ import {
   type AccountToggle,
 } from '@liveworkspace/settings/account';
 import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
+import { linkOut, profileRows } from './profile/profile-rows';
+import type { AccountIdentity } from './profile/ProfileHeader';
+import type { AccountSecurity } from './profile/SecurityRows';
 import type { SettingsCategory, SettingsRow } from './model';
-import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 
 export interface AccountSection {
   // The `all` scope as it stands, and how to change one of its keys.
   all: SettingsBlob;
   set: (key: string, value: boolean) => void;
+  // Who is signed in, for the Profile's header card (liveworkspace/docs/site.md "Settings", "Profile").
+  identity?: AccountIdentity | null;
   // The profile collaborators see: drawn here where the host can set it (liveworkspace.app, with its session),
   // else a link to where it is set.
   renderProfile?: () => ReactNode;
   profileHref?: string;
+  // How they sign in and where they are signed in: drawn here where the host can reach the session
+  // (liveworkspace.app), else a link to where they are.
+  security?: AccountSecurity;
+  securityHref?: string;
+  // Signing out, where the host can.
+  onSignOut?: () => Promise<boolean> | boolean | void;
   // The API tokens: drawn here where the host can make and revoke them (liveworkspace.app, with its session), else a
   // link to where they are.
   renderTokens?: () => ReactNode;
@@ -48,67 +58,16 @@ const toggleRow =
     onChange: (next) => set(row.key, next),
   });
 
-/** A row that leaves for another page (the profile, the API tokens on liveworkspace.app). */
-function linkOut(
-  key: string,
-  label: string,
-  description: string,
-  href: string,
-  cta: string,
-): SettingsRow {
-  return {
-    kind: 'custom',
-    key,
-    label,
-    description,
-    render: () => (
-      <SettingsRowShell
-        row={{ key, label, description }}
-        control={
-          <a href={href} className={SETTINGS_ROW_BUTTON}>
-            {cta}
-          </a>
-        }
-      />
-    ),
-  };
-}
-
 const TOKENS_KEYWORDS =
   'api token key mcp integration script developer access create revoke secret';
 
 /** The Account section's categories, by their own ids (the panel files them under the Account heading). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderProfile, profileHref, renderTokens, tokensHref, emails = true } = section;
+  const { all, set, renderTokens, tokensHref, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
-  const profile: SettingsRow[] = renderProfile
-    ? [
-        {
-          kind: 'custom',
-          key: 'profile',
-          label: 'Profile',
-          description: 'How collaborators see you in every app.',
-          keywords: 'name display colour color cursor avatar presence profile',
-          section: 'Profile',
-          render: renderProfile,
-        },
-      ]
-    : profileHref
-      ? [
-          {
-            ...linkOut(
-              'profile',
-              'Profile',
-              'Your name and colour, as collaborators see them on your cursor, comments and avatar in every app.',
-              profileHref,
-              'Edit',
-            ),
-            keywords: 'name display colour color cursor avatar presence profile',
-          },
-        ]
-      : [];
+  const profile = profileRows(section);
 
   const categories: SettingsCategory[] = [];
   if (profile.length > 0) {

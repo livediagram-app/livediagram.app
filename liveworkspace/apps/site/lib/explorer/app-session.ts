@@ -33,6 +33,8 @@ export type AppAccount = {
   fullName: string | null;
   // The profile's presence colour from the token answer's user, for the avatar; null for Automatic.
   colour: string | null;
+  // The account's address, for Settings' Profile header.
+  email: string | null;
 };
 
 const RENEW_BEFORE_MS = 60_000;
@@ -78,6 +80,7 @@ async function askToken(): Promise<AppAccount | null> {
       name: nameOf(body.user ?? null),
       fullName: body.user ? fullNameOf(body.user) : null,
       colour: accountColourOf(body.user),
+      email: text(body.user?.email),
     };
   } catch {
     return null;

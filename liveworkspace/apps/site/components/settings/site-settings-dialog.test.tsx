@@ -10,6 +10,21 @@ import SiteSettingsDialog from './SiteSettingsDialog';
 // to its scope, put back when a save fails; opened on what it is asked for, the API tokens drawn in place.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+// Who is signed in, as the page's header already asked (lib/session.ts): the Profile's header card reads it.
+const signOut = vi.fn(async () => true);
+vi.mock('@/lib/session', () => ({
+  useSession: () => ({
+    state: 'in',
+    name: 'Ada',
+    fullName: 'Ada Lovelace',
+    colour: '#8b5cf6',
+    email: 'ada@example.com',
+    joined: '2026-10-23T15:13:54.270Z',
+  }),
+  setSessionColour: () => {},
+  signOut: () => signOut(),
+}));
+
 let container: HTMLDivElement;
 let root: Root;
 let fetchMock: ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Promise<Response>>>;
@@ -163,14 +178,8 @@ describe('the Settings panel, on All', () => {
     const headings = [
       ...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > p'),
     ].map((p) => p.textContent);
-    expect(headings).toEqual([
-      'Account',
-      'Common',
-      'livediagram',
-      'liveplanner',
-      'livedocuments',
-      'livedesign',
-    ]);
+    // livedocuments' only setting of its own outside Common is its email switch, under Account › Notifications.
+    expect(headings).toEqual(['Account', 'Common', 'livediagram', 'liveplanner', 'livedesign']);
     // The four apps' scopes, then the profile (the first category, shown).
     const paths = fetchMock.mock.calls.map(([url]) => url);
     expect(paths).toContain('/api/account/profile');
@@ -192,6 +201,55 @@ describe('the Settings panel, on All', () => {
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')!;
     expect(patch[0]).toBe('/api/account/settings');
     expect(JSON.parse(patch[1]!.body as string)).toEqual({ all: { notifyTips: false } });
+  });
+
+  it('opens Profile on who is signed in, where they are signed in, and signs out of another browser', async () => {
+    fetchMock.mockImplementation((url, init) => {
+      if (url.endsWith('/list-sessions')) {
+        return json(200, [
+          {
+            id: 's1',
+            token: 't1',
+            userAgent: 'Mozilla/5.0 (Macintosh) Chrome/156.0',
+            createdAt: '2026-10-20T10:00:00Z',
+            updatedAt: '2026-10-25T10:00:00Z',
+          },
+          {
+            id: 's2',
+            token: 't2',
+            userAgent: 'Mozilla/5.0 (iPhone) Version/19.0 Mobile Safari/604.1',
+            createdAt: '2026-10-20T10:00:00Z',
+            updatedAt: '2026-10-24T10:00:00Z',
+          },
+        ]);
+      }
+      if (url.endsWith('/get-session')) return json(200, { session: { id: 's1' } });
+      if (url.endsWith('/list-accounts')) return json(200, []);
+      if (url.endsWith('/sign-in-options')) return json(200, { google: true });
+      if (url.endsWith('/revoke-session')) return json(200, { status: true });
+      return answer(url, init);
+    });
+    await open(null, { initialCategoryId: 'account:account' });
+    const pane = () => document.querySelector('[data-settings-pane]')!;
+    await until(() => pane().textContent?.includes('Safari on iOS'));
+    expect(pane().querySelector('[data-profile-header] h3')?.textContent).toBe('Ada Lovelace');
+    expect(pane().textContent).toContain('ada@example.com');
+    expect(pane().textContent).toContain('Colour: Violet');
+    expect(pane().textContent).toContain('Email Code');
+    act(() =>
+      pane()
+        .querySelector<HTMLButtonElement>('button[aria-label="Sign out of Safari on iOS"]')!
+        .click(),
+    );
+    await settle();
+    const revoke = fetchMock.mock.calls.find(([url]) => url.endsWith('/revoke-session'))!;
+    expect(JSON.parse(revoke[1]!.body as string)).toEqual({ token: 't2' });
+    const signOutButton = [...pane().querySelectorAll('button')].find(
+      (b) => b.textContent === 'Sign Out' && !b.getAttribute('aria-label'),
+    )!;
+    act(() => signOutButton.click());
+    await settle();
+    expect(signOut).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -217,7 +275,13 @@ describe('the Settings panel, for a guest on an app’s address', () => {
     localStorage.setItem(KEY, JSON.stringify({ alignmentGuides: false, telemetryEnabled: false }));
     await openAsGuest();
     expect(document.querySelector('[aria-label="Show settings for"]')).toBeNull();
-    expect(railButton('Profile')).toBeUndefined();
+    // The guest's Profile comes first: the guest card and the way in, not empty rows.
+    expect(railButton('Profile')).toBeDefined();
+    const pane = document.querySelector('[data-settings-pane]')!;
+    expect(pane.textContent).toContain('Guest');
+    expect(pane.querySelector('a[data-settings-sign-in]')?.getAttribute('href')).toBe(
+      '/api/auth/sign-in?return_to=%2Fexplorer',
+    );
     act(() => railButton('Editor')!.click());
     expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
     const footer = document.querySelector('[role="dialog"] footer')!;

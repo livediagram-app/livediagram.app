@@ -365,6 +365,39 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   rail rather than shown with a note (today each app keeps some of its own). Ids in All are prefixed with their
   heading's (`account:notifications`, `common:editor`, `livediagram.app:editor`), so two apps' categories and rows
   never collide.
+- **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
+  and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
+  folded into the Account section rather than listed again under the app: the app's rows the Account section
+  doesn't already have (its Trash, Cloud Sync and Delete Account; its own email switches, such as "Someone Joins My
+  Canvas"; its own accessibility rows) join the Account category of the same name, under a heading with the app's
+  name, and the editor's identity row gives way to the Profile's header. Every category id is unique in the panel,
+  and no category name the Account section uses appears under an app (pinned by
+  `packages/settings-ui/src/no-duplicates.test.tsx`, for every app's catalogue and an editor's own shape).
+- **Profile** (the Account section's first category, `packages/settings-ui/src/profile/`), laid out as the old
+  livediagram Profile page was, richer: grouped cards under headings, in the app's brand colour, light and dark.
+  - **The header card**: a banner in the brand's tint with a drawing of a canvas where the person's cursor and
+    name tag sit in their presence colour, their avatar (initials on their colour, Automatic as the name's own
+    colour, as the account menu paints it), their display name, email, **liveworkspace account** and when they
+    joined. Every host passes what it knows (`AccountHost.identity`): the site its session, the Explorer on an
+    app's address the app's session, an editor its signed-in user.
+  - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar
+    (`ProfileCard.tsx`) on liveworkspace.app; on an app's address and in an editor, a row with the current name and
+    colour and **Edit** on liveworkspace.app, since the profile is the session's.
+  - **Sign-in Methods** and **Where You’re Signed In**, two sections (on liveworkspace.app, `AccountHost.security`): the methods (an emailed code to
+    the account's address, always; Google, **Connected** or **Connect**, when the deployment has Google), and
+    **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
+    current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
+    `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
+    On an app's address and in an editor, a link to the same section on liveworkspace.app.
+  - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
+    editor's Trash, Cloud Sync and Delete Account, folded in as above.
+  - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
+    guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create account**, and
+    says what an account adds, rather than empty rows.
+  - Not here, on purpose: a profile picture (removed in `b964b391d`: accounts have none, people show as initials);
+    an email change, passwords and passkeys (accounts sign in with an emailed code or Google only, and the accounts
+    Worker has no change-email flow); deleting the account from liveworkspace.app (closing an account goes through
+    an app's server, `/api/auth/delete-account`, so its data goes with it; the site has no such door yet).
 - **Addresses.** `/explorer?settings=<section>` opens the panel there, on liveworkspace.app or an app's address:
   `?settings=<app>` on that app (`?settings=all` on All); `profile`, `notifications`, `privacy`, `accessibility` and
   `tokens` open All on that Account category, which is where every email's unsubscribe link lands. The address drops
@@ -385,10 +418,11 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
-  the app's token; its Profile and API Tokens rows link to liveworkspace.app, since the profile and tokens are the
+  the app's token; its Profile header is the app's session's, and its Name and Colour, Sign-in Methods and API
+  Tokens rows link to liveworkspace.app, since the profile, sessions and tokens are the
   session's.
-- **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section, no
-  profile or tokens. The settings are the ones the app's editor keeps for a guest in this browser, read and written
+- **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
+  tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
   shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
   `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys
