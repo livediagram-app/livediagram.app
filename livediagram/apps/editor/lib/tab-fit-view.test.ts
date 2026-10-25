@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Element as CanvasElement } from '@livediagram/document';
 import { tabFitView } from './tab-fit-view';
-import { computeFitToScreen } from './viewport';
+import { computeFitToScreen } from '@liveworkspace/workbench/lib/viewport';
 
 // The view Fit to Screen and a double-tap's fit back out both land on (docs/specs/008-canvas/canvas-and-palette.md
 // "Double-tap to zoom").

@@ -53,6 +53,8 @@ export type WorkbenchBindings = {
   readPreferences: () => WorkbenchPreferences;
   /** The product's api transport. */
   api: WorkbenchApi;
+  /** The canvas's zoom ceiling now (livedesign raises it while a photo page is in focus). */
+  zoomMax: () => number;
   /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
   formatLogScope: string;
 };
@@ -73,6 +75,8 @@ export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
     expectOkVoid: unbound,
     currentBearer: () => Promise.resolve(null),
   }),
+  // The editors' fixed ceiling, 500%.
+  zoomMax: () => 5,
   formatLogScope: 'document-format',
 });
 
@@ -105,6 +109,7 @@ export const workbench = {
   get api(): WorkbenchApi {
     return current().api;
   },
+  zoomMax: (): number => current().zoomMax(),
   get debugKey(): string {
     return current().debugKey;
   },

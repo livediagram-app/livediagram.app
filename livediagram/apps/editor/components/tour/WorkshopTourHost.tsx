@@ -18,7 +18,7 @@ import {
 } from './workshop-tour-steps';
 import { createShape, defaultSessionConfig, type Element } from '@livediagram/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import { computeViewportCenter } from '@/lib/viewport';
+import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { WorkshopTourArt } from './WorkshopTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';

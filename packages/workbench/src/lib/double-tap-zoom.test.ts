@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { ZOOM_MAX } from './canvas';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { configureWorkbench, resetWorkbenchForTests } from '../bindings';
+import { testBindings } from './testing/bindings';
 import {
   DOUBLE_TAP_FRAME_MAX_ZOOM,
   DOUBLE_TAP_MIN_ZOOM,
@@ -12,6 +13,11 @@ import {
 import { computeViewportCenter } from './viewport';
 
 // Double-tap to zoom (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
+
+// The canvas's zoom ceiling, as the product binds it.
+const ZOOM_MAX = 5;
+beforeEach(() => configureWorkbench(testBindings({ zoomMax: () => ZOOM_MAX })));
+afterEach(() => resetWorkbenchForTests());
 
 const PHONE = { width: 390, height: 700 };
 

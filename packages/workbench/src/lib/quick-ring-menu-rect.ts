@@ -1,4 +1,4 @@
-import type { QuickConnectDirection } from '@/lib/canvas';
+import type { QuickConnectDirection } from './quick-connect';
 
 // Where a quick-connect ring's menu (docs/specs/008-canvas/canvas-and-palette.md "Quick add + connect") lands on
 // screen once open: it fans outward from the plus, `near` px beyond the plus centre, centred across that side. Worked

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type { MouseEvent, PointerEvent } from 'react';
-import { DOUBLE_PRESS_MS, pressLedger } from '@liveworkspace/workbench/lib/double-press';
+import { DOUBLE_PRESS_MS, pressLedger } from '../../lib/double-press';
 import { pressedElement, useSmallElementDoubleTap } from './useSmallElementDoubleTap';
 
 // A finger's double-tap on a small element frames it before it edits (docs/specs/008-canvas/canvas-and-palette.md

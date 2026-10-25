@@ -4,7 +4,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
+import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import { createEraseFrameReader } from '@/lib/erase-frame';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { peerPushTarget } from '@/lib/avatar-walk';

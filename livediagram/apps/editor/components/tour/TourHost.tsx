@@ -13,7 +13,7 @@ import {
 } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import { computeViewportCenter } from '@/lib/viewport';
+import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';

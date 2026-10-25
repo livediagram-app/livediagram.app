@@ -159,7 +159,7 @@ export type ArrowEnd = 'from' | 'to';
 // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; 'text' drops a label to the side.
-export type QuickConnectDirection = 'right' | 'below' | 'left' | 'above';
+export type { QuickConnectDirection } from '@liveworkspace/workbench/lib/quick-connect';
 export type QuickConnectKind = 'duplicate' | 'text';
 
 export const SNAP_THRESHOLD = 24;

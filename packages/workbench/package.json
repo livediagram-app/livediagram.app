@@ -93,8 +93,10 @@
     "./hooks/canvas/useChartHover": "./src/hooks/canvas/useChartHover.ts",
     "./hooks/canvas/useKeyboardAvoidance": "./src/hooks/canvas/useKeyboardAvoidance.ts",
     "./hooks/canvas/useObservedSize": "./src/hooks/canvas/useObservedSize.ts",
+    "./hooks/canvas/useQuickRing": "./src/hooks/canvas/useQuickRing.ts",
     "./hooks/canvas/useReposition": "./src/hooks/canvas/useReposition.ts",
     "./hooks/canvas/useRightClickRelease": "./src/hooks/canvas/useRightClickRelease.ts",
+    "./hooks/canvas/useSmallElementDoubleTap": "./src/hooks/canvas/useSmallElementDoubleTap.ts",
     "./hooks/canvas/useSnapHaptic": "./src/hooks/canvas/useSnapHaptic.ts",
     "./hooks/canvas/useViewportStore": "./src/hooks/canvas/useViewportStore.tsx",
     "./hooks/navigation/useAppNavigation": "./src/hooks/navigation/useAppNavigation.ts",
@@ -149,10 +151,12 @@
     "./lib/dialog-handle": "./src/lib/dialog-handle.ts",
     "./lib/dom-hit-test": "./src/lib/dom-hit-test.ts",
     "./lib/double-press": "./src/lib/double-press.ts",
+    "./lib/double-tap-zoom": "./src/lib/double-tap-zoom.ts",
     "./lib/download-blob": "./src/lib/download-blob.ts",
     "./lib/editor-viewport": "./src/lib/editor-viewport.ts",
     "./lib/element-keyed-store": "./src/lib/element-keyed-store.ts",
     "./lib/explorer-teams-host": "./src/lib/explorer-teams-host.ts",
+    "./lib/fit-clear-of-panel": "./src/lib/fit-clear-of-panel.ts",
     "./lib/fits-on-screen": "./src/lib/fits-on-screen.ts",
     "./lib/haptics": "./src/lib/haptics.ts",
     "./lib/hsv": "./src/lib/hsv.ts",
@@ -173,6 +177,8 @@
     "./lib/palette-popover-open": "./src/lib/palette-popover-open.ts",
     "./lib/press-gestures": "./src/lib/press-gestures.ts",
     "./lib/primary-selection-paste": "./src/lib/primary-selection-paste.ts",
+    "./lib/quick-connect": "./src/lib/quick-connect.ts",
+    "./lib/quick-ring-menu-rect": "./src/lib/quick-ring-menu-rect.ts",
     "./lib/random": "./src/lib/random.ts",
     "./lib/reload-guard": "./src/lib/reload-guard.ts",
     "./lib/reload-when-saved": "./src/lib/reload-when-saved.ts",
@@ -200,7 +206,8 @@
     "./lib/unsaved-work": "./src/lib/unsaved-work.ts",
     "./lib/url-safety": "./src/lib/url-safety.ts",
     "./lib/viewport-glide": "./src/lib/viewport-glide.ts",
-    "./lib/viewport-store": "./src/lib/viewport-store.ts"
+    "./lib/viewport-store": "./src/lib/viewport-store.ts",
+    "./lib/viewport": "./src/lib/viewport.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -217,6 +224,7 @@
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },
   "devDependencies": {

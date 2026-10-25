@@ -21,6 +21,7 @@ describe('workbench bindings', () => {
     expect(workbench.appRecoveryFlag).toBe('__workbenchChunkRecovery');
     expect(workbench.runningStaleBuild()).toBe(false);
     expect(workbench.readPreferences()).toEqual({});
+    expect(workbench.zoomMax()).toBe(5);
     expect(() => workbench.track('Error', 'Client', 'Anything')).not.toThrow();
   });
 

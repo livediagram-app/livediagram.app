@@ -4,7 +4,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
+import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';

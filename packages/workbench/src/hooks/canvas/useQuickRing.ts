@@ -7,8 +7,8 @@
 // (`[data-quick-ring]`) closes it.
 
 import { useEffect, useState } from 'react';
-import type { QuickConnectDirection } from '@/lib/canvas';
-import type { SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import type { QuickConnectDirection } from '../../lib/quick-connect';
+import type { SelectionStore } from '../../lib/selection-store';
 
 export function useQuickRing(selection: SelectionStore) {
   const [quickRingOpen, setQuickRingOpen] = useState<QuickConnectDirection | null>(null);

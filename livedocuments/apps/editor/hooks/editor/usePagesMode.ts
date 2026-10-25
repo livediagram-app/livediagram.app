@@ -25,7 +25,8 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedocuments/document';
-import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
+import { computeReadingFrame } from '@/lib/reading-frame';
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
 import { topStripInset } from '@/lib/top-strip-inset';

@@ -27,7 +27,7 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedesign/design';
-import { besideSideInsets, computeFitBelow } from '@/lib/viewport';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
 
 // The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
 const WIREFRAME_FIT_MAX_ZOOM = 2.5;

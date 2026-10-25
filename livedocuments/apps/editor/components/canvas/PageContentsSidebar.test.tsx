@@ -72,7 +72,7 @@ function show({
   return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
 }
 
-// The view centred on a page (the centred transform, lib/viewport.ts), in jsdom's 0 x 0 canvas.
+// The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
 const centredOn = (i: number) => {
   const r = laid[i]!.rect;
   return { zoom: 1, offset: { x: -(r.x + r.width / 2), y: -(r.y + r.height / 2) } };

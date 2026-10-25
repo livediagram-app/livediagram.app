@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useRef, type MouseEvent, type PointerEvent } from 'react';
-import { DOUBLE_PRESS_MS, pressLedger } from '@liveworkspace/workbench/lib/double-press';
-import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
+import { DOUBLE_PRESS_MS, pressLedger } from '../../lib/double-press';
+import { isDoubleTapZoomPointer } from '../../lib/double-tap-zoom';
 
 // A double-tap's second press counts from the element presses' shared ledger (lib/double-press), which every element
 // part records into (a box, an arrow's line or label, a selection handle): an arrow opens its label editor on that

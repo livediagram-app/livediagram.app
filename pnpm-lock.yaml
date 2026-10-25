@@ -5927,6 +5927,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui

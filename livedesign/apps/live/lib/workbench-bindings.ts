@@ -3,16 +3,13 @@
 // before anything renders.
 import { configureWorkbench } from '@liveworkspace/workbench/bindings';
 import { apiFetch, apiHeaders, currentBearer, expectOk, expectOkVoid } from './api/core';
+import { zoomMax } from './canvas';
 import { runningStaleBuild } from './server-release';
 import { track } from './telemetry';
 import { readUserPreferences } from './user-preferences';
 import { APP_RECOVERY_FLAG, DEBUG_STORAGE_KEY, RELOAD_GUARD_KEY } from './workbench-keys';
 
-let bound = false;
-
 export function bindWorkbench(): void {
-  if (bound) return;
-  bound = true;
   configureWorkbench({
     track,
     debugKey: DEBUG_STORAGE_KEY,
@@ -20,6 +17,8 @@ export function bindWorkbench(): void {
     appRecoveryFlag: APP_RECOVERY_FLAG,
     runningStaleBuild,
     readPreferences: readUserPreferences,
+    // Raised while a photo page is in focus (docs/specs/031-photo/photo-pages.md "Navigating").
+    zoomMax,
     api: { fetch: apiFetch, headers: apiHeaders, expectOk, expectOkVoid, currentBearer },
     formatLogScope: 'design-format',
   });

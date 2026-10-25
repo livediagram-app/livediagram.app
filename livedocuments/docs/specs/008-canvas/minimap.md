@@ -92,7 +92,7 @@ letterboxing handled for free.
 
 ## Implementation
 
-- `lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
+- `../packages/workbench/src/lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
   (above), used by `lib/tab-fit-view.ts`.
 
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`

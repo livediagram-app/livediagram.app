@@ -21,10 +21,10 @@ import {
   computeFitToScreen,
   computeViewportCanvasRect,
   computeViewportCenter,
-} from '@/lib/viewport';
+} from '@liveworkspace/workbench/lib/viewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
-import { onMapShown } from '@/lib/fit-clear-of-panel';
+import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather

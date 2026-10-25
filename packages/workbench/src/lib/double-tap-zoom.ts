@@ -3,9 +3,9 @@
 // an element too small to work on frames it before it edits. Pure, so the views it lands on are tested without a
 // canvas.
 
-import { ZOOM_MAX } from './canvas';
+import { workbench } from '../bindings';
 import { computeFitToScreen, FIT_TO_SCREEN_PADDING } from './viewport';
-import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import type { ViewPose } from './viewport-glide';
 
 // Each double-tap doubles the zoom: a phone's 60% view lands at 120%, a 200% view at 400%.
 const DOUBLE_TAP_ZOOM_STEP = 2;
@@ -20,7 +20,7 @@ export function isDoubleTapZoomPointer(pointerType: string | null): boolean {
 
 /**
  * The view a double-tap lands on: `at` (canvas coords) in the middle of a canvas of `size` (screen px), at the next
- * zoom. The view's offset is the canvas point at its centre's negation (lib/viewport.ts computeViewportCenter), so
+ * zoom. The view's offset is the canvas point at its centre's negation (@liveworkspace/workbench/lib/viewport.ts computeViewportCenter), so
  * the zoom does not enter it.
  */
 export function doubleTapZoomView(
@@ -28,7 +28,11 @@ export function doubleTapZoomView(
   zoom: number,
   size: { width: number; height: number },
 ): ViewPose {
-  const next = Math.min(ZOOM_MAX, Math.max(zoom, zoom * DOUBLE_TAP_ZOOM_STEP, DOUBLE_TAP_MIN_ZOOM));
+  // Never past the canvas's zoom ceiling now (the `zoomMax` binding).
+  const next = Math.min(
+    workbench.zoomMax(),
+    Math.max(zoom, zoom * DOUBLE_TAP_ZOOM_STEP, DOUBLE_TAP_MIN_ZOOM),
+  );
   return { zoom: next, offset: { x: size.width / 2 - at.x, y: size.height / 2 - at.y } };
 }
 

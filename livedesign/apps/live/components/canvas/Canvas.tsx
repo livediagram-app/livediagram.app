@@ -8,7 +8,7 @@ import {
   useViewportStore,
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
-import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
+import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livedesign/design';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
@@ -19,7 +19,7 @@ import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@/hooks/canvas/useQuickRing';
+import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';

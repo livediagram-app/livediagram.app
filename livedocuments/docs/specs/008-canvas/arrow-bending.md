@@ -117,5 +117,5 @@ This applies to arrows and to the selection handles of boxed elements alike.
 
 One exception goes before the editor: a finger's double-press on an element too small on the screen to work on
 frames the element instead of editing it ([Double-tap to zoom](./canvas-and-palette.md#double-tap-to-zoom)); the
-canvas catches that second press ahead of the element (`hooks/canvas/useSmallElementDoubleTap.ts`), and the next
+canvas catches that second press ahead of the element (`../packages/workbench/src/hooks/canvas/useSmallElementDoubleTap.ts`), and the next
 double-press edits.

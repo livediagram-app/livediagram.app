@@ -1,6 +1,6 @@
 import { useMemo, type Ref } from 'react';
 import { isBoxed, unionBoxedBounds, type Element } from '@liveplanner/project';
-import { isContentOffScreen } from '@/lib/viewport';
+import { isContentOffScreen } from '@liveworkspace/workbench/lib/viewport';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 
 // True while every element on the tab is panned / zoomed entirely out of view, and there is something to see. Drives the "bring it back"
