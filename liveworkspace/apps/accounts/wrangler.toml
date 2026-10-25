@@ -71,12 +71,11 @@ service = "liveworkspace-index"
 binding = "TELEMETRY"
 service = "liveworkspace-telemetry"
 
-# The Google Drive mirror's service, told when an account closes (src/drive-disconnect.ts). A deploy is refused while
-# a service binding's target Worker doesn't exist, so it stays off until liveworkspace-drive is deployed; without it
-# nothing is sent. Uncomment then:
-# [[services]]
-# binding = "DRIVE"
-# service = "liveworkspace-drive"
+# The Google Drive mirror's service, told when an account closes (src/drive-disconnect.ts). Without it
+# nothing is sent.
+[[services]]
+binding = "DRIVE"
+service = "liveworkspace-drive"
 
 [[d1_databases]]
 binding = "AUTH_DB"

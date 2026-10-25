@@ -55,12 +55,11 @@ name = "MIGRATION_LIMITER"
 namespace_id = "1106"
 simple = { limit = 60, period = 60 }
 
-# The Google Drive mirror's service, which the change signal goes through (src/drive.ts). A deploy is refused
-# while a service binding's target Worker doesn't exist, so it stays off until liveworkspace-drive is deployed;
-# without it the index sends no signal and nothing else changes. Uncomment then:
-# [[services]]
-# binding = "DRIVE"
-# service = "liveworkspace-drive"
+# The Google Drive mirror's service, which the change signal goes through (src/drive.ts). Without it
+# the index sends no signal and nothing else changes.
+[[services]]
+binding = "DRIVE"
+service = "liveworkspace-drive"
 
 [env.staging]
 name = "liveworkspace-index-staging"
