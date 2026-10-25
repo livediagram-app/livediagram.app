@@ -735,14 +735,14 @@ and the dialog stays as the one complete, browsable index of them.
   own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
   at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
   for nothing. All shows every setting the account
-  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then **Common**
-  (liveworkspace's logo): every editor setting two or more apps have (`COMMON_SETTING_KEYS`,
-  liveworkspace/docs/accounts.md "Common settings"), once, in the categories the apps file them under
-  (Explorer for Show Home Banner); then each app's settings under its name and logo, in the apps'
-  order. This app's group is its own Settings minus the shared switches the Account section already
-  holds (a row marked "All apps" whose key is one of the Account section's) and minus its common
-  rows, which are drawn in Common instead (this editor's own rows, so a change there is counted and
-  synced as here), so a setting never shows twice; the other apps' groups are their own rows of their
+  has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
+  merged across every app (liveworkspace/docs/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
+  on, with no group per app. In each, the shared rows come first: every editor setting two or more apps have
+  (`COMMON_SETTING_KEYS`, liveworkspace/docs/accounts.md "Common settings"), once, and any row two apps keep under the
+  same key and wording, once, written to each; then each app's own rows under a small sub-heading with its logo and
+  name. This app's rows are its own Settings minus the shared switches the Account section already
+  holds (a row marked "All apps" whose key is one of the Account section's), and its common rows are this editor's
+  own rows (so a change there is counted and synced as here), so a setting never shows twice; the other apps' rows are their own rows of their
   plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over
   liveworkspace's account API through this app's router (`/api/workspace/account/settings/<app>`)
   with the person's access token (`currentBearer`), the door the Explorer panel's teams already use.
@@ -760,7 +760,7 @@ and the dialog stays as the one complete, browsable index of them.
   outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
   `?settings=`) lands on liveplanner; otherwise the dialog opens on the side this device chose last
   (`liveplanner:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
-  and the bearer request); the switch, the Account section and the All grouping are the package's.
+  and the bearer request); the switch, the Account section and All's merged categories are the package's.
 
   Email rows are **absent, not disabled**, unless BOTH email is configured (the api's `EMAIL` binding)
   ([Transactional email](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those

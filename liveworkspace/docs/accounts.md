@@ -514,7 +514,7 @@ again. A row that isn't one stored value (a list, several keys at once) or isn't
 (appearance, tokens, shortcuts) stays in the app's own Settings, and so does a shared key the panel shows elsewhere
 (the Account section's switches, the editors' chrome); a common setting's rows stay in each app's catalogue, so the
 app's own side shows them. Which shared switches the panel's Account section shows, and how they are worded, is
-plain data too, `@liveworkspace/settings/account`; the Common group is built from the catalogues
+plain data too, `@liveworkspace/settings/account`; the common settings are built from the catalogues
 (`commonCatalogue` in `@liveworkspace/settings/common`).
 
 A scope is one row, keyed by owner and scope, holding a JSON object of setting names to values.
@@ -522,8 +522,8 @@ A scope is one row, keyed by owner and scope, holding a JSON object of setting n
 ### Common settings
 
 A setting two or more apps have is one setting, kept in `all`: `COMMON_SETTING_KEYS` in
-`@liveworkspace/settings`, part of `ALL_SETTING_KEYS`. Changing it in any app, or under **Common** in the
-Settings panel's All view ([site.md](site.md#settings)), changes it in every app that has it. Today that is the
+`@liveworkspace/settings`, part of `ALL_SETTING_KEYS`. Changing it in any app, or in the Settings panel's All
+view, where it shows once in its merged category ([site.md](site.md#settings)), changes it in every app that has it. Today that is the
 Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels (`collaboratePanelEnabled`,
 `quickStylePanelEnabled`, `layersPanelEnabled`, `layersShowPreview`, `layersShowCount`, `layerHoverPreview`,
 `showMinimap`, `mapSize`, `mapDimOutside`), the canvas's `alignmentGuides`, `autoRebindArrows`,
@@ -537,8 +537,8 @@ These keys were each app's own until October 2026, so a person's values for them
 Nothing is lost: `joinSettings` takes a shared key from `all` when `all` has it, and otherwise from the app's own
 scope, so each app keeps showing what it showed. The first change anywhere writes `all`, which then wins in
 every app; `splitSettings` also deletes the writing app's old copy (a `null` in its app patch), so a reset
-(deleting the key) can't bring an old value back there. Where the apps' old copies differ, the All view's Common
-group shows the one from the app the panel was opened for, else the first app in the apps' order that has one. No
+(deleting the key) can't bring an old value back there. Where the apps' old copies differ, the All view's row
+shows the one from the app the panel was opened for, else the first app in the apps' order that has one. No
 migration job runs: the accounts Worker stores keys without knowing what they mean, and the copies left in app
 scopes are a few bytes each.
 

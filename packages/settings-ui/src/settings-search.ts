@@ -15,9 +15,14 @@ import { settingsCategoryPath, type SettingsCategory, type SettingsRow } from '.
 // opacity, "hotkey" for shortcuts: the same trick the help registry uses.
 
 // What search reads of a category and its rows: the model's, or an app's own catalogue.
-export type SearchableRow = Pick<SettingsRow, 'label' | 'description' | 'section' | 'keywords'>;
+export type SearchableRow = Pick<
+  SettingsRow,
+  'label' | 'description' | 'section' | 'keywords' | 'app'
+>;
 export type SearchableCategory = Pick<SettingsCategory, 'id' | 'label' | 'parent'> & {
   rows: readonly SearchableRow[];
+  // All's merged categories: an app's own rows are found by the app's name too.
+  appHeadings?: SettingsCategory['appHeadings'];
 };
 
 export type SettingsSearchCategory<C extends SearchableCategory = SettingsCategory> = C & {
@@ -35,13 +40,10 @@ export type SettingsSearchResult<C extends SearchableCategory = SettingsCategory
 
 const MIN_QUERY = 2;
 
-function haystack(
-  row: SearchableRow,
-  category: SearchableCategory,
-  categories: readonly SearchableCategory[],
-): string {
+function haystack(row: SearchableRow, category: SearchableCategory, path: string): string {
   return [
-    settingsCategoryPath(category, categories),
+    path,
+    row.app !== undefined ? (category.appHeadings?.[row.app]?.label ?? '') : '',
     row.section ?? '',
     row.label,
     row.description,
@@ -71,9 +73,13 @@ export function searchSettings<C extends SearchableCategory>(
   // EVERY term must match, so a second word narrows rather than widens, the
   // behaviour a reader expects from a search box, and the one that makes
   // "layer hover" useful.
+  // Each category's path once (not once per row): a long catalogue stays linear.
+  const byId = new Map(categories.map((c) => [c.id, c]));
   const matched = categories.map((category) => {
+    const parent = category.parent !== undefined ? byId.get(category.parent) : undefined;
+    const path = parent ? settingsCategoryPath(category, [parent]) : category.label;
     const rows = category.rows.filter((row) => {
-      const text = haystack(row, category, categories);
+      const text = haystack(row, category, path);
       return parts.every((part) => text.includes(part));
     }) as C['rows'];
     return { ...category, rows, matchCount: rows.length };

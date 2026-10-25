@@ -28,6 +28,9 @@ export type SettingsRowText = {
   illustration?: string;
   // The note shown on a phone, where the row has no effect: it stays visible, greyed and inert.
   desktopOnly?: string;
+  // The app this row is one app's own, in the All view's merged categories: a key into its category's
+  // `appHeadings`, drawn under that app's logo and name. Rows of one app are adjacent.
+  app?: string;
 };
 
 export type SettingsRowBase = SettingsRowText & {
@@ -143,12 +146,26 @@ export type SettingsCategory = {
   sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
   // Sections drawn as a closed accordion.
   collapsedSections?: readonly string[];
+  // The apps whose own rows sit here under their logo and name (a row's `app`), with each app's section notes
+  // and closed sections, which may differ between apps.
+  appHeadings?: Readonly<Record<string, SettingsAppHeading>>;
+  // Ids this category also answers to: an old layout's (a remembered `livediagram.app:editor`, `common:editor`) or a
+  // bare deep link's (`editor`).
+  aliases?: readonly string[];
   rows: readonly SettingsRow[];
 };
 
-// A heading the rail lists categories under, in the order given: the All view's Account and each app,
-// each with its logo.
-export type SettingsGroupHeading = { id: string; label: string; icon?: ReactNode };
+// An app's sub-heading inside a category of the All view: its logo and name.
+export type SettingsAppHeading = {
+  label: string;
+  icon?: ReactNode;
+  sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
+  collapsedSections?: readonly string[];
+};
+
+// A heading the rail lists categories under, in the order given: the All view's Account, with its logo. A `flat`
+// one has no heading: its categories are listed as they are, always shown (All's merged categories).
+export type SettingsGroupHeading = { id: string; label: string; icon?: ReactNode; flat?: boolean };
 
 // A section's target id: "Cloud Sync" → "cloud-sync".
 export function settingsSectionId(section: string): string {

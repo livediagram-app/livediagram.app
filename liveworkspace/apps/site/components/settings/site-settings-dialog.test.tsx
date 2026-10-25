@@ -218,8 +218,16 @@ describe('the Settings panel, on All', () => {
     const headings = [
       ...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > p'),
     ].map((p) => p.textContent);
-    // livedocuments' only setting of its own outside Common is its email switch, under Account › Notifications.
-    expect(headings).toEqual(['Account', 'Common', 'livediagram', 'liveplanner', 'livedesign']);
+    // Account is the one heading: every other category is one set, merged across Common and the apps.
+    expect(headings).toEqual(['Account']);
+    const apps = document.querySelector<HTMLElement>(
+      'nav[aria-label="Settings categories"] [role="group"][aria-label="Apps"]',
+    )!;
+    const top = [...apps.children].map((c) =>
+      (c.matches('button') ? c : c.querySelector('button'))?.textContent?.trim(),
+    );
+    expect(top.filter((label) => label === 'Editor')).toHaveLength(1);
+    expect(top, top.join(', ')).toContain('Tours');
     // The four apps' scopes, then the profile (the first category, shown).
     const paths = fetchMock.mock.calls.map(([url]) => url);
     expect(paths).toContain('/api/account/profile');
@@ -227,6 +235,27 @@ describe('the Settings panel, on All', () => {
     expect(document.querySelector('[data-settings-pane]')?.textContent).toContain(
       'Presence colour',
     );
+  });
+
+  it("opens a merged category, each app's own rows under its name, written to its own scope", async () => {
+    fetchMock.mockImplementation(answer);
+    await open(null);
+    act(() => railButton('Tours')!.click());
+    await settle();
+    const pane = document.querySelector<HTMLElement>('[data-settings-pane]')!;
+    const blocks = [...pane.querySelectorAll('[data-settings-app]')];
+    expect(blocks.map((b) => b.getAttribute('data-settings-app'))).toEqual([
+      'livediagram.app',
+      'liveplanner.app',
+    ]);
+    expect(blocks[0]!.querySelector('[data-settings-app-heading]')?.textContent).toBe(
+      'livediagram',
+    );
+    const row = blocks[1]!.querySelector<HTMLButtonElement>('[role="switch"]')!;
+    act(() => row.click());
+    await settle();
+    const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')!;
+    expect(patch[0]).toBe('/api/account/settings/liveplanner.app');
   });
 
   it('opens on an Account category, and writes its switch to the `all` scope', async () => {

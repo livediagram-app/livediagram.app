@@ -51,8 +51,8 @@ export function SettingsCategoryList({
   // category with none is dimmed and unclickable: the badge is the answer to
   // "which category was it in?", which is the question search is really for.
   searching?: boolean;
-  // Headings to list the categories under, in this order (the All view's Account and each app); a
-  // category is listed under the one its `group` names. Absent: one plain list.
+  // Headings to list the categories under, in this order (the All view's Account, then its merged categories under a
+  // `flat` one, drawn with no heading); a category is listed under the one its `group` names. Absent: one plain list.
   groups?: readonly SettingsGroupHeading[];
 }) {
   const isRoot = variant === 'root';
@@ -186,6 +186,25 @@ export function SettingsCategoryList({
       {groups.map((group) => {
         const listed = categories.filter((c) => c.group === group.id);
         if (listed.length === 0) return null;
+        if (group.flat) {
+          // No heading: its categories always show, set off from the headings above by a rule (or, on a phone,
+          // as a card of their own).
+          return (
+            <div
+              key={group.id}
+              role="group"
+              aria-label={group.label}
+              data-settings-group={group.id}
+              className={
+                isRoot
+                  ? ROOT_CARD
+                  : 'mt-1.5 flex flex-col gap-0.5 border-t border-slate-200 pt-2 first:mt-0 first:border-t-0 first:pt-0 dark:border-slate-800'
+              }
+            >
+              {listed.map(renderCategory)}
+            </div>
+          );
+        }
         const headingId = `settings-group-${group.id}`;
         const bodyId = `${headingId}-body`;
         const open = Boolean(searching) || openGroup === group.id;

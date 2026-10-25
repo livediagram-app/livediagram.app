@@ -467,12 +467,13 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
-- **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then
-  **Common** (liveworkspace's logo too), then each app under its name and logo, in the apps' order. Each setting shows
-  once. Each heading is a single-open accordion, laid out as a category row (the
-  same padding, icon column and type size): only the group holding the current pane starts open, opening one folds
-  the other, each eases open and shut, picking a category opens its group, and a search opens them all so no hit is
-  hidden. Account holds what belongs to the person in every app, the `all`
+- **All.** Every setting, in one set of categories (merged on 25 October 2026; before, All listed Common and then
+  a group per app). The rail has **Account** first, under its heading (liveworkspace's logo), a single-open
+  accordion laid out as a category row (the same padding, icon column and type size) that eases open and shut,
+  starts open only when it holds the current pane, and opens for a search so no hit is hidden. Under it, set off by
+  a rule (on a phone, a card of their own), every other category, with no heading and no per-app groups: one
+  **Editor** (with Draw, Pages and Presenting under it), one **Tours**, one **Explorer**, Layers, Map, Collaborate
+  and Quick Style, and so on, whichever apps have them. Account holds what belongs to the person in every app, the `all`
   scope ([accounts.md](accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
   collaborators see, with a preview of their cursor and avatar, `ProfileEditor` in `@liveworkspace/settings-ui`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with), under it
@@ -483,23 +484,43 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   address a link to the same category on liveworkspace.app, since tokens are the session's), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
-  something in an editor (UI scale, panel opacity and the rest) are left to each app's own group. **Common** holds
-  every editor setting two or more apps have (`COMMON_SETTING_KEYS`, [accounts.md](accounts.md#common-settings)),
-  once, in the categories the apps file them under: Editor (with Pages and Presenting under it), Explorer, and
-  Panels › Collaborate, Layers, Map and Quick Style. It is built from the apps' catalogues (`commonCatalogue` in
-  `@liveworkspace/settings/common`), worded as the apps word them. Where the apps file a setting differently, the
-  platform's place is used: Show Home Banner sits under each app's own Documents, Plans or Designs, and under
-  **Explorer** here. A Common row reads `all`, falling back to an app's old copy as `joinSettings` does, and writes
-  `all`. Each app's group then holds only that app's own settings; an app left with none would be left out of the
-  rail rather than shown with a note (today each app keeps some of its own). Ids in All are prefixed with their
-  heading's (`account:notifications`, `common:editor`, `livediagram.app:editor`), so two apps' categories and rows
-  never collide.
+  something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.
+  - **How the categories merge** (`mergeAppCategories`, `packages/settings-ui/src/merge-categories.ts`). The
+    sources are the common settings (every editor setting two or more apps have, `COMMON_SETTING_KEYS`,
+    [accounts.md](accounts.md#common-settings), built from the apps' catalogues by `commonCatalogue` in
+    `@liveworkspace/settings/common`, worded as the apps word them), then each app's own settings, the app the
+    panel was opened for first, then the rest in the apps' order. A category is merged with another of the same
+    place: its name under its parent's ("Editor", "Editor › Draw", "Panels › Layers"), so two apps' Editor are
+    one, and a sub-category nests under the merged parent the same way. A category only one app has is listed
+    once, under its own name (livediagram's Canvases, liveplanner's Plans). A category placed only by some apps
+    goes after the one before it in that app's list. One left with no rows is left out, and a sub-category whose
+    parent is left out stands at the top level by a short name (Layers, Map). Where the apps file a common
+    setting differently, the platform's place is used: Show Home Banner sits under each app's own Documents,
+    Plans or Designs, and under **Explorer** here.
+  - **Inside a merged category**, the shared rows come first, with no sub-heading: each common setting once,
+    which reads `all`, falling back to an app's old copy as `joinSettings` does, and writes `all`; and any row two
+    or more apps keep in their own scopes under the same key, with the same control and the same wording, also
+    once: it shows the first app's value, and a change is written to each of those apps' scopes, through each
+    app's own row, exactly as the per-app rows would. Then each app's own rows under a small sub-heading with the
+    app's Living Prism and name (never a coloured dot), with that app's sections, section notes and closed
+    sections inside it. Rows that share a key but not their wording (livediagram's "Someone Joins My Canvas" and
+    livedocuments' "Someone Joins My Document", `notifyDocumentJoin`) mean something different enough to want
+    one and not the other, so each stays under its own app.
+  - **Ids.** The Account section's ids are prefixed with its heading's (`account:notifications`); the merged
+    categories' with `apps:` and their place (`apps:editor`, `apps:editor/draw`); rows keep their source's
+    (`common:alignmentGuides`, `livediagram.app:tourWelcome`), so two apps' rows never collide. Every category
+    also answers to the ids it was built from, the old per-app layout's (`common:editor`,
+    `livediagram.app:tours`) and its bare one (`editor`, `notifications`): a category remembered from before
+    the merge, a deep link and a link row or readout line that names an old id all land on the merged
+    category. The merge is linear in rows and categories, rebuilt only when what it reads changes (40,000 rows
+    in about 30 ms; the four apps' catalogues today in under 1 ms, with the rest of the panel's model).
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
   folded into the Account section rather than listed again under the app: the app's rows the Account section
   doesn't already have (its Trash, Cloud Sync and Delete Account; its own email switches, such as "Someone Joins My
-  Canvas"; its own accessibility rows) join the Account category of the same name, under a heading with the app's
-  name, and the editor's identity row gives way to the Profile's header. Every category id is unique in the panel,
+  Canvas"; its own accessibility rows) join the Account category of the same name, under the app's sub-heading
+  (its Living Prism and name, as in the merged categories), and the editor's identity row gives way to the
+  Profile's header. Every category id is unique in the panel,
   and no category name the Account section uses appears under an app (pinned by
   `packages/settings-ui/src/no-duplicates.test.tsx`, for every app's catalogue and an editor's own shape).
 - **Profile** (the Account section's first category, `packages/settings-ui/src/profile/`), laid out as the old
@@ -549,8 +570,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   an app's side to `all` (`PATCH /api/account/settings` `{ all }`; a field of an object, a Presenting option say,
   writes the object with the rest kept, the old copy filling in where `all` has none); put back with a note if the write fails; a slider saves on release, as in the app. The profile's name is
   saved once typing pauses (800 ms), when the field is left, or as the page closes, never per keystroke; its colour
-  at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`); a Common row's
-  in the name of the app its wording came from (the app the panel was opened for when it has the setting). An app picks a
+  at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`); a common
+  setting's row in the name of the app its wording came from (the app the panel was opened for when it has the
+  setting), since it is one write to `all`; a merged row over several apps' own scopes once for each app it writes. An app picks a
   change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with

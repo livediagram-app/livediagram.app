@@ -155,19 +155,21 @@ describe('the Settings panel lists the account once', () => {
         'Accessibility',
       ]),
     );
-    // Each app's own email switches join Account › Notifications, under the app's name.
+    // Each app's own email switches join Account › Notifications, under the app's logo and name.
     const notifications = categories.find((c) => c.id === 'account:notifications')!;
     const sections = new Set(notifications.rows.map((r) => r.section));
-    expect(sections).toEqual(
-      new Set([
-        'In the Editor',
-        'Email',
-        'livediagram',
-        'liveplanner',
-        'livedocuments',
-        'livedesign',
-      ]),
+    expect(sections).toEqual(new Set(['In the Editor', 'Email']));
+    expect(new Set(notifications.rows.flatMap((r) => (r.app ? [r.app] : [])))).toEqual(
+      new Set(SETTINGS_APP_IDS),
     );
+    expect(Object.values(notifications.appHeadings ?? {}).map((h) => h.label)).toEqual([
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+    ]);
+    // No app has a group of its own: every other category is All's merged one.
+    expect(new Set(categories.map((c) => c.group))).toEqual(new Set([ACCOUNT_GROUP, 'apps']));
   });
 
   for (const app of [
@@ -189,9 +191,8 @@ describe('the Settings panel lists the account once', () => {
       expect(categories.filter((c) => c.label === 'API Tokens')).toHaveLength(1);
       // Its own accessibility row (not a shared one) sits under Account › Accessibility, under its name.
       const accessibility = categories.find((c) => c.id === 'account:accessibility')!;
-      expect(
-        accessibility.rows.find((r) => r.key === `${app}:highContrastFocus`)?.section,
-      ).toBeTruthy();
+      expect(accessibility.rows.find((r) => r.key === `${app}:highContrastFocus`)?.app).toBe(app);
+      expect(accessibility.appHeadings?.[app]).toBeTruthy();
       expect(
         categories.some((c) => c.group === app && /Account|Notifications|Privacy/.test(c.label)),
       ).toBe(false);
