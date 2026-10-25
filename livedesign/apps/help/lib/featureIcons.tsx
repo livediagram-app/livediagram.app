@@ -80,14 +80,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Selection Modes.
-  // The deck: the slide you are on, and the ones behind it.
-  'slide-deck': (
-    <Glyph>
-      <rect x="6" y="7.5" width="15" height="10" rx="1.5" />
-      <path d="M4 9.5v9.5a1.5 1.5 0 001.5 1.5H17" />
-      <path d="M11.5 10.5l4.5 2.5-4.5 2.5z" />
-    </Glyph>
-  ),
   select: (
     <Glyph>
       <path d="M5 3l6 16 2.5-6.5L20 10 5 3z" />
@@ -274,7 +266,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
     </Glyph>
   ),
-  // A slide with a window onto a small diagram: another tab shown live inside it.
+  // A page with a window onto a small diagram: another tab shown live inside it.
   'tab-windows': (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
@@ -614,34 +606,10 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCircleDot} />
     </Glyph>
   ),
-  // The last cards: the slide-deck trio, Locking a Tab, the two Tools
+  // The last cards: Locking a Tab, the two Tools
   // cleanups, and the three User Interface guides. With these the
   // catalogue is fully drawn, and the category fallback becomes a safety net for
   // cards not yet written rather than something a reader actually sees.
-  'building-a-deck': (
-    <Glyph>
-      <path d="M3.5 6.5h.01M3.5 12h.01M3.5 17.5h.01" />
-      <rect x="7" y="4.5" width="14" height="4" rx="1" />
-      <rect x="7" y="10" width="14" height="4" rx="1" />
-      <rect x="7" y="15.5" width="14" height="4" rx="1" />
-    </Glyph>
-  ),
-  // Corner brackets: the deck taken full screen.
-  presenting: (
-    <Glyph>
-      <rect x="4.5" y="6.5" width="15" height="11" rx="1.5" />
-      <path d="M2.5 5.5v-3h3M21.5 5.5v-3h-3M2.5 18.5v3h3M21.5 18.5v3h-3" />
-    </Glyph>
-  ),
-  // Back, forward, and where you are in the run.
-  'presenter-controls': (
-    <Glyph>
-      <rect x="2.5" y="8" width="19" height="8" rx="4" />
-      <path d="M9 10.5L6.5 12 9 13.5z" />
-      <path d="M15 10.5L17.5 12 15 13.5z" />
-      <path d="M11.3 12h.01M13.2 12h.01" />
-    </Glyph>
-  ),
   // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
   'side-by-side': (
     <Glyph>

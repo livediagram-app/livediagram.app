@@ -28,8 +28,6 @@ export function makeSeedFetchedDesign(deps: {
   noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDesignName: SetState<string>;
-  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
-  setDesignPresentation: SetState<string | null>;
   setDesignOwnerColor: SetState<string | null>;
   setDesignOwnerId: SetState<string | null>;
   setDesignOwnerName: SetState<string | null>;
@@ -49,7 +47,6 @@ export function makeSeedFetchedDesign(deps: {
     noteChangesetSeen,
     setActiveId,
     setDesignName,
-    setDesignPresentation,
     setDesignOwnerColor,
     setDesignOwnerId,
     setDesignOwnerName,
@@ -111,7 +108,6 @@ export function makeSeedFetchedDesign(deps: {
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
     setDesignName(fetched.name);
-    setDesignPresentation(fetched.presentation ?? null);
     // Prefer the tab id pinned in the URL fragment (#t=<id>) when
     // it points at a real loaded tab — round-trips the user back
     // to whichever tab they last had open before a refresh.

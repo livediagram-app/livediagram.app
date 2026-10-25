@@ -292,7 +292,7 @@ the same strokes, hatching and heads from `sketch.ts`, and the Professional fall
 `data-finish="marker"` group). `svgArrow` takes its width from `finishArrowWidthPx` and its line from
 `handDrawnArrow` (a still: `flowing` false); a marker line writes `stroke-opacity`, its `lineOver` as a second path,
 and a `headFill` head with `fill` and `fill-opacity`. Every caller that loops `svgBoxed` (`renderElementsToSvg`,
-`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
+`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`) computes `sketchBackdropIds`
 once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
 raster path so PNG matches SVG.
 

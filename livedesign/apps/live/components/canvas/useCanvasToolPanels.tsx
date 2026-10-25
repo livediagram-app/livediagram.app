@@ -1,7 +1,5 @@
 'use client';
 
-import { pageLabel } from '@livedesign/design';
-import type { DockAnchor } from '@/hooks/canvas/useDockPopovers';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import dynamic from 'next/dynamic';
@@ -16,12 +14,9 @@ const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPan
 });
 const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
-const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
-  ssr: false,
-});
 
-// The five tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
-// docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
+// The four tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -29,16 +24,13 @@ const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPan
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a sixth tool panel is a copy of its neighbour.
+// wiring bundle below, so a fifth tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
   panelWiringFor,
-  slidesPopover,
 }: {
   props: CanvasChromeProps;
-  // The Slide Deck as a popover over its cluster button (Pages mode), while open.
-  slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
@@ -46,7 +38,6 @@ export function useCanvasToolPanels({
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
-  slideDeckEl: ReactNode;
 } {
   const {
     canvasTool,
@@ -75,13 +66,6 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
-    slideDeck,
-    slideDeckPanelPosition,
-    onMoveSlideDeckPanel,
-    onResetSlideDeckPanel,
-    tabSummaries,
-    activeTabId,
-    readOnly,
   } = props;
 
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
@@ -95,9 +79,6 @@ export function useCanvasToolPanels({
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
-  );
-  const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
-    onResetSlideDeckPanel?.(),
   );
 
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
@@ -161,33 +142,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The sixth, and the one
-  // whose tool does not itself change the canvas — picking it opens the
-  // workbench, and Start is a deliberate second act.
-  const slideDeckEl =
-    !chromeHidden && slideDeck && (canvasTool === 'slide-deck' || slidesPopover) ? (
-      <SlideDeckPanel
-        state={slideDeck}
-        tabs={tabSummaries}
-        activeTabId={activeTabId ?? ''}
-        isReadOnly={readOnly}
-        pages={props.pagesMode?.pages.map((p) => ({
-          id: p.id,
-          label: pageLabel(p, p.index, Math.max(2, props.pagesMode!.pages.length)),
-        }))}
-        position={slideDeckWiring.position}
-        onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
-        onReset={slideDeckWiring.onReset}
-        dock={slidesPopover ? undefined : slideDeckWiring.dock}
-        // Over the Slides cluster button (Pages mode): a popover, closed by an outside press.
-        asPopover={!!slidesPopover}
-        popoverOpen={!!slidesPopover}
-        popoverAnchor={slidesPopover?.anchor}
-        dismissOnOutside={!!slidesPopover}
-        onPopoverClose={slidesPopover?.onClose}
-      />
-    ) : null;
-
-  return { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+  return { laserEl, spotlightEl, eraserEl, formatEl };
 }

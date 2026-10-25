@@ -139,7 +139,7 @@ export function applyPageChanges(
   try {
     // The pages this call has added, which a later add never takes as a blank.
     const madeHere = new Set<string>();
-    // The pages an add took as its blank (the fresh tab's empty first page, a blank deck's one slide), each to that
+    // The pages an add took as its blank (the fresh tab's empty first page), each to that
     // change's number: a later delete naming one means the empty page, which is gone already.
     const tookBlank = new Map<string, number>();
     changes.forEach((change, i) => {

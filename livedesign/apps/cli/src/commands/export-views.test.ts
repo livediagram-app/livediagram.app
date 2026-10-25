@@ -56,7 +56,6 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
         design: {
           id: m[1],
           name: doc.name,
-          presentation: null,
           tabs: doc.tabs.map((t, i) => ({
             id: t.id,
             name: t.name,
@@ -176,7 +175,6 @@ describe('a pull file read offline', () => {
     design: {
       id: 'aaaa0001-doc',
       name: 'Shop',
-      presentation: null,
       tabs: [flow, { id: 'other-01', name: 'Other', elements: [] }],
     },
     livedesignSync: {

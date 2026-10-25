@@ -28,7 +28,7 @@ const declaredPath = (dir: string): string | null => {
 
 describe('help article canonical paths', () => {
   it('reads a path from every article (guard against this test going blind)', () => {
-    expect(pagePaths.length).toBeGreaterThan(200);
+    expect(pagePaths.length).toBeGreaterThan(190);
     expect(pagePaths.filter((d) => declaredPath(d) === null)).toEqual([]);
   });
 

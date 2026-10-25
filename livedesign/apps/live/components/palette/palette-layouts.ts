@@ -298,7 +298,7 @@ export function participantPaletteCategories(): ResolvedPaletteCategory[] {
 }
 
 // The selection modes a Participant has: look and point, never an Editor's tools (Eraser, Format
-// Painter, Slide Deck).
+// Painter).
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
   'pan',

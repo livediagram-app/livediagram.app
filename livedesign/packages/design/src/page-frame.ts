@@ -166,19 +166,19 @@ export function pageExportFrame(
     // as the canvas shows it (the Map).
     paper?: string;
     // Prefixes the gradient and pattern ids: pages of different tabs share ids (every tab's first
-    // page), so markup inlined beside other pages' (slide thumbnails, the Map) needs its own.
+    // page), so markup inlined beside other pages' (Contents thumbnails, the Map) needs its own.
     idPrefix?: string;
     // A logo page's plain paper is left out (a logo goes over other things); a fill is kept.
     transparentPaper?: boolean;
     // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
-    // (the Map, slide thumbnails) the page is painted in the picture's tone under its overlay.
+    // (the Map, Contents thumbnails) the page is painted in the picture's tone under its overlay.
     imageHref?: (imageId: string) => string | undefined;
     // A photo page's composite (its preview, or an export's own rendering) by page id
     // (docs/specs/031-photo/photo-pages.md "Exports and other views"); absent draws its
     // transparency checkerboard and a picture glyph.
     photoHref?: (pageId: string) => string | undefined;
-    // Markup laid over the fill and under its pattern: a slide's animated background as it stands when the
-    // slide opens (docs/specs/007-editor/pages-mode.md "Animated backgrounds"). The SVG's is an opaque
+    // Markup laid over the fill and under its pattern: a page's animated background as it stands when the
+    // page is drawn (docs/specs/007-editor/pages-mode.md "Animated backgrounds"). The SVG's is an opaque
     // picture of the gradient with the motion painted in, so it takes the fill's place; laid over the pattern it
     // would hide it.
     overFill?: string;

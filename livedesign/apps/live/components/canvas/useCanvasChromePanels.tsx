@@ -64,7 +64,6 @@ export function useCanvasChromePanels({
   // Layers, a popover over its cluster button, rendered outside the corner layer.
   layersEl: ReactNode;
   collaborateEl: ReactNode;
-  slidesPopoverEl: ReactNode;
   // A photo page's Photo panel over its button in the pages strip, and whether that button is offered.
   photoPanelOffered: boolean;
   photoPopoverEl: ReactNode;
@@ -157,15 +156,8 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  // The five tool-config panels (laser / spotlight / eraser / format / slide
-  // deck), see useCanvasToolPanels. They share one contract: on screen
-  // only while their own tool is active.
-  // The Slides popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab
-  // switch) closes it rather than leaving it floating with no button under it.
-  const slidesOpen = activeDockPanel === 'slides' && !!props.pagesMode;
-  useEffect(() => {
-    if (activeDockPanel === 'slides' && !props.pagesMode) closeDockPanel();
-  }, [activeDockPanel, props.pagesMode, closeDockPanel]);
+  // The four tool-config panels (laser / spotlight / eraser / format), see useCanvasToolPanels. They
+  // share one contract: on screen only while their own tool is active.
   // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
   const { contentsDocked, contentsSide, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
     props,
@@ -173,13 +165,10 @@ export function useCanvasChromePanels({
     isMobile,
     closeDockPanel,
   });
-  const { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
-    slidesPopover: slidesOpen
-      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-      : null,
   });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
@@ -338,8 +327,6 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    // Over its cluster button (Pages mode) it renders beside the corner layer, like Collaborate.
-    'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -347,7 +334,6 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     contentsPopoverEl,
     photoPanelOffered,
     photoPopoverEl,

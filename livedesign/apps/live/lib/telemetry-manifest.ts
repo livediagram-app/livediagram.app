@@ -168,7 +168,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

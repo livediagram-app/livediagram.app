@@ -21,7 +21,7 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Its support categories cover the account, privacy, developer tooling and the hosted service's policies.
 
-**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away.
+**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. The Slide Deck feature and its three sub-articles (`/selection-modes/slide-deck/`, with `building-a-deck`, `presenting` and `presenter-controls` under it) retired with slide decks on 25 October 2026 ([Presentation mode](../012-collaboration/presentation-mode.md)) and land on Selection Modes.
 
 ## Information architecture
 
@@ -62,14 +62,14 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedesign is for.
 
-- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting and presenting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
+- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
 - **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
 - **Tabs** — a design's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Design, Importing and Exporting, one guide per tab-menu action.
-- **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.
+- **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following along, teams, sharing and embeds.
 - **Tools** — zen mode, appearance (light, dark, system) and cleanup.
 - **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding designs/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 

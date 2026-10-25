@@ -1,7 +1,8 @@
 // The whole-design envelope: the contents of a `.livedesign` file, as the
 // CLI's pull files write it and read it back. The sibling of the per-tab `livedesign.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
-// design with every tab, each tab's per-design folder, and the slide deck.
+// design with every tab and each tab's per-design folder. An older file's `presentation` (the slide deck
+// livedesign no longer has, docs/specs/012-collaboration/presentation-mode.md) is read past.
 // Images stay references to livedesign's image store; no bytes are embedded.
 
 import type { Tab } from './index';
@@ -18,7 +19,6 @@ export type DesignEnvelope = {
   design: {
     id: string;
     name: string;
-    presentation: string | null;
     tabs: EnvelopeTab[];
   };
 };
@@ -26,7 +26,7 @@ export type DesignEnvelope = {
 type DesignEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function designToEnvelopeText(
-  liveDoc: { id: string; name: string; presentation: string | null },
+  liveDoc: { id: string; name: string },
   tabs: EnvelopeTab[],
   exportedAt: number,
 ): string {
@@ -37,7 +37,6 @@ export function designToEnvelopeText(
     design: {
       id: liveDoc.id,
       name: liveDoc.name,
-      presentation: liveDoc.presentation,
       tabs,
     },
   };
@@ -74,11 +73,6 @@ export function parseDesignEnvelope(
     !d ||
     typeof d.id !== 'string' ||
     typeof d.name !== 'string' ||
-    !(
-      d.presentation === null ||
-      d.presentation === undefined ||
-      typeof d.presentation === 'string'
-    ) ||
     !Array.isArray(d.tabs) ||
     !d.tabs.every(isTab)
   ) {
@@ -93,7 +87,6 @@ export function parseDesignEnvelope(
       design: {
         id: d.id,
         name: d.name,
-        presentation: d.presentation ?? null,
         tabs: d.tabs,
       },
     },

@@ -234,9 +234,9 @@ export type UserPreferences = {
   // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
   // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
   contentsPlacement?: 'sidebar' | 'button';
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
-  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
-  // Missing === what this browser kept before they followed the account, else the defaults.
+  // The presenter settings, a key every app shares (@liveworkspace/settings). livedesign has had no slide
+  // deck since 25 October 2026 (docs/specs/012-collaboration/presentation-mode.md "Saved data") and never
+  // reads it; it is typed only so a commit carries the value through untouched for the apps that present.
   presentation?: Record<string, unknown>;
 };
 

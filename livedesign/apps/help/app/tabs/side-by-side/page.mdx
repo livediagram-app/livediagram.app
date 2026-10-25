@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SideBySideDrag, SideBySideOpen } from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
+import {
+  SideBySideDrag,
+  SideBySideOpen,
+} from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
 
 export const metadata = helpMetadata({
   title: 'Side by Side Tabs',
@@ -12,7 +15,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Side by Side Tabs" description="Put two tabs of a design on screen at once, and work on either without losing sight of the other." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("side-by-side")}>
 
-Tabs keep related work together: the deck and the article behind it, the draft and the reference. Side by side puts two of them on screen at once, so you can compare them, copy an idea across, or keep one in view while you work on the other.
+Tabs keep related work together: the logo and the screens that use it, the draft and the reference. Side by side puts two of them on screen at once, so you can compare them, copy an idea across, or keep one in view while you work on the other.
 
 ## Opening a tab beside another
 
@@ -57,7 +60,7 @@ Which two tabs you had side by side is remembered on this device for each design
 
 Side by side needs room for two working canvases, so it's offered on screens at least **1,400 pixels wide** and **700 pixels tall** (inside the browser window): most desktop monitors and larger laptops. On smaller laptops, tablets and phones it isn't offered, and you switch between tabs from the tab bar as usual.
 
-It also steps aside in [zen mode](/help/tools/zen-mode/) and while [presenting](/help/selection-modes/slide-deck/presenting/), and comes back when you leave them.
+It also steps aside in [zen mode](/help/tools/zen-mode/), and comes back when you leave it.
 
 <Tip>
   To keep a reference tab from changing while you work beside it, [lock

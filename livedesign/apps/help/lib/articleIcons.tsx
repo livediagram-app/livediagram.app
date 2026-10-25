@@ -194,7 +194,8 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <rect x="3" y="4" width="18" height="12" rx="1.5" />
       <path d="M12 16v4M8.5 20h7" />
-      <path d="M10 8.5l4 2.5-4 2.5z" />
+      <path d="M6.5 12.5c2-3 4.5-3.5 7-2" />
+      <circle cx="15.5" cy="10" r="1.25" />
     </Glyph>
   ),
 

@@ -93,6 +93,37 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Error', 'Api', 'Http401.ListFolders')).toBe(false);
   });
 
+  it('retires slide decks and presenting, not the Laser, Spotlight or Follow', () => {
+    for (const [action, type] of [
+      ['Opened', 'SlideDeck'],
+      ['Added', 'Slide'],
+      ['Added', 'PageSlide'],
+      ['Removed', 'Slide'],
+      ['Moved', 'Slide'],
+      ['Toggled', 'SlideHidden'],
+      ['Changed', 'SlideNotes'],
+      ['Opened', 'HeaderPresent'],
+      ['Started', 'Presentation'],
+      ['Closed', 'Presentation'],
+      ['Opened', 'PresenterNotes'],
+      ['Opened', 'SettingsPresenting'],
+      ['Changed', 'Presentation-transition'],
+      ['Changed', 'Presentation-speedQuick'],
+      ['Toggled', 'Presentation-loopOn'],
+      ['View', 'PagesTourStepWireframePresent'],
+      ['Opened', 'presenter-controls'],
+    ] as const) {
+      expect(isRetiredEvent('UI', action, type), `${action} ${type}`).toBe(true);
+    }
+    expect(isRetiredEvent('Help', 'View', 'building-a-deck')).toBe(true);
+    expect(isRetiredEvent('Error', 'Client', 'Render.Presentation.TypeError')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'Spotlight')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepWireframeAddPage')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'PageContents')).toBe(false);
+    expect(isRetiredEvent('Error', 'Client', 'Render.Canvas.TypeError')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);

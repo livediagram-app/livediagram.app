@@ -7,23 +7,21 @@ who re-renders when it changes.
 
 ## Files
 
-| File                                                                       | Role                                                                                |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`                             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
-| `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
-| `apps/live/hooks/ui/useStableObject.ts`                                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
-| `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
-| `apps/live/app/design/[id]/editor-ui-state.ts`                             | Creates the store; `selectedId` / setters come from it                              |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`                         | Provides the store; passes the canvas stable event props                            |
-| `apps/live/components/canvas/Canvas.tsx`                                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`                      | No selection props; each view reads its own flags                                   |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`                  | Subscribes; runs `deriveCanvasSelection` itself                                     |
-| `apps/live/components/canvas/selection-aware-views.tsx`                    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
-| `apps/live/components/canvas/LayerSelectionChrome.tsx`                     | Quick-connect pluses, union resize box                                              |
-| `apps/live/hooks/canvas/useCanvasSelectionView.ts`                         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/live/components/panels/SlideDeckPanel.tsx`                           | Reads the selection it slides from the store                                        |
-| `apps/live/lib/canvas-selection.ts`                                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
+| File                                                                       | Role                                                                     |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
+| `apps/live/hooks/canvas/useSelectionStore.tsx`                             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
+| `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable         |
+| `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props            |
+| `apps/live/app/design/[id]/editor-ui-state.ts`                             | Creates the store; `selectedId` / setters come from it                   |
+| `apps/live/components/canvas/EditorCanvasHost.tsx`                         | Provides the store; passes the canvas stable event props                 |
+| `apps/live/components/canvas/Canvas.tsx`                                   | `memo`; no `selectedId` / `multiSelectedIds` props                       |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`                      | No selection props; each view reads its own flags                        |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`                  | Subscribes; runs `deriveCanvasSelection` itself                          |
+| `apps/live/components/canvas/selection-aware-views.tsx`                    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`           |
+| `apps/live/components/canvas/LayerSelectionChrome.tsx`                     | Quick-connect pluses, union resize box                                   |
+| `apps/live/hooks/canvas/useCanvasSelectionView.ts`                         | `useCanvasSelectionView`, `CanvasSelectionInput`                         |
+| `apps/live/lib/canvas-selection.ts`                                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added         |
 
 ## Domain and naming
 
@@ -87,10 +85,6 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
   presence). Every other prop, including functions not named `on…` (`previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
 - No `on…` prop is called during render; the audit in the plan confirms it, and any found is renamed
   out of the convention rather than wrapped.
-- Object props built in the host per render (`slideDeck`) pass through
-  `useStableObject`: each function field becomes one forwarder per key calling the newest, and the
-  object keeps its identity until a data field changes or a field comes or goes. Their functions are
-  actions, never called in render.
 - `reshapingArrowId` changes value when a press lands on an arrow (a pending reshape); that is data,
   and re-renders the canvas as it should.
 - The canvas no longer receives `selectedId` or `multiSelectedIds`. Inside it:
@@ -111,21 +105,19 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     selected element when it is a path) for the path tool, which flips only for paths;
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
-  - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
-    with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
 
 ### Above the canvas
 
 Every editor hook that took `selectedId` / `multiSelectedIds` takes `readSelection: () =>
 Selection` instead and reads it where it acts. By kind:
 
-| Reader                            | Hooks and components                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Becomes                                                                                                                                                                                                          |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Handlers                          | `useElementHelpers`, `useElementCreation`, `useArrowConnect`, `useSelectionEditing`, `useElementSelectionActions`, `shift-duplicate-swap`, `useElementDuplication`, `useBoxedDragHandlers`, `useShapeStyleSetters`, `useElementStyle`, `useClipboard`, `useQuickConnectStart`, `useNudgeSelection`, `useShapeDrawing`, `useEditorDrag`, `useEditorKeyboardShortcuts`, `useSlideDeck` actions, `EditorCanvasHost`, `EditorTabDialogs`, `EditorView`, the root's own handlers | `readSelection()` at the start of the handler                                                                                                                                                                    |
-| Effects that follow the selection | `usePresenceBroadcast`, `useEditorViewport` (scroll into view), `useCanvasA11y` (announcement)                                                                                                                                                                                                                                                                                                                                                                              | a `selectionStore.subscribe` inside the effect, acting on each change; never `useSelectionOf`, which would render the root that calls them                                                                       |
-| The hidden-layer pruning          | the root                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | a `useLayoutEffect` on `layerInertIds` that reads `readSelection()` and sets once, before paint                                                                                                                  |
-| Views that show the selection     | `EditorContextMenuHost` (while a menu is open), `EditorSearchPanel` (`useEditorCommands(open)`, while search is open), `EditorTabDialogs` (while a selection export is open), `ModifierHint` (`selectedKindOf`, the selected element's flavour)                                                                                                                                                                                                                             | `useSelectionOf` in the component; a closed one selects `EMPTY_SELECTION`, so it never renders for a change                                                                                                      |
-| The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                                         | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx`) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
+| Reader                            | Hooks and components                                                                                                                                                                                                                                                                                                                                                                                                                                | Becomes                                                                                                                                                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Handlers                          | `useElementHelpers`, `useElementCreation`, `useArrowConnect`, `useSelectionEditing`, `useElementSelectionActions`, `shift-duplicate-swap`, `useElementDuplication`, `useBoxedDragHandlers`, `useShapeStyleSetters`, `useElementStyle`, `useClipboard`, `useQuickConnectStart`, `useNudgeSelection`, `useShapeDrawing`, `useEditorDrag`, `useEditorKeyboardShortcuts`, `EditorCanvasHost`, `EditorTabDialogs`, `EditorView`, the root's own handlers | `readSelection()` at the start of the handler                                                                                                                                                                    |
+| Effects that follow the selection | `usePresenceBroadcast`, `useEditorViewport` (scroll into view), `useCanvasA11y` (announcement)                                                                                                                                                                                                                                                                                                                                                      | a `selectionStore.subscribe` inside the effect, acting on each change; never `useSelectionOf`, which would render the root that calls them                                                                       |
+| The hidden-layer pruning          | the root                                                                                                                                                                                                                                                                                                                                                                                                                                            | a `useLayoutEffect` on `layerInertIds` that reads `readSelection()` and sets once, before paint                                                                                                                  |
+| Views that show the selection     | `EditorContextMenuHost` (while a menu is open), `EditorSearchPanel` (`useEditorCommands(open)`, while search is open), `EditorTabDialogs` (while a selection export is open), `ModifierHint` (`selectedKindOf`, the selected element's flavour)                                                                                                                                                                                                     | `useSelectionOf` in the component; a closed one selects `EMPTY_SELECTION`, so it never renders for a change                                                                                                      |
+| The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                 | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx`) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
 
 - The editor root does not read the gesture store (`useElementGestureActive()`, whether a move,
   resize, reshape, stroke or erase is open, is kept for a reader that only asks that), so a pan, zoom
@@ -182,9 +174,6 @@ export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b:
 // ../packages/workbench/src/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
 
-// apps/live/hooks/ui/useStableObject.ts
-export function useStableObject<T extends object>(value: T): T;
-
 // ../packages/workbench/src/components/primitives/withStableEventProps.tsx
 export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P>;
 ```
@@ -237,7 +226,6 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
 | Missing provider throws                               | `useSelectionStore.test.tsx`                                                                            |
 | Event props stable, newest called, presence respected | `useStableEventProps.test.ts`                                                                           |
 | An editor render re-renders nothing in the canvas     | `withStableEventProps.test.tsx`: same data, fresh handlers, inner view renders once                     |
-| Rebuilt objects stable until their data changes       | `useStableObject.test.ts`                                                                               |
 | A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render                      |
 | Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged                            |
 | The chrome follows the selection                      | `e2e/selection-chrome.spec.ts`: pluses, grips, union box, free-arrow frame, delete and undo, tab switch |

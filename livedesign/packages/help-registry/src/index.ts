@@ -100,8 +100,7 @@ export const categories: Category[] = [
   {
     slug: 'pages',
     title: 'Pages',
-    description:
-      'Design logos, wireframes and photos on pages, with backgrounds, presenting and exports.',
+    description: 'Design logos, wireframes and photos on pages, with backgrounds and exports.',
     articleCount: 7,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
@@ -127,8 +126,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
-    articleCount: 8,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, and Isometric.',
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -281,8 +280,7 @@ export const articles: Article[] = [
     title: 'What is livedesign?',
     description:
       'An overview of the real-time, multiplayer editor for logos, wireframes and photos.',
-    keywords:
-      'overview intro introduction about product logos wireframes photos photo editor presenting app',
+    keywords: 'overview intro introduction about product logos wireframes photos photo editor app',
     category: 'About livedesign',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -431,9 +429,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'presenting-well',
-    title: 'Presenting from the Canvas',
-    description: 'Get the most out of Presentation mode and Zen mode.',
-    keywords: 'presentation slideshow demo present fullscreen slides meeting',
+    title: 'Walking People Through Your Work',
+    description:
+      'Show your pages on a call with Zen mode, the laser, the spotlight and follow along.',
+    keywords:
+      'present presenting presentation demo walkthrough screen share screenshare call meeting zen laser spotlight follow point',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -822,7 +822,7 @@ export const articles: Article[] = [
   {
     slug: 'laser',
     title: 'Laser Pointer',
-    description: 'A temporary laser trail for drawing attention while presenting.',
+    description: 'A temporary laser trail for pointing things out on a call or a shared screen.',
     keywords: 'presentation highlight trail point attention presenting red pointer pen glow comet',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
@@ -834,48 +834,6 @@ export const articles: Article[] = [
     keywords: 'dim focus highlight presentation emphasis attention darken',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'slide-deck',
-    title: 'Slide Deck',
-    description: 'Turn your pages into a deck: each slide is a page, presented full screen.',
-    keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'building-a-deck',
-    title: 'Building a Deck',
-    description:
-      'Everything you do to a deck before you present it: slides, order, hiding and notes.',
-    keywords:
-      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenting',
-    title: 'Presenting',
-    description:
-      'What a running deck does: framing, transitions, moving through it, and what a click does.',
-    keywords:
-      'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock screen awake announce screen reader shortcuts dead',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenter-controls',
-    title: "The Presenter's Controls",
-    description:
-      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
-    keywords:
-      'hud controls strip corner position counter slide name jump to slide list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click to advance fill screen actual size show position keep controls visible hide pointer cursor kiosk unattended',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
   },
   {
     slug: 'isometric-mode',
@@ -911,7 +869,7 @@ export const articles: Article[] = [
     description:
       'The palette categories on each kind of page, and what only the search panel adds.',
     keywords:
-      'tools tab category where find text table chart sticky note image write components media data concepts devices icons stickers search panel slide wireframe logo moved',
+      'tools tab category where find text table chart sticky note image write components media data concepts devices icons stickers search panel wireframe logo moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1053,7 +1011,7 @@ export const articles: Article[] = [
     title: 'Frames',
     description: 'A labelled section that draws behind its contents and moves them as one.',
     keywords:
-      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
+      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export framing nest nested centre quick connect plus fill background',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1122,7 +1080,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its More and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide wireframe logo',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind wireframe logo',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1169,7 +1127,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a design from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture presentations search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank logo blank tab blank illustration empty page artboard wireframe phone tablet website laptop watch app logo design photo edit photo editor picture search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1178,7 +1136,7 @@ export const articles: Article[] = [
     slug: 'working-with-pages',
     title: 'Working with Pages',
     description:
-      'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export or present.',
+      'Every tab is a row of pages: add, size, paint, reorder, lock and find them, then export them.',
     keywords:
       'pages page sheet a4 blank page portrait landscape orientation size page size background logo wireframe photo design page kind first page choice navigator next page previous page backgrounds colour color gradient pattern dots grid lines theme dark page name rename duplicate move reorder drag delete add page snap margins margin fit resize scale split into pages contents sidebar find a page lock locked unlock padlock protect freeze read only page lock custom gradient photo background image background picture background photo overlay image overlay wash tint fade upload image title bar layout button background button carry over',
     category: 'Pages',
@@ -1224,18 +1182,17 @@ export const articles: Article[] = [
     description:
       'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page present presentation logo wireframe show me replay rerun settings accessibility photo photos',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page logo wireframe show me replay rerun settings accessibility photo photos',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
   },
   {
     slug: 'exporting-pages',
-    title: 'Exporting and Presenting Pages',
-    description:
-      'Every page or one page as a PDF, PNG or SVG, a logo kit or a photo, and presenting your pages.',
+    title: 'Exporting Pages',
+    description: 'Every page or one page as a PDF, PNG or SVG, a logo kit or a photo.',
     keywords:
-      'export download pdf png svg image zip all pages one page import json print printable pages page pages present presentation slide deck from pages deck button hide in slides show in slides notes logo kit photo jpeg webp psd',
+      'export download pdf png svg image zip all pages one page import json print printable pages page pages logo kit photo jpeg webp psd',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',

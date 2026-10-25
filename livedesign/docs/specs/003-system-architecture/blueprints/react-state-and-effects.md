@@ -104,15 +104,15 @@ export function ViewTransition(props: {
 
 ## Performance and limits
 
-- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move,
-  the start's mode switch), never per keystroke or pointer move.
+- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (the start's
+  mode switch), never per keystroke or pointer move.
 - `use(browser())` costs nothing in the browser; in the prerender it moves the content after hydration, so a site
   above the fold reserves its size (CLS stays 0).
 
 ## Presentation and UX
 
-A browser-only component's fallback is its empty shape (the same box, no content). The start's mode switch and a
-slide move animate as their own specs say; under reduced motion both change at once.
+A browser-only component's fallback is its empty shape (the same box, no content). The start's mode switch
+animates as its own spec says; under reduced motion it changes at once.
 
 ## Accessibility
 
@@ -125,18 +125,17 @@ Fallbacks carry no text. Reduced motion (both sources) starts no View Transition
 
 ## Observability
 
-No new log lines: a refused fullscreen and a Trusted Types violation are logged by their own blueprints.
+No new log lines: a Trusted Types violation is logged by its own blueprint.
 
 ## Testing
 
-| Rule                                     | Test                                                                                             |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback         |
-| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed   |
-| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
-| Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
-| Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node             |
+| Rule                                     | Test                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback       |
+| No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed |
+| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                     |
+| Reduced motion starts no transition      | The mode-switch test stubs `prefersReducedMotion` and asserts no `startTransition` type        |
+| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node           |
 
 ## Constants and configuration
 

@@ -18,7 +18,7 @@ add a sticky. The Participant level is the middle: take part in the design, neve
 
 | Level           | Wire name     | May                                                                                                                                                                                                                                                       |
 | --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment or reaction.                           |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, export. Writes nothing: no comment or reaction.                                                        |
 | **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)). |
 | **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                  |
 
@@ -47,8 +47,7 @@ A Participant changes the design's **content**, never its **shape**.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often carry the layout) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
-- **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
-  no page panel or page actions. Empty states describe
+- **Nothing offers what a session cannot do.** A Participant or Viewer sees no page panel or page actions. Empty states describe
   instead of instructing: a comment thread invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
   on one that has none (a Participant's offers **Add Comment** everywhere).
@@ -74,8 +73,8 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: Sticky and
   Text, then Image. No Search, no More. Each tile works as an Editor's does: dragged onto the
   canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
-- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Format Painter and Slide
-  Deck are an Editor's.
+- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Format Painter is an
+  Editor's.
 
 ## Ownership
 

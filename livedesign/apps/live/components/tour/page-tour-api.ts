@@ -13,6 +13,6 @@ export type PageTourApi = {
 
 export type PageTourStep = TourStepOf<PageTourApi> & {
   // The control a step needs on screen when the tour starts, where its own anchor only appears once the step opens
-  // it (a popover, the page's panel, the Slide Deck): the step is left out without it (spec "Filtering").
+  // it (a popover, the page's panel): the step is left out without it (spec "Filtering").
   requires?: (api: PageTourApi) => string;
 };

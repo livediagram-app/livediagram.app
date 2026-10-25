@@ -19,7 +19,6 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import { SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
 import { ContentsClusterSegment } from './ContentsClusterSegment';
@@ -120,11 +119,6 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/design/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -284,7 +278,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     explorerEl,
     layersEl,
     collaborateEl,
-    slidesPopoverEl,
     contentsPopoverEl,
     photoPanelOffered,
     photoPopoverEl,
@@ -435,7 +428,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
-      {zenMode ? null : slidesPopoverEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
       {photoPopoverEl}
@@ -485,19 +477,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
-          {panelEls['slide-deck']}
         </>
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the mode's own strip (Slides, Plan), the
+          strip, the mode's own strip (Contents, Plan), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/live-app.md). */}
       <div
-        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
-        // as its one way back out, and a deck has its own way out plus no
-        // zoom to offer.
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
@@ -538,11 +526,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onGo={props.pagesMode.focusPage}
               />
             ) : null}
-            {/* Contents and Slides (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): in Pages
-                mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
-                desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
-                the deck has nothing to hold. */}
+            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode, one strip where
+                Layers would be, for every role and on a phone too. */}
             {!zenMode && props.pagesMode ? (
               <PagesClusterStrip
                 contents={
@@ -561,14 +546,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       onTogglePopover={(button) =>
                         handleDockButtonClick('photo-panel', button, true)
                       }
-                    />
-                  ) : null
-                }
-                slides={
-                  !isMobile && !readOnly && props.slideDeck ? (
-                    <SlidesClusterSegment
-                      popoverOpen={activeDockPanel === 'slides'}
-                      onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
                     />
                   ) : null
                 }

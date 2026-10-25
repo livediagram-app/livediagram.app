@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS design (
   tab_kind            TEXT    NULL,
   -- The comment email's throttle (email/notifications.ts).
   comment_notified_at INTEGER NULL,
-  -- The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or NULL for none.
+  -- The slide deck livedesign had until 25 October 2026 (docs/specs/012-collaboration/presentation-mode.md "Saved
+  -- data"): kept, as the schema only ever adds, but never read or written.
   presentation        TEXT    NULL
 );
 

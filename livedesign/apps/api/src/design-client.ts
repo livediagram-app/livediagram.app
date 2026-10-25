@@ -18,7 +18,7 @@ import type {
 import type { Env } from './types';
 
 export type DesignRoomClient = {
-  // The tabs (no bodies), slide deck and what the design knows of itself, for a design read.
+  // The tabs (no bodies) and what the design knows of itself, for a design read.
   outline(): Promise<DesignOutline>;
   // One API request about this design, answered inside its Durable Object by the same handlers as before
   // (design-route.ts), with the caller's identity as the worker resolved it.

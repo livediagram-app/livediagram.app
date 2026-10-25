@@ -361,7 +361,7 @@ export const TAB_WINDOW_USE = chart(
   'UI',
   'Used',
   'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a slide or page.',
+  'A tab opened from a Tab Window showing it, on a page.',
   { types: ['TabWindowOpen'], rising: 'neutral' },
 );
 
@@ -898,12 +898,6 @@ export const NEW_VERSION_OFFERED = opened(
   'New Version Offered',
   'An open editor heard the server serves a newer design format, and offered a reload.',
   (t) => t === 'NewVersionPrompt',
-);
-
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
 );
 
 export const EXPLORER_REASONS_OPENED = opened(

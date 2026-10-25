@@ -43,11 +43,8 @@ export type OfflineDesignRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline designs get
-  // decks for the same reason they get everything else: Offline Mode is the
-  // whole product minus the server, not a reduced one. Optional so records
-  // written before the field existed stay valid.
-  presentation?: string | null;
+  // A record written before 25 October 2026 may still carry the slide deck it had (`presentation`):
+  // nothing reads it (docs/specs/012-collaboration/presentation-mode.md "Saved data").
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars are liveworkspace's index's,
   // on an item an offline design does not have, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
@@ -105,7 +102,6 @@ export function recordToDesign(rec: OfflineDesignRecord): LiveDoc {
     ownerId: OFFLINE_OWNER_ID,
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
-    presentation: rec.presentation ?? null,
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,
@@ -146,9 +142,6 @@ export function applyMeta(
   patch: {
     name?: string;
     tabs?: { id: string; folder?: string }[];
-    // Absent leaves the stored deck alone; null clears it. Same contract as
-    // the server's PUT, so an offline design behaves identically.
-    presentation?: string | null;
   },
   at: number,
 ): OfflineDesignRecord {
@@ -167,7 +160,6 @@ export function applyMeta(
     ...rec,
     name: patch.name ?? rec.name,
     tabs,
-    ...(patch.presentation !== undefined ? { presentation: patch.presentation } : {}),
     savedAt: at,
   };
 }
@@ -331,7 +323,7 @@ export async function offlineCreateDesign(
 
 export async function offlineSaveDesignMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
+  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

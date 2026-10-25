@@ -68,7 +68,6 @@ import {
   PALETTE_USE,
   PANELS_OPENED,
   POWER_USER_OFFER,
-  PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
   SERVER_CRASHES,
@@ -217,7 +216,6 @@ export const LIVEDESIGN: TelemetryAppConfig = {
         SHARING_AND_JOINING,
         SHARE_LINKS_MADE,
         TIMELINE_AND_ACTIVITY,
-        PRESENTATIONS,
       ],
     },
     {
@@ -279,7 +277,7 @@ export const LIVEDESIGN: TelemetryAppConfig = {
   teamwork: {
     key: 'teamwork',
     title: 'Discussion & Teams',
-    intro: 'Comments and teams, beside the presenting on the Dashboard',
+    intro: 'Comments and teams, beside the live sessions on the Dashboard',
     groups: [
       {
         title: 'Discussion and teams',

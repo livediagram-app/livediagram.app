@@ -118,8 +118,8 @@ Every app is a static export, so every component also renders once at build time
 - **A node that carries more than a ref** stays: React event props (a tooltip's trigger), `textContent`, or the
   component's own box are not what a `FragmentInstance` offers.
 - **An event React exposes is listened to through React** (`onFullscreenChange`, `onFullscreenError`) when it fires
-  on an element the component renders. An event that fires on `<html>` or `design` (presenting fullscreens the
-  whole design) is beyond any component's tree, so an effect listens on `design`.
+  on an element the component renders. An event that fires on `<html>` or `design` is beyond any component's tree,
+  so an effect listens on `design`.
 
 ## Out of scope
 

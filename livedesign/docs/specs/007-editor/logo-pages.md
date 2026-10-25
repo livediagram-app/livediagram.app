@@ -193,7 +193,7 @@ The parts, as the tiles name them: **Centre Lines**, **Diagonals**, **Safe Area*
 keyline and inner circles), **Square** and **Grid**.
 
 Guides are a view: never stored, never exported, never in a preview, and not shown in
-zen, presenting or the isometric view, nor to a viewer.
+zen or the isometric view, nor to a viewer.
 
 **Snapping**: on a logo page an element also snaps (as it snaps to every page's edges, centre lines
 and margin) to the **inner circle** and the **keyline square** (their edges and centres), while

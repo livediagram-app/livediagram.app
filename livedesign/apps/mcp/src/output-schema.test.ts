@@ -151,7 +151,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
   {
     tool: 'change_pages',
     output: 'changePagesOutput',
-    args: { designId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'slide-title' }] },
+    args: { designId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'title' }] },
   },
 ];
 

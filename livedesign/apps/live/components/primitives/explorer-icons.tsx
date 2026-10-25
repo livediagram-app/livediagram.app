@@ -23,7 +23,7 @@ import {
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes
-// that borrow from them (tab menu, share dialog, slide deck, team pane).
+// that borrow from them (tab menu, share dialog, team pane).
 //
 // It used to be two files, app/explorer/icons.tsx and
 // components/panels/explorer-icons.tsx, whose comments each said the other

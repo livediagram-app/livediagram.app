@@ -18,8 +18,6 @@ const POPOVER_WIDTH = 256;
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-design/layers.md).
   layers: 352,
-  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
-  slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
   // The Photo panel's 280 px (docs/specs/031-photo/photo-pages.md "The Photo panel").
@@ -28,12 +26,10 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   explorer: 608,
 };
 
-// 'slides': the Slide Deck panel over its cluster button in Pages mode.
 export type DockPanel =
   | 'explorer'
   | 'layers'
   | 'collaborate'
-  | 'slides'
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
   | 'contents'
   // A photo page's Photo panel over its button in the Pages strip (docs/specs/031-photo/photo-pages.md "The Photo panel").
@@ -47,7 +43,6 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
   else if (id === 'contents') track('UI', 'Opened', 'PageContents');
   else if (id === 'photo-panel') track('UI', 'Opened', 'PhotoPanel');
 }

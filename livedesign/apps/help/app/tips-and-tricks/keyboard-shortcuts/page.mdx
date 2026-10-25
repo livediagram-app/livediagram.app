@@ -22,7 +22,7 @@ The most useful canvas-tool keys are:
 - `V` to **Select** (the default on desktop), with `S` kept working as a legacy alias where the [palette strip](/help/palette/toolbar-layout/)'s **Search** isn't shown; where it is, `S` opens Search.
 - `H` for the **Hand** (pan) tool, the default on touch viewports.
 - `F` to draw a **Frame**, the section backdrop that carries what you draw inside it.
-- `K` for the **Laser** pointer, for drawing attention while you present.
+- `K` for the **Laser** pointer, for drawing attention while you share your screen.
 - `Z` to toggle [Zen mode](/help/tools/zen-mode/) on and off. `Escape` exits it too, once nothing is selected (the first press clears the selection).
 
 One more switches mode rather than tool, and has an article of its own: `I` for [Isometric mode](/help/selection-modes/isometric-mode/) (hold Shift and drag to rotate its camera).
@@ -134,22 +134,6 @@ Shift is the editor's power modifier. While you hold it, a small hint bar near t
 - **Shift-drag a selected arrow's head** splits a branch off its line, one trunk pointing at several targets. See [Arrows](/help/palette/arrows/).
 - **Shift + arrow keys** nudge the selection in big (10px) steps.
 
-## While presenting
-
-A running [slide deck](/help/selection-modes/slide-deck/) has its own set, and only its own set: the editor's shortcuts are switched off for the duration, so a stray `R` cannot drop a rectangle onto the canvas behind the slide.
-
-| Keys                                           | Does                                                                      |
-| ---------------------------------------------- | ------------------------------------------------------------------------- |
-| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                                                                |
-| `←` or `Page Up`                               | Previous slide                                                            |
-| `Home` / `End`                                 | Jump to the first or last slide                                           |
-| `G`                                            | Open the jump-to-slide list                                               |
-| `N`                                            | Show or hide presenter notes (on a slide that has them)                   |
-| `L` / `S`                                      | Arm the laser / the spotlight                                             |
-| `Esc`                                          | Close what's open (jump list, notes, settings), or leave the presentation |
-
-A click on empty slide advances; a click on an element that carries a note or comments opens them instead. Click-to-advance can be switched off in the deck's settings, and it pauses while the laser or spotlight is armed, so a click points rather than turns the page.
-
 ## Turning shortcuts off
 
 Shortcuts are handy, but they are not for everyone: if you dictate into the browser, or share it with something that needs the keys, they get in the way. You can switch them off with the **Keyboard Shortcuts** switch at the top of the **Keyboard** category in **Settings**: open **Settings** from the gear in the editor's bottom bar, pick **Keyboard**, and flip the switch.
@@ -158,7 +142,7 @@ Shortcuts are handy, but they are not for everyone: if you dictate into the brow
   <ShortcutsToggle />
 </Figure>
 
-Turning them off switches off the editor's shortcuts, not just the single letters: the tool keys, `Delete`, `Escape`, and the chords such as `⌘Z` and `⌘C` all stop, and the browser's own behaviour for those keys comes back. A few keep working because they are part of how the canvas or a presentation is driven rather than shortcuts: pasting with `⌘V` (it goes through the browser's own paste), `Space` + drag to pan, holding `⌘` to show the palette's badges, and the slide keys while presenting. Use the on-screen controls (undo and redo sit in the bottom-right corner) while they are off. This choice is saved in your browser and, unlike most preferences, deliberately stays per device rather than following you across sign-in: that way you can keep shortcuts on where you have a full keyboard and off on a device where you don't.
+Turning them off switches off the editor's shortcuts, not just the single letters: the tool keys, `Delete`, `Escape`, and the chords such as `⌘Z` and `⌘C` all stop, and the browser's own behaviour for those keys comes back. A few keep working because they are part of how the canvas is driven rather than shortcuts: pasting with `⌘V` (it goes through the browser's own paste), `Space` + drag to pan, and holding `⌘` to show the palette's badges. Use the on-screen controls (undo and redo sit in the bottom-right corner) while they are off. This choice is saved in your browser and, unlike most preferences, deliberately stays per device rather than following you across sign-in: that way you can keep shortcuts on where you have a full keyboard and off on a device where you don't.
 
 The editor is also careful about context: even with shortcuts on, typing into a text label or an input never triggers a tool key. A `z` typed into a label is just a `z`, never a jump into Zen mode.
 

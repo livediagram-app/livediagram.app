@@ -4,7 +4,7 @@ A **photo page** is one of the kinds of page ([Pages](../007-editor/pages-mode.m
 a picture to edit. It holds a **photo**: a stack of layers of pixels, adjustments and text, composited into one
 picture the size of the page. It is edited with the tools an image editor has (brushes, selections, retouching,
 gradients, transforms, adjustments and filters) on the page itself, with everything else Pages offers around it:
-the row of pages, ordinary elements on top, presenting, exports and real-time collaboration.
+the row of pages, ordinary elements on top, exports and real-time collaboration.
 
 Everything [Pages](../007-editor/pages-mode.md) says of pages applies to a photo page except where this
 spec says otherwise. The layer stack is [Photo layers](photo-layers.md), the tools [Photo tools](photo-tools.md),
@@ -302,7 +302,7 @@ a Participant or a Viewer.
 
 ## Exports and other views
 
-- **The composite is the page.** Every export of the page (PNG, JPEG, PDF, the page images, presenting,
+- **The composite is the page.** Every export of the page (PNG, JPEG, PDF, the page images,
   share-link previews, the Explorer thumbnail) draws the composite at the page's place, then the
   elements on top. The PNG of a photo page is exported at its **pixel size** by default (Export's scale **Actual
   Pixels**), and offers the usual scales beside it.

@@ -10,7 +10,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { pageElementBuckets } from './page-element-buckets';
-import { slideThumbFor, tabArrowLabels } from './slide-thumb';
+import { pageThumbFor, tabArrowLabels } from './page-thumb';
 
 // docs/specs/007-editor/pages-mode.md "Contents" "Cost": each page's picture draws from its own
 // elements, found in one walk, and draws exactly what the whole tab would.
@@ -96,10 +96,9 @@ describe('pageElementBuckets', () => {
     const buckets = pageElementBuckets(tab.elements, laid);
     const labels = tabArrowLabels(tab);
     for (const page of laid) {
-      const slide = { id: `c-${page.id}`, tabId: tab.id, elementIds: [], pageId: page.id };
-      const whole = slideThumbFor(slide, tab, { iconsLoaded: false, labels });
-      const own = slideThumbFor(
-        slide,
+      const whole = pageThumbFor(page.id, tab, { iconsLoaded: false, labels });
+      const own = pageThumbFor(
+        page.id,
         { ...tab, elements: buckets.get(page.id)! },
         { iconsLoaded: false, labels },
       );

@@ -35,9 +35,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   sharing: '#0284c7',
   'zen-mode': '#475569',
   // The last cards
-  'building-a-deck': '#0ea5e9',
-  presenting: '#6366f1',
-  'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
   'auto-align': '#22c55e',
@@ -60,7 +57,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'style-presets': '#e11d48',
   'layout-cleanup': '#2563eb',
   // Palette → Selection Modes
-  'slide-deck': '#0ea5e9',
   select: '#0ea5e9',
   hand: '#0891b2',
   eraser: '#f43f5e',

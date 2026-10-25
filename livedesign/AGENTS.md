@@ -1,7 +1,7 @@
 # livedesign
 
-Monorepo for the livedesign product: a collaborative editor for logos, wireframes and photos, made as pages and
-presented from the Slides view. Multiple apps share code through internal packages.
+Monorepo for the livedesign product: a collaborative editor for logos, wireframes and photos, made as pages.
+Multiple apps share code through internal packages.
 
 ## Before you start
 
@@ -191,7 +191,8 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
   (`packages/design/src/design-naming.test.ts` enforces it). The DOM's `document` and the flowchart shape `document`
   keep their names.
 - **Page kind** is what a page is: logo, wireframe or photo (`PageKind`). Every page of a tab is of one kind, its first page's. livedesign
-  has no slide, article or infographic pages; presenting is the Slides view stepping through any tab's pages.
+  has no slide, article or infographic pages, and no slide deck or presenting (removed 25 October 2026,
+  [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)).
 - **Template** is what a design was made from: a Logos, Photos or Wireframes template or a page layout, never a kind.
 - **This Browser** names a design saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 

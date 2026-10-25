@@ -61,7 +61,7 @@ The kit lives in `apps/mcp/eval/`:
     (a field name, a page line it could not parse, a miscount in the prompt's own arithmetic).
 16. Cross-test the bank after changing checks: run each task's checks on every other task's snapshot. A check that
     passes on unrelated output (or on none) is vacuous: make it require the thing it is about.
-17. A task that needs something to exist first (a deck to fill, a design to edit) makes it in `setup`, and answers
+17. A task that needs something to exist first (a page to fill, a design to edit) makes it in `setup`, and answers
     the ids of what it made so the snapshot reads them too.
 
 ## Act on the findings

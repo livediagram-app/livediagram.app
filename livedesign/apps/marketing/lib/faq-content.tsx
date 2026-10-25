@@ -36,7 +36,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livedesign?',
-        a: 'A free, real-time editor for designing on pages: logos on a square artboard, wireframes framed by their device and photos edited in layers, presented page by page or exported as PDF, PNG or SVG. Every design is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
+        a: 'A free, real-time editor for designing on pages: logos on a square artboard, wireframes framed by their device and photos edited in layers, exported as PDF, PNG or SVG. Every design is a stack of tabs, each holding its pages, and your team can work on any of them with you live.',
       },
       {
         q: 'Do I need an account to use livedesign?',
@@ -61,12 +61,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor. Small phone screens are best for reading, presenting and
+            gives you the full editor. Small phone screens are best for reading, following along and
             light edits. See <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, presenting and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor. Small phone screens are best for reading, following along and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -140,29 +140,29 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'creating',
     title: 'Creating',
-    blurb: 'Logos, wireframes, photos and presenting them.',
+    blurb: 'Logos, wireframes, photos and showing them off.',
     icon: lucideGlyph(lucideShapes, ICON),
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device, and photos edited in layers. Pages hold shapes, text, pictures, icons, tables and charts, and every page can be presented full screen.',
+        a: 'Logos, wordmarks and brand marks, and wireframes for phone, tablet, watch and web apps and websites, each framed by its device, and photos edited in layers. Pages hold shapes, text, pictures, icons, tables and charts, and every page exports as a PDF, PNG or SVG.',
       },
       {
         q: 'How many templates and themes are there?',
         a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a logo page starts from one of ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
       },
       {
-        q: 'Can I present my pages?',
+        q: 'Can I walk people through a design?',
         a: (
           <>
-            Yes. Every page, from any tab, presents full screen in the order you set. Each page can
-            carry presenter notes and a time budget, and a laser pointer and spotlight help you
-            guide the room. Presenting happens on your screen only, so collaborators carry on
-            working. See <a href="/help/selection-modes/slide-deck/presenting/">presenting</a>.
+            Yes. Share your screen, or the design itself, and point with the laser: a glowing trail
+            everyone in the design can see. Spotlight dims the page round your cursor so one thing
+            stands out, Zen mode hides the toolbars and panels, and a teammate can follow your view
+            as you move. See <a href="/help/selection-modes/laser/">the laser</a>.
           </>
         ),
         aText:
-          'Yes. Every page, from any tab, presents full screen in the order you set. Each page can carry presenter notes and a time budget, and a laser pointer and spotlight help you guide the room. Presenting happens on your screen only, so collaborators carry on working. See presenting.',
+          'Yes. Share your screen, or the design itself, and point with the laser: a glowing trail everyone in the design can see. Spotlight dims the page round your cursor so one thing stands out, Zen mode hides the toolbars and panels, and a teammate can follow your view as you move. See the laser.',
       },
       {
         q: 'Can I design a logo?',

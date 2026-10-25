@@ -51,9 +51,6 @@ export type { PageEdits };
 
 export type PagesModeView = {
   pages: LaidOutPage[];
-  // The whole row, when `pages` shows only some of it (a page slide presenting): a design's
-  // writing is laid out across all of its pages whichever of them are shown.
-  rowPages?: LaidOutPage[];
   // Frames one page in the view (its label's press).
   focusPage: (pageId: string) => void;
   // Fit (the zoom cluster's, Shift+1) in Pages: frames the page nearest the middle of what shows
@@ -83,20 +80,6 @@ export type PagesModeView = {
   photo?: PhotoEditorView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
-  // A page's place in the slide deck (PageDeckButton), composed in by the editor; absent
-  // where the deck cannot be changed.
-  deck?: PageDeckControls;
-  // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
-  letterbox?: boolean;
-};
-
-export type PageDeckControls = {
-  // The deck's slide of this page (on this tab), if it has one.
-  slideOf: (pageId: string) => { id: string; hidden: boolean; notes: string } | undefined;
-  add: (pageId: string) => void;
-  toggleHidden: (slideId: string) => void;
-  // The slide's speaker notes, as the Slide Deck panel writes them (an empty string removes them).
-  setNotes: (slideId: string, notes: string) => void;
 };
 
 export function usePagesMode(deps: {
@@ -111,9 +94,6 @@ export function usePagesMode(deps: {
   getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
-  // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
-  // open) another.
-  framePageRef?: RefObject<((pageId: string) => void) | null>;
   // Given the landing framing, so the fit on landing
   // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
   // whole row of pages.
@@ -122,7 +102,7 @@ export function usePagesMode(deps: {
   // in this browser (useLastPage); without either, landing frames the first page.
   designId?: string;
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
-  // The view is not this person's to snap onto a page: following someone, or presenting.
+  // The view is not this person's to snap onto a page: following someone.
   snapSuspended?: () => boolean;
 }): PagesModeView {
   const { activeTab, canEdit, tabLoaded, commitTabs } = deps;
@@ -297,15 +277,6 @@ export function usePagesMode(deps: {
     const raf = requestAnimationFrame(() => goToLanded());
     return () => cancelAnimationFrame(raf);
   }, [landed]);
-
-  const { framePageRef } = deps;
-  useEffect(() => {
-    if (!framePageRef) return;
-    framePageRef.current = setGoTo;
-    return () => {
-      framePageRef.current = null;
-    };
-  }, [framePageRef]);
 
   const focusPage = (pageId: string) => {
     const page = pages.find((p) => p.id === pageId);

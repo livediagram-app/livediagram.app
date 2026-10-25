@@ -29,7 +29,7 @@ from browsers and code editors: drag the tab to where you want it.
 - **No quick style panel.** The [quick style panel](../008-canvas/quick-style-panel.md) stands down
   while a split shows: half a window has no room for it beside the selection. Every style stays in
   the element's menu.
-- **Steps aside, is kept.** Zen mode, embeds and presenting hide the split; leaving them brings it
+- **Steps aside, is kept.** Zen mode and embeds hide the split; leaving them brings it
   back. A window that becomes too narrow hides it the same way.
 - **Per browser.** The split is remembered on this device, per design. It is not shared with
   collaborators and not part of the design.

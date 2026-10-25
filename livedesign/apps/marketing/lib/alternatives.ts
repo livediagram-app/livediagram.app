@@ -61,7 +61,7 @@ const LIST: Alternative[] = [
       'Logo pages with construction guides, Mirror drawing, 25 logo layouts and a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon in one .zip.',
       'Wireframe pages that draw the phone, tablet, browser, laptop or watch round the screen, starting from ready-made screens.',
       'A layered photo editor on the page: masks, blend modes, adjustments, 44 filters, selection and retouching tools, and PSD in and out.',
-      'Present any page full screen with notes, a timer, a laser pointer and a spotlight, on your screen only.',
+      'A laser pointer, a spotlight and Zen mode for walking people through a design, live.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
       '15 templates to start from, from a logo design to app and website wireframes and a photo to edit.',

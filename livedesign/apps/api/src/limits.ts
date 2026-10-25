@@ -68,12 +68,6 @@ export class TabTooLargeError extends Error {
 // NAME_MAX_LENGTH instead (names.ts, docs/specs/006-design/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A design's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
-// element copies, so a deck stays tiny however large the design is: a few
-// hundred bytes per slide. 256KB is roughly a thousand slides and exists to
-// bound a hostile payload, not to constrain any real deck.
-export const MAX_DECK_LEN = 256 * 1024;
-
 // The client-claimed design-write key relayed on presence. Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.

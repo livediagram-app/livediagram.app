@@ -12,7 +12,6 @@ import {
 import { lucideGlyph, EDITOR_MODE_ICONS } from '@livedesign/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
 import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (one per panel under Panels, one per mode under Editor, Notifications and
@@ -30,14 +29,7 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  | 'pages'
-  | 'presenting'
-  | 'layers'
-  | 'map'
-  | 'collaborate'
-  | 'quickStyle'
-  | 'notifications'
-  | 'tokens';
+  'pages' | 'layers' | 'map' | 'collaborate' | 'quickStyle' | 'notifications' | 'tokens';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -70,7 +62,6 @@ const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
 const PagesSubGlyph = EDITOR_MODE_ICONS.pages;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   pages: () => <PagesSubGlyph size={16} />,
-  presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,

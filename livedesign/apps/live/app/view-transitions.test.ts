@@ -19,14 +19,10 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep the slide moves with the canvas', () => {
+  // The slide moves were the only ones, and left with slide decks (docs/specs/012-collaboration/presentation-mode.md).
+  it('have no surface classes left', () => {
     expect([...classesIn(globals)]).toEqual([]);
-    expect([...classesIn(canvasMotion)].sort()).toEqual([
-      'slide-back',
-      'slide-fade',
-      'slide-forward',
-      'slide-in',
-    ]);
+    expect([...classesIn(canvasMotion)]).toEqual([]);
   });
 
   it('are started only through React, never document.startViewTransition', () => {

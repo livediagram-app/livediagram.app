@@ -29,19 +29,19 @@ The `ShareLink` DTO has `tabId: string | null`, and `SharedWithItem` has `tabId:
 
 A scoped link grants its role **on its tab only**. The worker enforces this in one place, the design access resolution: it answers not just "may this caller read/edit" but "with what tab scope". Every route applies the scope:
 
-| Door                                                        | Scoped visitor gets                                                                                                                                                          |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/share/:code`                                      | `{ design, role, tabId }`, with the design redacted (see [Redaction](#redaction)).                                                                                           |
-| `GET /api/designs/:id`                                      | The same redacted design.                                                                                                                                                    |
-| `PUT /api/designs/:id` (rename, reorder, tab folders, deck) | 403. The design's structure isn't theirs to change.                                                                                                                          |
-| `GET/PUT/DELETE /api/designs/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
-| Comment `POST`/`DELETE`                                     | Their tab only; otherwise 404.                                                                                                                                               |
-| `POST /api/designs/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
-| The design's preview (`GET /api/previews/items/:id`)        | Their tab's image, not the first tab's: the index names the link's tab to liveworkspace's previews.                                                                          |
-| `GET /api/images/:id?d=`                                    | Only images referenced by their tab.                                                                                                                                         |
-| Design timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
-| `GET /api/share/:code/image.svg`                            | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
-| Room ticket / WS upgrade                                    | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
+| Door                                                  | Scoped visitor gets                                                                                                                                                          |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/share/:code`                                | `{ design, role, tabId }`, with the design redacted (see [Redaction](#redaction)).                                                                                           |
+| `GET /api/designs/:id`                                | The same redacted design.                                                                                                                                                    |
+| `PUT /api/designs/:id` (rename, reorder, tab folders) | 403. The design's structure isn't theirs to change.                                                                                                                          |
+| `GET/PUT/DELETE /api/designs/:id/tabs/:tabId`         | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
+| Comment `POST`/`DELETE`                               | Their tab only; otherwise 404.                                                                                                                                               |
+| `POST /api/designs/:id/copy`                          | A copy holding **only their tab**.                                                                                                                                           |
+| The design's preview (`GET /api/previews/items/:id`)  | Their tab's image, not the first tab's: the index names the link's tab to liveworkspace's previews.                                                                          |
+| `GET /api/images/:id?d=`                              | Only images referenced by their tab.                                                                                                                                         |
+| Design timeline feed                                  | Refused: it spans every tab.                                                                                                                                                 |
+| `GET /api/share/:code/image.svg`                      | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
+| Room ticket / WS upgrade                              | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
 
 Holding several links is never merged: each request is judged on the code it carries.
 
@@ -54,7 +54,6 @@ A scoped link is only valid while its tab is still in the design. Deleting that 
 A scoped visitor's copy of the design:
 
 - `tabs`: every tab keeps its `id` and `orderIndex`, so the bar can draw it in place. The other tabs carry `name: ''`, no `folder`, `updatedAt: 0` and `outOfScope: true`. (Not `locked`: `Tab.locked` is the existing user-toggled read-only lock, a different thing.) Their tab is unchanged.
-- `presentation`: `null`. A slide deck spans tabs.
 - The design's name, owner name and colour stay: the visitor sees those when resolving any link.
 
 ### Shared with you and the Inbox
@@ -94,7 +93,7 @@ A session's scope and code come from its room ticket, minted a moment before the
 
 - A scoped visitor lands **on their tab**, whatever tab the design last had open.
 - Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The hover card reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
-- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete and lock too), drag-reordering, tab folders, design rename, and the slide deck (picking it says "The slide deck isn't shared with you").
+- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete and lock too), drag-reordering, tab folders and design rename.
 - An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.
 

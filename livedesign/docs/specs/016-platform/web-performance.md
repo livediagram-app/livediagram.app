@@ -51,7 +51,7 @@ Next renders the root not-found slot inside the layout, so its code is part of e
 ### A surface that is not on screen loads when it is
 
 A dialog, panel or view that renders only behind an open flag or a tab is loaded with
-`next/dynamic` (`ssr: false`), the way the editor's presentation overlay already is.
+`next/dynamic` (`ssr: false`), the way the editor's own on-demand surfaces are (below).
 The Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
 this way. Where switching to one must stay instant, its code is fetched once the page is idle
 (the telemetry dashboard).
@@ -64,11 +64,8 @@ this way. Where switching to one must stay instant, its code is fetched once the
 - **Content a board may draw on open**: the pages and their writing, and tables. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the design
   request, so a design that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
-  then kept, so their state survives), search, the quick style panel, the tool panels and presenting. Fetched once the opened design has rendered and the page is idle.
+  then kept, so their state survives), search, the quick style panel and the tool panels. Fetched once the opened design has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
-- **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
-  the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
-  listen from its first frame.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
 - `apps/live/app/design/[id]/design-lazy-load.test.ts` fails if any of these become static

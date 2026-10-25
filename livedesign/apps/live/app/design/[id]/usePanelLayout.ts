@@ -19,7 +19,6 @@ export function usePanelLayout() {
   const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the same.
   const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
-  const [slideDeckPanelPosition, setSlideDeckPanelPosition] = useState<Pos | null>(null);
   // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all the chrome (header, tab
@@ -38,8 +37,6 @@ export function usePanelLayout() {
     setSpotlightPanelPosition,
     eraserPanelPosition,
     setEraserPanelPosition,
-    slideDeckPanelPosition,
-    setSlideDeckPanelPosition,
     formatPanelPosition,
     setFormatPanelPosition,
     zenMode,

@@ -25,7 +25,7 @@ blocks on a network round-trip at boot.
   every liveworkspace app shares (`ALL_SETTING_KEYS` in
   `@liveworkspace/settings`: privacy, motion, notifications, the chrome's
   scale and opacity, power user mode, your own swatches, and the editor
-  settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover, Pages' Contents and Presenting), and livedesign's
+  settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Pages' Contents), and livedesign's
   own for every other key. The api joins the two on a read
   (`joinSettings`) and splits a change between them on a write
   (`splitSettings`), so the editor sees one flat set. A shared key changed
@@ -67,8 +67,8 @@ blocks on a network round-trip at boot.
     keys whose value differs from what the server last held (the set
     fetched at load, then each save it confirmed), each with its whole
     value, and `null` for a key removed. The accounts Worker replaces a
-    value rather than merging into it, so an object such as
-    `presentation` is always sent entire. Another app or tab changing
+    value rather than merging into it, so an object value is
+    always sent entire. Another app or tab changing
     other keys meanwhile keeps its change.
   - **Changes close together are one save.** A save waits
     `PREFERENCES_SAVE_DEBOUNCE_MS` (400 ms) after the last change: a
@@ -246,9 +246,8 @@ type UserPreferences = {
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
-  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
-  // browser kept before they followed the account, else the defaults.
+  // DEAD (docs/specs/012-collaboration/presentation-mode.md): the presenter settings of the retired presentation
+  // mode. Nothing reads or writes this; a stored value is ignored and left in place.
   presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the design's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -455,10 +454,6 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
-
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
@@ -535,8 +530,7 @@ and the dialog stays as the one complete, browsable index of them.
   readout nested under it while the mode is on; with the sub-categories
   **Pages** (a **Pages**
   section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
-  nested under it) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
-  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  nested under it)), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
@@ -568,7 +562,7 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds **Pages** (Contents and the logo guides) and **Presenting** (the presenter settings); the
+  spec). **Editor** holds **Pages** (Contents and the logo guides); the
   settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach arrows, middle-mouse pan
   and power user mode) stay on Editor itself. A category with no rows is never shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
@@ -716,7 +710,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Slides, Contents, Style and
+  Settings and theme, and the bottom-right cluster's (Contents, Style and
   the rest) on a desktop wide enough for them ([Live app](live-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

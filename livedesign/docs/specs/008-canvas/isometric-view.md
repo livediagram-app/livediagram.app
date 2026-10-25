@@ -3,7 +3,7 @@
 A **canvas tool**, in the picker beside Select / Hand / Laser, that renders the
 current tab as an **isometric scene with depth** — the flat canvas tilted
 onto an isometric plane, each shape extruded into a raised block. It's a way
-to _look_ at a canvas (architecture decks, system maps, screenshots), not a
+to _look_ at a canvas (architecture overviews, system maps, screenshots), not a
 way to edit one.
 
 ## What it does
@@ -78,8 +78,7 @@ Available to everyone, including view-only visitors (looking is read-only).
 
 - **Tool dropdown** in the palette (its own isometric-cube icon).
   The picker is grouped with menu dividers: editing tools (Select / Hand /
-  Format), then presenter tools (Laser / Spotlight / Slide
-  Deck), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
+  Format), then pointing tools (Laser / Spotlight), then the view modes (Isometric, then Zen) at the end. Selecting it switches the cursor mode the same way Select /
   Hand / Laser do.
 - **Keyboard:** `I` selects it (free letter; `V` / `H` / `K` are the
   other view tools, `Z` zen). Obeys the per-device keyboard-shortcuts toggle and the

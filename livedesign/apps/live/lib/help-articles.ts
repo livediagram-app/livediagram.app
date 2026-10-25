@@ -37,7 +37,6 @@ export const HELP_ARTICLES = {
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -163,10 +162,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
   },
-  slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your design.',
-  },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
     description: 'Drive your designs from Claude, Cursor, and other AI tools over MCP.',
@@ -285,7 +280,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   tabWindows: {
     title: 'Learn about tab windows',
-    description: 'Show another tab live on a slide, and keep it up to date.',
+    description: 'Show another tab live on a page, and keep it up to date.',
   },
   conceptGraphics: {
     title: 'Learn about concept graphics',
