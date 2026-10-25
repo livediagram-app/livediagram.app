@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -9,7 +9,14 @@ import { describe, expect, it } from 'vitest';
 // with a bare (light-mode) `text-slate-400` (or `!text-slate-400`); a variant (`dark:`, `placeholder:`) is not matched.
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const DIRS = ['app', 'components', 'hooks', 'lib'];
+const DIRS = [
+  'app',
+  'components',
+  'hooks',
+  'lib',
+  // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
+  '../../../packages/workbench/src',
+];
 // One class string: '...', "..." or `...` on one line.
 const CLASS_STRING = /(['"`])((?:(?!\1).)*?)\1/g;
 const LIGHT_SLATE_400 = /(?<![\w:!-])!?text-slate-400\b/;
@@ -28,7 +35,7 @@ describe('small labels read at AA', () => {
     const offenders: string[] = [];
     for (const dir of DIRS)
       for (const file of sources(join(ROOT, dir))) {
-        const rel = file.slice(ROOT.length);
+        const rel = relative(ROOT, file);
         readFileSync(file, 'utf8')
           .split('\n')
           .forEach((line, i) => {

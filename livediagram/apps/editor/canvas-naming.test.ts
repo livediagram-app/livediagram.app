@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -9,7 +9,15 @@ import { describe, expect, it } from 'vitest';
 // "New Document" doesn't creep back in. The flowchart Document shape is a shape, not an item, and keeps its name.
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const DIRS = ['app', 'components', 'hooks', 'lib', 'src'];
+const DIRS = [
+  'app',
+  'components',
+  'hooks',
+  'lib',
+  'src',
+  // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
+  '../../../packages/workbench/src',
+];
 const OLD_COPY = [
   /\b(?:New|Share|Delete|Rename|Sync|Open|Current|Duplicate|Existing|Your|This|My|Recent|Team|Community) Documents?\b/,
   /\bAdd to Documents?\b/,
@@ -32,7 +40,7 @@ describe('items are canvases in copy', () => {
     const offenders: string[] = [];
     for (const dir of DIRS)
       for (const file of sources(join(ROOT, dir))) {
-        const rel = file.slice(ROOT.length);
+        const rel = relative(ROOT, file);
         readFileSync(file, 'utf8')
           .split('\n')
           .forEach((line, i) => {

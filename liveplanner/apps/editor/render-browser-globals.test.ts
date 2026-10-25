@@ -45,7 +45,10 @@ function sources(dir: string, out: string[] = []): string[] {
 }
 
 // The shared design system (@liveworkspace/ui) renders here too, so its hooks are held to the rule as well.
-const files = ['apps', 'packages', '../packages/ui/src'].flatMap((d) => sources(`${repo}${d}`));
+// So is the editor code every editor shares (@liveworkspace/workbench).
+const files = ['apps', 'packages', '../packages/ui/src', '../packages/workbench/src'].flatMap((d) =>
+  sources(`${repo}${d}`),
+);
 const rel = (path: string) => path.slice(repo.length);
 
 describe('browser globals in components', () => {

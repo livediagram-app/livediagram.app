@@ -25,7 +25,14 @@ describe('View Transitions', () => {
   });
 
   it('are started only through React, never document.startViewTransition', () => {
-    const roots = ['../app', '../components', '../hooks', '../lib'].map(here);
+    // With the editor code every editor shares (@liveworkspace/workbench).
+    const roots = [
+      '../app',
+      '../components',
+      '../hooks',
+      '../lib',
+      '../../../../packages/workbench/src',
+    ].map(here);
     const offenders: string[] = [];
     const walk = (dir: string) => {
       for (const name of readdirSync(dir)) {

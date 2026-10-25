@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -10,7 +10,14 @@ import { describe, expect, it } from 'vitest';
 // the enclosing block after it.
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const DIRS = ['app', 'components', 'hooks', 'lib'];
+const DIRS = [
+  'app',
+  'components',
+  'hooks',
+  'lib',
+  // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
+  '../../../packages/workbench/src',
+];
 // A call whose first argument is an updater: commit(), commitTabs(), drawCommit(), rawCommitTabs(), tickTabs(), and
 // every setState-shaped setter (setHistory(), setPos(), ...); never a timer's callback (setTimeout, setInterval).
 const CALL =
@@ -80,7 +87,7 @@ describe('a handler decides before it commits', () => {
     for (const dir of DIRS)
       for (const file of sources(join(ROOT, dir)))
         for (const f of updaterFlags(readFileSync(file, 'utf8')))
-          offenders.push(`${file.slice(ROOT.length)}:${f.line}: ${f.name}`);
+          offenders.push(`${relative(ROOT, file)}:${f.line}: ${f.name}`);
     expect(offenders).toEqual([]);
   });
 });

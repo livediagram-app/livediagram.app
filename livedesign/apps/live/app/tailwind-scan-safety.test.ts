@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // Tailwind's scanner reads whole FILES, not just the parts that are markup. Any
@@ -25,6 +25,8 @@ import { describe, expect, it } from 'vitest';
 // (It found exactly that on its first run.)
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
+// The editor code every editor shares (@liveworkspace/workbench), which app/globals.css points Tailwind at too.
+const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
 
 // Everything Tailwind is pointed at. Build output is excluded: it CONTAINS the
 // compiled result, so scanning it would report the rule we are preventing.
@@ -54,7 +56,7 @@ const PLACEHOLDER_CLASS = new RegExp(
 );
 
 describe('no placeholder class names anywhere Tailwind can see them', () => {
-  const files = sourceFiles(ROOT);
+  const files = [ROOT, WORKBENCH].flatMap((dir) => sourceFiles(dir));
 
   it('scans a real tree (guard against this test going blind)', () => {
     expect(files.length).toBeGreaterThan(200);
@@ -67,7 +69,7 @@ describe('no placeholder class names anywhere Tailwind can see them', () => {
         .split('\n')
         .forEach((line, i) => {
           if (PLACEHOLDER_CLASS.test(line)) {
-            offenders.push(`${file.slice(ROOT.length)}:${i + 1}  ${line.trim().slice(0, 100)}`);
+            offenders.push(`${relative(ROOT, file)}:${i + 1}  ${line.trim().slice(0, 100)}`);
           }
         });
     }

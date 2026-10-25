@@ -37,6 +37,16 @@ describe('the api client fetch funnel', () => {
     expect(offenders).toEqual([]);
   });
 
+  // The api modules every editor shares (@liveworkspace/workbench/lib/api) go through the funnel too.
+  it('routes the shared api modules through apiFetch too', () => {
+    const dir = fileURLToPath(
+      new URL('../../../../../packages/workbench/src/lib/api', import.meta.url),
+    );
+    const shared = readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'));
+    expect(shared.length).toBeGreaterThan(0);
+    expect(shared.filter((f) => BARE_FETCH.test(readFileSync(`${dir}/${f}`, 'utf8')))).toEqual([]);
+  });
+
   it('confirms core.ts is the one module that calls fetch', () => {
     expect(readFileSync(`${API_DIR}/core.ts`, 'utf8')).toMatch(BARE_FETCH);
   });

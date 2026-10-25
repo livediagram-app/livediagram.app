@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -11,7 +11,14 @@ import { describe, expect, it } from 'vitest';
 // reader, and outside tests.
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
-const DIRS = ['app', 'components', 'hooks', 'lib'];
+const DIRS = [
+  'app',
+  'components',
+  'hooks',
+  'lib',
+  // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
+  '../../../packages/workbench/src',
+];
 const COUNT_IN_BRACKETS = / \(\$\{[^}]*(\.length|\bcount\b|\btotal\b)[^}]*\}\)/;
 
 function* sources(dir: string): Generator<string> {
@@ -31,7 +38,7 @@ describe('counts are badges', () => {
           .split('\n')
           .forEach((line, i) => {
             if (COUNT_IN_BRACKETS.test(line) && !/aria-label|ariaLabel/.test(line))
-              offenders.push(`${file.slice(ROOT.length)}:${i + 1}: ${line.trim()}`);
+              offenders.push(`${relative(ROOT, file)}:${i + 1}: ${line.trim()}`);
           });
       }
     expect(offenders).toEqual([]);

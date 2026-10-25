@@ -111,6 +111,8 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
 const SOURCES = ['apps', 'packages']
   .flatMap((top) => readdirSync(`${REPO}${top}`).map((name) => `${REPO}${top}/${name}`))
   .filter((dir) => statSync(dir).isDirectory())
+  // The editor code every editor shares (@liveworkspace/workbench), which this product's editor renders too.
+  .concat(`${REPO}../packages/workbench/src`)
   .flatMap((dir) => sourceFiles(dir))
   .map((path) => ({ path, text: readFileSync(path, 'utf8') }));
 

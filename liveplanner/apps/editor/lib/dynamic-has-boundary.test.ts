@@ -15,6 +15,8 @@ import { describe, expect, it } from 'vitest';
 // for its null fallback. Every lazy piece here is client-state-gated in a static export, so
 // `ssr: false` (a boundary with a null fallback) costs nothing.
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
+// The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
+const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
@@ -54,7 +56,7 @@ function dynamicCalls(src: string): string[] {
 describe('next/dynamic imports', () => {
   it('each carry their own Suspense boundary (ssr: false or a loading component)', () => {
     const offenders: string[] = [];
-    for (const file of sourceFiles(ROOT)) {
+    for (const file of [ROOT, WORKBENCH].flatMap((dir) => sourceFiles(dir))) {
       const src = readFileSync(file, 'utf8');
       if (!src.includes("from 'next/dynamic'")) continue;
       for (const call of dynamicCalls(src)) {

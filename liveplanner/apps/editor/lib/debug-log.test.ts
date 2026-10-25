@@ -70,6 +70,8 @@ describe('the console convention', () => {
       }
     };
     walk(root);
+    // The editor code every editor shares (@liveworkspace/workbench) keeps the convention too.
+    walk(join(root, '../../../packages/workbench/src'));
     expect(offenders).toEqual([]);
   });
 });
