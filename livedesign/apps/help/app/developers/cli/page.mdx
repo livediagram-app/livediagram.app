@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="The livedesign CLI"
-  description="Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and self-hosting."
+  description="Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and profiles."
   categoryTitle="Developers"
   categorySlug="developers"
 >
@@ -209,9 +209,9 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 
 Every error names what was wrong and suggests one command that fixes it. Set `LIVEDESIGN_DEBUG=1` to see what the CLI is doing, on stderr.
 
-## Self-Hosted Instances
+## Profiles
 
-The CLI talks to `https://livedesign.app` unless you point it elsewhere. For one command, add `--host https://pages.example.com`; for a shell, set `LIVEDESIGN_HOST`. To keep several, name them as profiles in `~/.config/livedesign/config.toml` and choose one with `--profile` or `LIVEDESIGN_PROFILE`:
+The CLI talks to `https://livedesign.app` unless you point it elsewhere, such as a local development server. For one command, add `--host https://pages.example.com`; for a shell, set `LIVEDESIGN_HOST`. To keep several, name them as profiles in `~/.config/livedesign/config.toml` and choose one with `--profile` or `LIVEDESIGN_PROFILE`:
 
 ```toml
 default_profile = "work"
@@ -220,7 +220,7 @@ default_profile = "work"
 host = "https://pages.example.com"
 ```
 
-Each profile keeps its own sign-in, and a self-hosted profile never contacts livedesign.app. `LIVEDESIGN_TOKEN` goes to whichever host is active, so set `LIVEDESIGN_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+Each profile keeps its own sign-in, and a profile for another host never contacts livedesign.app. `LIVEDESIGN_TOKEN` goes to whichever host is active, so set `LIVEDESIGN_HOST` beside it. A host without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
 
 ## Errors and Rate Limits
 

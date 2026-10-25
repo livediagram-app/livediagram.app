@@ -4,7 +4,7 @@
 // @liveworkspace/settings; the editor holds them as one flat set, which joinSettings and splitSettings turn
 // into the two scopes and back.
 //
-// Without an accounts Worker (a self-host with no sign-in) nothing is stored here: the editor keeps its
+// Without an accounts Worker (a deployment with no sign-in) nothing is stored here: the editor keeps its
 // preferences in the browser.
 
 import {

@@ -1,7 +1,7 @@
 // The Build with AI page's clients, as data (docs/specs/019-marketing/build-with-ai.md "The clients", in each
 // product). One address feeds every snippet, so the page can never show two: the product hands over its name and
-// this deployment's MCP address (a self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the
-// hosted one), and keeps its starter prompts, which are its own.
+// this deployment's MCP address (production, staging or local development, from NEXT_PUBLIC_MCP_ORIGIN), and
+// keeps its starter prompts, which are its own.
 
 export type AiClientGroup = 'Chat apps' | 'Coding agents' | 'Editors' | 'Anything else';
 
@@ -53,12 +53,10 @@ export type AiProduct = {
   name: string;
   /** This deployment's MCP address, from the product's api schema (`mcpEndpoint(resolveMcpOrigin(...))`). */
   mcpUrl: string;
-  /** The hosted MCP host a self-hoster swaps for their own (`mcp.livediagram.app`). */
-  hostedMcpHost: string;
 };
 
 /** The clients the page walks through, in the spec's order, each pointed at the product's one MCP address. */
-export function aiClients({ name, mcpUrl, hostedMcpHost }: AiProduct): readonly AiClient[] {
+export function aiClients({ name, mcpUrl }: AiProduct): readonly AiClient[] {
   const MCP_URL = mcpUrl;
   const MCP_NAME = name;
   return [
@@ -247,7 +245,6 @@ export function aiClients({ name, mcpUrl, hostedMcpHost }: AiProduct): readonly 
           code: { lang: 'text', code: 'Authorization: Bearer lwt_…', label: 'Header' },
         },
       ],
-      note: `Running your own ${name}? Use your own MCP host in place of ${hostedMcpHost}, still ending in /mcp.`,
     },
   ];
 }

@@ -21,10 +21,11 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { decodeAnalyzeData } from '../src/analyze-data.ts';
-import { collectWorks, type AppBundle, type Collected, type FileReader } from '../src/collect.ts';
+import { collectWorks, type AppBundle, type Collected } from '../src/collect.ts';
 import { LicencesError } from '../src/errors.ts';
 import { buildManifest, serialiseManifest } from '../src/manifest.ts';
 import { decodeMetafile } from '../src/metafile.ts';
+import { nodeReader } from '../src/node-reader.ts';
 import { workspaceToProductPath } from '../src/package-path.ts';
 import type { EmbeddedWork, LicenceApp, Override } from '../src/tables.ts';
 import { TEXT_SOURCES, TEXTS_DIR } from '../src/texts.ts';
@@ -68,29 +69,12 @@ function argument(name: string): string {
   return resolve(value);
 }
 
-const reader: FileReader = {
-  readText: (path) => {
-    try {
-      return readFileSync(path, 'utf8');
-    } catch {
-      return undefined;
-    }
-  },
-  listFiles: (dir) => {
-    try {
-      return readdirSync(dir).filter((name) => statSync(join(dir, name)).isFile());
-    } catch {
-      return [];
-    }
-  },
-};
-
 function run(
   p: Product,
   app: LicenceApp,
   script: string,
   args: string[],
-  env: NodeJS.ProcessEnv = {},
+  env: Record<string, string> = {},
 ) {
   const result = spawnSync(process.execPath, [script, ...args], {
     cwd: join(p.root, 'apps', app.id),
@@ -182,7 +166,7 @@ function main(config: LicencesConfig) {
       const result = collectWorks(bundle, {
         repoRoot: p.root,
         textsDir: TEXTS_DIR,
-        reader,
+        reader: nodeReader,
         overrides: config.overrides,
         embedded: config.embedded,
         textSources: TEXT_SOURCES,

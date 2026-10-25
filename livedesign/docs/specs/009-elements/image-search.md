@@ -11,7 +11,7 @@ Results come from [Openverse](https://openverse.org), the WordPress Foundation's
 openly licensed media (Flickr, Wikimedia Commons, Rawpixel and others).
 
 - **Free, no key, no account.** Search needs no credentials, so the feature works on every
-  self-hosted deployment with no setup and adds no secret ([Secrets policy](../002-project-scope/secrets-policy.md)).
+  deployment with no setup and adds no secret ([Secrets policy](../002-project-scope/secrets-policy.md)).
 - **Licences allow copying.** Openverse only indexes Creative Commons and public-domain works, so a
   picked picture may be copied into the owner's gallery (R2). That keeps the
   [element model](images.md#element-model) unchanged: there is still no external-URL image, and

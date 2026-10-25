@@ -116,6 +116,13 @@ describe('legacyHelpRedirect', () => {
       ['/help/activity-panel/reverting-changes/', '/help/canvas/undo/'],
       // The Welcome Tour became the Diagram Tour (docs/specs/007-editor/editor-tour.md).
       ['/help/getting-started/welcome-tour/', '/help/getting-started/diagram-tour/'],
+      // The Self-Hosting category was retired: its pages land on the help centre home.
+      ['/help/self-hosting/', '/help/'],
+      ['/help/self-hosting', '/help/'],
+      ['/help/self-hosting/self-hosting-overview/', '/help/'],
+      ['/help/self-hosting/deploying-livediagram/', '/help/'],
+      ['/help/self-hosting/configuration/', '/help/'],
+      ['/help/self-hosting/configuration/drive-and-mcp/', '/help/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://livediagram.app${from}`))!;

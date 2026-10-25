@@ -44,7 +44,7 @@ export function createMcpApp<E extends OauthEnv>(options: {
     if (!token) {
       // Point MCP clients at the OAuth resource metadata so they can start the
       // connect flow. The origin comes from the request, like every endpoint in
-      // oauth.ts, so a self-hosted worker sends clients to ITS metadata.
+      // oauth.ts, so a staging or local worker sends clients to ITS metadata.
       const origin = new URL(c.req.url).origin;
       return c.json({ error: 'unauthorized' }, 401, {
         'WWW-Authenticate': `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource"`,

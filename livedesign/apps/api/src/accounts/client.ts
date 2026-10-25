@@ -3,7 +3,7 @@
 // activity live. livedesign keeps none of them in its own database.
 //
 // Every call goes with this app's OAuth client credentials, so it runs in the Worker only. Without them (a
-// self-host with no sign-in) there is no accounts Worker, and each caller says what it does instead.
+// deployment with no sign-in) there is no accounts Worker, and each caller says what it does instead.
 
 import type { ClientCredentials, SettingsApp } from '@liveworkspace/auth-client';
 import type { Env } from '../types';

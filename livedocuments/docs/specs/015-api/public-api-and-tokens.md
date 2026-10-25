@@ -22,7 +22,7 @@ keeps tokens off the spoofable guest-identity path entirely (the guest REST
 hardening in [§4](#4-the-guest-header-retired) is a separate track).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+or the no-required-SaaS rule ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## 2. Why the API wasn't safe to expose as-is (history)
 
@@ -316,12 +316,12 @@ out cleanly:
 
 Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
 
-### 3.7 Self-hosting
+### 3.7 Without sign-in
 
 API tokens need an account, exactly as teams do ([Teams](../013-workspace/teams.md),
 [Auth + guest access](../014-identity/auth-and-guest-access.md)). Sign-in is always offered, so the
 Settings API Tokens category is always in the list; a guest's says why it is empty and links to sign in.
-A self-host that hasn't configured the api's accounts settings can mint none:
+A deployment that hasn't configured the api's accounts settings can mint none:
 
 - **Backend** — the `/api/tokens` routes require a verified account identity, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
@@ -330,7 +330,7 @@ A self-host that hasn't configured the api's accounts settings can mint none:
   reached, token creation / use is impossible without auth configured.
 
 So tokens work exactly when accounts do. This takes nothing away
-from a guest-only self-host, because the whole canvas / guest model stays fully
+from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
 
@@ -373,7 +373,7 @@ hardening landed first:
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page ([§3.7](#37-self-hosting)).
+   replaced the original Explorer "API tokens" page ([§3.7](#37-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
@@ -387,7 +387,7 @@ hardening landed first:
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
      requirement in `docs/development/architecture.md`, and the signed-in-only nature in
-     `docs/operations/self-hosting.md` (tokens need sign-in, like teams).
+     `docs/development/local-development.md` (tokens need sign-in, like teams).
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**

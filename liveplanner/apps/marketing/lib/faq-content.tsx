@@ -10,7 +10,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph } from '@liveplanner/ui';
+import { CONTACT_FORM_URL, lucideGlyph, STATUS_PAGE_URL } from '@liveplanner/ui';
 import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -278,14 +278,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I set up a team with shared plans?',
         a: (
           <>
-            Yes, once you sign in. Create a team from the Explorer, invite people by email, and
-            everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage
-            membership, everyone else just gets to work. See{' '}
+            Yes, once you sign in. Choose New Team in the Explorer sidebar, invite people by email,
+            and everyone gets a shared library of plans. Teams belong to your liveworkspace account,
+            so a team is the same wherever you sign in. Teams have Admin and Member roles: admins
+            manage membership, everyone else just gets to work. See{' '}
             <a href="/help/collaboration/teams/">teams</a>.
           </>
         ),
         aText:
-          'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
+          'Yes, once you sign in. Choose New Team in the Explorer sidebar, invite people by email, and everyone gets a shared library of plans. Teams belong to your liveworkspace account, so a team is the same wherever you sign in. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
       },
       {
         q: 'How do I keep my plans organised?',
@@ -429,7 +430,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a board as CSV, an image, a PDF or a Markdown outline, and a sheet as CSV. Your work is never locked in.',
+        a: 'Yes. Export a board as CSV, a Markdown outline, an image (PNG or SVG) or a PDF; a sheet as CSV, an image or a PDF; and a dashboard or form as JSON you can import into another plan. Your work is never locked in.',
       },
     ],
   },
@@ -507,12 +508,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is liveplanner up right now?',
         a: (
           <>
-            The <a href="/status">status page</a> lists every part of the service and notes any
-            incident we are working on. If it loads, the site is up.
+            The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
+            liveplanner&rsquo;s services from your browser while you watch, beside the services
+            every app shares.
           </>
         ),
         aText:
-          'The status page lists every part of the service and notes any incident we are working on. If it loads, the site is up.',
+          'The liveworkspace status page checks each of liveplanner’s services from your browser while you watch, beside the services every app shares.',
       },
       {
         q: 'Who makes liveplanner?',

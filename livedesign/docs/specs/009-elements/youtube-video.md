@@ -87,8 +87,8 @@ Why not just embed the iframe:
   be a hole in the canvas.
 - **Privacy.** `youtube-nocookie.com` sets no cookie until playback starts, so
   simply opening a design that contains a video is not a tracked visit. This
-  matters more here than usual: the repo is public and self-hostable
-  ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)), and a self-hoster should not be silently shipping their users to
+  matters more here than usual: the repo is public
+  ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)), and a deployment should not be silently shipping its users to
   Google on page load.
 
 Stopping playback unmounts the iframe, so a paused video is not a live player

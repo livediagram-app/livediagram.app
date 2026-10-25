@@ -1,5 +1,5 @@
 // Where the mirror's Google access tokens come from
-// (docs/specs/022-drive-mirror/drive-mirror.md, "Tokens" and "Self-hosting").
+// (docs/specs/022-drive-mirror/drive-mirror.md, "Tokens" and "Configuration").
 //
 //   - Broker: the api mints a one-hour token from the stored refresh token;
 //     cached until shortly before it expires, so about once per active hour.

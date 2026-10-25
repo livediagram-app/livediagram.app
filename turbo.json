@@ -21,6 +21,34 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
+    // liveworkspace.app's build also generates its /licences page from what the site
+    // and the platform's Workers bundle (liveworkspace/docs/site.md "Licences"), so
+    // their sources, the packages the site draws from and the lockfile are inputs.
+    "@liveworkspace/site#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/pnpm-lock.yaml",
+        "$TURBO_ROOT$/liveworkspace/apps/**",
+        "$TURBO_ROOT$/packages/**",
+        "$TURBO_ROOT$/livediagram/packages/**",
+        "$TURBO_ROOT$/liveplanner/packages/**",
+        "$TURBO_ROOT$/livedocuments/packages/**",
+        "$TURBO_ROOT$/livedesign/packages/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/next-env.d.ts",
+        "!$TURBO_ROOT$/liveworkspace/apps/site/generated/**",
+        "!$TURBO_ROOT$/liveworkspace/apps/site/public/licences/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
+    },
     // Marketing's build also generates the /licences page from what EVERY app
     // bundles (docs/specs/002-project-scope/third-party-licences.md), so any
     // app's or package's source, or the lockfile, is an input: a change there

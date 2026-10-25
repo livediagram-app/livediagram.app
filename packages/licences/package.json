@@ -12,7 +12,8 @@
     "./tables": "./src/tables.ts",
     "./texts": "./src/texts.ts",
     "./licence-id": "./src/licence-id.ts",
-    "./generate": "./scripts/generate.ts"
+    "./generate": "./scripts/generate.ts",
+    "./declared": "./src/declared.ts"
   },
   "scripts": {
     "verify": "node scripts/verify.ts",

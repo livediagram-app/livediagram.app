@@ -23,7 +23,7 @@ facts.
 
 - **Every api response** carries the header `X-Livediagram-Format: <n>`, and
   `X-Livediagram-Build: <id>` when the deploy set one (the WebSocket upgrade excepted). The editor's one fetch wrapper (`apiFetch`) reads it. Both headers are exposed to
-  cross-origin callers (`Access-Control-Expose-Headers`), for a self-hosted or local editor on
+  cross-origin callers (`Access-Control-Expose-Headers`), for a local editor on
   another origin.
 - **The realtime room** sends `{ kind: 'format', format, build? }` to each socket as it joins. A deploy
   restarts the room, every editor reconnects, so a viewer that makes no api calls hears it too.

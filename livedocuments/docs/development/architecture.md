@@ -128,4 +128,4 @@ Staging exists so every change runs against real remote Workers, Durable Objects
 
 Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, per-owner image caps), which the workflow adds with `wrangler deploy --var` only in livedocuments.app's own repository and then reads back off the live api worker. A fork deploys the committed config alone, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
 
-See [Self-hosting](../operations/self-hosting.md) for the step-by-step, and [Deployment](../specs/016-platform/deployment.md) for the deeper deployment contract.
+See [Deployment](../specs/016-platform/deployment.md) for the deployment contract.

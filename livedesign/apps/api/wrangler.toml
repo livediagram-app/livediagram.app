@@ -49,7 +49,7 @@ bucket_name = "livedesign-photo-blobs"
 # `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
 # endpoint; over-limit requests get a 429. Namespace ids are
 # arbitrary local identifiers (Cloudflare scopes by binding name +
-# script). Self-host: when this binding is absent the rate-limit
+# script). When this binding is absent the rate-limit
 # helper falls through to "allow" so deployments without the
 # feature still work.
 [[unsafe.bindings]]
@@ -97,7 +97,7 @@ crons = ["0 3 * * *"]
 # exempt from the write limiter, so without this an attacker holding a
 # code could brute-force the password unbounded. 30 resolves / 60s per IP
 # is ample for legit visitors. Separate namespace. Absent binding → the
-# index.ts check is skipped, so self-host still works.
+# index.ts check is skipped, so the worker still works.
 [[unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
 type = "ratelimit"
@@ -106,7 +106,7 @@ simple = { limit = 30, period = 60 }
 
 # Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
 # page fetch for link-card previews. 60/60s is plenty for a user dropping
-# bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
+# bookmark cards. Separate namespace. Absent binding → check skipped (when unbound).
 [[unsafe.bindings]]
 name = "UNFURL_RATE_LIMITER"
 type = "ratelimit"
@@ -183,7 +183,7 @@ simple = { limit = 120, period = 60 }
 #     worker, the SAME value as the service's TELEMETRY_KEY_LIVEDESIGN.
 #     Generate with `openssl rand -hex 32`.
 #
-# Unset = this worker sends no telemetry, so a self-host can ignore it.
+# Unset = this worker sends no telemetry, so a deployment can ignore it.
 
 # MEDIA_KEY is livedesign's secret on liveworkspace's media service (liveworkspace/docs/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as

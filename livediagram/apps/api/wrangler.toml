@@ -64,7 +64,7 @@ OAUTH_ISSUER = "https://mcp.livediagram.app"
 #     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
 #     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
 # Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
-# shows no Drive entry, which is the self-host default.
+# shows no Drive entry, which is the default when unset.
 
 # R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service
 # (MEDIA_KEY below), until they are migrated. Snapshots and share cards are liveworkspace's previews now
@@ -80,7 +80,7 @@ bucket_name = "livediagram-images"
 # `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
 # endpoint; over-limit requests get a 429. Namespace ids are
 # arbitrary local identifiers (Cloudflare scopes by binding name +
-# script). Self-host: when this binding is absent the rate-limit
+# script). When this binding is absent the rate-limit
 # helper falls through to "allow" so deployments without the
 # feature still work.
 [[unsafe.bindings]]
@@ -96,7 +96,7 @@ simple = { limit = 300, period = 60 }
 # budget. 120 batches / 60s per IP is generous for a CLI (one event per
 # command) while bounding how fast one source can inflate the public dashboard.
 # Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
-# helper allows, so self-host still works.
+# helper allows, so a deployment still works.
 [[unsafe.bindings]]
 name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
@@ -134,7 +134,7 @@ deleted_classes = ["WorkbenchStore"]
 # docs/specs/021-event-storming/note-reader.md). Separate namespace so AI abuse never eats into document-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway model spend. Absent binding
-# → helper allows, so self-host still works without this feature.
+# → helper allows, so a deployment still works without this feature.
 [[unsafe.bindings]]
 name = "AI_RATE_LIMITER"
 type = "ratelimit"
@@ -146,7 +146,7 @@ simple = { limit = 20, period = 60 }
 # exempt from the write limiter, so without this an attacker holding a
 # code could brute-force the password unbounded. 30 resolves / 60s per IP
 # is ample for legit visitors. Separate namespace. Absent binding → the
-# index.ts check is skipped, so self-host still works.
+# index.ts check is skipped, so a deployment still works.
 [[unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
 type = "ratelimit"
@@ -155,7 +155,7 @@ simple = { limit = 30, period = 60 }
 
 # Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
 # page fetch for link-card previews. 60/60s is plenty for a user dropping
-# bookmark cards. Separate namespace. Absent binding → check skipped (self-host).
+# bookmark cards. Separate namespace. Absent binding → check skipped.
 [[unsafe.bindings]]
 name = "UNFURL_RATE_LIMITER"
 type = "ratelimit"
@@ -177,7 +177,7 @@ simple = { limit = 120, period = 60 }
 # token, so a healthy browser needs about one an hour. 10 / 60s per account
 # id bounds a looping client far below the general write limiter's 300. The
 # route answers 429 drive_token_rate_limited, which the browser treats like
-# Google's own rate limit (it backs off). Absent binding → allow (self-host).
+# Google's own rate limit (it backs off). Absent binding → allow.
 [[unsafe.bindings]]
 name = "DRIVE_TOKEN_RATE_LIMITER"
 type = "ratelimit"
@@ -201,7 +201,7 @@ simple = { limit = 10, period = 60 }
 #
 # With no key the reader is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no photo import, and the route
-# answers 503. That is the self-host default.
+# answers 503. That is the default when unset.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -259,7 +259,7 @@ simple = { limit = 10, period = 60 }
 #     worker, and on the liveworkspace service as TELEMETRY_KEY_LIVEDIAGRAM.
 #     Generate with `openssl rand -hex 32`.
 #
-# Unset = this worker sends no telemetry, which is what a self-host gets with no
+# Unset = this worker sends no telemetry, which is what a deployment gets with no
 # configuration. A mismatch is silent (the service drops the batch), so check
 # `wrangler secret list` on all three if server-side counts look flat.
 

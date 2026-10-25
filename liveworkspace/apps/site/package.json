@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "next build && node scripts/asset-prefix.mjs",
+    "build": "node lib/licences/generate.ts --out . && next build && node scripts/asset-prefix.mjs && node ../../../packages/licences/scripts/verify.ts .",
     "deploy": "wrangler deploy",
     "lint": "oxlint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next out node_modules .turbo",
-    "test:e2e": "playwright test"
+    "clean": "rm -rf .next .next-analyze out generated public/licences node_modules .turbo",
+    "test:e2e": "playwright test",
+    "licences": "node lib/licences/generate.ts --out ."
   },
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
@@ -30,6 +31,8 @@
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/licences": "workspace:*",
+    "@liveworkspace/marketing-site": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

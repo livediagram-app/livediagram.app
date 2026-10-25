@@ -286,7 +286,7 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
 - **Following links.** The link badge follows through the shared follow path, which re-checks
   `isSafeFollowUrl`. The new-tab anchors carry `rel="noreferrer noopener"`.
 - **Privacy.** On open, only the YouTube poster is fetched (`i.ytimg.com`, cookieless). The player
-  uses `youtube-nocookie.com`. Self-hosters ship no third-party request beyond that until a press.
+  uses `youtube-nocookie.com`. Other deployments ship no third-party request beyond that until a press.
 
 ## Performance and limits
 

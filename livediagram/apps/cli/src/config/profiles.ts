@@ -1,4 +1,4 @@
-// Which host a command talks to (docs/specs/015-api/cli.md "Profiles and self-hosting", blueprint CLI7):
+// Which host a command talks to (docs/specs/015-api/cli.md "Profiles", blueprint CLI7):
 // --host, else --profile, else LIVEDIAGRAM_HOST, else LIVEDIAGRAM_PROFILE, else the config's default profile,
 // else https://livediagram.app. --host and --profile together are a usage error.
 

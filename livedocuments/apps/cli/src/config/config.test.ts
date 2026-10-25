@@ -38,7 +38,7 @@ describe('parseConfig', () => {
       'unknown = true',
       '',
       '[profiles.work]',
-      'host = "https://diagrams.example"  # self-hosted',
+      'host = "https://diagrams.example"  # another server',
       'other = "x"',
       '[profiles.work]',
     ].join('\n');

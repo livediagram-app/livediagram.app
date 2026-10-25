@@ -62,7 +62,7 @@ type AssignActionDialogProps = {
   // whether they can actually open this design (docs/specs/012-collaboration/assigned-actions.md §4).
   designId: string | null;
   designTeamId: string | null;
-  // capabilities.emailEnabled — hides the email offer on a self-host
+  // capabilities.emailEnabled — hides the email offer on a deployment
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
   // Inline personal-design fix (docs/specs/012-collaboration/assigned-actions.md §2): file the design into the

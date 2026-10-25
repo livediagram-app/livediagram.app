@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" subArticles={getSubArticles("what-we-collect")}>
 
-livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party, and a deployment only collects them if its operator turns them on: livediagram.app does, a self-hosted copy does not unless its operator chooses to. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
+livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
 
 ## What an event looks like
 
@@ -78,10 +78,5 @@ The opt-out itself is the last signal your browser sends, so even leaving is rec
 A few counts only the server can make: a sign-up or sign-in, a share-link visitor's first visit, a canvas used by several people or an AI tool, an email sent, and a server error. The server records those itself, with the same three anonymous fields, so the browser switch does not turn them off.
 
 The switch is on until you turn it off. It is saved with your other preferences, so when you are signed in it follows you to your other browsers once the editor has loaded there; as a guest, set it in each browser you use.
-
-<Note>
-  On a self-hosted deployment telemetry is **off by default**: it stays completely off unless the
-  operator explicitly enables it, so a fork or private instance emits and serves nothing.
-</Note>
 
 </ArticleLayout>

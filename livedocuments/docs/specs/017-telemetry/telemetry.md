@@ -8,7 +8,7 @@ First-party, anonymous product analytics, surfaced on a **public** dashboard so 
 
 - **Anonymous, aggregate, first-party.** Events carry no user id, no IP, no user-generated content (never a document name, tab name, participant name, element text, share code, or document id). Only a fixed, app-defined vocabulary of enum values is ever stored.
 - **No external vendors.** Ingestion, storage (a D1 database) and the dashboard are liveworkspace's own telemetry service, run by us. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
-- **Off by default.** A single env var gates the whole system, so OSS self-hosters and forks emit/serve nothing unless they opt in. No committed config turns it on: livedocuments.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
+- **Off by default.** A single env var gates the whole system, so forks emit/serve nothing unless they opt in. No committed config turns it on: livedocuments.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
 - **Transparent.** The dashboard is public (`https://liveworkspace.app/telemetry`, and `/telemetry` here redirects to it), and the privacy policy + landing page say plainly what we capture and why, and link to it.
 
 ## Event schema
@@ -216,7 +216,7 @@ Charts render in inline SVG (a line with a shaded selected-window span and a das
 
 1. In liveworkspace, provision the telemetry service and give it livedocuments' key as `TELEMETRY_KEY_LIVEDOCUMENTS` ([liveworkspace telemetry](../../../../liveworkspace/docs/telemetry.md) "Provisioning").
 2. Set the same value as the `TELEMETRY_KEY` GitHub secret (and `TELEMETRY_KEY_STAGING` for staging); the deploy puts it on the api and mcp workers.
-3. Turn telemetry on: livedocuments.app's deploys do it through the hosted profile. Another deployment sets `TELEMETRY_ENABLED = "true"` in `apps/api/wrangler.toml [vars]` and `NEXT_PUBLIC_TELEMETRY_ENABLED=true` for the live, help and marketing builds. Leaving them unset keeps telemetry off — the self-host default.
+3. Turn telemetry on: livedocuments.app's deploys do it through the hosted profile. Another deployment sets `TELEMETRY_ENABLED = "true"` in `apps/api/wrangler.toml [vars]` and `NEXT_PUBLIC_TELEMETRY_ENABLED=true` for the live, help and marketing builds. Leaving them unset keeps telemetry off — the default.
 
 ## Privacy posture
 

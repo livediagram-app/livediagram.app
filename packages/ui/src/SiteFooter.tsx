@@ -1,11 +1,12 @@
 import { Brand, type BrandApp } from '@liveworkspace/brand';
 import { lucideBookOpen, lucideSparkles } from '@liveworkspace/icons/lucide';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { PLATFORM_SITE, TERMS_LABEL } from '@liveworkspace/sites';
 import { Fragment, type ComponentType, type ReactNode } from 'react';
 
 import { CONTRIBUTORS } from './contributors';
 import { Glyph, type IconProps } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
+import { STATUS_PAGE_URL } from './status-page';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
@@ -61,14 +62,15 @@ const columns = ({
     links: [
       { href: '/help/', label: 'Help Centre', icon: HelpIcon },
       { href: `/help/about/what-is-${app}/`, label: 'About' },
-      { href: '/status', label: 'Status' },
+      // liveworkspace's one status page, for every app (liveworkspace/docs/site.md "Status").
+      { href: STATUS_PAGE_URL, label: 'Status' },
       { href: '/telemetry', label: 'Telemetry' },
     ],
   },
   {
     title: 'Legal',
     links: [
-      { href: `${PLATFORM_SITE.url}/terms`, label: 'Terms' },
+      { href: `${PLATFORM_SITE.url}/terms`, label: TERMS_LABEL },
       { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).

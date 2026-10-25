@@ -236,7 +236,7 @@ document, so a per-card badge is noise — the team list omits it as well).
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
-## Self-hosting
+## Without optional services
 
 Pictures come from liveworkspace's media service. A deploy without `MEDIA_KEY` has no image service and no export
 door key from it: the Explorer row shows its sketch and a link previews with the brand card. livediagram's own

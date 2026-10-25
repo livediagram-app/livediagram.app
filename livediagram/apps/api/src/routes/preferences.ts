@@ -2,7 +2,7 @@
 // by liveworkspace with the account, or under the guest's id (liveworkspace/settings.ts).
 //
 // GET answers them as one flat set: `{ prefs }`, read once per editor load. With nowhere to keep them
-// (a guest-only self-host, or an id liveworkspace can't hold) it answers `{ prefs: null }`, and the
+// (a guest-only deployment, or an id liveworkspace can't hold) it answers `{ prefs: null }`, and the
 // editor keeps them in the browser alone.
 //
 // PUT `{ prefs }` is a patch: each key it names takes its new value whole (an object replaces the

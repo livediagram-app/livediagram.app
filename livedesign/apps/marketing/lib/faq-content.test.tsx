@@ -100,7 +100,7 @@ describe('filterFaq', () => {
   });
 
   it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'self-host').map((c) => c.id)).toContain('self-hosting');
+    expect(filterFaq(FAQ_CATEGORIES, 'password').map((c) => c.id)).toContain('sharing');
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });

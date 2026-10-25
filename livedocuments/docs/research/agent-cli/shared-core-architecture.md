@@ -1,6 +1,6 @@
 # One core, many front-ends: REST, MCP and CLI
 
-Research for the agent-first `livedocuments` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated, measured and self-hosted. Measured against the code on `main` at `efaee7d29`.
+Research for the agent-first `livedocuments` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated and measured. Measured against the code on `main` at `efaee7d29`.
 
 Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API tokens](../../specs/015-api/public-api-and-tokens.md), [API app](../../specs/015-api/api.md), [Telemetry](../../specs/017-telemetry/telemetry.md).
 
@@ -74,11 +74,11 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 | Version skew | None                                                                  | An old CLI writes elements an old way; new element kinds pass through unnormalised | Server decides; client only formats                           | None                                                       |
 | Granularity  | Coarse, MCP-shaped (11 tools); no `element update`, `comment resolve` | Any                                                                                | Any                                                           | Route-shaped, too low-level for agents                     |
 | Context cost | JSON + base64 PNG per write                                           | Compact views                                                                      | Compact views                                                 | JSON                                                       |
-| Self-host    | Requires deploying `apps/mcp`                                         | Works with api only                                                                | Works with api only                                           | Works                                                      |
+| No-auth host | Requires deploying `apps/mcp`                                         | Works with api only                                                                | Works with api only                                           | Works                                                      |
 | REST users   | Gain nothing                                                          | Gain nothing                                                                       | **Gain everything** (graph input, ops, views over plain HTTP) | Gain nothing new                                           |
 | Cost         | Cheapest                                                              | Medium; duplicates write-path tests                                                | Medium-high: endpoints + migration of MCP                     | Low code, poor result                                      |
 
-**Decision: C, with the catalogue and views from B.** A is tempting for its zero drift, but it bakes the MCP's coarse granularity and JSON-plus-PNG payloads into the CLI and makes `apps/mcp` mandatory for self-hosters. D generates the wrong surface. B is what we would drift into by copying `apps/mcp/src` into `apps/cli`.
+**Decision: C, with the catalogue and views from B.** A is tempting for its zero drift, but it bakes the MCP's coarse granularity and JSON-plus-PNG payloads into the CLI and makes `apps/mcp` mandatory for every deployment. D generates the wrong surface. B is what we would drift into by copying `apps/mcp/src` into `apps/cli`.
 
 ### 4.1 Why writes must be server-side (version skew, concretely)
 
@@ -198,7 +198,7 @@ SSH sessions, containers and remote agent sandboxes have no browser on the loopb
 - **Cap:** each login mints a token against the 10-token cap. `auth login` on a profile that already holds a token revokes the old one (via `tokens/current`) after the new one works.
 - Token name: `livedocuments CLI (<hostname>)`, plus a `client: cli` marker so Settings and the timeline can label it.
 
-### 6.4 Pure-guest self-hosts
+### 6.4 Pure-guest hosts
 
 A host without Clerk cannot mint tokens and has no consent page (Public API §3.7), so `auth login` has nothing to talk to. The open-source constraint says the core must still work. The guest path does exist (`POST /api/guest-id` returns an id and, when signing is on, an `ownerSig`). **Decided (2026-10-03): the CLI is its own guest identity.** On a host whose capabilities report `authEnabled: false`, `auth login` calls `POST /api/guest-id` and stores the id and `ownerSig` per profile, in the same store as a token; every request then carries `X-Owner-Id` + `X-Owner-Sig`. Its documents belong to that guest and are not visible to a browser's guest; `auth status` says so in one line. No editor export path is built.
 
@@ -213,9 +213,9 @@ A host without Clerk cannot mint tokens and has no consent page (Public API §3.
 
 - Publishing from CI with npm provenance (`npm publish --provenance`), versioned with semver independent of the apps. The repo is a monorepo of private packages; `apps/cli` is the only public package.
 - **Update checks:** at most once a day, after the command finishes, `GET https://registry.npmjs.org/livedocuments/latest` (or the GitHub release for binaries) with a 1.5 s timeout, cached in `~/.cache/livedocuments/update.json`. Printed to **stderr** only, never stdout (agents parse stdout). Skipped when `CI`, non-TTY stderr, `LIVEDOCUMENTS_NO_UPDATE_CHECK=1`, or `update_check = false`. No self-update command for npm installs (the package manager owns it); binaries get `livedocuments upgrade`.
-- **Server-driven compatibility** beats client polling: the api already stamps `X-Livedocuments-Format` on every response. Add an optional `cli.minVersion` to `/api/capabilities`; a CLI below it refuses writes with one line naming the version to install. Self-hosts control it themselves.
+- **Server-driven compatibility** beats client polling: the api already stamps `X-Livedocuments-Format` on every response. Add an optional `cli.minVersion` to `/api/capabilities`; a CLI below it refuses writes with one line naming the version to install. Each host controls it.
 
-## 8. Profiles and self-hosting
+## 8. Profiles
 
 ```toml
 # ~/.config/livedocuments/config.toml
@@ -231,7 +231,7 @@ api = "https://diagrams.example.com/api"   # optional; discovered otherwise
 
 - `--host <url>` and `--profile <name>` on every command; `LIVEDOCUMENTS_HOST` / `LIVEDOCUMENTS_PROFILE` env equivalents.
 - **Discovery:** `GET {host}/api/capabilities` gives the api base, `authEnabled`, `oauthIssuer` (absent when `apps/mcp` is not deployed: fall back to "paste a token from Settings › API Tokens"), `telemetryEnabled` and `documentFormat`. One unauthenticated call, cached per profile for a day.
-- **No required SaaS calls:** a self-host profile never contacts livedocuments.app. The only third-party call is the optional npm update check (§7), which is skippable and never blocks.
+- **No required SaaS calls:** a profile on another host never contacts livedocuments.app. The only third-party call is the optional npm update check (§7), which is skippable and never blocks.
 - Credentials are stored per profile (keychain service `livedocuments:<host>`).
 
 ## 9. Telemetry
@@ -241,7 +241,7 @@ Consistent with [Telemetry](../../specs/017-telemetry/telemetry.md): anonymous, 
 - New category **`Cli`** in `TELEMETRY_CATEGORIES`, action `Used`, type the PascalCase operation id (`TabRead`, `ElementUpdate`), exactly mirroring `Mcp·Used·<Tool>`. Sent **after success only** (the MCP rule), never on `--help`.
 - Api failures: `Error·Api·Http<status>.<Operation>` / `Internal.<Operation>`, 4xx not reported (model-correctable input), the same rule as MCP §4.12.
 - Delivery: one `POST {profile api}/events` fire-and-forget, awaited at most 300 ms at exit. A Node request sends no `Origin`, so the same-origin guard passes, and the per-IP limiter applies naturally (unlike the MCP's service binding).
-- Destination is the **profile's own api**, so a self-host with `TELEMETRY_ENABLED` off records nothing and livedocuments.app hears nothing about self-host use.
+- Destination is the **profile's own api**, so a host with `TELEMETRY_ENABLED` off records nothing and livedocuments.app hears nothing about its use.
 - Opt-out: `LIVEDOCUMENTS_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `telemetry = false` in config. `livedocuments telemetry off` writes the setting **after** sending `UI·Toggled·TelemetryOff` (the spec's "flip fires before persist" rule). First run prints one stderr line saying what is counted and how to turn it off.
 - No device id, no command arguments, no document ids, no host names.
 
@@ -362,7 +362,7 @@ Items 1 to 3 also make the MCP thinner and fix its live-editor clobbering; they 
 
 Decided by Webber on 2026-10-03:
 
-- **CLI on a pure-guest self-host:** the CLI is its own guest identity via `/api/guest-id` (§6.4).
+- **CLI on a pure-guest host:** the CLI is its own guest identity via `/api/guest-id` (§6.4).
 - **Agent edits on a document open in the editor:** the ops endpoint relays element ops to the room, waking one for personal documents (§11 item 1).
 
 Still open:

@@ -719,7 +719,7 @@ describe('POST /drive/token rate limit', () => {
     expect((await call(db, 'POST', '/token')).status).toBe(200);
   });
 
-  it('allows everything when the binding is absent (self-host)', async () => {
+  it('allows everything when the binding is absent', async () => {
     const db = sqliteD1(BROKER);
     await connect(db);
     googleReplies.push({ status: 200, body: { access_token: 'fresh', expires_in: 3600 } });

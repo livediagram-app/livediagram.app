@@ -1,5 +1,5 @@
 // Origin of the MCP worker (docs/specs/015-api/mcp-server.md), shared by every app that names it: the live editor's
-// OAuth consent pages and the marketing site's Build with AI page. Self-hosters override it at build time with
+// OAuth consent pages and the marketing site's Build with AI page. Staging overrides it at build time with
 // NEXT_PUBLIC_MCP_ORIGIN, so both read it through resolveMcpOrigin rather than writing the hosted one in.
 
 export const DEFAULT_MCP_ORIGIN = 'https://mcp.livediagram.app';

@@ -22,7 +22,7 @@ keeps tokens apart from guests entirely (a guest is a liveworkspace guest with
 its own token, [§4](#4-guests-and-grants)).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+or the optional-services rule ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## 2. Who the API accepts
 
@@ -278,11 +278,11 @@ out cleanly:
 
 Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
 
-### 3.7 Self-hosting
+### 3.7 Without sign-in
 
 API tokens are gated on **auth being enabled**, exactly as teams and sign-in
 are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-self-host that hasn't configured sign-in runs in pure-guest mode, and in that
+deployment that hasn't configured sign-in runs in pure-guest mode, and in that
 mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
@@ -297,7 +297,7 @@ open and no way to mint one:
 
 So enabling tokens is opt-in with auth, and disabling auth removes them
 cleanly — no orphaned page, no half-working endpoint. This takes nothing away
-from a guest-only self-host, because the whole canvas / guest model stays fully
+from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
 
@@ -364,7 +364,7 @@ hardening landed first:
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page
-   ([§3.7](#37-self-hosting)).
+   ([§3.7](#37-without-sign-in)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
@@ -377,8 +377,7 @@ hardening landed first:
    - Add API tokens to the "what signing in unlocks" list in the
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
-     requirement in `docs/development/architecture.md`, and the signed-in-only nature in
-     `docs/operations/self-hosting.md` (tokens need sign-in, like teams).
+     requirement in `docs/development/architecture.md` (tokens need sign-in, like teams).
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**

@@ -510,8 +510,8 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     const w = world();
     const { engine, statuses } = makeEngine(w);
     await engine.start();
-    // The test host is a self-hosted one.
-    expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
+    // The test host is neither livediagram.app nor staging.
+    expect(statuses.at(-1)!.rootName).toBe('livediagram (other host)');
     w.google.userRename(w.ld.connection!.rootFolderId!, 'My Work');
     await engine.syncNow();
     expect(statuses.at(-1)!.rootName).toBe('My Work');

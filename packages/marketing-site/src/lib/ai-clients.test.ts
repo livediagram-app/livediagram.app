@@ -8,7 +8,6 @@ const MCP_URL = 'https://mcp.livediagram.app/mcp';
 const AI_CLIENTS = aiClients({
   name: 'livediagram',
   mcpUrl: MCP_URL,
-  hostedMcpHost: 'mcp.livediagram.app',
 });
 describe('Build with AI clients', () => {
   it('covers every client the spec names, in its group', () => {
@@ -86,17 +85,15 @@ describe('one-click install links', () => {
 });
 
 describe('a product binding', () => {
-  it('names the product and its hosted MCP host, never another product', () => {
+  it('names the product, never another product, and offers no copy of it to run', () => {
     const text = JSON.stringify(
       aiClients({
         name: 'liveplanner',
         mcpUrl: 'https://mcp.liveplanner.app/mcp',
-        hostedMcpHost: 'mcp.liveplanner.app',
       }),
     );
-    expect(text).toContain(
-      'Running your own liveplanner? Use your own MCP host in place of mcp.liveplanner.app',
-    );
+    expect(text).toContain('liveplanner');
+    expect(text).not.toMatch(/running your own|your own MCP host/i);
     expect(text).not.toMatch(/live(diagram|documents|design)/);
   });
 });

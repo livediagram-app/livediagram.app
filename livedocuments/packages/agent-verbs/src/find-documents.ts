@@ -34,7 +34,7 @@ export type FoundDocument = {
 
 // Each joined team's library, documents and folders. Best-effort by design: the
 // personal results must still come back when the teams surface is
-// unavailable (an older self-hosted api, a race with a membership
+// unavailable (an older api, a race with a membership
 // removal), so failures collapse to "no team documents", never an error.
 async function readTeams(api: ApiClient): Promise<Libraries['teams']> {
   let teams: TeamListItem[];

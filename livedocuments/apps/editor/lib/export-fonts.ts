@@ -11,7 +11,7 @@ import { googleFontsHref } from '@livedocuments/document';
 // fetches the font files it needs and inlines them as base64 `@font-face`
 // rules: the file then paints the real face anywhere, with no network.
 //
-// Best-effort by design. Google Fonts blocked, offline, a self-host that
+// Best-effort by design. Google Fonts blocked, offline, a deployment that
 // opted out — any failure resolves to an empty string and the export falls
 // back to the stack's system face, which is the same deal the canvas makes.
 

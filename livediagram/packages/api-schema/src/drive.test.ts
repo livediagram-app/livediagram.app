@@ -75,12 +75,12 @@ describe('driveRootName (docs/specs/022-drive-mirror/drive-mirror.md, "The root 
     ['[::1]', 'livediagram (staging)'],
     ['[::1]:3000', 'livediagram (staging)'],
     ['::1', 'livediagram (staging)'],
-    ['documents.example.org', 'livediagram (self-hosted)'],
-    ['documents.example.org:8443', 'livediagram (self-hosted)'],
-    ['192.168.1.20:3000', 'livediagram (self-hosted)'],
-    ['[2001:db8::1]:3000', 'livediagram (self-hosted)'],
-    ['livediagram.app.evil.example', 'livediagram (self-hosted)'],
-    ['staging.livediagram.app.example', 'livediagram (self-hosted)'],
+    ['documents.example.org', 'livediagram (other host)'],
+    ['documents.example.org:8443', 'livediagram (other host)'],
+    ['192.168.1.20:3000', 'livediagram (other host)'],
+    ['[2001:db8::1]:3000', 'livediagram (other host)'],
+    ['livediagram.app.evil.example', 'livediagram (other host)'],
+    ['staging.livediagram.app.example', 'livediagram (other host)'],
   ])('%s → %s', (host, name) => {
     expect(driveRootName(host)).toBe(name);
   });

@@ -907,7 +907,7 @@ out of Prettier (`.prettierignore`).
 | `ELISION_CONTAINERS_NAMED`   | 3                             | A line that stays short (`VW60`)                                          | 1 to 10         |
 | `PROGRESS_DEFAULT`           | 50                            | Where the editor draws an unset progress                                  | fixed           |
 
-No environment variable or binding; self-hosting needs nothing new.
+No environment variable or binding; a deployment needs nothing new.
 
 ## Assets and external resources
 

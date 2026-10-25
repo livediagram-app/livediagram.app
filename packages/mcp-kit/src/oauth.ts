@@ -73,7 +73,7 @@ export function isAllowedRedirectUri(uri: string): boolean {
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
-// (works on a product's mcp.<product>.app and any self-host).
+// (works on a product's mcp.<product>.app, staging and local development).
 function selfOrigin(reqUrl: string): string {
   return new URL(reqUrl).origin;
 }

@@ -18,6 +18,27 @@ export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
 // liveworkspace's per-network limits (a sign-in code's) would otherwise count every app's visitors as one.
 export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
 
+// ---------- The status page ---------------------------------------------------------------------------------------
+// liveworkspace.app keeps one status page for the platform and every app (liveworkspace/docs/site.md "Status"). The
+// apps' own `/status` pages are gone, so each app's router sends that address here, to the app's own group.
+
+/** The path an app's old status page answered on. */
+export const STATUS_PATH = '/status';
+
+/** liveworkspace.app's status page, opened at `app`'s group, on the router's `WORKSPACE_ORIGIN` (production's when
+ *  unset): staging's from staging, the local site from a dev router. */
+export function statusPageUrl(app: AppName, workspaceOrigin?: string): string {
+  return `${workspaceOrigin || PRODUCTION_WORKSPACE_ORIGIN}${STATUS_PATH}#${app}`;
+}
+
+/** A router's answer to its old status page (`/status`, `/status/`, anything under it): a permanent redirect to
+ *  liveworkspace's, or null for any other path. */
+export function statusRedirect(url: URL, app: AppName, workspaceOrigin?: string): Response | null {
+  const { pathname } = url;
+  if (pathname !== STATUS_PATH && !pathname.startsWith(`${STATUS_PATH}/`)) return null;
+  return Response.redirect(statusPageUrl(app, workspaceOrigin), 301);
+}
+
 // ---------- The Explorer on the app's address ---------------------------------------------------------------------
 // Every app serves liveworkspace's Explorer at its own /explorer (liveworkspace/docs/one-explorer.md "The Explorer
 // on each app's address"), through EXPLORER_ROUTE below.

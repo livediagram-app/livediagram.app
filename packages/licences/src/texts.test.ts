@@ -13,9 +13,13 @@ const onDisk = readdirSync(TEXTS_DIR).toSorted();
 // read here as text because this package cannot depend on them. Each product's own test checks that
 // every file its tables name is in the pool.
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
+// liveworkspace.app keeps its tables beside its site (liveworkspace/apps/site/lib/licences).
 const tables = readdirSync(repo).flatMap((product) =>
   ['overrides.ts', 'embedded-works.ts']
-    .map((file) => join(repo, product, 'packages/licences/src', file))
+    .flatMap((file) => [
+      join(repo, product, 'packages/licences/src', file),
+      join(repo, product, 'apps/site/lib/licences', file),
+    ])
     .filter((path) => existsSync(path)),
 );
 const tableFiles = tables.flatMap((path) =>

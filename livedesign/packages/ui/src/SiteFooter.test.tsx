@@ -19,8 +19,8 @@ describe('SiteFooter', () => {
   });
 
   it('links the security policy and third-party licences among the legal links', () => {
-    expect(labels.slice(labels.indexOf('Terms'))).toEqual([
-      'Terms',
+    expect(labels.slice(labels.indexOf('Terms of Use'))).toEqual([
+      'Terms of Use',
       'Privacy Policy',
       'Data &amp; Security',
       'Report a Vulnerability',

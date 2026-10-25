@@ -44,7 +44,6 @@ const LIST: Alternative[] = [
         us: 'Structured diagrams, templates, tabs and folders, Presentation mode',
         them: 'A freeform board inside the Microsoft 365 suite',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'Your organisation already runs on Microsoft 365, and you want whiteboards inside Teams meetings.',
@@ -62,7 +61,7 @@ const LIST: Alternative[] = [
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
       '82 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
-      'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
+      'Free and MIT-licensed, with every board exportable, so no future retirement can take your boards away.',
     ],
     sections: [
       {
@@ -89,7 +88,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open, and yours to keep',
         paragraphs: [
-          'A retirement like this is a reminder of what it means to rely on someone else’s product. livediagram is MIT-licensed and its whole codebase is public. The hosted version is free with no paid tier, and if you would rather not depend on it, you can deploy the same code to your own Cloudflare account.',
+          'A retirement like this is a reminder of what it means to rely on someone else’s product. livediagram is MIT-licensed and its whole codebase is public. It is free with no paid tier, and your canvases export to portable formats, so you are never locked in.',
           'You can also keep a canvas entirely in your browser with Offline Mode, or, once signed in, mirror your canvases to your own Google Drive.',
         ],
       },
@@ -113,23 +112,22 @@ const LIST: Alternative[] = [
       },
       {
         q: 'When should I stay with Microsoft Whiteboard?',
-        a: 'If you have a work or school account and your team lives in Teams, Whiteboard stays available there and fits naturally into your meetings and your organisation’s admin controls. livediagram suits personal use, mixed teams without a shared Microsoft tenant, and anyone who wants their boards in open, self-hostable software.',
+        a: 'If you have a work or school account and your team lives in Teams, Whiteboard stays available there and fits naturally into your meetings and your organisation’s admin controls. livediagram suits personal use, mixed teams without a shared Microsoft tenant, and anyone who wants their boards in free, open-source software.',
       },
     ],
   },
   {
     slug: 'miro',
     name: 'Miro',
-    highlights: ['Free, no tiers', 'No sign-up', 'Self-hostable'],
+    highlights: ['Free, no tiers', 'No sign-up', 'MIT-licensed'],
     title: 'Miro alternative · livediagram',
     description:
-      'An open-source, free Miro alternative: real-time diagrams, whiteboards and workshop boards you can open without an account and host yourself.',
+      'An open-source, free Miro alternative: real-time diagrams, whiteboards and workshop boards you can open without an account.',
     h1: 'The open-source Miro alternative',
     lede: 'Miro is a powerful, sprawling online workspace. livediagram is a lighter, open-source take on the same idea: real-time multiplayer diagrams, whiteboards and workshop boards you can start in one click, with no sign-up, and run on your own account if you want to.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free tier, then paid plans' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary SaaS' },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -159,7 +157,7 @@ const LIST: Alternative[] = [
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
-      "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
+      "It's free for everyone and MIT-licensed, with no per-seat pricing.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a canvas.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
@@ -185,7 +183,7 @@ const LIST: Alternative[] = [
         heading: 'Free means free, not a free tier',
         paragraphs: [
           "Miro's free tier is real, but it's the top of a pricing funnel: board limits and gated features exist to move teams onto paid seats. livediagram has no paid tier and no plan to introduce one. The hosted version at livediagram.app is free, every user gets every feature, and there is nothing to upgrade to.",
-          "That's sustainable because the whole codebase is MIT-licensed and public. If you'd rather not depend on the hosted service at all, you can deploy the same code to your own Cloudflare account: the editor, the API, and the realtime collaboration all self-host, with no license keys and no phone-home checks.",
+          'The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.',
         ],
       },
       {
@@ -206,7 +204,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram really free?',
-        a: 'Yes. The hosted version at livediagram.app is free with every feature included, and there is no paid tier or plan to add one. The code is MIT-licensed, so you can also self-host the whole product on your own Cloudflare account.',
+        a: 'Yes. The hosted version at livediagram.app is free with every feature included, and there is no paid tier or plan to add one. The code is MIT-licensed and public.',
       },
       {
         q: 'Do my teammates need an account to edit with me?',
@@ -219,10 +217,6 @@ const LIST: Alternative[] = [
       {
         q: 'Can livediagram run workshops the way Miro does?',
         a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the canvas keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
-      },
-      {
-        q: 'Can I self-host livediagram?',
-        a: 'Yes. The whole monorepo (editor, API, realtime, marketing site) is MIT-licensed and deploys to a Cloudflare account you control. There are no license checks and no required calls to our servers.',
       },
     ],
   },
@@ -287,7 +281,7 @@ const LIST: Alternative[] = [
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
       '82 templates (three mind-map styles among them), 24 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
-      'Free, open source, and self-hostable.',
+      'Free and open source, with no paid tier.',
     ],
     sections: [
       {
@@ -314,7 +308,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free and open, with no upgrade prompts',
         paragraphs: [
-          'XMind is a subscription product: the free version is capable but the full feature set is paid. livediagram is MIT-licensed open source with a free hosted version and no paid tier at all. Every feature, including export, collaboration, and the API, is available to everyone, and you can self-host the whole thing on your own Cloudflare account if you prefer.',
+          'XMind is a subscription product: the free version is capable but the full feature set is paid. livediagram is MIT-licensed open source with a free hosted version and no paid tier at all. Every feature, including export, collaboration, and the API, is available to everyone.',
         ],
       },
     ],
@@ -333,7 +327,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is livediagram really free?',
-        a: 'Yes. There is no subscription and no feature gating: the hosted version is free with everything included, the code is MIT-licensed, and you can self-host it.',
+        a: 'Yes. There is no subscription and no feature gating: the hosted version is free with everything included, and the code is MIT-licensed.',
       },
     ],
   },
@@ -442,7 +436,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram open source like Excalidraw?',
-        a: "Yes. Both projects are MIT-licensed. livediagram's whole monorepo is public, the hosted version is free with no paid tier, and you can self-host it on your own Cloudflare account.",
+        a: "Yes. Both projects are MIT-licensed. livediagram's whole monorepo is public, and the hosted version is free with no paid tier.",
       },
       {
         q: 'Can I get the hand-drawn look in livediagram?',
@@ -517,7 +511,7 @@ const LIST: Alternative[] = [
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
       'Bring your diagrams with you: .drawio files import page by page, whole folders import as canvases, and draw.io libraries become shape libraries.',
       'Charts, icons, freehand sketching, comments and a slide-deck Presentation mode, all built in.',
-      'Free, MIT-licensed, and self-hostable on your own Cloudflare account.',
+      'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [
       {
@@ -551,7 +545,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram free like draw.io?',
-        a: 'Yes. Both are free, and both are open source. livediagram is MIT-licensed with a free hosted version at livediagram.app, no paid tier, and the option to self-host on your own Cloudflare account.',
+        a: 'Yes. Both are free, and both are open source. livediagram is MIT-licensed with a free hosted version at livediagram.app and no paid tier.',
       },
       {
         q: 'Can I import my .drawio files?',
@@ -560,10 +554,6 @@ const LIST: Alternative[] = [
       {
         q: 'Does livediagram have AWS, UML, or network shape libraries?',
         a: "It ships full-colour technology icons (AWS, Azure, Kubernetes, databases and more) that cover most architecture diagrams, plus core shapes, device frames, and class, sequence and state machine templates. It does not have draw.io's formal notation libraries (full UML, BPMN, network stencils); for strict formal notation, draw.io is the better pick.",
-      },
-      {
-        q: 'Can I self-host livediagram the way I can run draw.io myself?',
-        a: 'Yes. The entire codebase is MIT-licensed and deploys to a Cloudflare account you control, including the realtime collaboration. No license checks, no required calls to our servers.',
       },
     ],
   },
@@ -583,7 +573,6 @@ const LIST: Alternative[] = [
         them: 'Free Starter plan with limits, then paid Figma seats',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -624,7 +613,7 @@ const LIST: Alternative[] = [
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
-      'MIT-licensed and self-hostable, so your boards never depend on one vendor.',
+      'MIT-licensed, with portable exports, so your boards never depend on one vendor.',
     ],
     sections: [
       {
@@ -657,7 +646,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram really free compared with FigJam?',
-        a: 'Yes. Every feature is free for everyone, with no file limits, no seats and no paid tier. The code is MIT-licensed, so you can also run your own copy.',
+        a: 'Yes. Every feature is free for everyone, with no file limits, no seats and no paid tier. The code is MIT-licensed.',
       },
       {
         q: 'Can I import my FigJam boards?',
@@ -689,7 +678,6 @@ const LIST: Alternative[] = [
         them: 'Free plan with document and shape limits, then paid plans',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -728,7 +716,7 @@ const LIST: Alternative[] = [
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
-      'MIT-licensed and self-hostable, so your diagrams never depend on one vendor.',
+      'MIT-licensed, with portable exports, so your diagrams never depend on one vendor.',
     ],
     sections: [
       {
@@ -761,7 +749,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is livediagram a free alternative to Lucidchart?',
-        a: 'Yes. Every feature is free for everyone, with no plan limits on documents or shapes, no seats and no paid tier. The code is MIT-licensed, so you can also run your own copy.',
+        a: 'Yes. Every feature is free for everyone, with no plan limits on documents or shapes, no seats and no paid tier. The code is MIT-licensed.',
       },
       {
         q: 'Can I import my Lucidchart diagrams?',

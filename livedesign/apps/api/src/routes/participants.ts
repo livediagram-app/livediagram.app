@@ -73,7 +73,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
       console.warn('[participants] write_failed', err instanceof Error ? err.message : 'unknown');
       return json({ error: 'profile_unavailable' }, { status: 503 });
     }
-    // No accounts Worker to keep it (a self-host with no sign-in): answered as sent, and the editor keeps
+    // No accounts Worker to keep it (a deployment with no sign-in): answered as sent, and the editor keeps
     // it in the browser.
     const participant: ParticipantDTO = stored?.participant ?? {
       id,

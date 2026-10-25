@@ -8,7 +8,7 @@ export type Env = {
   OAUTH_KV: KVNamespace;
   // Base URL of the app that hosts the OAuth consent page (apps/editor). The
   // authorize endpoint redirects the signed-in user there. Defaults to the
-  // hosted app; self-hosters point it at their own live origin.
+  // hosted app; staging points it at its own editor origin.
   CONSENT_BASE_URL?: string;
   // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.

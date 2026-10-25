@@ -96,7 +96,7 @@ function start(id: string, owner: string) {
 }
 
 describe('handleImages', () => {
-  it('503 without the media service (self-host without MEDIA_KEY)', async () => {
+  it('503 without the media service (deployment without MEDIA_KEY)', async () => {
     const env = { ...db.env, MEDIA_KEY: undefined } as Env;
     expect((await call('GET', '/api/images', { env })).status).toBe(503);
   });

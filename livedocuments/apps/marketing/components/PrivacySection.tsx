@@ -53,7 +53,7 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Open source, auditable',
     description:
-      'The whole stack (editor, API, this site) is on GitHub under the MIT license. Anything we claim here, you can read in the source. Run your own copy if you prefer, on your own Cloudflare account, in an afternoon.',
+      'The whole stack (editor, API, this site) is on GitHub under the MIT license. Anything we claim here, you can read in the source.',
     art: <OpenSourceArt />,
   },
 ];

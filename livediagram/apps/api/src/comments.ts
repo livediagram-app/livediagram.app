@@ -16,7 +16,7 @@ import {
 import { buildViewModel, commentHosts } from '@livediagram/document-views';
 
 // Who is saving: their profile, or only their id when no profile could be read (a guest-only
-// self-host keeps none; liveworkspace may be out of reach). Then their own new comments keep the
+// a deployment keeps none; liveworkspace may be out of reach). Then their own new comments keep the
 // name and colour they were posted under, clamped and checked, and still carry the writer's id, so
 // nobody else's comment can be relabelled either way.
 export type CommentWriter = { id: string; name: string | null; color: string | null };

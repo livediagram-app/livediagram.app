@@ -52,7 +52,7 @@ function toParticipant(id: string, profile: Profile): ParticipantDTO | null {
 
 // The participants of these owner ids, found ones only, in one accounts call per 100 ids not
 // remembered. Never throws: when liveworkspace can't be reached, or sign-in isn't configured (a
-// guest-only self-host), the ids are simply not found and callers show their fallback.
+// guest-only deployment), the ids are simply not found and callers show their fallback.
 export async function getParticipants(
   env: Env,
   ids: readonly string[],

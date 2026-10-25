@@ -2,7 +2,6 @@ import {
   lucideArrowUpDown,
   lucideGift,
   lucideMessagesSquare,
-  lucidePackage,
   lucideShapes,
   lucideShare2,
   lucideShieldCheck,
@@ -10,7 +9,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livedocuments/ui';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL, STATUS_PAGE_URL } from '@livedocuments/ui';
 import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -127,15 +126,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               public on GitHub
             </a>
-            . You can read it, run your own copy, or contribute.
+            . You can read it, fork it, or contribute.
           </>
         ),
         aText:
-          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, run your own copy, or contribute.',
+          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, fork it, or contribute.',
       },
       {
         q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. The free hosted version and a self-hosted copy run the same software.',
+        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature ships to every user.',
       },
     ],
   },
@@ -249,7 +248,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I set up a team with shared documents?',
-        a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of documents. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+        a: (
+          <>
+            Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams
+            in the Explorer to make one and invite people by email, and every team gets a shared
+            library of livedocuments documents in its own space. Admins manage the team, Members
+            just get to work. See <a href="/help/collaboration/teams/">teams</a>.
+          </>
+        ),
+        aText:
+          'Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams in the Explorer to make one and invite people by email, and every team gets a shared library of livedocuments documents in its own space. Admins manage the team, Members just get to work. See teams.',
       },
       {
         q: 'Can I follow what someone else is looking at?',
@@ -267,13 +275,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
-            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
+            Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone
             unlocks it, with a padlock beside its name. You can also lock single elements or whole
             layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
           </>
         ),
         aText:
-          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+          'Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
       },
       {
         q: 'How do I keep up with what changed?',
@@ -359,13 +367,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there an API?',
         a: (
           <>
-            Yes. Once you sign in, create an API token and call the REST API to read and manage your
-            documents from scripts, CI or anything that can send a header. See the{' '}
-            <a href="/help/developers/api-overview/">API overview</a>.
+            Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens
+            belong to your liveworkspace account) and call the livedocuments REST API to read and
+            change your documents, tabs and pages from scripts, CI or anything that can send a
+            header. See the <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:
-          'Yes. Once you sign in, create an API token and call the REST API to read and manage your documents from scripts, CI or anything that can send a header. See the API overview.',
+          'Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens belong to your liveworkspace account) and call the livedocuments REST API to read and change your documents, tabs and pages from scripts, CI or anything that can send a header. See the API overview.',
       },
       {
         q: 'Is there a command-line tool?',
@@ -455,34 +464,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
   {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host livedocuments?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livedocuments/">deploying livedocuments</a>.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedocuments.',
-      },
-      {
-        q: 'Do I need sign-in to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Email switches on once sign-in and its own key are set up.',
-      },
-    ],
-  },
-  {
     id: 'support',
     title: 'Help and support',
     blurb: 'When something is not right.',
@@ -505,12 +486,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is livedocuments up right now?',
         a: (
           <>
-            The <a href="/status">status page</a> lists every part of the service and notes any
-            incident we are working on. If it loads, the site is up.
+            The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
+            livedocuments&rsquo;s services from your browser while you watch, beside the services
+            every app shares.
           </>
         ),
         aText:
-          'The status page lists every part of the service and notes any incident we are working on. If it loads, the site is up.',
+          'The liveworkspace status page checks each of livedocuments’s services from your browser while you watch, beside the services every app shares.',
       },
       {
         q: 'Who makes livedocuments?',

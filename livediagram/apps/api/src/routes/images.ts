@@ -23,7 +23,7 @@ import { resolveDocumentGrant } from './document-grant';
 export const USAGE_DOCUMENTS_MAX = 200;
 export const USAGE_LOOKUPS_IN_FLIGHT = 10;
 
-// Without the service (a self-host without MEDIA_KEY) every endpoint answers 503, so the editor hides
+// Without the service (a deployment without MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
 export async function handleImages(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;

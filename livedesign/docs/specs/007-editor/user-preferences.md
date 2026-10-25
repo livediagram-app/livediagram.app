@@ -127,11 +127,10 @@ cleared. A second merge finds nothing left to move.
 
 ### Without liveworkspace accounts
 
-A self-host with no accounts Worker configured keeps no preferences on the
+A deployment with no accounts Worker configured keeps no preferences on the
 server: `GET` and `PUT /api/preferences` answer 404
 `preferences_not_stored`, the editor stops sending for that page load, and
-the localStorage cache is the only store. No SaaS call is required, so
-self-hosting stays viable.
+the localStorage cache is the only store. No SaaS call is required.
 
 ## Schema
 

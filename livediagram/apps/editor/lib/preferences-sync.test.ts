@@ -254,7 +254,7 @@ describe('only what changed goes to the server', () => {
   });
 });
 
-describe('a deployment that keeps no preferences (guest-only self-host)', () => {
+describe('a deployment that keeps no preferences (guest-only deployment)', () => {
   it('keeps them in this browser alone when the api answers prefs: null', async () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ uiScale: 1.2 }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');

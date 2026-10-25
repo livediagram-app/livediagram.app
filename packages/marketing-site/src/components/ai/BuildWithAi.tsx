@@ -61,7 +61,6 @@ function SectionHead({
 export function BuildWithAi({
   name,
   mcpUrl,
-  hostedMcpHost,
   clients,
   prompts,
   heroLede,
@@ -230,7 +229,7 @@ export function BuildWithAi({
             If it doesn&apos;t connect
           </h2>
           <div className="mt-8">
-            <AiTroubleshooting name={name} hostedMcpHost={hostedMcpHost} />
+            <AiTroubleshooting />
           </div>
           <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
             Still stuck? The{' '}

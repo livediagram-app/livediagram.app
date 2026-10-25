@@ -127,4 +127,4 @@ Staging exists mainly so a new Durable Object `[[migrations]]` tag, and every ot
 
 Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, the photo blob cap, the telemetry and media service URLs), which the workflow adds with `wrangler deploy --var` only in livedesign.app's own repository and then reads back off the live api worker. A fork deploys the committed config alone, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
 
-See [Self-hosting](../operations/self-hosting.md) for the step-by-step, and [Deployment](../specs/016-platform/deployment.md) for the deeper deployment contract.
+See [Deployment](../specs/016-platform/deployment.md) for the deeper deployment contract.

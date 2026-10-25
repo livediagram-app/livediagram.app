@@ -286,7 +286,7 @@ too.
 - A post is **hidden automatically** once reports have come from three distinct browsers on three distinct networks
   (address ranges, as for likes), so rotating addresses inside one range counts once.
 - **Moderation is self-serve: nobody reviews posts by hand.** Reports are the only moderation, there is no operator
-  role and no moderation page, so the hosted service and a self-host work the same way with nothing to configure.
+  role and no moderation page, so the hosted service and a deployment work the same way with nothing to configure.
 - **Hidden is final.** Nobody can restore a hidden post, and its author can neither edit nor remove it (removing would
   clear its reports and let the same document be published again). It stays visible to its author alone: marked
   **Hidden after reports** in the Share dialog, with no Edit Listing or Remove, and marked **Hidden** in My Shares.
@@ -379,7 +379,7 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 ## Turning the Community off
 
 The Community can be switched off remotely, with no redeploy of the apps: set the api worker's `COMMUNITY_ENABLED` to
-`false` (a plain variable or a secret; `0` and `off` count too). Unset, or anything else, leaves it on, so a self-host
+`false` (a plain variable or a secret; `0` and `off` count too). Unset, or anything else, leaves it on, so a deployment
 needs nothing. `GET /api/capabilities` reports it as `communityEnabled`.
 
 While it is off:
@@ -395,13 +395,13 @@ While it is off:
   `false` hides it.
 - The help centre's Community articles and the marketing sitemap are static and stay.
 
-## Self-hosting
+## Configuration
 
 Community needs liveworkspace's Community service, which holds the listings: an api without `COMMUNITY_KEY` reports
-the Community off, and a self-host that wants one runs the service (`liveworkspace/apps/community`) and points
-`COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` at it. The snapshot cache renders images, the app is static
+the Community off, and `COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` point at the service
+(`liveworkspace/apps/community`). The snapshot cache renders images, the app is static
 behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
-out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, which
+out, the pages are served exactly as built). Nothing is published until someone publishes. Publishing and My Shares need sign-in, which
 every build offers.
 
 ## Out of scope

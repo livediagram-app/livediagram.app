@@ -14,7 +14,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
 //     (only the keys that changed, debounced, one PUT at a time,
-//     lib/preferences-sync). Without liveworkspace accounts (a self-host
+//     lib/preferences-sync). Without liveworkspace accounts (a deployment
 //     with no sign-in) the cache is the only store.
 //
 // Cross-tab consistency: callers can listen for the native `storage`

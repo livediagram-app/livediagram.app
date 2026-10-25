@@ -1,6 +1,6 @@
 // The Build with AI page's clients and starter prompts (docs/specs/019-marketing/build-with-ai.md "The clients").
 // One address, MCP_URL, feeds every snippet, so the page can never show two. It is this deployment's MCP worker: a
-// self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the hosted one. The client list is
+// build set with NEXT_PUBLIC_MCP_ORIGIN (staging, say) shows its own, never the hosted one. The client list is
 // @liveworkspace/marketing-site's, bound to this product; the starter prompts are livediagram's own.
 
 import { mcpEndpoint, resolveMcpOrigin } from '@livediagram/api-schema';
@@ -15,7 +15,6 @@ export const MCP_URL = mcpEndpoint(resolveMcpOrigin(process.env.NEXT_PUBLIC_MCP_
 export const AI_PRODUCT: AiProduct = {
   name: 'livediagram',
   mcpUrl: MCP_URL,
-  hostedMcpHost: 'mcp.livediagram.app',
 };
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);

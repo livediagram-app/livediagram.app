@@ -148,9 +148,9 @@ account's own settings (or the defaults).
 
 <!-- /legacy-names -->
 
-### Self-host degradation
+### Degradation without the api
 
-When the api keeps no preferences (a self-hosted deployment without
+When the api keeps no preferences (a deployment without
 liveworkspace accounts, or an owner id the accounts database has no
 place for), `GET /api/preferences` answers `{ prefs: null }` and
 `PUT` answers 404 `preferences_not_stored`. The editor then keeps
@@ -158,7 +158,7 @@ preferences in this browser only (`keepPreferencesLocally`) and sends
 nothing more for the page's life: the localStorage cache is the only
 persistence, as in the original v1 design. When the api worker itself
 is unreachable the fetch fails and the cache stays authoritative. No
-required SaaS calls, self-hosting stays viable.
+required SaaS calls.
 
 ## Schema
 

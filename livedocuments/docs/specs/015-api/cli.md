@@ -144,9 +144,9 @@ In order of precedence:
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
   `watch` ran) is read again from the store, and the refused request is retried once with the new token.
   `LIVEDOCUMENTS_TOKEN` is never re-read.
-- `LIVEDOCUMENTS_TOKEN` goes to whichever host is active; set `LIVEDOCUMENTS_HOST` beside it for a self-host.
+- `LIVEDOCUMENTS_TOKEN` goes to whichever host is active; set `LIVEDOCUMENTS_HOST` beside it for another host.
 
-## Profiles and self-hosting
+## Profiles
 
 - `~/.config/livedocuments/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEDOCUMENTS_HOST` and
   `LIVEDOCUMENTS_PROFILE` choose one. The default is `https://livedocuments.app`.
@@ -154,7 +154,7 @@ In order of precedence:
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
-- A self-host profile never contacts livedocuments.app.
+- A profile on another host (staging, local dev) never contacts livedocuments.app.
 
 ## Local files
 

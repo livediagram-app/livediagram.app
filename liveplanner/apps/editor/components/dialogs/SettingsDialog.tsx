@@ -100,7 +100,7 @@ export function SettingsDialog({
   );
 
   // The header's liveplanner / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
-  // account whose settings liveworkspace keeps, so a guest, a workbench and a self-hosted editor see this app's alone.
+  // account whose settings liveworkspace keeps, so a guest, a workbench and an editor without liveworkspace accounts (local dev) see this app's alone.
   const allowAll = signedIn && !workbench && !preferencesKeptLocally();
   // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
   const [scope, setScope] = useSettingsScope(

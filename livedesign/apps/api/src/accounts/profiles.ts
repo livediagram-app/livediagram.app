@@ -9,7 +9,7 @@
 // carries it at once, since the room broadcasts what each editor says.
 //
 // A name is decoration: when the accounts Worker can't be reached, a read answers what it has and logs,
-// never failing the request it serves. Without an accounts Worker (a self-host with no sign-in) nobody has
+// never failing the request it serves. Without an accounts Worker (a deployment with no sign-in) nobody has
 // a stored profile, and the editor keeps its own in the browser.
 
 import { ProfileError, readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';

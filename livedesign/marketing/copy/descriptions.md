@@ -21,7 +21,7 @@ For HTML `<meta name="description">` and search snippets.
 Alternate:
 
 > Design logos, wireframes and photos with your team, live. No sign-in wall, no
-> paid tier. Open source and self-hostable on Cloudflare. [133]
+> paid tier. Free and open source. [117]
 
 ---
 
@@ -31,8 +31,7 @@ For social posts and short "about" fields.
 
 > livedesign is a multiplayer page editor in the browser: logos, wireframes and
 > photos. Open a link and design with your team, with live cursors and comments,
-> then present your pages or export them. No sign-in wall. MIT-licensed, free,
-> and self-hostable. [252]
+> then present your pages or export them. No sign-in wall. MIT-licensed and free. [236]
 
 ---
 
@@ -43,7 +42,7 @@ For directory cards and "short pitch" fields.
 > livedesign is a real-time editor for logos, wireframes and photos that works
 > without signing in. Open a link and design with your team: live cursors,
 > comments, templates for each kind of page, and undo that never touches anyone
-> else's work. MIT-licensed, free forever, and self-hostable on Cloudflare. [47 words]
+> else's work. MIT-licensed and free forever. [42 words]
 
 ---
 
@@ -61,8 +60,7 @@ For Product Hunt, app store short descriptions, README intros.
 > Start from a template, present a tab's pages full screen, and export them as
 > PDF, PNG or SVG.
 >
-> It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [117 words]
+> It is MIT-licensed and free for everyone with no paid tier. [111 words]
 
 ---
 
@@ -93,7 +91,7 @@ For longer listing bodies and "about this project" sections.
 > everything in tabs and nested folders.
 >
 > livedesign is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [241 words]
+> for one. [234 words]
 
 ---
 
@@ -150,8 +148,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > livedesign is MIT-licensed and publicly viewable. The hosted version at
 > livedesign.app is free for everyone, with no paid tier and no plan to
-> introduce one. You can self-host the entire stack on your own Cloudflare
-> account; the open-source core never calls home and never gates features behind
+> introduce one. The open-source core never calls home and never gates features behind
 > a license check.
 >
 > Open a link, design together, show it. That is the whole pitch. [443 words]

@@ -32,6 +32,16 @@ describe('checkExport', () => {
     ]);
   });
 
+  it('refuses a browser section that lists no works', () => {
+    const empty: LicencesManifest = {
+      ...manifest,
+      sections: [{ side: 'browser', apps: [{ id: 'marketing', label: 'Website' }], works: [] }],
+    };
+    expect(
+      checkExport({ manifest: empty, htmlBytes: 10, exportedTexts: ['aaaa.txt', 'bbbb.txt'] }),
+    ).toEqual(['the browser section lists no works']);
+  });
+
   it('refuses a page listing no texts at all', () => {
     expect(
       checkExport({ manifest: { ...manifest, texts: {} }, htmlBytes: 10, exportedTexts: [] }),

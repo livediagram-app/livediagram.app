@@ -4,7 +4,7 @@
 // notifications, the editors' chrome), and this app's own, `livediagram.app`. The editor sees one
 // flat set: joinSettings on the way out, splitSettings on the way in.
 //
-// With no accounts Worker configured (a guest-only self-host), or an owner id liveworkspace can't
+// With no accounts Worker configured (a guest-only deployment), or an owner id liveworkspace can't
 // hold, there is nowhere to keep them: the preferences stay in the browser alone.
 
 import {
