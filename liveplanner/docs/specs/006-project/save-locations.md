@@ -16,18 +16,28 @@ anything on the canvas. A project in This Browser still says what it is on the p
 | **liveplanner**  | A normal cloud project, saved to the api (D1), reachable from any device.                                    |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
-## The default
+## The default depends on who is creating
 
-Every new plan starts on **liveplanner**, whoever is creating it. A guest has a liveworkspace guest identity
-([liveworkspace/docs/accounts.md "Guests"](../../../../liveworkspace/docs/accounts.md)), so a guest's plans are index
-items like anyone's: listed in the shared Explorer ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)),
-and moved to the account when the guest signs in. (Guests used to start in This Browser, to keep a visitor's
-experiments off the server; with the Explorer listing the index's items, a plan in This Browser would never show
-there.) This Browser is chosen only on purpose, with **Take Offline**.
+| Who                | Default          |
+| ------------------ | ---------------- |
+| A guest            | **This Browser** |
+| A signed-in person | **liveplanner**  |
 
-- One function answers it: `defaultSaveLocationFor()` in `apps/editor/lib/save-locations.ts`. Every create from
-  `/new` asks it at commit, through `resolveSaveLocation` in `useNewProjectLocation`
-  (`apps/editor/app/new/useNewProjectLocation.ts`), so the create never waits on sign-in to decide.
+Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
+A project in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
+browser's projects beside the index's ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md),
+[Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
+
+- One function answers it: `defaultSaveLocationFor({ signedIn })` in
+  `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
+  `resolveSaveLocation` in `useNewProjectLocation` (`apps/editor/app/new/useNewProjectLocation.ts`): the create on
+  mount, its Retry, and the wizard-less links (`/new?template=`, `/new?blank=1`).
+- A `/new?folder=` / `?team=` context names a server place, so it is
+  liveplanner whoever is creating.
+- Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
+  ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
+  A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
+  a project in This Browser; a guest never waits.
 - There is no per-person override: no setting chooses the store ([User preferences](../007-editor/user-preferences.md)).
 
 ## The folder browser
@@ -122,7 +132,8 @@ its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-The Offline Mode article says every new plan starts on liveplanner, and how to move one either way. No article of its own: each location's article (offline today) is where the substance
+The Offline Mode article says a guest's new plans start in this browser and a signed-in person's on liveplanner,
+and how to move one either way. No article of its own: each location's article (offline today) is where the substance
 is.
 
 ## Implementation map

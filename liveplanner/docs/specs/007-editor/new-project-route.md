@@ -231,9 +231,9 @@ Mode's second effect off):
   workspace frame's create in place reads too. A template link fires `UI / Used / TemplateLink`. The marketing site's
   template gallery links every card here ([Marketing site](../019-marketing/marketing-site.md)).
 - **Stored** where [Save Locations → The default depends on who is creating](../006-project/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), liveplanner for everyone else. Decided at the create by
+  says: This Browser for a guest, liveplanner for a signed-in person. Decided at the create by
   `resolveSaveLocation` (`app/new/useNewProjectLocation.ts`): a guest never waits, and is created without waiting
-  for identity at all ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)); a browser that
+  for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)); a browser that
   looks signed in waits for identity, so a signed-in person is never handed a project in This Browser.
 - **Filed** (liveplanner) in the `/new?folder=` / `?team=` context when there is one, an explicit placement that makes
   the create a cloud one whoever is creating; otherwise the create carries no placement and the server files it in
