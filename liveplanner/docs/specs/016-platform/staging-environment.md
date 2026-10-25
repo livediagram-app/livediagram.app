@@ -235,9 +235,8 @@ cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 #    the four _STAGING entries in the table above
 ```
 
-**Done** — both custom domains are attached in the Cloudflare dashboard (the deploy
-token is scoped to upload worker scripts, not to manage DNS, so this step can never be
-automated from the workflow — same as production, [Deployment](deployment.md)):
+**Nothing to do for hostnames**: both are declared in the workers' `[env.staging]` blocks
+and attached by the deploy itself, as production's are ([Deployment](deployment.md#custom-domain)):
 
 - `staging.liveplanner.app` → `liveplanner-router-staging`
 - `mcp-staging.liveplanner.app` → `liveplanner-mcp-staging`

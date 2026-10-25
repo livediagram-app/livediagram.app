@@ -4,7 +4,7 @@ A small Cloudflare Worker that fronts the apex domain (`liveplanner.app`) and ro
 
 - **Workspace:** `apps/router` (`@liveplanner/router`).
 - **Runtime:** Cloudflare Workers.
-- **Production hostname:** `liveplanner.app` (custom domain configured in the Cloudflare dashboard). Default Workers URL also remains reachable.
+- **Production hostname:** `liveplanner.app` and `www.liveplanner.app`; staging's is `staging.liveplanner.app`. Each is a custom domain declared in `apps/router/wrangler.toml`, attached by `wrangler deploy` ([Deployment](deployment.md#custom-domain)). Default Workers URL also remains reachable.
 
 ## Routing table
 

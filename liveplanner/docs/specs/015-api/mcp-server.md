@@ -60,7 +60,8 @@ stays a pure REST/WS surface.
   This is the reuse-over-duplication rule: the MCP must not re-implement
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.liveplanner.app`** (its own hostname,
-  like the api). Add the service to the deploy workflow alongside marketing /
+  `mcp-staging.liveplanner.app` in staging, each a custom domain declared in
+  `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). Add the service to the deploy workflow alongside marketing /
   live / telemetry / api (it depends on api existing, so it deploys in the same
   wave as api or just after). The `router` worker is unchanged — `mcp.` is a
   separate host, not a path under the main hostname, so it carries no router

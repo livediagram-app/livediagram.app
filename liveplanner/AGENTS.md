@@ -240,7 +240,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 
 - The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and its source is **not public**. Never add contributing, forking or self-hosting wording, or links to the repository, to anything users see.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
-- liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
+- The Cloudflare ids in the wrangler configs are the live liveworkspace account's. Production deploys, the CLI publish and the MCP registry publish are manual-only ([Deployment](docs/specs/016-platform/deployment.md)).
 - Optional integrations degrade, never break: the editor always offers sign-in (the liveworkspace accounts Worker), and when the api has no accounts settings every visitor settles as a guest.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 

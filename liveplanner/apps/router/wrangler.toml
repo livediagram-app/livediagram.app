@@ -3,6 +3,13 @@ name = "liveplanner-router"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
+# The public hostnames (docs/specs/016-platform/deployment.md "Custom domain"), attached by
+# `wrangler deploy` with their DNS records and certificates. www is the canonical origin
+# links are built from (APP_BASE_URL in apps/api/hosted-vars.json), so it is attached too.
+routes = [
+  { pattern = "liveplanner.app", custom_domain = true },
+  { pattern = "www.liveplanner.app", custom_domain = true },
+]
 
 # Service bindings to the marketing and live apps.
 # The `service` values must match the deployed Worker names of each downstream app.
@@ -52,9 +59,8 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveplanner-router-staging` and fronts
-# https://staging.liveplanner.app (the custom domain is attached in the
-# Cloudflare dashboard — the deploy token has no zone scope, same as
-# production).
+# https://staging.liveplanner.app, its custom domain declared below (routes are
+# non-inheritable, so production's two never reach staging).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
 # non-inheritable, so these four are the staging router's only downstreams,
@@ -69,6 +75,7 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "liveplanner-router-staging"
+routes = [{ pattern = "staging.liveplanner.app", custom_domain = true }]
 
 [[env.staging.services]]
 binding = "MARKETING"

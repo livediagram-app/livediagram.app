@@ -17,7 +17,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]` and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, Durable Object bindings, the account it deploys to (`account_id`, the liveworkspace account) and its public hostnames (see [Custom domain](#custom-domain)). Secrets **never** go in `wrangler.toml`. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 
@@ -154,7 +154,16 @@ Subsequent deploys are idempotent updates.
 
 ## Custom domain
 
-Production lives at **`https://liveplanner.app`**. The apex routes to the router worker (configured in the Cloudflare dashboard, not in `wrangler.toml`). From there:
+Production lives at **`https://liveplanner.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
+
+| Worker                       | Hostnames                                 |
+| ---------------------------- | ----------------------------------------- |
+| `liveplanner-router`         | `liveplanner.app`, `www.liveplanner.app`  |
+| `liveplanner-mcp`            | `mcp.liveplanner.app`                     |
+| `liveplanner-router-staging` | `staging.liveplanner.app`                 |
+| `liveplanner-mcp-staging`    | `mcp-staging.liveplanner.app`             |
+
+`wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.liveplanner.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `liveplanner.app` ([Creating the API token](#creating-the-api-token)); a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. From the router:
 
 - `https://liveplanner.app/api/*` → api worker (REST + WebSocket).
 - `https://liveplanner.app/live` and `https://liveplanner.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).

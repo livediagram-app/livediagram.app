@@ -9,6 +9,10 @@ compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
 # bundled by wrangler directly.
 compatibility_flags = ["nodejs_compat"]
+# Its own hostname (docs/specs/016-platform/deployment.md "Custom domain"), attached by `wrangler deploy`
+# with its DNS record and certificate. Other deployments set their own host here, then point
+# CONSENT_BASE_URL + the editor app's NEXT_PUBLIC_MCP_ORIGIN at it.
+routes = [{ pattern = "mcp.liveplanner.app", custom_domain = true }]
 
 # Pin a fixed local dev port so `pnpm dev` doesn't race the api worker:
 # both `wrangler dev` invocations otherwise default to 8787. liveplanner runs
@@ -36,14 +40,6 @@ CONSENT_BASE_URL = "https://liveplanner.app"
 # worker sends no telemetry. TELEMETRY_URL (a var, unset meaning production's
 # https://liveworkspace.app/api/telemetry) names the service. See apps/api/wrangler.toml.
 
-# Its own hostname `mcp.liveplanner.app` (docs/specs/015-api/mcp-server.md) — NOT declared here. Like
-# every other worker on this platform (the router included), the public hostname
-# is attached in the Cloudflare dashboard, not via wrangler: the deploy
-# CF_API_TOKEN is scoped to upload worker scripts, not manage zone routes / DNS.
-# Attach the custom domain once under Workers → liveplanner-mcp → Domains &
-# Routes. Other deployments do the same with their own host, then point
-# CONSENT_BASE_URL + the editor app's NEXT_PUBLIC_MCP_ORIGIN at it.
-
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`
 # token, which the api already accepts on every route (docs/specs/015-api/public-api-and-tokens.md §3.3), so no
@@ -61,9 +57,9 @@ id = "e791bf14dbe2418c9447c9c1813e0f8b"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveplanner-mcp-staging` on its own host,
-# `mcp-staging.liveplanner.app` (attached in the Cloudflare dashboard).
+# `mcp-staging.liveplanner.app`.
 # `compatibility_flags`, `[[rules]]` and `[dev]` are inheritable and carry
-# over; vars, the service binding and KV are not, so they are restated.
+# over; routes, vars, the service binding and KV are not, so they are restated.
 # ---------------------------------------------------------------------------
 
 # Named explicitly: wrangler would append "-staging" to the top-level
@@ -71,6 +67,7 @@ id = "e791bf14dbe2418c9447c9c1813e0f8b"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "liveplanner-mcp-staging"
+routes = [{ pattern = "mcp-staging.liveplanner.app", custom_domain = true }]
 
 [env.staging.vars]
 # The consent page lives in the STAGING editor app — a staging OAuth flow must
