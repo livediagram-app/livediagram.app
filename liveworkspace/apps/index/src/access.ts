@@ -94,6 +94,10 @@ export async function loadItem(
   if (!row) return notFound();
   // An app acting for a person reaches its own items only; another app's answers as missing.
   if (caller.person?.app && caller.person.app !== row.app) return notFound();
+  // The Drive mirror reaches the person's personal items only; a team's, or anyone else's, answers as missing.
+  if (caller.person?.drive && (row.team_id !== null || row.owner_id !== caller.person.id)) {
+    return notFound();
+  }
   const access = await accessTo(env, row, caller);
   if (access instanceof Response) return access;
   if (options.manage && access.via === 'link') return fail(403, 'forbidden');

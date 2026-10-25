@@ -5,7 +5,9 @@
 //   - a link visitor, by a share code (and its password), with or without a person;
 //   - an app's server, by its key and X-Index-App;
 //   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
-//     token) as an app's server does, for the app X-Index-App names.
+//     token) as an app's server does, for the app X-Index-App names;
+//   - the Google Drive mirror's service, by its key, X-Index-App: drive and X-Index-Person: that account, for
+//     their personal items and folders only, in every app (liveworkspace/docs/drive.md "Contracts > The index").
 
 import { createPersonVerifier } from '@liveworkspace/auth-client';
 import {
@@ -29,6 +31,9 @@ export type Person = {
   teams: string[];
   // Set when an app's server acts for the person: only that app's items are theirs to reach here.
   app?: App;
+  // Set when the Drive mirror acts for the person: only their personal items (any app's) and their own folders
+  // are theirs to reach here, never a team's or one shared with them. Their teams are always empty.
+  drive?: true;
 };
 
 export type ShareCredentials = { code: string; password: string | null };
@@ -79,14 +84,25 @@ export function shareOf(request: Request): ShareCredentials | null {
   return { code: code.toUpperCase(), password: password || null };
 }
 
+// What the Drive mirror's service names itself in X-Index-App when it acts for a person.
+export const DRIVE_DELEGATE = 'drive';
+
 // The account an app's server acts for, or null when the request names none. A request that names one without
-// the app's key, or names a guest or a malformed id, is refused rather than read as nobody.
+// the app's key, or names a guest or a malformed id, is refused rather than read as nobody. The Drive mirror's
+// service naming a guest is `guest` (403): its key is right, the person can't be mirrored.
 export async function delegatedPersonOf(
   request: Request,
   env: Env,
-): Promise<Person | null | 'refused'> {
+): Promise<Person | null | 'refused' | 'guest'> {
   const personId = request.headers.get(INDEX_PERSON_HEADER);
   if (personId === null) return null;
+  if (request.headers.get(INDEX_APP_HEADER) === DRIVE_DELEGATE) {
+    if (!(await isDriveCaller(request, env))) return 'refused';
+    if (personId.startsWith('guest_')) return 'guest';
+    if (!isId(personId) || personId.includes(':')) return 'refused';
+    // X-Index-Teams is ignored: a team's items are never the mirror's.
+    return { id: personId, kind: 'account', teams: [], drive: true };
+  }
   // The app's own key, or accounts' (its workbench service acting for a token's account on one app's items,
   // liveworkspace/docs/workbench.md).
   const app = (await callerApp(request, env)) ?? (await mergeDelegateApp(request, env));
@@ -102,9 +118,13 @@ export async function delegatedPersonOf(
   return { id: personId, kind: 'account', teams, app };
 }
 
-export async function callerOf(request: Request, env: Env): Promise<Caller | null> {
+// The caller, null for a refused delegate (401), or `guest` for the Drive mirror naming a guest (403).
+export async function callerOf(request: Request, env: Env): Promise<Caller | null | 'guest'> {
   const delegated = await delegatedPersonOf(request, env);
   if (delegated === 'refused') return null;
+  if (delegated === 'guest') return 'guest';
+  // The mirror never comes in through a link.
+  if (delegated?.drive) return { person: delegated, share: null };
   return { person: delegated ?? (await personOf(request, env)), share: shareOf(request) };
 }
 
@@ -123,6 +143,14 @@ async function mergeDelegateApp(request: Request, env: Env): Promise<App | null>
   const app = request.headers.get(INDEX_APP_HEADER);
   if (!isApp(app)) return null;
   return (await isMergeCaller(request, env)) ? app : null;
+}
+
+// Whether a request carries the Drive mirror's key (INDEX_KEY_DRIVE).
+export async function isDriveCaller(request: Request, env: Env): Promise<boolean> {
+  const expected = env.INDEX_KEY_DRIVE?.trim();
+  const token = bearerOf(request);
+  if (!expected || !token) return false;
+  return timingSafeEqual(token, expected);
 }
 
 export async function isMergeCaller(request: Request, env: Env): Promise<boolean> {

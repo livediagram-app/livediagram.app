@@ -27,6 +27,7 @@ import { callApp } from './app-calls';
 import { personalScope, scopeOf, teamScope, type Person } from './auth';
 import { decodeCursor, isId, parseLimit } from './codec';
 import { defaultPlacement } from './default-placement';
+import { touchItem } from './drive';
 import { INTENT_MAX, OPEN_MEMORY_MAX, PURGE_NOW_MAX } from './config';
 
 const DAY_MS = 86_400_000;
@@ -141,6 +142,8 @@ export async function parseListSpec(
   if (app) spec.app = app;
   if (cursor) spec.cursor = cursor;
   if (scopes) spec.scopes = scopes;
+  // The Drive mirror lists the person's personal items only, in every view: nothing shared with them, no team's.
+  if (person.drive) spec.scopes = [personalScope(person.id)];
   const folder = params.get('folder');
   if (folder !== null) {
     if (!isId(folder)) return badRequest('invalid_folder');
@@ -171,7 +174,8 @@ export async function parseListSpec(
   }
   const any = params.get('any');
   if (any !== null) {
-    if (any !== '1') return badRequest('invalid_query');
+    // Search's whole reach, links included: not the mirror's to ask.
+    if (any !== '1' || person.drive) return badRequest('invalid_query');
     spec.any = true;
   }
   return spec;
@@ -210,6 +214,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
     .bind(...(appParam ? [scope, appParam, EMPTY_TRASH_MAX] : [scope, EMPTY_TRASH_MAX]))
     .all<Pick<ItemRow, 'id' | 'app'>>();
   await purgeRows(env, results);
+  if (results.length > 0 && !team) ctx.drive.add(person.id);
   if (results.length > 0) {
     const ids = results.slice(0, PURGE_NOW_MAX).map((r) => r.id);
     ctx.waitUntil(drainTombstonesSoon(env, ids));
@@ -298,6 +303,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     if (String(err).includes('UNIQUE')) return conflict('item_exists');
     throw err;
   }
+  touchItem(ctx.drive, row);
   const access: Access = { level: 'edit', tabId: null, via: 'owner', code: null };
   const grant = await mintGrant(env, {
     app: row.app,
@@ -474,6 +480,11 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
       .bind(title, ownerId, teamId, scope, folderId, updatedAt, id),
     ...events,
   ]);
+  // Renamed or moved: its owner's mirror before and after (into or out of a team, one side is personal).
+  if (events.length > 0) {
+    touchItem(ctx.drive, row);
+    touchItem(ctx.drive, { owner_id: ownerId, team_id: teamId });
+  }
   const next: ItemRow = {
     ...row,
     title,
@@ -519,6 +530,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   if (url.searchParams.get('permanent') === 'true' && !teammate) {
     if (offline) await env.INDEX_DB.batch(takenOffline(Date.now()));
     await purgeRows(env, [{ id: row.id, app: row.app }]);
+    touchItem(ctx.drive, row);
     ctx.waitUntil(drainTombstonesSoon(env, [row.id]));
     console.log('[index] purged', { app: row.app });
     return noContent();
@@ -546,6 +558,7 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     );
   }
   await db.batch(statements);
+  if (row.trashed_at === null) touchItem(ctx.drive, row);
   return noContent();
 }
 
@@ -568,6 +581,7 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
     );
   }
   await db.batch(statements);
+  if (loaded.row.trashed_at !== null) touchItem(ctx.drive, loaded.row);
   const row = await getItemRow(env, id);
   return json({ item: await itemFor(env, caller.person, row!, loaded.access) });
 }
@@ -623,6 +637,7 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     console.warn('[index] copy failed', { app: from.app, error: copied.error });
     return fail(502, 'copy_failed');
   }
+  touchItem(ctx.drive, row);
   // Through a link: Copied by a Visitor, on the source's owner's Timeline.
   recordVisitorCopy(env, ctx.waitUntil, from, person, access, now);
   const ownAccess: Access = { level: 'edit', tabId: null, via: 'owner', code: null };

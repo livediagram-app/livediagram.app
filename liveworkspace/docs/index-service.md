@@ -26,6 +26,7 @@ apps/index/src/timeline.ts    the Timeline: recording events, and a person's fee
 apps/index/src/purge.ts       purging, tombstones and the daily sweep
 apps/index/src/merge.ts       a guest becoming an account
 apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
+apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
 ```
 
 ## Who calls it
@@ -53,6 +54,27 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
   `POST /api/index/internal/workbench-close` `{ app, pairingId, itemIds }` (up to 500) to close a pairing's sessions:
   the index calls `${APP_ORIGIN_<APP>}/api/internal/items/:id/workbench-close` `{ pairingId }` for each, ten at a
   time, with the app's key, and answers `{ closed, unreached }`.
+- **The Google Drive mirror's service** ([drive.md](drive.md) "Contracts > The index"), with `INDEX_KEY_DRIVE`:
+  - acting for an account with `X-Index-App: drive` and `X-Index-Person`, on the person routes `items`, `trash` and
+    `folders` only (anything else, `/shared` and an item's `share` routes included, answers `404`). It reaches
+    that person's **personal** items, in every app: lists aren't forced to one app (an `app` or `apps` filter it
+    sends still applies), every list view is narrowed to their personal scope (a `team` filter is refused as for
+    anyone outside the team, `view=shared` is empty, `any` is refused), and an item that is a team's or someone
+    else's, shared with them or not, answers `404` to read and write. Folders are their own tree. `X-Index-Teams`
+    and `X-Share-Code` are ignored; a guest id answers `403`, a wrong key `401` (`auth.ts`, `access.ts`,
+    `drive.test.ts`);
+  - setting the person's `drive_mirrored` flag (`drive_people`): `PUT` / `DELETE /app/people/:id/drive` (`204`),
+    `GET` → `{ mirrored }`. Only its key opens these, and its key opens no other `/app` route. Purging a person
+    clears it.
+
+  The index calls it back: after any request that changed a flagged person's personal item or folder (made,
+  renamed, moved between folders or into or out of a team, trashed, restored, copied, purged, the Trash emptied,
+  a folder made, renamed, moved or deleted, a guest's work merged in, or a summary push that raised `updatedAt`),
+  and after the daily sweep for the personal items it trashed or purged, it sends `POST /app/changes`
+  `{ personId, at }` with `DRIVE_KEY_INDEX` through its `DRIVE` service binding, once per person per request,
+  after the response (`waitUntil`). The request collects the people it touched; one read of `drive_people` by
+  primary key picks the flagged ones. A failed call is logged (`index: drive-signal failed`) and dropped. Without
+  the binding nothing is read or sent.
 
 ## Decisions the contract left open
 
@@ -80,6 +102,9 @@ apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cro
 | `INDEX_KEY_<APP>`   | secret, per app (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`); the app's `INDEX_KEY`                     |
 | `GRANT_SIGNING_KEY` | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                |
 | `MERGE_KEY`         | secret: accounts' `INDEX_MERGE_KEY`                                                                                      |
+| `INDEX_KEY_DRIVE`   | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                        |
+| `DRIVE_KEY_INDEX`   | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                               |
+| `DRIVE`             | service binding to `liveworkspace-drive` (`-staging`); commented out in `wrangler.toml` until that Worker is deployed    |
 | `ACCOUNTS_URL`      | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index` |
 | `INDEX_AUDIENCES`   | var: every app's API resource, comma-separated                                                                           |
 | `APP_ORIGIN_<APP>`  | var: where each app's internal routes are                                                                                |
@@ -110,7 +135,9 @@ one statement reading one index range of at most `limit + 1` rows per scope the 
 each team's), never the whole feed (`timeline.test.ts`: two pages from 10,000 of a person's events among
 100,000 others in about 15 ms); an event is recorded in the batch of the change it is about, two or three
 statements more. Each list sorts the person's matching rows to
-page them, so a page's cost grows with what that person holds (a few milliseconds at 2,000).
+page them, so a page's cost grows with what that person holds (a few milliseconds at 2,000). The Drive mirror's
+change signal costs a write request nothing before it answers: afterwards, one primary-key read of `drive_people`
+for the people it touched (usually one), and a call per flagged person; without the `DRIVE` binding, nothing.
 
 ## Running it locally
 
@@ -137,7 +164,9 @@ Cloudflare account.
 2. Apply the migrations: `corepack pnpm db:migrate:remote` (add `--env staging` for staging).
 3. Put the secrets, each with `wrangler secret put` (and `--env staging`): `GRANT_SIGNING_KEY` (made as
    above, a different one per environment), `MERGE_KEY` (the same value as accounts' `INDEX_MERGE_KEY`),
-   and `INDEX_KEY_<APP>` for each app (the same value as that app's `INDEX_KEY`).
+   and `INDEX_KEY_<APP>` for each app (the same value as that app's `INDEX_KEY`). For the Drive mirror,
+   `INDEX_KEY_DRIVE` and `DRIVE_KEY_INDEX` (the same values as the service's), and once `liveworkspace-drive` is
+   deployed, uncomment the `DRIVE` binding: a deploy is refused while a binding's target Worker doesn't exist.
 4. Check the staging app origins and API resources in `wrangler.toml` against each app's staging deploy.
 5. `wrangler deploy` (and `--env staging`). The daily cron purges the Trash and retries missed purges;
    the 15-minute one finishes closed accounts' purges and tells the apps what was purged.

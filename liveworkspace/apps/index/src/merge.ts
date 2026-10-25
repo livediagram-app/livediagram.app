@@ -5,6 +5,7 @@
 // account's stays. Running it again finds nothing left to move.
 
 import { isMergeCaller } from './auth';
+import { sendDriveSignals } from './drive';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
@@ -127,6 +128,9 @@ export async function handleMerge(
     db.prepare('DELETE FROM collab_form_reads WHERE person_id = ?').bind(guest),
   ]);
   const items = (results[1] as D1Result).meta.changes ?? 0;
+  const folders = (results[2] as D1Result).meta.changes ?? 0;
+  // The account's own tree grew: its Drive mirror, if any, catches up.
+  if ((items > 0 || folders > 0) && env.DRIVE) waitUntil(sendDriveSignals(env, [user]));
   waitUntil(
     drainPersonMerges(env).catch((err: unknown) => {
       console.warn('[index] person merges failed', { error: String(err) });

@@ -6,12 +6,13 @@
 import { continuePurges, FREQUENT_CRON, handlePersonPurge } from './account-purge';
 import { handleApp } from './app-routes';
 import { callerOf } from './auth';
+import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
 import type { PersonContext, RouteContext } from './context';
 import { indexEnabled, type Env } from './env';
 import { handleFolders } from './folders';
 import { publicKeys } from './grants';
-import { fail, json, notFound, unauthorized } from './http';
+import { fail, forbidden, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleMerge } from './merge';
@@ -34,6 +35,9 @@ function splitPath(path: string): string[] | null {
 
 // The lists an app acting for a person sees filtered to that app.
 const LISTS = new Set(['items', 'trash', 'shared', 'inbox', 'timeline']);
+
+// What the Drive mirror acting for a person may reach: their items, Trash and folders (liveworkspace/docs/drive.md).
+const DRIVE_ROUTES = new Set(['items', 'trash', 'folders']);
 
 // The routes that need a person: anything listing or changing a person's own things.
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
@@ -90,37 +94,43 @@ const worker = {
     if (!indexEnabled(env)) return notFound();
     const segments = splitPath(url.pathname.slice(API_PATH.length));
     if (!segments) return notFound();
-    // Server to server: an app's pushes, and accounts' merge. No person, no browser.
-    if (segments[0] === 'app') return handleApp(request, env, segments);
+    const waitUntil = (promise: Promise<unknown>) => ctx.waitUntil(promise);
+    // Server to server: an app's pushes, the Drive mirror's flag, and accounts' merge. No person, no browser.
+    if (segments[0] === 'app') return handleApp(request, env, segments, waitUntil);
     if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
-      return handleMerge(request, env, (promise) => ctx.waitUntil(promise));
+      return handleMerge(request, env, waitUntil);
     }
     // Accounts' team and API token events for the Timeline.
     if (segments[0] === 'internal' && segments[1] === 'timeline' && segments.length === 2) {
       return handleAccountTimeline(request, env);
     }
     if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
-      return handlePersonPurge(request, env, (promise) => ctx.waitUntil(promise));
+      return handlePersonPurge(request, env, waitUntil);
     }
     // Accounts' workbench service closing the rooms a pairing's sessions joined.
     if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
       return handleWorkbenchClose(request, env);
     }
     const caller = await callerOf(request, env);
+    if (caller === 'guest') return forbidden();
     if (!caller) return unauthorized();
-    // An app acting for a person reaches that app's items only: its lists are that app's.
+    // An app acting for a person reaches that app's items only: its lists are that app's. The Drive mirror's
+    // lists are every app's (an `app` or `apps` filter it sends still applies), its reach narrowed instead.
     const delegate = caller.person?.app;
     if (delegate && LISTS.has(segments[0] ?? '') && segments.length === 1) {
       url.searchParams.set('app', delegate);
     }
-    return route({
-      request,
-      env,
-      url,
-      segments,
-      caller,
-      waitUntil: (promise) => ctx.waitUntil(promise),
-    });
+    if (caller.person?.drive) {
+      const share = segments[2] === 'share' || segments[2] === 'share-password';
+      if (!DRIVE_ROUTES.has(segments[0] ?? '') || (segments[0] === 'items' && share)) {
+        return notFound();
+      }
+    }
+    const drive: DriveTouched = new Set();
+    const response = await route({ request, env, url, segments, caller, waitUntil, drive });
+    // After the answer: the Drive mirror hears of its people's changes (nothing without its binding).
+    if (drive.size > 0 && env.DRIVE) ctx.waitUntil(sendDriveSignals(env, drive));
+    return response;
   },
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests

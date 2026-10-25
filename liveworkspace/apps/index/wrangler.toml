@@ -19,6 +19,9 @@ workers_dev = false
 #   GRANT_SIGNING_KEY   the private ES256 JWK (with its kid) grants are signed with; its public half
 #                       is served at /api/index/jwks.
 #   MERGE_KEY           accounts' INDEX_MERGE_KEY: it moves a guest's things to their new account.
+#   INDEX_KEY_DRIVE     the Drive mirror's INDEX_KEY_DRIVE: it acts for a person on their personal items and
+#                       folders, and sets their drive_mirrored flag (liveworkspace/docs/drive.md).
+#   DRIVE_KEY_INDEX     the Drive mirror's DRIVE_KEY_INDEX: the index's change signal carries it.
 [vars]
 ENVIRONMENT = "production"
 # The accounts origin: access and guest tokens are checked against `${ACCOUNTS_URL}/api/auth`, and
@@ -44,6 +47,13 @@ migrations_dir = "migrations"
 # (src/account-purge.ts FREQUENT_CRON): carry on closed accounts' purges and tell the apps what was purged.
 [triggers]
 crons = ["23 4 * * *", "*/15 * * * *"]
+
+# The Google Drive mirror's service, which the change signal goes through (src/drive.ts). A deploy is refused
+# while a service binding's target Worker doesn't exist, so it stays off until liveworkspace-drive is deployed;
+# without it the index sends no signal and nothing else changes. Uncomment then:
+# [[services]]
+# binding = "DRIVE"
+# service = "liveworkspace-drive"
 
 [env.staging]
 name = "liveworkspace-index-staging"
@@ -71,3 +81,8 @@ migrations_dir = "migrations"
 
 [env.staging.triggers]
 crons = ["23 4 * * *", "*/15 * * * *"]
+
+# As production's: uncomment once liveworkspace-drive-staging is deployed.
+# [[env.staging.services]]
+# binding = "DRIVE"
+# service = "liveworkspace-drive-staging"

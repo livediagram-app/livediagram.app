@@ -32,11 +32,11 @@ function readerFor(env: Env): TeamReader | null {
 }
 
 // Whether `person` is in `teamId`, adding it to their teams for the rest of the request when accounts says
-// they are now. Accounts only: a guest has no teams, and an app's delegated person carries the teams the app
-// checked (the app asks the same way, @liveworkspace/index-app teams.ts).
+// they are now. Accounts only: a guest has no teams, an app's delegated person carries the teams the app
+// checked (the app asks the same way, @liveworkspace/index-app teams.ts), and the Drive mirror reaches no team.
 export async function inTeamNow(env: Env, person: Person, teamId: string): Promise<boolean> {
   if (person.teams.includes(teamId)) return true;
-  if (person.kind !== 'account' || person.app) return false;
+  if (person.kind !== 'account' || person.app || person.drive) return false;
   const claimed = person.teams.map((id) => ({ id, name: '', role: 'member' as const }));
   const teams = await access.teamsOf(readerFor(env), person.id, claimed, teamId);
   for (const t of teams) if (!person.teams.includes(t.id)) person.teams.push(t.id);

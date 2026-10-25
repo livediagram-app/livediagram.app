@@ -40,6 +40,15 @@ comma-separated, ≤ 50>`. Every person route then answers as that account, but 
   `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
   malformed person is refused (401).
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
+- **The Google Drive mirror's service acting for an account** ([drive.md](drive.md) "Contracts > The index"):
+  `Authorization: Bearer <INDEX_KEY_DRIVE>`, `X-Index-App: drive` and `X-Index-Person: <account id>`. It answers
+  as that account on `/items`, `/trash` and `/folders` only (every other person route, `/shared` and an item's
+  `share` routes among them, is 404), for the account's **personal** items in every app: its lists are not
+  filtered to one app (an `app` or `apps` filter it sends still applies) but every view is narrowed to the
+  personal scope, so nothing shared with them or in a team is listed (`view=shared` is empty, a `team` filter is
+  403, `any` is 400); a team's item, or anyone else's, answers 404 to read and write; it cannot move an item into
+  a team or make one there (403). Folders are the account's own tree. `X-Index-Teams` and `X-Share-Code` are
+  ignored. A guest id is refused 403; a wrong key, a link or a malformed person 401.
 
 Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
 `cursor`; a response carries `nextCursor` when there is more.
@@ -182,6 +191,8 @@ holds for that person:
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
   `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
+
+Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
 
 Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
 items. The request is recorded first and done in chunks of 500 rows, so it holds for any number of items:
@@ -333,6 +344,24 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `PUT /app/people/events` — `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
+
+## The Google Drive mirror
+
+The index's half of [drive.md](drive.md) "Contracts > The index" (`apps/index/src/drive.ts`):
+
+- `PUT /app/people/:id/drive` and `DELETE /app/people/:id/drive` (`204`) set and clear the person's
+  `drive_mirrored` flag; `GET` answers `{ mirrored }`. With `INDEX_KEY_DRIVE` only (an app's key is 401, and the
+  Drive key opens no other `/app` route); a guest id is 403.
+- **The change signal.** After any request that changed a flagged person's personal item or folder, the index
+  calls its `DRIVE` service binding after the response (`waitUntil`): `POST https://drive/app/changes`
+  `{ personId, at }` with `Authorization: Bearer <DRIVE_KEY_INDEX>`, once per person per request. What counts: an
+  item made, renamed, moved (between folders, or into or out of a team, which signals its personal owner),
+  trashed, restored, copied or purged (one by one, the Trash emptied, or the daily sweep, which also signals for
+  the empty items it trashes), a folder made, renamed, moved or deleted, a guest's work merged into the account,
+  and a summary push that raised the item's `updatedAt`. A team's item or folder never signals. The request
+  collects the people it touched; one primary-key read of `drive_people` picks out the flagged ones. A failed
+  call is logged (`index: drive-signal failed`, with the status) and dropped. Without the binding nothing is
+  read or sent.
 
 ## Notices
 

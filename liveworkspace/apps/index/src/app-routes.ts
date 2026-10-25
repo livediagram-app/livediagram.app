@@ -6,6 +6,7 @@ import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId } from './codec';
+import { handleDriveFlag, sendDriveSignals } from './drive';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
 import { handleAppPeople } from './notices';
@@ -14,7 +15,16 @@ import { pushAppEvents, pushPersonEvents } from './timeline';
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
-export async function handleApp(request: Request, env: Env, segments: string[]): Promise<Response> {
+export async function handleApp(
+  request: Request,
+  env: Env,
+  segments: string[],
+  waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
+): Promise<Response> {
+  // /app/people/:id/drive: the Drive mirror's flag, with its own key and no app's (drive.ts).
+  if (segments[1] === 'people' && segments[3] === 'drive' && segments.length === 4) {
+    return handleDriveFlag(request, env, segments[2] ?? '');
+  }
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
   // /app/people/events: the Timeline's events about people (images uploaded), timeline.ts.
@@ -42,9 +52,11 @@ export async function handleApp(request: Request, env: Env, segments: string[]):
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
   if (request.method !== 'PUT' && !seenRead) return notFound();
   const itemId = segments[2];
-  const item = await env.INDEX_DB.prepare('SELECT app FROM items WHERE id = ?')
+  const item = await env.INDEX_DB.prepare(
+    'SELECT app, owner_id, team_id, updated_at FROM items WHERE id = ?',
+  )
     .bind(itemId)
-    .first<{ app: App }>();
+    .first<{ app: App; owner_id: string; team_id: string | null; updated_at: number }>();
   if (!item) return notFound();
   if (item.app !== app) return fail(403, 'wrong_app');
   if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
@@ -70,6 +82,10 @@ export async function handleApp(request: Request, env: Env, segments: string[]):
     )
       .bind(text, Math.floor(body.updatedAt), itemId)
       .run();
+    // A content save: the Drive mirror rewrites a personal item's file when its updatedAt moved on.
+    if (item.team_id === null && Math.floor(body.updatedAt) > item.updated_at && env.DRIVE) {
+      waitUntil(sendDriveSignals(env, [item.owner_id]));
+    }
     return noContent();
   }
 
