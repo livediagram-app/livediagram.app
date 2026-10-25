@@ -490,7 +490,6 @@ caret)`; `syncArticlePeople(participants)` names and colours carets and drops th
   focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
   there (`glideViewport`, `VIEW_GLIDE_MS`; at once under reduced motion); a finger's pan
   (`panFrom`) stops a glide under way.
-- **Isometric**: `ArticleFlows` is not mounted (`canvasTool !== 'isometric'`).
 
 ## Interfaces and contracts
 

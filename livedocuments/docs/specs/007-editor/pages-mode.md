@@ -73,8 +73,7 @@ page is and offers; this section is the basics.
   off a page is hidden and cannot be pressed, as if the pages were the only
   paper (`PageClip`, a layer clipped to the pages that holds the
   element views). The selection handles are drawn above it, so an element
-  hanging off a page still shows all of them. Not in the isometric view, whose
-  3D stack a clip would flatten.
+  hanging off a page still shows all of them.
 - **The sheets are a view, never elements.** They take no pointer events (a
   press on one is a press on the empty canvas). Thumbnails see the tab's own
   backdrop and the elements whole; the Export dialog exports
@@ -210,8 +209,8 @@ an article does not offer, the 16:9 Slide, becomes A4);
 **Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
-empty page's layout invitation waits until the choice is made. Not offered in zen or isometric
-view, nor on a second page (a page added from the + is of the tab's kind).
+empty page's layout invitation waits until the choice is made. Not offered in zen,
+nor on a second page (a page added from the + is of the tab's kind).
 The **Project Brief** template (kind `article`) in /new starts a tab with one article.
 
 ## The page panel
@@ -1524,8 +1523,7 @@ The Export dialog exports **pages**, not the tab's content bounds.
   exports white; elements are inked for the page's own surface. An element (an arrow by its
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
-- The Isometric and Background pattern options are not offered: a page is its own background and
-  is never tilted.
+- The Background pattern option is not offered: a page is its own background.
 - The Hidden layers option is not offered: Pages has no Layers, so a hidden layer's
   elements stay out of the export as they stay off its canvas.
 
@@ -1661,7 +1659,7 @@ SlideShown`).
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
   screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
   fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.
-- Zen, presenting and the isometric view show the sheets alone: no labels, cogs, layout invites or
+- Zen and presenting show the sheets alone: no labels, cogs, layout invites or
   add button. While a
   page slide presents, the canvas shows that page's sheet alone (its neighbours are not drawn), as
   it shows only a slide's elements.

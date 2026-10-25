@@ -74,7 +74,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: Sticky and
   Text, then Image. No Search, no More. Each tile works as an Editor's does: dragged onto the
   canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
-- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Format Painter and Slide
+- **The selection modes it needs**: Select, Hand, Laser, Spotlight and Zen. Format Painter and Slide
   Deck are an Editor's.
 
 ## Ownership

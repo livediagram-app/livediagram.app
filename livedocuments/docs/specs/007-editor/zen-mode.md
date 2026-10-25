@@ -31,7 +31,7 @@ view-only visitors (focusing is read-only).
 ## How it's toggled
 
 - **Enter — the canvas-tool dropdown** on the Toolbar strip, as a "Zen"
-  entry under Isometric. It's an action, not a persistent tool: picking
+  entry at the end. It's an action, not a persistent tool: picking
   it hides the chrome and leaves the current tool selected. (Entering
   originally lived as an always-visible button on the zoom controls;
   it moved into the dropdown to keep the resting UI minimal.)

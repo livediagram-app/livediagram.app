@@ -605,8 +605,8 @@ A board can be maximised to work on it without the rest of the canvas around it.
   place again and the categories come back.
 - **Zoom is a Sheet's alone**: the bottom-right zoom buttons (Zoom out, the zoom level and its menu, Zoom in, and a
   phone's Fit) show only while a Sheet covers the canvas, and zoom its cells ([Zoom](../029-sheets/sheet.md#zoom)). On
-  a Board, Dashboard or Form tab there is nothing to zoom, so they are not shown; the cluster keeps Isometric and Zen
-  when they apply, and goes when neither does.
+  a Board, Dashboard or Form tab there is nothing to zoom, so they are not shown; the cluster keeps Zen
+  when it applies, and goes when it does not.
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot); a column
   set wider takes its slots and the gaps between them. On a phone a column takes the board's width less 48 px whatever
