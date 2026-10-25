@@ -22,6 +22,8 @@ import {
 } from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { readSignedInHint } from '@/lib/signed-in-hint';
+import { useSignInGate } from '@liveworkspace/workbench/hooks/auth/useSignInGate';
 import { OAUTH_PRIMARY, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 
@@ -56,7 +58,15 @@ function Message({ heading, body }: { heading: string; body: string }) {
 
 function Device() {
   const params = useSearchParams();
-  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, isSignedIn, accountUserId } = useAccountBootstrap();
+  // Sign in is offered only once the session says there is no one: the 5 s give-up is not that answer while
+  // the ldes_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
+  const gate = useSignInGate({
+    authLoaded,
+    sessionAnswered,
+    signedIn: !!isSignedIn && !!accountUserId,
+    signedInHint: readSignedInHint(),
+  });
   const [typed, setTyped] = useState(params.get('code') ?? '');
   const [step, setStep] = useState<Step>({ kind: 'enter' });
   const [readOnly, setReadOnly] = useState(false);
@@ -70,13 +80,13 @@ function Device() {
 
   if (step.kind === 'cancelled')
     return <Message heading="Connection cancelled" body="Your terminal will stop waiting." />;
-  if (!authLoaded)
+  if (gate === 'waiting')
     return (
       <OauthShell>
         <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
       </OauthShell>
     );
-  if (!isSignedIn || !accountUserId) {
+  if (gate === 'sign-in' || !accountUserId) {
     // The browser's own address: this branch renders in the browser only (`use(browser())`, under the page's Suspense).
     use(browser());
     const back = window.location.pathname + window.location.search;

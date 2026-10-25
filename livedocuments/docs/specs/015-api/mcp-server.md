@@ -102,7 +102,9 @@ This implements the OAuth flow Manager Toolkit uses:
    redirects to a **consent page in `apps/editor`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
    already signed in there (a livedocuments session through the liveworkspace accounts
-   Worker; a signed-out visitor gets a Sign in link that returns here).
+   Worker; a signed-out visitor gets a Sign in link that returns here). A person signed in to liveworkspace but
+   not yet here is signed in on the way by the page's silent bounce, and a browser whose signed-in hint is set waits
+   for its session's answer before offering Sign in ([Auth + guest access](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
    **What the consent screen may believe.** `/oauth/authorize` also passes the
    client name and the redirect host as query params for display, and the screen
    must **not** render those. It is the only thing standing between a user and a
