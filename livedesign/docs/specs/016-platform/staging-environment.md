@@ -213,17 +213,19 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Data stores** staging needs, each created once with wrangler:
 
-| Resource | Name                             | Created with                                                    | Where the id lives                        |
-| -------- | -------------------------------- | --------------------------------------------------------------- | ----------------------------------------- |
-| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`      | bound by name, no id                      |
-| KV       | `mcp-oauth-kv-staging`           | `wrangler kv namespace create mcp-oauth-kv-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
+| Resource | Name                             | Created with                                                            | Where the id lives                        |
+| -------- | -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------- |
+| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`              | bound by name, no id                      |
+| KV       | `livedesign-mcp-oauth-staging`   | `wrangler kv namespace create livedesign-mcp-oauth-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
 
 `wrangler r2 bucket list` and `wrangler kv namespace list` show whether each exists. The
 KV namespace's id goes into `apps/mcp/wrangler.toml` once it is created; until then the
 file holds a placeholder id and the mcp deploy fails. The api's Durable Objects need no
 setup: they exist once the staging api worker deploys.
 
-Note the KV **title** is `mcp-oauth-kv-staging`, matching production's `mcp-oauth-kv`.
+Note the KV **title** is `livedesign-mcp-oauth-staging`, matching production's
+`livedesign-mcp-oauth`: the product's name leads, because every liveworkspace app's
+namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
 It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would produce
 `livedesign-mcp-staging-OAUTH_KV` instead.
@@ -244,9 +246,8 @@ cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 #    the _STAGING entries in the table above
 ```
 
-**Done** — both custom domains are attached in the Cloudflare dashboard (the deploy
-token is scoped to upload worker scripts, not to manage DNS, so this step can never be
-automated from the workflow — same as production, [Deployment](deployment.md)):
+**Nothing to do for hostnames**: both are declared in the workers' `[env.staging]` blocks
+and attached by the deploy itself, as production's are ([Deployment](deployment.md#custom-domain)):
 
 - `staging.livedesign.app` → `livedesign-router-staging`
 - `mcp-staging.livedesign.app` → `livedesign-mcp-staging`

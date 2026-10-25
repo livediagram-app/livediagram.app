@@ -2,11 +2,17 @@
 # (mcp.livedesign.app), separate from the api worker — distinct dependency
 # surface (MCP SDK, OAuth/KV, the resvg WASM rasteriser) and public origin.
 name = "livedesign-mcp"
+# The liveworkspace Cloudflare account, which also hosts livedesign.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
 # bundled by wrangler directly.
 compatibility_flags = ["nodejs_compat"]
+# Its own hostname (docs/specs/016-platform/deployment.md "Custom domain"), attached by `wrangler deploy`
+# with its DNS record and certificate. Another host is set here instead, then
+# CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN point at it.
+routes = [{ pattern = "mcp.livedesign.app", custom_domain = true }]
 
 # Pin a fixed local dev port so `pnpm dev` doesn't race the api worker:
 # both `wrangler dev` invocations otherwise default to 8787. livedesign runs
@@ -34,14 +40,6 @@ CONSENT_BASE_URL = "https://livedesign.app"
 # worker sends no telemetry. TELEMETRY_URL (a var, unset meaning production's
 # https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry) names the service. See apps/api/wrangler.toml.
 
-# Its own hostname `mcp.livedesign.app` (docs/specs/015-api/mcp-server.md) — NOT declared here. Like
-# every other worker on this platform (the router included), the public hostname
-# is attached in the Cloudflare dashboard, not via wrangler: the deploy
-# CF_API_TOKEN is scoped to upload worker scripts, not manage zone routes / DNS.
-# Attach the custom domain once under Workers → livedesign-mcp → Domains &
-# Routes. Staging does the same with its own host, then point
-# CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN at it.
-
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`
 # token, which the api already accepts on every route (docs/specs/015-api/public-api-and-tokens.md §3.3), so no
@@ -51,17 +49,17 @@ binding = "API"
 service = "livedesign-api"
 
 # OAuth 2.1 state (docs/specs/015-api/mcp-server.md §3): client registrations, authorize sessions, and
-# codes — all short TTLs. Provision with `wrangler kv namespace create OAUTH_KV`
-# and paste the id here (the api worker needs no KV, and API tokens are liveworkspace accounts').
+# codes — all short TTLs. Namespace `livedesign-mcp-oauth` (the api worker needs no KV, and API tokens
+# are liveworkspace accounts').
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000040008000000000000001"
+id = "c7d13d51126249cdad42f6eed08e4610"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-mcp-staging` on its own host,
-# `mcp-staging.livedesign.app` (attached in the Cloudflare dashboard).
+# `mcp-staging.livedesign.app`.
 # `compatibility_flags`, `[[rules]]` and `[dev]` are inheritable and carry
-# over; vars, the service binding and KV are not, so they are restated.
+# over; routes, vars, the service binding and KV are not, so they are restated.
 # ---------------------------------------------------------------------------
 
 # Named explicitly: wrangler would append "-staging" to the top-level
@@ -69,6 +67,7 @@ id = "00000000000040008000000000000001"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "livedesign-mcp-staging"
+routes = [{ pattern = "mcp-staging.livedesign.app", custom_domain = true }]
 
 [env.staging.vars]
 # The consent page lives in the STAGING live app — a staging OAuth flow must
@@ -80,10 +79,10 @@ CONSENT_BASE_URL = "https://staging.livedesign.app"
 binding = "API"
 service = "livedesign-api-staging"
 
-# Own OAuth state, namespace `mcp-oauth-kv-staging` (the production one is
-# `mcp-oauth-kv` — the title is NOT the binding name). Client registrations
+# Own OAuth state, namespace `livedesign-mcp-oauth-staging` (the production one is
+# `livedesign-mcp-oauth` — the title is NOT the binding name). Client registrations
 # and authorize codes are short-TTL scratch data, so there was nothing to
 # migrate across.
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000040008000000000000002"
+id = "343e00f05c4a4ba28854210fffbe4e91"

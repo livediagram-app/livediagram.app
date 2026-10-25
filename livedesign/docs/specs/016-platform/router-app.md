@@ -4,7 +4,7 @@ A small Cloudflare Worker that fronts the apex domain (`livedesign.app`) and rou
 
 - **Workspace:** `apps/router` (`@livedesign/router`).
 - **Runtime:** Cloudflare Workers.
-- **Production hostname:** `livedesign.app` (custom domain configured in the Cloudflare dashboard). Default Workers URL also remains reachable.
+- **Production hostname:** `livedesign.app` and `www.livedesign.app`; staging's is `staging.livedesign.app`. Each is a custom domain declared in `apps/router/wrangler.toml`, attached by `wrangler deploy` ([Deployment](deployment.md#custom-domain)). Default Workers URL also remains reachable.
 
 ## Routing table
 
