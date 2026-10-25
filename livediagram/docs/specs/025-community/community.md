@@ -401,7 +401,7 @@ Community needs liveworkspace's Community service, which holds the listings: an 
 the Community off, and `COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` point at the service
 (`liveworkspace/apps/community`). The snapshot cache renders images, the app is static
 behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
-out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, which
+out, the pages are served exactly as built). Nothing is published until someone publishes. Publishing and My Shares need sign-in, which
 every build offers.
 
 ## Out of scope

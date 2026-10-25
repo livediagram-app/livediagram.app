@@ -155,7 +155,7 @@ web connectors expects OAuth, and the user chose the OAuth path. Because it stil
 resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
-**Self-hosting / sign-in gating.** OAuth depends on the consent page authenticating
+**Sign-in gating.** OAuth depends on the consent page authenticating
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
 same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
 no-auth deployment: the exchange endpoint rejects every caller and the consent
@@ -1160,7 +1160,7 @@ Worker (no DOM, no React).
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.
    - `docs/development/architecture.md` — the new `apps/mcp` worker in the layout + deploy
-     order; `docs/operations/self-hosting.md` — MCP needs sign-in (like tokens/teams) and is
+     order; `docs/specs/016-platform/deployment.md` — MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).
 

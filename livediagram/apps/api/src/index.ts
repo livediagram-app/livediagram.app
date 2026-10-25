@@ -291,7 +291,7 @@ async function routeApiRequest(
   // Throttle blind share-code / password guessing on the share-resolve
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
-  // write limiter above. Per-IP. Absent binding → allow (self-host).
+  // write limiter above. Per-IP. Absent binding → allow.
   // A link's previews are liveworkspace's (liveworkspace/docs/previews.md), so only the resolve itself counts here.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
     const key = clientRateKey(request);

@@ -18,8 +18,8 @@ import { site } from '@/lib/help-site';
 import './globals.css';
 
 // The livediagram help centre (docs/specs/018-help/help-app.md). Indexable static site served
-// under /help by the router. No third-party scripts, it stays
-// self-host-clean (docs/specs/002-project-scope/open-source-and-business-model.md).
+// under /help by the router. No third-party scripts
+// (docs/specs/002-project-scope/open-source-and-business-model.md).
 //
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, and this app's own scripts under its asset prefix.

@@ -149,11 +149,11 @@ this spec does not restate it.
   tester's Drive (each environment makes its own root: its own Google project,
   storage and `ldRoot`):
 
-  | Host                                                                                                           | Root folder name        |
-  | -------------------------------------------------------------------------------------------------------------- | ----------------------- |
-  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`           |
-  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)` |
-  | any other host                                                                                                 | `livediagram`           |
+  | Host                                                                                                           | Root folder name           |
+  | -------------------------------------------------------------------------------------------------------------- | -------------------------- |
+  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`              |
+  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)`    |
+  | any other host                                                                                                 | `livediagram (other host)` |
 
   Hosts compare case-insensitively. The name is given only when the root is
   **created**; a root the user renamed keeps its name, and livediagram never

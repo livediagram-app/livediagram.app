@@ -2,7 +2,7 @@
 //
 // A person's editor preferences, kept by liveworkspace with their account (or under a guest's id)
 // so their choices follow them across devices, and the shared ones across apps. With nowhere to
-// keep them (a guest-only self-host) the api says so, and they stay in this browser alone.
+// keep them (a guest-only deployment) the api says so, and they stay in this browser alone.
 //
 // The shape is opaque to the api-client by design: docs/specs/007-editor/user-preferences.md's
 // UserPreferences lives in apps/editor/lib/user-preferences.ts as the

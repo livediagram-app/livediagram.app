@@ -90,7 +90,7 @@ export type Env = {
   // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
   // "Tokens"): each call reaches Google's token endpoint, so it gets a far
   // tighter bound than the general write limiter. Keyed on the account id.
-  // Optional: absent (self-host) → "allow".
+  // Optional: absent → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
@@ -136,7 +136,7 @@ export type Env = {
   // from which of these keys is set, because a key is provider-specific and its
   // name should say so — see ai-provider.ts. None = the photo reader is hidden
   // (capabilities reports aiEnabled:false and /api/ai/read-notes answers 503),
-  // which is the self-host default.
+  // which is the default when unset.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
@@ -149,7 +149,7 @@ export type Env = {
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai/read-notes. Caps AI requests at
   // 20/60s per IP so a single client can't exhaust the operator's model budget.
-  // Optional: absent (self-host) falls through to "allow".
+  // Optional: absent falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
@@ -176,7 +176,7 @@ export type Env = {
   // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
   // it open to guests. Hosted livediagram.app leaves it unset.
   AI_REQUIRE_SIGN_IN?: string;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Configuration").
   // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
   // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
   // refresh tokens, otherwise the browser holds its own short-lived tokens.

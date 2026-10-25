@@ -10,18 +10,13 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-There are two ways people use livediagram:
-
-1. **Self-hosted.** Clone the repo, deploy it, run it on their own Cloudflare account (or anywhere the apps are runnable). Gets every feature in the OSS codebase. No subscription, no license check, no SaaS dependency required (sign-in is optional, see [04](../014-identity/auth-and-guest-access.md)).
-2. **Hosted by livediagram.** The official deployment at [livediagram.app](https://livediagram.app). Free for everyone, no tiers.
-
-Both paths get the same feature set. The hosted version is a convenience (and a place for the project to live publicly); it is not a commercial product.
+People use livediagram at [livediagram.app](https://livediagram.app), the official deployment. Free for everyone, no tiers. It is a place for the project to live publicly; it is not a commercial product. The code stays public so anyone can read and audit it.
 
 ## Implications for how we build
 
 - **No license checks.** Don't gate any feature behind a server call, license string, or runtime telemetry check.
 - **No paid-tier shims.** The codebase contains no "Pro features" feature-flag, no billing integration (no Stripe), no "upgrade" CTAs. If we ship it, every user gets it.
-- **Optional SaaS, not required SaaS.** The OSS core never calls home. Its SaaS integrations are all optional, each gated on its own key: the liveworkspace accounts Worker for sign-in ([Auth + guest access](../014-identity/auth-and-guest-access.md)), Resend for email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)), and a model provider for the event-storming photo reader ([Note reader](../021-event-storming/note-reader.md)). The editor always offers sign-in; when the api's accounts settings (`ACCOUNTS_URL` / `API_RESOURCE`) aren't set, visitors have no identity and the editor still draws, keeping documents in This Browser ([Auth + guest access](../014-identity/auth-and-guest-access.md#sign-in-is-always-on)). A self-hoster who wants no server-side outbound traffic (besides Cloudflare) leaves all three unset; the browser still fetches the editor's typefaces from Google Fonts ([Fonts](../004-interface-design/fonts.md)).
+- **Optional SaaS, not required SaaS.** The OSS core never calls home. Its SaaS integrations are all optional, each gated on its own key: the liveworkspace accounts Worker for sign-in ([Auth + guest access](../014-identity/auth-and-guest-access.md)), Resend for email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)), and a model provider for the event-storming photo reader ([Note reader](../021-event-storming/note-reader.md)). The editor always offers sign-in; when the api's accounts settings (`ACCOUNTS_URL` / `API_RESOURCE`) aren't set, visitors have no identity and the editor still draws, keeping documents in This Browser ([Auth + guest access](../014-identity/auth-and-guest-access.md#sign-in-is-always-on)).
 - All design decisions assume the codebase is visible to the public, which constrains how we handle [secrets](secrets-policy.md).
 
 ## What this means for contributors

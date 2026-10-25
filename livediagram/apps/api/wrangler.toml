@@ -134,7 +134,7 @@ deleted_classes = ["WorkbenchStore"]
 # docs/specs/021-event-storming/note-reader.md). Separate namespace so AI abuse never eats into document-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway model spend. Absent binding
-# → helper allows, so self-host still works without this feature.
+# → helper allows, so a deployment still works without this feature.
 [[unsafe.bindings]]
 name = "AI_RATE_LIMITER"
 type = "ratelimit"
@@ -201,7 +201,7 @@ simple = { limit = 10, period = 60 }
 #
 # With no key the reader is hidden: GET /api/capabilities answers
 # { aiEnabled: false }, the editor shows no photo import, and the route
-# answers 503. That is the self-host default.
+# answers 503. That is the default when unset.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.

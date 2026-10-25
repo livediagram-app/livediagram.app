@@ -26,7 +26,7 @@ The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the 
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@livediagram/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
-- Self-hostable: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
+- The doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
 
 ## Non-goals (v1)
 

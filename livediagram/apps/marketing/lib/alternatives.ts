@@ -88,7 +88,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open, and yours to keep',
         paragraphs: [
-          'A retirement like this is a reminder of what it means to rely on someone else’s product. livediagram is MIT-licensed and its whole codebase is public. The hosted version is free with no paid tier, and if you would rather not depend on it, you can deploy the same code to your own Cloudflare account.',
+          'A retirement like this is a reminder of what it means to rely on someone else’s product. livediagram is MIT-licensed and its whole codebase is public. It is free with no paid tier, and your canvases export to portable formats, so you are never locked in.',
           'You can also keep a canvas entirely in your browser with Offline Mode, or, once signed in, mirror your canvases to your own Google Drive.',
         ],
       },
@@ -119,7 +119,7 @@ const LIST: Alternative[] = [
   {
     slug: 'miro',
     name: 'Miro',
-    highlights: ['Free, no tiers', 'No sign-up', 'Self-hostable'],
+    highlights: ['Free, no tiers', 'No sign-up', 'MIT-licensed'],
     title: 'Miro alternative · livediagram',
     description:
       'An open-source, free Miro alternative: real-time diagrams, whiteboards and workshop boards you can open without an account.',
@@ -157,7 +157,7 @@ const LIST: Alternative[] = [
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
-      "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
+      "It's free for everyone and MIT-licensed, with no per-seat pricing.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a canvas.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
@@ -613,7 +613,7 @@ const LIST: Alternative[] = [
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
-      'MIT-licensed and self-hostable, so your boards never depend on one vendor.',
+      'MIT-licensed, with portable exports, so your boards never depend on one vendor.',
     ],
     sections: [
       {
@@ -716,7 +716,7 @@ const LIST: Alternative[] = [
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
-      'MIT-licensed and self-hostable, so your diagrams never depend on one vendor.',
+      'MIT-licensed, with portable exports, so your diagrams never depend on one vendor.',
     ],
     sections: [
       {

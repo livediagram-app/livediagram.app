@@ -246,19 +246,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
       },
       {
-        q: 'Can I write documents or design slides in it?',
-        a: (
-          <>
-            Not any more. Articles, slide pages and infographics now live in{' '}
-            <a href="https://livedocuments.app">livedocuments</a>, and logos in{' '}
-            <a href="https://livedesign.app">livedesign</a>, sister apps on the same free
-            liveworkspace account. livediagram can still present a canvas as a slide deck.
-          </>
-        ),
-        aText:
-          'Not any more. Articles, slide pages and infographics now live in livedocuments, and logos in livedesign, sister apps on the same free liveworkspace account. livediagram can still present a canvas as a slide deck.',
-      },
-      {
         q: 'Can I use it as a whiteboard?',
         a: (
           <>
@@ -572,34 +559,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Delete any canvas you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
-      },
-    ],
-  },
-  {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host livediagram?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livediagram/">deploying livediagram</a>.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livediagram.',
-      },
-      {
-        q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'You need a liveworkspace accounts Worker, your own or liveworkspace’s: it signs people in and gives every guest their identity, so nobody has to sign in to use your copy, with persistence, sharing and real-time collaboration all working. You do not need an AI key: photo import reads sticky notes in the browser, or with a hosted model once you add one, and email and the Google Drive mirror switch on once their own keys are set up.',
       },
     ],
   },

@@ -1088,7 +1088,7 @@ Environment the CLI reads: `LIVEDIAGRAM_TOKEN`, `LIVEDIAGRAM_HOST`, `LIVEDIAGRAM
 `DO_NOT_TRACK`, `LIVEDIAGRAM_NO_UPDATE_CHECK`, `LIVEDIAGRAM_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
 Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livediagram.app`) and `CLI_MIN_VERSION` (unset until a
 release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
-`pnpm staging:check` holds; both documented in `docs/operations/self-hosting.md`. No new secret or binding.
+`pnpm staging:check` holds; both documented in `docs/specs/016-platform/deployment.md`. No new secret or binding.
 
 ## Assets and external resources
 

@@ -105,7 +105,7 @@ export async function handleTabPut(
     // Newly added comments carry the resolved owner's profile, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). Remembered per isolate for a minute
     // (liveworkspace/profiles.ts), so an autosave costs no accounts call. Without a profile (a
-    // guest-only self-host, or liveworkspace out of reach) the writer's own new comments keep the
+    // guest-only deployment, or liveworkspace out of reach) the writer's own new comments keep the
     // name they were posted under, still tied to the writer's id.
     const writerParticipant = await getParticipant(env, owner);
     const sanitised: Tab = {

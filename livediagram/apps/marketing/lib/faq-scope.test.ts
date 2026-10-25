@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+
+import { FAQ_CATEGORIES } from './faq-content';
 
 // The FAQ answers questions about livediagram alone (docs/specs/019-marketing/marketing-site.md "Content pages
 // (FAQ)"). Its sister apps' names and the kinds of work that live there (liveplanner's boards of cards, sheets,

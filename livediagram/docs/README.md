@@ -15,7 +15,6 @@ These docs are the practical guide: what the app does, how to run it locally, an
 - ./development/architecture.md - when you need the repo shape: eight apps, twenty-two packages, Cloudflare-only deploys
 - ./development/local-development.md - when cloning, installing, and running the apps locally
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
-- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + Durable Objects, optionally with sign-in through liveworkspace accounts
 - ./research/README.md - when you need measurements and experiment reports, such as sticky detection in wall photos
 - ./research/migration-readiness.md - when designing the Google Drive mirror or importing boards from Miro or Microsoft Whiteboard
 - ./demo/sticky-vision/index.html - when watching the sticky detector run live on a synthetic wall (`pnpm demo:sticky-vision`)

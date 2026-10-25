@@ -72,7 +72,6 @@ livediagram's scenes:
 | Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                               |
 | Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                |
 | Privacy and Security | shared, with its own | a livediagram.app share link with its safeguards                                     |
-| Self-Hosting         | shared, with its own | `~/livediagram` deploying api, editor and router to your own domain                  |
 | Policies             | shared, the same     | the terms and the privacy policy, sealed                                             |
 
 ## Home page

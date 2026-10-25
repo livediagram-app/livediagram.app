@@ -934,7 +934,7 @@ low-threshold capture surface can least afford.
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
 - **Gated on the model key ([Note reader](note-reader.md)).** No model key = no photo
-  UI anywhere, and a self-host without one loses nothing else. The reader resolves
+  UI anywhere, and a deployment without one loses nothing else. The reader resolves
   its provider from the key that is set, `GOOGLE_AI_STUDIO_API_KEY` or the generic
   `AI_API_KEY` ([Note reader](note-reader.md), "Whose model? The key says.") — any
   OpenAI-compatible endpoint, which is Gemini on the hosted site and can be a local

@@ -65,7 +65,7 @@ but unused`) rather than left as a dead secret nobody notices.
   `response_format: { type: 'json_schema', strict: true }` with the answer shape. JSON mode
   alone was not enough: `gemini-2.5-flash-lite` failed two batches of seven in one run with
   broken quoting, a dropped field, or a truncated answer, and one bad answer fails every note
-  of its batch. The generic preset keeps JSON mode, because what a self-hosted endpoint
+  of its batch. The generic preset keeps JSON mode, because what a custom endpoint
   supports is unknown; strict validation applies to every provider regardless.
 - **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty text is a real
   answer (the paper was there, the words were not readable) and it still becomes a note,
@@ -75,7 +75,7 @@ but unused`) rather than left as a dead secret nobody notices.
 
 - Auth required: an account access token or a guest token.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional: absent on
-  self-host deployments falls through to "allow".
+  deployments falls through to "allow".
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, the request's `Origin`
   must match one of the comma-separated entries exactly, or the worker answers
   `403 origin_not_allowed` before reaching the model. The hosted deployment sets it in
@@ -98,7 +98,7 @@ Error responses follow the standard worker envelope, `{ "error": "<token>" }`:
 | `rate_limited`       | 429    | The caller's per-IP request budget is spent.                  |
 | `ai_quota`           | 429    | The model key has spent its quota (raise it; retrying won't). |
 | `ai_error`           | 502    | The upstream model call failed or answered unusably.          |
-| `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).      |
+| `ai_not_configured`  | 503    | No model key on this deployment (the default).                |
 
 A request with no identity at all gets the worker-wide `bad_request` 400 every owner-scoped
 route sends.

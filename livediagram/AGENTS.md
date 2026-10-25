@@ -238,7 +238,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 - The codebase is **MIT-licensed** and **publicly viewable**.
 - A free hosted version runs alongside at livediagram.app. **No paid tier and no plan to introduce one.**
-- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Every build offers sign-in through the liveworkspace accounts Worker, which also gives guests their identity; a visitor never has to sign in.
+- Keep outside services optional (no required SaaS calls, no license checks gating the core editor). Every build offers sign-in through the liveworkspace accounts Worker, which also gives guests their identity; a visitor never has to sign in.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy

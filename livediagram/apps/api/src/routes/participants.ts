@@ -69,7 +69,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
       if (err instanceof ProfileError) return badRequest(`invalid ${err.code}`);
       throw err;
     }
-    // Nowhere to keep it (a guest-only self-host, docs/specs/015-api/api.md "participants"): the
+    // Nowhere to keep it (a guest-only deployment, docs/specs/015-api/api.md "participants"): the
     // editor keeps the name it chose, and presence carries it to everyone in the room.
     return json({
       participant: p ?? { id, name: body.name, color: body.color, createdAt: Date.now() },

@@ -591,9 +591,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The livediagram CLI',
     description:
-      'Read, build, edit and discuss canvases from a terminal: install, sign in, the commands, and self-hosting.',
+      'Read, build, edit and discuss canvases from a terminal: install, sign in, the commands, and profiles for other servers.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host document',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile host document',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -716,47 +716,6 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-  },
-
-  // ---- Self-Hosting ----
-  {
-    slug: 'self-hosting-overview',
-    title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own livediagram, and why you might.',
-    keywords: 'host yourself own server on premise deploy install run',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'deploying-livediagram',
-    title: 'Deploying livediagram',
-    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords:
-      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'configuration',
-    title: 'Configuration and Optional Auth',
-    description: 'Environment variables, sign-in, and guests.',
-    keywords:
-      'env vars environment sign-in accounts setup secrets settings configure resend email ai openai google drive mcp telemetry r2 community',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'drive-and-mcp',
-    title: 'Google Drive and MCP on a Self-Hosted Instance',
-    description: 'Set up the Drive mirror and the MCP server on your own deployment.',
-    keywords:
-      'google drive mirror oauth client id secret picker api key drive token key mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting/configuration',
-    parentSlug: 'configuration',
   },
 
   // ---- Troubleshooting ----

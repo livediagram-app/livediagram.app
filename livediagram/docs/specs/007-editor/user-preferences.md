@@ -151,12 +151,11 @@ second merge finds nothing left to move.
 
 ### Without optional services
 
-Without the accounts Worker (a guest-only self-host, no `ACCOUNTS_URL`)
+Without the accounts Worker (a guest-only deployment, no `ACCOUNTS_URL`)
 there is nowhere to keep them: `GET /api/preferences` answers
 `{ prefs: null }`, and the editor keeps them in localStorage alone and
 sends no saves (a `PUT` there answers 409 `preferences_local_only`, which
-stops sending too). That is the original v1 behaviour, so self-hosting
-needs no SaaS for it. When the api worker itself is unreachable the
+stops sending too). That is the original v1 behaviour, and needs no SaaS. When the api worker itself is unreachable the
 fetch fails and the cache stays authoritative, as above.
 
 ## Schema
