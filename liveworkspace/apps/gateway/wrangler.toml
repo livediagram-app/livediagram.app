@@ -28,11 +28,15 @@ binding = "COMMUNITY"
 service = "liveworkspace-community"
 
 [[services]]
+binding = "STATUS"
+service = "liveworkspace-status"
+
+[[services]]
 binding = "SITE"
 service = "liveworkspace-site"
 
 # Staging: https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev, in front of the
-# -staging Workers. Service bindings are non-inheritable, so all six are restated, each with the suffix.
+# -staging Workers. Service bindings are non-inheritable, so all seven are restated, each with the suffix.
 [env.staging]
 name = "liveworkspace-gateway-staging"
 workers_dev = true
@@ -56,6 +60,10 @@ service = "liveworkspace-telemetry-staging"
 [[env.staging.services]]
 binding = "COMMUNITY"
 service = "liveworkspace-community-staging"
+
+[[env.staging.services]]
+binding = "STATUS"
+service = "liveworkspace-status-staging"
 
 [[env.staging.services]]
 binding = "SITE"

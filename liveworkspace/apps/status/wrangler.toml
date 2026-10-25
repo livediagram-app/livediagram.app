@@ -1,0 +1,66 @@
+name = "liveworkspace-status"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only its API, /api/status, on liveworkspace.app: the page at /status is the static site's (apps/site).
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+# No secrets. Every check is a public address (docs/status.md).
+[vars]
+ENVIRONMENT = "production"
+# liveworkspace.app's origin, where its own services are checked: the gateway's until the zone moves (docs/gateway.md).
+PLATFORM_ORIGIN = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+
+# Its own database: every check for 90 days, the daily rollups, the incidents and the two answers it serves.
+[[d1_databases]]
+binding = "STATUS_DB"
+database_name = "liveworkspace-status"
+database_id = "9430bdaf-7819-41d4-8cb6-7aec451488b6"
+migrations_dir = "migrations"
+
+# liveworkspace.app's own services are checked through the gateway: a Worker can't fetch another Worker's
+# workers.dev address on the same account (docs/status.md "Where the checks go").
+[[services]]
+binding = "PLATFORM"
+service = "liveworkspace-gateway"
+
+# Per-network budget for reads the edge cache missed: each is one D1 row, so this only stops a flood.
+[[ratelimits]]
+name = "READ_RATE_LIMITER"
+namespace_id = "1104"
+simple = { limit = 60, period = 60 }
+
+# Every hour, at minute 7: check every service, store it, roll up the day, prune past 90 days.
+[triggers]
+crons = ["7 * * * *"]
+
+[env.staging]
+name = "liveworkspace-status-staging"
+# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
+# routes = [{ pattern = "staging.liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+PLATFORM_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+
+[[env.staging.d1_databases]]
+binding = "STATUS_DB"
+database_name = "liveworkspace-status-staging"
+database_id = "2cdd405e-c958-4a25-b65d-878b83901230"
+migrations_dir = "migrations"
+
+[[env.staging.services]]
+binding = "PLATFORM"
+service = "liveworkspace-gateway-staging"
+
+[[env.staging.ratelimits]]
+name = "READ_RATE_LIMITER"
+namespace_id = "2104"
+simple = { limit = 60, period = 60 }
+
+[env.staging.triggers]
+crons = ["7 * * * *"]

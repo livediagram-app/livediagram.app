@@ -1,7 +1,17 @@
 // Running the status page's checks (liveworkspace/docs/site.md "Status") and reading them: each service's state,
 // each group's, and the page's. Pure apart from `runProbe`, which takes its fetch and clock, so tests drive it.
 
-import type { Probe, Service, ServiceGroup } from './services';
+import {
+  judgeAnswer,
+  type Probe,
+  type Service,
+  type ServiceGroup,
+  SLOW_MS,
+  TIMEOUT_MS,
+} from '@liveworkspace/status';
+
+// The same thresholds as the status Worker's (@liveworkspace/status), so the two judge alike.
+export { SLOW_MS, TIMEOUT_MS };
 
 // A service's state, always shown as an icon and a word, never colour alone.
 //  - up: answered as expected, in time.
@@ -12,8 +22,6 @@ import type { Probe, Service, ServiceGroup } from './services';
 //  - skipped: not checked here, with the reason.
 export type ServiceState = 'up' | 'reached' | 'slow' | 'down' | 'checking' | 'skipped';
 
-export const SLOW_MS = 1500;
-export const TIMEOUT_MS = 10_000;
 export const REFRESH_MS = 60_000;
 // How many past checks each service keeps for its strip: this visit's only, in memory.
 export const HISTORY_MAX = 30;
@@ -75,14 +83,16 @@ export async function runProbe(
   }
 }
 
-// What is wrong with a readable answer (as the row's detail), or null when it is the one expected.
+// What is wrong with a readable answer (as the row's detail), or null when it is the one expected: the shared rules,
+// in words.
 function judge(
   probe: Extract<Probe, { kind: 'read' }>,
   status: number,
   contentType: string | null,
 ): string | null {
-  if (!probe.ok.includes(status)) return `HTTP ${status}`;
-  if (probe.json && !/\bjson\b/i.test(contentType ?? '')) return `HTTP ${status}, not JSON`;
+  const wrong = judgeAnswer(probe, status, contentType);
+  if (wrong === 'status') return `HTTP ${status}`;
+  if (wrong === 'not_json') return `HTTP ${status}, not JSON`;
   return null;
 }
 

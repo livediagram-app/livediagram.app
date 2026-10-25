@@ -1,0 +1,33 @@
+{
+  "name": "@liveworkspace/status-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --inspector-port 9135 --port 3010 --test-scheduled --var ENVIRONMENT:development --var PLATFORM_ORIGIN:http://localhost:3000",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply liveworkspace-status --local",
+    "db:migrate:remote": "wrangler d1 migrations apply liveworkspace-status --remote",
+    "db:migrate:remote:staging": "wrangler d1 migrations apply liveworkspace-status-staging --env staging --remote",
+    "seed:local": "esbuild scripts/seed.ts --bundle --platform=node --format=esm --outfile=.wrangler/seed/seed.mjs --log-level=warning && node .wrangler/seed/seed.mjs .wrangler/seed/seed.sql && wrangler d1 execute liveworkspace-status --local --file .wrangler/seed/seed.sql"
+  },
+  "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/index-app": "workspace:*",
+    "@liveworkspace/status": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261007.1",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.148.0"
+  }
+}

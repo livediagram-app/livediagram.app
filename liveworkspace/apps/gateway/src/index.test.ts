@@ -13,6 +13,9 @@ describe('targetFor', () => {
     ['/api/previews/liveplanner.app/abc', 'MEDIA'],
     ['/api/telemetry/events', 'TELEMETRY'],
     ['/api/community', 'COMMUNITY'],
+    ['/api/status', 'STATUS'],
+    ['/api/status/history', 'STATUS'],
+    ['/status', 'SITE'],
     ['/', 'SITE'],
     ['/explorer/home', 'SITE'],
     ['/telemetry', 'SITE'],
@@ -26,10 +29,9 @@ describe('fetch', () => {
   it('forwards the request unchanged to the Worker that owns its path', async () => {
     const seen: Array<[Target, string]> = [];
     const env = Object.fromEntries(
-      (['ACCOUNTS', 'INDEX', 'MEDIA', 'TELEMETRY', 'COMMUNITY', 'SITE'] as const).map((t) => [
-        t,
-        { fetch: async (r: Request) => (seen.push([t, r.url]), new Response(t)) },
-      ]),
+      (['ACCOUNTS', 'INDEX', 'MEDIA', 'TELEMETRY', 'COMMUNITY', 'STATUS', 'SITE'] as const).map(
+        (t) => [t, { fetch: async (r: Request) => (seen.push([t, r.url]), new Response(t)) }],
+      ),
     ) as unknown as Env;
     const url = 'https://gw.example/api/index/jwks?x=1';
     const res = await worker.fetch(new Request(url), env);

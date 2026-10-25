@@ -1,8 +1,15 @@
 'use client';
 
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
-import { lucideRefreshCw } from '@liveworkspace/icons/lucide';
+import { lucideHistory, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import {
+  allServices,
+  environmentOf,
+  type StatusEnvironment,
+  type StatusHistory,
+  statusGroups,
+} from '@liveworkspace/status';
 import {
   type CSSProperties,
   type ReactNode,
@@ -24,22 +31,20 @@ import {
   summarise,
   viewServices,
 } from '@/lib/status/probe';
-import {
-  allServices,
-  environmentOf,
-  statusGroups,
-  type StatusEnvironment,
-} from '@/lib/status/services';
+import { HISTORY_REFRESH_MS, hasRuns, incidentsByService, loadHistory } from '@/lib/status/history';
+import { RecentIncidents } from './RecentIncidents';
 import { ServiceGroupCard } from './ServiceGroupCard';
 import { formatAgo, formatMs, Legend, OVERALL_LOOK, StateBadge } from './status-ui';
 
 const RefreshIcon = lucideGlyph(lucideRefreshCw, 16);
+const HistoryIcon = lucideGlyph(lucideHistory, 16);
 
 const noSubscription = () => () => {};
 
 // The status page's live board (liveworkspace/docs/site.md "Status"). A round of checks runs on load, then every
 // REFRESH_MS while the tab is visible; a hidden tab pauses and checks again on its return. Check now runs one at
-// once. Everything it shows comes from this visit's checks: nothing records history, so it shows none.
+// once. Beside them, liveworkspace's hourly checks and their 90 days (liveworkspace/docs/status.md): read once on load
+// and again every HISTORY_REFRESH_MS while visible. Without them (no Worker, no runs yet) it shows this visit's alone.
 export function StatusBoard({
   fetchImpl,
   environment,
@@ -64,6 +69,10 @@ export function StatusBoard({
   const [nextAt, setNextAt] = useState<number | null>(null);
   const [visible, setVisible] = useState(true);
   const runningRef = useRef(false);
+  // The stored history: undefined while the first read is out, null when there is none to show.
+  const [stored, setStored] = useState<StatusHistory | null | undefined>(undefined);
+  const [storedAt, setStoredAt] = useState<number | null>(null);
+  const loadingStored = useRef(false);
 
   const views = useMemo(() => viewServices(services, history), [services, history]);
   const summary = useMemo(() => summarise(services, views), [services, views]);
@@ -82,6 +91,30 @@ export function StatusBoard({
       setNextAt(Date.now() + REFRESH_MS);
     }
   }, [groups, fetchImpl]);
+
+  const readStored = useCallback(async () => {
+    if (loadingStored.current) return;
+    loadingStored.current = true;
+    try {
+      setStored(await loadHistory(fetchImpl ?? globalThis.fetch.bind(globalThis)));
+    } finally {
+      loadingStored.current = false;
+      setStoredAt(Date.now());
+    }
+  }, [fetchImpl]);
+
+  // The stored history: once on load, then again when it is due and the tab is visible.
+  useEffect(() => {
+    void readStored();
+  }, [readStored]);
+  useEffect(() => {
+    if (visible && storedAt !== null && now !== null && now - storedAt >= HISTORY_REFRESH_MS)
+      void readStored();
+  }, [visible, storedAt, now, readStored]);
+  const hourly = hasRuns(stored ?? null) ? (stored as StatusHistory) : null;
+  const incidents = useMemo(() => (hourly ? incidentsByService(hourly) : undefined), [hourly]);
+  // The cards' clock, for "Checked by liveworkspace 23 min ago": a minute is fine enough for an hourly check.
+  const minute = now === null ? null : Math.round(now / 60_000) * 60_000;
 
   // The first round, once the address is known.
   useEffect(() => {
@@ -148,8 +181,8 @@ export function StatusBoard({
               {copy.line}
             </p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              Every check runs live from your browser, every minute while this page is open. Nothing
-              here is a snapshot or a promise.
+              Every check runs live from your browser, every minute while this page is open. Beside
+              them, liveworkspace checks every service from Cloudflare each hour and keeps 90 days.
             </p>
           </div>
 
@@ -267,28 +300,64 @@ export function StatusBoard({
           </ul>
         </nav>
 
-        {platform ? <ServiceGroupCard group={platform} views={views} wide /> : null}
+        {stored !== undefined && !hourly ? (
+          <p
+            data-history="unavailable"
+            className="flex items-start gap-2 rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-sm leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400"
+          >
+            <span aria-hidden className="mt-0.5 inline-flex shrink-0">
+              <HistoryIcon />
+            </span>
+            liveworkspace’s hourly history isn’t available right now, so this page shows your
+            browser’s live checks alone.
+          </p>
+        ) : null}
+
+        {platform ? (
+          <ServiceGroupCard
+            group={platform}
+            views={views}
+            wide
+            history={hourly}
+            incidents={incidents}
+            now={minute}
+          />
+        ) : null}
         <div className="grid gap-6 lg:grid-cols-2">
           {apps.map((g) => (
-            <ServiceGroupCard key={g.id} group={g} views={views} />
+            <ServiceGroupCard
+              key={g.id}
+              group={g}
+              views={views}
+              history={hourly}
+              incidents={incidents}
+              now={minute}
+            />
           ))}
         </div>
+
+        {hourly ? <RecentIncidents history={hourly} groups={groups} /> : null}
 
         <Legend>
           <div className="mt-6 grid gap-4 border-t border-slate-100 pt-5 text-sm leading-relaxed text-slate-600 sm:grid-cols-2 dark:border-slate-800 dark:text-slate-400">
             <p>
               <strong className="font-semibold text-slate-800 dark:text-slate-200">
-                Where the checks come from.
+                Your browser’s checks.
               </strong>{' '}
-              Each one is a request your browser makes to an address the service already answers,
-              timed from here. A service down for you may be up for others, and the other way round.
+              The first line of each service, by the person icon: a request your browser makes to an
+              address the service already answers, timed from here. A service down for you may be up
+              for others, and the other way round. Its strip holds the checks since you opened this
+              page, at most 30, and forgets them when you leave.
             </p>
             <p>
               <strong className="font-semibold text-slate-800 dark:text-slate-200">
-                No uptime history.
+                liveworkspace’s hourly checks.
               </strong>{' '}
-              Nothing records these checks, so the strips show only the ones made since you opened
-              this page, at most 30 each, and forget them when you leave.
+              The second line, by the cloud: the same check, made from Cloudflare every hour, which
+              can read every answer, so it never needs to say Reached. Under it, a bar per day for
+              the last 90 days: taller and green when the service was up all day, shorter and amber
+              or red for its worst slow or down check, a stub for a day without checks. Hover, tap
+              or focus the bars for the day.
             </p>
           </div>
         </Legend>

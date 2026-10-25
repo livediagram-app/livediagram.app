@@ -84,8 +84,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             There is no catch. liveplanner shows no ads, runs no third-party trackers and never
-            sells your data. The <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">privacy policy</a> sets
-            out what the service does with your data, and you can export your work whenever you
+            sells your data. The{' '}
+            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">
+              privacy policy
+            </a>{' '}
+            sets out what the service does with your data, and you can export your work whenever you
             like.
           </>
         ),
@@ -449,7 +452,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
-            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">privacy policy</a> for the details.
+            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">
+              privacy policy
+            </a>{' '}
+            for the details.
           </>
         ),
         aText:
@@ -509,12 +515,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
-            liveplanner&rsquo;s services from your browser while you watch, beside the services
-            every app shares.
+            liveplanner&rsquo;s services from your browser while you watch, and from Cloudflare
+            every hour, with 90 days of liveplanner&rsquo;s history and any recent incidents, beside
+            the services every app shares.
           </>
         ),
         aText:
-          'The liveworkspace status page checks each of liveplanner’s services from your browser while you watch, beside the services every app shares.',
+          'The liveworkspace status page checks each of liveplanner’s services from your browser while you watch, and from Cloudflare every hour, with 90 days of liveplanner’s history and any recent incidents, beside the services every app shares.',
       },
       {
         q: 'Who makes liveplanner?',

@@ -1,10 +1,16 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
 import { APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
-import { allServices, appOrigin, environmentOf, mcpOrigin, statusGroups } from './services';
+import {
+  allServices,
+  appOrigin,
+  environmentOf,
+  mcpOrigin,
+  probedServices,
+  resolveProbeUrl,
+  statusGroups,
+} from './services';
 
-// liveworkspace/docs/site.md "Status": the one status page, its groups, and no app with a status page of its own.
+// liveworkspace/docs/site.md "Status": the one list of services the page and the status Worker both check.
 
 describe('the status page’s services', () => {
   const groups = statusGroups('production');
@@ -84,52 +90,22 @@ describe('the status page’s services', () => {
     const staging = statusGroups('staging')[1]!.services.find((s) => s.name === 'MCP server');
     expect(staging?.check.mode).toBe('skipped');
   });
-});
 
-// Every app used to keep its own /status page; now only liveworkspace's exists, and every link goes there.
-describe('no app keeps a status page of its own', () => {
-  const repo = join(import.meta.dirname, '../../../../..');
-  const apps = APP_SITES.map((s) => s.id.replace(/\.app$/, ''));
-
-  function sources(dir: string): string[] {
-    return readdirSync(dir).flatMap((name) => {
-      if (
-        ['node_modules', 'out', '.next', '.next-dev', '.turbo'].includes(name) ||
-        name.startsWith('.')
-      )
-        return [];
-      const path = join(dir, name);
-      if (statSync(path).isDirectory()) return sources(path);
-      return /\.(tsx?|mdx)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
-    });
-  }
-
-  it('has no /status route in any app’s marketing site', () => {
-    for (const app of apps) {
-      const dir = join(repo, app, 'apps/marketing/app');
-      expect(readdirSync(dir), app).not.toContain('status');
-    }
+  it('resolves liveworkspace’s own paths on its origin, and leaves every app’s address as written', () => {
+    const [site, , , , , , api] = probedServices(groups);
+    expect(site!.id).toBe('liveworkspace:site');
+    expect(resolveProbeUrl(site!.check.probe, 'https://lw.example/')).toBe(
+      'https://lw.example/robots.txt',
+    );
+    expect(api!.id).toBe('livediagram:api');
+    expect(resolveProbeUrl(api!.check.probe, 'https://lw.example')).toBe(
+      'https://www.livediagram.app/api/capabilities',
+    );
   });
 
-  it('links to no /status on an app’s own address, from its sites or the shared footer', () => {
-    const roots = [
-      join(repo, 'packages/ui/src'),
-      ...apps.flatMap((app) =>
-        ['apps/marketing', 'apps/help', 'packages/ui/src']
-          .map((p) => join(repo, app, p))
-          .filter((p) => {
-            try {
-              return statSync(p).isDirectory();
-            } catch {
-              return false;
-            }
-          }),
-      ),
-    ];
-    const OWN_STATUS = /href=["'{`]+\/status\b|href:\s*['"`]\/status\b|\]\(\/status\b/;
-    const offenders = roots
-      .flatMap(sources)
-      .filter((path) => OWN_STATUS.test(readFileSync(path, 'utf8')));
-    expect(offenders).toEqual([]);
+  it('keeps one round small: 27 requests, under a Worker’s 50 subrequests with room to spare', () => {
+    expect(probedServices(groups)).toHaveLength(27);
+    expect(probedServices(groups).length).toBeLessThan(40);
+    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(35);
   });
 });

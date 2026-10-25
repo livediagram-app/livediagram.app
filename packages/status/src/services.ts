@@ -1,7 +1,8 @@
-// What the status page checks (liveworkspace/docs/site.md "Status"): liveworkspace's shared services, then each
-// app's own, each with an endpoint it already answers that says it is up. Nothing here is a backend of its own:
-// every check is a route the service serves anyway, picked to be cheap (no database read where one can be avoided,
-// or one the edge caches).
+// What the status page checks (liveworkspace/docs/site.md "Status") and the status Worker checks every hour
+// (liveworkspace/docs/status.md): liveworkspace's shared services, then each app's own, each with an endpoint it
+// already answers that says it is up. The one list both use, so the page and the stored history never drift. Every
+// check is a route the service serves anyway, picked to be cheap (no database read where one can be avoided, or one
+// the edge caches).
 
 import {
   APP_SITES,
@@ -16,7 +17,9 @@ import {
 //  - `read`: the page can read the answer (this origin, or a CORS `*` route), so its status code must be one of
 //    `ok`, and JSON when `json` says so (which tells a Worker's own answer from the site's HTML 404 page).
 //  - `reach`: another site that sends no CORS headers. The browser only learns that it answered (an opaque
-//    `no-cors` response), never what it said, so the page calls that Reached rather than claiming more.
+//    `no-cors` response), never what it said, so the page calls that Reached rather than claiming more. The status
+//    Worker can read it, and counts any 2xx or 3xx as up.
+// A `read` URL that starts with `/` is on liveworkspace.app itself (`resolveProbeUrl`).
 export type Probe =
   | {
       kind: 'read';
@@ -297,4 +300,18 @@ export function statusGroups(env: StatusEnvironment): ServiceGroup[] {
 /** Every service on the page, flattened, in page order. */
 export function allServices(groups: readonly ServiceGroup[]): Service[] {
   return groups.flatMap((g) => g.services);
+}
+
+/** Every service with a check of its own, in page order: what one round (in a browser or on the server) fetches. */
+export function probedServices(
+  groups: readonly ServiceGroup[],
+): Array<Service & { check: { mode: 'probe'; probe: Probe } }> {
+  return allServices(groups).filter(
+    (s): s is Service & { check: { mode: 'probe'; probe: Probe } } => s.check.mode === 'probe',
+  );
+}
+
+/** A probe's absolute address: liveworkspace.app's own paths on `platformOrigin`, anything else as written. */
+export function resolveProbeUrl(probe: Probe, platformOrigin: string): string {
+  return probe.url.startsWith('/') ? `${platformOrigin.replace(/\/$/, '')}${probe.url}` : probe.url;
 }

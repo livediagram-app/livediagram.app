@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { StatusHistory } from '@liveworkspace/status';
 import { StatusBoard } from './StatusBoard';
 
 // liveworkspace/docs/site.md "Status": the board shows every group, and each service's state from its check, as an
@@ -112,5 +113,151 @@ describe('StatusBoard', () => {
     const legend = host!.querySelector('[aria-labelledby="status-legend"]')!.textContent;
     for (const word of ['Operational', 'Reached', 'Slow', 'Down', 'Checking', 'Not checked'])
       expect(legend).toContain(word);
+  });
+});
+
+// The stored history (liveworkspace/docs/status.md), served at /api/status/history; every other address as fetchWhere.
+const AT = Date.now() - 23 * 60_000;
+const DAYS = 90;
+const bars = (last: number, worst: string) => ({
+  p: 99.5,
+  w: `${'u'.repeat(DAYS - 1)}${worst}`,
+  u: last < 1000 ? [[DAYS - 1, last] as [number, number]] : [],
+});
+const HISTORY: StatusHistory = {
+  v: 1,
+  at: AT,
+  from: new Date(AT - (DAYS - 1) * 86_400_000).toISOString().slice(0, 10),
+  days: DAYS,
+  latest: {
+    'livediagram:api': ['u', 200, 120],
+    'livediagram:editor': ['u', 200, 40],
+    'liveplanner:api': ['d', null, 10_000, 'timeout'],
+  },
+  services: {
+    'livediagram:api': bars(1000, 'u'),
+    'livediagram:editor': bars(1000, 'u'),
+    'liveplanner:api': bars(500, 'd'),
+  },
+  incidents: [['liveplanner:api', AT - 3_600_000, null, 'd', 2, 'timeout']],
+};
+
+function withHistory(history: unknown, seen: string[] = []): typeof fetch {
+  const rest = fetchWhere(/$^/);
+  return async (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    seen.push(url);
+    if (url === '/api/status/history')
+      return new Response(JSON.stringify(history), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    return rest(input, init);
+  };
+}
+
+describe('StatusBoard with the hourly history', () => {
+  it('reads it once on load, and shows each service’s last hourly check beside this visit’s', async () => {
+    const seen: string[] = [];
+    await render(withHistory(HISTORY, seen));
+    expect(seen.filter((u) => u.includes('/api/status'))).toEqual(['/api/status/history']);
+    expect(host!.querySelector('[data-history="unavailable"]')).toBeNull();
+    const api = row('livediagram:api')!;
+    // The cards' clock moves once a minute, so 23 minutes reads as 22 to 24.
+    expect(api.textContent).toMatch(/Checked by liveworkspace 2[2-4] min ago/);
+    expect(api.querySelector('[data-hourly]')?.getAttribute('data-hourly')).toBe('up');
+    // A page the browser can only reach gets a true state from the hourly check.
+    expect(row('livediagram:editor')!.getAttribute('data-state')).toBe('reached');
+    expect(row('livediagram:editor')!.querySelector('[data-hourly]')?.textContent).toContain(
+      'Operational',
+    );
+    // Down in words, with why.
+    const planner = row('liveplanner:api')!.querySelector('[data-hourly]')!;
+    expect(planner.getAttribute('data-hourly')).toBe('down');
+    expect(planner.textContent).toContain('Timed out');
+    expect(planner.textContent).toContain('Down');
+  });
+
+  it('draws 90 days as one image with a summary in words, never colour alone', async () => {
+    await render(withHistory(HISTORY));
+    const strip = row('liveplanner:api')!.querySelector('[role="img"]')!;
+    expect(strip.getAttribute('aria-label')).toMatch(
+      /^Last 90 days: 99\.5% up over 90 days; 1 day with incidents/,
+    );
+    expect(strip.querySelectorAll('[data-day]')).toHaveLength(90);
+    // The worst day is told by its height as well as its colour.
+    expect(strip.lastElementChild!.className).toContain('h-2/5');
+    expect(row('liveplanner:api')!.textContent).toContain('99.5% over 90 days');
+    // A service with no stored days says so.
+    expect(row('livedesign:api')!.textContent).toContain('No data yet');
+  });
+
+  it('shows a day on focus, and moves through the days with the arrow keys', async () => {
+    await render(withHistory(HISTORY));
+    const strip = row('liveplanner:api')!.querySelector<HTMLElement>('[role="img"]')!;
+    await act(async () => strip.focus());
+    const tip = () => row('liveplanner:api')!.querySelector('[role="tooltip"]');
+    expect(tip()?.textContent).toContain('Worst: Down');
+    expect(tip()?.textContent).toContain('50% up');
+    expect(tip()?.textContent).toContain('ongoing');
+    await act(async () => {
+      strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    });
+    expect(tip()?.textContent).toContain('Up all day');
+    expect(tip()?.textContent).toContain('No incidents.');
+  });
+
+  it('lists recent incidents under the app’s name, with the state in words', async () => {
+    await render(withHistory(HISTORY));
+    const section = host!.querySelector('[aria-labelledby="status-incidents"]')!;
+    const item = section.querySelector('[data-incident="liveplanner:api"]')!;
+    expect(item.textContent).toContain('API · liveplanner');
+    expect(item.textContent).toContain('Down');
+    expect(item.textContent).toContain('Ongoing');
+    expect(item.textContent).toContain('No answer in 10 s');
+  });
+
+  it('leaves out the realtime rooms’ copies of the API’s incidents, and shows the latest ten at first', async () => {
+    const many = Array.from({ length: 12 }, (_, i) => [
+      'livediagram:api',
+      AT - (i + 2) * 86_400_000,
+      AT - (i + 2) * 86_400_000 + 3_600_000,
+      'd',
+      1,
+      'timeout',
+    ]) as StatusHistory['incidents'];
+    const copies = many.map((i) => [
+      'livediagram:realtime',
+      ...i.slice(1),
+    ]) as StatusHistory['incidents'];
+    await render(withHistory({ ...HISTORY, incidents: [...many, ...copies] }));
+    const section = host!.querySelector('[aria-labelledby="status-incidents"]')!;
+    expect(section.querySelectorAll('[data-incident="livediagram:realtime"]')).toHaveLength(0);
+    expect(section.querySelectorAll('[data-incident]')).toHaveLength(10);
+    const more = section.querySelector('button')!;
+    expect(more.textContent).toBe('Show all 12');
+    await act(async () => more.click());
+    expect(section.querySelectorAll('[data-incident]')).toHaveLength(12);
+  });
+
+  it('says when there are no incidents', async () => {
+    await render(withHistory({ ...HISTORY, incidents: [] }));
+    expect(host!.querySelector('[aria-labelledby="status-incidents"]')?.textContent).toContain(
+      'No incidents in the last 90 days.',
+    );
+  });
+
+  it('falls back to the live checks alone, quietly, without the Worker or before its first run', async () => {
+    await render(fetchWhere(/$^/));
+    expect(host!.querySelector('[data-history="unavailable"]')?.textContent).toContain(
+      'shows your browser’s live checks alone',
+    );
+    expect(host!.querySelector('[role="img"]')).toBeNull();
+    expect(host!.querySelector('[aria-labelledby="status-incidents"]')).toBeNull();
+    expect(row('livediagram:api')?.getAttribute('data-state')).toBe('up');
+
+    act(() => root!.unmount());
+    root = createRoot(host!);
+    await render(withHistory({ ...HISTORY, at: null, latest: {}, services: {}, incidents: [] }));
+    expect(host!.querySelector('[data-history="unavailable"]')).not.toBeNull();
   });
 });
