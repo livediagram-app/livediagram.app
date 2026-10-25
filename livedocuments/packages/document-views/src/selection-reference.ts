@@ -5,9 +5,9 @@
 import { WORKBENCH_SELECTION_MAX_REFS } from '@livedocuments/api-schema';
 import type { Element, Tab } from '@livedocuments/document';
 import { LABEL_CUT_CHARS } from './constants';
-import { textField } from './fields';
+import { textField } from '@liveworkspace/document-views/fields';
 import { buildViewModel, type ViewModel } from './model';
-import { jsonString } from './text';
+import { jsonString } from '@liveworkspace/document-views/text';
 
 type SelectionReferenceInput = {
   documentId: string;

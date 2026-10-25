@@ -1,10 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { shapeAt } from './__fixtures__/build';
 import { readingOrder, rowsOf } from './reading-order';
 
-const placed = (els: Element[]) => els.map((el, index) => ({ el, index }));
-const ids = (items: { el: Element }[]) => items.map((p) => p.el.id);
+type El = { id: string; type: string; x?: number; y?: number; width?: number; height?: number };
+const shapeAt = (
+  _kind: 'square',
+  id: string,
+  x: number,
+  y: number,
+  width = 100,
+  height = 50,
+): El => ({
+  id,
+  type: 'shape',
+  x,
+  y,
+  width,
+  height,
+});
+const placed = (els: El[]) => els.map((el, index) => ({ el, index }));
+const ids = (items: { el: El }[]) => items.map((p) => p.el.id);
 
 describe('readingOrder (R13)', () => {
   it('reads rows top to bottom, then left to right', () => {
@@ -40,8 +54,8 @@ describe('readingOrder (R13)', () => {
   });
 
   it('puts elements without geometry last, in array order (E13)', () => {
-    const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
-    const odder = { id: 'odder', type: 'hologram' } as unknown as Element;
+    const odd: El = { id: 'odd', type: 'hologram' };
+    const odder: El = { id: 'odder', type: 'hologram' };
     const items = placed([odder, shapeAt('square', 'a', 0, 0), odd]);
     items.reverse();
     expect(ids(readingOrder(items))).toEqual(['a', 'odder', 'odd']);

@@ -6,7 +6,7 @@ import { isKnownElement, type Element } from '@livediagram/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
-import { estimateTokens, type ViewResult } from './budget';
+import { estimateTokens, type ViewResult } from '@liveworkspace/document-views/budget';
 import {
   buildElision,
   collapsedPartsOf,
@@ -14,14 +14,14 @@ import {
   elisionLine,
   elisionText,
   type ElisionArguments,
-} from './elision';
-import { textField } from './fields';
+} from '@liveworkspace/document-views/elision';
+import { textField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
 import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
 import { ELISION_CONTAINERS_NAMED, LABEL_CUT_CHARS } from './constants';
-import { jsonString } from './text';
+import { jsonString } from '@liveworkspace/document-views/text';
 import {
   isViewRun,
   subtreeItems,
@@ -29,7 +29,7 @@ import {
   type ViewItem,
   type ViewNode,
 } from './tree';
-import type { ViewAttribute } from './view-attribute';
+import type { ViewAttribute } from '@liveworkspace/document-views/view-attribute';
 
 type OutlineOptions = {
   // The id of the element whose subtree to print, resolved by the caller.

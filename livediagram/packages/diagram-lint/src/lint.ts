@@ -13,7 +13,7 @@ import { LINT_CHECKS } from './checks';
 import { textOverprint } from './checks/text-overflow';
 import { LINT_MAX_ARROWS } from './constants';
 import { prepareLintContext, type LintSource } from './context';
-import { consoleLintLogger, type LintLogger } from './log';
+import { consoleLintLogger, type LintLogger } from '@liveworkspace/diagram-lint/log';
 import { crossingPairs, lintExtent } from './measures';
 import { sortFindings } from './order';
 

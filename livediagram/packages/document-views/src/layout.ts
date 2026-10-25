@@ -2,9 +2,14 @@
 // geometry relative to the content origin, or coarse rows per container.
 import type { LayoutView, ViewDoor } from '@livediagram/api-schema';
 import { contentOrigin, type Endpoint } from '@livediagram/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import type { ViewEdge } from './edges';
-import { boxOf, numberField } from './fields';
+import { boxOf, numberField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { rowsOf } from './reading-order';

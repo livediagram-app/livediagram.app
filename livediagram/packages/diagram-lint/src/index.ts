@@ -3,8 +3,13 @@
 export { lintGraph, lintTab, type LintOptions } from './lint';
 export { coloursSet } from './colours-set';
 export { withoutFindings } from './without-findings';
-export { formatLintReport, lintFooterPart, lintSummaryLine, lintVerdict } from './format';
+export {
+  formatLintReport,
+  lintFooterPart,
+  lintSummaryLine,
+  lintVerdict,
+} from '@liveworkspace/diagram-lint/format';
 export { compareGraphLayouts, formatCompareTable, parseCompareDimensions } from './compare';
-export { consoleLintLogger, type LintLogger } from './log';
+export { consoleLintLogger, type LintLogger } from '@liveworkspace/diagram-lint/log';
 export type { LintSource } from './context';
 export * from './constants';

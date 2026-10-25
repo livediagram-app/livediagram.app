@@ -1,8 +1,20 @@
 // The one closing line naming what a view left out and how to see it, in the reading door's syntax
 // (docs/specs/024-agents/blueprints/document-views.md "Elision line", VW39, VW54).
-import type { Elision, ViewDoor } from '@livedocuments/api-schema';
 import { ELISION_CONTAINERS_NAMED } from './constants';
 import { ELLIPSIS, plural } from './text';
+
+// The front door a view is read through; it chooses the elision command's syntax (VW54, VW57). The same
+// shapes as each product's `api-schema` wire types (`ViewDoor`, `Elision`), which they satisfy as they are.
+export type ViewDoor = 'cli' | 'mcp';
+
+// What a view left out, and the command that shows it; null when nothing was.
+export type Elision = {
+  dropped: ('notes' | 'attributes')[];
+  collapsed: { ref: string; kind: string; elements: number }[];
+  omitted: { noun: string; count: number }[];
+  arguments: Record<string, string | number | boolean>;
+  command: string;
+} | null;
 
 type Collapsed = NonNullable<Elision>['collapsed'][number];
 
@@ -71,7 +83,7 @@ export function buildElision(
   };
 }
 
-// `… notes hidden; 12 elements in stack c991 hidden: view --only c991`
+// `… notes hidden; 12 elements in frame c991 hidden: view --only c991`
 // The largest collapsed containers are named; the rest are one total, so the line stays short however
 // many containers a budget folds (VW39).
 export function elisionLine(elision: NonNullable<Elision>): string {

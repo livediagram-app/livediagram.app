@@ -4,8 +4,8 @@
 import type { LintMeasures, LintReport, LintSeverity } from '@livediagram/api-schema';
 import type { ArrowStyle, GraphInput } from '@livediagram/document';
 import { lintGraph } from './lint';
-import { lintVerdict } from './format';
-import type { LintLogger } from './log';
+import { lintVerdict } from '@liveworkspace/diagram-lint/format';
+import type { LintLogger } from '@liveworkspace/diagram-lint/log';
 
 const COMPARE_DIMENSIONS = ['direction', 'groups', 'lines'] as const;
 type CompareDimension = (typeof COMPARE_DIMENSIONS)[number];

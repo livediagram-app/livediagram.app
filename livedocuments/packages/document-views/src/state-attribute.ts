@@ -2,9 +2,19 @@
 // document-views.md "State attributes", VW22).
 import { RATING_DEFAULT, type Element } from '@livedocuments/document';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
-import { arrayField, numberField, stringField, textField } from './fields';
-import { jsonString } from './text';
-import { countAttribute, flagAttribute, shapeKindOf, type ViewAttribute } from './view-attribute';
+import {
+  arrayField,
+  numberField,
+  stringField,
+  textField,
+} from '@liveworkspace/document-views/fields';
+import { jsonString } from '@liveworkspace/document-views/text';
+import {
+  countAttribute,
+  flagAttribute,
+  shapeKindOf,
+  type ViewAttribute,
+} from '@liveworkspace/document-views/view-attribute';
 
 const countOf = (el: Element, field: string) => arrayField(el, field).length;
 

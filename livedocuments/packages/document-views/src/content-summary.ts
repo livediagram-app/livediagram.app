@@ -1,9 +1,15 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/document-views.md "Content
 // summaries", VW18 to VW21).
 import type { Element } from '@livedocuments/document';
-import { arrayField, flagField, isObject, listOf, stringField } from './fields';
-import { cellText } from './text';
-import { shapeKindOf } from './view-attribute';
+import {
+  arrayField,
+  flagField,
+  isObject,
+  listOf,
+  stringField,
+} from '@liveworkspace/document-views/fields';
+import { cellText } from '@liveworkspace/document-views/text';
+import { shapeKindOf } from '@liveworkspace/document-views/view-attribute';
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
