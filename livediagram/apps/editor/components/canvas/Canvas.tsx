@@ -34,7 +34,10 @@ import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
-import { useSelectionOf, useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import {
+  useSelectionOf,
+  useSelectionStore,
+} from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -47,7 +50,7 @@ import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canva
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
-import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
+import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';

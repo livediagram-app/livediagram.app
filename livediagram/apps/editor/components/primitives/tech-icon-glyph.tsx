@@ -22,8 +22,8 @@ import {
 import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
-import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { iconBandClass } from '@/components/primitives/icon-band';
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
@@ -44,7 +44,7 @@ const GLYPH_GROUP = {
 // picture at any zoom, exactly as the export draws it.
 export function TechIconArt({ iconId, sizePx }: { iconId: string | undefined; sizePx: number }) {
   // The colour/glyph data lives in the async catalogue chunk
-  // (lib/icon-registry.ts); subscribe so the brand mark pops in the moment it
+  // (@liveworkspace/workbench/lib/icon-registry.ts); subscribe so the brand mark pops in the moment it
   // lands (and kick the load if this is the first icon surface to mount).
   const catalogsLoaded = useIconCatalogs();
   const icon = getTechIcon(iconId);

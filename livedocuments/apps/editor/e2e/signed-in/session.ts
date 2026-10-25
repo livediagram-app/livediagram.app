@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { E2E_SESSION_KEY } from '../../lib/workbench-keys';
 
 // A signed-in session for the signed-in e2e specs (docs/specs/003-system-architecture/e2e-smoke.md
 // "Signed-in specs").
@@ -8,9 +9,6 @@ import type { Page } from '@playwright/test';
 // stands in for the liveworkspace accounts Worker (E2E_ACCOUNTS_STUB): `/e2e/token` mints an access
 // token the api worker verifies like a real one, so the person is a real verified account to the api
 // and the realtime room. This puts that token where the bridge reads it, before any page script runs.
-
-// Kept in step with E2E_SESSION_KEY in components/providers/E2EAuthBridge.tsx.
-const E2E_SESSION_KEY = 'livedocuments:e2e:session';
 
 export type StubUser = {
   // The account id; defaults to `user_stub`.

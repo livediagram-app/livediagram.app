@@ -22,9 +22,12 @@ import { useRef, useState } from 'react';
 import { createFreehand, type Element, type Tab, withVariantColours } from '@livedesign/design';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
-import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@liveworkspace/workbench/lib/highlighter-config';
+import {
+  HIGHLIGHTER_COLOR,
+  HIGHLIGHTER_WIDTH,
+} from '@liveworkspace/workbench/lib/highlighter-config';
 import { whiteboardPenIntent } from '@/lib/whiteboard-tool';
 import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';

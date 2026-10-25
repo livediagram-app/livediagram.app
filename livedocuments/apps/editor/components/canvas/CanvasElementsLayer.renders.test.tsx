@@ -65,21 +65,28 @@ vi.mock('./PreviewedElement', async (importOriginal) => {
 });
 // The grips layer is re-created on every layer render, so its count is the layer's.
 const layerRenders = { count: 0 };
-vi.mock('@liveworkspace/workbench/components/canvas/SelectionGripsLayer', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@liveworkspace/workbench/components/canvas/SelectionGripsLayer')>();
-  return {
-    ...real,
-    SelectionGripsLayer: (props: Parameters<typeof real.SelectionGripsLayer>[0]) => {
-      layerRenders.count += 1;
-      return real.SelectionGripsLayer(props);
-    },
-  };
-});
+vi.mock(
+  '@liveworkspace/workbench/components/canvas/SelectionGripsLayer',
+  async (importOriginal) => {
+    const real =
+      await importOriginal<
+        typeof import('@liveworkspace/workbench/components/canvas/SelectionGripsLayer')
+      >();
+    return {
+      ...real,
+      SelectionGripsLayer: (props: Parameters<typeof real.SelectionGripsLayer>[0]) => {
+        layerRenders.count += 1;
+        return real.SelectionGripsLayer(props);
+      },
+    };
+  },
+);
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
-const { SelectionStoreProvider } = await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
+const { SelectionStoreProvider } =
+  await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
 let store = createSelectionStore();
 
 const a = createShape('square', 0, 0);

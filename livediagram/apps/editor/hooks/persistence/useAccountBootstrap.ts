@@ -1,6 +1,9 @@
 'use client';
 
-import { DEFERRED_AUTH_PENDING, useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import {
+  DEFERRED_AUTH_PENDING,
+  useDeferredAuth,
+} from '@liveworkspace/workbench/components/providers/deferred-auth';
 import {
   useWorkbenchSession,
   type WorkbenchSession,

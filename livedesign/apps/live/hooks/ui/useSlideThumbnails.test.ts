@@ -4,7 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { createShape, svgBoxed, type Deck, type Tab } from '@livedesign/design';
 import { useSlideThumbnails } from './useSlideThumbnails';
 
-vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIconCatalogs', () => ({
+  useIconCatalogs: () => false,
+}));
 
 describe('useSlideThumbnails', () => {
   // docs/specs/007-editor/pages-mode.md "Slides": a page slide is drawn as the page exports,

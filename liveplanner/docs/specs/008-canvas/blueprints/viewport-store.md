@@ -5,16 +5,16 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 
 ## Files
 
-| File                                                          | Role                                                                       |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `../packages/workbench/src/lib/viewport-store.ts`             | `createViewportStore`, `View`, `ViewportStore`                             |
-| `../packages/workbench/src/hooks/ui/useStoreSlice.ts`         | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
-| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`              | `useSelectionOf` delegates to `useStoreSlice`                              |
-| `apps/editor/hooks/canvas/useEditorViewport.ts`               | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
-| `apps/editor/app/project/[id]/useEditorState.ts`              | Never subscribes; passes `viewport` on; effects subscribe                  |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`          | Passes no view to the canvas                                               |
-| `apps/editor/components/canvas/Canvas.tsx`                    | `CanvasView` subscribes to the view; children subscribe where they show it |
-| `../packages/workbench/src/hooks/canvas/useViewportStore.tsx` | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
+| File                                                           | Role                                                                       |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `../packages/workbench/src/lib/viewport-store.ts`              | `createViewportStore`, `View`, `ViewportStore`                             |
+| `../packages/workbench/src/hooks/ui/useStoreSlice.ts`          | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
+| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx` | `useSelectionOf` delegates to `useStoreSlice`                              |
+| `apps/editor/hooks/canvas/useEditorViewport.ts`                | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
+| `apps/editor/app/project/[id]/useEditorState.ts`               | Never subscribes; passes `viewport` on; effects subscribe                  |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`           | Passes no view to the canvas                                               |
+| `apps/editor/components/canvas/Canvas.tsx`                     | `CanvasView` subscribes to the view; children subscribe where they show it |
+| `../packages/workbench/src/hooks/canvas/useViewportStore.tsx`  | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
 
 ## Domain and naming
 

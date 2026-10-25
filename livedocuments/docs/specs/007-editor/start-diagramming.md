@@ -159,5 +159,5 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `components/start/template-start-mode.test.ts`: when the start shows.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `components/canvas/empty-card-dismissed.test.ts` (bringing the start
+- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
   back), `hooks/editor/page-edits.test.ts` (the last page).

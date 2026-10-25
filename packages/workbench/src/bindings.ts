@@ -59,10 +59,26 @@ export type WorkbenchBindings = {
   zoomMax: () => number;
   /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
   formatLogScope: string;
+  /** The window event that asks the mounted host to open Settings on a category (`<product>:open-settings`). */
+  openSettingsEvent: string;
+  /** The window event a floating panel sends as it arrives or leaves on its own (`<product>:panel-presence`). */
+  panelPresenceEvent: string;
+  /** The window event the panel layout sends as it is written (`<product>:panel-layout-changed`). */
+  panelLayoutEvent: string;
+  /** The sessionStorage key of the search handed to the next start panel (`<product>:v2:start-query`). */
+  startQueryKey: string;
+  /** The localStorage prefix of the move prompt's Not Now, per account (`<product>:v2:local-move-dismissed:`). */
+  localMoveDismissedPrefix: string;
+  /** The localStorage list of closed empty-tab cards (`<product>:v2:empty-card-dismissed`), where the editor has them. */
+  emptyCardDismissedKey?: string;
+  /** The localStorage key of the Format panel's configuration (`<product>:v2:format-config`), where it has one. */
+  formatConfigKey?: string;
+  /** The localStorage key of the Spotlight panel's configuration (`<product>:v2:spotlight-config`), where it has one. */
+  spotlightConfigKey?: string;
 };
 
 /** What workbench code reads until an editor configures it: safe no-ops and `workbench:` keys. */
-export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
+export const WORKBENCH_DEFAULTS: Readonly<Required<WorkbenchBindings>> = Object.freeze({
   track: () => {},
   debugKey: 'workbench:debug',
   reloadGuardKey: 'workbench:stale-chunk-reloads',
@@ -79,6 +95,14 @@ export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
   }),
   zoomMax: () => ZOOM_MAX,
   formatLogScope: 'document-format',
+  openSettingsEvent: 'workbench:open-settings',
+  panelPresenceEvent: 'workbench:panel-presence',
+  panelLayoutEvent: 'workbench:panel-layout-changed',
+  startQueryKey: 'workbench:v2:start-query',
+  localMoveDismissedPrefix: 'workbench:v2:local-move-dismissed:',
+  emptyCardDismissedKey: 'workbench:v2:empty-card-dismissed',
+  formatConfigKey: 'workbench:v2:format-config',
+  spotlightConfigKey: 'workbench:v2:spotlight-config',
 });
 
 let bound: Readonly<WorkbenchBindings> = WORKBENCH_DEFAULTS;
@@ -122,6 +146,31 @@ export const workbench = {
   },
   get formatLogScope(): string {
     return current().formatLogScope;
+  },
+  get openSettingsEvent(): string {
+    return current().openSettingsEvent;
+  },
+  get panelPresenceEvent(): string {
+    return current().panelPresenceEvent;
+  },
+  get panelLayoutEvent(): string {
+    return current().panelLayoutEvent;
+  },
+  get startQueryKey(): string {
+    return current().startQueryKey;
+  },
+  get localMoveDismissedPrefix(): string {
+    return current().localMoveDismissedPrefix;
+  },
+  // Bound only by an editor that runs the module, so an unbound one keeps its `workbench:` default.
+  get emptyCardDismissedKey(): string {
+    return current().emptyCardDismissedKey ?? WORKBENCH_DEFAULTS.emptyCardDismissedKey;
+  },
+  get formatConfigKey(): string {
+    return current().formatConfigKey ?? WORKBENCH_DEFAULTS.formatConfigKey;
+  },
+  get spotlightConfigKey(): string {
+    return current().spotlightConfigKey ?? WORKBENCH_DEFAULTS.spotlightConfigKey;
   },
 };
 

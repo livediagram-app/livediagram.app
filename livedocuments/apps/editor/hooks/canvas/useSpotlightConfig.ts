@@ -11,7 +11,7 @@ import {
   loadSpotlightConfig,
   saveSpotlightConfig,
   type SpotlightConfig,
-} from '@/lib/spotlight-config';
+} from '@liveworkspace/workbench/lib/spotlight-config';
 import { track } from '@/lib/telemetry';
 
 const TELEMETRY_TYPE: Record<keyof SpotlightConfig, string> = {

@@ -99,7 +99,7 @@ describe('Page edits', () => {
   // docs/specs/007-editor/start-diagramming.md "Start Making Pages": the last page can go too.
   it('deletes the last page with everything on the tab, and brings Start Making Pages back', async () => {
     const { dismissEmptyCard, emptyCardDismissed } =
-      await import('@/components/canvas/empty-card-dismissed');
+      await import('@liveworkspace/workbench/components/canvas/empty-card-dismissed');
     dismissEmptyCard('t:pages');
     const h = harness({
       id: 't',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ES_LANES, laneIndexAt, laneCentre, type Element } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
-import { isTechIconId } from './tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 
 // `buildTemplate` is the dispatch that turns a TemplateKind into the
 // starting elements when the user picks a template (docs/specs/008-canvas/canvas-and-palette.md's

@@ -39,7 +39,10 @@ import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { StripPopover, useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
+import {
+  StripPopover,
+  useStripPopover,
+} from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import { StripOpenerPanel } from './StripOpenerPanel';
 import {

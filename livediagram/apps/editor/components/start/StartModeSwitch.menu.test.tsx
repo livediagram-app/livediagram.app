@@ -75,11 +75,7 @@ describe('StartModeSwitch chip', () => {
       expect.stringMatching(/^Draw/),
       expect.stringMatching(/^Workshop/),
     ]);
-    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual([
-      'false',
-      'true',
-      'false',
-    ]);
+    expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(document.activeElement).toBe(rows[1]);
   });
 

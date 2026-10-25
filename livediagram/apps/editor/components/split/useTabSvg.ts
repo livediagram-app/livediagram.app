@@ -5,7 +5,7 @@ import type { Tab } from '@livediagram/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';

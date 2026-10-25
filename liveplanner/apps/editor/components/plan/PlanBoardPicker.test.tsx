@@ -7,7 +7,9 @@ let plan: { items: Map<string, unknown> } | null = null;
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 // Each test's panel arrives fresh: one unmounted by the test before is not a mode change turning it in place.
 vi.mock('@liveworkspace/workbench/components/start/start-panel-open', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@liveworkspace/workbench/components/start/start-panel-open')>()),
+  ...(await importOriginal<
+    typeof import('@liveworkspace/workbench/components/start/start-panel-open')
+  >()),
   startPanelJustLeft: () => justLeft,
 }));
 let justLeft = false;

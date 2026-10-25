@@ -6,7 +6,10 @@ import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { PaletteTray, usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import {
+  PaletteTray,
+  usePaletteStripBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 import { useInsertionDragInHand } from '@/lib/insertion-preview';
 import { usePaletteDragPreview } from '@/lib/palette-drag-preview';

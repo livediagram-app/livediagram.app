@@ -15,8 +15,8 @@ import {
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
-import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
-import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
+import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
+import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';
 import type { TemplateStartMode } from './start-template-items';
 

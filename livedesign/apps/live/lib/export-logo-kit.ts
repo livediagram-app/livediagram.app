@@ -89,11 +89,7 @@ export async function exportLogoKit(
 
 /** The kit's file name: `<design> - <page name> - Logo Kit.zip`, the page by its name, else its
  *  place ("Page 2"), or no page at all while it is the only one. */
-export function logoKitFileName(
-  designName: string,
-  page: LaidOutPage,
-  pageCount: number,
-): string {
+export function logoKitFileName(designName: string, page: LaidOutPage, pageCount: number): string {
   const pageName = page.name ?? (pageCount > 1 ? `Page ${page.index + 1}` : '');
   const base = `${designName || 'design'}${pageName ? ` - ${pageName}` : ''}`;
   return `${sanitizeFilename(base)} - Logo Kit.zip`;

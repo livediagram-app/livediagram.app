@@ -85,8 +85,8 @@ snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
 - `../packages/workbench/src/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts,
 children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
 SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ children })`,
-`SELECTION_GRIPS_Z_INDEX`. One module for every editor but livediagram, whose own copy lifts the layer
-for isometric view and shifts an arrow's grips for the insert-between preview.
+  `SELECTION_GRIPS_Z_INDEX`. One module for every editor but livediagram, whose own copy lifts the layer
+  for isometric view and shifts an arrow's grips for the insert-between preview.
 - `SelectionChromeLayer({ elementId, box, zoom, rotation, shiftX?, showHandles, showAnchors,
 onBeginDrag })` in `element-parts.tsx`.
 - `MenuFlyoutSection` treats a press inside `[data-grips-for]` as a press on the element, as it

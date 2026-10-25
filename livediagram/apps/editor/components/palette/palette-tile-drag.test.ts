@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
-import { STICKER_DND_MIME } from '@/lib/stickers';
-import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDragStart } from './palette-tile-drag';
 

@@ -22,7 +22,7 @@ import {
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 

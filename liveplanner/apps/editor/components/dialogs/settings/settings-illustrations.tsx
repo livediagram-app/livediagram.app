@@ -1,4 +1,7 @@
-import { ChoiceStates, type ChoiceIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-choice-illustrations';
+import {
+  ChoiceStates,
+  type ChoiceIllustrationId,
+} from '@liveworkspace/workbench/components/dialogs/settings/settings-choice-illustrations';
 
 // Small drawings for the settings whose effect is VISUAL, the ones whose
 // description is really trying to describe a picture: one drawing per option

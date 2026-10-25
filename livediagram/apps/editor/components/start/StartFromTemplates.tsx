@@ -30,8 +30,8 @@ import {
 import type { EditorMode } from '@livediagram/document';
 import type { TemplateKind } from '@livediagram/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
-import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
+import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';

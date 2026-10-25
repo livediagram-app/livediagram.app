@@ -24,19 +24,19 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/project/src/indicator-placement.ts`                                                                                                              | `indicatorRings`, `centredIndicators`, `topAnchor`, `footerAnchor`, `contentBox`, `placeIndicators`, `pipInset`, `contentShift`, the constants (pure) |
 | `packages/project/src/shape-hit.ts`                                                                                                                        | exports `roundedRectRing` (was the private `roundedRect`)                                                                                             |
-| `apps/editor/lib/element-indicator-style.ts`                                                                                                                 | `ELEMENT_INDICATOR_STYLES`, `readElementIndicatorStyle`, `withElementIndicatorStyle`                                                                  |
-| `apps/editor/components/canvas/ElementIndicatorStyleContext.tsx`                                                                                             | the style as a context, provided by `Canvas.tsx` from `settings`                                                                                      |
-| `../packages/workbench/src/components/canvas/indicator-items.ts`                                                                                                           | `IndicatorItem`, `buildIndicatorItems`, `clusterSize(items, form)`, `indicatorBacking`                                                                |
-| `apps/editor/components/canvas/useIndicatorLayout.ts`                                                                                                        | `placeCluster`, `useIndicatorLayout` (memoised), `ContentLayout`, `ContentInset`                                                                      |
-| `apps/editor/components/canvas/ElementIndicators.tsx`                                                                                                        | the component: a layout → Top cluster, Footer row or pip                                                                                              |
-| `apps/editor/components/canvas/InsetContent.tsx`                                                                                                             | the content area pulled in by a `ContentInset`; renders nothing extra at zero                                                                         |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`                                                                                                        | `contentInset`: wraps the inline-icon layout and the plain label in `InsetContent`                                                                    |
-| `apps/editor/components/canvas/shape-inline-icon-layout.tsx`                                                                                                 | exports `inlineIconMetrics`, `inlineIconGap` (shared with the content estimate)                                                                       |
-| `apps/editor/components/canvas/element-badges.tsx`                                                                                                           | keeps `RemoteSelectorsStrip` + `ADORNMENT_MIN_ZOOM`; `BadgeStrip` is removed                                                                          |
-| `apps/editor/components/canvas/useElementIndicators.ts`                                                                                                      | `elementIndicatorItems` (which indicators an element carries), `useElementIndicators` (items + layout)                                                |
-| `apps/editor/components/canvas/BoxedElementView.tsx`                                                                                                         | calls `useElementIndicators`, renders `ElementIndicators`; root gains the `group/el` name                                                             |
-| `apps/editor/lib/user-preferences.ts`                                                                                                                        | `elementIndicatorStyle?: 'top' \| 'footer' \| 'off'`                                                                                                  |
-| `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                                                                              | the Editor › Element Indicators choice row (Top / Footer / Off)                                                                                       |
+| `apps/editor/lib/element-indicator-style.ts`                                                                                                               | `ELEMENT_INDICATOR_STYLES`, `readElementIndicatorStyle`, `withElementIndicatorStyle`                                                                  |
+| `apps/editor/components/canvas/ElementIndicatorStyleContext.tsx`                                                                                           | the style as a context, provided by `Canvas.tsx` from `settings`                                                                                      |
+| `../packages/workbench/src/components/canvas/indicator-items.ts`                                                                                           | `IndicatorItem`, `buildIndicatorItems`, `clusterSize(items, form)`, `indicatorBacking`                                                                |
+| `apps/editor/components/canvas/useIndicatorLayout.ts`                                                                                                      | `placeCluster`, `useIndicatorLayout` (memoised), `ContentLayout`, `ContentInset`                                                                      |
+| `apps/editor/components/canvas/ElementIndicators.tsx`                                                                                                      | the component: a layout → Top cluster, Footer row or pip                                                                                              |
+| `apps/editor/components/canvas/InsetContent.tsx`                                                                                                           | the content area pulled in by a `ContentInset`; renders nothing extra at zero                                                                         |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`                                                                                                      | `contentInset`: wraps the inline-icon layout and the plain label in `InsetContent`                                                                    |
+| `apps/editor/components/canvas/shape-inline-icon-layout.tsx`                                                                                               | exports `inlineIconMetrics`, `inlineIconGap` (shared with the content estimate)                                                                       |
+| `apps/editor/components/canvas/element-badges.tsx`                                                                                                         | keeps `RemoteSelectorsStrip` + `ADORNMENT_MIN_ZOOM`; `BadgeStrip` is removed                                                                          |
+| `apps/editor/components/canvas/useElementIndicators.ts`                                                                                                    | `elementIndicatorItems` (which indicators an element carries), `useElementIndicators` (items + layout)                                                |
+| `apps/editor/components/canvas/BoxedElementView.tsx`                                                                                                       | calls `useElementIndicators`, renders `ElementIndicators`; root gains the `group/el` name                                                             |
+| `apps/editor/lib/user-preferences.ts`                                                                                                                      | `elementIndicatorStyle?: 'top' \| 'footer' \| 'off'`                                                                                                  |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                                                                            | the Editor › Element Indicators choice row (Top / Footer / Off)                                                                                       |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts` | the three `UI\|Changed\|ElementIndicators*` explanations and the chart                                                                                |
 
 ## Interfaces and contracts
@@ -202,27 +202,27 @@ Placement is pure and deterministic; no logs. A style change is the telemetry ev
 
 ## Testing
 
-| Rule                                                           | Test                                                               |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Rounded rect: Top fits tight, clear of the outline             | `packages/project/src/indicator-placement.test.ts`                 |
-| Circle: slides along the diagonal, stays inside                | same                                                               |
-| Diamond / small pill / thin bar: no fit → `null`               | same                                                               |
-| Never crosses the middle band                                  | same                                                               |
-| A short fixed label frees the corner; a long one does not      | same                                                               |
-| Centred shapes anchor top-centre / bottom-centre; boxes do not | same                                                               |
-| A centred cluster sits inside a circle's and a hexagon's top   | same                                                               |
-| Pip: hexagon's edge, rounded box's curve, diamond's apex       | same                                                               |
-| Content box counts an inline icon                              | same                                                               |
-| Content shift: twice for middle, refuses against the alignment | same                                                               |
-| Unknown style reads as Top; Footer and Off read back           | `apps/editor/lib/element-indicator-style.test.ts`                    |
-| Commands hidden until hover; labels; counts                    | `apps/editor/components/canvas/ElementIndicators.test.tsx`           |
-| Selected: the cluster fades out and is inert; back on deselect | same                                                               |
-| Off draws nothing                                              | same                                                               |
-| Icon + label move down under Top; clear content stays          | same                                                               |
-| Scale label shrinks evenly; nothing moves for the pip          | same                                                               |
-| Footer uses words, falls back to compact and to the pip        | same                                                               |
-| Which elements carry which indicators; what each opens         | `apps/editor/components/canvas/useElementIndicators.test.ts`         |
-| Item order, names, cluster size estimate, backing              | `../packages/workbench/src/components/canvas/indicator-items.test.ts`              |
-| The content area moves; no box when nothing moves              | `apps/editor/components/canvas/InsetContent.test.tsx`                |
-| Through the real element view: draw, move, fade, Off           | `apps/editor/components/canvas/BoxedElementView.indicators.test.tsx` |
-| Settings row writes the style and fires the choice event       | `settings-catalogue.test.ts` (existing per-row rules)              |
+| Rule                                                           | Test                                                                  |
+| -------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Rounded rect: Top fits tight, clear of the outline             | `packages/project/src/indicator-placement.test.ts`                    |
+| Circle: slides along the diagonal, stays inside                | same                                                                  |
+| Diamond / small pill / thin bar: no fit → `null`               | same                                                                  |
+| Never crosses the middle band                                  | same                                                                  |
+| A short fixed label frees the corner; a long one does not      | same                                                                  |
+| Centred shapes anchor top-centre / bottom-centre; boxes do not | same                                                                  |
+| A centred cluster sits inside a circle's and a hexagon's top   | same                                                                  |
+| Pip: hexagon's edge, rounded box's curve, diamond's apex       | same                                                                  |
+| Content box counts an inline icon                              | same                                                                  |
+| Content shift: twice for middle, refuses against the alignment | same                                                                  |
+| Unknown style reads as Top; Footer and Off read back           | `apps/editor/lib/element-indicator-style.test.ts`                     |
+| Commands hidden until hover; labels; counts                    | `apps/editor/components/canvas/ElementIndicators.test.tsx`            |
+| Selected: the cluster fades out and is inert; back on deselect | same                                                                  |
+| Off draws nothing                                              | same                                                                  |
+| Icon + label move down under Top; clear content stays          | same                                                                  |
+| Scale label shrinks evenly; nothing moves for the pip          | same                                                                  |
+| Footer uses words, falls back to compact and to the pip        | same                                                                  |
+| Which elements carry which indicators; what each opens         | `apps/editor/components/canvas/useElementIndicators.test.ts`          |
+| Item order, names, cluster size estimate, backing              | `../packages/workbench/src/components/canvas/indicator-items.test.ts` |
+| The content area moves; no box when nothing moves              | `apps/editor/components/canvas/InsetContent.test.tsx`                 |
+| Through the real element view: draw, move, fade, Off           | `apps/editor/components/canvas/BoxedElementView.indicators.test.tsx`  |
+| Settings row writes the style and fires the choice event       | `settings-catalogue.test.ts` (existing per-row rules)                 |

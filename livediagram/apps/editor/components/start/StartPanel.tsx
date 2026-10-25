@@ -32,10 +32,16 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 import type { StartPalette } from './start-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
-import { takeStartQuery } from './start-query';
+import { takeStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { liftBestMatch } from '@liveworkspace/workbench/components/start/best-match';
-import { isStartCardKey, nextCardIndex } from '@liveworkspace/workbench/components/start/start-card-keys';
-import { noteStartPanelLeft, startPanelJustLeft } from '@liveworkspace/workbench/components/start/start-panel-open';
+import {
+  isStartCardKey,
+  nextCardIndex,
+} from '@liveworkspace/workbench/components/start/start-card-keys';
+import {
+  noteStartPanelLeft,
+  startPanelJustLeft,
+} from '@liveworkspace/workbench/components/start/start-panel-open';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';

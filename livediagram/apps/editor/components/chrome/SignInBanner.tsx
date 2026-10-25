@@ -14,7 +14,10 @@ import { CloseIcon, SparkleIcon } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { announceToastFloorChange, BOTTOM_CHROME_SELECTOR } from '@liveworkspace/workbench/components/toast/toast-floor';
+import {
+  announceToastFloorChange,
+  BOTTOM_CHROME_SELECTOR,
+} from '@liveworkspace/workbench/components/toast/toast-floor';
 import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';

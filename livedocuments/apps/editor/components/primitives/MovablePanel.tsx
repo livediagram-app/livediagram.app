@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@livedocuments/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
-import { announcePanelPresence } from '@/lib/panel-presence';
+import { announcePanelPresence } from '@liveworkspace/workbench/lib/panel-presence';
 
 // The corner-docking props bundle (docs/specs/007-editor/panel-docking.md). CanvasChrome builds one of
 // these per panel when docking is active and panel wrappers spread it
@@ -98,7 +98,7 @@ export function MovablePanel({
     onDockDragEnd,
   });
 
-  // Arriving and leaving, the panel has the chrome placed around it measure again (lib/panel-presence.ts).
+  // Arriving and leaving, the panel has the chrome placed around it measure again (@liveworkspace/workbench/lib/panel-presence.ts).
   useEffect(() => {
     announcePanelPresence();
     return announcePanelPresence;

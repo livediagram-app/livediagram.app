@@ -40,7 +40,11 @@ import {
 } from '@/lib/presentation-config';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { positionAt, presentingIndex, type PresentingPosition } from '@liveworkspace/workbench/lib/presenting-position';
+import {
+  positionAt,
+  presentingIndex,
+  type PresentingPosition,
+} from '@liveworkspace/workbench/lib/presenting-position';
 import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 
 // How long after the last deck edit the save fires. Deck edits arrive in

@@ -23,8 +23,8 @@ A shared name from the design system is imported from `@liveworkspace/ui`, not t
 here are product-neutral: they cite a product spec by the path the products share
 (`docs/specs/007-editor/editor-app.md`, `live-app.md` in livedesign) rather than one product's nouns.
 
-Code that differs per product stays in the product. A module moves only once it reads the same in all
-four, and the product's part of it is handed in:
+Code that differs per product stays in the product. A module moves once it reads the same in every
+editor that has it (two or more), and the product's part of it is handed in:
 
 - **as props or arguments**, for a value or a callback (a label, a URL, what to do on click);
 - **as a small injected module** for anything wider: the workbench exports a `createX(config)` or a
@@ -42,17 +42,25 @@ through props: each editor's `lib/workbench-bindings.ts` calls `configureWorkben
 facts, and workbench code reads them through `workbench` (`workbench.track(…)`,
 `workbench.debugKey`), never through the product's own module.
 
-| Binding             | What it is                                                                                   | Read by                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `debugKey`          | the localStorage key of the debug flag (`<product>:debug`)                                   | `lib/debug-log`                                                                  |
-| `track`             | the product's telemetry `track`, typed on the events workbench code sends                    | `lib/stale-build-navigation`, `hooks/canvas/useZoomControls`                     |
-| `reloadGuardKey`    | the sessionStorage key of the one reload guard (`<product>:stale-chunk-reloads`)             | `lib/reload-guard`                                                               |
-| `appRecoveryFlag`   | the window flag the app's chunk recovery sets (`__<product>ChunkRecovery`)                   | `lib/stale-build-navigation`                                                     |
-| `formatLogScope`    | the fingerprint of the stored format (`document-format`, `project-format`, …)                | `lib/reload-when-saved`                                                          |
-| `runningStaleBuild` | whether this page runs an older build than the live one (the product's server-release)       | `lib/stale-build-navigation`                                                     |
-| `readPreferences`   | the person's preferences, as far as workbench code reads them (`reduceMotion`)               | `hooks/ui/useReduceMotion`                                                       |
-| `api`               | the product's api transport: `fetch`, `headers`, `expectOk`, `expectOkVoid`, `currentBearer` | `lib/api/oauth`, `lib/api/tokens`, `lib/index-client`, `lib/explorer-teams-host` |
-| `zoomMax`           | the canvas's zoom ceiling now (livedesign raises it for a photo page)                        | `lib/double-tap-zoom`, `hooks/canvas/useZoomControls`                            |
+| Binding                    | What it is                                                                                              | Read by                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `debugKey`                 | the localStorage key of the debug flag (`<product>:debug`)                                              | `lib/debug-log`                                                                  |
+| `track`                    | the product's telemetry `track`, typed on the events workbench code sends                               | `lib/stale-build-navigation`, `hooks/canvas/useZoomControls`                     |
+| `reloadGuardKey`           | the sessionStorage key of the one reload guard (`<product>:stale-chunk-reloads`)                        | `lib/reload-guard`                                                               |
+| `appRecoveryFlag`          | the window flag the app's chunk recovery sets (`__<product>ChunkRecovery`)                              | `lib/stale-build-navigation`                                                     |
+| `formatLogScope`           | the fingerprint of the stored format (`document-format`, `project-format`, …)                           | `lib/reload-when-saved`                                                          |
+| `runningStaleBuild`        | whether this page runs an older build than the live one (the product's server-release)                  | `lib/stale-build-navigation`                                                     |
+| `readPreferences`          | the person's preferences, as far as workbench code reads them (`reduceMotion`)                          | `hooks/ui/useReduceMotion`                                                       |
+| `api`                      | the product's api transport: `fetch`, `headers`, `expectOk`, `expectOkVoid`, `currentBearer`            | `lib/api/oauth`, `lib/api/tokens`, `lib/index-client`, `lib/explorer-teams-host` |
+| `zoomMax`                  | the canvas's zoom ceiling now (livedesign raises it for a photo page)                                   | `lib/double-tap-zoom`, `hooks/canvas/useZoomControls`                            |
+| `openSettingsEvent`        | the window event asking the host to open Settings (`<product>:open-settings`)                           | `lib/open-settings`, `hooks/ui/useOpenSettingsRequests`                          |
+| `panelPresenceEvent`       | the window event a panel sends as it arrives or leaves (`<product>:panel-presence`)                     | `lib/panel-presence`, `hooks/ui/useQuickStylePlacement`                          |
+| `panelLayoutEvent`         | the window event the panel layout sends as it is written (its `PANEL_LAYOUT_CHANGED_EVENT`)             | `hooks/ui/useQuickStylePlacement`                                                |
+| `startQueryKey`            | the sessionStorage key of the search handed to the next start (`<product>:v2:start-query`)              | `components/start/start-query`                                                   |
+| `localMoveDismissedPrefix` | the localStorage prefix of the move prompt's Not Now (`<product>:v2:local-move-dismissed:`)             | `lib/offline/local-move-dismissal`                                               |
+| `emptyCardDismissedKey`    | optional: the localStorage list of closed empty-tab cards (`<product>:v2:empty-card-dismissed`)         | `components/canvas/empty-card-dismissed`                                         |
+| `formatConfigKey`          | optional: the localStorage key of the Format panel's configuration (`<product>:v2:format-config`)       | `lib/format-config`                                                              |
+| `spotlightConfigKey`       | optional: the localStorage key of the Spotlight panel's configuration (`<product>:v2:spotlight-config`) | `lib/spotlight-config`                                                           |
 
 The rules:
 
@@ -69,14 +77,18 @@ The rules:
   page outside the root layout. Both evaluate before any component renders, and workbench code
   reads a binding only when it runs (an effect, a handler, a call), never at module scope, so a
   module-level singleton reads it lazily (`getToken: () => workbench.api.currentBearer()`).
-- **Safe when unconfigured.** Every binding has a typed default: `track` does nothing, the keys
+- **Safe when unconfigured.** An optional binding is one only some editors run (livediagram, livedocuments and
+  livedesign, not liveplanner); the others need not name it. Every binding has a typed default: `track` does nothing, the keys
   are `workbench:`-prefixed, `api` refuses with an error rather than sending an anonymous request.
   Tests run on the defaults unless they configure their own (`lib/testing/bindings` builds a full
   set from a few), and a development build warns once if workbench code reads a binding before
   `configureWorkbench`.
 - **A product's facts stay the product's.** Its keys are constants in its `lib/workbench-keys.ts`
   (no imports, so its pre-boot scripts and e2e fixtures read them too); never change one in place,
-  since people's saved flags live under it. A product difference becomes a binding value, never a
+  since people's saved flags live under it. A value only one component reads is a prop instead:
+  `E2EAuthBridge` takes its `sessionKey` from the provider that mounts it. A drag type a product's
+  drop targets match (`STICKER_DND_MIME`, `TECH_ICON_DND_MIME`) lives beside its `ICON_DND_MIME` in
+  `lib/icons.ts`, so the shared catalogue modules carry none. A product difference becomes a binding value, never a
   dropped behaviour.
 
 ## Use

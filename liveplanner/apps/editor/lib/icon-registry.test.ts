@@ -5,9 +5,9 @@ import {
   isIconCatalogsLoaded,
   resolveIconArtLoaded,
   subscribeIconCatalogs,
-} from './icon-registry';
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { getIcon, PLACEHOLDER_ICON } from './icons';
-import { isTechIconId } from './tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 
 // The registry is module-global state, and vitest isolates each test FILE
 // into its own module graph — so this file (and only this file) can observe

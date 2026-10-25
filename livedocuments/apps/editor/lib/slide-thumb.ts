@@ -23,7 +23,10 @@ import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 
 export type SlideThumb = { markup: string; viewBox: string };
 

@@ -7,12 +7,12 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 | File                                                          | Holds                                                                                                                   |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/hooks/ui/useToast.tsx`                           | `ToastProvider`, `useToast`, the `ToastApi` (`info`, `success`, `warning`, `error`, `offer`, `action`, `dismissAction`) |
-| `../packages/workbench/src/components/toast/toast-queue.ts`                 | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
+| `../packages/workbench/src/components/toast/toast-queue.ts`   | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
 | `apps/editor/components/toast/ToastStack.tsx`                 | The always-mounted `Notifications` region, its placement and the floor                                                  |
 | `apps/editor/components/toast/ToastCard.tsx`                  | One toast: icon, message, actions, close; `TOAST_SURFACE` for the look shared by other notices                          |
 | `../packages/workbench/src/components/toast/useToastTimer.ts` | The pausable timeout                                                                                                    |
-| `../packages/workbench/src/components/toast/toast-floor.ts`                 | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                          |
-| `../packages/workbench/src/components/toast/useToastFloor.ts`               | Measures the floor while the stack is up                                                                                |
+| `../packages/workbench/src/components/toast/toast-floor.ts`   | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                          |
+| `../packages/workbench/src/components/toast/useToastFloor.ts` | Measures the floor while the stack is up                                                                                |
 
 ## Domain and naming
 
@@ -177,8 +177,8 @@ on `window` (`announceToastFloorChange()`): the sign-in banner on mount and unmo
 
 | Rule                                                      | Test                                                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------- |
-| Dedupe, limit, upsert in place, retire oldest timed out   | `../packages/workbench/src/components/toast/toast-queue.test.ts`                  |
-| Floor: column, overlap, off-column chrome, phone          | `../packages/workbench/src/components/toast/toast-floor.test.ts`                  |
+| Dedupe, limit, upsert in place, retire oldest timed out   | `../packages/workbench/src/components/toast/toast-queue.test.ts`    |
+| Floor: column, overlap, off-column chrome, phone          | `../packages/workbench/src/components/toast/toast-floor.test.ts`    |
 | Timeouts per tone, pause and resume with the remainder    | `../packages/workbench/src/components/toast/useToastTimer.test.tsx` |
 | Gate (warning and error ignore it), roles, Escape, exit   | `apps/editor/hooks/ui/useToast.test.tsx`                            |
 | One row: icon, message, actions, close in order           | `apps/editor/components/toast/ToastCard.test.tsx`                   |

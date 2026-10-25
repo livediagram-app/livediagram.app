@@ -15,8 +15,8 @@ import {
   lucideStar,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateKind } from '@livedocuments/templates';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
-import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
+import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';

@@ -16,7 +16,11 @@ import {
 } from '@livedocuments/document';
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
-import { clusterSize, type IndicatorForm, type IndicatorItem } from '@liveworkspace/workbench/components/canvas/indicator-items';
+import {
+  clusterSize,
+  type IndicatorForm,
+  type IndicatorItem,
+} from '@liveworkspace/workbench/components/canvas/indicator-items';
 
 // What the cluster needs to know about the content: everything contentBox reads but the size.
 type ContentLayout = Omit<Parameters<typeof contentBox>[0], 'width' | 'height'>;

@@ -2,9 +2,9 @@
 // (docs/specs/007-editor/toolbar-layout.md "Search: every element type").
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { getLineArtIconCatalog } from '@/lib/icons';
-import { getStickerCatalog } from '@/lib/stickers';
+import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
 import { CATALOGUE_MATCH_LIMIT, searchCatalogueTiles } from './palette-catalogue-search';
 import type { PaletteTileDef } from './palette-tile-defs';
 

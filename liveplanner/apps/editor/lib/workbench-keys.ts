@@ -11,3 +11,18 @@ export const RELOAD_GUARD_KEY = 'liveplanner:stale-chunk-reloads';
 
 /** Set on window once the running app's chunk recovery is installed: the pre-boot guard then stands down. */
 export const APP_RECOVERY_FLAG = '__liveplannerChunkRecovery';
+
+/** The window event that asks the mounted host to open Settings on a category (`requestOpenSettings`). */
+export const OPEN_SETTINGS_EVENT = 'liveplanner:open-settings';
+
+/** The window event a floating panel sends as it arrives or leaves with no gesture of its own (docs/specs/008-canvas/quick-style-panel.md "Collisions"). */
+export const PANEL_PRESENCE_EVENT = 'liveplanner:panel-presence';
+
+/** The sessionStorage key of the search a `/new?q=` link hands the next start panel. */
+export const START_QUERY_KEY = 'liveplanner:v2:start-query';
+
+/** The localStorage prefix of "Not Now" on the move prompt after signing in, one key per account (`<prefix><userId>`). */
+export const LOCAL_MOVE_DISMISSED_PREFIX = 'liveplanner:v2:local-move-dismissed:';
+
+/** Test builds only: the localStorage key the e2e specs put a signed-in session under for E2EAuthBridge. */
+export const E2E_SESSION_KEY = 'liveplanner:e2e:session';

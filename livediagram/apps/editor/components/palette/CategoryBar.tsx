@@ -12,7 +12,10 @@ import {
 import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { StripPopover, useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
+import {
+  StripPopover,
+  useStripPopover,
+} from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { CategoryFlyout, type FlyoutCategory } from './CategoryFlyout';
 import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';

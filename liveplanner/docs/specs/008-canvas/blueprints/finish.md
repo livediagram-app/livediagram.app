@@ -500,7 +500,7 @@ per command letter.
 | Marker: budgets                                              | `packages/project/src/marker.perf.test.ts`                                                                   |
 | one door to both pens; Marker in the export; backdrops       | `packages/project/src/hand-drawn.test.ts`                                                                    |
 | export split, body placement, tab window frame, defs, fonts  | `packages/project/src/svg-render-sketch.test.ts`                                                             |
-| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                                          |
+| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
 
 ## Constants and configuration

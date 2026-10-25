@@ -37,7 +37,10 @@ import { PlayIcon } from '@/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/design/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
-import { rowDropIndex, useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
+import {
+  rowDropIndex,
+  useRowReorderDrag,
+} from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
 import { SOLID_BRAND_DARK_CONTROL } from '@livedesign/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';

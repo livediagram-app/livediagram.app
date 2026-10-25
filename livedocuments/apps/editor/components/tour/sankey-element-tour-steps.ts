@@ -4,7 +4,10 @@
 import { sankeyFrame, type ShapeElement } from '@livedocuments/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
-import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
+import {
+  sankeyFlowsTourSteps,
+  type SankeyFlowsTourContext,
+} from '@liveworkspace/workbench/components/tour/sankey-flows-tour-steps';
 import { inTheMenu } from './concept-element-tour-steps';
 import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';

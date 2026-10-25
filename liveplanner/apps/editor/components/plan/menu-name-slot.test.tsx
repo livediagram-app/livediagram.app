@@ -4,7 +4,10 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { announceHeaderBand, InMenuBox, MenuNameSlot, TabNameInBox } from './menu-name-slot';
-import { setActiveTabName, usePublishTabRename } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+import {
+  setActiveTabName,
+  usePublishTabRename,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 
 afterEach(cleanup);
 

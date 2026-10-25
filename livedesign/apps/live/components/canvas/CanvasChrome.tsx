@@ -93,10 +93,12 @@ type ChromeExtras = {
   onResetLaserPanel?: () => void;
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, owned by useSpotlightConfig
   // in Canvas, plus the live radius the canvas clicks also change.
-  spotlightConfig?: import('@/lib/spotlight-config').SpotlightConfig;
-  onChangeSpotlightField?: <K extends keyof import('@/lib/spotlight-config').SpotlightConfig>(
+  spotlightConfig?: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig;
+  onChangeSpotlightField?: <
+    K extends keyof import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig,
+  >(
     field: K,
-    value: import('@/lib/spotlight-config').SpotlightConfig[K],
+    value: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig[K],
   ) => void;
   spotlightRadius?: number;
   onSetSpotlightRadius?: (radius: number) => void;
@@ -120,9 +122,11 @@ type ChromeExtras = {
   slideDeck?: import('@/app/design/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
-  formatConfig?: import('@/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
-  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
+  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
+  onToggleFormatGroup?: (
+    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
+  ) => void;
+  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
   formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;

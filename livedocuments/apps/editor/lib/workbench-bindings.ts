@@ -4,10 +4,22 @@
 import { configureWorkbench } from '@liveworkspace/workbench/bindings';
 import { apiFetch, apiHeaders, currentBearer, expectOk, expectOkVoid } from './api/core';
 import { ZOOM_MAX } from '@liveworkspace/workbench/lib/zoom-range';
+import { PANEL_LAYOUT_CHANGED_EVENT } from './panel-layout';
 import { runningStaleBuild } from './server-release';
 import { track } from './telemetry';
 import { readUserPreferences } from './user-preferences';
-import { APP_RECOVERY_FLAG, DEBUG_STORAGE_KEY, RELOAD_GUARD_KEY } from './workbench-keys';
+import {
+  APP_RECOVERY_FLAG,
+  DEBUG_STORAGE_KEY,
+  EMPTY_CARD_DISMISSED_KEY,
+  FORMAT_CONFIG_KEY,
+  LOCAL_MOVE_DISMISSED_PREFIX,
+  OPEN_SETTINGS_EVENT,
+  PANEL_PRESENCE_EVENT,
+  RELOAD_GUARD_KEY,
+  SPOTLIGHT_CONFIG_KEY,
+  START_QUERY_KEY,
+} from './workbench-keys';
 
 export function bindWorkbench(): void {
   configureWorkbench({
@@ -20,5 +32,13 @@ export function bindWorkbench(): void {
     zoomMax: () => ZOOM_MAX,
     api: { fetch: apiFetch, headers: apiHeaders, expectOk, expectOkVoid, currentBearer },
     formatLogScope: 'document-format',
+    panelLayoutEvent: PANEL_LAYOUT_CHANGED_EVENT,
+    openSettingsEvent: OPEN_SETTINGS_EVENT,
+    panelPresenceEvent: PANEL_PRESENCE_EVENT,
+    startQueryKey: START_QUERY_KEY,
+    localMoveDismissedPrefix: LOCAL_MOVE_DISMISSED_PREFIX,
+    emptyCardDismissedKey: EMPTY_CARD_DISMISSED_KEY,
+    formatConfigKey: FORMAT_CONFIG_KEY,
+    spotlightConfigKey: SPOTLIGHT_CONFIG_KEY,
   });
 }

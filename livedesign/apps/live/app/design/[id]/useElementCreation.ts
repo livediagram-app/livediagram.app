@@ -16,9 +16,9 @@ import {
   type Tab,
   withVariantColours,
 } from '@livedesign/design';
-import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
+import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
-import { getSticker, stickerDropSize } from '@/lib/stickers';
+import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/design/[id]/useArrowConnect';

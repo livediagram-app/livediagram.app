@@ -8,7 +8,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SETTINGS_CATEGORIES, type SettingsDeleteAccountRowSpec } from './settings-catalogue';
 
 const auth = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
-vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({ useDeferredAuth: () => auth.value }));
+vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
+  useDeferredAuth: () => auth.value,
+}));
 vi.mock('@liveworkspace/workbench/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),

@@ -5,7 +5,10 @@ import { DialogCloseButton, Glyph, NoMatches } from '@livedesign/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { SettingsIllustration, type SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
+import {
+  SettingsIllustration,
+  type SettingsIllustrationId,
+} from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 import { SettingsSignInLink } from './SettingsSignInLink';
 
 // What the shared Settings view (@liveworkspace/settings-ui) borrows from this editor: its glyphs,

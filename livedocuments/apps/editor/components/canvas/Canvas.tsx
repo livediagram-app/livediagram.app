@@ -40,7 +40,7 @@ import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndica
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
+import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
 import { useCanvasPointer } from './useCanvasPointer';
 import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import { useCanvasDrawTools } from './useCanvasDrawTools';

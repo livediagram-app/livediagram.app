@@ -32,7 +32,11 @@ import {
   useTabWindowContextValue,
 } from '@/components/canvas/tab-window/tab-window-context';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
-import { brushPageId, pageBrushPreview, pagePaintPress } from '@liveworkspace/workbench/lib/format-page-brush';
+import {
+  brushPageId,
+  pageBrushPreview,
+  pagePaintPress,
+} from '@liveworkspace/workbench/lib/format-page-brush';
 import { useDeadPageBrush } from '@liveworkspace/workbench/hooks/editor/useDeadPageBrush';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 

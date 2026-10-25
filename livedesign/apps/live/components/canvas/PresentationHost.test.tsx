@@ -36,7 +36,9 @@ vi.mock('@/components/canvas/PresentationOverlay', () => ({
   ),
 }));
 const transition = vi.hoisted(() => vi.fn((_type: string, change: () => void) => change()));
-vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({ startTypedTransition: transition }));
+vi.mock('@liveworkspace/workbench/lib/view-transition', () => ({
+  startTypedTransition: transition,
+}));
 const settle = vi.hoisted(() => ({ ready: null as null | (() => void) }));
 vi.mock('./slide-transition', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./slide-transition')>()),

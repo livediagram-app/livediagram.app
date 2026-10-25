@@ -8,7 +8,10 @@ import { apiUploadImage } from '../api/images';
 import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from './session';
 import type { DecodedImage, ImageCodec, ImportImageSession } from './types';
-import { createWebpEncoder, type WasmWebpEncode } from '@liveworkspace/workbench/lib/import-images/webp';
+import {
+  createWebpEncoder,
+  type WasmWebpEncode,
+} from '@liveworkspace/workbench/lib/import-images/webp';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
 

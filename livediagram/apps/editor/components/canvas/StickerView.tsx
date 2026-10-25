@@ -13,8 +13,8 @@ import { trustedHtml } from '@livediagram/ui';
 // takes an element colour.
 
 import { stickerArt, type StickerDef } from '@liveworkspace/icons';
-import { getSticker } from '@/lib/stickers';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { getSticker } from '@liveworkspace/workbench/lib/stickers';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 // The art in its own <svg>, sized by the caller. Shared with the palette
 // tile so a sticker looks the same in the picker as on the canvas.
@@ -40,7 +40,7 @@ export function StickerView({
   stickerId: string | undefined;
   animClass?: string;
 }) {
-  // The catalogue rides the async icon chunk (lib/icon-registry.ts); subscribe
+  // The catalogue rides the async icon chunk (@liveworkspace/workbench/lib/icon-registry.ts); subscribe
   // so the sticker pops in the moment it lands.
   // The read is gated on the subscription's value, or the React Compiler's memo of `getSticker(stickerId)` keeps
   // the empty answer from before the chunk landed.

@@ -62,11 +62,11 @@ type TechIconDef = {
   a peer's op, a file) is dropped as it enters (`dropMalformedIds`), so the element reads as one with a key
   this build does not know: an icon its placeholder glyph.
 - **The heavy data loads async.** `tech-icons.ts` is the synchronous API
-  surface only (types, `TECH_ICON_DND_MIME`, `TECH_PROVIDERS`, `isTechIconId`);
+  surface only (types, `TECH_PROVIDERS`, `isTechIconId`);
   the per-icon colour + glyph markup lives in
   `../packages/icons/src/tech-icon-catalog.ts` (the shared `@liveworkspace/icons`
   package) and is dynamic-imported (together with the line-art catalogue) by
-  `apps/editor/lib/icon-registry.ts`, keeping ~25 kB of source out of the
+  `../packages/workbench/src/lib/icon-registry.ts`, keeping ~25 kB of source out of the
   editor's first-load JS (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Catalogue loading"). `isTechIconId` —
   which gates hot paths that can't wait for the chunk (the coloured-vs-line-art
   render dispatch, the drag fold-into-shape exclusion, telemetry typing) —
@@ -131,7 +131,7 @@ still used for search, the aria-label, and the on-canvas element.
 Unlike the Icons tab, a Technology tile is **always a standalone element** — it
 never drops _inside_ a selected shape as an inline icon (a coloured brand tile
 beside a shape's text is not meaningful, and the inline-icon renderer only knows
-line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`),
+line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `lib/icons.ts`),
 which the canvas drop handler routes to a standalone-icon create and which the
 shape drop target ignores. The same rule holds _after_ placement: dragging an
 existing standalone tech icon over a shape leaves it standalone — the

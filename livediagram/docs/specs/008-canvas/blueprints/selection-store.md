@@ -10,9 +10,9 @@ who re-renders when it changes.
 | File                                                                       | Role                                                                                |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`                           | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `../packages/workbench/src/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
 | `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
-| `../packages/workbench/src/hooks/ui/useStableObject.ts`                                  | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
+| `../packages/workbench/src/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
 | `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
 | `apps/editor/app/document/[id]/editor-ui-state.ts`                         | Creates the store; `selectedId` / setters come from it                              |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                       | Provides the store; passes the canvas stable event props                            |

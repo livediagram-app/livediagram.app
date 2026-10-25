@@ -7,7 +7,7 @@ import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import type { SvgMotion } from '@/lib/export-tab';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';

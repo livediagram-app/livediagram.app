@@ -7,7 +7,10 @@ import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
-import { usePublishTabName, usePublishTabRename } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+import {
+  usePublishTabName,
+  usePublishTabRename,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';

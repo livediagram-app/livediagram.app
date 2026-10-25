@@ -18,7 +18,7 @@ import {
 } from '@livedocuments/document';
 import type { PageLayoutId } from '@livedocuments/templates';
 import { trustedHtml, useAppearance } from '@livedocuments/ui';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { elementAsSeen } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';

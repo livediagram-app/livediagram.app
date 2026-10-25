@@ -11,7 +11,7 @@ import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar'
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
 import { exportPageLabel } from '@/lib/export-pages';
 import { downloadBlob, loadTabImages, renderTabToSvg } from '@/lib/export-tab';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { PREVIEW_CHECKER } from './ImageExportPanel';
 

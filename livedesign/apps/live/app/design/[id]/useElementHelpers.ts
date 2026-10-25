@@ -14,7 +14,11 @@ import {
   paintableArrowFields,
   paintableBoxedFields,
 } from '@/lib/format-painter';
-import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
+import {
+  filterPaintedFields,
+  formatPaintsAnything,
+  type FormatConfig,
+} from '@liveworkspace/workbench/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { brushPageId } from '@liveworkspace/workbench/lib/format-page-brush';
 import { patchTab } from './editor-page-helpers';

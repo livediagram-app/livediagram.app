@@ -35,7 +35,7 @@ import {
   MenuAccordionSection,
   MenuActionButton,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';

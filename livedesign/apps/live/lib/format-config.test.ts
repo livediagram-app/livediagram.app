@@ -9,7 +9,7 @@ import {
   formatPaintsAnything,
   parseFormatConfig,
   FORMAT_GROUPS,
-} from './format-config';
+} from '@liveworkspace/workbench/lib/format-config';
 
 // A source with every paintable field actually set, so the projections below
 // produce their full key set rather than a sparse one.

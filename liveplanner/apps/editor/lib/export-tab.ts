@@ -45,7 +45,10 @@ import {
   xmlEscape,
 } from '@liveplanner/project';
 import { backgroundPatternTile } from './canvas-backgrounds';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
 import { exportChartInk } from './export-chart-ink';
 

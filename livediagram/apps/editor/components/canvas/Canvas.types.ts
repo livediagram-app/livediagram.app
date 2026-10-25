@@ -231,9 +231,11 @@ export type CanvasProps = {
   ) => void;
   // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
   // in editor state, where the paint happens; Canvas forwards them.
-  formatConfig?: import('@/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
-  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
+  formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
+  onToggleFormatGroup?: (
+    group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
+  ) => void;
+  onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
   formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;

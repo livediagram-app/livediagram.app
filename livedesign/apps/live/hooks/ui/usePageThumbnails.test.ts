@@ -5,7 +5,9 @@ import { createShape, layOutPages, type Element, type Page } from '@livedesign/d
 import * as slideThumb from '@/lib/slide-thumb';
 import { usePageThumbnails, type PageThumbTab } from './usePageThumbnails';
 
-vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => true }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIconCatalogs', () => ({
+  useIconCatalogs: () => true,
+}));
 
 // docs/specs/007-editor/pages-mode.md "Contents" "Cost".
 afterEach(() => {

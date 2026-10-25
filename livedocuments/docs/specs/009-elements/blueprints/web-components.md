@@ -6,26 +6,26 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                          | Role                                                                             |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                     | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`                | `createComponent`, `createHero`, `createCalloutCard`, `COMPONENT_SIZE`           |
-| `packages/document/src/shape-factory.ts`                      | Default sizes and starting content per kind                                      |
-| `packages/document/src/shape-variants.ts`                     | `applyShapeVariant`: the `callout` Card preset                                   |
-| `packages/document/src/svg-render-web.ts`                     | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                             | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                             | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                        | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                           | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
-| `apps/editor/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
-| `apps/editor/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/editor/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
-| `apps/editor/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
-| `apps/editor/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
+| File                                                             | Role                                                                             |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `packages/document/src/web-components.ts`                        | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/document/src/component-factories.ts`                   | `createComponent`, `createHero`, `createCalloutCard`, `COMPONENT_SIZE`           |
+| `packages/document/src/shape-factory.ts`                         | Default sizes and starting content per kind                                      |
+| `packages/document/src/shape-variants.ts`                        | `applyShapeVariant`: the `callout` Card preset                                   |
+| `packages/document/src/svg-render-web.ts`                        | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/document/src/themes.ts`                                | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/document/src/colors.ts`                                | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/document/src/data-shapes.ts`                           | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/document/src/validate.ts`                              | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
+| `apps/editor/components/canvas/web/*.tsx`                        | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | The in-place single-line editor                                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`            | Routes faces; computes `editable`                                                |
+| `apps/editor/hooks/canvas/useWebComponentSetters.ts`             | Row writes, ring append, hero caption writes                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
+| `apps/editor/components/palette/context-menu-web-editors.tsx`    | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `apps/editor/components/palette/ElementContentSections.tsx`      | The image menu's "Caption Card" toggle                                           |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`          | `WEB_ROW_ACTION`: the ring's add-row action                                      |
+| `apps/editor/lib/element-telemetry.ts`                           | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
 
 ## Domain and naming
 

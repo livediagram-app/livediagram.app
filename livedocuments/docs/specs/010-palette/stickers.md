@@ -54,7 +54,7 @@ carrying its own `stickerId`:
 | Colours / Border UI | stroke + text swatches          | none (nothing to recolour)      |
 
 Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
-`ShapeElement`, its own `STICKER_DND_MIME` (so a drag onto a shape can't be
+`ShapeElement`, its own `STICKER_DND_MIME` (in `lib/icons.ts` beside `ICON_DND_MIME`, so a drag onto a shape can't be
 mistaken for an icon fold), `supportsColours` false, membership in
 `SELF_PAINTING_SHAPES` (no wrapper border) and in `isSelfDrawingShape` (no
 label editor, no markers, no text alignment, no morph), and exclusion from

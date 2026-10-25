@@ -16,7 +16,7 @@ vi.stubGlobal(
   },
 );
 
-import { PANEL_PRESENCE_EVENT } from '@/lib/panel-presence';
+import { workbench } from '@liveworkspace/workbench/bindings';
 import { MovablePanel } from './MovablePanel';
 
 afterEach(cleanup);
@@ -24,7 +24,7 @@ afterEach(cleanup);
 describe('MovablePanel presence', () => {
   it('announces itself as it arrives and as it leaves', () => {
     const heard = vi.fn();
-    window.addEventListener(PANEL_PRESENCE_EVENT, heard);
+    window.addEventListener(workbench.panelPresenceEvent, heard);
     const { unmount } = render(
       <MovablePanel title="Map" position={null} defaultCorner="bottom-left" onMoveTo={() => {}}>
         <p>body</p>
@@ -33,6 +33,6 @@ describe('MovablePanel presence', () => {
     expect(heard).toHaveBeenCalledTimes(1);
     unmount();
     expect(heard).toHaveBeenCalledTimes(2);
-    window.removeEventListener(PANEL_PRESENCE_EVENT, heard);
+    window.removeEventListener(workbench.panelPresenceEvent, heard);
   });
 });

@@ -8,29 +8,29 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                 | Role                                                                |
-| ---------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/project/src/shape-kind.ts`                 | `ShapeKind` includes `'page'`                                       |
-| `packages/project/src/shape-factory.ts`              | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
-| `packages/project/src/element-types.ts`              | `ShapeElement.pageTitle`, `pageSubtitle`                            |
-| `packages/project/src/data-shapes.ts`                | `PAGE_HEADING_MAX`                                                  |
-| `packages/project/src/validate.ts`                   | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
-| `packages/project/src/svg-render-body.ts`            | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
-| `packages/project/src/svg-render-page.ts`            | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
-| `packages/project/src/svg-render.ts`                 | Export box (`borderedRect`) and the fold over it                    |
-| `packages/project/src/svg-render-describe.ts`        | Export body label starts at `pageBodyTop`                           |
-| `packages/project/src/themes.ts`                     | `themeColourFields`: page exempt from theme applies [QD15]          |
-| `packages/project/src/colors.ts`                     | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
-| `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` returns a page's own colours                |
-| `apps/editor/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
-| `apps/editor/components/canvas/PageMasthead.tsx`       | The masthead: two `InlineTextLine`s over a hairline rule            |
-| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
-| `../packages/workbench/src/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
-| `apps/editor/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
-| `packages/project/src/export-tab-text.ts`            | Markdown outline [QD13]                                             |
+| File                                                             | Role                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/project/src/shape-kind.ts`                             | `ShapeKind` includes `'page'`                                       |
+| `packages/project/src/shape-factory.ts`                          | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
+| `packages/project/src/element-types.ts`                          | `ShapeElement.pageTitle`, `pageSubtitle`                            |
+| `packages/project/src/data-shapes.ts`                            | `PAGE_HEADING_MAX`                                                  |
+| `packages/project/src/validate.ts`                               | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
+| `packages/project/src/svg-render-body.ts`                        | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
+| `packages/project/src/svg-render-page.ts`                        | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
+| `packages/project/src/svg-render.ts`                             | Export box (`borderedRect`) and the fold over it                    |
+| `packages/project/src/svg-render-describe.ts`                    | Export body label starts at `pageBodyTop`                           |
+| `packages/project/src/themes.ts`                                 | `themeColourFields`: page exempt from theme applies [QD15]          |
+| `packages/project/src/colors.ts`                                 | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
+| `apps/editor/lib/themes.ts`                                      | `deriveNewBoxedColours` returns a page's own colours                |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`            | `isSvgRenderedShape('page')` is false: CSS box path                 |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`            | Stacks `PageMasthead` over the body region                          |
+| `apps/editor/components/canvas/PageMasthead.tsx`                 | The masthead: two `InlineTextLine`s over a hairline rule            |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | One plain line edited in place                                      |
+| `../packages/workbench/src/components/canvas/PageCornerFold.tsx` | The turned-back corner                                              |
+| `apps/editor/components/canvas/BoxedElementView.tsx`             | Mounts the fold                                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:page`, `toolGroup: 'write'`                             |
+| `packages/project/src/export-tab-text.ts`                        | Markdown outline [QD13]                                             |
 
 ## Domain and naming
 

@@ -20,7 +20,7 @@ import {
   iconAnimationStyle,
   type IconPrim,
 } from '@/lib/icons';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 // non-scaling-stroke keeps the line weight constant on screen at any
 // element size / zoom (matching the device-frame shapes), so a big icon
@@ -86,7 +86,7 @@ export function IconPrims({
   // false = play the animation once and hold; undefined / true loops.
   animationRepeat?: boolean;
 }) {
-  // The glyph catalogue loads as an async chunk (lib/icon-registry.ts). This
+  // The glyph catalogue loads as an async chunk (@liveworkspace/workbench/lib/icon-registry.ts). This
   // subscription (a) kicks the load if nothing else has, and (b) re-renders
   // this glyph when the data lands — until then `getIcon` serves the framed
   // question-mark placeholder, so an icon element is never a blank flash.

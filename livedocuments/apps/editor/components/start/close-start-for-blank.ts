@@ -2,7 +2,7 @@
 // Skip, Start Blank (`/new?blank=1`) or a blank's `/new?template=` link opens with its tab's start already closed, so
 // someone who asked for nothing gets nothing over the canvas.
 import { isBlankTemplate, type TemplateKind } from '@livedocuments/templates';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from './start-closed-key';
 
 export function closeStartForBlank(tabId: string, kind: TemplateKind | null): boolean {

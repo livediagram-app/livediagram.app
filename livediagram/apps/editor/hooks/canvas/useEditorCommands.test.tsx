@@ -18,7 +18,8 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { useEditorCommands } = await import('./useEditorCommands');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
-const { SelectionStoreProvider } = await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
+const { SelectionStoreProvider } =
+  await import('@liveworkspace/workbench/hooks/canvas/useSelectionStore');
 
 // The commands read the selection from the store while search is open.
 let store = createSelectionStore();

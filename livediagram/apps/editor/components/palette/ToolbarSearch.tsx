@@ -11,7 +11,7 @@ import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { markerTiles } from './palette-marker-tiles';
 import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { catalogueStripGroups } from './catalogue-strip-groups';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';

@@ -21,8 +21,11 @@ import {
 } from '@livedesign/design';
 import { pageExportFrame } from '@/lib/export-page';
 import { framesFirst, ZOOM_MIN, zoomMax } from '@/lib/canvas';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { StartAgainTray } from './StartAgainTray';

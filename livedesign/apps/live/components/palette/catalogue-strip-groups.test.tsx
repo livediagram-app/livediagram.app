@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { ICON_CATEGORIES } from '@/lib/icons';
-import { STICKER_CATEGORIES } from '@/lib/stickers';
+import { STICKER_CATEGORIES } from '@liveworkspace/workbench/lib/stickers';
 import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 

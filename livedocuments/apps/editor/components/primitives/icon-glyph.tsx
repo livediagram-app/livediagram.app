@@ -20,7 +20,7 @@ import {
   iconAnimationStyle,
   type IconPrim,
 } from '@/lib/icons';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 // non-scaling-stroke keeps the line weight constant on screen at any
 // element size / zoom (matching the device-frame shapes), so a big icon

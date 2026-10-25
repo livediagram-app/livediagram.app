@@ -16,8 +16,11 @@ import {
   type Point,
 } from '@livediagram/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import {
+  resolveIconArtLoaded,
+  resolveStickerArtLoaded,
+} from '@liveworkspace/workbench/lib/icon-registry';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

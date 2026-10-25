@@ -509,7 +509,7 @@ per command letter.
 | Marker: budgets                                              | `packages/design/src/marker.perf.test.ts`                                                                |
 | one door to both pens; Marker in the export; backdrops       | `packages/design/src/hand-drawn.test.ts`                                                                 |
 | export split, body placement, tab window frame, defs, fonts  | `packages/design/src/svg-render-sketch.test.ts`                                                          |
-| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                                        |
+| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                        |
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                 |

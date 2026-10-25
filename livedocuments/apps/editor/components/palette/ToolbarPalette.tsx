@@ -18,7 +18,10 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { StripPopover, useStripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
+import {
+  StripPopover,
+  useStripPopover,
+} from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import { Divider } from './strip-rail-items';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';

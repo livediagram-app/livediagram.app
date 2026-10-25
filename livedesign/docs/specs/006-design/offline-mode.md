@@ -523,7 +523,7 @@ Track adoption without content, reusing the closed vocabulary:
 - Share's offline gate and syncing in place: `components/dialogs/ShareOfflineGate.tsx`,
   `app/design/[id]/useSyncInPlace.ts`, `subscribeOfflineIds` in `lib/offline/offline-store.ts`.
 - The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
-  `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
+  `hooks/persistence/useLocalMovePrompt.ts`, `../packages/workbench/src/lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Design" and "Take Offline" (with confirmation + image re-homing).
 - Image handling ([Image element + per-owner gallery](../009-elements/images.md)) — embed `data:` URIs offline; upload-on-save,

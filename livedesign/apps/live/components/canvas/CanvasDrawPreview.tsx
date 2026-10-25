@@ -6,7 +6,10 @@ import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
 import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
-import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@liveworkspace/workbench/lib/highlighter-config';
+import {
+  HIGHLIGHTER_COLOR,
+  HIGHLIGHTER_WIDTH,
+} from '@liveworkspace/workbench/lib/highlighter-config';
 import { draftMirrorMaps, pointsBox, SymmetryCopies, toScreen } from './MirrorReflection';
 
 type CanvasDrawPreviewProps = {

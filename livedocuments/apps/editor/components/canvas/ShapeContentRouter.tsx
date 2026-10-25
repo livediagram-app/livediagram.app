@@ -27,7 +27,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
-import { isTechIconId } from '@/lib/tech-icons';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';

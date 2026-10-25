@@ -5,7 +5,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
-import { ensureIconCatalogs } from '@/lib/icon-registry';
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import type { Element } from '@livedesign/design';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';

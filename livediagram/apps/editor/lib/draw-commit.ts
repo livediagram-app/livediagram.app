@@ -34,8 +34,8 @@ import {
 } from '@livediagram/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import type { ThemeDefinition } from '@livediagram/document';
-import { isTechIconId } from '@/lib/tech-icons';
-import { getSticker, stickerDropSize } from '@/lib/stickers';
+import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
+import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { stampSizeFor } from '@/lib/stamp-placement';
 import { placedTextBox } from '@/lib/text-hug';

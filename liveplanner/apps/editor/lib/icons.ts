@@ -12,7 +12,7 @@
 //
 // This module is the SYNCHRONOUS API surface only. The catalogue data
 // (@liveworkspace/icons icon-catalog-1/2, ~36 kB of glyph geometry) loads as an async chunk
-// through lib/icon-registry.ts, keeping it out of the editor's first-load
+// through @liveworkspace/workbench/lib/icon-registry.ts, keeping it out of the editor's first-load
 // JS. Nothing here may import those data modules statically; until the
 // chunk lands, lookups fall back to PLACEHOLDER_ICON and list views come
 // back empty (the consumers subscribe via useIconCatalogs and re-render
@@ -27,7 +27,7 @@ import {
 } from '@liveplanner/project';
 
 import type { IconDef, IconPrim } from '@liveworkspace/workbench/lib/icon-types';
-import { getIconLoaded } from './icon-registry';
+import { getIconLoaded } from '@liveworkspace/workbench/lib/icon-registry';
 
 export type { IconDef, IconPrim };
 

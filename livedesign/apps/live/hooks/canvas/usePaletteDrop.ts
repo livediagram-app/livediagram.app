@@ -10,10 +10,8 @@
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
-import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
-import { STICKER_DND_MIME } from '@/lib/stickers';
+import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
-import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 type PaletteDropDeps = {

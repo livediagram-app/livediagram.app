@@ -1,14 +1,14 @@
 // Technology-icon catalogue DATA (docs/specs/010-palette/technology-icons.md), kept separate from the editor's
-// synchronous API surface (the editor app's lib/tech-icons.ts: MIME, provider list,
+// synchronous API surface (the editors' @liveworkspace/workbench/lib/tech-icons.ts: provider list,
 // the id set behind `isTechIconId`) so the heavy per-icon SVG markup loads as
-// an async chunk there (via lib/icon-registry.ts) instead of riding the
+// an async chunk there (via @liveworkspace/workbench/lib/icon-registry.ts) instead of riding the
 // editor's first-load JS. This file is a pure data catalogue — exempt from
 // the file-size budget per AGENTS.md — and must NOT be imported statically
 // by anything on the editor's first-load path (only the registry's dynamic
 // import, the Workers' ./resolve, and tests may import it).
 //
 // Adding an icon is a TWO-line change now: the entry here plus its id in
-// TECH_ICON_IDS in the editor app's lib/tech-icons.ts (a parity test pins the two
+// TECH_ICON_IDS in @liveworkspace/workbench/lib/tech-icons.ts (a parity test pins the two
 // together).
 import type { TechIconDef } from './types';
 

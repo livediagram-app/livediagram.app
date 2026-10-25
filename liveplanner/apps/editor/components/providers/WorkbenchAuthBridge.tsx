@@ -9,7 +9,10 @@ import { useLayoutEffect, useMemo, type ReactNode, type RefObject } from 'react'
 import type { WorkbenchConfinementSession } from '@liveplanner/api-schema';
 import { registerTokenProvider, setWorkbenchConfinement } from '@/lib/api/core';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { DeferredAuthContext, type DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import {
+  DeferredAuthContext,
+  type DeferredAuthState,
+} from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { WorkbenchSessionContext, type WorkbenchSession } from './workbench-session-context';
 
 export function WorkbenchAuthBridge({

@@ -16,7 +16,11 @@ import {
   paintableArrowFields,
   paintableBoxedFields,
 } from '@/lib/format-painter';
-import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
+import {
+  filterPaintedFields,
+  formatPaintsAnything,
+  type FormatConfig,
+} from '@liveworkspace/workbench/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';

@@ -47,7 +47,7 @@ import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { handStartQuery } from '@/components/start/start-query';
+import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
 
 // In-place handoff (docs/specs/007-editor/new-project-route.md): once a project is created, this page

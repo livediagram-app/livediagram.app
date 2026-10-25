@@ -13,7 +13,10 @@ import {
 } from 'react';
 import { Portal, atLeastInset, safeInset } from '@livedesign/ui';
 import { ToastCard, type ToastCardAction } from './ToastCard';
-import { toastTimeout, type ToastEntry } from '@liveworkspace/workbench/components/toast/toast-queue';
+import {
+  toastTimeout,
+  type ToastEntry,
+} from '@liveworkspace/workbench/components/toast/toast-queue';
 import { useToastFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
 import { useToastTimer } from '@liveworkspace/workbench/components/toast/useToastTimer';
 

@@ -517,7 +517,7 @@ Track adoption without content, reusing the closed vocabulary:
 - Share's offline gate and syncing in place: `components/dialogs/ShareOfflineGate.tsx`,
   `app/project/[id]/useSyncInPlace.ts`, `subscribeOfflineIds` in `lib/offline/offline-store.ts`.
 - The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
-  `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
+  `hooks/persistence/useLocalMovePrompt.ts`, `../packages/workbench/src/lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
   "Sync Project" and "Take Offline" (with confirmation).
 - `apps/marketing` — the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).

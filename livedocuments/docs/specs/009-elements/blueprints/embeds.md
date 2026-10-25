@@ -7,41 +7,41 @@ ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                       | Role                                                                                |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `../packages/model-core/src/youtube.ts`                    | `youtubeVideoId`, the URL builders, `createEmbedTargetFor`, provider tables         |
-| `packages/document/src/youtube.ts`                         | `embedTargetFor`: the shared rules bound to the host Figma is told, `livedocuments` |
-| `packages/document/src/element-types.ts`                   | `VideoElement`                                                                      |
-| `packages/document/src/factories.ts`                       | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                    |
-| `packages/document/src/index.ts`                           | `isBoxed` includes `video`                                                          |
-| `packages/document/src/colors.ts`                          | Default fill / stroke / text, `supportsColours`, paper-independent ink              |
-| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.video` is empty                                                |
-| `packages/document/src/shadow.ts`                          | `supportsShadow` includes `video`                                                   |
-| `packages/document/src/validate.ts`                        | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`           |
-| `packages/document/src/element-kind-label.ts`              | `elementKindLabel`: `video` reads "Embed"                                           |
-| `packages/document/src/svg-render-describe.ts`             | Headless export: the generic rect branch [QC2]                                      |
-| `apps/editor/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice          |
-| `../packages/ui/src/Tooltip.tsx`                           | `Tooltip`: names each player control button                                         |
-| `../packages/ui/src/HoverCard.tsx`                         | `HoverCard`: explains the website's new-tab link                                    |
-| `../packages/workbench/src/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                                |
-| `apps/editor/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                             |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                                       |
-| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the link picker                                                  |
-| `apps/editor/components/canvas/BoxedElementView.tsx`       | The link badge (`linked`) applies to `video`                                        |
-| `apps/editor/components/dialogs/EditorElementDialogs.tsx`  | Builds the `urlOnly` config for a `video` target                                    |
-| `apps/editor/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit                  |
-| `../packages/workbench/src/lib/url-safety.ts`              | `normaliseUrl`, `isSafeFollowUrl`                                                   |
-| `apps/editor/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                     |
-| `apps/editor/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                     |
-| `apps/editor/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                           |
-| `apps/editor/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                           |
-| `../packages/workbench/src/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                                    |
-| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addVideo(provider?)` arms the draw                                                 |
-| `apps/editor/lib/draw-mode.ts`                             | `PendingDraw` `video` intent, banner copy, cursor glyph                             |
-| `apps/editor/lib/draw-commit.ts`                           | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                          |
-| `apps/editor/hooks/canvas/useShapeDrawing.ts`              | `Element·Added·Video` on a drawn embed                                              |
-| `apps/editor/lib/element-telemetry.ts`                     | `elementTelemetryType`: `video` → `Video` for copy paths                            |
-| `apps/editor/lib/element-names.ts`                         | `kindLabel`: `video` reads "Embed"                                                  |
+| File                                                                   | Role                                                                                |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `../packages/model-core/src/youtube.ts`                                | `youtubeVideoId`, the URL builders, `createEmbedTargetFor`, provider tables         |
+| `packages/document/src/youtube.ts`                                     | `embedTargetFor`: the shared rules bound to the host Figma is told, `livedocuments` |
+| `packages/document/src/element-types.ts`                               | `VideoElement`                                                                      |
+| `packages/document/src/factories.ts`                                   | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                    |
+| `packages/document/src/index.ts`                                       | `isBoxed` includes `video`                                                          |
+| `packages/document/src/colors.ts`                                      | Default fill / stroke / text, `supportsColours`, paper-independent ink              |
+| `packages/document/src/themes.ts`                                      | `THEME_COLOUR_FIELDS.video` is empty                                                |
+| `packages/document/src/shadow.ts`                                      | `supportsShadow` includes `video`                                                   |
+| `packages/document/src/validate.ts`                                    | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`           |
+| `packages/document/src/element-kind-label.ts`                          | `elementKindLabel`: `video` reads "Embed"                                           |
+| `packages/document/src/svg-render-describe.ts`                         | Headless export: the generic rect branch [QC2]                                      |
+| `apps/editor/components/canvas/VideoView.tsx`                          | The face: empty state, poster, load card, player, controls, no-load notice          |
+| `../packages/ui/src/Tooltip.tsx`                                       | `Tooltip`: names each player control button                                         |
+| `../packages/ui/src/HoverCard.tsx`                                     | `HoverCard`: explains the website's new-tab link                                    |
+| `../packages/workbench/src/components/canvas/use-frame-blocked.ts`     | `useFrameBlocked`: the no-load watch                                                |
+| `apps/editor/components/canvas/element-variant.ts`                     | The dark rounded frame (`case 'video'`)                                             |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`                  | Routes `video` to `VideoView`                                                       |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`             | Double-click opens the link picker                                                  |
+| `apps/editor/components/canvas/BoxedElementView.tsx`                   | The link badge (`linked`) applies to `video`                                        |
+| `apps/editor/components/dialogs/EditorElementDialogs.tsx`              | Builds the `urlOnly` config for a `video` target                                    |
+| `apps/editor/components/dialogs/LinkPickerDialog.tsx`                  | `UrlOnlyConfig`: URL mode only, validate as you type and at commit                  |
+| `../packages/workbench/src/lib/url-safety.ts`                          | `normaliseUrl`, `isSafeFollowUrl`                                                   |
+| `apps/editor/components/palette/palette-tile-defs.tsx`                 | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                     |
+| `apps/editor/components/palette/palette-tile-art.tsx`                  | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                     |
+| `apps/editor/components/palette/palette-create-tabs.tsx`               | `PaletteMediaTab`: the Embed group under Image and Avatar                           |
+| `apps/editor/components/palette/PaletteTileGroup.tsx`                  | The collapsible group row                                                           |
+| `../packages/workbench/src/components/palette/palette-group-state.tsx` | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                                    |
+| `apps/editor/app/document/[id]/useElementCreation.ts`                  | `addVideo(provider?)` arms the draw                                                 |
+| `apps/editor/lib/draw-mode.ts`                                         | `PendingDraw` `video` intent, banner copy, cursor glyph                             |
+| `apps/editor/lib/draw-commit.ts`                                       | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                          |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`                          | `Element·Added·Video` on a drawn embed                                              |
+| `apps/editor/lib/element-telemetry.ts`                                 | `elementTelemetryType`: `video` → `Video` for copy paths                            |
+| `apps/editor/lib/element-names.ts`                                     | `kindLabel`: `video` reads "Embed"                                                  |
 
 ## Domain and naming
 
@@ -380,38 +380,38 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 ## Testing
 
-| Rule                                                                                              | Test                                                                | File                                                        |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `../packages/model-core/src/youtube.test.ts`                |
-| Host case-insensitive, id case-sensitive                                                          | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                           |
-| `?v=` only on a YouTube host; lookalikes refused                                                  | two `returns null` cases                                            | `youtube.test.ts`                                           |
-| Id is exactly 11 URL-safe chars                                                                   | wrong length or alphabet                                            | `youtube.test.ts`                                           |
-| Dangerous schemes refused                                                                         | `javascript:` / `data:` for both parsers                            | `youtube.test.ts`                                           |
-| Poster on `i.ytimg.com`, player on no-cookie with autoplay                                        | `url builders`                                                      | `youtube.test.ts`                                           |
-| Vimeo, Loom, Figma, Google resolution                                                             | one test each                                                       | `youtube.test.ts`                                           |
-| Google Form is not a document                                                                     | `returns null for a Google host that is not an embeddable doc`      | `youtube.test.ts`                                           |
-| Website catch-all, host label, no poster                                                          | `treats any other http(s) host as a plain website embed`            | `youtube.test.ts`                                           |
-| Lookalike is a website, never the provider                                                        | `does not mistake a lookalike host ...`                             | `youtube.test.ts`                                           |
-| Malformed known-provider link is `null`                                                           | `still refuses a malformed link ...` (Vimeo, Google only) [QC1]     | `youtube.test.ts`                                           |
-| Drag fits 16:9 and centres                                                                        | two `buildDrawnBoxed` tests                                         | `apps/editor/lib/draw-commit.test.ts`                       |
-| Tile provider lands on the element                                                                | `carries the embed provider through the gesture ...`                | `draw-commit.test.ts`                                       |
-| Banner names the provider, 16:9 note off on mobile                                                | two `drawBannerMessage` tests                                       | `apps/editor/lib/draw-mode.test.ts`                         |
-| `Video` has a telemetry bucket                                                                    | `gives every NON-shape element kind a bucket too`                   | `apps/editor/lib/palette-telemetry-coverage.test.ts`        |
-| Embed group has tiles and a renderer                                                              | tile-group coverage                                                 | `apps/editor/components/palette/palette-tile-defs.test.tsx` |
-| `video` is in the element vocabulary                                                              | vocabulary fixture                                                  | `packages/document/src/element-type-vocabulary.test.ts`     |
-| No iframe until play (I1)                                                                         | `mounts the player only once play is pressed`                       | `apps/editor/components/canvas/VideoView.test.tsx`          |
-| A link change tears the player down (D60)                                                         | `stops the player when the link changes`                            | `VideoView.test.tsx`                                        |
-| Pointer-inert iframe; sandbox on website only; controls; load card; empty and unembeddable states | none (GC2)                                                          | none                                                        |
-| No load event within `LOAD_TIMEOUT_MS` is a failure                                               | `calls a frame dead when it never loads`                            | `../packages/workbench/src/components/canvas/use-frame-blocked.test.tsx`  |
-| A load event settles the watch                                                                    | `settles on any load event`                                         | `use-frame-blocked.test.tsx`                                |
-| A new `src` forgets the verdict and asks again                                                    | `forgets the verdict when the URL changes, and asks again`          | `use-frame-blocked.test.tsx`                                |
-| No `src`, no watch                                                                                | `asks nothing without a URL`                                        | `use-frame-blocked.test.tsx`                                |
-| `reset()` clears the verdict                                                                      | none (GC3)                                                          | none                                                        |
-| Picker: URL only, validated as typed and at commit, on normalised URL                             | none (GC4)                                                          | none                                                        |
-| One palette group open at a time; local fallback                                                  | none (GC5)                                                          | none                                                        |
-| `createVideo` 480×270 locked; `embedProvider` closed set                                          | none (GC6)                                                          | none                                                        |
-| Export representation                                                                             | none [QC2] (GC10)                                                   | none                                                        |
-| End to end: place, link, play, drag still works                                                   | none (GC9)                                                          | none                                                        |
+| Rule                                                                                              | Test                                                                | File                                                                     |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `../packages/model-core/src/youtube.test.ts`                             |
+| Host case-insensitive, id case-sensitive                                                          | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                                        |
+| `?v=` only on a YouTube host; lookalikes refused                                                  | two `returns null` cases                                            | `youtube.test.ts`                                                        |
+| Id is exactly 11 URL-safe chars                                                                   | wrong length or alphabet                                            | `youtube.test.ts`                                                        |
+| Dangerous schemes refused                                                                         | `javascript:` / `data:` for both parsers                            | `youtube.test.ts`                                                        |
+| Poster on `i.ytimg.com`, player on no-cookie with autoplay                                        | `url builders`                                                      | `youtube.test.ts`                                                        |
+| Vimeo, Loom, Figma, Google resolution                                                             | one test each                                                       | `youtube.test.ts`                                                        |
+| Google Form is not a document                                                                     | `returns null for a Google host that is not an embeddable doc`      | `youtube.test.ts`                                                        |
+| Website catch-all, host label, no poster                                                          | `treats any other http(s) host as a plain website embed`            | `youtube.test.ts`                                                        |
+| Lookalike is a website, never the provider                                                        | `does not mistake a lookalike host ...`                             | `youtube.test.ts`                                                        |
+| Malformed known-provider link is `null`                                                           | `still refuses a malformed link ...` (Vimeo, Google only) [QC1]     | `youtube.test.ts`                                                        |
+| Drag fits 16:9 and centres                                                                        | two `buildDrawnBoxed` tests                                         | `apps/editor/lib/draw-commit.test.ts`                                    |
+| Tile provider lands on the element                                                                | `carries the embed provider through the gesture ...`                | `draw-commit.test.ts`                                                    |
+| Banner names the provider, 16:9 note off on mobile                                                | two `drawBannerMessage` tests                                       | `apps/editor/lib/draw-mode.test.ts`                                      |
+| `Video` has a telemetry bucket                                                                    | `gives every NON-shape element kind a bucket too`                   | `apps/editor/lib/palette-telemetry-coverage.test.ts`                     |
+| Embed group has tiles and a renderer                                                              | tile-group coverage                                                 | `apps/editor/components/palette/palette-tile-defs.test.tsx`              |
+| `video` is in the element vocabulary                                                              | vocabulary fixture                                                  | `packages/document/src/element-type-vocabulary.test.ts`                  |
+| No iframe until play (I1)                                                                         | `mounts the player only once play is pressed`                       | `apps/editor/components/canvas/VideoView.test.tsx`                       |
+| A link change tears the player down (D60)                                                         | `stops the player when the link changes`                            | `VideoView.test.tsx`                                                     |
+| Pointer-inert iframe; sandbox on website only; controls; load card; empty and unembeddable states | none (GC2)                                                          | none                                                                     |
+| No load event within `LOAD_TIMEOUT_MS` is a failure                                               | `calls a frame dead when it never loads`                            | `../packages/workbench/src/components/canvas/use-frame-blocked.test.tsx` |
+| A load event settles the watch                                                                    | `settles on any load event`                                         | `use-frame-blocked.test.tsx`                                             |
+| A new `src` forgets the verdict and asks again                                                    | `forgets the verdict when the URL changes, and asks again`          | `use-frame-blocked.test.tsx`                                             |
+| No `src`, no watch                                                                                | `asks nothing without a URL`                                        | `use-frame-blocked.test.tsx`                                             |
+| `reset()` clears the verdict                                                                      | none (GC3)                                                          | none                                                                     |
+| Picker: URL only, validated as typed and at commit, on normalised URL                             | none (GC4)                                                          | none                                                                     |
+| One palette group open at a time; local fallback                                                  | none (GC5)                                                          | none                                                                     |
+| `createVideo` 480×270 locked; `embedProvider` closed set                                          | none (GC6)                                                          | none                                                                     |
+| Export representation                                                                             | none [QC2] (GC10)                                                   | none                                                                     |
+| End to end: place, link, play, drag still works                                                   | none (GC9)                                                          | none                                                                     |
 
 ## Constants and configuration
 

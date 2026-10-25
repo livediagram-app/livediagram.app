@@ -17,7 +17,7 @@ import {
   type Slide,
   type Tab,
 } from '@livedesign/design';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';

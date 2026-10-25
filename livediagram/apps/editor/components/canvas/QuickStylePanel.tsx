@@ -13,7 +13,7 @@ import {
 } from '@/components/palette/palette-style-previews';
 import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
+import { useQuickStylePlacement } from '@liveworkspace/workbench/hooks/ui/useQuickStylePlacement';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import {

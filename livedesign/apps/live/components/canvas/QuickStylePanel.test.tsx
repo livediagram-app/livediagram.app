@@ -16,7 +16,7 @@ vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => false,
 }));
 // Nor a canvas to place it on: a measured spot, so the panel is visible to role queries.
-vi.mock('@/hooks/ui/useQuickStylePlacement', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useQuickStylePlacement', () => ({
   useQuickStylePlacement: () => ({ left: 12, top: 12, width: null }),
 }));
 

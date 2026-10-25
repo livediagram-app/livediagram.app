@@ -22,7 +22,10 @@ import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
 import { deriveNewBoxedColours, getTheme } from '@/lib/themes';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@liveworkspace/workbench/lib/highlighter-config';
+import {
+  HIGHLIGHTER_COLOR,
+  HIGHLIGHTER_WIDTH,
+} from '@liveworkspace/workbench/lib/highlighter-config';
 import { simplifyPenStroke } from '@/lib/pen-smoothing';
 import { RECOGNITION_THRESHOLD } from '@/lib/recognition-preview';
 

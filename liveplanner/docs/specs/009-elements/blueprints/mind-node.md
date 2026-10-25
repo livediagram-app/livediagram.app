@@ -8,56 +8,56 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                           | Role                                                                                                                               |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/project/src/mind-map.ts`                             | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling                                                     |
-| `packages/project/src/mind-flow.ts`                            | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
-| `packages/project/src/mind-layout.ts`                          | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                                                                       |
-| `packages/project/src/mind-grow.ts`                            | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`                                                           |
-| packages/project/src/mind-fit.ts (removed)                     | `fitMindNodeHeight`: grow a node taller, re-lay a tidy map around it                                                               |
-| packages/project/src/mind-outline-text.ts (removed)            | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
-| packages/project/src/mind-outline-marks.ts (removed)           | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
-| packages/project/src/mind-outline.ts (removed)                 | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
-| `packages/project/src/mind-connector-route.ts`                 | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
-| `packages/project/src/anchor-choice.ts`                        | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
-| `packages/project/src/shape-factory.ts`                        | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
-| `packages/project/src/element-types.ts`                        | `mindParentId`, `mindFlow`                                                                                                         |
-| `packages/project/src/validate.ts`                             | `mindParentId` is a string; `mindFlow` a known flow                                                                                |
-| `packages/project/src/duplicate.ts`                            | Re-parents copied children onto copied parents                                                                                     |
-| `packages/project/src/svg-render.ts`                           | The export's corner radius                                                                                                         |
-| useMindGrowth.ts                                               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
-| useGrowthLanding.ts                                            | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
-| useMindOutline.ts                                              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |
-| mind-dress.ts                                                  | `dressMindNode`, `dressMindConnector`: one look for growth and outline saves                                                       |
-| mind-label-fit.ts                                              | `mindLabelFontPx`, `mindLabelPadding`, `mindLabelHeight`, `fitMindLabel`: the height a label needs                                 |
-| `apps/editor/components/canvas/text-hug-measure.ts`            | `measureLabelBlock`, `measureDrawnMindLabel`: the DOM measure of a label's lines                                                   |
-| useMindLabelFit.ts                                             | The live height while typing, drawn by `BoxedElementView` until the commit                                                         |
-| `apps/editor/app/project/[id]/useSelectionEditing.ts`          | `commitLabel` grows a mind node to fit in the label's commit                                                                       |
-| `apps/editor/components/dialogs/shortcut-sections.ts`          | The Keyboard settings rows for Tab, Enter and Shift+Enter on a mind node                                                           |
-| MindOutlineDialog.tsx                                          | The Edit Outline dialog: rows, help link, count line, remove question                                                              |
-| MindOutlineRows.tsx                                            | The row editor: bullets, guides, keys, toolbar, caret placement                                                                    |
-| apps/editor/components/dialogs/OutlineRowEditor.tsx (removed)  | One row: an imperatively painted contentEditable over its marks                                                                    |
-| MindOutlineToolButton.tsx                                      | A toolbar button with its key in a hover card                                                                                      |
-| outline-levels.ts                                              | `levelLook`: the colour ring per level                                                                                             |
-| outline-rows.ts                                                | The row model: `rowsFromText`, `textFromRows`, split, join, indent, outdent, move, paste                                           |
-| MindOutlineContext.tsx                                         | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map commands                                       |
-| `../packages/workbench/src/components/canvas/indicator-items.ts`             | `buildIndicatorItems`: the outline and tidy commands                                                                               |
-| mind-handoff.ts                                                | Typing ahead: `beginMindHandoff`, `landMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                         |
-| format-painter.ts                                              | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies                                                         |
-| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                                                                     |
-| `apps/editor/hooks/canvas/useCanvasA11y.ts`                    | `ownsTabKey`: traversal stands aside                                                                                               |
-| useMindLabelKeys.ts                                            | Tab / Enter / Escape in the label editor; claims the handoff                                                                       |
-| `apps/editor/components/canvas/RichTextEditor.tsx`             | Hands its key events to `useMindLabelKeys`                                                                                         |
-| MindGrowContext.tsx                                            | `useMindGrow`: grow and abandon, editor canvas only                                                                                |
-| `apps/editor/components/canvas/quick-connect-options.tsx`      | `MIND_CHILD_OPTION`, `MIND_SIBLING_OPTION`                                                                                         |
-| `apps/editor/components/canvas/QuickConnectRing.tsx`           | Leads with the two growth options                                                                                                  |
-| `apps/editor/components/canvas/SelectionPopover.tsx`           | `onAddMindChild`, `onAddMindSibling`: the toolbar buttons                                                                          |
-| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`    | Offers the toolbar buttons on an editable, unlocked mind node                                                                      |
-| useMindMapSetters.ts                                           | `setMindFlowSelected`, `tidyMindMapSelected`, `tidyMindMap` (with its notification)                                                |
-| `apps/editor/components/palette/context-menu-data-editors.tsx` | `MindFlowTiles`, with Tidy Map                                                                                                     |
-| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`             | A drag carries the subtree (`withMindSubtrees`)                                                                                    |
-| `apps/editor/components/canvas/element-variant.ts`             | The canvas corner radius                                                                                                           |
-| `apps/editor/hooks/canvas/useEditorViewport.ts`                | `scrollIntoView` with a side margin                                                                                                |
+| File                                                             | Role                                                                                                                               |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/project/src/mind-map.ts`                               | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling                                                     |
+| `packages/project/src/mind-flow.ts`                              | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
+| `packages/project/src/mind-layout.ts`                            | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                                                                       |
+| `packages/project/src/mind-grow.ts`                              | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`                                                           |
+| packages/project/src/mind-fit.ts (removed)                       | `fitMindNodeHeight`: grow a node taller, re-lay a tidy map around it                                                               |
+| packages/project/src/mind-outline-text.ts (removed)              | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
+| packages/project/src/mind-outline-marks.ts (removed)             | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
+| packages/project/src/mind-outline.ts (removed)                   | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
+| `packages/project/src/mind-connector-route.ts`                   | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
+| `packages/project/src/anchor-choice.ts`                          | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
+| `packages/project/src/shape-factory.ts`                          | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
+| `packages/project/src/element-types.ts`                          | `mindParentId`, `mindFlow`                                                                                                         |
+| `packages/project/src/validate.ts`                               | `mindParentId` is a string; `mindFlow` a known flow                                                                                |
+| `packages/project/src/duplicate.ts`                              | Re-parents copied children onto copied parents                                                                                     |
+| `packages/project/src/svg-render.ts`                             | The export's corner radius                                                                                                         |
+| useMindGrowth.ts                                                 | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
+| useGrowthLanding.ts                                              | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
+| useMindOutline.ts                                                | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |
+| mind-dress.ts                                                    | `dressMindNode`, `dressMindConnector`: one look for growth and outline saves                                                       |
+| mind-label-fit.ts                                                | `mindLabelFontPx`, `mindLabelPadding`, `mindLabelHeight`, `fitMindLabel`: the height a label needs                                 |
+| `apps/editor/components/canvas/text-hug-measure.ts`              | `measureLabelBlock`, `measureDrawnMindLabel`: the DOM measure of a label's lines                                                   |
+| useMindLabelFit.ts                                               | The live height while typing, drawn by `BoxedElementView` until the commit                                                         |
+| `apps/editor/app/project/[id]/useSelectionEditing.ts`            | `commitLabel` grows a mind node to fit in the label's commit                                                                       |
+| `apps/editor/components/dialogs/shortcut-sections.ts`            | The Keyboard settings rows for Tab, Enter and Shift+Enter on a mind node                                                           |
+| MindOutlineDialog.tsx                                            | The Edit Outline dialog: rows, help link, count line, remove question                                                              |
+| MindOutlineRows.tsx                                              | The row editor: bullets, guides, keys, toolbar, caret placement                                                                    |
+| apps/editor/components/dialogs/OutlineRowEditor.tsx (removed)    | One row: an imperatively painted contentEditable over its marks                                                                    |
+| MindOutlineToolButton.tsx                                        | A toolbar button with its key in a hover card                                                                                      |
+| outline-levels.ts                                                | `levelLook`: the colour ring per level                                                                                             |
+| outline-rows.ts                                                  | The row model: `rowsFromText`, `textFromRows`, split, join, indent, outdent, move, paste                                           |
+| MindOutlineContext.tsx                                           | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map commands                                       |
+| `../packages/workbench/src/components/canvas/indicator-items.ts` | `buildIndicatorItems`: the outline and tidy commands                                                                               |
+| mind-handoff.ts                                                  | Typing ahead: `beginMindHandoff`, `landMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                         |
+| format-painter.ts                                                | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies                                                         |
+| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`         | Tab / Enter on a selected node                                                                                                     |
+| `apps/editor/hooks/canvas/useCanvasA11y.ts`                      | `ownsTabKey`: traversal stands aside                                                                                               |
+| useMindLabelKeys.ts                                              | Tab / Enter / Escape in the label editor; claims the handoff                                                                       |
+| `apps/editor/components/canvas/RichTextEditor.tsx`               | Hands its key events to `useMindLabelKeys`                                                                                         |
+| MindGrowContext.tsx                                              | `useMindGrow`: grow and abandon, editor canvas only                                                                                |
+| `apps/editor/components/canvas/quick-connect-options.tsx`        | `MIND_CHILD_OPTION`, `MIND_SIBLING_OPTION`                                                                                         |
+| `apps/editor/components/canvas/QuickConnectRing.tsx`             | Leads with the two growth options                                                                                                  |
+| `apps/editor/components/canvas/SelectionPopover.tsx`             | `onAddMindChild`, `onAddMindSibling`: the toolbar buttons                                                                          |
+| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`      | Offers the toolbar buttons on an editable, unlocked mind node                                                                      |
+| useMindMapSetters.ts                                             | `setMindFlowSelected`, `tidyMindMapSelected`, `tidyMindMap` (with its notification)                                                |
+| `apps/editor/components/palette/context-menu-data-editors.tsx`   | `MindFlowTiles`, with Tidy Map                                                                                                     |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`               | A drag carries the subtree (`withMindSubtrees`)                                                                                    |
+| `apps/editor/components/canvas/element-variant.ts`               | The canvas corner radius                                                                                                           |
+| `apps/editor/hooks/canvas/useEditorViewport.ts`                  | `scrollIntoView` with a side margin                                                                                                |
 
 ## Domain and naming
 

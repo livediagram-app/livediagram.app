@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { PaletteTray, PaletteTrayAction, type StripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import {
+  PaletteTray,
+  PaletteTrayAction,
+  type StripBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 
 type ModeBannerProps = {
   icon: ReactNode;

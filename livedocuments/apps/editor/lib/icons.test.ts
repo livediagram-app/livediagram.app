@@ -7,7 +7,10 @@ import {
   getIcon,
   iconsInCategory,
 } from './icons';
-import { ensureIconCatalogs, getLoadedIconCatalog } from './icon-registry';
+import {
+  ensureIconCatalogs,
+  getLoadedIconCatalog,
+} from '@liveworkspace/workbench/lib/icon-registry';
 
 // The catalogue data lives in an async chunk (lib/icon-registry.ts); load it
 // once up front so these tests exercise the loaded state. The pre-load

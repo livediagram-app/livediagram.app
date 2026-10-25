@@ -37,24 +37,24 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 ## Modules
 
-| Module                                                      | Holds                                                                                                                                      |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/animation-sets.ts`                   | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                        | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
-| `packages/document/src/animation-membership.ts`             | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
-| `apps/editor/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
-| `apps/editor/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
-| `apps/editor/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
-| `apps/editor/components/palette/AnimationSetTiles.tsx`      | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
-| `apps/editor/components/canvas/useBoxedElementAnimation.ts` | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
-| `apps/editor/components/canvas/useShapeSvgAnimation.tsx`    | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
-| `../packages/workbench/src/components/canvas/useTraceDashes.ts`           | measures the SVG Trace copies' on-screen length onto them                                                                                  |
-| `../packages/workbench/src/components/canvas/AnimationLayer.tsx`          | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
-| `apps/editor/components/canvas/animated-words.tsx`          | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
-| `apps/editor/components/canvas/useTextAnimation.ts`         | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
-| `apps/editor/components/canvas/useTableAnimation.ts`        | a table's grid class, counts, cells' Text view and unit starts                                                                             |
-| `apps/editor/components/canvas/drawing-animation.tsx`       | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
-| `apps/editor/app/motion-<set>.css`                          | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`, `table`)                                                              |
+| Module                                                           | Holds                                                                                                                                      |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/animation-sets.ts`                        | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `packages/document/src/animation.ts`                             | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/document/src/animation-membership.ts`                  | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
+| `apps/editor/lib/animation-set-writes.ts`                        | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
+| `apps/editor/lib/animation-classes.ts`                           | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
+| `apps/editor/components/palette/AnimationSections.tsx`           | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
+| `apps/editor/components/palette/AnimationSetTiles.tsx`           | the tile grid + Speed / Repeat rows for any set, kept tile included                                                                        |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts`      | `wrapperShapeAnimation`; the wrapper's Shape / Sticky class, layer flag and variables                                                      |
+| `apps/editor/components/canvas/useShapeSvgAnimation.tsx`         | the SVG-rendered shape's Pulse ring, Glow halo, Trace copies and Gradient defs                                                             |
+| `../packages/workbench/src/components/canvas/useTraceDashes.ts`  | measures the SVG Trace copies' on-screen length onto them                                                                                  |
+| `../packages/workbench/src/components/canvas/AnimationLayer.tsx` | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
+| `apps/editor/components/canvas/animated-words.tsx`               | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
+| `apps/editor/components/canvas/useTextAnimation.ts`              | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
+| `apps/editor/components/canvas/useTableAnimation.ts`             | a table's grid class, counts, cells' Text view and unit starts                                                                             |
+| `apps/editor/components/canvas/drawing-animation.tsx`            | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
+| `apps/editor/app/motion-<set>.css`                               | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`, `table`)                                                              |
 
 `canvas-motion.css` keeps arrow, icon, progress, rating and chart animations and the legacy text-native and
 sticker classes a kept Shape value still draws.
@@ -98,7 +98,7 @@ through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimT
 
 New optional fields on `ShapeElement`, `TextElement`, `StickyElement`, `TableElement`: `textAnimation?:
 TextAnimation`, `textAnimationSpeed?: AnimationSpeed`, `textAnimationRepeat?: boolean` (Text plays once by default: stored only when true; `setRepeats(set, stored)` reads either default). They
-are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`lib/format-config.ts`),
+are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`../packages/workbench/src/lib/format-config.ts`),
 projected by `paintableBoxedFields` for a word-carrying source, and in the OpenAPI document (regenerated with
 `node scripts/gen-openapi-schemas.mjs` in `apps/api`). Validation stays lenient.
 
