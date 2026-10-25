@@ -197,19 +197,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
       },
       {
-        q: 'Can I plan projects, keep a spreadsheet or run a form in it?',
-        a: (
-          <>
-            Not any more. Boards of cards, spreadsheets, dashboards and forms now live in{' '}
-            <a href="https://liveplanner.app">liveplanner</a>, a sister app on the same free
-            liveworkspace account. livediagram still has roadmaps, timelines and Gantt charts to
-            draw a plan out.
-          </>
-        ),
-        aText:
-          'Not any more. Boards of cards, spreadsheets, dashboards and forms now live in liveplanner, a sister app on the same free liveworkspace account. livediagram still has roadmaps, timelines and Gantt charts to draw a plan out.',
-      },
-      {
         q: 'Can I add pictures?',
         a: (
           <>
@@ -268,18 +255,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
-      },
-      {
-        q: 'Can I write documents or design slides in it?',
-        a: (
-          <>
-            Not any more. Articles, slide pages, infographics and logos now live in{' '}
-            <a href="https://livedocuments.app">livedocuments</a>, a sister app on the same free
-            liveworkspace account. livediagram can still present a canvas as a slide deck.
-          </>
-        ),
-        aText:
-          'Not any more. Articles, slide pages, infographics and logos now live in livedocuments, a sister app on the same free liveworkspace account. livediagram can still present a canvas as a slide deck.',
       },
       {
         q: 'Can I use it as a whiteboard?',
