@@ -4,12 +4,14 @@
 // `workbench`, and only when it runs, never at module scope. Until then every binding has a safe
 // default, and a development build warns once that one was read early.
 
+import { ZOOM_MAX } from './lib/zoom-range';
+
 /**
  * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
  * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
  */
-export type WorkbenchTelemetryCategory = 'Error';
-export type WorkbenchTelemetryAction = 'Client';
+export type WorkbenchTelemetryCategory = 'Canvas' | 'Error';
+export type WorkbenchTelemetryAction = 'Client' | 'Zoomed';
 export type WorkbenchTrack = (
   category: WorkbenchTelemetryCategory,
   action: WorkbenchTelemetryAction,
@@ -75,8 +77,7 @@ export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
     expectOkVoid: unbound,
     currentBearer: () => Promise.resolve(null),
   }),
-  // The editors' fixed ceiling, 500%.
-  zoomMax: () => 5,
+  zoomMax: () => ZOOM_MAX,
   formatLogScope: 'document-format',
 });
 

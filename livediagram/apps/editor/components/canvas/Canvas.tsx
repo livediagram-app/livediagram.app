@@ -19,7 +19,7 @@ import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
-import { useZoomControls } from '@/hooks/canvas/useZoomControls';
+import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
 import { isEventStormingTab } from '@livediagram/document';

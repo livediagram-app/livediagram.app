@@ -99,6 +99,7 @@
     "./hooks/canvas/useSmallElementDoubleTap": "./src/hooks/canvas/useSmallElementDoubleTap.ts",
     "./hooks/canvas/useSnapHaptic": "./src/hooks/canvas/useSnapHaptic.ts",
     "./hooks/canvas/useViewportStore": "./src/hooks/canvas/useViewportStore.tsx",
+    "./hooks/canvas/useZoomControls": "./src/hooks/canvas/useZoomControls.ts",
     "./hooks/navigation/useAppNavigation": "./src/hooks/navigation/useAppNavigation.ts",
     "./hooks/ui/held-key-store": "./src/hooks/ui/held-key-store.ts",
     "./hooks/ui/useAutoHeight": "./src/hooks/ui/useAutoHeight.ts",
@@ -207,7 +208,8 @@
     "./lib/url-safety": "./src/lib/url-safety.ts",
     "./lib/viewport-glide": "./src/lib/viewport-glide.ts",
     "./lib/viewport-store": "./src/lib/viewport-store.ts",
-    "./lib/viewport": "./src/lib/viewport.ts"
+    "./lib/viewport": "./src/lib/viewport.ts",
+    "./lib/zoom-range": "./src/lib/zoom-range.ts"
   },
   "scripts": {
     "lint": "oxlint",

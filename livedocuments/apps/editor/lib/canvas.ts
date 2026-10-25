@@ -164,10 +164,9 @@ export const ALIGN_SNAP_THRESHOLD = 6;
 export const ARROW_SNAP_REVEAL_PX = 36;
 export const ARROW_SNAP_THRESHOLD_PX = 12;
 
-// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel
-// zoom so the two can never drift apart. 0.1 = 10%, 5 = 500%.
-export const ZOOM_MIN = 0.1;
-export const ZOOM_MAX = 5;
+// Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
+// (@liveworkspace/workbench/lib/zoom-range.ts).
+export { ZOOM_MAX, ZOOM_MIN } from '@liveworkspace/workbench/lib/zoom-range';
 
 // Discriminated union covering every in-flight drag the canvas can be
 // holding. Each variant carries the start-of-gesture state the

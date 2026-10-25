@@ -3,7 +3,7 @@
 // before anything renders.
 import { configureWorkbench } from '@liveworkspace/workbench/bindings';
 import { apiFetch, apiHeaders, currentBearer, expectOk, expectOkVoid } from './api/core';
-import { ZOOM_MAX } from './canvas';
+import { ZOOM_MAX } from '@liveworkspace/workbench/lib/zoom-range';
 import { runningStaleBuild } from './server-release';
 import { track } from './telemetry';
 import { readUserPreferences } from './user-preferences';

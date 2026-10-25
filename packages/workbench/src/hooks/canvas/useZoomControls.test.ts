@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { describe, expect, it } from 'vitest';
+import { createViewportStore } from '../../lib/viewport-store';
 import { useZoomControls } from './useZoomControls';
-
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // The zoom buttons step from the zoom as it is when pressed, and keep their identity across zooms,
 // so the chrome holding them does not render for a zoom

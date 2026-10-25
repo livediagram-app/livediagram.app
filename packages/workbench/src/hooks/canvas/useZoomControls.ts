@@ -6,11 +6,12 @@
 // is just the buttons, clamped to the shared zoom bounds.
 
 import { useMemo, type Dispatch, type SetStateAction } from 'react';
-import { track } from '@/lib/telemetry';
-import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
+import { workbench } from '../../bindings';
+import { ZOOM_MIN } from '../../lib/zoom-range';
 
 const ZOOM_STEP = 0.1;
-const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+// Up to the canvas's zoom ceiling now (the `zoomMax` binding).
+const clampZoom = (z: number) => Math.max(ZOOM_MIN, Math.min(workbench.zoomMax(), z));
 
 // Steps are updaters, applied to the zoom as it is when pressed: the handlers depend on no zoom value,
 // so they keep their identity across zooms (docs/specs/008-canvas/blueprints/viewport-store.md).
@@ -19,17 +20,17 @@ export function useZoomControls(setZoom: Dispatch<SetStateAction<number>>) {
     () => ({
       zoomIn: () => {
         setZoom((z) => clampZoom(z + ZOOM_STEP));
-        track('Canvas', 'Zoomed', 'In');
+        workbench.track('Canvas', 'Zoomed', 'In');
       },
       zoomOut: () => {
         setZoom((z) => clampZoom(z - ZOOM_STEP));
-        track('Canvas', 'Zoomed', 'Out');
+        workbench.track('Canvas', 'Zoomed', 'Out');
       },
       // Jump straight to a preset level (the hover popover on the zoom
       // percentage button: 25% … 150%).
       setZoomTo: (z: number) => {
         setZoom(clampZoom(z));
-        track('Canvas', 'Zoomed', 'Preset');
+        workbench.track('Canvas', 'Zoomed', 'Preset');
       },
     }),
     [setZoom],
