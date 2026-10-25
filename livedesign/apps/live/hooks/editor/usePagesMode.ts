@@ -41,7 +41,7 @@ import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from 
 import { pageEdits, type PageEdits } from './page-edits';
 import type { PageLayoutId } from '@livedesign/templates';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';

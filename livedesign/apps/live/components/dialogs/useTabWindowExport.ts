@@ -16,7 +16,7 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg, tabDrawingFontIdsOf } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
-import { svgFrameOf } from '@/lib/svg-frame';
+import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 
 type ImageContext = { ownerId: string; designId: string; shareCode: string | null };
 

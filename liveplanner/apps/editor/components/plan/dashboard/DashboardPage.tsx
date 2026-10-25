@@ -25,7 +25,7 @@ import { useFitGuard } from './useFitGuard';
 import { useSlotMove } from './useSlotMove';
 import { DashboardMenuName } from './DashboardMenuName';
 import { DashboardSettings } from './DashboardSettings';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { elementFontId, resolveFinish, resolveFontStack } from '@liveplanner/project';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';

@@ -5,9 +5,9 @@
 // An external store (docs/specs/003-system-architecture/react-state-and-effects.md): the opening
 // screen reads `healing` with useSyncExternalStore.
 
-import { getOnline } from './online-status';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import { claimReloadIn } from './reload-guard';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type LoadStep = 'identity' | 'participant' | 'project' | 'share' | 'first-tab' | 'done';
 

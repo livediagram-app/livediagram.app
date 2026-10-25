@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/document';
 import { setLanePreview } from '@/lib/lane-preview';
 import { TimelineLanesOverlay } from './TimelineLanesOverlay';
-import { createViewportStore } from '@/lib/viewport-store';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 
 // The lit lane (docs/specs/021-event-storming/event-storming.md Phase 6). What matters here is that it draws NOTHING

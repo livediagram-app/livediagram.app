@@ -1,5 +1,5 @@
 import type { SavedItemTypes } from '@/lib/api/item-types';
-import { getOnline } from '@/lib/online-status';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_PROJECT_NAME } from '@liveplanner/templates';

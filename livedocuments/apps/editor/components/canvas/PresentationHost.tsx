@@ -16,7 +16,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useFocusReturn } from '@/hooks/ui/useFocusReturn';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { startTypedTransition } from '@/lib/view-transition';
 import { slideTransitionType, whenScreenSettles } from './slide-transition';
 

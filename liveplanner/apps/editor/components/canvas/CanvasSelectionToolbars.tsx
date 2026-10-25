@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useCommentBadges } from './CommentBadgesContext';
 import { useViewportOf } from '@/hooks/canvas/useViewportStore';
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   elementHasText,
   elementKindLabel,
@@ -11,7 +11,7 @@ import {
   threadAt,
   type Element,
 } from '@liveplanner/project';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
   useCanvasSelectionView,
   type CanvasSelectionInput,
@@ -23,7 +23,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper

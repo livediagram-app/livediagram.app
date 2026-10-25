@@ -1,4 +1,4 @@
-import { createElementKeyedStore } from './element-keyed-store';
+import { createElementKeyedStore } from '@liveworkspace/workbench/lib/element-keyed-store';
 
 // What an element tour step shows on the concept graphic or chart it is on (docs/specs/007-editor/element-tours.md),
 // never stored, so nothing changes in the project: an animation previewed (`run` restarts it), or one chevron stage's

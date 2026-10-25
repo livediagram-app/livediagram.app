@@ -1,6 +1,6 @@
 'use client';
 
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
 import { clamp } from '@livedesign/design';
 import { ZOOM_MIN, zoomCeilingRaised, zoomMax } from '@/lib/canvas';

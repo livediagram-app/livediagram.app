@@ -42,7 +42,7 @@ import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay
 import { SketchFace } from '@/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
+import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';

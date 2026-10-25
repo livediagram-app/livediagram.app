@@ -17,7 +17,7 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `apps/editor/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note); none for chevrons                            |
 | `apps/editor/components/canvas/ConceptRowBar.tsx`                                                      | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
 | `apps/editor/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
-| `apps/editor/lib/move-row.ts`                                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
+| `../packages/workbench/src/lib/move-row.ts`                                                            | `moveRow`, shared by the Rows editor and the stage bar                       |
 | `apps/editor/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
 
 ## Domain and naming

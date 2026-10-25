@@ -17,7 +17,7 @@
 // advancing, so reading a note never costs you a slide.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { isPressableControl } from '@livediagram/ui';
 import { presentedSlideName } from '@/lib/slide-headline';
 

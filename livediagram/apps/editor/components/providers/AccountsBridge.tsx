@@ -12,7 +12,7 @@
 // DeferredAuthState the app tree already consumes.
 
 import { useEffect } from 'react';
-import { API_BASE } from '@/lib/api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';

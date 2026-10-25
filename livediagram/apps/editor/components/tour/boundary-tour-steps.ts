@@ -2,7 +2,7 @@ import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, menuStep, pressWord, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Boundary tour (docs/specs/007-editor/element-tours.md "The Boundary tour"), on a selected boundary: a zone that
 // holds what is inside it, its title (and icon), its meta line, and its three styles.

@@ -9,7 +9,7 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { pageWritingFonts } from '@/lib/article/article-export';
-import { downloadBlob } from '@/lib/download-blob';
+import { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';
 import { embeddedFontFaceCss } from '@/lib/export-fonts';
 import { exportPageLabel, sanitizeFilename, type PageScope } from '@/lib/export-pages';
 import { estimateGifBytes, GIF_ESTIMATE_DELAY_MS } from '@/lib/gif-export/gif-estimate';

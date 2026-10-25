@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render as rtlRender } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { createViewportStore } from '@/lib/viewport-store';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { describe, expect, it } from 'vitest';
 import { CanvasDrawPreview } from './CanvasDrawPreview';

@@ -5,7 +5,7 @@ import {
   replaceAppLocation,
   interceptAppNavigation,
   setAppNavigationInterceptor,
-} from './app-location';
+} from '@liveworkspace/workbench/lib/app-location';
 
 describe('assignAppLocation', () => {
   const assign = vi.fn();

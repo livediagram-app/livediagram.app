@@ -2,7 +2,7 @@
 // "Guests"): livedesign's settings for the shared handoff (`@liveworkspace/index-client/browser`). The token is kept
 // under GUEST_TOKEN_STORAGE_KEY and sent as the Bearer, exactly as an account's access token is.
 import { createGuestTokens } from '@liveworkspace/index-client/browser';
-import { API_BASE } from './api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { reportParticipantCreated } from './local-identity';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 

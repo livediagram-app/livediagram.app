@@ -5,7 +5,7 @@
 
 import type { SetStateAction } from 'react';
 import { debugLog } from './debug-log';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type Selection = {
   readonly selectedId: string | null;

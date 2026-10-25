@@ -17,7 +17,7 @@ import {
 } from '@livedesign/templates';
 import { lucideGlyph, NoMatches, Tooltip } from '@livedesign/ui';
 import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
-import { prefetchWhenIdle } from '@/lib/idle-prefetch';
+import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { LayoutTile } from './LayoutTile';
 import {

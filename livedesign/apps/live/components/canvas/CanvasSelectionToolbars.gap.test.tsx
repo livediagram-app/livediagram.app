@@ -8,7 +8,7 @@ import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-and-palette.md: the selection toolbar keeps a wide gap only to clear the "+"
 // quick-connect button; an element that shows none gets the close gap.

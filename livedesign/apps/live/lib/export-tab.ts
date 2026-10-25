@@ -714,4 +714,4 @@ export async function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Prom
 }
 
 // The download helper lives on its own, so a caller can save a file without the export code.
-export { downloadBlob } from './download-blob';
+export { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';

@@ -5,7 +5,7 @@
 // A token with fewer than GUEST_TOKEN_REFRESH_BEFORE_MS left is replaced on the next page load that needs it.
 
 import { createGuestTokens } from '@liveworkspace/index-client/browser';
-import { API_BASE } from './api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { reportParticipantCreated } from './local-identity';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 

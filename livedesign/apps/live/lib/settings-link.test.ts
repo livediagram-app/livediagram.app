@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { dropSettingsLink, readSettingsLink } from './settings-link';
+import { dropSettingsLink, readSettingsLink } from '@liveworkspace/workbench/lib/settings-link';
 
 describe('the Settings deep link', () => {
   it('names a category and, optionally, a section', () => {

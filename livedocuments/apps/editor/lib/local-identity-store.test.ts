@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { storageEvent } from '@/lib/testing/storage-event';
+import { storageEvent } from '@liveworkspace/workbench/lib/testing/storage-event';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { getGuestSelfId, subscribeGuestSelfId } from './local-identity';
 import { guestTokenFor } from '@liveworkspace/index-client/testing';

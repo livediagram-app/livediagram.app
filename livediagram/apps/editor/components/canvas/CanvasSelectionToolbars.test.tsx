@@ -12,7 +12,7 @@ import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
-import { createViewportStore } from '@/lib/viewport-store';
+import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-performance.md: the selection chrome is hidden while a selection is
 // moved, resized or reshaped, and comes back when the gesture ends.

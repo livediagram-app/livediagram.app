@@ -1,5 +1,5 @@
 import { useState, type DragEvent as ReactDragEvent } from 'react';
-import { setDraggedTab } from '@/lib/tab-drag-store';
+import { setDraggedTab } from '@liveworkspace/workbench/lib/tab-drag-store';
 
 // The tab bar's drag-reorder machinery (docs/specs/006-document/tab-folders.md), lifted out of
 // TabBar's pill renderer: which pill is being dragged, which pill +

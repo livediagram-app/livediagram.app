@@ -8,7 +8,7 @@
 import { createContext, useCallback, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The element whose view is loading, set by ShapeContentRouter's OffDashboard around it.
 export const FillTabElementContext = createContext<string | null>(null);

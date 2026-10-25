@@ -1,4 +1,4 @@
-import { getOnline } from '@/lib/online-status';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_DESIGN_NAME } from '@livedesign/templates';

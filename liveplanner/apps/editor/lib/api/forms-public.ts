@@ -6,7 +6,7 @@ import type {
   FormResponseRefusal,
   PublicFormResponse,
 } from '@liveplanner/api-schema';
-import { API_BASE } from './base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 
 const formUrl = (code: string, door = '') =>
   `${API_BASE}/forms/${encodeURIComponent(code)}${door ? `/${door}` : ''}`;

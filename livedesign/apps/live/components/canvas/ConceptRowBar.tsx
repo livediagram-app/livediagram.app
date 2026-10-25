@@ -14,7 +14,7 @@ import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';
 import { track } from '@/lib/telemetry';
 import { isMobileViewportSync } from '@/lib/responsive';
-import { moveRow } from '@/lib/move-row';
+import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
 // A chevron stage's own controls (docs/specs/009-elements/concept-graphics.md "Editing"): move it left, move it
 // right, delete it, and give it a note while no stage has one. Drawn inside the top of the stage it acts on, at a constant screen size, while that stage

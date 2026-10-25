@@ -42,7 +42,7 @@ import type { TextSize } from '@livediagram/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
-import { easeNextStyleChange } from '@/lib/tab-style-ease';
+import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { LooksHome } from './LooksHome';
 import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
 

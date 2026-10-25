@@ -10,7 +10,7 @@ let closeDialog: () => void = () => {};
 const opened = vi.fn();
 
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(search) }));
-vi.mock('@/lib/app-location', () => ({
+vi.mock('@liveworkspace/workbench/lib/app-location', () => ({
   replaceAppLocation: (href: string) => {
     replace(href);
   },

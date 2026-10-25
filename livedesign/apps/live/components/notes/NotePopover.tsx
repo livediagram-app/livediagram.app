@@ -6,7 +6,7 @@ import type { TextRun } from '@livedesign/design';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Per-element note popover. Distinct from CommentThreadPopover: notes are a
 // SINGLE small design (no author, no thread, no resolve / replies),

@@ -7,7 +7,7 @@
 // canvases side by side each publish their own.
 import { useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 import { sketchBackdropIds, type Element, type Finish } from '@liveplanner/project';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 const byTab = new Map<string, ReadonlySet<string>>();
 const listeners = createListeners();

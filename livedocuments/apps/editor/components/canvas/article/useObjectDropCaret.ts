@@ -10,7 +10,7 @@ import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livedocuments/doc
 import { useCanvasGesture } from '@/lib/canvas-gesture';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { screenToCanvasBySheet, type DropCaret } from './useZoneDrag';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 type Held = { flow: string; zone: ArticleZoneBlock; rect: PageRect; elementId: string };
 

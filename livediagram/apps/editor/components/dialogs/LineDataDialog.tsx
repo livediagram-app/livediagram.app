@@ -4,7 +4,7 @@ import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { registerChartDataDialog } from '@/lib/chart-data-dialog-handle';
+import { registerChartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
 import { parseCsvLineData } from '@/lib/csv';
 import { useActiveTour } from '@/lib/tour-active';
 

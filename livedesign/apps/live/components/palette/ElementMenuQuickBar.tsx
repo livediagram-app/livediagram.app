@@ -15,7 +15,7 @@ import {
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
-import { useClearStyles } from '@/lib/clear-styles-store';
+import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };

@@ -10,7 +10,10 @@ import { pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { track } from '@/lib/telemetry';
 import { computeFitBelow } from '@/lib/viewport';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
 import { usePagesMode } from './usePagesMode';
 import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity } from './usePageSnap';
 

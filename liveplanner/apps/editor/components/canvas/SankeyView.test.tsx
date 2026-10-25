@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import { act, fireEvent, render } from '@testing-library/react';
-import { setSankeyTourFocus } from '@/lib/sankey-tour-focus';
+import { setSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import { createShape, type ShapeElement } from '@liveplanner/project';
 import { SankeyView } from './SankeyView';
 

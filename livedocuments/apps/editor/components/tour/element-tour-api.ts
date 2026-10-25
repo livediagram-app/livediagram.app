@@ -1,5 +1,5 @@
 import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
-import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
+import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import type { SankeyFlowsTourApi } from './sankey-flows-tour-steps';
 
 // What an element tour's steps may do (docs/specs/007-editor/element-tours.md), built fresh by ElementTourHost every

@@ -32,7 +32,7 @@ import {
 } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { accountInitial } from '@/lib/account-avatar';
+import { accountInitial } from '@liveworkspace/workbench/lib/account-avatar';
 import {
   HEADER_ACTION_BTN,
   HEADER_ACTION_TONE,

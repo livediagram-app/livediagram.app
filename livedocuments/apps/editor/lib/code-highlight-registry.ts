@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 
 import type { CodeLanguage } from '@livedocuments/document';
 import type { CodeToken } from './code-tokens';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Async loader for the code tokenizer (docs/specs/009-elements/code-block.md), on the icon-registry
 // pattern: one memoized dynamic import, a useSyncExternalStore pair, and a

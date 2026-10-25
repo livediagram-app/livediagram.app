@@ -27,7 +27,7 @@ import {
   type IconAnimation,
 } from '@livediagram/document';
 
-import type { IconDef, IconPrim } from './icon-types';
+import type { IconDef, IconPrim } from '@liveworkspace/workbench/lib/icon-types';
 import { getIconLoaded, getLoadedIconCatalog } from './icon-registry';
 
 export type { IconDef, IconPrim };

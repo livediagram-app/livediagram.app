@@ -15,7 +15,7 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { fitStripTiles } from './toolbar-strip-tiles';
-import { editorViewportOf } from '@/lib/editor-viewport';
+import { editorViewportOf } from '@liveworkspace/workbench/lib/editor-viewport';
 
 const PHONE_GUTTERS_PX = 24;
 const MENU_GAP_PX = 8;

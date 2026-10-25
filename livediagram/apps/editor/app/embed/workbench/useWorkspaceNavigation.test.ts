@@ -8,7 +8,7 @@ vi.mock('./create-in-place', async (original) => ({
   createDocumentInPlace: create.createDocumentInPlace,
 }));
 
-import { assignAppLocation } from '@/lib/app-location';
+import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 

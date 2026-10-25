@@ -7,7 +7,7 @@
 // use to somebody scrolled elsewhere. Following is the missing half: instead
 // of moving the pointer to the audience, move the audience to the pointer.
 
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';

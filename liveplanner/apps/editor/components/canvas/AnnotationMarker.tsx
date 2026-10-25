@@ -5,7 +5,7 @@ import { Portal } from '@liveplanner/ui';
 import type { TextRun } from '@liveplanner/project';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const GAP = 10;
 const MAX_W = 280;

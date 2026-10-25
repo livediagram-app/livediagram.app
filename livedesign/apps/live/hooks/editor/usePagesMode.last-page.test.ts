@@ -8,7 +8,10 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { computeFitBelow } from '@/lib/viewport';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
 import { LAST_PAGE_SETTLE_MS, lastPageKey, readLastPage } from '@/lib/last-page';
 import { usePagesMode } from './usePagesMode';
 

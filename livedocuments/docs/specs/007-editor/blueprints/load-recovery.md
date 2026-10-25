@@ -65,7 +65,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 
 ## Offline
 
-- `lib/online-status.ts`: `getOnline()` (`navigator.onLine !== false`, true without a navigator),
+- `../packages/workbench/src/lib/online-status.ts`: `getOnline()` (`navigator.onLine !== false`, true without a navigator),
   `getOnlineServer()` (true), `subscribeOnline` (`online` + `offline`); `useOnline()`
   (`hooks/ui/useOnline.ts`) reads it with `useSyncExternalStore`.
 - The watchdog takes `deps.online` (default `getOnline`): offline at the deadline skips

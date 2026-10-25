@@ -12,8 +12,8 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
-import { API_BASE } from '@/lib/api/base';
-import { sameOriginPath } from '@/lib/same-origin-path';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { sameOriginPath } from '@liveworkspace/workbench/lib/same-origin-path';
 import { AUTH_TITLE, AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 

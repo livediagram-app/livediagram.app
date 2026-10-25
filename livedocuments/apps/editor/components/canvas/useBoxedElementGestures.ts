@@ -1,11 +1,11 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { isSelfDrawingShape } from '@livedocuments/document';
-import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';
 import { armPlainClick } from '@/lib/selection-click';
-import { fitsOnCanvas } from '@/lib/fits-on-screen';
+import { fitsOnCanvas } from '@liveworkspace/workbench/lib/fits-on-screen';
 import { markPanThrough } from '@/hooks/canvas/pan-through';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 

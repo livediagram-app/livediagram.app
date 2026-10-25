@@ -19,8 +19,8 @@ import {
   anchorFromEditorView,
   editorViewFromAnchor,
   type CanvasAnchor,
-} from '@/lib/split-pane-view';
-import { EDITOR_VIEWPORT_ATTR } from '@/lib/editor-viewport';
+} from '@liveworkspace/workbench/lib/split-pane-view';
+import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
 import { setLocalBesideTab } from '@/lib/split-presence';
 import { SplitDivider } from './SplitDivider';
 import { SplitSeamControls } from './SplitSeamControls';

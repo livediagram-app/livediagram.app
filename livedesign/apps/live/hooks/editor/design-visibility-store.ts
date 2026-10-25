@@ -6,7 +6,7 @@
 // editor's own churn and no prop runs through the chrome to reach it.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type DesignVisibility = {
   shareable: boolean;

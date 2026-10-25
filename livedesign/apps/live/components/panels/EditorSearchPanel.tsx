@@ -13,7 +13,7 @@ import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 import { explorerPath } from '@liveworkspace/explorer';
-import { assignAppLocation } from '@/lib/app-location';
+import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 
 const SearchPanel = dynamic(
   () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),

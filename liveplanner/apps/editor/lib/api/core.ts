@@ -14,7 +14,7 @@ import { noteServerBuild, noteServerProjectFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@liveplanner/project';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { readGuestToken } from '../guest-token';
-import { API_BASE } from './base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 import { withPlanGrant } from './plan-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.

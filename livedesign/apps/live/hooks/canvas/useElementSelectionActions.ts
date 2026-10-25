@@ -26,7 +26,7 @@ import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 
 type EditorSelectionActionsDeps = {

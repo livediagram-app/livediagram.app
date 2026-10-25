@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // The machinery behind "is the user currently holding <key>": one singleton
 // store per key, so subscribers re-render on the transitions (down -> up, up ->

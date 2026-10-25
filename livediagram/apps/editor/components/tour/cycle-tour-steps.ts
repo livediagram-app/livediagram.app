@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Cycle tour (docs/specs/007-editor/element-tours.md "The Cycle tour"): its steps round the ring from twelve
 // o'clock, the solid first step, the words in the middle, and Flow sent round its arrows.

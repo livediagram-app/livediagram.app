@@ -13,7 +13,7 @@ import { pageKindOf, type LaidOutPage, type PageKind } from '@livedesign/design'
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { PALETTE_KIND_LANDING, paletteKindForPage } from '@/lib/palette-kind';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 
 // After the current event (React has rendered the add by then); a timeout, not a frame, so a tab in

@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { editorViewportOf } from '@/lib/editor-viewport';
+import { editorViewportOf } from '@liveworkspace/workbench/lib/editor-viewport';
 
 // Whether the centred strip would run under the top-left menu card (docs/specs/007-editor/toolbar-layout.md "The
 // category bar"): the strip as drawn is wider than the room centring leaves it, the editor's width less the menu

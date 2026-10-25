@@ -39,7 +39,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
+import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
   clipboardWriteFor,
   copyTooLargeMessage,
@@ -62,7 +62,7 @@ import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { dropImportHint } from '@/lib/drop-import-hint';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, an Excalidraw scene, or elements
 // copied here (their JSON or the in-app copy's id).

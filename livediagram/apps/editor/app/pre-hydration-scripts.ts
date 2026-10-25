@@ -1,7 +1,7 @@
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/auth-client/silent';
 import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
-import { API_BASE } from '@/lib/api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 

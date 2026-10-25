@@ -2,7 +2,7 @@ import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, menuStep, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Entity tour (docs/specs/007-editor/element-tours.md "The Entity tour"), on a selected entity: a title over
 // `name: Type` rows with their keys, renaming it, editing a field where it stands, the Fields menu, and growing a

@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { isDragTravel } from '@/lib/press-gestures';
 import type { Item } from '@liveplanner/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type PlanDropSlot = {
   status: string;

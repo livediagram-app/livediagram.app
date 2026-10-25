@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Timeline tour (docs/specs/007-editor/element-tours.md "The Timeline tour"): milestones read left to right along
 // one line, each a name and a when, taking turns above and below, and Build bringing them in in order.

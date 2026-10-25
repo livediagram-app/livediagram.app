@@ -74,7 +74,7 @@ A livediagram guest is liveworkspace's guest ([liveworkspace/docs/accounts.md](.
 
 Every entry path a guest can arrive on first (`/` and `/new`, the Explorer, the editor, the team invite `/join`) resolves the guest's identity (`ensureGuestIdentity`, shared as the `useGuestId` hook) before its first owner-scoped call, so even a first-time visitor's first request carries the Bearer. A guest who already holds a token resolves with no network. **The cost** is one full-page bounce through the accounts site the first time a browser needs a guest, and once a year after that.
 
-Every other random value the editor rolls for a guest (the display name, the presence colour, an avatar's costume) goes through `apps/editor/lib/random.ts`, which draws from `crypto.getRandomValues` rather than `Math.random`. None of it guards a secret, but a weak generator feeding values that read as identity is what static analysis flags, and the strong one is free in every runtime we target.
+Every other random value the editor rolls for a guest (the display name, the presence colour, an avatar's costume) goes through `../packages/workbench/src/lib/random.ts`, which draws from `crypto.getRandomValues` rather than `Math.random`. None of it guards a secret, but a weak generator feeding values that read as identity is what static analysis flags, and the strong one is free in every runtime we target.
 
 ## Capability matrix
 

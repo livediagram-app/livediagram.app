@@ -3,7 +3,7 @@
 // every api response's headers (apiFetch) and the realtime room's `format` message; read by the new
 // version prompt and the stale build navigation. Module state: one page, one server.
 import { PROJECT_FORMAT, parseBuildId, parseProjectFormat } from '@liveplanner/api-schema';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 /** The build id this editor was built with; null when the build set none (local development). */
 export const EDITOR_BUILD_ID: string | null = parseBuildId(process.env.NEXT_PUBLIC_BUILD_ID);

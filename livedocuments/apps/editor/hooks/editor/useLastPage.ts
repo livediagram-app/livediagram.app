@@ -6,7 +6,7 @@ import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { LaidOutPage } from '@livedocuments/document';
 import { computeViewportCenter } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   LAST_PAGE_SETTLE_MS,
   pageNearestPoint,

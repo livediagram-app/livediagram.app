@@ -5,7 +5,7 @@
 // name re-renders when it changes.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let name = '';
 const listeners = createListeners();

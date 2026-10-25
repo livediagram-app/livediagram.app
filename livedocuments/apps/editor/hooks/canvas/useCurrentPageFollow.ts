@@ -9,7 +9,7 @@
 import { useEffect, useRef } from 'react';
 import { pageKindOf, type LaidOutPage, type PageKind } from '@livedocuments/document';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
 
 // How long the view rests before the page under its centre counts as the page someone is on.

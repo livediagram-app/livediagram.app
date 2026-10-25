@@ -9,7 +9,7 @@ import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { explorerPath } from '@liveworkspace/explorer';
-import { assignAppLocation } from '@/lib/app-location';
+import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { cardTabResolver, type CardSearchSource } from '@/lib/search-plan';
 
 const SearchPanel = dynamic(

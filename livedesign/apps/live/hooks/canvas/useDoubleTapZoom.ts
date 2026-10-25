@@ -5,7 +5,7 @@ import type { Element as CanvasElement } from '@livedesign/design';
 import { doubleTapFitsTab, doubleTapFrameView, doubleTapZoomView } from '@/lib/double-tap-zoom';
 import { tabFitView } from '@/lib/tab-fit-view';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
-import type { ViewportStore } from '@/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 

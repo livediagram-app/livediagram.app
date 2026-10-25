@@ -5,7 +5,7 @@
 
 import { fnv1aString } from '@livedocuments/document';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
-import { randomPick } from './random';
+import { randomPick } from '@liveworkspace/workbench/lib/random';
 import type { AccessLevel } from '@livedocuments/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';

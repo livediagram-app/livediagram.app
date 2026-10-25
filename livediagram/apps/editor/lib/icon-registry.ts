@@ -28,7 +28,7 @@ import {
   type StickerDef,
   type TechIconDef,
 } from '@liveworkspace/icons';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Everything derived from the loaded chunks, assembled once. Kept in one
 // object (not four nullable module vars) so "loaded" is a single state flip —

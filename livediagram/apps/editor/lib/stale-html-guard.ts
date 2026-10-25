@@ -13,7 +13,7 @@
 // console), so a test can run it against stubs. Both of its lines are warnings, always shown: a reload
 // is a recovery worth seeing (docs/specs/003-system-architecture/console-logging.md).
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
-import { API_BASE } from './api/base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import {
   APP_RECOVERY_FLAG,
   RELOAD_GUARD_KEY,

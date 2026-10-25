@@ -596,4 +596,4 @@ export async function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Prom
 }
 
 // The download helper lives on its own (the Sheet's CSV uses it without the export code).
-export { downloadBlob } from './download-blob';
+export { downloadBlob } from '@liveworkspace/workbench/lib/download-blob';

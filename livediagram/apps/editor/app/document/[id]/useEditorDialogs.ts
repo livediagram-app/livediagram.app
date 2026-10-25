@@ -1,6 +1,6 @@
 import { use, useCallback, useEffect, useState } from 'react';
 import { browser } from 'react-dom';
-import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
+import { dropSettingsLink, readSettingsLink } from '@liveworkspace/workbench/lib/settings-link';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
 import { track } from '@/lib/telemetry';
 import { useOpenSettingsRequests } from '@/hooks/ui/useOpenSettingsRequests';

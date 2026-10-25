@@ -5,11 +5,11 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Slide, Tab } from '@livedocuments/document';
 import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { PresentationOverlay, type PresentationStep } from './PresentationOverlay';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/announcer', () => ({ announce: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/announcer', () => ({ announce: vi.fn() }));
 
 // The running deck (docs/specs/012-collaboration/presentation-mode.md): its keys, its pacing readout and
 // the tool it hands back on the way out.

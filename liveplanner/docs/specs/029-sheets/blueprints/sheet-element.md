@@ -154,7 +154,7 @@ sheet-controller.tsx     the controller in context: selection (and selectionNow)
 sheet-geometry.ts        offsets, hit testing, windows, reveal
 sheet-keys.ts            the keyboard map (the spec's table) as commands
 sheet-pointing.ts        the formula being written, for pointing from another Sheet of the tab
-sheet-csv.ts             CSV text out (Download CSV, through lib/download-blob.ts) and in (Import CSV, a dropped file)
+sheet-csv.ts             CSV text out (Download CSV, through @liveworkspace/workbench's lib/download-blob.ts) and in (Import CSV, a dropped file)
 sheet-store-client.ts, sheet-presence-store.ts (sheet-store blueprint)
 sheet-icons.tsx, sheet-art.tsx (toolbar glyphs; the palette tile's art)
 hooks: useSheetModel.ts, useSheetActions.ts (every command), useFormulaInput.ts, useSheetPointer.ts,
@@ -167,7 +167,7 @@ Beside it, in the main bundle:
 hooks/sheets/useSheetsBridge.ts      the bridge
 hooks/sheets/useSheetCsvDrop.ts      a CSV dropped on the canvas in Plan mode
 lib/sheet-seeds.ts                   placed sheets (placeNewSheet, takePlacedSheet) and clipboard seeds
-lib/download-blob.ts                 downloadBlob, the shared file save (Download CSV)
+lib/download-blob.ts                 downloadBlob, the shared file save (Download CSV), in @liveworkspace/workbench
 components/plan/FocusElementButton.tsx  Focus in a board's or Sheet's header (plan-board blueprint "Focus")
 components/plan/SetupCard.tsx        the setup card and wizard stepper Setup Board and Setup Sheet share
 components/plan/CardSearchControls.tsx  the Cards panel's search and field filters (useCardSearch), reused by

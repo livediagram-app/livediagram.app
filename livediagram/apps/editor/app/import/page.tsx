@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
-import { replaceAppLocation } from '@/lib/app-location';
+import { replaceAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { explorerHref } from '@/lib/explorer-href';
 import { useImportDialogs } from './useImportDialogs';
 import { importReturnUrl, importRequestOf, type ImportRequest } from './import-request';

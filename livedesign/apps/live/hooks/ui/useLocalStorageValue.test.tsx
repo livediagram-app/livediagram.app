@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useLocalStorageValue, writeLocalStorageValue } from './useLocalStorageValue';
-import { storageEvent } from '@/lib/testing/storage-event';
+import { storageEvent } from '@liveworkspace/workbench/lib/testing/storage-event';
 
 afterEach(() => {
   vi.restoreAllMocks();

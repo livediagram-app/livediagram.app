@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // The timeline lane an in-flight drag is LANDING ON (docs/specs/021-event-storming/event-storming.md Phase 6), for
 // the overlay that lights it. Same discipline as `insertion-preview.ts`: this

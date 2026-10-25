@@ -22,7 +22,7 @@ import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
-import { API_BASE } from './base';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 import { withDocumentGrant } from './document-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.

@@ -6,7 +6,7 @@
 // keeps its identity while its values do.
 import { useSyncExternalStore } from 'react';
 import type { PageRect } from '@livedocuments/document';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let clips: ReadonlyMap<string, PageRect> = new Map();
 const listeners = createListeners();

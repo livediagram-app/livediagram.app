@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } from 'react';
 import { isCommittablePath, type Element, type PathAnchor } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { announce } from '@/lib/announcer';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {

@@ -2,7 +2,7 @@ import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, pressWord, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Tab Window tour (docs/specs/007-editor/element-tours.md "The Tab Window tour"), on a selected tab window: another
 // tab drawn live inside it, Open to edit that tab (or, with none chosen yet, Choose a Tab), its menu, and resizing. It

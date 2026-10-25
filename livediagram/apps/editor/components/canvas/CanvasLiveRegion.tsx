@@ -11,7 +11,7 @@ import {
   getAnnouncementSnapshot,
   getServerAnnouncementSnapshot,
   subscribeAnnouncements,
-} from '@/lib/announcer';
+} from '@liveworkspace/workbench/lib/announcer';
 
 export function CanvasLiveRegion() {
   const { message, nonce } = useSyncExternalStore(

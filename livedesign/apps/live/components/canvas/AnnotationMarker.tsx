@@ -5,7 +5,7 @@ import { Portal } from '@livedesign/ui';
 import type { TextRun } from '@livedesign/design';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The fixed note glyph inside an annotation marker (docs/specs/009-elements/annotations.md). A small
 // speech bubble with text lines, tinted by the marker's stroke colour.

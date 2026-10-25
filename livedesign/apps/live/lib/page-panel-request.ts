@@ -3,7 +3,7 @@
 // tour page's panel on the tab a step is about. CanvasPages owns the panel and follows each new request once.
 import { useState, useSyncExternalStore } from 'react';
 import type { PagePanelTab } from '@/components/canvas/PagePanel';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type PagePanelRequest = {
   seq: number;

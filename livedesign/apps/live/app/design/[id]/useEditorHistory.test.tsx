@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useEditorHistory } from './useEditorHistory';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/announcer', () => ({ announce: vi.fn() }));
+vi.mock('@liveworkspace/workbench/lib/announcer', () => ({ announce: vi.fn() }));
 
 // A locked tab pauses undo and redo on every route (docs/specs/008-canvas/canvas-and-palette.md
 // "A locked tab pauses undo and redo"): the flags the toolbar and the command palette read, and

@@ -22,7 +22,7 @@ const h = vi.hoisted(() => ({
   encoder: { palette: vi.fn(), add: vi.fn(), finish: vi.fn(), cancel: vi.fn() },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: h.track }));
-vi.mock('@/lib/download-blob', () => ({ downloadBlob: h.download }));
+vi.mock('@liveworkspace/workbench/lib/download-blob', () => ({ downloadBlob: h.download }));
 vi.mock('@/lib/export-fonts', () => ({ embeddedFontFaceCss: async () => '' }));
 vi.mock('@/lib/presentation-config', async (orig) => ({
   ...(await orig<typeof import('@/lib/presentation-config')>()),

@@ -254,7 +254,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
-- WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
+- WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
   icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
@@ -512,7 +512,7 @@ per command letter.
 | ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
-| WebKit is told by `GestureEvent`                             | `apps/live/lib/live-filter-cost.test.ts`                                                                 |
+| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                 |
 | pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/live/components/canvas/SketchArtPicture.test.tsx`                                                  |
 
 ## Constants and configuration

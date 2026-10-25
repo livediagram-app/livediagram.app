@@ -5,7 +5,7 @@
 // size, never on a timer; null until the first measure, so the notice never paints out of place.
 import { useLayoutEffect, useState } from 'react';
 import { noticeBottom } from '@/lib/board-scene-notice-slot';
-import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
+import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 const DOCK_SELECTOR = '[data-whiteboard-dock]';
 

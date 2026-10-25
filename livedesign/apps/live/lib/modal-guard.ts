@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Shared "a modal dialog is open" flag for the editor's WINDOW-level
 // listeners (keyboard shortcuts, paste). The shortcut hooks bail for

@@ -1,4 +1,4 @@
-import { createDialogHandle } from './dialog-handle';
+import { createDialogHandle } from '@liveworkspace/workbench/lib/dialog-handle';
 
 // The open Sequence dialog's tab switches and its close, for the Sequence element tour
 // (docs/specs/007-editor/element-tours.md "The Sequence tour"), which runs steps inside the dialog from outside it.

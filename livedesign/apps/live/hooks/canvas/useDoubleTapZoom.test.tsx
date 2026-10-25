@@ -12,7 +12,10 @@ vi.mock('@/lib/tab-fit-view', () => ({
 import { track } from '@/lib/telemetry';
 import { glideViewport } from '@/lib/viewport-glide';
 import { tabFitView } from '@/lib/tab-fit-view';
-import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
 import { useDoubleTapZoom } from './useDoubleTapZoom';
 
 // The hook glides the view to lib/double-tap-zoom's answers (docs/specs/008-canvas/canvas-and-palette.md

@@ -7,7 +7,7 @@ import {
   type ConceptTourContext,
 } from './concept-element-tour-steps';
 import type { TourStepOf } from './tour-step';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Pyramid tour (docs/specs/007-editor/element-tours.md "The Pyramid tour"), on a Pyramid or an Inverted pyramid:
 // its tiers cut from one triangle, the apex first, the three shapes it switches between, and Build from the base.

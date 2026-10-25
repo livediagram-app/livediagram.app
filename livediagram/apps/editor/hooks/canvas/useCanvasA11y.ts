@@ -15,7 +15,7 @@
 import { useEffect } from 'react';
 import { isBoxed, type Element } from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
+import { announce, getAnnouncementSnapshot } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeSelected } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';

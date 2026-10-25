@@ -13,7 +13,7 @@ import {
 } from '@liveplanner/items';
 import type { Element } from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Before any tab has published (a palette outside the editor): every type is taken, so nothing greys out.
 let taken: CardTypesTaken = { kind: 'all' };

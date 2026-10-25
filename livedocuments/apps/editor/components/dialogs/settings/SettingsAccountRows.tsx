@@ -6,7 +6,7 @@ import { Button, GlyphDisc, SOLID_BRAND_DARK } from '@livedocuments/ui';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { accountInitial } from '@/lib/account-avatar';
+import { accountInitial } from '@liveworkspace/workbench/lib/account-avatar';
 import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './settings-catalogue';
 
 // The account rows, moved here from the Explorer's /explorer/profile page

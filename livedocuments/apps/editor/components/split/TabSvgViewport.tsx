@@ -21,7 +21,7 @@ import {
   zoomAbout,
   type CanvasAnchor,
   type PaneView,
-} from '@/lib/split-pane-view';
+} from '@liveworkspace/workbench/lib/split-pane-view';
 import type { TabSvg } from './useTabSvg';
 
 // What the split frame reads off a pane when the editor moves into it: where its canvas sits, so

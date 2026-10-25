@@ -11,7 +11,7 @@ import { debugLog } from '@/lib/debug-log';
 import { pageInView } from '@/lib/page-contents';
 import { pageSnap, type SnapBand, type SnapFrame } from '@/lib/page-snap';
 import { track } from '@/lib/telemetry';
-import type { View } from '@/lib/viewport-store';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // How long a view moved by anything but a gesture rests before it snaps: past a held arrow key's

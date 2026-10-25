@@ -4,7 +4,7 @@
 // canvas cannot zoom, so the bottom-right zoom controls zoom the sheet's cells instead. The person's own view, like
 // maximising: a module store, never saved, sent or undone, back to 100% when no Sheet covers the canvas.
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export const SHEET_ZOOM_MIN = 0.5;
 export const SHEET_ZOOM_MAX = 2;

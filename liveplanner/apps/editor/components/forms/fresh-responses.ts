@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { FROM_FORM_FIELD, readFromForm } from '@liveplanner/forms';
 import type { Item } from '@liveplanner/items';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // How long a response's card shows New when nobody opens it. Safe range 1..30 days.
 export const FRESH_RESPONSE_MS = 7 * 24 * 60 * 60 * 1000;

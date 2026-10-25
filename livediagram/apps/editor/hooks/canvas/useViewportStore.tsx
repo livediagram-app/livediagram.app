@@ -6,7 +6,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStoreSlice } from '@/hooks/ui/useStoreSlice';
-import type { View, ViewportStore } from '@/lib/viewport-store';
+import type { View, ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 const ViewportStoreContext = createContext<ViewportStore | null>(null);
 

@@ -69,7 +69,7 @@ A guest's identity is liveworkspace's, so the same guest reaches the same things
 - **Never a loop.** A handoff that comes back without a token (no accounts site, or a deployment without one, which answers `#error=guest_not_configured`) is remembered for five minutes, and the page carries on without an identity in the meantime, with a stand-in id for this page load only.
 - **No redirect for a link.** Opening a document through a share link or an embed needs no identity: the share code is enough for the index to grant what the link allows.
 - **A new guest is counted once.** A guest token for a guest this browser has not had reports `Participant·Created` ([Telemetry](../017-telemetry/telemetry.md)).
-- The other random values the editor rolls for a guest (the display name, the presence colour, an avatar's costume) go through `apps/editor/lib/random.ts`, which draws from `crypto.getRandomValues` rather than `Math.random`.
+- The other random values the editor rolls for a guest (the display name, the presence colour, an avatar's costume) go through `../packages/workbench/src/lib/random.ts`, which draws from `crypto.getRandomValues` rather than `Math.random`.
 
 ## Capability matrix
 

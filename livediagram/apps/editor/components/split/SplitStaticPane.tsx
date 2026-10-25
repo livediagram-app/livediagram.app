@@ -7,7 +7,7 @@ import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
-import type { CanvasAnchor } from '@/lib/split-pane-view';
+import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { TabSvgViewport, type TabSvgViewportHandle } from './TabSvgViewport';

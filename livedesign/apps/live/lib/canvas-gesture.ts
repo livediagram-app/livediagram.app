@@ -7,7 +7,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { debugLog } from './debug-log';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type CanvasGesture =
   'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';

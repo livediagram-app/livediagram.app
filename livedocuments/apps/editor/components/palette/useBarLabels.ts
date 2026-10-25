@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import { editorViewportOf } from '@/lib/editor-viewport';
+import { editorViewportOf } from '@liveworkspace/workbench/lib/editor-viewport';
 
 // Whether the category bar names its categories (docs/specs/007-editor/toolbar-layout.md "The category bar"), from
 // the strip's REAL sizes: the centred strip may take the editor's width less the

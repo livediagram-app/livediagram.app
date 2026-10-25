@@ -15,7 +15,7 @@ import {
   SeenIds,
   type SpeechBubble,
 } from '@/lib/avatar-speech';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let bubbles: SpeechBubble[] = [];
 const listeners = createListeners();

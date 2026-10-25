@@ -4,7 +4,7 @@
 // usePlanCoverWiring as the tab opens or is renamed, read by TabNameInBox. A module store, like plan-tab-list-store.ts.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let name = '';
 const listeners = createListeners();

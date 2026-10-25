@@ -8,7 +8,7 @@
 import { useSyncExternalStore } from 'react';
 import type { PlanTabKind } from '@liveplanner/project';
 import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 type PlanCover = {
   // The board or Sheet filling the open tab, or null, and which it is.

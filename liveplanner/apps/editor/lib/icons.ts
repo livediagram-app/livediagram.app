@@ -26,7 +26,7 @@ import {
   type IconAnimation,
 } from '@liveplanner/project';
 
-import type { IconDef, IconPrim } from './icon-types';
+import type { IconDef, IconPrim } from '@liveworkspace/workbench/lib/icon-types';
 import { getIconLoaded } from './icon-registry';
 
 export type { IconDef, IconPrim };

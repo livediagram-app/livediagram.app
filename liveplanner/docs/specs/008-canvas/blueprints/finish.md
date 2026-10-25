@@ -259,7 +259,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
-- WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
+- WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole).
 - `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` uses (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
@@ -501,7 +501,7 @@ per command letter.
 | one door to both pens; Marker in the export; backdrops       | `packages/project/src/hand-drawn.test.ts`                                                                    |
 | export split, body placement, tab window frame, defs, fonts  | `packages/project/src/svg-render-sketch.test.ts`                                                             |
 | ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                          |
-| WebKit is told by `GestureEvent`                             | `apps/editor/lib/live-filter-cost.test.ts`                                                                   |
+| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
 
 ## Constants and configuration
 

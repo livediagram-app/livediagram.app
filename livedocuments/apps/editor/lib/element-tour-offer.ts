@@ -1,5 +1,5 @@
 import type { ElementTourKind } from './element-tours';
-import { createElementKeyedStore } from './element-keyed-store';
+import { createElementKeyedStore } from '@liveworkspace/workbench/lib/element-keyed-store';
 
 // The element tour offer on screen (docs/specs/007-editor/element-tours.md "The tour offer"): ElementTourHost decides
 // whether the selected element is offered its tour and publishes it here; the selection toolbar, which lives in the

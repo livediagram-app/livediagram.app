@@ -5,7 +5,7 @@
 // not this: it is the board's own setting.
 import { useSyncExternalStore } from 'react';
 import { track } from '@/lib/telemetry';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // What is maximised, which names its telemetry (BoardMaximised, ViewRestored...).
 export type MaximisedKind = 'Board' | 'View' | 'Sheet';

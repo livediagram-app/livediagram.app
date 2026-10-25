@@ -3,7 +3,7 @@ import type { ElementTourApi } from './element-tour-api';
 import { waitForSelector } from './tour-dom';
 import type { TourStepOf } from './tour-step';
 import { TARGET_WAIT_MS } from './useTourEngine';
-import { elementSelector } from '@/lib/canvas-selectors';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Sequence tour (docs/specs/007-editor/element-tours.md "The Sequence tour"), on a selected sequence diagram: how it
 // reads on the canvas, then its Sequence dialog, opened by the tour, where every step rings a real control: the

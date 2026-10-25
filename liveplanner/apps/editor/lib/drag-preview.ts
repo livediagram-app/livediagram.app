@@ -7,7 +7,7 @@
 
 import { useSyncExternalStore } from 'react';
 import type { Element } from '@liveplanner/project';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type DragOverlay = {
   tabId: string;

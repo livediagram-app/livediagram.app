@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { createListeners } from '@/lib/listeners';
+import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Which guided tour is on screen (docs/specs/026-plan/plan-tour.md "Where it appears"): the Plan, Dashboard and
 // Form tours never run at once, so each host publishes itself here while it is active and waits for the others to
