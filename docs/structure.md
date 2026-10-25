@@ -40,7 +40,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
-│  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives
+│  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
@@ -254,11 +254,24 @@ Each step is its own PR, and both products build and pass their tests after ever
      `livedocuments/apps/editor`, `livedesign/apps/live`) and whose imports stay inside it, the shared
      `@liveworkspace/*` packages and npm: no `@<product>/*` and no editor file. It keeps the editor's
      folders (`lib/…`, `hooks/ui/…`, `hooks/canvas/…`, `components/primitives/…`), and its tests came
-     with it. Every module is a subpath (`@liveworkspace/workbench/lib/listeners`) with no barrel, so
-     an editor bundles only what it imports. What a product needs to differ is handed in as props, or
-     as a small module the workbench exports for each editor to bind (`createX(config)`), never as a
-     product import. The editors' repo-scan guards read `packages/workbench/src` beside their own
-     folders, and each editor's stylesheet scans it with `@source '../../../../packages/workbench/src'`.
+     with it: 254 files, about 13,100 lines (174 modules, 8,800 lines; 80 tests, 4,300 lines), about
+     12,750 lines fewer in each editor. 125 were byte-identical and self-contained as they stood. 129
+     more followed once two seams were settled: 89 copies differed only in their comments (one
+     product's nouns, a renamed spec, one side behind), which now read the same; and they imported
+     shared names (`Button`, `HoverCard`, `Portal`, `useMediaQuery`, the menu hooks) through the
+     product's ui, which re-exports `@liveworkspace/ui` unchanged, so they import them from there.
+     Every module is a subpath (`@liveworkspace/workbench/lib/listeners`) with no barrel, so an editor
+     bundles only what it imports. What a product needs to differ is handed in as props, or as a small
+     module the workbench exports for each editor to bind (`createX(config)`), never as a product
+     import. The editors' repo-scan guards read `packages/workbench/src` beside their own folders, the
+     style guards (optical, touch targets, motion budget) run in the package, and each editor's
+     stylesheet scans it with `@source '../../../../packages/workbench/src'`.
+   - Still in each editor, though most of it reads the same: what sits on a product binding. The
+     largest blockers are `lib/telemetry.ts` (the product's telemetry client), `lib/user-preferences.ts`,
+     `lib/debug-log.ts` (its storage key), `lib/api/core.ts`, `lib/canvas.ts` and the settings
+     catalogue, each imported at module level by the identical files above them. They move once
+     those bindings are injected rather than imported, which is a change to how the editor wires
+     itself, not a move.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

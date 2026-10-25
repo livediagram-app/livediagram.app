@@ -14,8 +14,14 @@ Editor code that reads the same in every editor and names no product:
   of an editor;
 - its tests come with it, and run here.
 
-The folders keep the editor's layout (`lib/…`, `hooks/ui/…`, `hooks/canvas/…`, `components/primitives/…`),
-so a module's place here says where it came from.
+The folders keep the editor's layout (`lib/…`, `hooks/ui/…`, `hooks/canvas/…`, `components/primitives/…`,
+`components/canvas/…`, `components/tour/…` and so on), so a module's place here says where it came from.
+
+A shared name from the design system is imported from `@liveworkspace/ui`, not through a product's
+`@<product>/ui` (which re-exports it unchanged). A name a product's ui binds for itself (`SiteFooter`,
+`IDENTITY_FILL`, `Brand`) is a product import, so a module using one stays in the editor. Comments
+here are product-neutral: they cite a product spec by the path the products share
+(`docs/specs/007-editor/editor-app.md`, `live-app.md` in livedesign) rather than one product's nouns.
 
 Code that differs per product stays in the product. A module moves only once it reads the same in all
 four, and the product's part of it is handed in:
