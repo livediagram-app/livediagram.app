@@ -75,7 +75,10 @@ export function HelpHome({
   const { articles } = site.catalogue;
   const walkthrough = category(site, home.startHere.walkthrough);
   const walkthroughArticles = articles.filter((a) => a.categorySlug === walkthrough.slug);
-  const steps = walkthroughArticles.slice(0, home.startHere.steps);
+  const steps =
+    typeof home.startHere.steps === 'number'
+      ? walkthroughArticles.slice(0, home.startHere.steps)
+      : home.startHere.steps.map((path) => articleAt(site, path));
   const troubleshooting = category(site, home.stillStuck.category);
   return (
     <div>
@@ -133,7 +136,7 @@ export function HelpHome({
               </h2>
               <ol className="mt-4 space-y-1">
                 {steps.map((a, i) => (
-                  <li key={a.slug}>
+                  <li key={`${a.categorySlug}/${a.slug}`}>
                     <Link
                       href={articleHref(a)}
                       className="group/step -mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm text-slate-700 transition-colors hover:bg-brand-50 hover:text-brand-800 dark:text-slate-200 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"

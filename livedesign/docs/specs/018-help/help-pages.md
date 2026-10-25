@@ -39,6 +39,10 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
   Contact (which has no card) has its own scene; an unknown slug renders nothing rather than a stand-in.
 - The art shows in two places: on a category's card (across its top, or beside the copy on a `wide` card), and
   on the right of the category page's header from `lg` up.
+- Each help centre draws its own scenes, in its own app and its own brand colours (`brand-*` classes, so a
+  scene follows the product's hue). A scene is never copied from another product's help centre: the art shows
+  this product's work, not a sibling's. The Getting Started scene in particular tells this product's first
+  three steps, on three numbered cards.
 - Labels in a scene are the editor's own (real shortcuts, real API fields), checked against the articles.
 - The art is decorative (`aria-hidden`); the card's title and description say what the picture shows.
 
@@ -51,8 +55,9 @@ Top to bottom:
    link straight to the articles most readers come for (Your First Design, Sharing Your Design, Keyboard
    Shortcuts, Templates, Exporting Designs, Logo Pages). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
-2. **Start here.** A full-width card, the Getting Started scene beside the first four Getting Started guides as
-   numbered steps and a link to the rest, then About livedesign and Tips and Tricks as two wide cards.
+2. **Start here.** A full-width card: livedesign's own Getting Started scene (a first design: a logo artboard beside wireframe screens, its layers, and the share link) beside
+   four numbered steps (Your First Design, Logo Pages, Layers, Sharing Your Design), named in `startHere.steps` in `lib/home-sections.ts`, and a
+   link to every Getting Started guide; then About livedesign and Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
 5. **Developers and self-hosting.** Developers and Self-Hosting, as wide cards.

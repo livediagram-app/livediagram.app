@@ -5,6 +5,11 @@ styles, SEO helpers, styles and catalogue checks live here. Each help app keeps 
 articles and illustrations, its catalogue (`@<product>/help-registry`), its card art, its header and footer, its
 home-page layout and its page copy.
 
+The art is a per-app slot: `HelpHome` draws the Start here card and every category card with the scene the app
+hands over in `art.categoryArt` (its `components/category-art/`), so each help centre draws its own Getting Started
+story in its own brand colours. An app picks the Start here steps in its layout: `startHere.steps` is either a count
+(the walkthrough's first guides) or a list of `categorySlug/slug` articles.
+
 Specs: `docs/specs/018-help/help-app.md` and `help-pages.md` in each product.
 
 ## Binding a help app

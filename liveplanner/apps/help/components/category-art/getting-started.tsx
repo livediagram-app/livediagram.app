@@ -1,11 +1,4 @@
-import {
-  Arrow,
-  Avatar,
-  Cursor,
-  Label,
-  Shape,
-  DiscText,
-} from '@/components/illustrations/primitives';
+import { Avatar, DiscText, Label } from '@/components/illustrations/primitives';
 import { Card, Stage, TickDisc } from './parts';
 
 // A numbered step disc, sitting on the top edge of its card.
@@ -20,8 +13,23 @@ function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
   );
 }
 
-// Getting Started: the first three things a new person does, as three cards on a path. Pick a starting point,
-// add shapes, share the link.
+// The board's three columns: each one's head dot and the tags on its cards.
+const COLUMNS = [
+  { x: 26, head: 'fill-slate-300', tags: ['fill-amber-300', 'fill-sky-300', 'fill-emerald-300'] },
+  { x: 58, head: 'fill-amber-400', tags: ['fill-sky-300', 'fill-amber-300'] },
+  { x: 90, head: 'fill-emerald-400', tags: ['fill-emerald-300'] },
+];
+
+// The sheet's rows: whether its Done box is ticked, and its status pill's tone.
+const ROWS = [
+  { done: true, pill: 'fill-emerald-300' },
+  { done: false, pill: 'fill-amber-300' },
+  { done: true, pill: 'fill-emerald-300' },
+  { done: false, pill: 'fill-sky-300' },
+];
+
+// Getting Started: the first three things a new person does in liveplanner, as three cards on a path. Start a
+// board of cards, keep the detail in a sheet, share the link.
 export function GettingStartedArt() {
   return (
     <Stage>
@@ -33,74 +41,130 @@ export function GettingStartedArt() {
         strokeLinecap="round"
       />
 
-      {/* 1: pick a starting point. */}
+      {/* 1: start a board. Three columns of cards, one lifted on its way to Done. */}
       <Card x={18} y={52} w={108} h={140} r={12}>
-        {[
-          ['fill-brand-100', 'fill-brand-400'],
-          ['fill-violet-100', 'fill-violet-400'],
-          ['fill-amber-100', 'fill-amber-400'],
-          ['fill-emerald-100', 'fill-emerald-400'],
-        ].map(([bg, fg], i) => {
-          const x = 30 + (i % 2) * 44;
-          const y = 70 + Math.floor(i / 2) * 40;
-          const on = i === 0;
-          return (
-            <g key={i}>
-              <rect
-                x={x}
-                y={y}
-                width={40}
-                height={34}
-                rx={6}
-                className={`${bg} ${on ? 'stroke-brand-500' : 'stroke-transparent'}`}
-                strokeWidth={2}
-              />
-              <rect x={x + 6} y={y + 7} width={16} height={4} rx={2} className={fg} />
-              <rect
-                x={x + 6}
-                y={y + 15}
-                width={28}
-                height={3}
-                rx={1.5}
-                className="fill-white help-art-as-drawn"
-                opacity={0.9}
-              />
-              <rect
-                x={x + 6}
-                y={y + 21}
-                width={20}
-                height={3}
-                rx={1.5}
-                className="fill-white help-art-as-drawn"
-                opacity={0.9}
-              />
-            </g>
-          );
-        })}
+        {COLUMNS.map((col) => (
+          <g key={col.x}>
+            <rect x={col.x} y={68} width={28} height={86} rx={5} className="fill-slate-50" />
+            <circle cx={col.x + 6} cy={75} r={2.2} className={col.head} />
+            <rect
+              x={col.x + 11}
+              y={73.5}
+              width={12}
+              height={3}
+              rx={1.5}
+              className="fill-slate-300"
+            />
+            {col.tags.map((tag, i) => (
+              <g key={i}>
+                <rect
+                  x={col.x + 3}
+                  y={82 + i * 22}
+                  width={22}
+                  height={18}
+                  rx={3}
+                  className="fill-white stroke-slate-200"
+                  strokeWidth={1}
+                />
+                <rect
+                  x={col.x + 6}
+                  y={86 + i * 22}
+                  width={14}
+                  height={3}
+                  rx={1.5}
+                  className="fill-slate-300"
+                />
+                <rect x={col.x + 6} y={92 + i * 22} width={8} height={3} rx={1.5} className={tag} />
+              </g>
+            ))}
+          </g>
+        ))}
+        <g transform="rotate(-6 104 118)">
+          <rect
+            x={92}
+            y={108}
+            width={24}
+            height={19}
+            rx={3}
+            className="fill-white stroke-brand-500"
+            strokeWidth={1.5}
+          />
+          <rect x={96} y={112} width={14} height={3} rx={1.5} className="fill-slate-300" />
+          <rect x={96} y={118} width={8} height={3} rx={1.5} className="fill-amber-300" />
+        </g>
         <Label x={72} y={170} anchor="middle" size={10.5} weight={700} tone="strong">
-          Pick a start
+          Start a board
         </Label>
       </Card>
       <Step cx={72} cy={52} n={1} />
 
-      {/* 2: add shapes. */}
+      {/* 2: fill a sheet. A grid with a header row, a ticked Done column, status pills, and one cell selected. */}
       <Card x={146} y={52} w={108} h={140} r={12}>
-        <Shape x={158} y={74} w={40} h={26} label="" />
-        <Shape
-          x={210}
-          y={98}
-          w={34}
-          h={34}
-          kind="circle"
-          fill="fill-violet-100"
-          stroke="stroke-violet-400"
+        <rect
+          x={156}
+          y={68}
+          width={88}
+          height={84}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
         />
-        <Shape x={162} y={118} w={36} h={26} accent />
-        <Arrow from={[198, 87]} to={[214, 101]} width={2} />
-        <Arrow from={[180, 100]} to={[180, 115]} width={2} />
-        <Cursor x={226} y={128} colour="violet" />
+        <path d="M156 73 a5 5 0 0 1 5 -5 h78 a5 5 0 0 1 5 5 v9 h-88 Z" className="fill-brand-100" />
+        {[0, 1, 2].map((i) => (
+          <rect
+            key={i}
+            x={[162, 192, 218][i]}
+            y={73.5}
+            width={[20, 16, 18][i]}
+            height={3}
+            rx={1.5}
+            className="fill-brand-400"
+          />
+        ))}
+        {ROWS.map((row, i) => {
+          const y = 82 + i * 17.5;
+          return (
+            <g key={i}>
+              <line x1={156} y1={y} x2={244} y2={y} className="stroke-slate-200" strokeWidth={1} />
+              <rect
+                x={162}
+                y={y + 7}
+                width={i === 1 ? 16 : 22}
+                height={3.5}
+                rx={1.7}
+                className="fill-slate-300"
+              />
+              {row.done ? (
+                <TickDisc cx={200} cy={y + 8.8} r={4.5} />
+              ) : (
+                <rect
+                  x={195.5}
+                  y={y + 4.3}
+                  width={9}
+                  height={9}
+                  rx={2}
+                  className="fill-white stroke-slate-300"
+                  strokeWidth={1}
+                />
+              )}
+              <rect x={216} y={y + 5.5} width={22} height={6.5} rx={3.2} className={row.pill} />
+            </g>
+          );
+        })}
+        <line x1={188} y1={68} x2={188} y2={152} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={212} y1={68} x2={212} y2={152} className="stroke-slate-200" strokeWidth={1} />
+        {/* The selected cell. */}
+        <rect
+          x={156}
+          y={117}
+          width={32}
+          height={17.5}
+          className="fill-none stroke-brand-500"
+          strokeWidth={2}
+        />
+        <rect x={185} y={131.5} width={5} height={5} className="fill-brand-500 stroke-white" />
         <Label x={200} y={170} anchor="middle" size={10.5} weight={700} tone="strong">
-          Add shapes
+          Fill a sheet
         </Label>
       </Card>
       <Step cx={200} cy={52} n={2} />

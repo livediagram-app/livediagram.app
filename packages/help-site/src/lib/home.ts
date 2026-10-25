@@ -16,9 +16,10 @@ export interface HomeSection {
 export interface HelpHomeLayout {
   /** The category sections between the hero and the closing band, top to bottom. */
   sections: readonly HomeSection[];
-  /** The Start here section: the walkthrough's category, how many of its first guides show as numbered steps,
-   *  and the cards beside it. */
-  startHere: { walkthrough: string; steps: number; beside: readonly string[] };
+  /** The Start here section: the walkthrough's category, its numbered steps, and the cards beside it. The steps
+   *  are either how many of the walkthrough's first guides to show, or the guides themselves by
+   *  `categorySlug/slug`, for a product whose best first reads sit in other categories. */
+  startHere: { walkthrough: string; steps: number | readonly string[]; beside: readonly string[] };
   /** The closing band: the category beside the Contact route. */
   stillStuck: { category: string; contact: string };
   /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */

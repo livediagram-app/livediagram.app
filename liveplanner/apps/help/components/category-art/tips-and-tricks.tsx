@@ -1,20 +1,20 @@
 import { Label } from '@/components/illustrations/primitives';
 import { Card, Kbd, Sparkle, Stage } from './parts';
 
-const COMMANDS: { name: string; keys: string; active?: boolean }[] = [
-  { name: 'Zoom to fit', keys: '⇧ 1', active: true },
-  { name: 'Next editor mode', keys: '⇧ D' },
+const COMMANDS: { name: string; keys?: string; active?: boolean }[] = [
+  { name: 'Create New Tab', active: true },
+  { name: 'Share Plan' },
   { name: 'Zen mode', keys: 'Z' },
 ];
 
-const SHORTCUTS: { key: string; name: string }[] = [
-  { key: 'R', name: 'Square' },
-  { key: 'T', name: 'Text' },
-  { key: 'N', name: 'Sticky note' },
+const SHORTCUTS: { key: string; name: string; where: string }[] = [
+  { key: 'N', name: 'New card', where: 'On a board' },
+  { key: '⇧→', name: 'Move card', where: 'On a board' },
+  { key: 'F2', name: 'Edit a cell', where: 'In a sheet' },
 ];
 
-// Tips and Tricks: working at the speed of the keyboard. The command palette open on ⌘K, and the single-key
-// shortcuts that drop a shape without touching the palette.
+// Tips and Tricks: working at the speed of the keyboard. The command palette open on ⌘K, and the shortcuts that
+// add and move cards on a board and edit a sheet's cells without touching the mouse.
 export function TipsAndTricksArt() {
   return (
     <Stage>
@@ -54,10 +54,21 @@ export function TipsAndTricksArt() {
               >
                 {c.name}
               </Label>
-              <rect x={326} y={y + 4} width={40} height={14} rx={4} className="fill-slate-100" />
-              <Label x={346} y={y + 11.5} anchor="middle" size={8.5} weight={700} tone="body">
-                {c.keys}
-              </Label>
+              {c.keys && (
+                <>
+                  <rect
+                    x={326}
+                    y={y + 4}
+                    width={40}
+                    height={14}
+                    rx={4}
+                    className="fill-slate-100"
+                  />
+                  <Label x={346} y={y + 11.5} anchor="middle" size={8.5} weight={700} tone="body">
+                    {c.keys}
+                  </Label>
+                </>
+              )}
             </g>
           );
         })}
@@ -82,7 +93,7 @@ export function TipsAndTricksArt() {
               {s.name}
             </Label>
             <Label x={x + 48} y={177} size={9} tone="muted">
-              {`Press ${s.key}`}
+              {s.where}
             </Label>
           </g>
         );

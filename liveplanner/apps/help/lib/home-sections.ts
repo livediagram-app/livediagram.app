@@ -40,8 +40,13 @@ const sections: HomeSection[] = [
 /** The Start here section: the walkthrough's category and the cards beside it. */
 const startHere = {
   walkthrough: 'getting-started',
-  /** How many of the walkthrough's first guides show as numbered steps. */
-  steps: 4,
+  /** The numbered steps: liveplanner's own first reads, in the order a new person takes them. */
+  steps: [
+    'getting-started/your-first-project',
+    'plan/boards',
+    'plan/sheets',
+    'getting-started/sharing-your-project',
+  ],
   beside: ['about', 'tips-and-tricks'],
 } as const;
 
