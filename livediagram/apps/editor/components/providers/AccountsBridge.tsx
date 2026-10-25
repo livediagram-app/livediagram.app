@@ -13,6 +13,7 @@
 
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import {
@@ -24,6 +25,9 @@ type SessionUser = {
   id: string;
   email: string | null;
   name: string | null;
+  // The ID token's Google picture and Show My Google Picture switch (apps/api/src/routes/auth.ts AuthUser).
+  picture?: string | null;
+  pictureHidden?: boolean;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -110,6 +114,8 @@ function stateOf(session: Session | null): DeferredAuthState {
       username: null,
       email: user.email,
       createdAt: null,
+      picture: profilePictureOf(user.picture),
+      pictureHidden: user.pictureHidden === true,
     },
     getToken,
     // Clears what the retired returning-visitor note left in this browser

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   admitFrame,
   helloPresence,
@@ -76,6 +76,38 @@ describe('helloPresence', () => {
   it('drops a colour that could load something from outside', () => {
     const p = helloPresence({ name: 'Ada', color: 'url(//tracker.example/x)' }, SESSION);
     expect(p.color).toBe('');
+  });
+
+  // liveworkspace/docs/accounts.md "Profile pictures".
+  it('keeps a Google picture only from an account session', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const claimed = {
+      name: 'Ada',
+      color: '#f00',
+      picture: 'https://lh3.googleusercontent.com/a/ada=s96-c',
+    };
+    expect(helloPresence(claimed, { ...SESSION, account: true }).picture).toBe(
+      'https://lh3.googleusercontent.com/a/ada=s96-c',
+    );
+    expect(helloPresence(claimed, SESSION)).not.toHaveProperty('picture');
+    expect(info).toHaveBeenCalledWith('[profile-picture] rejected', 'not_account');
+    info.mockRestore();
+  });
+
+  it('drops a picture that is not a Google picture URL, whole', () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    for (const picture of [
+      'https://evil.example/ada.png',
+      'javascript:alert(1)',
+      'http://lh3.googleusercontent.com/a/ada',
+      `https://lh3.googleusercontent.com/a/${'x'.repeat(600)}`,
+    ]) {
+      expect(
+        helloPresence({ name: 'Ada', picture }, { ...SESSION, account: true }),
+      ).not.toHaveProperty('picture');
+    }
+    expect(info).toHaveBeenCalledWith('[profile-picture] rejected', 'invalid_url');
+    info.mockRestore();
   });
 
   it('smuggles no extra keys out of the claimed object', () => {

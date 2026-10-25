@@ -51,6 +51,10 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
+  //   - `account`: a verified account (not a guest, a link visitor or an API token) holds this session, from
+  //     X-Verified-Account (liveworkspace/docs/accounts.md "Profile pictures"): only such a session may put a
+  //     Google picture on the roster, and only such a session is sent the pictures on it.
+  account?: boolean;
   //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
   //     (docs/specs/012-collaboration/vote-integrity.md): what caps one network's poll answers. 32 hex characters.
   networkTag?: string | null;
@@ -92,6 +96,7 @@ type VerifiedSession = {
   tabScope: string | null;
   shareCode: string | null;
   personTag: string | null;
+  account?: boolean;
   networkTag: string | null;
   workbenchPairing: string | null;
   adderKey: string | null;
@@ -123,6 +128,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     tabScope: header('X-Verified-Tab-Scope'),
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
+    account: request.headers.get('X-Verified-Account') === '1',
     networkTag: header('X-Verified-Network'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
@@ -150,6 +156,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     tabScope: v.tabScope,
     shareCode: v.shareCode,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
+    account: v.account === true,
     networkTag: v.networkTag?.slice(0, MAX_NETWORK_TAG_LEN) ?? null,
     pollAnsweredAs: null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,

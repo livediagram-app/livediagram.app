@@ -47,7 +47,18 @@ function toParticipant(id: string, profile: Profile): ParticipantDTO | null {
     name: profile.name,
     color: profile.color ?? colorForKey(id),
     createdAt: profile.createdAt ?? 0,
+    // The published Google picture (null when Show My Google Picture is off); readers strip it for a caller that
+    // is not signed in (withoutPicture).
+    ...(profile.picture ? { picture: profile.picture } : {}),
   };
+}
+
+// A participant as a caller who is not signed in reads it: never a picture (liveworkspace/docs/accounts.md
+// "Profile pictures": pictures go only to signed-in viewers).
+export function withoutPicture(p: ParticipantDTO): ParticipantDTO {
+  if (p.picture === undefined) return p;
+  const { picture: _hidden, ...rest } = p;
+  return rest;
 }
 
 // The participants of these owner ids, found ones only, in one accounts call per 100 ids not

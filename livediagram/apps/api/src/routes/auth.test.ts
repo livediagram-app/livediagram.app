@@ -315,6 +315,28 @@ describe('the account name cookie (ld_account)', () => {
     expect(cookieValue(email, 'ld_account')).toBe(encodeURIComponent('ada@example.com'));
   });
 
+  // liveworkspace/docs/accounts.md "Profile pictures".
+  it("keeps the account's Google picture beside it, and says when Show My Google Picture is off", async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ada=s96-c';
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada', picture, picture_hidden: true }));
+    const shown = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=refresh-2' },
+    });
+    expect(cookieValue(shown, 'ld_account_picture')).toBe(encodeURIComponent(picture));
+    const body: { user: { picture: unknown; pictureHidden: unknown } } = await shown.json();
+    expect(body.user).toMatchObject({ picture, pictureHidden: true });
+
+    fetchMock.mockResolvedValueOnce(named({ name: 'Ada', picture: 'https://evil.example/a.png' }));
+    const foreign = await call('/api/auth/token', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=refresh-2' },
+    });
+    expect(cookieValue(foreign, 'ld_account_picture')).toBe('');
+    const none: { user: { picture: unknown; pictureHidden: unknown } } = await foreign.json();
+    expect(none.user).toMatchObject({ picture: null, pictureHidden: false });
+  });
+
   it("keeps the profile's presence colour beside it, and clears it with none or at sign-out", async () => {
     fetchMock.mockResolvedValueOnce(named({ name: 'Ada', presence_color: '#0ea5e9' }));
     const coloured = await call('/api/auth/token', {

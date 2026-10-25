@@ -20,6 +20,7 @@ import {
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import {
   apiCreateRoomTicket,
   connectRoom,
@@ -233,12 +234,19 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
+  //
+  // A signed-in session says hello with its Google picture unless Show My Google Picture is off; the room keeps it
+  // only from an account session and sends it only to account sessions (liveworkspace/docs/accounts.md "Profile
+  // pictures"). A switch flipped mid-session reaches the room on the next connect.
+  const authUser = useDeferredAuth().user;
+  const helloPicture = authUser && !authUser.pictureHidden ? (authUser.picture ?? null) : null;
   const connectAs = useEffectEvent(() => ({
     self: {
       id: selfParticipant.id,
       key: selfParticipant.key,
       name: selfParticipant.name,
       color: selfParticipant.color,
+      ...(helloPicture ? { picture: helloPicture } : {}),
     },
     shareCode: sessionShareCode,
   }));
@@ -295,6 +303,8 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
+          // Only ever present when the room judged us an account session.
+          ...(p.picture ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next

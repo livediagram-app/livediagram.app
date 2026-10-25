@@ -14,6 +14,8 @@ const { db } = vi.hoisted(() => ({
   db: {
     getParticipant: vi.fn(),
     setParticipant: vi.fn(),
+    // The real rule: a reader who is not signed in gets no picture.
+    withoutPicture: ({ picture: _p, ...rest }: { picture?: string }) => rest,
   },
 }));
 vi.mock('../liveworkspace/profiles', () => db);
@@ -34,7 +36,8 @@ const makeCtx = (
   });
 
 beforeEach(() => {
-  for (const fn of Object.values(db)) fn.mockReset();
+  db.getParticipant.mockReset();
+  db.setParticipant.mockReset();
 });
 
 describe('handleParticipants', () => {
@@ -47,6 +50,25 @@ describe('handleParticipants', () => {
     });
     const res = await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner: null }));
     expect(res.status).toBe(200);
+  });
+
+  // liveworkspace/docs/accounts.md "Profile pictures": pictures go only to signed-in readers.
+  it('GET gives the Google picture to a signed-in reader and never to a guest', async () => {
+    db.getParticipant.mockResolvedValue({
+      id: 'p1',
+      name: 'Ann',
+      color: '#fff',
+      createdAt: 0,
+      picture: 'https://lh3.googleusercontent.com/a/ada=s96-c',
+    });
+    const guest = await handleParticipants(makeCtx('GET', '/api/participants/p1', { owner: null }));
+    const guestBody: { participant: object } = await guest.json();
+    expect(guestBody.participant).not.toHaveProperty('picture');
+    const signedIn = await handleParticipants(
+      makeTestRouteContext('GET', '/api/participants/p1', { accountUserId: 'user_me' }),
+    );
+    const signedInBody: { participant: { picture?: string } } = await signedIn.json();
+    expect(signedInBody.participant.picture).toBe('https://lh3.googleusercontent.com/a/ada=s96-c');
   });
 
   it('GET 404 for an unknown participant', async () => {

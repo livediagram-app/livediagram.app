@@ -12,6 +12,9 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
+  // The person's published Google picture (liveworkspace/docs/accounts.md "Profile pictures"), for a signed-in
+  // reader only; absent for none, for a guest, and when the reader is not signed in.
+  picture?: string;
 };
 
 // Realtime presence identity, broadcast to every connected peer: the room and the participant route clamp to
@@ -64,4 +67,8 @@ export type ParticipantPresence = {
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
+  // The person's Google picture (liveworkspace/docs/accounts.md "Profile pictures"): kept by the room only from a
+  // session a verified account holds and only when it is a Google picture URL (isProfilePictureUrl), and sent
+  // only to account sessions; a guest's roster never carries one.
+  picture?: string;
 };

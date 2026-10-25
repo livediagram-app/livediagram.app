@@ -17,6 +17,10 @@ type DeferredAuthUser = {
   username: string | null;
   email: string | null;
   createdAt: Date | null;
+  // The account's Google picture (liveworkspace/docs/accounts.md "Profile pictures"), for the person's own avatar;
+  // absent or null without one. `pictureHidden`: Show My Google Picture is off, so presence leaves it out.
+  picture?: string | null;
+  pictureHidden?: boolean;
 };
 
 export type DeferredAuthState = {

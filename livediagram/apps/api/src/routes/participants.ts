@@ -4,7 +4,7 @@
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livediagram/api-schema';
 import { isSafeColourValue } from '@livediagram/document';
 import { ProfileError } from '@liveworkspace/auth-client';
-import { getParticipant, setParticipant } from '../liveworkspace/profiles';
+import { getParticipant, setParticipant, withoutPicture } from '../liveworkspace/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
 import { requireOwner, type RouteContext, readBody } from './context';
@@ -38,7 +38,9 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
       }
       return notFound();
     }
-    return json({ participant: p });
+    // The Google picture only to a signed-in caller (an account's session or token), never a guest or a link
+    // visitor (liveworkspace/docs/accounts.md "Profile pictures").
+    return json({ participant: ctx.verifiedUserId ? p : withoutPicture(p) });
   }
   if (request.method === 'PUT') {
     const owner = requireOwner(ctx);

@@ -81,6 +81,7 @@ const SPOOFED = {
   'X-Verified-Network': 'forged',
   'X-Verified-Item-Owner': 'evil',
   'X-Verified-Item-Team': 'evil',
+  'X-Verified-Account': '1',
 };
 
 async function upgrade(env: Env, path: string) {
@@ -108,6 +109,8 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('');
     expect(h.get('X-Verified-Share-Code')).toBe('');
     expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
+    // An account's session: it may publish a Google picture and is sent others'.
+    expect(h.get('X-Verified-Account')).toBe('1');
     expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
     expect(h.get('X-Verified-Document')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
@@ -140,6 +143,8 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Tab-Scope')).toBe('tab-2');
     expect(h.get('X-Verified-Share-Code')).toBe('abc');
     expect(h.get('X-Verified-Person')).toBe('');
+    // No account: never a Google picture, over the spoofed header.
+    expect(h.get('X-Verified-Account')).toBe('0');
   });
 
   it('takes the share code a signed-in link opener names on ?s=', async () => {

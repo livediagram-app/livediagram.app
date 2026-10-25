@@ -146,7 +146,7 @@ the marketing site's "No Catch" night section:
 - **Interstitials** (the redirecting card) use the same frame with no pitch, the card centred, so a
   hand-off between pages never flashes a different ground.
 
-Signed-in status surfaces in the editor header via `<AuthControls>` (initial bubble + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
+Signed-in status surfaces in the editor header via `<AuthControls>` (the account's Google picture over its initial, from the ID token's `picture` claim, + Sign out menu). Signed-out users see a "Sign in" link in the same slot. Neither blocks the editor — they're purely informational.
 
 ## Identity display name
 
@@ -266,3 +266,18 @@ Signing in never moves a document in This Browser by itself ([Offline Mode → A
 - The single persistence boundary (`apps/editor/lib/api-client.ts` against the api worker, see [11-api.md](../015-api/api.md)) is the same in guest and authenticated mode. Both send `Authorization: Bearer`: the guest token from `localStorage` for guests, the in-memory access token for signed-in users. The api-client's module-level `setTokenProvider` is the single switch.
 - Page script never holds the client secret or the refresh token: both live only in the api worker and its HttpOnly cookie, and the access token lives only in memory. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 - The api worker's degraded-mode behaviour matters: with `ACCOUNTS_URL` or `API_RESOURCE` unset, it resolves no owner for any request, so nobody can keep a document on the server. The editor still opens and documents in This Browser still work, but a real deployment, even a guest-only one, configures the accounts site.
+
+### Google pictures (liveworkspace/docs/accounts.md "Profile pictures")
+
+A Google sign-in's picture travels with the person data this app already reads, never by a request of its own:
+
+- **Own chrome.** The token answer's `user.picture` (the ID token's `picture`) and the `ld_account_picture`
+  cookie draw the header avatar and the person's own presence row, whatever **Show My Google Picture** says.
+  `user.pictureHidden` (the `picture_hidden` claim) keeps it out of everything others see.
+- **Presence.** The editor says `hello` with its picture unless hidden. The api stamps `X-Verified-Account`
+  on the room upgrade (a `user_…` grant subject only, never a guest, a link visitor or a spoofed header);
+  the room keeps a picture only from such a session and only when it is a Google picture URL
+  (`isProfilePictureUrl`, refused whole), and sends the roster's pictures only to account sessions: a guest's
+  roster has every picture taken out. A switch flipped mid-session reaches the room on the next connect.
+- **Participants.** `GET /api/participants/<id>` answers `picture` only to a signed-in caller.
+- **Drawing.** Every avatar is the shared `PictureDisc` (fixed size, lazy, no referrer, initials underneath).

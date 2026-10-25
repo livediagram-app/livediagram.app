@@ -5,6 +5,7 @@
 
 import {
   capWorkbenchRole,
+  isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livediagram/api-schema';
@@ -104,6 +105,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39): how the room tells one person's sessions
     // from everyone else's without holding their id. Empty = none.
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // Whether a verified account holds this session (not a guest, a link visitor or an API token's CLI, which
+    // reaches the room as its account but draws no avatars): only such a session may publish a Google picture
+    // and be sent others' (liveworkspace/docs/accounts.md "Profile pictures"). Set on every path, like the rest.
+    forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
     forwarded.headers.set('X-Verified-Document', id);

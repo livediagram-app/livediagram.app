@@ -28,6 +28,7 @@ describe('verifiedSessionOf', () => {
       tabScope: 't1',
       shareCode: null,
       personTag: 'p',
+      account: false,
       networkTag: 'n',
       workbenchPairing: 'w',
       adderKey: 'a',

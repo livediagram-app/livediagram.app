@@ -8,6 +8,9 @@
 // that knows which presence belongs to which socket, so it excludes it here.
 // Presence comes off each socket's attachment (deserialized once per
 // socket, then reused for every recipient's roster).
+//
+// Google pictures go only to account sessions (liveworkspace/docs/accounts.md "Profile pictures"): a guest or an
+// anonymous share-link visitor gets the same roster with every picture removed, so the URL never reaches them.
 import {
   agentRosterFor,
   type AgentPresenceRecord,
@@ -20,6 +23,8 @@ export type RosterEntry = {
   ws: WebSocket;
   presence: ParticipantPresence | null;
   personTag: string | null;
+  // A verified account holds this socket: only such a recipient is sent others' pictures.
+  account?: boolean;
 };
 
 type RosterFrame = {
@@ -36,7 +41,7 @@ export function* rosterFrames(
   const sessions: RosterSession[] = entries.flatMap(({ presence, personTag }) =>
     presence ? [{ presenceId: presence.id, personTag }] : [],
   );
-  for (const { ws, presence: self, personTag } of entries) {
+  for (const { ws, presence: self, personTag, account } of entries) {
     const agents = agentRosterFor(
       self ? { presenceId: self.id, personTag } : null,
       sessions,
@@ -45,7 +50,12 @@ export function* rosterFrames(
     const participants: ParticipantPresence[] = [];
     for (const { ws: peer, presence } of entries) {
       if (peer === ws || !presence) continue;
-      participants.push(presence);
+      if (account || presence.picture === undefined) {
+        participants.push(presence);
+        continue;
+      }
+      const { picture: _hidden, ...withoutPicture } = presence;
+      participants.push(withoutPicture);
     }
     yield { ws, participants, agents };
   }

@@ -1763,6 +1763,7 @@ export class DocumentRoom extends DurableObject<Env> {
         ws,
         presence: session?.presence ?? null,
         personTag: session?.personTag ?? null,
+        account: session?.account === true,
       });
     }
     // Agent entries past their expiry never reach a frame; the store drops them on its next sweep (PR30).

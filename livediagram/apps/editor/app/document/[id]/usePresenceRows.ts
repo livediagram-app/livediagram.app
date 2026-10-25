@@ -5,6 +5,7 @@
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import {
   useLocalBesideTab,
   useRemoteBesideTabs,
@@ -111,13 +112,20 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in each person's other pane.
   const remoteBesideTabs = useRemoteBesideTabs();
   const selfBesideTabId = useLocalBesideTab();
+  // Our own row shows our Google picture to us whatever the switch says: it is our screen
+  // (liveworkspace/docs/accounts.md "Profile pictures").
+  const ownPicture = useDeferredAuth().user?.picture ?? null;
+  const shownSelf = useMemo(
+    () => (ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant),
+    [ownPicture, selfParticipant],
+  );
   const participantsByTab = foldAgentPresence({
     participantsByTab: buildParticipantsByTab({
       documentShareable,
       documentTeamId,
       agentsPresent: liveAgents.length > 0,
       activeId,
-      selfParticipant,
+      selfParticipant: shownSelf,
       tabs,
       remoteTabFocus,
       remoteBesideTabs,
@@ -128,7 +136,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       now: presenceClock.now,
     }),
     agents: liveAgents,
-    selfParticipant,
+    selfParticipant: shownSelf,
     activeId,
     tabIds: tabs.map((tab) => tab.id),
     now: presenceClock.now,

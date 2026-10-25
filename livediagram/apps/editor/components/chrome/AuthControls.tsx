@@ -28,7 +28,7 @@ import {
   Glyph,
   useMenu,
   useMenuButton,
-  GlyphDisc,
+  PictureDisc,
 } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -110,13 +110,17 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          <GlyphDisc
+          {/* The Google picture when there is one, always on our own screen (liveworkspace/docs/accounts.md
+              "Profile pictures"). */}
+          <PictureDisc
+            pictureUrl={user?.picture}
+            name={displayName}
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
             className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </GlyphDisc>
+          </PictureDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>
