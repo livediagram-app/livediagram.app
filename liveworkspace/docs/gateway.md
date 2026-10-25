@@ -50,7 +50,11 @@ account does not have.
 5. Give the status Worker the `global_fetch_strictly_public` compatibility flag and drop its `PLATFORM` binding to
    the gateway, so its checks of liveworkspace.app go out and come back in through the zone's routes
    ([status.md](status.md#where-the-checks-go)).
-6. Delete `apps/gateway`, its two Workers and this page.
+6. In the `liveworkspace` Google Cloud project ([drive.md](drive.md#google)): point the Branding links (home,
+   privacy, terms) and the Drive UI integration's Open URL at `https://liveworkspace.app`, and add
+   `https://staging.liveworkspace.app` to the client's JavaScript origins, with its `/api/auth/callback/google`
+   and `/drive/connected` as redirect URIs. liveworkspace.app's own are listed already.
+7. Delete `apps/gateway`, its two Workers and this page.
 
 Every Worker behind the gateway (and livediagram's, on its own stand-ins) carries the `global_fetch_strictly_public`
 compatibility flag: without it a Worker's `fetch()` to another Worker's workers.dev address on this account fails with
