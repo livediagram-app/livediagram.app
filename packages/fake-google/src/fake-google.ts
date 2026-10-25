@@ -1,9 +1,9 @@
 // FakeGoogle: an in-memory stand-in for the Google endpoints the Drive mirror
-// talks to (docs/specs/022-drive-mirror/blueprints/drive-mirror.md), so every
+// talks to (liveworkspace/docs/drive.md), so every
 // test proves the mirror without real Google credentials.
 //
 //   - OAuth: POST /token (authorization_code, refresh_token) and POST /revoke.
-//   - Drive v3: about (the user's permissionId), changes (startPageToken, list), files (list, get, alt=media,
+//   - Drive v3: about (the user's permissionId), changes (startPageToken, list, watch), channels.stop, files (list, get, alt=media,
 //     create, update, delete), uploads (multipart, resumable).
 //   - `fields` is honoured; `q` supports what the mirror sends.
 //   - `user*` methods act as the person in Drive's own UI.
@@ -19,6 +19,19 @@ const ACCESS_TOKEN_TTL_S = 3600;
 const DEFAULT_FILE_FIELDS = 'kind,id,name,mimeType';
 const DEFAULT_PAGE_SIZE = 100;
 const MAX_PAGE_SIZE = 1000;
+
+// Google's ceiling for a changes channel: a week.
+const CHANNEL_TTL_MS = 7 * 24 * 3600 * 1000;
+
+export type WatchChannel = {
+  id: string;
+  type: 'web_hook';
+  address: string;
+  token: string;
+  expiration: string;
+  resourceId: string;
+  user: string;
+};
 
 type Grant = { user: string; refreshToken: string; revoked: boolean };
 type AccessToken = { user: string; grant: Grant; expiresAt: number };
@@ -78,6 +91,8 @@ export class FakeGoogle {
       query: URLSearchParams;
     }
   >();
+  // Open changes channels by id: what a test pushes to.
+  readonly channels = new Map<string, WatchChannel>();
   private counter = 0;
   private readonly now: () => number;
   omitRefreshToken: boolean;
@@ -384,6 +399,39 @@ export class FakeGoogle {
         user: { kind: 'drive#user', permissionId: user, emailAddress: `${user}@example.test` },
       };
       return jsonResponse(200, pickFields(about, parseFields(fields)));
+    }
+
+    // Push notifications: a channel is recorded, never called; a test posts to the receiver itself.
+    if (path === '/drive/v3/changes/watch' && method === 'POST') {
+      const token = Number(url.searchParams.get('pageToken'));
+      if (!this.store.isValidPageToken(token))
+        return driveError(400, 'invalid', 'Invalid page token');
+      const body = (await request.json()) as Partial<WatchChannel>;
+      if (body.type !== 'web_hook' || !body.id || !body.address?.startsWith('https://')) {
+        return driveError(400, 'invalid', 'Invalid channel');
+      }
+      const channel: WatchChannel = {
+        id: body.id,
+        type: 'web_hook',
+        address: body.address,
+        token: body.token ?? '',
+        expiration: String(body.expiration ?? this.now() + CHANNEL_TTL_MS),
+        resourceId: `res-${++this.counter}`,
+        user,
+      };
+      this.channels.set(channel.id, channel);
+      const { user: _user, ...answer } = channel;
+      return jsonResponse(200, { kind: 'api#channel', ...answer });
+    }
+
+    if (path === '/drive/v3/channels/stop' && method === 'POST') {
+      const body = (await request.json()) as { id?: string; resourceId?: string };
+      const channel = body.id ? this.channels.get(body.id) : undefined;
+      if (!channel || channel.resourceId !== body.resourceId || channel.user !== user) {
+        return driveError(404, 'notFound', 'Channel not found');
+      }
+      this.channels.delete(channel.id);
+      return new Response(null, { status: 204, headers: CORS });
     }
 
     if (path === '/drive/v3/changes/startPageToken' && method === 'GET') {

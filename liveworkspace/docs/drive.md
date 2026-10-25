@@ -102,11 +102,15 @@ allows `http://localhost:3000` and each app's local port block.
 | Item moved to another folder     | File moved                                                                                 |
 | Item moved to the Trash          | File moved to Drive's bin                                                                  |
 | Item restored from the Trash     | File restored from the bin (re-created if it is gone)                                      |
-| Item purged                      | File permanently deleted, if still in the bin                                              |
+| Item purged                      | File stays in Drive's bin, which empties it after 30 days (see below)                      |
 | Item moved into a team           | File moved to Drive's bin (the item left their own work)                                   |
 | Item moved out of a team         | File created (or restored)                                                                 |
 | Folder created / renamed / moved | Folder created / renamed / moved                                                           |
 | Folder deleted                   | Its contents move to the parent (as the index does), then the empty folder goes to the bin |
+
+The service never deletes a file outright. The index answers a purged item and one moved into a team alike (gone
+from the person's own work), so both go to Drive's bin, where a way back (out of the team) restores the file and
+Drive empties the rest after 30 days; the row is forgotten when Drive reports the file removed.
 
 ## Inbound: Drive to liveworkspace
 
@@ -151,7 +155,7 @@ under its nearest mirrored ancestor, and the item moves into it.
 
 ## Cadence
 
-Named constants in `@liveworkspace/drive` (`cadence.ts`):
+Named constants in `@liveworkspace/drive` (`constants.ts`):
 
 - **Change signals.** The index tells the service after any change to a connected person's personal item or folder
   (created, renamed, moved, trashed, restored, purged, shared into or out of a team, or a content save, which reaches
@@ -265,19 +269,48 @@ liveworkspace id, the Drive file id, the last written name / parent / trashed / 
 last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs passes. A D1-free service: the index's
 `drive_mirrored` flag (below) is the only cross-person record.
 
-**Talking to the index.** Through its `INDEX` service binding, with its own key, `INDEX_KEY_DRIVE`, which may act as
-any person, across every app, on that person's own personal items and folders only. The index keeps a
-`drive_mirrored` flag per person, set and cleared by the service on connect and disconnect, and sends the change
-signal only for flagged people, so nobody else costs anything.
+## Contracts
 
-**Talking to the apps.** Through each app's existing internal door, `<APP_ORIGIN_<APP>>/api/internal/items/…`, with
-`DRIVE_KEY_<APP>` (the app's `DRIVE_KEY`):
+### The index
 
-- `GET /:id/export?format=file` answers the envelope (`Content-Type` the app's MIME type, `ETag` its version), built
-  in the item's Durable Object from the same read a copy makes (`exportCopy`). `format=svg` is the existing preview.
-- `POST /import` `{ owner, folderId, name, file }` makes a new item from an envelope of that app's kind, registers it
-  in the index, and answers `{ id }`. It refuses another app's kind (`400 wrong_kind`) and a file over the app's
-  item limits (`413`).
+The service reaches the index through its `INDEX` service binding.
+
+- **Acting as the person.** The index's ordinary person routes (`/api/index/…`, the same ones `@liveworkspace/index-client`
+  calls), with `Authorization: Bearer <INDEX_KEY_DRIVE>`, `X-Index-App: drive` and `X-Index-Person: <account id>`.
+  The index takes this as the person (`delegatedPersonOf`), with two differences from an app's delegate: lists are
+  not forced to one app (an `app` filter, if given, still applies), and only the person's **personal** items are
+  reachable, never a team's or one shared with them, by read or write (a team item answers `404`). Folders are the
+  person's own tree, as for any caller. `X-Index-Teams` is ignored for this key. A guest id is refused (`403`).
+- **The flag.** `PUT /app/people/:id/drive` and `DELETE /app/people/:id/drive` (same key) set and clear the person's
+  `drive_mirrored` flag (`204`); `GET` answers `{ mirrored }`. Purging a person clears it.
+- **The change signal.** After any write that changes a flagged person's personal item or folder, the index calls
+  its `DRIVE` service binding, after the response (`waitUntil`):
+  `POST /app/changes` `{ personId, at }` with `Authorization: Bearer <DRIVE_KEY_INDEX>`. One call per person per
+  write request, whatever it changed: an item made, renamed, moved (between folders, or into or out of a team),
+  trashed, restored, copied or purged; a folder made, renamed, moved or deleted; a summary push that raised an
+  item's `updatedAt`. The signal names no item; a pass reads the whole picture. A failed call is logged
+  (`index: drive-signal failed`) and dropped: the fallback check catches up. Without the binding nothing is sent.
+
+### The apps
+
+Each app's internal door (`@liveworkspace/index-app` `handleInternalItems`), at
+`<APP_ORIGIN_<APP>>/api/internal/items/…`, accepts `Authorization: Bearer <DRIVE_KEY>` (the app's `DRIVE_KEY`
+secret, the service's `DRIVE_KEY_<APP>`) on exactly these two routes, alongside the keys each already takes:
+
+- **Export the file.** `GET /:id/export?format=file`, `If-None-Match` optional. The handler's `export(itemId, query)`
+  gets `format: 'file'` and answers `{ status: 'ok', body, contentType, version }` with `body` the app's whole-item
+  envelope as JSON text, `contentType` the app's MIME type ([The file](#the-file)), and `version` the content's last
+  save (epoch ms). The envelope's `exportedAt` is that version, so unchanged content is byte-identical. Built in the
+  item's Durable Object from the same read a copy makes (`exportCopy`). `304` when unchanged, `404` when gone.
+- **Import a file.** `POST /import`, JSON `{ owner, folderId, name, file }`: `owner` an account id, `folderId` a
+  folder of theirs or null, `name` the new item's name, `file` the envelope text. The handler `import(input)` makes
+  a new item for `owner` from it, with fresh ids throughout (tab ids and links remapped as a copy remaps them),
+  registers it in the index as `owner`'s personal item in `folderId`, and answers `201 { id }`. It refuses an
+  envelope of another kind or that doesn't parse (`400 invalid_file`) and one past the app's item limits
+  (`413 too_large`).
+
+`@liveworkspace/drive` holds the four kinds, MIME types and extensions (`APP_FILE_FORMATS`), so the service and every
+app name them from one place.
 
 ## Limits and cost
 
