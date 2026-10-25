@@ -231,7 +231,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     theme: 'lavender',
     finish: 'professional',
     font: 'roboto-slab',
-    pattern: 'isometric',
+    pattern: 'crosshatch',
   },
   {
     id: 'garden',

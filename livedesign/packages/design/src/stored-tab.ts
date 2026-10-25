@@ -4,6 +4,7 @@
 // is added once and reaches every entry point.
 import { upgradeLegacyLinks } from './legacy-links';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
+import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
@@ -17,8 +18,9 @@ export function migrateStoredTab<
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
-  const schemed = migrateRetiredTheme(
-    migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab))),
+  // A retired background pattern (./retired-patterns) moves onto its replacement, after the whiteboard sets one.
+  const schemed = migrateRetiredPattern(
+    migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the design rename (./legacy-links) are upgraded here too.

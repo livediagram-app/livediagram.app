@@ -39,7 +39,6 @@ const STATIC_PATTERNS: Record<Exclude<BackgroundPattern, AnimatedBackgroundPatte
   diagonal: true,
   waves: true,
   bricks: true,
-  isometric: true,
   hexagonal: true,
   engineering: true,
   checkerboard: true,

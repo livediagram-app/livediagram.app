@@ -56,7 +56,7 @@ The table is in the order the carousel shows them after the Mashup card, six to 
 | Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
 | Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
 | Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab   | Isometric    | (kept)           |
+| Studio          | Lavender | Professional | Roboto Slab   | Crosshatch   | (kept)           |
 | Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
 | Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
 | Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
