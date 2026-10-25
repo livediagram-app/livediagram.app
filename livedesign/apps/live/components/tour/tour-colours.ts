@@ -2,6 +2,7 @@
 // panels' palette (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (the Pages tour, the
 // element tours, Show Me) reads as part of the tab it runs on. Pure.
 import type { CSSProperties } from 'react';
+import { BRAND_RAMP } from '@livedesign/ui';
 import { contrastRatio, isLightColor, toneToContrast } from '@livedesign/design';
 
 // The palette colours a tour's card is painted in: its surface, border, ink, muted ink and accent.
@@ -34,8 +35,8 @@ export const BANNER_INK = LIGHT_INK;
 export const BANNER_FROM_CONTRAST = 5.9;
 export const BANNER_TO_CONTRAST = 7.6;
 // Sign-in's own gradient (brand-700, brand-800), for an accent that cannot be read as hex.
-const SIGN_IN_BANNER_FROM = '#0369a1';
-const SIGN_IN_BANNER_TO = '#075985';
+const SIGN_IN_BANNER_FROM = BRAND_RAMP[700];
+const SIGN_IN_BANNER_TO = BRAND_RAMP[800];
 
 export function bannerColours(accent: string): { from: string; to: string } {
   const from = toneToContrast(accent, BANNER_INK, 'light', BANNER_FROM_CONTRAST);
