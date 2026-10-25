@@ -21,11 +21,18 @@ export type ExplorerHostExtras = {
   sidebarLinks: readonly SidebarLink[];
   /** The filter's every-app choice ("All" by default). */
   allLabel: string;
+  /** Whether the "<app> | All" switch shows (Explorer's `showAppFilter`). */
+  showAppFilter: boolean;
   /** The host app's items kept only in this browser, where the host can read them (ThisBrowser.tsx). */
   thisBrowser: ThisBrowserHost | null;
 };
 
-const DEFAULTS: ExplorerHostExtras = { sidebarLinks: [], allLabel: 'All', thisBrowser: null };
+const DEFAULTS: ExplorerHostExtras = {
+  sidebarLinks: [],
+  allLabel: 'All',
+  showAppFilter: true,
+  thisBrowser: null,
+};
 const Ctx = createContext<ExplorerHostExtras>(DEFAULTS);
 
 export function useHostExtras(): ExplorerHostExtras {

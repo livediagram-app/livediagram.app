@@ -200,7 +200,7 @@ export function ExplorerPanel({
   ...props
 }: ExplorerPanelProps) {
   const extras = useMemo<ExplorerHostExtras>(
-    () => ({ sidebarLinks: [], allLabel: 'All', thisBrowser }),
+    () => ({ sidebarLinks: [], allLabel: 'All', showAppFilter: true, thisBrowser }),
     [thisBrowser],
   );
   return (

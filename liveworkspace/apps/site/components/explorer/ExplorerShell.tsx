@@ -543,6 +543,8 @@ export function ExplorerShell() {
           sidebarLinks={sidebarLinks}
           thisBrowser={thisBrowser}
           allLabel="All Apps"
+          // In no app there is no app to narrow to: every app's work, and no switch naming one.
+          showAppFilter={arrived.app !== null}
           renderAppLogo={renderAppLogo}
           // A guest is named people too: accounts answers this browser's guest for names alone.
           accounts={accounts}

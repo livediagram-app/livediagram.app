@@ -240,8 +240,9 @@ const segment = (active: boolean) =>
 /** This app's items, or every app's: the app's own name ("livediagram") beside All. */
 export function FilterToggle() {
   const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
-  const { allLabel } = useHostExtras();
+  const { allLabel, showAppFilter } = useHostExtras();
   const choose = (next: AppFilter) => () => setFilter(next);
+  if (!showAppFilter) return null;
   // Each choice wears its logo: the app's, and the platform's for every app.
   const logo = (of: AppFilter) => {
     const node = renderAppLogo?.(of === 'app' ? app : 'all');

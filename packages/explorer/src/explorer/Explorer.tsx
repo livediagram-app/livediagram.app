@@ -158,6 +158,9 @@ export type ExplorerProps = {
   thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
   allLabel?: string;
+  /** Whether the "<app> | All" switch shows. False where the Explorer is in no app (liveworkspace.app reached from
+   *  no app): `filter` stays the host's, and there is no app to switch to. Shown when omitted. */
+  showAppFilter?: boolean;
   /** A sentence said once on arrival, as a toast (why the person was sent here: a revoked link, say). */
   arrivalNotice?: string | null;
   /** liveworkspace accounts, for people's names (the Owner column, What Happened, the Timeline: one cache). On
@@ -305,6 +308,7 @@ function ExplorerInner({
   sidebarLinks,
   thisBrowser,
   allLabel,
+  showAppFilter,
   arrivalNotice,
   accounts,
   signedIn,
@@ -332,9 +336,10 @@ function ExplorerInner({
     () => ({
       sidebarLinks: sidebarLinks ?? [],
       allLabel: allLabel ?? 'All',
+      showAppFilter: showAppFilter ?? true,
       thisBrowser: thisBrowser ?? null,
     }),
-    [sidebarLinks, allLabel, thisBrowser],
+    [sidebarLinks, allLabel, showAppFilter, thisBrowser],
   );
   return (
     <ExplorerProvider

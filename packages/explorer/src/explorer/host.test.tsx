@@ -28,6 +28,25 @@ describe('a host’s own chrome', () => {
     vi.unstubAllGlobals();
   });
 
+  it('has no app switch where it is in no app', async () => {
+    render(
+      <Explorer
+        app="liveplanner"
+        client={createFakeIndex().client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/open/${i.id}`}
+        onCreate={vi.fn()}
+        allLabel="All Apps"
+        filter="all"
+        showAppFilter={false}
+      />,
+    );
+    await screen.findAllByRole('heading', { level: 1 });
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /liveplanner/ })).toBeNull();
+  });
+
   it('says the host’s word on arrival once, as a toast', async () => {
     render(
       <Explorer
