@@ -95,7 +95,6 @@ function BoxedElementViewImpl({
   onSetWebRows,
   onSetPointerTip,
   onSetHeroCaptionLine,
-  isoDepth,
   stackGlide,
   chartPalette,
   onCancelEdit,
@@ -349,11 +348,6 @@ function BoxedElementViewImpl({
       // so its buttons stay reachable.
       role={elementRole(element)}
       aria-label={elementAriaLabel(element)}
-      // Frames are tagged so isometric mode can settle them just under the
-      // base plane (globals.css [data-iso] rule): a frame's big surface is
-      // coplanar with its contents under preserve-3d, and coplanar layers
-      // z-fight (flicker) while the camera orbits.
-      data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
@@ -376,8 +370,6 @@ function BoxedElementViewImpl({
         wrapperAnimClass
       } ${variant.className} ${cursor}`}
       style={{
-        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
-        ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,

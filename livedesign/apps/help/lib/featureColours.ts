@@ -67,7 +67,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'format-painter': '#8b5cf6',
   laser: '#ef4444',
   spotlight: '#f59e0b',
-  'isometric-mode': '#9333ea',
   // Palette → Elements
   write: '#0891b2',
   'embed-elements': '#e11d48',

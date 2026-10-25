@@ -180,8 +180,8 @@ const TEXT_PANELS: Record<
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
 // Markdown) open an editable view/copy panel; image formats
-// (PNG / SVG / PDF) open an options-and-download panel with the isometric +
-// background-pattern toggles. The main grid stays clean — no format-specific
+// (PNG / SVG / PDF) open an options-and-download panel with the
+// background-pattern toggle. The main grid stays clean — no format-specific
 // options bleed onto it.
 export function ExportTabDialog({
   tab,
@@ -294,7 +294,7 @@ export function ExportTabDialog({
     [windows],
   );
   const renderPreview = useCallback(
-    (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
+    (opts: { pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(tab, {
         ...opts,
         images: previewImages,
@@ -308,7 +308,7 @@ export function ExportTabDialog({
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
   const runImageExport = async (
     format: ImageFormat,
-    opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean },
+    opts: { pattern: boolean; hiddenLayers: boolean },
   ) => {
     if (busy) return;
     setBusy(true);

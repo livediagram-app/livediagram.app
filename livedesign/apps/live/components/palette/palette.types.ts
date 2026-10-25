@@ -10,7 +10,6 @@ export type CanvasTool =
   | 'spotlight'
   | 'eraser'
   | 'format'
-  | 'isometric'
   // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
   // Picking the tool does NOT start presenting; Start is a deliberate second
   // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
@@ -24,12 +23,12 @@ export type PaletteProps = {
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
   // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
-  // dropdown under Isometric. An action, not a tool: firing it leaves the
+  // dropdown, its last entry. An action, not a tool: firing it leaves the
   // current tool selected. Omit to hide the entry; exit stays on the zoom
   // dock (the only chrome left in zen).
   onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Eraser / Format / Laser / Spotlight).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one, so a tile per choice places
   // that choice rather than the factory default.

@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useLayoutEffect,
-  useRef,
-  type CSSProperties,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 // The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize", "The handles are always on
@@ -26,15 +19,11 @@ export const SelectionGripsContext = createContext<SelectionGripHosts | null>(nu
 
 export function SelectionGripsLayer({
   onHosts,
-  isoDepth,
   children,
 }: {
   // Receives the hosts once mounted (in a layout effect, so the portals fill before the first
   // paint) and null on unmount.
   onHosts: (hosts: SelectionGripHosts | null) => void;
-  // One past the top element's paint index, so isometric view lifts the layer above every
-  // element's stagger (globals.css [data-iso] [data-selection-grips]).
-  isoDepth?: number;
   // Grips the canvas draws itself (union handles, quick-connect pluses), under the portalled ones.
   children?: ReactNode;
 }) {
@@ -48,7 +37,7 @@ export function SelectionGripsLayer({
     <div
       data-selection-grips=""
       className="pointer-events-none absolute inset-0"
-      style={{ zIndex: SELECTION_GRIPS_Z_INDEX, '--iso-z': isoDepth } as CSSProperties}
+      style={{ zIndex: SELECTION_GRIPS_Z_INDEX }}
     >
       {children}
       {/* An arrow's grips are SVG in canvas coordinates, as in the arrow's own <svg>. */}
