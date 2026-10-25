@@ -9,6 +9,7 @@ import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
 import type { InboxHost, InboxLocalRows, InboxTelemetry } from '@liveworkspace/explorer';
 import { helpArticleHref } from './help-articles';
 import { getGuestSelfId } from './local-identity';
+import { inboxSnapshot } from './offline/inbox-snapshot';
 import { readOfflineActivity, type OfflineActivity } from './offline/offline-activity';
 import { track } from './telemetry';
 
@@ -73,7 +74,11 @@ export function explorerInboxHost(ownerId: string | null): InboxHost {
   return {
     localRows: async () => {
       if (!ownerId) return { actions: [], threads: [] };
-      return localInboxRows(await readOfflineActivity([ownerId, getGuestSelfId()]), ownerId);
+      const ids = [ownerId, getGuestSelfId()];
+      const rows = localInboxRows(await readOfflineActivity(ids), ownerId);
+      // The Explorer page on this address lists the same rows from the snapshot (lib/offline/inbox-snapshot.ts).
+      inboxSnapshot.publish(ids, rows);
+      return rows;
     },
     actionsHelpHref: helpArticleHref('assignedActions'),
     onTelemetry: trackInbox,

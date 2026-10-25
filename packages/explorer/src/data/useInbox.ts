@@ -3,7 +3,8 @@
 // The Inbox (GET /inbox): open actions and cards assigned to or by the person, unresolved threads they are in, and
 // forms with responses they haven't seen, across every app. One request per filter, shared by the sidebar's counts
 // (the Inbox's, and the Timeline's events since the person last looked) and the Inbox view. Beside it, the host's
-// own rows (items only this browser holds), marked `local`. Coming back to the browser tab reads it again, keeping
+// own rows (items only this browser holds), marked `local`, read again alone when the host says they changed
+// (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
 // what it had if that read fails: a slightly stale list beats an alarm.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -74,15 +75,29 @@ function merged(data: InboxResponse, local: InboxLocalRows): InboxData {
   };
 }
 
+type LocalRead = InboxHost['localRows'];
+
+type Held = {
+  key: string;
+  // The index's rows as read, and the host's beside them: merged for the view, so the host's alone can be read again.
+  raw: InboxResponse | null;
+  local: InboxLocalRows;
+  // The host's read that gave `local`: a host that reads for someone else (the person settled) is read again.
+  localFrom: LocalRead;
+  error: boolean;
+};
+
 export function useInbox(
   client: IndexClient,
   app: App,
   filter: AppFilter,
   host?: InboxHost,
 ): InboxState {
-  const [state, setState] = useState<{ key: string; data: InboxData | null; error: boolean }>({
+  const [state, setState] = useState<Held>({
     key: '',
-    data: null,
+    raw: null,
+    local: NO_LOCAL,
+    localFrom: undefined,
     error: false,
   });
   const [attempt, setAttempt] = useState(0);
@@ -93,34 +108,63 @@ export function useInbox(
   const key = `${filter}:${attempt}`;
   useEffect(() => {
     const controller = new AbortController();
+    const localFrom = hostRef.current?.localRows;
     Promise.all([
       client.inbox(filter === 'app' ? { app } : {}, { signal: controller.signal }),
       readLocal(hostRef.current, app, filter),
     ])
-      .then(([data, local]) => {
-        if (!controller.signal.aborted) setState({ key, data: merged(data, local), error: false });
+      .then(([raw, local]) => {
+        if (!controller.signal.aborted) setState({ key, raw, local, localFrom, error: false });
       })
       .catch((e: unknown) => {
         if (isAbort(e) || controller.signal.aborted) return;
         setState((prev) =>
-          prev.key === key && prev.data ? prev : { key, data: null, error: true },
+          prev.key === key && prev.raw
+            ? prev
+            : { key, raw: null, local: NO_LOCAL, localFrom, error: true },
         );
       });
     return () => controller.abort();
   }, [client, app, filter, key, refresh]);
   useReturnToTab(() => setRefresh((n) => n + 1));
+  // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
+  const localReads = useRef(0);
+  const rereadLocal = useCallback(() => {
+    const read = ++localReads.current;
+    const localFrom = hostRef.current?.localRows;
+    void readLocal(hostRef.current, app, filter).then((local) => {
+      if (read !== localReads.current) return;
+      setState((prev) => (prev.raw ? { ...prev, local, localFrom } : prev));
+    });
+  }, [app, filter]);
+  useEffect(
+    () => () => {
+      // Unmounted, or app and filter moved on: a read still out lands nowhere.
+      localReads.current++;
+    },
+    [rereadLocal],
+  );
+  // The host's rows changed (an offline item saved).
+  const subscribeLocal = host?.subscribeLocal;
+  useEffect(() => subscribeLocal?.(rereadLocal), [subscribeLocal, rereadLocal]);
+  // The host reads for someone else than the rows on screen were read for.
+  const localRows = host?.localRows;
+  const stale = state.raw !== null && state.localFrom !== localRows;
+  useEffect(() => {
+    if (stale) rereadLocal();
+  }, [stale, localRows, rereadLocal]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
   const clearTimelineNew = useCallback(
     () =>
       setState((prev) =>
-        prev.data && prev.data.timelineNew
-          ? { ...prev, data: { ...prev.data, timelineNew: 0 } }
-          : prev,
+        prev.raw && prev.raw.timelineNew ? { ...prev, raw: { ...prev.raw, timelineNew: 0 } } : prev,
       ),
     [],
   );
   const current = state.key === key ? state : null;
-  const data = current?.data ?? null;
+  const raw = current?.raw ?? null;
+  const local = current?.local ?? NO_LOCAL;
+  const data = useMemo(() => (raw ? merged(raw, local) : null), [raw, local]);
   const loading = !current;
   const error = current?.error ?? false;
   return useMemo(

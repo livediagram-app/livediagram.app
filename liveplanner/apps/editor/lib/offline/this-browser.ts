@@ -4,12 +4,15 @@
 // (offline-store.ts), and the id cache's one read of every record per page load rebuilds it (offline-ids.ts).
 
 import { thisBrowserPublisher } from '@liveworkspace/explorer/this-browser';
+import { inboxSnapshot } from './inbox-snapshot';
 import { localOpensOf } from './offline-opens';
 import type { OfflineProjectRecord } from './offline-store';
 
 const list = thisBrowserPublisher<OfflineProjectRecord>(
   'liveplanner',
   (opens) => localOpensOf(opens)?.lastOpenedAt ?? null,
+  // Each write may change the Inbox's rows too: the snapshot is worked out again once the store is quiet.
+  () => inboxSnapshot.schedule(),
 );
 
 export const thisBrowserItemOf = list.itemOf;

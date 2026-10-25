@@ -56,7 +56,9 @@ function ExplorerImpl({
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
-  const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
+  // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
+  const inboxOwner = accountUserId ?? guestId ?? null;
+  const inboxHost = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
 

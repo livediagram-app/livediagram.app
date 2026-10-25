@@ -351,6 +351,11 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that runs them lives.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
+- **The Inbox's This Browser rows** come from the app's snapshot in localStorage
+  (`liveworkspace:this-browser-inbox:<app>`, [one-explorer.md](one-explorer.md#the-explorer-on-each-apps-address)),
+  listed only when it names the person reading (`lib/explorer/inbox.tsx` `localInboxHost`) and heard as it changes.
+  Each opens in the app's editor on this origin, like any of the app's items. On liveworkspace.app there are none:
+  the snapshot is on the app's origin.
 - **Telemetry** goes to liveworkspace.app's `/api/telemetry`, always for the app (the service takes a page's
   events only for its own origin).
 - **Assets** load from `/_liveworkspace/…` on the same origin, which the router also forwards.
