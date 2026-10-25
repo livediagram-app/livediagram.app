@@ -41,7 +41,7 @@ BASE_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
 # skipped and a closed account's purge waits in pending_purges until it is set.
 INDEX_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
-TURNSTILE_SITE_KEY = ""
+TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 # The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
 TELEMETRY_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry"
 # Signing in on each app's own address (src/handoff.ts): the sign-in pages are served under the app's address, and
@@ -130,7 +130,7 @@ ENVIRONMENT = "staging"
 BASE_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
 INDEX_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
-TURNSTILE_SITE_KEY = ""
+TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 TELEMETRY_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry"
 SIGN_IN_ON_APP_ORIGINS = "true"
 GOOGLE_ON_APP_ORIGINS = "false"
