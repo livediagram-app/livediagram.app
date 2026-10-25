@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import {
   ownToggleSetter,
+  requestProfileHost,
   SETTINGS_DIALOG_CLASS,
   SETTINGS_DIALOG_SIZE,
   SettingsPanel,
@@ -105,7 +106,16 @@ export function SettingsDialog({
     focus || initialCategoryId ? 'app' : null,
   );
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
-  // and synced as here); the profile is set on liveworkspace.app.
+  // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
+  // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this
+  // editor's own presence follows it at once. Only where All is offered: a guest, a workbench and a self-hosted
+  // editor have no liveworkspace account to set it on.
+  const identityName = signedIn && user ? (user.fullName ?? user.username ?? user.email ?? '') : '';
+  const profile = useMemo(
+    () =>
+      allowAll ? requestProfileHost(settingsRequest, { accountName: identityName }) : undefined,
+    [allowAll, identityName],
+  );
   const account = useMemo<AccountHost>(
     () => ({
       shared: {
@@ -121,12 +131,12 @@ export function SettingsDialog({
               joined: user.createdAt,
             }
           : null,
-      profileHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
+      ...(profile ? { profile } : {}),
       // Sign-in methods and devices are liveworkspace.app's session's.
       securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
       emails: emailEnabled,
     }),
-    [settings, model, onChange, emailEnabled, signedIn, user],
+    [settings, model, onChange, emailEnabled, signedIn, user, profile],
   );
 
   // Which categories people actually open is the signal for whether this

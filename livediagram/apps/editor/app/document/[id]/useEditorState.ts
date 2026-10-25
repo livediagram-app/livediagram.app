@@ -1,5 +1,6 @@
 'use client';
 
+import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -929,6 +930,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
+  // A name or colour saved in Settings › Profile (docs/specs/007-editor/user-preferences.md, "This app or All") is
+  // this editor's own at once: its cursor, name tag and presence avatar in the room follow it, with no reload. It is
+  // already stored, so the participant write above is not sent again for it.
+  useEffect(
+    () =>
+      onProfileSaved((saved) => {
+        const current = selfParticipantRef.current;
+        if (current.id === 'self') return;
+        const next = participantWithProfile(current, saved);
+        if (!next) return;
+        lastPersistedSelfRef.current = { name: next.name, color: next.color };
+        setSelfParticipant(next);
+      }),
+    [],
+  );
   // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.

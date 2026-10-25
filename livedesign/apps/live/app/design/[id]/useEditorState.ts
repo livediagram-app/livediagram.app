@@ -1,5 +1,6 @@
 'use client';
 
+import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { pageStep } from '@/lib/page-step';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
@@ -843,6 +844,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
+  // A name or colour saved in Settings › Profile (docs/specs/007-editor/user-preferences.md, "This app or All") is
+  // this editor's own at once: its cursor, name tag and presence avatar in the room follow it, with no reload. It is
+  // already stored, so the participant write above is not sent again for it.
+  useEffect(
+    () =>
+      onProfileSaved((saved) => {
+        const current = selfParticipantRef.current;
+        if (current.id === 'self') return;
+        const next = participantWithProfile(current, saved);
+        if (!next) return;
+        lastPersistedSelfRef.current = { name: next.name, color: next.color };
+        setSelfParticipant(next);
+      }),
+    [],
+  );
   // In-place recovery when the room can't replay our reconnect gap
   // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
