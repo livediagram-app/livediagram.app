@@ -108,11 +108,11 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 ### More
 
-| Row          | Opens                                  | Children                                    | Badge                   |
-| ------------ | -------------------------------------- | ------------------------------------------- | ----------------------- |
-| Library      | Nothing: the row expands and collapses | Recent, Favourites, Unsorted, Image Gallery | None                    |
-| This Browser | `/explorer/offline`                    | None                                        | Designs in this browser |
-| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                        | None                    |
+| Row          | Opens                                  | Children                          | Badge                   |
+| ------------ | -------------------------------------- | --------------------------------- | ----------------------- |
+| Library      | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None                    |
+| This Browser | `/explorer/offline`                    | None                              | Designs in this browser |
+| Trash        | `/explorer/trash` ([Trash](trash.md))  | None                              | None                    |
 
 - **This Browser** shows only while this browser holds at least one offline design, or while its view is the current
   one (so the highlighted row never vanishes under the reader). Its designs are the reader's own

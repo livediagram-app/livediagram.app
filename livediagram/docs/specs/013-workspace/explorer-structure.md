@@ -9,11 +9,12 @@ serves no `/explorer` page of its own; its links to it go through `explorerHref`
 
 ## Views
 
-Its views are Home, My Work, Unsorted, Recent, Favourites, Shared With Me, Trash, Inbox, Timeline, Invites, Search,
+Its views are Home, My Work, Recent, Favourites, Shared With Me, Trash, Inbox, Timeline, Invites, Search,
 a folder, a team's library and the Library's pages, at `/explorer/<view>` ([its README](../../../../packages/explorer/README.md)
-"Views"). Older addresses still lead somewhere, so links already out there keep working: `/explorer/profile` opens
+"Views"). There is no Unsorted view: an item in no folder sits at the root of My Work, or of its
+team, which lists it. Older addresses still lead somewhere, so links already out there keep working: `/explorer/profile` opens
 Settings on Notifications (every notification email carries it as its unsubscribe link), `/explorer/activity` the
-Inbox, `/explorer/dynamic` My Work and `/explorer/generated` the Made by AI filter.
+Inbox, `/explorer/unsorted` and `/explorer/dynamic` My Work and `/explorer/generated` the Made by AI filter.
 
 On livediagram's address the page reads as livediagram: New makes a Canvas, items of livediagram open on the same
 origin and other apps' items on their own sites, and the filter shows "this app's items" or "All Apps".

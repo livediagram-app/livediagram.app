@@ -130,7 +130,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], string>> = {
   all: 'explorer/my-work',
   folder: 'explorer/folders',
   team: 'explorer/team-spaces',
-  unsorted: 'explorer/unsorted',
   recent: 'explorer/recent',
   favourites: 'explorer/explorer-page',
   shared: 'explorer/shared-with-you',
@@ -241,6 +240,8 @@ export function arrivalNotice(search: string, app: AppName | null): string | nul
 // notification email's unsubscribe link) land somewhere real. Each replaces itself with its successor.
 export const RETIRED_TARGETS = {
   dynamic: '/explorer/all',
+  // My Work's root already lists what is in no folder.
+  unsorted: '/explorer/all',
   generated: '/explorer/search?q=made-by%3Aai',
   activity: '/explorer/inbox',
   tags: '/explorer',

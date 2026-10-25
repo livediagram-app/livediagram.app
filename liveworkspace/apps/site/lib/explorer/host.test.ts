@@ -122,6 +122,7 @@ describe('addresses the Explorer used to have', () => {
     );
     expect(retiredTarget('activity', '?from=liveplanner')).toBe('/explorer/inbox?from=liveplanner');
     expect(retiredTarget('generated', '')).toBe('/explorer/search?q=made-by%3Aai');
+    expect(retiredTarget('unsorted', '?from=livedesign')).toBe('/explorer/all?from=livedesign');
   });
 
   it("says why a revoked link sent the person here, in the app's words", () => {

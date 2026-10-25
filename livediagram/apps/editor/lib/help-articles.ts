@@ -102,7 +102,6 @@ export const HELP_ARTICLES = {
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
   myWork: 'explorer/my-work',
   recent: 'explorer/recent',
-  unsorted: 'explorer/unsorted',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
@@ -377,10 +376,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   recent: {
     title: 'Learn about Recent',
     description: 'Your most recently opened canvases, personal and team, in one list.',
-  },
-  unsorted: {
-    title: 'Learn about Unsorted',
-    description: 'Every canvas that is in no folder, yours and your teams’.',
   },
   teamSpaces: {
     title: 'Learn about team spaces',

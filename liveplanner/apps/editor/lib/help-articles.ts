@@ -72,7 +72,6 @@ export const HELP_ARTICLES = {
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
   myWork: 'explorer/my-work',
   recent: 'explorer/recent',
-  unsorted: 'explorer/unsorted',
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',
   timeline: 'explorer/timeline',
@@ -245,10 +244,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   recent: {
     title: 'Learn about Recent',
     description: 'Everything you opened, newest first.',
-  },
-  unsorted: {
-    title: 'Learn about Unsorted',
-    description: 'Every plan that is in no folder, yours and your teams’.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',

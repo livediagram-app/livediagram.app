@@ -1763,7 +1763,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

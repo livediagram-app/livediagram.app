@@ -1,8 +1,8 @@
 'use client';
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Timeline, Shared With Me), Spaces
-// (My Work and its folders, each team and its folders), and More (the Library's Recent, Favourites and
-// Unsorted, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
+// (My Work and its folders, each team and its folders), and More (the Library's Recent and Favourites, then
+// the Trash). Rows carry toned tiles and the current row is a raised pill, in the
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
 //
 // It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
@@ -45,7 +45,6 @@ import {
   TimelineIcon,
   TrashIcon,
   TreeChevronIcon,
-  UnsortedIcon,
 } from '../ui/icons';
 import { inboxCount } from '../data/useInbox';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -86,7 +85,6 @@ const INDENT_STEP = 16;
 const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
   'favourites',
-  'unsorted',
   'gallery',
   'shape-libraries',
 ]);
@@ -609,13 +607,6 @@ export function Sidebar() {
             label="Favourites"
             selected={is({ kind: 'favourites' })}
             onActivate={() => navigate({ kind: 'favourites' })}
-            depth={1}
-          />
-          <SidebarRow
-            icon={<UnsortedIcon />}
-            label={SIDEBAR_LABELS.unsorted}
-            selected={is({ kind: 'unsorted' })}
-            onActivate={() => navigate({ kind: 'unsorted' })}
             depth={1}
           />
           {/* The host's Library pages (livediagram's), where it has them. */}

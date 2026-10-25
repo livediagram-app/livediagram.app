@@ -68,7 +68,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   all: 'myWork',
   folder: 'folders',
   team: 'teamSpaces',
-  unsorted: 'unsorted',
   recent: 'recent',
   favourites: 'explorerPage',
   shared: 'sharedWithYou',

@@ -118,13 +118,6 @@ export function viewList(
         belongs: (i) => live(i) && ofApp(i) && i.folderId === null && i.teamId === null,
         enabled: true,
       };
-    case 'unsorted':
-      return {
-        key: key('unsorted'),
-        load: items({ view: 'unsorted' }),
-        belongs: (i) => live(i) && ofApp(i) && i.folderId === null,
-        enabled: true,
-      };
     case 'recent':
       // The RECENT_LIMIT most recently opened, from one page with room to spare.
       return {
