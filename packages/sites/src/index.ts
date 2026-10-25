@@ -306,13 +306,15 @@ const EXPLORER_ARRIVAL_PARAMS = [
 ];
 
 /** Whether `site`'s Explorer has the view at `section` (the path under /explorer). This Browser reads one app's
- *  offline list on its own origin, and the Library is each app's own, so liveworkspace.app has neither. */
+ *  offline list on its own origin, so liveworkspace.app has none; the Library is where an app keeps one (on
+ *  liveworkspace.app, the last app's). */
 function explorerHasView(site: Site, section: string): boolean {
   const app = appOfSite(site.id);
-  const items = app ? APP_ITEMS[app] : null;
-  if (section === 'offline') return items?.offlinePath != null;
-  if (section === 'images') return items?.imagesPath != null;
-  if (section === 'shape-libraries') return items?.shapeLibrariesPath != null;
+  if (!app) return section !== 'offline';
+  const items = APP_ITEMS[app];
+  if (section === 'offline') return items.offlinePath !== null;
+  if (section === 'images') return items.imagesPath !== null;
+  if (section === 'shape-libraries') return items.shapeLibrariesPath !== null;
   return true;
 }
 

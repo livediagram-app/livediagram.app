@@ -100,9 +100,9 @@ describe("the site switcher's links on an Explorer page", () => {
       liveworkspace: 'https://liveworkspace.app/explorer',
       liveplanner: 'https://www.liveplanner.app/explorer/offline',
     });
-    // The Library is where the app keeps one.
+    // The Library is where the app keeps one (liveworkspace.app shows the last app's).
     expect(links('/explorer/images')).toEqual({
-      liveworkspace: 'https://liveworkspace.app/explorer',
+      liveworkspace: 'https://liveworkspace.app/explorer/images',
       livediagram: 'https://www.livediagram.app/explorer/images',
       liveplanner: 'https://www.liveplanner.app/explorer',
       livedocuments: 'https://www.livedocuments.app/explorer/images',

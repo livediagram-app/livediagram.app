@@ -41,9 +41,9 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
 - **What doesn't**: the query that only speaks on arrival or hands over to one app (`from`,
   `ended`, `trashed`, `title`, `convert`, `item`), and the hash. A view the target doesn't have
   opens its Explorer's Home instead: This Browser (`/explorer/offline`) on liveworkspace.app, which
-  can't read an app's offline list, and the Image Gallery (`/explorer/images`) or Shape Libraries
-  (`/explorer/shape-libraries`) where the target keeps none (liveworkspace.app keeps neither of its
-  own; the registry's `imagesPath` and `shapeLibrariesPath` say which apps do).
+  can't read an app's offline list, and an app's Image Gallery (`/explorer/images`) or Shape
+  Libraries (`/explorer/shape-libraries`) where it keeps none (the registry's `imagesPath` and
+  `shapeLibrariesPath` say which apps do; liveworkspace.app shows the last app's).
 - **How**: `explorerSwitchHref(pathname, search)` in `@liveworkspace/sites` turns the page's
   address into each site's link (null off the Explorer), and the shared `SiteSwitcher` takes it as
   `hrefFor`. Only the Explorer's header passes it; every other header's switcher still goes to each
