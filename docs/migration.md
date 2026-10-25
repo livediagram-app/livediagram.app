@@ -191,7 +191,7 @@ So the old id can't simply be reused, and the plan is:
 2. The new editor, on first load, looks for `livediagram:v2:self-id`. When it finds one, it sends the old id and
    its signature, with its own guest or account token, to a one-time door on livediagram's api. The door checks
    the signature with the old `GUEST_ID_HMAC_SECRET` (copied as a secret), or, for an unsigned id, accepts it only
-   when the guest's first sighting predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids. It
+   when the guest's `participants` row predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids. It
    then asks the index to merge `legacy_guest_<uuid>` into the caller, guest or account, and the editor removes
    the old keys. A retry merges nothing and is harmless.
 3. From then on the work is the browser's ordinary new guest's, or the account's if they were signed in (a
