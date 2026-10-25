@@ -27,7 +27,8 @@ Every page wears the marketing site's language, so moving between `/` and `/help
 ## Category art
 
 Every category has one **category scene**: a large SVG illustration of that area of the product at work, drawn from
-the help illustration kit (`components/illustrations/primitives.tsx`) so it shares the in-article figures' house
+the help illustration kit (`../packages/help-site/src/art/primitives.tsx`, with the stage and its motifs in
+`../packages/help-site/src/art/parts.tsx`) so it shares the in-article figures' house
 style and dark appearance. A scene is a composed moment, not a row of glyphs: real labels lifted from the editor
 (panel names, menu items, element text), people where the area is about people, and at least two accent hues
 beside the brand. It is drawn on a 400 by 220 stage. The scene always shows whole, and the stage's dotted ground runs far past
@@ -39,12 +40,40 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
   Contact (which has no card) has its own scene; an unknown slug renders nothing rather than a stand-in.
 - The art shows in two places: on a category's card (across its top, or beside the copy on a `wide` card), and
   on the right of the category page's header from `lg` up.
-- Each help centre draws its own scenes, in its own app and its own brand colours (`brand-*` classes, so a
-  scene follows the product's hue). A scene is never copied from another product's help centre: the art shows
-  this product's work, not a sibling's. The Getting Started scene in particular tells this product's first
+- Each help centre tells its own story, in its own brand colours (`brand-*` classes and `var(--color-brand-*)`, so
+  a scene follows the product's hue). A scene is never copied from another product's help centre. A scene whose
+  story is the same in every product (the policies, a share link's safeguards, a page that would not load, one
+  piece of work on three devices, one search box, the API from outside, the keyboard) is drawn once, in
+  `../packages/help-site/src/art/scenes/<slug>.tsx`, and takes the product's content as props: its words, its
+  share host, its formats, its work drawn on each screen. The app's `components/category-art/<slug>.tsx` binds it.
+  Every other scene is the product's own. The Getting Started scene in particular tells this product's first
   three steps, on three numbered cards.
 - Labels in a scene are the editor's own (real shortcuts, real API fields), checked against the articles.
 - The art is decorative (`aria-hidden`); the card's title and description say what the picture shows.
+
+livediagram's scenes:
+
+| Scene                | Where                | What it shows                                                                        |
+| -------------------- | -------------------- | ------------------------------------------------------------------------------------ |
+| Getting Started      | own                  | a first diagram: pick a starting point, add shapes and arrows, share the link        |
+| About                | own                  | three windows: a workshop's stickies, a diagram and a sketch                         |
+| Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom               |
+| Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                       |
+| Selection Modes      | own                  | the mode picker, a marquee and the laser's trail                                     |
+| Collaboration        | own                  | three people on one canvas: cursors, a live selection, a comment thread, Share       |
+| Explorer             | own                  | My Work and a grid of diagrams                                                       |
+| Tabs                 | own                  | one document's canvases stacked behind the tab bar                                   |
+| User Interface       | own                  | the editor with numbered callouts on its parts                                       |
+| Tools                | shared, with its own | Auto Layout tidying a sign-up flow, beside the shared appearance switch and Zen mode |
+| Tips and Tricks      | shared, with its own | the command palette on ⌘K (Zoom to fit, Next editor mode, Zen mode) and R, T and N   |
+| Search Panel         | shared, with its own | "roadmap" finding a canvas, a tab, a sticky note and a guide                         |
+| Supported Devices    | shared, with its own | a little diagram on a laptop, a tablet and a phone                                   |
+| Developers           | shared, with its own | `POST /api/documents` making a Service map                                           |
+| Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                               |
+| Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                |
+| Privacy and Security | shared, with its own | a livediagram.app share link with its safeguards                                     |
+| Self-Hosting         | shared, with its own | `~/livediagram` deploying api, editor and router to your own domain                  |
+| Policies             | shared, the same     | the terms and the privacy policy, sealed                                             |
 
 ## Home page
 

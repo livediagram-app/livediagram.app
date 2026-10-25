@@ -187,13 +187,19 @@ checker has to split ARC parameters properly — SVG allows the two flags to be
 glued to the following coordinate (`0 1 4.5` written `014.5`), and a naive number
 scan reads that as one value and then reports perfectly good glyphs as broken.
 
-The system has three layers, all under `apps/help`:
+The system has these layers. The kit, and every figure that is the same in each product that shows it, live
+once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
 
-- **`components/illustrations/primitives.tsx`** — the shared SVG kit (`Scene`,
+- **`../packages/help-site/src/art/primitives.tsx`** — the shared SVG kit (`Scene`,
   `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`, `Panel`, `Dialog`,
   `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`). Every figure composes
   from these so the house style (white panels, slate borders, sky-blue `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
+- **`../packages/help-site/src/art/illustrations/<area>.tsx`** — a figure that is the
+  same in every product that shows it (the colour and border controls, the layers
+  panel, undo and redo, the presentation tools): drawn once, and imported by an
+  article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
+  the app while it shows that product's own work, words or palette.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond

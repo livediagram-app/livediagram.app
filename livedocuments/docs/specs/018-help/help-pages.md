@@ -27,7 +27,8 @@ Every page wears the marketing site's language, so moving between `/` and `/help
 ## Category art
 
 Every category has one **category scene**: a large SVG illustration of that area of the product at work, drawn from
-the help illustration kit (`components/illustrations/primitives.tsx`) so it shares the in-article figures' house
+the help illustration kit (`../packages/help-site/src/art/primitives.tsx`, with the stage and its motifs in
+`../packages/help-site/src/art/parts.tsx`) so it shares the in-article figures' house
 style and dark appearance. A scene is a composed moment, not a row of glyphs: real labels lifted from the editor
 (panel names, menu items, element text), people where the area is about people, and at least two accent hues
 beside the brand. It is drawn on a 400 by 220 stage. The scene always shows whole, and the stage's dotted ground runs far past
@@ -39,12 +40,41 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
   Contact (which has no card) has its own scene; an unknown slug renders nothing rather than a stand-in.
 - The art shows in two places: on a category's card (across its top, or beside the copy on a `wide` card), and
   on the right of the category page's header from `lg` up.
-- Each help centre draws its own scenes, in its own app and its own brand colours (`brand-*` classes, so a
-  scene follows the product's hue). A scene is never copied from another product's help centre: the art shows
-  this product's work, not a sibling's. The Getting Started scene in particular tells this product's first
+- Each help centre tells its own story, in its own brand colours (`brand-*` classes and `var(--color-brand-*)`, so
+  a scene follows the product's hue). A scene is never copied from another product's help centre. A scene whose
+  story is the same in every product (the policies, a share link's safeguards, a page that would not load, one
+  piece of work on three devices, one search box, the API from outside, the keyboard) is drawn once, in
+  `../packages/help-site/src/art/scenes/<slug>.tsx`, and takes the product's content as props: its words, its
+  share host, its formats, its work drawn on each screen. The app's `components/category-art/<slug>.tsx` binds it.
+  Every other scene is the product's own. The Getting Started scene in particular tells this product's first
   three steps, on three numbered cards.
 - Labels in a scene are the editor's own (real shortcuts, real API fields), checked against the articles.
 - The art is decorative (`aria-hidden`); the card's title and description say what the picture shows.
+
+livedocuments's scenes:
+
+| Scene                | Where                | What it shows                                                                                               |
+| -------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Getting Started      | own                  | a first document: an article, slide or infographic page, writing on it, the share link                      |
+| About                | own                  | three windows: a slide, an article and an infographic                                                       |
+| Pages                | own                  | an article page, a slide and an infographic, labelled the way the editor labels them                        |
+| Canvas               | own                  | an article page and a slide on the canvas, a heading selected, the alignment guide, undo and zoom           |
+| Palette              | own                  | the strip on a slide (Write first), the Components category open, a Callout dropped on the slide            |
+| Selection Modes      | own                  | the tool picker's three bands with Select chosen, and the spotlight and laser on a slide                    |
+| Collaboration        | own                  | two people writing one article: cursors, a highlighted line, a comment thread, Share                        |
+| Explorer             | own                  | My Work and a grid of articles, slides and posters                                                          |
+| Tabs                 | own                  | one document's tabs stacked behind the tab bar                                                              |
+| User Interface       | own                  | the editor with numbered callouts: the menu, the palette strip, the bottom-right buttons, the tab bar       |
+| Tools                | shared, with its own | Markdown Import turning `#` and `-` lines into an article, beside the shared appearance switch and Zen mode |
+| Tips and Tricks      | shared, with its own | the command palette (Slide Deck, Fit to Screen, Zen mode) and T, N and 9                                    |
+| Search Panel         | shared, with its own | "roadmap" finding a document, a tab, a sticky note and a guide                                              |
+| Supported Devices    | shared, with its own | an article page on a laptop, a tablet and a phone                                                           |
+| Developers           | shared, with its own | `POST /api/documents` with the `slide-deck` template, and the slide it makes                                |
+| Account and Data     | shared, with its own | a profile, synced documents, and PNG, SVG, PDF and JSON                                                     |
+| Troubleshooting      | shared, with its own | a document that didn't load and the checklist fixing it                                                     |
+| Privacy and Security | shared, with its own | a livedocuments.app share link with its safeguards                                                          |
+| Self-Hosting         | shared, with its own | `~/livedocuments` deploying api, editor and router to your own domain                                       |
+| Policies             | shared, the same     | the terms and the privacy policy, sealed                                                                    |
 
 ## Home page
 
