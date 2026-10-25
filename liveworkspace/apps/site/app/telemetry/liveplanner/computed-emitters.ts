@@ -218,7 +218,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Uncaught.Project.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
-  'packages/ui/src/PageViewTracker.tsx Page·View': {
+  'packages/ui/src/page-view-tracker.tsx Page·View': {
     values: ['/', '/project', '/explorer/home', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },

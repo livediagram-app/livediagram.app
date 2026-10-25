@@ -183,8 +183,11 @@ const SANKEY_TOUR_STEP_SOURCE: string[] = [
       /canvasStep\(\s*'([a-z-]+)'/g,
     ),
   ].map((m) => m[1]!),
+  // The flows steps are shared by every editor (@liveworkspace/workbench).
   ...[
-    ...read('editor/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
+    ...read('../../packages/workbench/src/components/tour/sankey-flows-tour-steps.ts').matchAll(
+      /step\(\s*'([a-z-]+)'/g,
+    ),
   ].map((m) => `flows-${m[1]!}`),
   'outro',
 ].map((id) => `SankeyTourStep${pascal(id)}`);
@@ -357,7 +360,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['community', 'finding-community-documents'],
     open: SLUG_WHY,
   },
-  'packages/ui/src/PageViewTracker.tsx Page·View': {
+  'packages/ui/src/page-view-tracker.tsx Page·View': {
     values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
