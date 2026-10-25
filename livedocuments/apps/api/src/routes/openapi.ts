@@ -1,5 +1,5 @@
 import { buildOpenApiDocument } from '../openapi/document';
-import type { OpenApiDocument } from '../openapi/types';
+import type { OpenApiDocument } from '@liveworkspace/api-kit/openapi-types';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 

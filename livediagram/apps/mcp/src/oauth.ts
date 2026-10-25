@@ -5,7 +5,7 @@
 import { CLI_CLIENT_ID, CLI_CLIENT_NAME } from '@livediagram/api-schema';
 import type { OauthServer } from '@liveworkspace/mcp-kit/oauth';
 import { cliClients } from '@liveworkspace/mcp-kit/oauth-clients';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { appBase } from './tool-helpers';
 
 export const OAUTH: OauthServer<Env> = {

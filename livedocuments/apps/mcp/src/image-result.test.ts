@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 // The rasteriser is WASM; the order of the blocks is what is under test.
 const drawn: string[] = [];
-vi.mock('./render', () => ({
+vi.mock('@liveworkspace/mcp-kit/render', () => ({
   svgToPngBase64: async (svg: string) => {
     drawn.push(svg);
     return 'cG5n';

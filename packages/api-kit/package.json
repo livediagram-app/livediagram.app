@@ -8,11 +8,18 @@
     "./api-token": "./src/api-token.ts",
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",
+    "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
+    "./openapi-types": "./src/openapi-types.ts",
+    "./origin-check": "./src/origin-check.ts",
     "./refusal-log": "./src/refusal-log.ts",
     "./request-auth": "./src/request-auth.ts",
     "./request-body": "./src/request-body.ts",
     "./responses": "./src/responses.ts",
+    "./room-access": "./src/room-access.ts",
+    "./room-agent-presence": "./src/room-agent-presence.ts",
+    "./room-follows": "./src/room-follows.ts",
+    "./room-multiplayer": "./src/room-multiplayer.ts",
     "./unfurl": "./src/unfurl.ts",
     "./unfurl-fetch": "./src/unfurl-fetch.ts"
   },
@@ -24,6 +31,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {

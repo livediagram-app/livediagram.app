@@ -3,7 +3,7 @@
 // `env.DOCUMENT_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
 // internal and their bodies trusted. Every other request is a WebSocket upgrade, which the room answers itself.
 import { opForTheWire } from '@livedocuments/document';
-import { parseAccessCloseMatch, type AccessCloseMatch } from './room-access';
+import { parseAccessCloseMatch, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
 
 /** The room's surface the internal endpoints act on. */
 export type InternalRoom = {

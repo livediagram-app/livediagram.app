@@ -8,7 +8,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTools } from './tools';
 
 export async function connectTestClient(

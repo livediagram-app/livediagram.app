@@ -17,7 +17,7 @@ import {
   type StoredTabBody,
   servableImageIds,
 } from './db';
-import { imageRefIds } from './image-refs/extract';
+import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
 import { redactTabForCommunity } from './community-redact';
 import { mediaClient } from './media';
 import type { DocumentEnv } from './types';

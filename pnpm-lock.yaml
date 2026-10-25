@@ -5312,6 +5312,9 @@ importers:
 
   packages/api-kit:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -5436,6 +5439,9 @@ importers:
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../render-png
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -5443,6 +5449,9 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@resvg/resvg-wasm':
+        specifier: ^2.6.2
+        version: 2.6.2
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -5936,12 +5945,18 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit
+      '@liveworkspace/render-png':
+        specifier: workspace:*
+        version: link:../render-png
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.1
         version: 1.32.1(zod@4.6.7)
       hono:
         specifier: ^4.13.13
         version: 4.13.13
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1

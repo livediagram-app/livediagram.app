@@ -11,7 +11,7 @@ import {
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { tabStatsOfData } from '../db/tab-stats';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 
 export const DOCUMENT_MIGRATION_SHAPE: MigrationRoomShape = {
   itemTable: 'document',

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { ITEM_TYPES } from '@liveplanner/items';
 import { emptySheet, sheetToJson } from '@liveplanner/sheets';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the

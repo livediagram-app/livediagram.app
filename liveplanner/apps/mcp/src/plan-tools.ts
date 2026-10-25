@@ -19,7 +19,7 @@ import {
   mcpListItems,
 } from '@liveplanner/agent-verbs/mcp';
 import { clientFor } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
 import { deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
 

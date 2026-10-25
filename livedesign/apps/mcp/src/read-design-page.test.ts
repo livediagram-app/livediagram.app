@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livedesign/design';
 
 // read_design's page (docs/specs/015-api/mcp-server.md §4.2): one page of a Pages tab, by id, place or name.
-vi.mock('./render', () => ({ svgToPngBase64: async () => 'cG5n' }));
+vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => 'cG5n' }));
 const { pageAsked } = await import('./read-design');
 
 const page = (id: string, name?: string) => ({

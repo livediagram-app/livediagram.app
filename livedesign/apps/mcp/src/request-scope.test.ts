@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { postTelemetry, reportApiFailure } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInRequest } from '@liveworkspace/mcp-kit/request-scope';
 
 // A telemetry post the runtime can cancel with the response is a post that may

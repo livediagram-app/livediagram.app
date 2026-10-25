@@ -19,7 +19,7 @@ import {
 } from '@liveplanner/project';
 import { ApiError, apiJson } from './api';
 import { elementsIssue } from './element-values';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 export async function submitChangeset(
   env: Env,

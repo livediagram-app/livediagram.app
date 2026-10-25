@@ -9,7 +9,7 @@ Scope, by file (all under `apps/api/`):
 
 | File                                    | Role                                                                                          |
 | --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `src/image-refs/extract.ts`             | The JavaScript extractor: what a reference is                                                 |
+| `../packages/api-kit/src/image-refs.ts` | The JavaScript extractor: what a reference is                                                 |
 | `src/db/image-refs.ts`                  | The writers' statements, and the document's own reads (its set; whether it places an image)   |
 | `src/routes/images.ts`                  | The usage map (`usageOf`): the media service's references, kept to canvases the index answers |
 | `src/db/tabs.ts`                        | `upsertTab`, `seedTabs`, `swapTabData` carry index statements; `deleteTabRow` cascades        |
@@ -114,7 +114,7 @@ owner lookup, `mediaOwner` and a team's joined people from liveworkspace account
 ## Interfaces and contracts
 
 ```ts
-// src/image-refs/extract.ts
+// packages/api-kit/src/image-refs.ts (the monorepo's)
 export const IMAGE_REF_ID_MAX_LENGTH = 128;
 export function isGalleryImageId(value: unknown): value is string;
 export function imageRefIds(elements: unknown): string[];
@@ -206,7 +206,7 @@ about 3 ms and keys no push. The byte endpoint's share read is one index grant a
 
 | Rule                                                   | Test                                            |
 | ------------------------------------------------------ | ----------------------------------------------- |
-| What a reference is                                    | `src/image-refs/extract.test.ts`                |
+| What a reference is                                    | `../packages/api-kit/src/image-refs.test.ts`    |
 | Each writer maintains the index (I1), routes included  | `src/db/image-refs-writers.test.ts`             |
 | The push sends the set (I2) and grants (I3)            | `src/document-room/document-outbox.test.ts`     |
 | Deleting a tab / document / account drops them         | `src/db/image-refs-writers.test.ts`             |

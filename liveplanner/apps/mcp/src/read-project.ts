@@ -8,7 +8,7 @@ import {
   type TabViewName,
 } from '@liveplanner/api-schema';
 import { ApiError, apiJson, apiText } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
 import { READ_PROJECT_DEFAULT_BUDGET } from '@liveplanner/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';

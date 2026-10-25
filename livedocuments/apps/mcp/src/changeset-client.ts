@@ -21,7 +21,7 @@ import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 export async function submitChangeset(
   env: Env,

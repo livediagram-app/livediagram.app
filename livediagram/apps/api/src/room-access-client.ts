@@ -4,7 +4,7 @@
 // the request. Every other access change reaches the room through the index (a revoked link's revoke door) or its
 // grants (a session's grant is renewed before it lapses, and one the index refuses closes it).
 
-import type { AccessCloseMatch } from './room-access';
+import type { AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
 import { roomFetch } from './room-client';
 import type { Env } from './types';
 

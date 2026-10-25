@@ -471,7 +471,7 @@ Besides the design's content (**Storage**), its key-value storage holds:
 
 Per-session state (presence id, verified role, person tag, tab scope, admitting share code, workbench pairing, presence) lives in each socket's serialized attachment, so it survives hibernation; only the rate-cap windows and the catch-up log reset on a wake.
 
-The room's other parts each have a module in `apps/api/src/`: the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`), the access-change closes (`room-access.ts`) and the presence roster each socket is sent (`room-roster.ts`).
+The room's other parts each have a module in `apps/api/src/`: the session attachment and the verified upgrade headers (`room-session.ts`), the role gate on client ops (`room-op-gate.ts`, the [Share roles](../013-workspace/share-roles.md) level ladder), the worker-only internal endpoints (`room-internal.ts`), the access-change closes (`../packages/api-kit/src/room-access.ts`) and the presence roster each socket is sent (`room-roster.ts`).
 
 ### What the room reports
 

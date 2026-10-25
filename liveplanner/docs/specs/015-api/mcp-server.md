@@ -528,7 +528,7 @@ to the right tools:
 - **`show_my_project`** `{ name }` — find a project by name with find_projects and read_project it
   inline.
 
-Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
+Registered in `apps/mcp/src/prompts.ts` (the show-my prompt by `registerShowMyPrompt`, `../packages/mcp-kit/src/prompts.ts`), wired in `buildServer` beside the tools
 and schema resource.
 
 ### 4.11 Read-only tokens (the one scope)

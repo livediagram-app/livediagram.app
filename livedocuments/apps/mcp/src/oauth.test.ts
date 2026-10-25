@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CLI_CLIENT_ID, CLI_CLIENT_NAME } from '@livedocuments/api-schema';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { OAUTH } from './oauth';
 
 // The authorization server itself is @liveworkspace/mcp-kit's, tested there; what is this product's is its

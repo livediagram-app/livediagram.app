@@ -5,6 +5,7 @@
 // Pure text — no api calls, no auth needed to list them.
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerShowMyPrompt } from '@liveworkspace/mcp-kit/prompts';
 import { z } from 'zod';
 
 // What a clear diagram asks of its author (docs/specs/015-api/mcp-server.md §4.7). A prompt is a message
@@ -74,28 +75,11 @@ export function registerPrompts(server: McpServer): void {
     }),
   );
 
-  server.registerPrompt(
-    'show_my_document',
-    {
-      title: 'Show my canvas',
-      description: 'Find one of your canvases by name and display it inline.',
-      argsSchema: {
-        name: z.string().describe('Part of the canvas’s name.'),
-      },
-    },
-    ({ name }) => ({
-      messages: [
-        {
-          role: 'user',
-          content: {
-            type: 'text',
-            text:
-              `Find my livediagram document matching "${name}" with find_documents, then ` +
-              `read_document it to show me the image and a link. If several match, list them ` +
-              `and ask which one.`,
-          },
-        },
-      ],
-    }),
-  );
+  // @liveworkspace/mcp-kit's, every product's.
+  registerShowMyPrompt(server, {
+    product: 'livediagram',
+    record: 'document',
+    shown: { one: 'canvas', many: 'canvases' },
+    called: 'document',
+  });
 }

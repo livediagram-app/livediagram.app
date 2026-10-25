@@ -20,16 +20,16 @@ import {
 // never as missing-glyph boxes.
 import { previewResolvers } from '@liveworkspace/icons/resolve';
 import { emojiGlyphsOf, previewEmoji } from './preview-emoji';
-import { svgToPngBase64 } from './render';
+import { svgToPngBase64 } from '@liveworkspace/mcp-kit/render';
 import { INTER_ITALIC, previewFonts } from './preview-fonts';
 import {
   PREVIEW_IMAGE_BUDGET_BYTES,
   PREVIEW_IMAGE_BUDGET_PIXELS,
   PREVIEW_IMAGE_MAX_BYTES,
   previewLeftOutNote,
-} from './preview-budget';
+} from '@liveworkspace/mcp-kit/preview-budget';
 import { apiFetch } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
 
 // Prefetch the bytes of every image element on the tab and return a
@@ -77,7 +77,7 @@ type TextBlock = { type: 'text'; text: string };
 
 // The preview's blocks: the picture, after a note when the budget drew some pictures as placeholders.
 const previewBlocks = (image: ImageBlock, leftOut: number): (TextBlock | ImageBlock)[] =>
-  leftOut > 0 ? [{ type: 'text', text: previewLeftOutNote(leftOut) }, image] : [image];
+  leftOut > 0 ? [{ type: 'text', text: previewLeftOutNote(leftOut, 'document') }, image] : [image];
 const NO_IMAGES: ImageResolver = { leftOut: 0 };
 
 // A PNG preview of the tab, its images and icons resolved as the editor draws them, after a note when some pictures

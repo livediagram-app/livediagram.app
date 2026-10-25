@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { changePages, writeArticle, type PagesDone } from '@livedocuments/agent-verbs';
 import { mcpChangePages, mcpWriteArticle } from '@livedocuments/agent-verbs/mcp';
 import { clientFor } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
 import { deepLink, errorResult, requireToken, textResult } from './tool-helpers';
 

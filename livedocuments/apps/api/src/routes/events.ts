@@ -3,7 +3,7 @@
 
 import { isServerEmittedEvent, isValidTelemetryEvent } from '@livedocuments/api-schema';
 import { TELEMETRY_BATCH_MAX } from '@liveworkspace/telemetry';
-import { isLocalhostPair } from '../origin-check';
+import { isLocalhostPair } from '@liveworkspace/api-kit/origin-check';
 import { noContent, notFound } from '../responses';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportServerEvents } from '../server-telemetry';

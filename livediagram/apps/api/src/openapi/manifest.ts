@@ -16,7 +16,7 @@
 import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
-import type { BodySchema } from './types';
+import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.

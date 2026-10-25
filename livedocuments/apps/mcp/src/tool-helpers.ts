@@ -8,7 +8,7 @@
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livedocuments/api-schema';
 import { apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 export type Extra = RequestHandlerExtra<never, never>;
 // A success carries its result object as `structuredContent` (validated by the

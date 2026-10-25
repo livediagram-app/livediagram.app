@@ -38,10 +38,10 @@ import {
   answerAgentPresence,
   clearAgentsForOp,
   RoomAgentPresence,
-} from '../room-agent-presence';
+} from '@liveworkspace/api-kit/room-agent-presence';
 import type { ClientMessage, Env, PlanEnv, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
-import { multiplayerDecision } from '../room-multiplayer';
+import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
 import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
@@ -53,7 +53,7 @@ import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
-import { sessionMatchesAccessClose, type AccessCloseMatch } from '../room-access';
+import { sessionMatchesAccessClose, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
 import {
   newSessionAttachment,
   readSessionAttachment,
@@ -1245,7 +1245,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   // A trashed project or a changed link clears agent entries (room-agent-presence.ts, PR15).
   private async clearAgentsFor(op: unknown): Promise<void> {
-    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence());
+    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence(), 'project-trashed');
     this.armAlarm();
   }
 

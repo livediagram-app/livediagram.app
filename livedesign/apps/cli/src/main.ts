@@ -19,7 +19,7 @@ import { configDir } from './config/paths';
 import { readConfig, resolveProfile, type Profile } from './config/profiles';
 import { CLI_VERSION, isBelow, UPGRADE_HINT } from './config/version';
 import { debugLog, type DebugLog } from './debug';
-import { fieldsOf } from './dispatch/fields';
+import { fieldsOf } from '@liveworkspace/cli-kit/fields';
 import { splitGlobals, type Globals } from './dispatch/globals';
 import { parseVerbArgs } from './dispatch/parse-flags';
 import { route } from './dispatch/route';
