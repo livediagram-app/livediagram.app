@@ -4,7 +4,7 @@ import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
 import { offlineListDesigns } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { SYNC_SAVE_WAIT_MS } from './useSyncInPlace';
 
 const SAVE_POLL_MS = 100;
