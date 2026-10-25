@@ -62,7 +62,9 @@ export async function runProbe(
       if (wrong) return done('down', wrong);
     }
     const answered =
-      probe.kind === 'reach' ? done('reached', 'Reached') : done('up', `HTTP ${res.status}`);
+      probe.kind === 'reach'
+        ? done('reached', 'Reached')
+        : done('up', probe.says ?? `HTTP ${res.status}`);
     return answered.ms > SLOW_MS ? { ...answered, state: 'slow' } : answered;
   } catch (err) {
     const timedOut =

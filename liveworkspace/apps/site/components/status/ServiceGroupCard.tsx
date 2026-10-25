@@ -145,7 +145,7 @@ function ServiceRow({
         >
           {latest && state !== 'skipped' ? formatMs(latest.ms) : '—'}
         </span>
-        <span className="min-w-0 truncate">{evidence}</span>
+        <span className="min-w-0 flex-1 leading-snug">{evidence}</span>
         {service.check.mode === 'probe' ? (
           <span className="ml-auto w-20 shrink-0 sm:w-28">
             <HistoryStrip history={view?.history ?? []} />

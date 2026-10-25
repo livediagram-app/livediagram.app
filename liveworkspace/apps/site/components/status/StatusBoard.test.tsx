@@ -83,6 +83,30 @@ describe('StatusBoard', () => {
     expect(host!.querySelector('[role="status"]')?.textContent).toBe('Some services are down');
   });
 
+  it('never prints a bare error code under Operational: Media’s 404 says what it means', async () => {
+    await render(fetchWhere(/$^/));
+    const media = row('liveworkspace:media')!;
+    expect(media.getAttribute('data-state')).toBe('up');
+    expect(media.textContent).toContain('Answers; storage not checked');
+    expect(media.textContent).not.toContain('HTTP 404');
+    for (const r of host!.querySelectorAll('[data-state="up"]'))
+      expect(r.textContent, r.getAttribute('data-service') ?? '').not.toMatch(/HTTP [45]\d\d/);
+  });
+
+  it('gives each group’s jump link its state in words, never a dot alone', async () => {
+    await render(fetchWhere(/livedesign\.app\/api\/capabilities/));
+    const links = [...host!.querySelectorAll('nav[aria-label="Groups"] a')].map(
+      (a) => a.textContent,
+    );
+    expect(links).toEqual([
+      'liveworkspaceAll up',
+      'livediagramAll up',
+      'liveplannerAll up',
+      'livedocumentsAll up',
+      'livedesign2 down',
+    ]);
+  });
+
   it('explains every state in the legend', async () => {
     await render(fetchWhere(/$^/));
     const legend = host!.querySelector('[aria-labelledby="status-legend"]')!.textContent;

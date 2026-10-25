@@ -198,7 +198,8 @@ Worker's port.
 Each service shows its state as an icon and a word, never colour alone: **Operational** (answered as expected),
 **Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
 give), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
-(`HTTP 200`, `Reached`, `Through the API`) and a strip of the checks made since the page was opened (at most 30
+(`HTTP 200`, `Reached`, `Through the API`; where a bare code would mislead, what it means instead: Media's expected
+404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked") and a strip of the checks made since the page was opened (at most 30
 each, kept in memory and gone on reload). There is no uptime history: nothing records one, so the page shows none.
 
 On top, the overall state (all operational, some slow, or some down), how many services answered, the median
@@ -207,12 +208,14 @@ seconds while the tab is visible (a hidden tab pauses, and checks again on retur
 once. A change of overall state is announced politely to screen readers. A legend explains every state.
 
 Groups: liveworkspace first (its wordmark), then each app in `@liveworkspace/sites` order under its own logo,
-never a coloured dot, each with its own summary and an anchor (`#livediagram`). The page follows the site's
+never a coloured dot, each with its own summary and an anchor (`#livediagram`). Under the summary, a jump link per
+group carries the group's state as the rows do, an icon and words ("All up", "1 slow", "2 down"), never a dot. The page follows the site's
 landing design: the tinted radial hero, rounded cards, light and dark, a 16px gutter on a phone. Its motion (the
 live pulse, the strip settling, the countdown ring) is in `app/status/status-motion.css`, paced as content, and
 stops for reduced motion. The catalogue is `lib/status/services.ts`, the checks `lib/status/probe.ts`.
 
-**What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (21 for four apps, 27 in all),
+**What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (23 for four apps, with
+livediagram's Community pages; 29 in all),
 every one a `HEAD`, an `OPTIONS` or a small JSON `GET` with `cache: no-store`, and only while someone has the page
 open and visible.
 

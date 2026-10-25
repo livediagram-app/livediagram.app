@@ -31,7 +31,7 @@ import {
   type StatusEnvironment,
 } from '@/lib/status/services';
 import { ServiceGroupCard } from './ServiceGroupCard';
-import { formatAgo, formatMs, Legend, OVERALL_LOOK } from './status-ui';
+import { formatAgo, formatMs, Legend, OVERALL_LOOK, StateBadge } from './status-ui';
 
 const RefreshIcon = lucideGlyph(lucideRefreshCw, 16);
 
@@ -243,16 +243,23 @@ export function StatusBoard({
               const s = summarise(g.services, views);
               const mark =
                 s.overall === 'checking' ? 'checking' : s.down ? 'down' : s.slow ? 'slow' : 'up';
+              const words =
+                mark === 'checking'
+                  ? 'Checking'
+                  : mark === 'down'
+                    ? `${s.down} down`
+                    : mark === 'slow'
+                      ? `${s.slow} slow`
+                      : 'All up';
               return (
                 <li key={g.id}>
                   <a
                     href={`#${g.id}`}
-                    className="relative touch-target-y inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-800"
+                    className="relative touch-target-y inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pr-1 pl-3 text-sm font-medium text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-800"
                   >
                     <GroupMark id={g.site.id} />
                     {g.title}
-                    <span className="sr-only">: {MARK_WORDS[mark]}</span>
-                    <MarkDot state={mark} />
+                    <StateBadge state={mark} size="sm" word={words} />
                   </a>
                 </li>
               );
@@ -297,35 +304,6 @@ function GroupMark({ id }: { id: string }) {
     <AppMark app={app} className="size-4" />
   ) : (
     <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />
-  );
-}
-
-const MARK_WORDS = {
-  up: 'all up',
-  slow: 'some slow',
-  down: 'some down',
-  checking: 'checking',
-} as const;
-
-// A group's state on its jump link: a shape as well as a colour (a dot, a ring, a cross), and words for assistive
-// tech beside it.
-function MarkDot({ state }: { state: keyof typeof MARK_WORDS }) {
-  if (state === 'down')
-    return (
-      <span
-        aria-hidden
-        className="text-[11px] leading-none font-bold text-rose-600 dark:text-rose-400"
-      >
-        ✕
-      </span>
-    );
-  if (state === 'checking')
-    return <span aria-hidden className="size-2 rounded-full border border-slate-400" />;
-  return (
-    <span
-      aria-hidden
-      className={`size-2 rounded-full ${state === 'slow' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-    />
   );
 }
 

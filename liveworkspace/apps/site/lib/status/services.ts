@@ -23,6 +23,9 @@ export type Probe =
       method: 'GET' | 'HEAD' | 'OPTIONS';
       ok: readonly number[];
       json?: boolean;
+      // What an expected answer means, in words, where its bare status code would mislead (a 404 that is the
+      // Worker's sign of life). Otherwise the row shows "HTTP <status>".
+      says?: string;
     }
   | { kind: 'reach'; url: string; method: 'HEAD' | 'GET' };
 
@@ -109,7 +112,8 @@ const read = (
   method: 'GET' | 'HEAD' | 'OPTIONS',
   ok: readonly number[],
   json = false,
-): Check => ({ mode: 'probe', probe: { kind: 'read', url, method, ok, json } });
+  says?: string,
+): Check => ({ mode: 'probe', probe: { kind: 'read', url, method, ok, json, says } });
 
 const reach = (url: string): Check => ({
   mode: 'probe',
@@ -163,15 +167,23 @@ function platformGroup(): ServiceGroup {
         description: 'Every app’s anonymous events, and the public dashboard they feed.',
         icon: 'chart',
         label: 'OPTIONS /api/telemetry/events',
-        check: read('/api/telemetry/events', 'OPTIONS', [204]),
+        check: read(
+          '/api/telemetry/events',
+          'OPTIONS',
+          [204],
+          false,
+          'Answers; database not checked',
+        ),
       },
       {
         id: `${g}:media`,
         name: 'Media & previews',
         description: 'Uploaded images, and the picture of every item, for every app.',
         icon: 'image',
-        label: 'GET /api/previews (the Worker answers)',
-        check: read('/api/previews', 'GET', [404], true),
+        label: 'GET /api/previews',
+        // It serves only the apps' Workers and previews behind access checks, so its sign of life is its own
+        // JSON "not found" for a bare request, which the site's HTML 404 page never is.
+        check: read('/api/previews', 'GET', [404], true, 'Answers; storage not checked'),
       },
     ],
   };
