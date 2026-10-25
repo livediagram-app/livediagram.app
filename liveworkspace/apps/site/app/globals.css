@@ -14,13 +14,10 @@
 @source '../../../../livediagram/packages/ui/src/icons';
 /* Every app's logo (components/landing/AppLogo.tsx): its dark-mode accent and shimmer. */
 @source '../../../../packages/brand/src';
-@source '../../../../livediagram/packages/ui/src/appearance';
 /* The account menu, shared with every app's marketing header. */
 @source '../../../../packages/account-menu/src';
 /* The Settings panel: the shared Settings view, and livediagram's dialog close button. */
 @source '../../../../packages/settings-ui/src';
-@source '../../../../livediagram/packages/ui/src/dialog';
-@source '../../../../livediagram/packages/ui/src/CompactEmptyState.tsx';
 /* The design system every app shares (@liveworkspace/ui): the Tooltip and HoverCard with the hint surface they
  * draw on, the dialog frame, the buttons and fields. All of it, so a piece a page starts using is never unstyled. */
 @source '../../../../packages/ui/src';

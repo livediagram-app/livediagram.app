@@ -97,7 +97,7 @@ export function SaveSwitchRow({
   return (
     <div
       data-save-switch=""
-      className={`relative -mx-2 flex min-w-0 cursor-pointer items-center gap-3 rounded-xl px-2 py-1 transition-colors duration-short motion-reduce:transition-none ${
+      className={`relative -mx-2 flex min-w-0 cursor-pointer items-center gap-3 rounded-xl px-2 py-1 transition-colors duration-micro motion-reduce:transition-none ${
         ink
           ? 'hover:bg-[var(--save-switch-hover)]'
           : 'hover:bg-slate-100/70 dark:hover:bg-slate-800/60'

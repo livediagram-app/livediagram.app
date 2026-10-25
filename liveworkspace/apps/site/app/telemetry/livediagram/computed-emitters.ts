@@ -68,10 +68,10 @@ const CLI_VERBS = [...countedVerbs().map((v) => pascalToken(v.id)), SYNC_WATCH_T
 // Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
 const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
 
-// The Appearance settings' labels (packages/ui appearance-cycle.ts), the
+// The Appearance settings' labels (@liveworkspace/ui appearance-cycle.ts), the
 // editor's `UI·Toggled` type on an explicit pick.
 const APPEARANCE_LABELS = tokensAfter(
-  read('../packages/ui/src/appearance/appearance-cycle.ts'),
+  read('../../packages/ui/src/appearance/appearance-cycle.ts'),
   'export const APPEARANCE_LABEL',
   '};',
 );
