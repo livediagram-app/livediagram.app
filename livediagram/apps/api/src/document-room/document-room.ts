@@ -97,6 +97,8 @@ import {
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
+import { importMigratedDocument } from './document-migration';
+import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import {
   documentShares,
   type ShareAnswer,
@@ -757,6 +759,17 @@ export class DocumentRoom extends DurableObject<Env> {
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
     this.bindDocument(documentId);
     await importDocumentCopy(this.requireEnv(), documentId, copy);
+  }
+
+  // An old livediagram.app document's part (the migration door, document-migration.ts): one transaction, with its
+  // own times; the outbox pushes it to the index and the media service as any write.
+  async importMigrated(
+    documentId: string,
+    payload: MigrationRoomPayload,
+  ): Promise<MigrationDoorAnswer> {
+    this.bindDocument(documentId);
+    this.requireEnv();
+    return importMigratedDocument(this.db, payload);
   }
 
   // Share links the index revoked or rescoped: each one's sessions hear it and end now. `rescoped`: they reload

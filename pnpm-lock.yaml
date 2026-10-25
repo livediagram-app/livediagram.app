@@ -128,6 +128,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -1224,6 +1227,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -2446,6 +2452,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -3530,6 +3539,9 @@ importers:
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../../../packages/migration
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -5639,6 +5651,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/migration':
+        specifier: workspace:*
+        version: link:../migration
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1

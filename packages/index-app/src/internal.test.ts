@@ -235,7 +235,7 @@ describe('the guest-merge door', () => {
       { personMerged },
     );
     expect(res.status).toBe(200);
-    expect(personMerged).toHaveBeenCalledWith('guest_g1', 'user_u1');
+    expect(personMerged).toHaveBeenCalledWith('guest_g1', 'user_u1', { legacy: false });
     expect(
       (await send('POST', '/api/internal/people/guest_g1/merge', { into: 'user_u1' }, {})).status,
     ).toBe(200);

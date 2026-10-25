@@ -124,6 +124,9 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'preferences',
   'participants',
   'drive',
+  // The one-time doors of the move from the old livediagram.app.
+  'legacy-guest',
+  'migration',
 ]);
 
 // The fixed words that appear BELOW a resource in the api's routes

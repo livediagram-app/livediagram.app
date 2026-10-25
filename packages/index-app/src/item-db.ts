@@ -107,6 +107,17 @@ export class ItemDb {
     return results;
   }
 
+  // One transaction around work that reads and writes the item's SQLite directly (`ItemSql`), for a write whose
+  // statements depend on what it reads (the migration door, migration-room.ts): the reads and the writes land as one,
+  // and a throw rolls back both. Counts as a write when anything changed.
+  transact<T>(fn: (sql: ItemSql) => T): T {
+    this.hooks.ensureSchema();
+    const before = this.totalChanges();
+    const result = this.hooks.transaction(() => fn(this.sql));
+    if (this.totalChanges() !== before) this.hooks.onWrite();
+    return result;
+  }
+
   async exec(query: string): Promise<{ count: number; duration: number }> {
     this.hooks.ensureSchema();
     const before = this.totalChanges();

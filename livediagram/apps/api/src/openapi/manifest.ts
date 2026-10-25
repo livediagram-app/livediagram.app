@@ -1698,4 +1698,70 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     statuses: [204, 401, 404],
   },
+
+  // ---- The move from the old livediagram.app (docs/specs/015-api/api.md "Migration") ----
+  // One-time doors for the editor's pass after the move, as the browser's own guest or account; an API token or a
+  // workbench session is refused (401 identity_required). First-party only.
+  {
+    method: 'POST',
+    path: '/legacy-guest/claim',
+    segment: 'legacy-guest',
+    tag: 'Migration',
+    summary:
+      "Claim what was migrated under the old site's guest id this browser kept, into the caller. 200 `{ merged: false }` for a claim that will never succeed; 503 while accounts is unavailable.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { legacyId: { type: 'string' }, signature: { type: ['string', 'null'] } },
+      required: ['legacyId', 'signature'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        merged: { type: 'boolean' },
+        reason: { type: 'string', enum: ['unknown', 'claimed'] },
+      },
+      required: ['merged'],
+    },
+    statuses: [200, 400, 401, 429, 503],
+  },
+  {
+    method: 'POST',
+    path: '/migration/local-parts',
+    segment: 'migration',
+    tag: 'Migration',
+    summary:
+      "Move a This Browser document's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        tabs: { type: 'array', items: { type: 'object' } },
+      },
+      required: ['id', 'name', 'tabs'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: {
+        parts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              app: { type: 'string' },
+              id: { type: 'string' },
+              url: { type: 'string' },
+              tabIds: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['app', 'id', 'url', 'tabIds'],
+          },
+        },
+        keep: { type: 'array', items: { type: 'object' } },
+      },
+      required: ['parts', 'keep'],
+    },
+    statuses: [200, 400, 401, 413, 502, 503],
+  },
 ];

@@ -37,6 +37,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                         |
 | `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))                    |
 | `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export designs as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps)) |
+| `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 | `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                       |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.

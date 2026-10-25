@@ -83,6 +83,8 @@ import { notifyProjectJoin } from '../email/notifications';
 import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
+import { importMigratedPlan } from './plan-migration';
+import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { answerPlanRequest, type RouteIdentity } from './plan-route';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -584,6 +586,14 @@ export class PlanRoom extends DurableObject<Env> {
   async importCopy(planId: string, copy: PlanCopy): Promise<void> {
     this.bindPlan(planId);
     await importPlanCopy(this.requireEnv(), planId, copy);
+  }
+
+  // An old livediagram.app document's liveplanner part (the migration door, plan-migration.ts): one transaction, with
+  // its own times and Plan rows; the outbox pushes it to the index as any write.
+  async importMigrated(planId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer> {
+    this.bindPlan(planId);
+    this.requireEnv();
+    return importMigratedPlan(this.db, payload);
   }
 
   // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.

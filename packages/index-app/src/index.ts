@@ -7,6 +7,8 @@ export * from './timing-safe';
 export * from './purge';
 export * from './internal';
 export * from './import-item';
+export * from './migration-door';
+export * from './migration-room';
 export * from './outbox';
 export * from './activity';
 export * from './anonymise';

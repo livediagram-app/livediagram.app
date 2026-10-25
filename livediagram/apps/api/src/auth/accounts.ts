@@ -1,4 +1,5 @@
-import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
+import { bearerTokenOf, isWorkbenchSessionFormat } from '@livediagram/api-schema';
+import { isAnyApiTokenFormat } from './legacy-token';
 import {
   audiencesFor,
   createPersonVerifier,
@@ -79,7 +80,7 @@ export async function getPersonIdentity(
 
   const token = bearerTokenOf(request.headers.get('Authorization'));
   if (!token) return null;
-  if (isApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
+  if (isAnyApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
 
   // The Explorer's tabs read takes any app's token (@liveworkspace/auth-client explorer-reads.ts): on
   // another app's address it asks as that app.

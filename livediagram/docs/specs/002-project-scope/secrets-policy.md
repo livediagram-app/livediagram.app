@@ -39,6 +39,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `TELEMETRY_KEY`                                 | api **and** mcp | No server-side telemetry reaches the liveworkspace service ([Telemetry](../017-telemetry/telemetry.md))                                           |
 | `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                      |
 | `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export canvases as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))        |
+| `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and on the liveworkspace telemetry service, as `TELEMETRY_KEY_LIVEDIAGRAM`). A mismatch is silent — the service simply drops the batch — so verify with `wrangler secret list` on each rather than assuming. `MEDIA_KEY` likewise matches the media service's `MEDIA_KEY_LIVEDIAGRAM`; a mismatch there is loud, as every image route answers 503. Generate it with `openssl rand -hex 32`.
 
