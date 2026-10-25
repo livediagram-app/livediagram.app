@@ -77,30 +77,21 @@ export const LAYOUT_STYLES = ['flow', 'tree', 'mindmap'] as const;
 export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
 
-// Keys no object built from input may carry.
-export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([
-  '__proto__',
-  'constructor',
-  'prototype',
-]);
-
 // The layout engine's rank gap (EO23); larger reads as a separate drawing.
 export { LAYER_GAP as PLACEMENT_GAP } from '@livedocuments/document';
 export const PLACEMENT_GAP_MAX = 2000;
 // Below it boxes read as touching (EO32).
 export const INSERT_MIN_GAP = 16;
-// A 4,000-character code value with escapes and its other fields fits (EO3).
-export const EDIT_LINE_MAX_CHARS = 16_384;
-// A readable candidate list; the rest counted (EO45).
-export const REJECTION_CANDIDATES_MAX = 10;
 
-// Enough to fix a batch of typos in one round (EO7).
-export const EDIT_MAX_ERRORS = 10;
-// The few nearest elements worth trying, within typos and short slips (EO45).
-export const NEAREST_CANDIDATES_MAX = 5;
-export const NEAREST_MAX_DISTANCE = 3;
-// "did you mean" offers a name only this close (EO45).
-export const DID_YOU_MEAN_MAX_DISTANCE = 2;
-// Where result and rejection lines cut a string (EO43, the views' cuts).
-export const LABEL_CUT_CHARS = 60;
-export const VALUE_CUT_CHARS = 48;
+// The engine's bounds, the same in every product.
+export {
+  PROTOTYPE_KEYS,
+  EDIT_LINE_MAX_CHARS,
+  REJECTION_CANDIDATES_MAX,
+  EDIT_MAX_ERRORS,
+  NEAREST_CANDIDATES_MAX,
+  NEAREST_MAX_DISTANCE,
+  DID_YOU_MEAN_MAX_DISTANCE,
+  LABEL_CUT_CHARS,
+  VALUE_CUT_CHARS,
+} from '@liveworkspace/edit-operations/limits';

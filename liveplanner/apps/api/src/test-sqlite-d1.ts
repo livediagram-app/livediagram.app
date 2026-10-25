@@ -282,6 +282,11 @@ function testPlanRooms(
           ? { status: 'empty', version }
           : { status: 'ok', body: svg, contentType: 'image/svg+xml; charset=utf-8', version };
       },
+      // The Drive file's two halves (plan-room.ts exportFile and importFile).
+      exportFile: async (planId: string, query: { ifVersion: number | null }) =>
+        (await import('./plan-room/project-file')).exportProjectFile(env, planId, query.ifVersion),
+      importFile: async (planId: string, file: unknown) =>
+        (await import('./plan-room/project-file')).importProjectFile(env, planId, file as never),
       hasTab: async (planId: string, tabId: string) =>
         (await import('./db/tabs')).planHasTab(env, planId, tabId),
       item: async (planId: string, itemId: string) =>

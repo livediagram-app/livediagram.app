@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ChangesetRequest } from '@livedesign/api-schema';
 import { parseEditOperations } from '@livedesign/edit-operations';
-import { argvToOperationLine } from '../argv-line';
+import { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { memoryCopies } from '../testing/memory-copies';

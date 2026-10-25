@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
-    "@livedocuments/document": "workspace:*"
+    "@livedocuments/document": "workspace:*",
+    "@liveworkspace/diagram-lint": "workspace:*"
   },
   "devDependencies": {
     "@livedocuments/edit-operations": "workspace:*",

@@ -8,7 +8,7 @@ import { isWithin } from '../data/useFolders';
 import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
 import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
 import { ShareDialog } from '../dialogs/ShareDialog';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ConfirmDialog } from '@liveworkspace/ui';
 import { DefaultFoldersDialog } from '../defaults/DefaultFolders';
 import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
 import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
@@ -150,6 +150,7 @@ export function ExplorerDialogs() {
       });
       return (
         <ConfirmDialog
+          open
           title={confirm.title}
           message={confirm.message}
           confirmLabel={confirm.confirmLabel}
@@ -171,6 +172,7 @@ export function ExplorerDialogs() {
       const item = dialog.item;
       return (
         <ConfirmDialog
+          open
           title={`Delete “${item.title || 'Untitled'}” for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
@@ -193,6 +195,7 @@ export function ExplorerDialogs() {
       const item = dialog.item;
       return (
         <ConfirmDialog
+          open
           title={`Delete this ${ctx.kind.lowerOne}?`}
           message={`“${item.title || 'Untitled'}” is kept only in this browser, so deleting it removes it for good.`}
           confirmLabel="Delete"
@@ -217,6 +220,7 @@ export function ExplorerDialogs() {
       if (!sync && !syncHref) return null;
       return (
         <ConfirmDialog
+          open
           title={`Sync “${name}” to your account?`}
           message={
             sync
@@ -252,6 +256,7 @@ export function ExplorerDialogs() {
     case 'empty-trash':
       return (
         <ConfirmDialog
+          open
           title="Empty the Trash?"
           message={emptyTrashMessage(dialog, ctx.filter === 'app' ? ctx.words.lowerOne : null)}
           confirmLabel="Empty Trash"

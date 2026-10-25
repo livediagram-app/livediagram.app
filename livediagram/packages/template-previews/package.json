@@ -23,12 +23,12 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*"
+    "@livediagram/templates": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
-    "@liveworkspace/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",

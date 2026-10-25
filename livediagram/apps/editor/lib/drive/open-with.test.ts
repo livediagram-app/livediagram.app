@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FakeGoogle } from '@livediagram/fake-google';
+import { FakeGoogle } from '@liveworkspace/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import {
   createFreehand,

@@ -3,8 +3,8 @@
 import type { ArrowElement, Element, Endpoint, RefTable } from '@livedocuments/document';
 import type { ViewEdgeJson, ViewEnd } from '@livedocuments/api-schema';
 import { LABEL_CUT_CHARS } from './constants';
-import { textField } from './fields';
-import { attrValue, jsonString } from './text';
+import { textField } from '@liveworkspace/document-views/fields';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
 
 export type ViewEdge = {
   arrow: ArrowElement;

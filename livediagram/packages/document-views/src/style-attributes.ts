@@ -12,9 +12,9 @@ import {
   type Element,
   type ShapeKind,
 } from '@livediagram/document';
-import { fieldOf } from './fields';
-import { attrValue } from './text';
-import { shapeKindOf, type ViewAttribute } from './view-attribute';
+import { fieldOf } from '@liveworkspace/document-views/fields';
+import { attrValue } from '@liveworkspace/document-views/text';
+import { shapeKindOf, type ViewAttribute } from '@liveworkspace/document-views/view-attribute';
 
 function isShapeKind(kind: string): kind is ShapeKind {
   return SHAPE_KINDS.has(kind);

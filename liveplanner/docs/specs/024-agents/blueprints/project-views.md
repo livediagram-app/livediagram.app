@@ -17,7 +17,7 @@ Scope, by file:
 | packages/project/src/mermaid-serialise.ts                                       | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/project/src/index.ts`                                                 | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/project-views.ts`                                      | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
-| `packages/api-schema/src/ref-errors.ts`                                         | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
+| `../packages/api-schema/src/ref-errors.ts`                                      | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                                   | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                              | Re-exports both new files                                                                                                   |
 | `packages/project-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@liveplanner/project-views` (depends on `project`, `api-schema`), shaped like `items`                      |
@@ -609,7 +609,7 @@ type OverviewView = {
 
 ### Refs on the wire
 
-`packages/api-schema/src/ref-errors.ts`: `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
+`../packages/api-schema/src/ref-errors.ts`: `TARGET_NOT_FOUND_ERROR = 'target_not_found'`,
 `TARGET_AMBIGUOUS_ERROR = 'target_ambiguous'` (the codes [Edit operations](../edit-operations.md#rejections) names),
 `RefCandidate = { ref, kind, label }`, `RefErrorBody = { error, message, input, candidates: RefCandidate[],
 stale: boolean }`.

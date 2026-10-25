@@ -7,6 +7,7 @@
 
 import type { PhotoBlobMeta } from './db/photo-blobs';
 import type { DesignCopy, DesignOutline } from './design-room/design-content';
+import type { DesignFileImport } from './design-room/design-file';
 import type { RouteIdentity } from './design-room/design-route';
 import type {
   ExportQuery,
@@ -26,6 +27,10 @@ export type DesignRoomClient = {
   // The design drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
   // content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
+  // The design as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new design
+  // made from one (the import door).
+  exportFile(query: ExportQuery): Promise<ExportResult>;
+  importFile(file: DesignFileImport): Promise<void>;
   // Whether the design holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Of `ids`, the photo blobs this tab holds, with what they are: the source side of an adoption into another
@@ -63,6 +68,8 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     outline: () => room.outline(designId),
     route: (request, identity) => room.route(designId, request, identity),
     exportImage: (query) => room.exportImage(designId, query),
+    exportFile: (query) => room.exportFile(designId, query),
+    importFile: (file) => room.importFile(designId, file),
     hasTab: (tabId) => room.hasTab(designId, tabId),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
@@ -83,6 +90,8 @@ export type DesignRoomRpc = {
   outline(designId: string): Promise<DesignOutline>;
   route(designId: string, request: Request, identity: RouteIdentity): Promise<Response>;
   exportImage(designId: string, query: ExportQuery): Promise<ExportResult>;
+  exportFile(designId: string, query: ExportQuery): Promise<ExportResult>;
+  importFile(designId: string, file: DesignFileImport): Promise<void>;
   hasTab(designId: string, tabId: string): Promise<boolean>;
   heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;

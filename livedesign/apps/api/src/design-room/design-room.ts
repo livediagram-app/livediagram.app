@@ -95,6 +95,7 @@ import {
 import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
+import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
 import { answerDesignRequest, type RouteIdentity } from './design-route';
 
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -558,6 +559,22 @@ export class DesignRoom extends DurableObject<Env> {
     return svg === null
       ? { status: 'empty', version: savedAt }
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
+  }
+
+  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", design-file.ts): the
+  // design's whole envelope, its last save as the version, unread when the caller holds that save.
+  async exportFile(designId: string, query: ExportQuery): Promise<ExportResult> {
+    this.bindDesign(designId);
+    const sql = this.state.storage.sql;
+    if (!hasDesignSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    return exportDesignFile(this.requireEnv(), designId, query.ifVersion);
+  }
+
+  // A new design from a Drive file (routes/internal-file.ts read it): its tabs land as a copy's do, and it starts as
+  // its owner's.
+  async importFile(designId: string, file: DesignFileImport): Promise<void> {
+    this.bindDesign(designId);
+    await importDesignFile(this.requireEnv(), designId, file);
   }
 
   async hasTab(designId: string, tabId: string): Promise<boolean> {

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { itemTitle, namedStatus, typeIn, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
-import { NoMatches, PlanCardsIcon } from '@liveplanner/ui';
+import { NoMatches, PlanCardsIcon, useMediaQuery } from '@liveplanner/ui';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideBookOpen,
@@ -120,6 +120,17 @@ const TEMPLATE_GROUPS = SHEET_TEMPLATE_GROUPS.map((group) => ({
   }),
 }));
 
+// On a wide screen the groups sit in two columns, each group going to the shorter one, so a short group (Money) has
+// the next one under it rather than a gap beside a long one (Work). Narrower, one column in the catalogue's order.
+const TEMPLATE_COLUMNS = TEMPLATE_GROUPS.reduce<[typeof TEMPLATE_GROUPS, typeof TEMPLATE_GROUPS]>(
+  (cols, g) => {
+    const rowsIn = (col: typeof TEMPLATE_GROUPS) => col.reduce((n, c) => n + c.rows.length + 1, 0);
+    (rowsIn(cols[1]) < rowsIn(cols[0]) ? cols[1] : cols[0]).push(g);
+    return cols;
+  },
+  [[], []],
+);
+
 const iconChip = (icon: ReactNode) => (
   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
     {icon}
@@ -143,6 +154,25 @@ export function SheetSetupStart({
   const basics = BASICS.filter((s) => s.id !== 'cards' || (plan && live.length > 0));
   const rowsOf = (rows: readonly StartRow[]) =>
     rows.map((s) => ({ id: s.id, label: s.label, detail: s.hint, icon: iconChip(s.icon) }));
+  const wide = useMediaQuery('(min-width: 1024px)');
+  const groupSection = ({ group, rows }: (typeof TEMPLATE_GROUPS)[number]) => {
+    const id = `setup-sheet-${group.replace(/\W+/g, '-').toLowerCase()}`;
+    return (
+      <section key={group} className="flex min-w-0 flex-col gap-1.5" aria-labelledby={id}>
+        <h3 id={id} className={HEADING} style={{ color: palette.muted }}>
+          {group}
+        </h3>
+        <OptionRows
+          kind="single"
+          label={`${group} Templates`}
+          palette={palette}
+          selected={start}
+          onPick={(pick) => onStart(pick as SetupStart)}
+          rows={rowsOf(rows)}
+        />
+      </section>
+    );
+  };
   return (
     <div className="flex flex-col gap-4">
       <section className="flex flex-col gap-1.5" aria-labelledby="setup-sheet-start">
@@ -158,25 +188,12 @@ export function SheetSetupStart({
           rows={rowsOf(basics)}
         />
       </section>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {TEMPLATE_GROUPS.map(({ group, rows }) => {
-          const id = `setup-sheet-${group.replace(/\W+/g, '-').toLowerCase()}`;
-          return (
-            <section key={group} className="flex min-w-0 flex-col gap-1.5" aria-labelledby={id}>
-              <h3 id={id} className={HEADING} style={{ color: palette.muted }}>
-                {group}
-              </h3>
-              <OptionRows
-                kind="single"
-                label={`${group} Templates`}
-                palette={palette}
-                selected={start}
-                onPick={(pick) => onStart(pick as SetupStart)}
-                rows={rowsOf(rows)}
-              />
-            </section>
-          );
-        })}
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        {(wide ? TEMPLATE_COLUMNS : [TEMPLATE_GROUPS]).map((col, i) => (
+          <div key={i} className="flex min-w-0 flex-col gap-4">
+            {col.map(groupSection)}
+          </div>
+        ))}
       </div>
     </div>
   );

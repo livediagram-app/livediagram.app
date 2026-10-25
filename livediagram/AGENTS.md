@@ -209,7 +209,7 @@ packages/
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
-  api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
@@ -217,9 +217,8 @@ packages/
   sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
-  fake-google/  # in-memory Google Drive + OAuth, for tests only
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
-  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), model-core, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, fake-google (an in-memory Google, for tests), source-ast, style-guards, ui (the design system), model-core, api-schema (the wire shapes and validators every product shares), help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, template-previews (the previews' motion kit, story parts, fan and checks), marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

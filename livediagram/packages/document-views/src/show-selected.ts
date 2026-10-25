@@ -2,7 +2,12 @@
 // owner's live selection, each element as `show` prints it, in tab order, under one header and one budget.
 import type { ShowSelectedView, ViewDoor } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { showElement } from './show';

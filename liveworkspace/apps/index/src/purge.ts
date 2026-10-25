@@ -11,6 +11,7 @@ import {
   SWEEP_ITEMS_MAX,
   TOMBSTONES_PER_RUN,
 } from './config';
+import { sendDriveSignals, touchItem, type DriveTouched } from './drive';
 import type { Env } from './env';
 
 export type Purgeable = { id: string; app: App };
@@ -105,36 +106,45 @@ export async function drainTombstones(
 // statement, so an item saved a moment before is not moved; an item restored unchanged is not moved again for the
 // same change (`empty_swept_for`). No Timeline event: an empty item tidied away is not news. Bounded per run,
 // oldest change first, on the partial index items_empty.
+// `touched` collects the owners of the personal items it moved, for the Drive mirror's signal.
 export async function sweepEmpty(
   env: Env,
   now = Date.now(),
   max = EMPTY_SWEEP_MAX,
+  touched?: DriveTouched,
 ): Promise<number> {
-  const res = await env.INDEX_DB.prepare(
+  const { results } = await env.INDEX_DB.prepare(
     `UPDATE items SET trashed_at = ?, trash_reason = 'empty', empty_swept_for = updated_at
      WHERE id IN (
        SELECT id FROM items
        WHERE trashed_at IS NULL AND (summary = '{}' OR json_extract(summary, '$.hasContent') = 0)
          AND updated_at < ? AND (empty_swept_for IS NULL OR empty_swept_for <> updated_at)
-       ORDER BY updated_at LIMIT ?)`,
+       ORDER BY updated_at LIMIT ?)
+     RETURNING owner_id, team_id`,
   )
     .bind(now, now - EMPTY_ITEM_STALE_MS, max)
-    .run();
-  return res.meta.changes ?? 0;
+    .all<{ owner_id: string; team_id: string | null }>();
+  if (touched) for (const row of results) touchItem(touched, row);
+  return results.length;
 }
 
 // The daily run: empty items to the Trash, items 30 days in the Trash purged, then every tombstone still waiting.
+// The Drive mirror hears of every flagged owner of a personal item either step moved or purged, once each.
 export async function sweep(
   env: Env,
   now = Date.now(),
 ): Promise<{ emptied: number; purged: number; confirmed: number }> {
-  const emptied = await sweepEmpty(env, now);
+  const touched: DriveTouched = new Set();
+  const emptied = await sweepEmpty(env, now, EMPTY_SWEEP_MAX, touched);
   const { results } = await env.INDEX_DB.prepare(
-    'SELECT id, app FROM items WHERE trashed_at IS NOT NULL AND trashed_at < ? ORDER BY trashed_at LIMIT ?',
+    `SELECT id, app, owner_id, team_id FROM items WHERE trashed_at IS NOT NULL AND trashed_at < ?
+     ORDER BY trashed_at LIMIT ?`,
   )
     .bind(now - TRASH_RETENTION_MS, SWEEP_ITEMS_MAX)
-    .all<Purgeable>();
+    .all<Purgeable & { owner_id: string; team_id: string | null }>();
   await purgeRows(env, results, now);
+  for (const row of results) touchItem(touched, row);
+  await sendDriveSignals(env, touched, now);
   const confirmed = await drainTombstones(env, {}, now);
   await sweepLooseEvents(env);
   return { emptied, purged: results.length, confirmed };

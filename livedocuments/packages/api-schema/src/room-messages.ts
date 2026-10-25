@@ -1,4 +1,4 @@
-import type { AgentPresence } from './agent-presence';
+import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livedocuments/document';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';

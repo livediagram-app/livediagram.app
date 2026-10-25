@@ -29,8 +29,8 @@
 
 import { pageImageIds, type Tab } from '@livedesign/design';
 import { bytesToBase64 } from '@liveworkspace/api-kit/bytes';
-import { imagePixelSize } from './image-size';
-import { sniffImageType } from './image-sniff';
+import { imagePixelSize } from '@liveworkspace/api-schema/image-size';
+import { sniffImageType } from '@liveworkspace/api-schema/image-sniff';
 
 export type EmbedImageSource = (
   imageId: string,

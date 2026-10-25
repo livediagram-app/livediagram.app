@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { PopDot } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 17: Workshop mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.

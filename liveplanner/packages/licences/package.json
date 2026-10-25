@@ -6,7 +6,7 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "generate": "node scripts/generate.ts",
+    "generate": "node ../../../packages/licences/scripts/generate-product.ts --product .",
     "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

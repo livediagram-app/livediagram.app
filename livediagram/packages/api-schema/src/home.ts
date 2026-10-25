@@ -2,7 +2,7 @@
 // marker, which the api reads to count an open, and the use window the offline opens share. Home's reads themselves
 // are liveworkspace's index's.
 
-import { utcDay } from './within-reach';
+import { utcDay } from '@liveworkspace/api-schema/within-reach';
 import { DAY_MS } from '@livediagram/document';
 
 /** How many UTC days back, today included, a use day counts towards most used (spec). */

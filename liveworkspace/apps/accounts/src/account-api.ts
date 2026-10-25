@@ -5,7 +5,8 @@
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
 //     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
-//     for notification emails, many people's notify switches at once and a team's people.
+//     for notification emails, many people's notify switches at once and a team's people; and for livediagram's
+//     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
 import { AUTH_BASE_PATH } from './auth-options.ts';
@@ -26,6 +27,7 @@ import { clientApp } from './clients.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
 import { sameSecret } from './secrets.ts';
 import { pendingInvitations } from './internal-invitations.ts';
+import { claimLegacyGuest, legacyClaimConfig } from './legacy-guests.ts';
 import { recordActivity, signupAppOf } from './lifecycle.ts';
 import { rangeOf } from './rate-limit.ts';
 import {
@@ -923,6 +925,24 @@ async function handleInternal(
 
   if (route === 'GET teams/changes') {
     return json(await teamChanges(db, url.searchParams.get('cursor')));
+  }
+
+  // A returning guest of the old livediagram.app, claimed by livediagram's api for the caller it verified
+  // (legacy-guests.ts). A plain 404 until the old site's signing secret is set.
+  if (route === 'POST legacy-guests/claim') {
+    const secret = env.LEGACY_GUEST_ID_HMAC_SECRET?.trim();
+    if (!secret) return error(404, 'not_found');
+    if (client.app !== 'livediagram.app') return error(403, 'wrong_app');
+    const body = await readBody(request);
+    const limitKey = typeof body.into === 'string' ? body.into.slice(0, 100) : '';
+    if (
+      env.LEGACY_GUEST_LIMITER &&
+      !(await env.LEGACY_GUEST_LIMITER.limit({ key: `claim:${limitKey}` })).success
+    ) {
+      return error(429, 'rate_limited');
+    }
+    const outcome = await claimLegacyGuest(legacyClaimConfig(env, secret), body);
+    return json(outcome.body, outcome.status);
   }
 
   return error(404, 'not_found');

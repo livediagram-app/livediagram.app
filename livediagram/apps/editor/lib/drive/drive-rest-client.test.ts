@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FakeGoogle, fakePngBase64Url } from '@livediagram/fake-google';
+import { FakeGoogle, fakePngBase64Url } from '@liveworkspace/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import { DRIVE_MULTIPART_MAX_BYTES } from './cadence';
 import { DriveApiError } from './drive-client';

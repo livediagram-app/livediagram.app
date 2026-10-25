@@ -39,14 +39,15 @@ export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFON
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when
 // it has a liveworkspace session and a guest when not. First in <head> (after Trusted Types), because when it
 // bounces it stops the page loading, so nothing signed-out paints and no app code starts. Never on the sign-in
-// pages, the guest hand-off's way back, the AI-tool consent pages, embeds; the shared script
+// pages, the guest hand-off's way back, embeds; the shared script
 // (@liveworkspace/auth-client/silent) also leaves frames, crawlers, share links and anyone who signed out of
 // livedocuments alone.
+// The AI-tool consent and device pages (/oauth) do bounce: they only work signed in, and the bounce keeps their
+// address, so someone with a liveworkspace session who arrives from an AI tool is never shown a Sign in step.
 export const SILENT_SIGN_IN_SKIP_PATHS = [
   '/sign-in',
   '/get-started',
   '/auth',
-  '/oauth',
   '/embed',
   '/workbench',
 ];

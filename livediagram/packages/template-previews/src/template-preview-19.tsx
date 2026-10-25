@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX, Pop, PopDot, popGroup } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX, Pop, PopDot, popGroup } from '@liveworkspace/template-previews/story-parts';
 
 // Group 19: the redesigned single-picture templates (the timeline, the pyramid, the Venn diagram, the fishbone) and
 // the classic retrospective, as the templates now draw them: a bold title over a how-to, colour that means

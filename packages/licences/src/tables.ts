@@ -28,3 +28,16 @@ export type EmbeddedWork = {
   trigger: { assets: RegExp } | { sources: string[] };
   texts: TextRef[];
 };
+
+// A product's licences page as the generator and the checks take it (its @<product>/licences `src/product.ts`):
+// its folder and its own tables.
+export type LicencesProduct = {
+  // The product's folder (the one holding apps/), as a file: URL or a path.
+  productRoot: URL | string;
+  // Every deployed app, in the order the page lists them.
+  apps: readonly LicenceApp[];
+  // Apps distributed rather than deployed, which carry their own notices, so the page leaves them out.
+  distributed?: readonly string[];
+  overrides: readonly Override[];
+  embedded: readonly EmbeddedWork[];
+};

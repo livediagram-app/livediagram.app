@@ -1,5 +1,5 @@
 import type { Server } from 'node:http';
-import type { FakeGoogle } from '@livediagram/fake-google';
+import type { FakeGoogle } from '@liveworkspace/fake-google';
 import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
 import { enableDebugLogs, test, expect, expectNoPageErrors } from './fixtures';
 import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';

@@ -16,7 +16,7 @@ import {
   type DriveItemKind,
   type DriveLease,
 } from '@livediagram/api-schema';
-import { FakeGoogle, fakePngBase64Url } from '@livediagram/fake-google';
+import { FakeGoogle, fakePngBase64Url } from '@liveworkspace/fake-google';
 import { ApiError } from '../api/core';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus, type Timers } from './engine';

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 13: the infographic Pages templates (docs/specs/008-canvas/canvas-and-palette.md
 // "Templates"): Data Story, How It Works, Versus and Social Carousel. Like group 12,

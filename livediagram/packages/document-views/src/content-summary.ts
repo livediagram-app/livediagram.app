@@ -2,9 +2,15 @@
 // summaries", VW18 to VW21).
 import { ENTITY_KEY_LABELS, type Element } from '@livediagram/document';
 import { ENTITY_FIELDS_SHOWN } from './constants';
-import { arrayField, flagField, isObject, listOf, stringField } from './fields';
-import { cellText } from './text';
-import { shapeKindOf } from './view-attribute';
+import {
+  arrayField,
+  flagField,
+  isObject,
+  listOf,
+  stringField,
+} from '@liveworkspace/document-views/fields';
+import { cellText } from '@liveworkspace/document-views/text';
+import { shapeKindOf } from '@liveworkspace/document-views/view-attribute';
 
 function entitySummary(el: Element): string {
   const fields = arrayField(el, 'entityFields').filter(isObject);

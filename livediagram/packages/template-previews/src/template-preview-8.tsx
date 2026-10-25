@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX, Pop, popGroup } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX, Pop, popGroup } from '@liveworkspace/template-previews/story-parts';
 
 // Group 8: the discovery and strategy starters built together, the
 // opportunity solution tree and the stakeholder map. Static SVG preview

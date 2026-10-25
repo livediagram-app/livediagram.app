@@ -10,9 +10,8 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
 import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button } from '@liveworkspace/ui';
+import { Button, ConfirmDialog } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { CloseIcon, LinkIcon, PencilIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, PortalMenu } from '../ui/Menu';
 import { EllipsisTriggerButton } from '../ui/RowMenu';
@@ -262,6 +261,7 @@ export function TeamCard({
 
       {removing && removeWords ? (
         <ConfirmDialog
+          open
           title={removeWords.title}
           message={removeWords.message}
           confirmLabel={removeWords.confirm}
@@ -271,6 +271,7 @@ export function TeamCard({
       ) : null}
       {asking?.kind === 'delete' ? (
         <ConfirmDialog
+          open
           title={deleteCopy(team.name).title}
           message={deleteCopy(team.name).message}
           confirmLabel={deleteCopy(team.name).confirm}

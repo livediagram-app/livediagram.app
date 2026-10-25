@@ -16,8 +16,7 @@ import {
   type DriveLease,
 } from '@livediagram/api-schema';
 import {
-  remapTabLinks,
-  type StoredPresentation,
+  copyDocumentEnvelope as copyEnvelope,
   type Tab,
   documentToEnvelopeText,
   type DocumentEnvelope,
@@ -114,33 +113,9 @@ export interface LivediagramPort {
   releaseLease(holder: string): Promise<void>;
 }
 
-// A copied document gets fresh tab ids; tab links and the deck's slides
-// follow them, so the copy navigates and presents like the original.
-export function copyEnvelope(envelope: DocumentEnvelope): {
-  tabs: EnvelopeTab[];
-  presentation: string | null;
-} {
-  const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
-  const tabs = envelope.document.tabs.map((t) => ({
-    ...t,
-    id: idMap.get(t.id)!,
-    elements: remapTabLinks(t.elements, idMap),
-  }));
-  let presentation = envelope.document.presentation;
-  if (presentation) {
-    try {
-      const deck = JSON.parse(presentation) as StoredPresentation;
-      for (const d of deck.decks ?? []) {
-        for (const slide of d.slides ?? []) slide.tabId = idMap.get(slide.tabId) ?? slide.tabId;
-      }
-      presentation = JSON.stringify(deck);
-    } catch {
-      // An unreadable deck is dropped rather than carried broken.
-      presentation = null;
-    }
-  }
-  return { tabs, presentation };
-}
+// A copied document gets fresh tab ids; tab links and the deck's slides follow them (@livediagram/document
+// copyDocumentEnvelope, which the api's Drive import door uses too).
+export { copyEnvelope };
 
 // The production port, over lib/api.
 export function createApiLivediagramPort(ownerId: string): LivediagramPort {

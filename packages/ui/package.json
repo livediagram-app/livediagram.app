@@ -14,7 +14,20 @@
     "./breadcrumb-json-ld": "./src/breadcrumb-json-ld.ts",
     "./appearance-storage": "./src/appearance/appearance-storage.ts",
     "./appearance-store": "./src/appearance/appearance-store.ts",
-    "./work-art": "./src/work-art.tsx"
+    "./work-art": "./src/work-art.tsx",
+    "./diagram-build-animation": "./src/DiagramBuildAnimation.tsx",
+    "./palette-tab-icons": "./src/palette-icons/palette-tab-icons.tsx",
+    "./palette-group-icons": "./src/palette-icons/palette-group-icons.tsx",
+    "./social-card": "./src/social-card.tsx",
+    "./seo": "./src/seo.ts",
+    "./site-header": "./src/site-header/SiteHeader.tsx",
+    "./header-primary-cta": "./src/site-header/HeaderPrimaryCta.tsx",
+    "./start-blank-link": "./src/site-header/StartBlankLink.tsx",
+    "./signed-in-hint": "./src/site-header/signed-in-hint.ts",
+    "./page-view-tracker": "./src/page-view-tracker.tsx",
+    "./web-vitals": "./src/web-vitals.ts",
+    "./web-vitals-reporter": "./src/WebVitalsReporter.tsx",
+    "./identity-fill": "./src/identity-fill.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -23,12 +36,19 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/trusted-types": "workspace:*"
   },
@@ -41,6 +61,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "jsdom": "^30.1.2",
+    "next": "^16.4.1",
     "oxlint": "^1.88.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

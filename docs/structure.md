@@ -32,7 +32,6 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
-│  ├─ status                   the status page's one list of services, how an answer is judged, the history's wire shapes
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
@@ -42,7 +41,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
-├─ liveworkspace/              the platform's own apps
+├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
@@ -50,7 +49,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
-│  └─ apps/gateway             the workers.dev stand-in for liveworkspace.app's routes, until the zone moves
+│  ├─ apps/gateway             the workers.dev stand-in for liveworkspace.app's routes, until the zone moves
+│  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
 │  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
@@ -165,7 +165,7 @@ Each step is its own PR, and both products build and pass their tests after ever
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
    behaviour, which becomes config, or just one side being behind, where the newer side wins.
-   Then move. **Done** for `page-background`, `help-registry`, `tailwind-config`, `icons` and `licences`:
+   Then move. **Done** for `diagram-lint`, `document-views`, `page-background`, `help-registry`, `tailwind-config`, `icons` and `licences`:
    - `page-background` and `icons` were one side behind (livedesign's and livediagram's copies were the
      supersets), so each is one copy with no product binding. The Lucide manifest is the union of the
      four products' glyphs; each glyph is a named export, so no bundle grows.
@@ -185,7 +185,17 @@ Each step is its own PR, and both products build and pass their tests after ever
      client provider. It keeps its articles and illustrations, catalogue, card art, header and footer,
      home layout and page copy. The help pages' tints now follow each product's brand (livedocuments and
      livedesign had kept livediagram's sky).
-   - `diagram-lint` and `document-views` are not done yet.
+   - `diagram-lint` and `document-views` were mostly typed on each product's element union, so only what reads no
+     product's elements moved. `@liveworkspace/document-views` holds the view text helpers (`text`, with livediagram's
+     newer `cellText`), field reads, view attributes, budgets and elision (with the `ViewDoor` and `Elision` shapes they
+     read, the same as each `api-schema`'s), reading order and freehand runs over any element, and the shared view
+     constants. `@liveworkspace/diagram-lint` holds the report text over a product's own codes, label quoting, the
+     logger, the shared `LINT_*` numbers and `createSortFindings`: 22 files, about 1,200 lines with their tests, about
+     1,100 lines fewer in each product. Each product's package keeps its name and surface, binds `Placed` and
+     `FreehandRun` to its `Element` and `sortFindings` to its `LINT_CODES` and `LINT_SEVERITY`. Still in each product:
+     the views, the lint context and checks, typed on its `Element` and `Tab`, and the wire types in its `api-schema`,
+     whose lint codes and view names really differ (livediagram's group, aspect and colour checks, livedocuments'
+     `pages` view).
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
    - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`
@@ -250,6 +260,69 @@ Each step is its own PR, and both products build and pass their tests after ever
      and `telemetry-client`: `SiteHeader`, `HeaderPrimaryCta` and `StartBlankLink` (its CTA surfaces and
      `ctaHref`), `SiteAccount` and `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`,
      and the web-vitals reporter. They follow as those packages move.
+   - `edit-operations`, first slice: `@liveworkspace/edit-operations` (`packages/edit-operations`) holds the
+     engine code the four copies had in common that reads no product's element union: the bounds every
+     vocabulary had (`limits`: cuts, caps, distances, `PROTOTYPE_KEYS`), `equality`, the line form's
+     `tokenise` (liveplanner's was behind and gains `arrowParts`), `nearest` (generic over `{ id }`),
+     `graph-walk` (over arrow ends), `element-text`'s `labelOf`, `quoteCut` and `endRef`, the result lines'
+     printer, and the line walk of `parse`. The real differences became bindings: each product's `parse.ts`
+     binds `createParseEditOperations` to its operations, word parser and refusals, and livediagram,
+     livedocuments and livedesign bind `createFormatResultFooter` with their CLI's revert command
+     (liveplanner keeps its own printer: it quotes only labels and its footer has no lint). Each module is
+     a subpath, so a product's file became `export * from '@liveworkspace/edit-operations/x'` (or a binding)
+     and no caller changed; the shared package is at full coverage. About 600 lines fewer in each product.
+   - Still in each product's `edit-operations`: everything on its element union and `EditState`
+     (`state`, `selectors`, `placement`, `fields`, `colours`, `labels`, `locks`, `ids`, every operation,
+     `finalise`, `replace`, `results`, `apply`), which reads the same in livediagram, livedocuments and
+     livedesign but moves only once the union is shared; and what is its own vocabulary or refusals
+     (`vocabulary`, `types`, `parse-line`, `parse-json`, `rejections`, `format-operation`), its `pages` slice
+     and liveplanner's Plan bodies. No stored document or wire shape changed.
+   - `api-schema`: `@liveworkspace/api-schema` (`packages/api-schema`) holds the wire shapes and validators the
+     four `api-schema` packages had in common and that name no product: access levels, agent presence, API tokens,
+     the build id and document format parsers, the template and icon catalogues, comment threads, creation use, the
+     Offline Mode conversion, document dates and sources, folders, reading an api error, the image limits, sniffing
+     and size, the gallery row, the MCP origin resolver, participants, placement, ref errors, share-link levels and
+     lifetimes, the signed-in hint reader, the snapshot SVG helpers, the tab size cap, teams, title case, the Trash
+     clock and within reach: 30 modules and 21 tests, about 1,900 lines. Every difference between copies was a
+     comment or one side behind (livediagram's `importMarksUse`, the room ticket's `adderKey`, `IconSearchResponse`);
+     the newer side won. What carries a product's name became a binding it keeps: its build, format and conversion
+     headers, its MCP origin (`createMcpOriginResolver`), its hint cookie (`createSignedInHintReader`) and its Trash
+     tokens; liveplanner and livedesign re-export under their nouns (`projectDates`, `DesignPlacement`). Types the
+     api's OpenAPI document names (`TrashedProject`, `ProjectSource`, `DesignCommentThread`, …) keep a local
+     declaration, so `/api/openapi.json` did not change. The SHA-256 digest four packages each held is one copy in
+     `@liveworkspace/model-core/sha256`. Each module is a subpath and each product's `api-schema` re-exports it, so
+     no caller changed. Still per product: what is typed on its element model (`drag-preview`, `embed-images`), its
+     vocabularies (telemetry, lint, room ops, changesets, views, CTA surfaces, page views), the workbench messages
+     (their types carry the product's prefix) and its envelopes, which name its noun.
+   - `ui`, third slice, with `template-previews` and the licences bindings: the palette icons and the diagram build
+     animation moved to `@liveworkspace/ui` as they were. The social card, page metadata, site header (its CTA,
+     start-blank link and signed-in hint), page-view tracker, web-vitals report and reporter, and identity fill
+     became `createX(config)` factories that take each product's brand, data and telemetry. The account slot is
+     `createSiteAccount` in `@liveworkspace/account-menu`, so ui needn't depend on it. The previews' motion kit, story
+     parts, both stylesheets, a generic `PreviewFan` and one shared check suite are `@liveworkspace/template-previews`;
+     each product keeps only its drawings, and every app's `@source` names the shared fan. Licences have one
+     `generate-product.ts` that reads a product's `src/product.ts`, and one `describeLicenceTables` suite in place of
+     four copies each of the generate script and the apps, dependencies and texts tests. Each product package keeps
+     its name and re-exports, so callers didn't change, and every product renders exactly as before (each moved piece
+     rendered byte-identical). livedocuments now ships the whole shared `preview-motion.css`, about 0.5 KB gzipped of
+     rules it never matches. help-registry had nothing left to share beyond product data.
+   - `agent-verbs`, first slice: `@liveworkspace/agent-verbs` (`packages/agent-verbs`) holds what the four products'
+     agent-verbs packages shared once the product's name, noun and collection were set aside: 16 modules and their
+     tests, about 2,750 lines, and about 1,600 to 2,000 fewer lines in each product. The verb shape (`define`), short
+     refs, the element-command line (`argv-line`), the list helpers and the MCP tool helper were the same in all four;
+     where they differed, one side was behind (livediagram's `connect` arrow and `telemetryType`), and the newer side
+     won. Read copies, the library sweep (`find`), folders, addressing, the changeset write and the folder verbs
+     differed only in the product's CLI name, noun and collection, so each is a `createX(binding)` and each product's
+     `agent-product.ts` holds those facts (liveplanner's messages say "plan" where its api says "project"). The api
+     refusals, the image gallery and `image ls` are shared by the three products that keep images. The shared code
+     never imports a product's api-schema: it declares the fields it reads, and each product hands in `revOfEtag`,
+     `CHANGESET_SUMMARY_MAX` and its element fingerprint. Every product's verb catalogue and MCP tools dump
+     byte-identical before and after; the shared suites run against a made-up product, so a word left unbound fails.
+   - Still in each product's agent-verbs: the catalogue, the MCP schemas, guides and skill, and the verbs typed on its
+     elements or its api-schema (lifecycle, edit, tab, changeset, the pages and plan verbs). Presence, comment and
+     workbench sit on its api-schema's rules and its model's ref functions; the `find-*` and `verbs/shared` bindings
+     stay because the apps read their product-named keys (`Libraries.personal.documents`, `tabOf`'s
+     `{ document, tab }`).
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

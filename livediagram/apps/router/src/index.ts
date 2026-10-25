@@ -9,7 +9,10 @@ import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 import {
   routeToWorkspace,
   routeToPreviews,
+  forwardToDrive,
   forwardToIndex,
+  isDrivePath,
+  PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   statusRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
@@ -34,6 +37,9 @@ export interface Env {
   // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
   // production's.
   INDEX_ORIGIN?: string;
+  // liveworkspace's Google Drive mirror (liveworkspace/docs/drive.md): `/api/drive/*` goes there, not to the api.
+  // Unset means production's.
+  DRIVE_ORIGIN?: string;
   // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
   // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
@@ -225,6 +231,11 @@ async function route(request: Request, env: Env): Promise<Response> {
   // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
+  // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/drive.md): the Drive mirror answers them, cookies
+  // dropped.
+  if (isDrivePath(url.pathname)) {
+    return forwardToDrive(request, url, env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN);
   }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix

@@ -16,7 +16,7 @@ export {
   type VerbBehaviour,
   type VerbContext,
 } from './define';
-export { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
+export { REF_MIN_PREFIX, shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 export {
   folderChoices,
   folderLines,
@@ -44,7 +44,7 @@ export {
   verbById,
   verbsOf,
 } from './catalogue';
-export { argvToOperationLine } from './argv-line';
+export { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 export { baseFromCopy, readPlainTab, recordCopy, type ReadCopies, type ReadCopy } from './copies';
 export { classifySource } from './source-kind';
 export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';

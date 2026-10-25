@@ -90,7 +90,8 @@ export async function callApi(
   return { text: await res.text(), status: res.status };
 }
 
-// A token from stdin (`--with-token`): never read from a terminal, and only an lwt_ token.
+// A token from stdin (`--with-token`): never read from a terminal, and only an API token (`lwt_`, or an `lvd_` one
+// carried over from the old livediagram.app).
 async function tokenFromStdin(io: CliIo): Promise<string> {
   if (io.stdinIsTTY)
     throw new CliError({

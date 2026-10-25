@@ -193,6 +193,8 @@ describe('the workbench page’s surroundings', () => {
       authLoaded: true,
       accountUserId: 'user_1',
       accountDisplayName: 'Webber',
+      // The workbench's session is settled from the start: there is no sign-in to wait for.
+      sessionAnswered: true,
     });
     expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${SECRET}` });
     core.setTokenProvider(null);

@@ -34,7 +34,8 @@ export async function liveTokenFacts(
   return row ? { readOnly: row.readOnly === 1, expiresAt: row.expiresAt } : null;
 }
 
-// The token a secret is, revoked or not, for ending its workbench after a self-revoke.
+// The token a secret is, revoked or not, for ending its workbench after a self-revoke. Either prefix (`lwt_`, or an
+// `lvd_` one carried over from the old livediagram.app, isApiTokenFormat).
 export async function tokenBySecret(
   db: D1Database,
   token: string,

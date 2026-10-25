@@ -1,96 +1,11 @@
-// A scripted api for the verb suites: routes by path (and query), answering JSON, text, or what a function returns
-// for the request (a POST, a refusal, a header); 404 otherwise.
+// A scripted api for the verb suites (@liveworkspace/agent-verbs/testing/fake-api), on this product's host and
+// collection.
 
-import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
-import type { VerbContext } from '../define';
+import { createFakeApi } from '@liveworkspace/agent-verbs/testing/fake-api';
+import { AGENT_PRODUCT } from '../agent-product';
 
-const isText = (a: unknown): a is { text: string } =>
-  typeof a === 'object' && a !== null && 'text' in a && Object.keys(a).length === 1;
-
-export function fakeApi(routes: Record<string, unknown>): ApiClient & { calls: string[] } {
-  const calls: string[] = [];
-  const api = createApiClient({
-    baseUrl: 'https://livedesign.app/api',
-    headers: () => ({}),
-    fetch: async (request) => {
-      const url = new URL(request.url);
-      const key = `${url.pathname.replace(/^\/api/, '')}${url.search}`;
-      calls.push(key);
-      const answer = key in routes ? routes[key] : routes[url.pathname.replace(/^\/api/, '')];
-      if (answer === undefined) return Response.json({ error: 'not_found' }, { status: 404 });
-      if (typeof answer === 'function')
-        return (answer as (r: Request) => Response | Promise<Response>)(request);
-      if (isText(answer)) return new Response(answer.text);
-      return Response.json(answer);
-    },
-  });
-  return Object.assign(api, { calls });
-}
-
-type FakeContext = VerbContext & {
-  notices: string[];
-  slept: number[];
-  clock: { now: number };
-};
-
-export function contextOf(
-  api: ApiClient,
-  shareCodes: string[] = [],
-  logs: string[] = [],
-  more: Partial<VerbContext> = {},
-): FakeContext {
-  const notices: string[] = [];
-  const slept: number[] = [];
-  const clock = { now: Date.UTC(2026, 9, 5, 8) };
-  let ids = 0;
-  return {
-    log: (line) => void logs.push(line),
-    api,
-    host: 'https://livedesign.app',
-    useShareCode: (code) => void shareCodes.push(code),
-    notice: (line) => void notices.push(line),
-    now: () => clock.now,
-    newId: () => `new-${++ids}`,
-    sleep: async (ms) => {
-      slept.push(ms);
-      clock.now += ms;
-    },
-    readInput: async (path) => {
-      throw new Error(`no input ${path}`);
-    },
-    copies: null,
-    ...more,
-    notices,
-    slept,
-    clock,
-  };
-}
-
-export const DOC_A = 'aaaa1111-0000-4000-8000-000000000001';
-export const DOC_B = 'aaaa2222-0000-4000-8000-000000000002';
-export const DOC_C = 'bbbb0000-0000-4000-8000-000000000003';
-
-// A personal library of three designs and no teams.
-export const library = {
-  '/designs': {
-    designs: [
-      { id: DOC_A, name: 'Auth flow', savedAt: Date.UTC(2026, 9, 1), ownerId: 'u' },
-      { id: DOC_B, name: 'Auth flow v2', savedAt: Date.UTC(2026, 9, 3), ownerId: 'u' },
-      { id: DOC_C, name: 'Shop', savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' },
-    ],
-  },
-  '/teams': { teams: [] },
-};
-
-export const tabsOfA = {
-  [`/designs/${DOC_A}`]: {
-    design: {
-      id: DOC_A,
-      name: 'Auth flow',
-      tabs: [
-        { id: 'tab-two-0000', name: 'Details', orderIndex: 1 },
-        { id: 'tab-one-0000', name: 'Overview', orderIndex: 0 },
-      ],
-    },
-  },
-};
+export const { fakeApi, contextOf, library, tabsOfA } = createFakeApi(
+  AGENT_PRODUCT,
+  'https://livedesign.app',
+);
+export { DOC_A, DOC_B, DOC_C } from '@liveworkspace/agent-verbs/testing/fake-api';

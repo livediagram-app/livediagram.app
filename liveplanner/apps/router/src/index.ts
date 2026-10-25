@@ -9,7 +9,10 @@ import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 import {
   routeToWorkspace,
   routeToPreviews,
+  forwardToDrive,
   forwardToIndex,
+  isDrivePath,
+  PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   statusRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
@@ -39,6 +42,9 @@ export interface Env {
   // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
   // production's; staging and local dev name their own.
   INDEX_ORIGIN?: string;
+  // liveworkspace's Google Drive mirror (liveworkspace/docs/drive.md): `/api/drive/*` goes there, not to the api.
+  // Unset means production's.
+  DRIVE_ORIGIN?: string;
   // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
   // image.png and card go there, not to the api. Unset means production's.
   PREVIEWS_ORIGIN?: string;
@@ -210,6 +216,11 @@ async function route(request: Request, env: Env): Promise<Response> {
   // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+  }
+  // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/drive.md): the Drive mirror answers them, cookies
+  // dropped.
+  if (isDrivePath(url.pathname)) {
+    return forwardToDrive(request, url, env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN);
   }
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix

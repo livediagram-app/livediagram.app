@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 25: the strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Wardley
 // map, Threat model, Service blueprint, Metric tree, Value Proposition Canvas, Working Backwards, Family tree and

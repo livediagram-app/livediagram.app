@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX, Pop, PopDot } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX, Pop, PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 10 (plan 0002 new templates): the Meeting agenda and the Objectives
 // planner. Static SVG preview tiles, one branch per TemplateKind;

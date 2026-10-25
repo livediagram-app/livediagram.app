@@ -21,11 +21,21 @@ import {
 } from '@liveworkspace/workbench/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { readSignedInHint } from '@/lib/signed-in-hint';
+import { useSignInGate } from '@liveworkspace/workbench/hooks/auth/useSignInGate';
 
 function Consent() {
   const params = useSearchParams();
   const session = params.get('session');
-  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, isSignedIn, accountUserId } = useAccountBootstrap();
+  // Sign in is offered only once the session says there is no one: the 5 s give-up is not that answer while
+  // the ld_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
+  const gate = useSignInGate({
+    authLoaded,
+    sessionAnswered,
+    signedIn: !!isSignedIn && !!accountUserId,
+    signedInHint: readSignedInHint(),
+  });
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
   // Why the last Connect failed, for the line under the buttons.
   const [failure, setFailure] = useState<HandoverFailure>('failed');
@@ -72,14 +82,14 @@ function Consent() {
     );
   }
 
-  if (!authLoaded) {
+  if (gate === 'waiting') {
     return (
       <OauthShell>
         <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
       </OauthShell>
     );
   }
-  if (!isSignedIn || !accountUserId) {
+  if (gate === 'sign-in' || !accountUserId) {
     // Return here after sign-in. The sign-in page reads `redirect_url` (NOT
     // `redirect`) and validates it as a safe internal path before bouncing
     // back — /oauth/consent?... qualifies, so the user lands back on consent.

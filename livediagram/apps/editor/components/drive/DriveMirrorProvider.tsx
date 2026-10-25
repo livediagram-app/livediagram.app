@@ -309,8 +309,8 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     }
 
     const unsubscribeWrites = subscribeApiWrites((signal) => {
-      // A change from Drive is not an edit to write back.
-      if (signal.drive) return;
+      // A change from Drive is not an edit to write back. A claim's own POST already counted as a write.
+      if (signal.drive || signal.claimed) return;
       const engine = runtime.current?.engine;
       if (engine) engine.noteWrite();
       else channel.post({ type: 'write' });

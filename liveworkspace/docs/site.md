@@ -454,8 +454,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   so they are never hidden behind All. Only the other apps' groups are left out. It is drawn in the app's own Settings
   view: its rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes,
   search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read.
-  A guest's side is the app's settings alone. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
-  for what only makes sense inside the editor (appearance, shortcuts, the editors' shared chrome such as UI scale).
+  A guest's side is the app's settings alone. The footer only says where settings are saved: it has no link into the
+  app's own Settings (a "More in <app> Settings" link was removed on 25 October 2026); what only makes sense inside
+  the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
 - **All.** Every setting, grouped under headings in the rail: **Account** first (liveworkspace's logo), then

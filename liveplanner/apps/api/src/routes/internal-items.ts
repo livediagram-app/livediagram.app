@@ -7,7 +7,9 @@
 // Each is a call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
 // Trash are the index's; a purge also drops the plan's previews at liveworkspace's media service (db/projects.ts
 // `purgePlanPreviews`). The export door draws a plan for those previews (liveworkspace/docs/previews.md), on the
-// index's key or the media service's (MEDIA_KEY). A notice is worked out off the index's path: a share link made (the first-share milestone),
+// index's key or the media service's (MEDIA_KEY), and answers a plan's whole file for liveworkspace's Drive mirror, which
+// calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps",
+// routes/internal-file.ts). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
@@ -16,6 +18,7 @@ import { purgePlanPreviews } from '../db/projects';
 import { planRoom } from '../plan-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
+import { importProjectFileFor } from './internal-file';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -26,6 +29,7 @@ export function handleInternalItems(
   return handle(request, {
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
+    driveKey: env.DRIVE_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -34,8 +38,14 @@ export function handleInternalItems(
       },
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
-      // The plan drawn for liveworkspace's previews, by its Durable Object, where the content is.
-      export: (id, query) => planRoom(env, id).exportImage(query),
+      // The plan drawn for liveworkspace's previews, or its whole file for the Drive mirror, by its Durable Object,
+      // where the content is.
+      export: (id, query) =>
+        query.format === 'file'
+          ? planRoom(env, id).exportFile(query)
+          : planRoom(env, id).exportImage(query),
+      // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
+      import: (input) => importProjectFileFor(env, input),
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),
       // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>

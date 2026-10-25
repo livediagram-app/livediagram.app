@@ -6,8 +6,7 @@
 // list and the usage), each tile's picture only as it nears the screen (./blobs).
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
-import { EmptyState } from '@liveworkspace/ui';
+import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
@@ -141,6 +140,7 @@ export function GalleryPane({
       </div>
       {deleting ? (
         <ConfirmDialog
+          open
           title={`Delete “${imageName(deleting)}”?`}
           message={
             usageOf(deleting.id).length

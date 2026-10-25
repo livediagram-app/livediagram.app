@@ -7,7 +7,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder, Level } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ConfirmDialog } from '@liveworkspace/ui';
 import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { DismissIcon, ItemIcon } from '../ui/icons';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
@@ -88,6 +88,7 @@ export function SharedList({
       ) : null}
       {dismissing ? (
         <ConfirmDialog
+          open
           title={`Dismiss “${dismissing.title || 'Untitled'}”?`}
           message="It leaves your Shared With Me list. Its link still opens it, and opening it again brings it back."
           confirmLabel="Dismiss"

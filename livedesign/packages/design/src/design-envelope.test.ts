@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  copyDesignEnvelope,
   DESIGN_ENVELOPE_KIND,
   designToEnvelopeText,
   parseDesignEnvelope,
@@ -66,5 +67,52 @@ describe('parseDesignEnvelope', () => {
       ok: true,
       envelope: { ...older, design: { id: 'd', name: 'n', tabs: [tab] } },
     });
+  });
+});
+
+describe('copyDesignEnvelope', () => {
+  it('mints fresh tab ids and re-points tab links at them', () => {
+    const text = designToEnvelopeText(
+      { id: 'D', name: 'Logo' },
+      [
+        {
+          id: 't1',
+          name: 'One',
+          elements: [
+            {
+              id: 'b',
+              type: 'shape',
+              shape: 'square',
+              x: 0,
+              y: 0,
+              width: 1,
+              height: 1,
+              link: { kind: 'tab', tabId: 't2' },
+            },
+          ] as EnvelopeTab['elements'],
+        },
+        { id: 't2', name: 'Two', elements: [] },
+      ],
+      1,
+    );
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    const { tabs } = copyDesignEnvelope(parsed.envelope);
+    expect(tabs.map((t) => t.id)).not.toContain('t1');
+    const second = tabs[1]!.id;
+    expect((tabs[0]!.elements[0] as { link?: { tabId: string } }).link?.tabId).toBe(second);
+  });
+
+  // docs/specs/012-collaboration/presentation-mode.md "Saved data": an older file's deck stays behind.
+  it('copies an older file that carries a slide deck without the deck', () => {
+    const older = JSON.stringify({
+      kind: DESIGN_ENVELOPE_KIND,
+      schemaVersion: 1,
+      exportedAt: 1,
+      design: { id: 'D', name: 'L', presentation: '{"decks":[]}', tabs: [tab] },
+    });
+    const parsed = parseDesignEnvelope(older);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(copyDesignEnvelope(parsed.envelope)).not.toHaveProperty('presentation');
   });
 });

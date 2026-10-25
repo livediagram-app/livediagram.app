@@ -1,0 +1,197 @@
+import { describe, expect, it } from 'vitest';
+import { createPageMetadata } from './seo';
+
+// A product's binding, as its `seo.ts` makes one from its `site.ts`.
+const { pageMetadata, BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } = createPageMetadata({
+  url: 'https://product.example',
+  name: 'product',
+  pitch: 'a real-time canvas for diagrams, whiteboards and workshops',
+});
+
+describe('the brand card', () => {
+  it("is the site's own, served at its origin root", () => {
+    expect(BRAND_OG_IMAGE).toEqual({
+      url: 'https://product.example/opengraph-image',
+      width: 1200,
+      height: 630,
+      alt: 'product: a real-time canvas for diagrams, whiteboards and workshops',
+    });
+    expect(BRAND_TWITTER_IMAGE).toBe('https://product.example/twitter-image');
+  });
+});
+
+// pageMetadata is the single factory every marketing subpage
+// (FAQ, /alternatives, /alternatives/<slug>, /features/<id>, /status)
+// and every help-centre page uses for its Next `metadata` block, so a
+// regression here ripples across the whole non-landing surface. The tests below pin the
+// shape Google + Twitter + sister-page canonical-checks all
+// depend on: a value drift in `openGraph.type` from 'article' to
+// 'website', or in `locale` from 'en_GB' to 'en-GB' (BCP 47 form
+// rather than the OG-required underscore form), would break
+// social cards on every subpage at once.
+
+describe('pageMetadata', () => {
+  it("uses a page's own card for both Open Graph and Twitter when it has one", () => {
+    const image = {
+      url: 'https://product.example/help/og/canvas/themes.png',
+      alt: 'Themes',
+    };
+    const md = pageMetadata({ title: 't', description: 'd', path: '/help/canvas/themes/', image });
+    expect(md.openGraph?.images).toEqual([{ ...image, width: 1200, height: 630 }]);
+    expect(md.twitter?.images).toEqual([image.url]);
+  });
+
+  it('takes a `website` OG type for an app front page, defaulting to `article`', () => {
+    const md = pageMetadata({ title: 't', description: 'd', path: '/community/', type: 'website' });
+    expect(md.openGraph).toMatchObject({ type: 'website', url: '/community/' });
+    expect(pageMetadata({ title: 't', description: 'd', path: '/x' }).openGraph).toMatchObject({
+      type: 'article',
+    });
+  });
+
+  it('passes title + description through to the top-level fields', () => {
+    const md = pageMetadata({
+      title: 'FAQ | product',
+      description: 'Questions and answers',
+      path: '/faq',
+    });
+    expect(md.title).toBe('FAQ | product');
+    expect(md.description).toBe('Questions and answers');
+  });
+
+  it('uses the supplied path as the canonical', () => {
+    // The metadataBase in each app's layout resolves the relative
+    // path against the production origin, so `/faq` becomes
+    // `https://product.example/faq` in the emitted <link>. The
+    // factory's job is to surface the supplied path verbatim.
+    const md = pageMetadata({ title: 't', description: 'd', path: '/terms' });
+    expect(md.alternates).toEqual({ canonical: '/terms' });
+  });
+
+  it('emits an `article`-type openGraph block with the default siteName + en_GB locale', () => {
+    const md = pageMetadata({
+      title: 'Terms | product',
+      description: 'Legal terms',
+      path: '/terms',
+    });
+    // OG locale uses the underscore form (en_GB), not BCP 47's
+    // hyphen form (en-GB). They look interchangeable but they
+    // mean different things to different parsers, and the
+    // OG spec is strict on the underscore one.
+    expect(md.openGraph).toMatchObject({
+      type: 'article',
+      url: '/terms',
+      siteName: 'product',
+      title: 'Terms | product',
+      description: 'Legal terms',
+      locale: 'en_GB',
+    });
+  });
+
+  it('emits a `summary_large_image` twitter card with title + description mirrors', () => {
+    const md = pageMetadata({
+      title: 'Alternatives | product',
+      description: 'How product compares',
+      path: '/alternatives',
+    });
+    expect(md.twitter).toMatchObject({
+      card: 'summary_large_image',
+      title: 'Alternatives | product',
+      description: 'How product compares',
+    });
+  });
+
+  it('sets the OG + Twitter card image explicitly (the file-convention fallback is suppressed once openGraph is declared)', () => {
+    // Next.js auto-promotes app/opengraph-image.tsx to og:image ONLY for
+    // routes that don't declare their own openGraph. Every page here sets an
+    // explicit openGraph object, which suppresses that fallback, so without
+    // an explicit image the card goes missing (verified against the built
+    // HTML). Pin that the factory references marketing's generated assets by
+    // absolute URL, so a page in a basePath app (the help centre, which has
+    // no card of its own) resolves them too.
+    const md = pageMetadata({ title: 't', description: 'd', path: '/privacy' });
+    const og = md.openGraph as Record<string, unknown> | undefined;
+    expect(og?.images).toEqual([
+      {
+        url: 'https://product.example/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'product: a real-time canvas for diagrams, whiteboards and workshops',
+      },
+    ]);
+    const tw = md.twitter as Record<string, unknown> | undefined;
+    expect(tw?.images).toEqual(['https://product.example/twitter-image']);
+  });
+
+  it('omits the shared card image when the page has its own route-level image (ownOgImage)', () => {
+    // The /features/<id> pages ship their own opengraph-image / twitter-image,
+    // so the factory must NOT set images (that would override the per-category
+    // file-convention card with the generic brand one).
+    const md = pageMetadata({
+      title: 't',
+      description: 'd',
+      path: '/features/simple',
+      ownOgImage: true,
+    });
+    const og = md.openGraph as Record<string, unknown> | undefined;
+    expect(og?.images).toBeUndefined();
+    const tw = md.twitter as Record<string, unknown> | undefined;
+    expect(tw?.images).toBeUndefined();
+  });
+
+  it('returns a fresh object on each call (call sites compose into Next metadata at module load)', () => {
+    // Each page's `export const metadata` evaluates the factory
+    // once at build time; a shared mutable reference would mean a
+    // future revision that mutated the result (e.g. adding a
+    // per-page image) leaked across pages. Asserting distinct
+    // references rules out an accidental return-the-singleton
+    // refactor.
+    const a = pageMetadata({ title: 'a', description: 'd', path: '/faq' });
+    const b = pageMetadata({ title: 'b', description: 'd', path: '/terms' });
+    expect(a).not.toBe(b);
+    expect(a.openGraph).not.toBe(b.openGraph);
+  });
+
+  it('omits openGraph.modifiedTime when no modifiedTime is supplied', () => {
+    // FAQ + Terms + Privacy don't pass a date today. The factory
+    // must NOT emit an empty / "Invalid Date" string into the
+    // article:modified_time meta tag for them, which would surface
+    // a parse warning in Google Search Console.
+    const md = pageMetadata({ title: 't', description: 'd', path: '/faq' });
+    const og = md.openGraph as Record<string, unknown> | undefined;
+    expect(og?.modifiedTime).toBeUndefined();
+  });
+
+  it('serialises modifiedTime to an ISO 8601 string for article:modified_time', () => {
+    // Next.js's metadata API takes a string (or Date) here and
+    // emits it as the `article:modified_time` OG meta. ISO 8601
+    // is what Google + Open Graph parsers expect; assertions here
+    // pin (a) the exact format, and (b) that the factory does the
+    // toISOString() conversion itself (so callers can pass a
+    // friendly Date and not worry about the wire format). See
+    // packages/comparisons/README.md "Metadata".
+    const date = new Date('2026-06-02T00:00:00.000Z');
+    const md = pageMetadata({
+      title: 't',
+      description: 'd',
+      path: '/alternatives/miro',
+      modifiedTime: date,
+    });
+    const og = md.openGraph as Record<string, unknown> | undefined;
+    expect(og?.modifiedTime).toBe('2026-06-02T00:00:00.000Z');
+  });
+});
+
+describe('pageMetadata siteName', () => {
+  it('lets an app name itself (the help centre) without changing anything else', () => {
+    const md = pageMetadata({
+      title: 'Themes',
+      description: 'd',
+      path: '/help/canvas/themes/',
+      siteName: 'product Help',
+    });
+    expect(md.title).toBe('Themes');
+    expect(md.openGraph).toMatchObject({ siteName: 'product Help', title: 'Themes' });
+    expect(md.twitter).toMatchObject({ card: 'summary_large_image', title: 'Themes' });
+  });
+});

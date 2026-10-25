@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { DocumentListItem } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { useAfterLegacyClaim } from './useAfterLegacyClaim';
 
 // One page: the pickers show the most recent few, and search filters what is here.
 export const DOCUMENT_LIST_LIMIT = 100;
@@ -70,5 +71,7 @@ export function useDocumentList(
       cancel();
     };
   }, [enabled, ownerId, generation]);
+  // An old livediagram.app guest's work, just claimed (docs/specs/014-identity/auth-and-guest-access.md).
+  useAfterLegacyClaim(() => setGeneration((g) => g + 1), enabled);
   return { documentList, refreshDocumentList: () => setGeneration((g) => g + 1) };
 }

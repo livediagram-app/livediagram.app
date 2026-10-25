@@ -6,7 +6,7 @@ import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livedesign/api-sche
 import { formatLintReport } from '@livedesign/page-lint';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, designOf, tabOf, tabPath } from './shared';
 
 const tabFlag = z
@@ -159,9 +159,7 @@ export const tabLint = defineVerb({
   listKey: 'findings',
   run: async (ctx, input) => {
     const { design, tab } = await tabOf(ctx, input.doc, input.tab);
-    const report = await ctx.api.json<LintReport>(
-      `${tabPath(design.id, tab.id)}?view=lint&json=1`,
-    );
+    const report = await ctx.api.json<LintReport>(`${tabPath(design.id, tab.id)}?view=lint&json=1`);
     return {
       findings: report.findings,
       errors: report.counts.error,

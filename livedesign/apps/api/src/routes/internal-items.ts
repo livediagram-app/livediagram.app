@@ -8,7 +8,9 @@
 // Trash are the index's; a purge also drops the design's previews in liveworkspace's media service
 // (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's path: a share link made (the
 // first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The export
-// door draws the design for liveworkspace's previews, which call it with MEDIA_KEY.
+// door draws the design for liveworkspace's previews, which call it with MEDIA_KEY, and answers its whole file for
+// liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md
+// "Contracts > The apps", routes/internal-file.ts).
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
@@ -17,6 +19,7 @@ import { purgeDesignPreviews } from '../db/designs';
 import { designRoom } from '../design-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
+import { importDesignFileFor } from './internal-file';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -27,6 +30,7 @@ export function handleInternalItems(
   return handle(request, {
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
+    driveKey: env.DRIVE_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -64,8 +68,14 @@ export function handleInternalItems(
         await designRoom(env, to).importCopy(copy);
         return { tabs: copy.tabs.length, items: 0 };
       },
-      // The design drawn, for liveworkspace's previews (design-room.ts `exportImage`).
-      export: (id, query) => designRoom(env, id).exportImage(query),
+      // The design drawn, for liveworkspace's previews (design-room.ts `exportImage`), or its whole file, for the
+      // Drive mirror (`exportFile`).
+      export: (id, query) =>
+        query.format === 'file'
+          ? designRoom(env, id).exportFile(query)
+          : designRoom(env, id).exportImage(query),
+      // A new design from a Drive file, as its owner's (routes/internal-file.ts).
+      import: (input) => importDesignFileFor(env, input),
     },
   });
 }

@@ -146,6 +146,13 @@ the account, its verified email, read-only and the account's teams. `createToken
 ten seconds), so a burst of MCP calls costs one check; it is also how long a revoked token can go on
 working in an isolate that had just checked it.
 
+**Tokens carried over from the old livediagram.app** ([docs/migration.md](../../docs/migration.md) step 1) keep
+their `lvd_` prefix. The old site stored them exactly as `api_token` does (the lowercase SHA-256 hex of the whole
+token), so the migrate tool copies their rows in as they are and the secret is never needed. Every check of a
+token's shape takes `lvd_` beside `lwt_`: `isApiTokenFormat` here (`src/tokens.ts`, which the self-revoke and the
+workbench's own token checks use too) and in `@liveworkspace/api-kit` (each app's api and CLI). Nothing mints
+`lvd_`: `generateApiToken` makes `lwt_` only.
+
 ### Workbench pairings
 
 A token can also be paired with a workbench (a developer tool that frames an app's editor), approved once by its
@@ -242,6 +249,42 @@ authorize step instead (`mergeGuestOnAuthorize`): when the authorize answer carr
 request a valid `lw_guest` cookie, the session's account takes the guest's settings, profile and
 index items, and the cookie is cleared. Without a guest cookie it costs nothing.
 
+### Returning guests of the old livediagram.app
+
+The migration ([docs/migration.md](../../docs/migration.md) step 6) copies each old guest's work under
+`guest_<old uuid>`, an id no browser is ever handed. The migrate tool also writes one `legacy_guest` row per
+migrated guest (migration `0011_legacy_guest.sql`): `id` (`guest_<old uuid>`, the key), `firstSeenAt` (when the
+old site first saw it, epoch ms), and `claimedAt` and `claimedBy`, null until it is claimed. This Worker only reads
+and stamps the rows; it never makes one.
+
+When the new editor finds the old id in a browser, livediagram's api forwards it here with its client credentials:
+`POST /api/account/internal/legacy-guests/claim` `{ legacyId, signature, into }` (`src/legacy-guests.ts`).
+
+- **Only with the secret.** Without `LEGACY_GUEST_ID_HMAC_SECRET` (the old site's `GUEST_ID_HMAC_SECRET`) the
+  route is a plain 404, like any unknown route. Only livediagram's client may call it (another app's is 403
+  `wrong_app`), and it is limited to 10 a minute per `into` (`LEGACY_GUEST_LIMITER`; absent, as in tests, not
+  limited): 429 `rate_limited`.
+- **The body.** `legacyId` is the old bare id, a lowercase v4 UUID; `signature` is the old `self-sig` (a string)
+  or null; `into` is the caller as livediagram's api verified it, an account (`user_…`) or a guest
+  (`guest_<uuid>`), never `guest_<legacyId>` itself. Anything else is 400 (`invalid_legacy_id`,
+  `invalid_signature`, `invalid_into`).
+- **Possession.** With a signature: HMAC-SHA-256 of the UTF-8 bare `legacyId` under the secret (its UTF-8
+  bytes), written as base64url without padding (43 characters), checked with `crypto.subtle.verify` (constant
+  time) before anything is read. A wrong one is 403 `bad_signature`. Without one, the row's `firstSeenAt` must be
+  before `LEGACY_GUEST_SIGNING_LIVE_AT` (`@liveworkspace/migration`, 2026-09-25 12:00 UTC), the old site's own
+  rule for ids from before signing; a later one is 403 `signature_required`.
+- **The answers** (`LegacyGuestClaimAnswer`). No row: `{ merged: false, reason: 'unknown' }`. A row already
+  claimed by someone else: `{ merged: false, reason: 'claimed' }`; claimed by `into` itself: `{ merged: true }`,
+  so a retry is harmless. Otherwise the guest is merged into `into` exactly as a guest signing in is (above):
+  when `into` is an account its settings and profile move first, then the index is sent
+  `POST ${INDEX_URL}/internal/merge` `{ guestId: 'guest_<legacyId>', userId: into, legacy: true }` with
+  `INDEX_MERGE_KEY` (the `legacy` form lets the target be a guest, [one-explorer-contracts.md](one-explorer-contracts.md#guests)).
+  Only once the index has answered is the row stamped (`claimedAt`, `claimedBy`, in an update that also requires
+  `claimedAt IS NULL`), and the answer is `{ merged: true }`. A failed or unconfigured index is 502
+  `merge_failed` and stamps nothing, so the next try merges again.
+
+The route costs one primary-key read of `legacy_guest`, the merge, and one primary-key update.
+
 ### liveworkspace.app's own token
 
 The Explorer lives on liveworkspace.app itself ([site.md](site.md#the-explorer-explorer)), which has the session
@@ -294,8 +337,10 @@ It never bounces:
   and the other apps stay signed in, so signing in to that app again is one click with no code;
 - inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
   (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
-- on the sign-in pages, the guest hand-off's way back, the AI-tool consent pages, embeds, a share
-  link (`?s=`) or liveplanner's form links, so their own flows are never interrupted;
+- on the sign-in pages, the guest hand-off's way back, embeds, a share link (`?s=`) or liveplanner's
+  form links, so their own flows are never interrupted. The AI-tool consent and device pages (`/oauth/*`)
+  do bounce: they only work signed in, and the bounce keeps their address, so someone arriving from an AI
+  tool with a liveworkspace session but none in the app is signed in rather than shown a Sign in step;
 - when the app's API isn't on the page's own site, or the address is too long to carry (1,500
   characters), or the browser has no `sessionStorage` or cookies to guard it.
 
@@ -819,29 +864,30 @@ the same token (`PUT /api/participants/:id`). Joining by link and tokens stay th
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
 
-| Route                                          | Does                                                                                     |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `POST /api/account/internal/tokens/verify`     | `{ token }` → the account and its teams, or 404                                          |
-| `POST /api/account/internal/tokens`            | `{ accessToken, name, readOnly }` → a token, shown once                                  |
-| `POST /api/account/internal/teams`             | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
-| `POST /api/account/internal/invitations`       | `{ userId }` → `{ invitations }`: those waiting for the account's verified address       |
-| `POST /api/account/internal/teams/of`          | `{ userId }` → `{ teams }`: the claim a token minted now would carry                     |
-| `GET /api/account/internal/teams/changes`      | `?cursor=` → the next page of the change feed (no app reads it now)                      |
-| `POST /api/account/internal/tokens/revoke`     | `{ token }` → revokes it (a CLI signing out), or 404                                     |
-| `POST /api/account/internal/tokens/live`       | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
-| `POST /api/account/internal/settings/read`     | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
-| `POST /api/account/internal/settings/write`    | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
-| `POST /api/account/internal/settings/notify`   | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`          |
-| `POST /api/account/internal/teams/members`     | `{ teamId }` → `{ team, members }`, joined and invited, or 404                           |
-| `POST /api/account/internal/profiles/read`     | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
-| `POST /api/account/internal/profiles/write`    | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
-| `POST /api/account/internal/sightings`         | `{ userId }` → `{ first }`, for the client's own app                                     |
-| `POST /api/account/internal/milestones/claim`  | `{ userId, milestone }` → `{ claimed }`, for the client's own app                        |
-| `POST /api/account/internal/emails`            | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                   |
-| `POST /api/account/internal/activity`          | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)       |
-| `POST /api/account/internal/workbench/session` | `{ session }` → the workbench session for the client's app, or 404 `{ reason }`          |
-| `POST /api/account/internal/workbench/rooms`   | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room      |
-| `POST /api/account/internal/allowance`         | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app           |
+| Route                                            | Does                                                                                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/account/internal/tokens/verify`       | `{ token }` → the account and its teams, or 404                                                                                  |
+| `POST /api/account/internal/tokens`              | `{ accessToken, name, readOnly }` → a token, shown once                                                                          |
+| `POST /api/account/internal/teams`               | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin                                                 |
+| `POST /api/account/internal/invitations`         | `{ userId }` → `{ invitations }`: those waiting for the account's verified address                                               |
+| `POST /api/account/internal/teams/of`            | `{ userId }` → `{ teams }`: the claim a token minted now would carry                                                             |
+| `GET /api/account/internal/teams/changes`        | `?cursor=` → the next page of the change feed (no app reads it now)                                                              |
+| `POST /api/account/internal/tokens/revoke`       | `{ token }` → revokes it (a CLI signing out), or 404                                                                             |
+| `POST /api/account/internal/tokens/live`         | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one                                         |
+| `POST /api/account/internal/settings/read`       | `{ owner, app }` → `{ all, app, updatedAt }`                                                                                     |
+| `POST /api/account/internal/settings/write`      | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                                                              |
+| `POST /api/account/internal/settings/notify`     | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`                                                  |
+| `POST /api/account/internal/teams/members`       | `{ teamId }` → `{ team, members }`, joined and invited, or 404                                                                   |
+| `POST /api/account/internal/profiles/read`       | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                                                                 |
+| `POST /api/account/internal/profiles/write`      | `{ owner, name?, color? }` → `{ profile }`; null clears a field                                                                  |
+| `POST /api/account/internal/sightings`           | `{ userId }` → `{ first }`, for the client's own app                                                                             |
+| `POST /api/account/internal/milestones/claim`    | `{ userId, milestone }` → `{ claimed }`, for the client's own app                                                                |
+| `POST /api/account/internal/emails`              | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                                                           |
+| `POST /api/account/internal/activity`            | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)                                               |
+| `POST /api/account/internal/workbench/session`   | `{ session }` → the workbench session for the client's app, or 404 `{ reason }`                                                  |
+| `POST /api/account/internal/workbench/rooms`     | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room                                              |
+| `POST /api/account/internal/allowance`           | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app                                                   |
+| `POST /api/account/internal/legacy-guests/claim` | `{ legacyId, signature, into }` → `{ merged }` ([above](#returning-guests-of-the-old-livediagramapp)); livediagram's client only |
 
 The workbench routes (`/api/account/workbench/*`: tickets, sessions, pairing requests and pairings, for API tokens,
 workbench sessions and the signed-in person) are in [workbench.md](workbench.md).

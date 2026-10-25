@@ -4,28 +4,14 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MCP_ORIGIN, mcpEndpoint, resolveMcpOrigin } from './mcp-origin';
 
+// The resolver's rules are tested in @liveworkspace/api-schema; here, that it is bound to livedocuments's MCP.
 describe('resolveMcpOrigin', () => {
-  it('falls back to the hosted MCP when unset', () => {
+  it('falls back to the hosted MCP when unset or blank', () => {
     expect(resolveMcpOrigin(undefined)).toBe(DEFAULT_MCP_ORIGIN);
-  });
-  it('falls back when the build passes an empty string (the production deploy does)', () => {
     expect(resolveMcpOrigin('')).toBe(DEFAULT_MCP_ORIGIN);
-    expect(resolveMcpOrigin('   ')).toBe(DEFAULT_MCP_ORIGIN);
-  });
-  it('uses an explicit origin, without a trailing slash', () => {
-    expect(resolveMcpOrigin('https://mcp-staging.livedocuments.app')).toBe(
-      'https://mcp-staging.livedocuments.app',
-    );
-    expect(resolveMcpOrigin('https://mcp.example.com/')).toBe('https://mcp.example.com');
-    expect(resolveMcpOrigin('https://mcp.example.com///')).toBe('https://mcp.example.com');
-    expect(resolveMcpOrigin('///')).toBe(DEFAULT_MCP_ORIGIN);
-    // A long run of slashes strips in one pass (a `/\/+$/` regex backtracked on it).
-    expect(resolveMcpOrigin(`x${'/'.repeat(200_000)}a${'/'.repeat(200_000)}`)).toBe(
-      `x${'/'.repeat(200_000)}a`,
-    );
   });
 
-  it('puts the endpoint path on the origin', () => {
+  it('uses an explicit origin, and puts the endpoint path on it', () => {
     expect(mcpEndpoint(resolveMcpOrigin('https://mcp.example.com/'))).toBe(
       'https://mcp.example.com/mcp',
     );

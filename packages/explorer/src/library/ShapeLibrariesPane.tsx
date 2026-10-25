@@ -6,8 +6,7 @@
 // shapes are ordinary elements, so nothing here touches an item.
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
-import { EmptyState } from '@liveworkspace/ui';
+import { ConfirmDialog, EmptyState } from '@liveworkspace/ui';
 import { ShapesIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { PlainShapeTile } from './ShapePreview';
@@ -257,6 +256,7 @@ function LibraryCard({
       ) : null}
       {confirming ? (
         <ConfirmDialog
+          open
           title="Delete This Shape Library?"
           message="Its shapes leave My shapes; anything that uses them keeps them."
           confirmLabel="Delete"

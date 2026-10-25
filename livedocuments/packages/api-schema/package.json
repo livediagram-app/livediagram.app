@@ -18,6 +18,8 @@
   "dependencies": {
     "@livedocuments/document": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

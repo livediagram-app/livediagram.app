@@ -69,6 +69,26 @@ have cloud documents and offline documents side by side.
   (`apps/editor/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
   asks for version 1, which the browser refuses once another tab has opened version 2; its offline
   documents are out of reach in that tab until it reloads.
+- **Retired parts set aside (version 3).** The old livediagram.app editor kept documents in This Browser in the
+  same database (`livediagram-offline`, version 2) on the same address, and its documents could hold Pages and
+  Plan content, which now belongs to livedocuments, liveplanner and livedesign (repo `docs/migration.md`, step 6).
+  This editor drops that content when it reads a tab (`migrateStoredTab`) and saves without it, so it has to be
+  copied somewhere first. Version 3 adds a second object store, `retired-parts` (keyPath `id`), and the upgrade
+  transaction copies into it, untouched, every document record whose tabs hold anything
+  `hasRetiredContent` (`@liveworkspace/migration/split`) says livediagram no longer reads, or that keeps Plan cards
+  or sheets on the record itself (a non-empty `items` or `sheets`, beside `itemsRev`, `itemsNextKey` and
+  `itemTypes`), keyed by the document id. Because it runs inside the version-change transaction, no read of any record can come before it, in this tab
+  or another one. Each starting state is handled: no database yet (both stores made empty), version 1 (each
+  record moved from `diagrams` is checked as it moves), version 2 from either editor (every record in `documents`
+  is checked). A record the check throws on is set aside too: copying costs nothing, and losing content cannot be
+  undone. The record in `documents` is left as it is. The upgrade logs `[offline-store] set aside N of M
+documents with retired parts` (`apps/editor/lib/offline/retired-parts-upgrade.ts`).
+- **Other tabs during an upgrade.** Every connection this editor opens closes itself on `versionchange`, and
+  connections only live for one operation, so a new-editor tab never holds an upgrade up for long. An open that is
+  `blocked` (by a tab of the old editor still open from before the switch) gives up at once, as above, but the
+  browser keeps the upgrade waiting and runs it the moment the old tab lets go, so the set-aside still comes
+  before any read at version 3. That old tab's next open asks for version 2 and is refused; its documents are
+  out of reach in that tab until it reloads, as with version 2.
 - **Durability honesty (important).** An offline document has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
@@ -407,6 +427,53 @@ Offline Mode is independent of sign-in:
 - The "This Browser" badge and pill read the same for a guest as for anyone: the
   sentence about clearing site data is the one a guest most needs to see.
 
+## Moving retired parts to the other apps
+
+When `retired-parts` holds anything, the editor offers once to move those parts where they now live. The offer
+waits until the editor has an identity of its own (a guest token or a signed-in account), because the move is made
+as that person. It is shown in the editor (beside the move prompt after signing in, never in an embed or a
+workbench, and never both at once: this offer goes first).
+
+- **The offer.** A dialog: **Some Pages and Boards Have a New Home**, with the subtitle "Pages, boards and designs
+  you made in this browser now live in livedocuments, liveplanner and livedesign. They're kept safe here until you
+  move them." It lists the documents by name, with **Move Them** and **Not Now**.
+- **Move Them.** For each set-aside document in turn ("Moving 1 of 3…"), the editor posts the whole raw
+  set-aside record to `POST /api/migration/local-parts` as the person: `id` (from which the api makes the same part
+  ids on a retry, so a lost answer never makes duplicates), `name` and `tabs`, and, where the
+  record has them, `createdAt`, `savedAt`, `presentation`, `items`, `itemsRev`, `itemsNextKey`, `itemTypes`,
+  `sheets` and `ownerId` (the record's, else the old site's guest id while this browser still holds it), under the
+  splitter's names (`LocalDocumentInput`). On a success it
+  writes the answer's `keep` tabs back into the record in `documents` and deletes the `retired-parts` row, both in
+  one transaction over the two stores, then lists where each part went, one link per part, named by its app
+  (**Open in livedocuments**). On a failure the record and the row both stay as they were, and the dialog says so:
+  "These couldn't be moved yet. They're still safe in this browser, so try again from Settings." A partial run
+  shows both lists.
+- **Writing `keep` back** never undoes work done since the set-aside. Each tab in the record is matched by id to
+  its set-aside copy:
+  - unchanged since (the same stored content, or what this editor's own read of it saves when nobody changed
+    anything: its retired content dropped and its kind stamped): it becomes its `keep` version, or leaves the
+    record when the split moved all of it;
+  - changed since (edited in this editor): it stays as it is, because what it lost to the read is already in the
+    moved parts;
+  - added since: it stays;
+  - a set-aside tab deleted since is not brought back.
+    A `keep` tab the set-aside copy never had is added at the end. A record left with no tabs is deleted from This
+    Browser (everything in it moved), and a record that is gone (synced to the cloud, purged) is left gone: its
+    parts still move. The record's Plan fields (`items`, `itemsRev`, `itemsNextKey`, `itemTypes`, `sheets`) leave
+    it, since they moved with the liveplanner part; the name, folder, star, Trash state and dates stay as they are.
+- **Not Now** is remembered for this browser (`livediagram:v2:retired-parts-dismissed`), and the dialog is not
+  shown on load again. The set-aside copy stays. The same dialog is always one click away in Settings › Account ›
+  Your Data, **Pages and Boards in This Browser** ("Pages, boards and designs from this browser that now belong
+  in livedocuments, liveplanner or livedesign. They wait here until you move them."), whose **Move Them** button
+  opens it; the row is there only while `retired-parts` holds anything when Settings opens, and never in a
+  workbench. It stays while Settings is open, so the dialog it opened never vanishes under the person; once
+  nothing is left its button reads **All Moved**, disabled.
+- **Where it lives**: `lib/offline/retired-parts-upgrade.ts` (the set-aside), `lib/offline/retired-parts.ts` (the
+  store: count, list, settle), `lib/offline/retired-parts-merge.ts` (writing `keep` back),
+  `lib/api/migration.ts` (the call), `hooks/persistence/useRetiredPartsMove.ts` (the move's phases),
+  `components/dialogs/RetiredPartsDialog.tsx`, `components/dialogs/RetiredPartsOffer.tsx` (the load-time
+  offer) and `components/dialogs/settings/SettingsRetiredPartsRow.tsx`.
+
 ## Persistence architecture
 
 The editor already has a **single persistence boundary**: `apps/editor/lib/api-client.ts`
@@ -480,6 +547,9 @@ Track adoption without content, reusing the closed vocabulary:
 - The move prompt after signing in: `UI`/`Opened`/`LocalMovePrompt` when it
   shows, `UI`/`Selected`/`LocalMovePrompt` on Move, `UI`/`Closed`/`LocalMovePrompt`
   on Not Now. Each document it moves also sends the conversion event below.
+- The offer to move retired parts ([above](#moving-retired-parts-to-the-other-apps)): `UI`/`Opened`/`RetiredPartsOffer`
+  when it shows, `UI`/`Selected`/`RetiredPartsOffer` on Move Them, `UI`/`Closed`/`RetiredPartsOffer` on Not Now,
+  and `Document`/`Moved`/`RetiredParts` for each document whose parts moved.
 - On conversion, a coarse event for each direction, so uptake and the
   destructive take-offline path are visible: `Document`/`Moved` with type
   `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from

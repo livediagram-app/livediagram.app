@@ -6,6 +6,7 @@ import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from '@/lib/api/core';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
+import { useAfterLegacyClaim } from '@/hooks/persistence/useAfterLegacyClaim';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph, TeamIcon } from '@livediagram/ui';
 
@@ -27,6 +28,8 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
   // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
   const [driveVersion, setDriveVersion] = useState(0);
   useAfterDriveChange(() => setDriveVersion((v) => v + 1), !!ownerId);
+  // And when an old livediagram.app guest's work was claimed (docs/specs/014-identity/auth-and-guest-access.md).
+  useAfterLegacyClaim(() => setDriveVersion((v) => v + 1), !!ownerId);
 
   useEffect(() => {
     if (!ownerId) return;

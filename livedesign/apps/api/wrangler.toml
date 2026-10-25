@@ -198,6 +198,15 @@ simple = { limit = 120, period = 60 }
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
+# DRIVE_KEY is livedesign's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md
+# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDESIGN. It opens the
+# internal export door's `file` format and the import door, nothing else. Never in [vars]:
+#
+#   - Local dev: `DRIVE_KEY=dev-livedesign-drive-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DRIVE_KEY` (and `--env staging`).
+#
+# Unset = the mirror cannot export or import designs (the two doors take only the index's key).
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-api-staging` via

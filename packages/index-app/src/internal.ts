@@ -16,9 +16,14 @@
 //   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
 //                                                            for the guest to the account
 //   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=]   the item drawn as a file, for liveworkspace's
-//                                                            previews (liveworkspace/docs/previews.md) and, next, the
-//                                                            Drive mirror. Also takes the app's MEDIA_KEY (`exportKey`).
+//                                                            previews (liveworkspace/docs/previews.md). Also takes the
+//                                                            app's MEDIA_KEY (`exportKey`) and DRIVE_KEY (`driveKey`).
+//   GET    /api/internal/items/:id/export?format=file       the item's whole-item envelope, the Drive mirror's file
+//                                                            (liveworkspace/docs/drive.md "Contracts > The apps")
+//   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
+//                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
 //
+// The Drive key opens those two doors and nothing else.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
 import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
@@ -48,9 +53,9 @@ export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'confl
 
 // ---------- The export door (liveworkspace/docs/previews.md "The export door") --------------------------------------
 
-// What an item can be exported as. `svg`: the first tab (or `tabId`) drawn, the platform's previews. The Drive
-// mirror adds its own formats here.
-export const EXPORT_FORMATS = ['svg'] as const;
+// What an item can be exported as. `svg`: the first tab (or `tabId`) drawn, the platform's previews. `file`: the
+// item's whole-item envelope as JSON text, the Drive mirror's file (`tabId` and `code` play no part).
+export const EXPORT_FORMATS = ['svg', 'file'] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export type ExportQuery = {
@@ -104,15 +109,34 @@ export type InternalItemHandlers = {
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
   // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
   export?: (itemId: string, query: ExportQuery) => Promise<ExportResult>;
+  // A new item for `owner` from a file (the Drive mirror's import door): fresh ids throughout, registered in the
+  // index as the owner's personal item in `folderId`. Refuses a file of another kind or that doesn't parse
+  // (`invalid_file`) and one past the app's item limits (`too_large`).
+  import?: (input: ImportInput) => Promise<ImportResult>;
   // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/workbench.md
   // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
   workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
 };
 
+// The import door's body (liveworkspace/docs/drive.md "Contracts > The apps"): whose item it is (an account id,
+// never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.
+export type ImportInput = { owner: string; folderId: string | null; name: string; file: string };
+
+export type ImportResult =
+  { status: 'ok'; id: string } | { status: 'invalid_file' } | { status: 'too_large' };
+
+// The largest import body the door reads: a Durable Object RPC message's cap, which an item's content crosses whole.
+// A bigger body is refused by its Content-Length before it is read.
+export const IMPORT_MAX_BYTES = 32 * 1024 * 1024;
+// The longest item name the import door takes; each app shortens it further to its own cap.
+export const IMPORT_NAME_MAX = 1000;
+
 export type InternalItemsOptions = {
   key: string | undefined;
   // A second key the export door alone takes: the app's MEDIA_KEY, which liveworkspace's previews call it with.
   exportKey?: string | undefined;
+  // The app's DRIVE_KEY, which liveworkspace's Drive mirror calls with: the export door and the import door alone.
+  driveKey?: string | undefined;
   handlers: InternalItemHandlers;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -209,18 +233,61 @@ async function exportItem(
   return new Response(result.body, { status: 200, headers });
 }
 
+// POST /api/internal/items/import: a new item from a file, or why not.
+async function importItem(
+  request: Request,
+  run: NonNullable<InternalItemHandlers['import']>,
+): Promise<Response> {
+  const declared = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(declared) && declared > IMPORT_MAX_BYTES) {
+    console.warn('[internal] import refused', { reason: 'too_large', bytes: declared });
+    return json({ error: 'too_large' }, 413);
+  }
+  const body = await bodyOf(request);
+  if (!body) return badRequest('body must be a JSON object');
+  const { owner, folderId, name, file } = body;
+  if (typeof owner !== 'string' || !USER_ID.test(owner))
+    return badRequest('owner must be an account id');
+  if (folderId !== null && !validId(folderId))
+    return badRequest('folderId must be a folder id or null');
+  if (typeof name !== 'string' || !name.trim() || name.length > IMPORT_NAME_MAX)
+    return badRequest('name must be a name');
+  if (typeof file !== 'string' || !file) return badRequest('file must be the file text');
+  let result: ImportResult;
+  try {
+    result = await run({ owner, folderId, name: name.trim(), file });
+  } catch (err) {
+    // The mirror asks again on its next pass.
+    console.error('[internal] import failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  if (result.status === 'invalid_file') {
+    console.warn('[internal] import refused', { reason: 'invalid_file' });
+    return json({ error: 'invalid_file' }, 400);
+  }
+  if (result.status === 'too_large') {
+    console.warn('[internal] import refused', { reason: 'too_large' });
+    return json({ error: 'too_large' }, 413);
+  }
+  console.info('[internal] imported', { id: result.id });
+  return json({ id: result.id }, 201);
+}
+
 const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
+const IMPORT_PATH = '/api/internal/items/import';
 
 export async function handleInternalItems(
   request: Request,
-  { key, exportKey, handlers, waitUntil = (p) => void p }: InternalItemsOptions,
+  { key, exportKey, driveKey, handlers, waitUntil = (p) => void p }: InternalItemsOptions,
 ): Promise<Response> {
   const url = new URL(request.url);
   const pathname = url.pathname;
   if (!isInternalItemsPath(pathname)) return notFound();
-  // The export door takes either key; every other door the index's alone.
+  // The export door takes the index's, the media and the Drive key; the import door the index's and the Drive key;
+  // every other door the index's alone.
   const exporting = EXPORT_PATH.test(pathname) && request.method === 'GET';
-  const keys = exporting ? [key, exportKey] : [key];
+  const importing = pathname === IMPORT_PATH && request.method === 'POST';
+  const keys = exporting ? [key, exportKey, driveKey] : importing ? [key, driveKey] : [key];
   const present = keys.filter((k): k is string => Boolean(k));
   if (present.length === 0) return notFound();
   let allowed = false;
@@ -244,6 +311,7 @@ export async function handleInternalItems(
 
   if (exporting)
     return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
+  if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);

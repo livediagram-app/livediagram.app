@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@livedocuments/document';
 import { LINT_MAX_ARROWS } from '../constants';
 import { arrow, box, stack, lint, of, tabOf } from '../fixtures/build';
-import { formatLintReport } from '../format';
+import { formatLintReport } from '@liveworkspace/diagram-lint/format';
 
 // A column of sources on the left, a column of targets on the right, every source joined to the target
 // across from another: n arrows crossing pairwise.

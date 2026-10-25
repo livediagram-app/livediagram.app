@@ -2,7 +2,11 @@
 // a tab, each a pure function of it. The api and the CLI render through `renderView`; `overviewView`
 // summarises a document and `diffView` compares two reads of a tab.
 export * from './constants';
-export { estimateTokens, type ViewFit, type ViewResult } from './budget';
+export {
+  estimateTokens,
+  type ViewFit,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 export { buildViewModel, headerFactsOf, type ViewContext, type ViewModel } from './model';
 export { headerLine, type HeaderFacts } from './header';
 export { renderView, type ViewRequest } from './render-view';

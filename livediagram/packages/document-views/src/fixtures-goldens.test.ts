@@ -4,7 +4,7 @@ import { agentBuiltTab } from './__fixtures__/agent-built-tab';
 import { edgeCasesTab } from './__fixtures__/edge-cases-tab';
 import { golden } from './__fixtures__/golden-path';
 import { largeTab } from './__fixtures__/large-tab';
-import { estimateTokens } from './budget';
+import { estimateTokens } from '@liveworkspace/document-views/budget';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 

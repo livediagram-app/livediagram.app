@@ -3,16 +3,27 @@
 import type { DiffView, ViewDoor } from '@livedocuments/api-schema';
 import { STYLE_KEYS, type Element, type Endpoint, type Tab } from '@livedocuments/document';
 import { attributesOf } from './attributes';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { contentSummaryOf } from './content-summary';
 import { edgeText, endText, type ViewEdge } from './edges';
-import { boxOf, fieldOf, numberField, textField, threadOf } from './fields';
+import {
+  boxOf,
+  fieldOf,
+  numberField,
+  textField,
+  threadOf,
+} from '@liveworkspace/document-views/fields';
 import { viewHeader } from './header';
 import { buildViewModel, type ViewContext, type ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
-import { attrValue, jsonString, plural } from './text';
-import type { ViewAttribute } from './view-attribute';
+import { attrValue, jsonString, plural } from '@liveworkspace/document-views/text';
+import type { ViewAttribute } from '@liveworkspace/document-views/view-attribute';
 
 type DiffContext = { since: number; rev: number; tabIds?: readonly string[] };
 type DiffOptions = { budget?: number; door?: ViewDoor };

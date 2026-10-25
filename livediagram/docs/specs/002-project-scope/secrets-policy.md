@@ -38,6 +38,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`       | api             | The photo import reads handwriting in the browser instead ([Note reader](../021-event-storming/note-reader.md))                                   |
 | `TELEMETRY_KEY`                                 | api **and** mcp | No server-side telemetry reaches the liveworkspace service ([Telemetry](../017-telemetry/telemetry.md))                                           |
 | `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                      |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export canvases as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))        |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and on the liveworkspace telemetry service, as `TELEMETRY_KEY_LIVEDIAGRAM`). A mismatch is silent — the service simply drops the batch — so verify with `wrangler secret list` on each rather than assuming. `MEDIA_KEY` likewise matches the media service's `MEDIA_KEY_LIVEDIAGRAM`; a mismatch there is loud, as every image route answers 503. Generate it with `openssl rand -hex 32`.
 

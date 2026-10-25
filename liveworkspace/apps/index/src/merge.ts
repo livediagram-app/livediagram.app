@@ -3,8 +3,13 @@
 // app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
 // Where the account already has the same thing (a favourite, a default), the
 // account's stays. Running it again finds nothing left to move.
+//
+// `legacy: true` is the migration's returning guest of the old livediagram.app (docs/migration.md step 6), claimed
+// through accounts: its target may be a guest as well as an account, everything else the same. Without it a guest
+// target is refused, as before.
 
 import { isMergeCaller } from './auth';
+import { sendDriveSignals } from './drive';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
@@ -20,11 +25,12 @@ export async function handleMerge(
   const body = await readObject(request);
   const guest = body?.guestId;
   const user = body?.userId;
+  const legacy = body?.legacy === true;
   if (
     !isId(guest) ||
     !guest.startsWith('guest_') ||
     !isId(user) ||
-    user.startsWith('guest_') ||
+    (user.startsWith('guest_') && !legacy) ||
     guest === user
   ) {
     return badRequest();
@@ -33,7 +39,7 @@ export async function handleMerge(
   const personal = `p:${user}`;
   const results = await db.batch([
     // First, so the apps hear of it however the rest goes.
-    recordPersonMerges(db, guest, user, Date.now()),
+    recordPersonMerges(db, guest, user, Date.now(), legacy),
     db
       .prepare(
         `UPDATE items SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
@@ -127,11 +133,18 @@ export async function handleMerge(
     db.prepare('DELETE FROM collab_form_reads WHERE person_id = ?').bind(guest),
   ]);
   const items = (results[1] as D1Result).meta.changes ?? 0;
+  const folders = (results[2] as D1Result).meta.changes ?? 0;
+  // The account's own tree grew: its Drive mirror, if any, catches up.
+  if ((items > 0 || folders > 0) && env.DRIVE) waitUntil(sendDriveSignals(env, [user]));
   waitUntil(
     drainPersonMerges(env).catch((err: unknown) => {
       console.warn('[index] person merges failed', { error: String(err) });
     }),
   );
-  console.log('[index] merged a guest into an account', { items });
+  console.log('[index] merged a guest', {
+    items,
+    legacy,
+    into: user.startsWith('guest_') ? 'guest' : 'account',
+  });
   return json({ items });
 }

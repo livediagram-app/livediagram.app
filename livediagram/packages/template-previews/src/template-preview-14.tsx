@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 import {
   BLUE,
   Board,

@@ -186,6 +186,32 @@ describe('local-dev dispatch (origin proxy)', () => {
     }
   });
 
+  it('forwards /api/drive/* to the Drive mirror, Authorization kept, cookies dropped', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(
+        new Request('https://livedesign.app/api/drive/marks', {
+          headers: { Authorization: 'Bearer t', Cookie: 'a=b' },
+        }),
+        { ...env, DRIVE_ORIGIN: 'http://127.0.0.1:3011' },
+      );
+      const req = fetchMock.mock.calls[0]![0];
+      expect(req.url).toBe('http://127.0.0.1:3011/api/drive/marks');
+      expect(req.headers.get('Authorization')).toBe('Bearer t');
+      expect(req.headers.get('Cookie')).toBeNull();
+      // Production's when no origin is named, and never the api worker.
+      await dispatch('/api/drive/config', env);
+      expect(fetchMock.mock.calls[1]![0].url).toBe(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/drive/config',
+      );
+      expect(api.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('503s with a pointer at the fix when neither binding nor origin exists', async () => {
     const res = await dispatch('/new', {});
     expect(res.status).toBe(503);

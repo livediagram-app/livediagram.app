@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX, Pop } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX, Pop } from '@liveworkspace/template-previews/story-parts';
 
 // Group 5 of 5 (the cloud / UML / state / event storming / whiteboard batch), split out of template-preview-4.tsx when the hover
 // stories pushed it past the ~1000-line budget. Static SVG preview tiles, one

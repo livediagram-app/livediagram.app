@@ -5,6 +5,7 @@
 // livedesign no longer has, docs/specs/012-collaboration/presentation-mode.md) is read past.
 // Images stay references to livedesign's image store; no bytes are embedded.
 
+import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
 
 export const DESIGN_ENVELOPE_KIND = 'livedesign.design';
@@ -91,4 +92,16 @@ export function parseDesignEnvelope(
       },
     },
   };
+}
+
+// A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/drive.md): fresh tab ids, with
+// the tab links following them, so the copy navigates like the original.
+export function copyDesignEnvelope(envelope: DesignEnvelope): { tabs: EnvelopeTab[] } {
+  const idMap = new Map(envelope.design.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
+  const tabs = envelope.design.tabs.map((t) => ({
+    ...t,
+    id: idMap.get(t.id)!,
+    elements: remapTabLinks(t.elements, idMap),
+  }));
+  return { tabs };
 }

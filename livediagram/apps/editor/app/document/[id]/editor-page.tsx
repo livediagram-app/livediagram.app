@@ -20,7 +20,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
-import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
+import { LocalStorePrompts } from '@/components/dialogs/LocalStorePrompts';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
@@ -212,9 +212,10 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           <EditorView />
         </ShapeLibraryProvider>
       </MentionContext.Provider>
-      {/* Moving this browser's documents in This Browser after signing in
-          (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
-      {appChrome ? <LocalMovePrompt /> : null}
+      {/* This browser's own store: an old livediagram.app guest's claim, its retired parts, and moving documents in
+          This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone
+          else's page. */}
+      {appChrome ? <LocalStorePrompts /> : null}
       {/* A Take Offline or Sync the Explorer page handed over in the address. */}
       <ConversionHandoff />
     </EditorContext.Provider>

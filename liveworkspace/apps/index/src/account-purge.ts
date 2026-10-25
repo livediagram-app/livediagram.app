@@ -190,6 +190,8 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
+    // Their Drive mirror's flag (liveworkspace/docs/drive.md): accounts tells the service itself.
+    byPerson('drive_people'),
     anonymiseAction('assignee_id'),
     anonymiseAction('assigner_id'),
   ];

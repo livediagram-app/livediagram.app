@@ -40,6 +40,15 @@ comma-separated, ≤ 50>`. Every person route then answers as that account, but 
   `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
   malformed person is refused (401).
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
+- **The Google Drive mirror's service acting for an account** ([drive.md](drive.md) "Contracts > The index"):
+  `Authorization: Bearer <INDEX_KEY_DRIVE>`, `X-Index-App: drive` and `X-Index-Person: <account id>`. It answers
+  as that account on `/items`, `/trash` and `/folders` only (every other person route, `/shared` and an item's
+  `share` routes among them, is 404), for the account's **personal** items in every app: its lists are not
+  filtered to one app (an `app` or `apps` filter it sends still applies) but every view is narrowed to the
+  personal scope, so nothing shared with them or in a team is listed (`view=shared` is empty, a `team` filter is
+  403, `any` is 400); a team's item, or anyone else's, answers 404 to read and write; it cannot move an item into
+  a team or make one there (403). Folders are the account's own tree. `X-Index-Teams` and `X-Share-Code` are
+  ignored. A guest id is refused 403; a wrong key, a link or a malformed person 401.
 
 Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
 `cursor`; a response carries `nextCursor` when there is more.
@@ -63,6 +72,18 @@ items, folders, favourites, opens and placement defaults to the account in one b
 cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {into}` (at once, and from its
 frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
 their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
+
+**A returning guest of the old livediagram.app** ([docs/migration.md](../../docs/migration.md) step 6). Their
+copied work is under `guest_<old uuid>`, which accounts merges into whoever claims it
+([accounts.md](accounts.md#returning-guests-of-the-old-livediagramapp)), a guest as well as an account. So the
+merge has a second form, `{guestId, userId, legacy: true}`: `userId` may then be a guest (`guest_…`) too, and
+everything else is the same (items, folders, favourites, opens, use days, the Timeline, Shared with me, placement
+defaults, the Inbox's rows, one batch); an item or folder outside a team lands in `p:<userId>`, the target's own
+space, guest or account. Without `legacy: true` a guest target is still refused (400). The apps hear it as
+`POST /api/internal/people/:guest/merge {into, legacy: true}`, so an app can tell a legacy merge (whose `into` may
+be a guest) from an ordinary one, which keeps its `{into}` shape. The index keeps the flag on each
+`person_app_merges` row until the app confirms. An app's door that takes only an account refuses a guest `into`
+until it is taught the legacy form; the index retries it like any other refusal, for up to a week.
 
 A guest's things stay until the guest deletes them, or becomes an account; nothing expires on its own.
 
@@ -182,6 +203,8 @@ holds for that person:
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
   `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
+
+Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
 
 Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
 items. The request is recorded first and done in chunks of 500 rows, so it holds for any number of items:
@@ -333,6 +356,46 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 - `PUT /app/people/events` — `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
+
+## The migration's handoff
+
+For a browser's Local only documents from the old livediagram.app ([docs/migration.md](../../docs/migration.md)
+step 6): livediagram's api splits one and hands each part that belongs to another app to the index, which makes
+the item for the person and has that app write it.
+
+- `POST /app/migration/handoff`, with **livediagram's** key (`X-Index-App: livediagram`; any other app's key is
+  403 `wrong_app`) and `X-Index-Person: <the caller>`. On this route alone the person may be a guest
+  (`guest_<uuid>`) as well as an account, since a Local only document's owner usually is one; `X-Index-Teams` is
+  ignored. A missing or malformed person is 401.
+- The body is `HandoffRequest` (`@liveworkspace/migration`): `{app, title, payload}`, where `app` is
+  `liveplanner`, `livedocuments` or `livedesign`, `title` an item title, and `payload` a `MigrationRoomPayload` for
+  that app (`v: 1`, `payload.app === app`, `payload.id` an id). Up to 32 MiB (413 `payload_too_large`); anything
+  else is 400. Limited to 60 a minute per person (`MIGRATION_LIMITER`; absent, not limited): 429 `rate_limited`.
+- The index makes the item as `POST /items` would: `id` the payload's, the given app's kind, owned by the person,
+  no team, no folder (the top of their space, `p:<person>`), `source: 'import'`, created and updated now, with
+  its `created` Timeline event in the same batch. An id already taken is 409 `item_exists`.
+- Then it calls the app's migration door, `PUT ${APP_ORIGIN_<APP>}/api/internal/items/:id/migration`, with that
+  app's key, the payload as the body (`ownerId` set to the person and `teamId` to null, whatever was sent), and
+  30 seconds to answer. If the app fails, the item row is deleted again (its Timeline rows go with it) and the
+  answer is 502 `migration_failed`. Otherwise `{id, app}` (201).
+
+## The Google Drive mirror
+
+The index's half of [drive.md](drive.md) "Contracts > The index" (`apps/index/src/drive.ts`):
+
+- `PUT /app/people/:id/drive` and `DELETE /app/people/:id/drive` (`204`) set and clear the person's
+  `drive_mirrored` flag; `GET` answers `{ mirrored }`. With `INDEX_KEY_DRIVE` only (an app's key is 401, and the
+  Drive key opens no other `/app` route); a guest id is 403.
+- **The change signal.** After any request that changed a flagged person's personal item or folder, the index
+  calls its `DRIVE` service binding after the response (`waitUntil`): `POST https://drive/app/changes`
+  `{ personId, at }` with `Authorization: Bearer <DRIVE_KEY_INDEX>`, once per person per request. What counts: an
+  item made, renamed, moved (between folders, or into or out of a team, which signals its personal owner),
+  trashed, restored, copied or purged (one by one, the Trash emptied, or the daily sweep, which also signals for
+  the empty items it trashes), a folder made, renamed, moved or deleted, a guest's work merged into the account,
+  and a summary push that raised the item's `updatedAt`. A team's item or folder never signals. The request
+  collects the people it touched; one primary-key read of `drive_people` picks out the flagged ones. A failed
+  call is logged (`index: drive-signal failed`, with the status) and dropped. Without the binding nothing is
+  read or sent.
 
 ## Notices
 

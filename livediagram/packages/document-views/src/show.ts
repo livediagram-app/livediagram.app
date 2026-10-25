@@ -3,7 +3,12 @@
 // arrows both ways. Mirrors, packed points and person ids are left out and named.
 import type { ShowView, ViewDoor } from '@livediagram/api-schema';
 import { contentOrigin, type Element, type Endpoint } from '@livediagram/document';
-import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
+import {
+  fitLines,
+  fitOf,
+  type ViewLine,
+  type ViewResult,
+} from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
 import { edgeJson, endText, type ViewEdge } from './edges';
 import {
@@ -14,12 +19,12 @@ import {
   stringField,
   textField,
   threadOf,
-} from './fields';
+} from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import { layoutEndText } from './layout';
 import type { ViewModel } from './model';
 import { commentText, readComment } from './comments';
-import { cellText, jsonString } from './text';
+import { cellText, jsonString } from '@liveworkspace/document-views/text';
 
 type ShowOptions = { budget?: number; door?: ViewDoor };
 

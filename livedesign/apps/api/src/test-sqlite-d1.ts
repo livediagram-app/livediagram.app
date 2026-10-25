@@ -282,6 +282,11 @@ function testDesignRooms(
         (await import('./db/photo-blobs')).heldBlobs(env, tabId, ids),
       servesImage: async (designId: string, imageId: string, onlyTabId: string | null) =>
         (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
+      // The Drive file's two halves (design-room.ts exportFile and importFile).
+      exportFile: async (designId: string, query: { ifVersion: number | null }) =>
+        (await import('./design-room/design-file')).exportDesignFile(env, designId, query.ifVersion),
+      importFile: async (designId: string, file: unknown) =>
+        (await import('./design-room/design-file')).importDesignFile(env, designId, file as never),
       hasTab: async (designId: string, tabId: string) =>
         (await import('./db/tabs')).designHasTab(env, designId, tabId),
       exportCopy: async (designId: string, onlyTabId: string | null, copierId: string | null) =>

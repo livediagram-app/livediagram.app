@@ -26,7 +26,7 @@ Scope, by file:
 | `packages/project/src/colors.ts`                           | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                                                                                                          |
 | `../packages/model-core/src/canvas-colors.ts`              | The Default scheme's light and dark canvas colours                                                                                                                                                                                  |
 | `../packages/tailwind-config/theme.css`                    | The `dark:` class variant, the slate tokens and the default brand ramp, `color-scheme` (this product's ramp: `packages/tailwind-config/theme.css`)                                                                                  |
-| `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                                                                                                        |
+| `../packages/template-previews/src/preview-art-tile.css`   | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                                                                                                        |
 
 ## Domain and naming
 

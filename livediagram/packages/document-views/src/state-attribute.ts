@@ -9,9 +9,20 @@ import {
   type SessionButtonConfig,
 } from '@livediagram/document';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
-import { arrayField, flagField, numberField, stringField, textField } from './fields';
-import { attrValue, jsonString } from './text';
-import { countAttribute, flagAttribute, shapeKindOf, type ViewAttribute } from './view-attribute';
+import {
+  arrayField,
+  flagField,
+  numberField,
+  stringField,
+  textField,
+} from '@liveworkspace/document-views/fields';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
+import {
+  countAttribute,
+  flagAttribute,
+  shapeKindOf,
+  type ViewAttribute,
+} from '@liveworkspace/document-views/view-attribute';
 
 const countOf = (el: Element, field: string) => arrayField(el, field).length;
 

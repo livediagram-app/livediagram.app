@@ -1,7 +1,7 @@
 import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX, Pop, popGroup } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX, Pop, popGroup } from '@liveworkspace/template-previews/story-parts';
 
 // Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
 // cloud batch). Static SVG preview tiles (one branch per TemplateKind; see

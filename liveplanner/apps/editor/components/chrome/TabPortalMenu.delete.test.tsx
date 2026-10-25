@@ -55,14 +55,14 @@ describe('Delete in the tab menu', () => {
     open({ onDelete, onClose });
     expect(onDelete).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Delete this tab?' })).toBeNull();
+    expect(screen.queryByRole('alertdialog', { name: 'Delete this tab?' })).toBeNull();
   });
 
   it('asks first, with the warning, when deleting does what an undo cannot take back', () => {
     const onDelete = vi.fn();
     open({ onDelete, deleteWarning: 'A form sends its responses here.' });
     expect(onDelete).not.toHaveBeenCalled();
-    const dialog = screen.getByRole('dialog', { name: 'Delete this tab?' });
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete this tab?' });
     expect(dialog.textContent).toContain('A form sends its responses here.');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledTimes(1);

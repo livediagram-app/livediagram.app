@@ -31,12 +31,13 @@ The deploy workflow also **syncs** the sign-in values, `MEDIA_KEY` and `TELEMETR
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which keeps every outside service optional (see [03](open-source-and-business-model.md)).
 
-| Secret                                          | Worker          | Absent means                                                                                                               |
-| ----------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md)) |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                          |
-| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))     |
-| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                        |
+| Secret                                          | Worker          | Absent means                                                                                                                              |
+| ----------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md))                |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                         |
+| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))                    |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export designs as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps)) |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                       |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 

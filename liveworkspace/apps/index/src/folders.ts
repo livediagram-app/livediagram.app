@@ -7,6 +7,7 @@ import { FOLDER_NAME_MAX, type Folder } from '@liveworkspace/index-client';
 import { personalScope, scopeOf, scopesOf, teamScope, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import type { PersonContext } from './context';
+import { touchItem } from './drive';
 import type { Env } from './env';
 import { handleFolderPreviews } from './folder-previews';
 import { badRequest, conflict, forbidden, json, noContent, notFound, readObject } from './http';
@@ -117,6 +118,7 @@ export async function handleFolders(ctx: PersonContext): Promise<Response> {
           .bind(folder.parent_id, folder.id),
         db.prepare('DELETE FROM folders WHERE id = ?').bind(folder.id),
       ]);
+      touchItem(ctx.drive, folder);
       return noContent();
     }
   }
@@ -164,6 +166,7 @@ async function createFolder(ctx: PersonContext): Promise<Response> {
     if (String(err).includes('UNIQUE')) return conflict('folder_exists');
     throw err;
   }
+  touchItem(ctx.drive, row);
   return json({ folder: toFolder(row) }, { status: 201 });
 }
 
@@ -206,6 +209,7 @@ async function updateFolder(ctx: PersonContext, folder: FolderRow): Promise<Resp
       .bind(name, now, folder.id)
       .run();
   }
+  if (name !== undefined || parentId !== undefined) touchItem(ctx.drive, folder);
   const updated = await getFolderRow(env, folder.id);
   return json({ folder: toFolder(updated!) });
 }

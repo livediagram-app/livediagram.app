@@ -7,8 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
-import { Button } from '@liveworkspace/ui';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { Button, ConfirmDialog } from '@liveworkspace/ui';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { InfoIcon, ItemIcon } from '../ui/icons';
 import type { Words } from '../words';
@@ -170,6 +169,7 @@ export function TrashPane({
       ) : null}
       {purging ? (
         <ConfirmDialog
+          open
           title={`Delete “${purging.title || 'Untitled'}” for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"

@@ -8,6 +8,12 @@
  * adds the Explorer package's utilities (its explorer.css names its sources) and the page's own. */
 @source './';
 @source '../../components/explorer';
+/* The Settings panel opens over the Explorer, and its classes are in the site's stylesheet too. Both sheets share one
+ * utilities layer, and a `dark:` utility weighs the same as a plain one, so a light class this sheet emits again
+ * comes after a dark one only the site's sheet has and wins (the panel's pills stayed light in dark). Scanning the
+ * panel here puts its dark classes in this sheet, after the light ones. */
+@source '../../components/settings';
+@source '../../../../../packages/settings-ui/src';
 /* The bottom bar's Appearance switch, so its wide-screen label's classes sort with this sheet's own. */
 
 /* The Explorer wears the colours of the app the person came from: its brand ramp, light and dark, as that app's

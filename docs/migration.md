@@ -65,9 +65,12 @@ the copy takes).
    through that map, so the person's old and new work land on one account and nothing they made on the new side
    moves. The script reports each such match.
 3. Carry over the per-person data that has a new home:
-   - unsubscribes and email preferences (`email_lifecycle`) into the accounts Worker, **before** step 8 sends
-     anything;
-   - `user_preferences` into the shared settings (`packages/settings`);
+   - `user_preferences` into the shared settings (the accounts Worker's `settings` table, `packages/settings`),
+     **before** step 8 sends anything: opting out of email is a settings key there (`notifyTips`,
+     `notifyComments`, `notifyMentions` and the rest in the `all` scope, `notifyDocumentJoin` in livediagram's),
+     not a table of its own. `email_lifecycle` holds only which onboarding emails were sent; its stamps are copied
+     too (into the accounts Worker's `email_lifecycle`, with `signup_app` livediagram), so nobody gets the welcome
+     series again;
    - `shape_libraries`, `custom_themes` and `placement_defaults` into each person's `PersonStore`.
 4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/accounts.md`, Teams) from `teams` and
    `team_members`: each team with its name, organisation, members and roles through the owner map, **keeping the
@@ -138,12 +141,12 @@ Not copied: `collab_threads` and `collab_actions` (a projection, rebuilt from th
 
 A livediagram document can hold tabs that now belong to four products. Each tab goes to one:
 
-| Tab in the old document                                                     | Goes to       | As                   |
-| --------------------------------------------------------------------------- | ------------- | -------------------- |
-| Diagram, Draw, Workshop (Q&A boards and cards included)                     | livediagram   | the same document id |
-| Pages: articles, slides, infographics (`opensIn` pages and its older names) | livedocuments | a new document       |
-| Logo, wireframe and photo pages                                             | livedesign    | a new design         |
-| Board, Sheet, Dashboard, Form tabs, with their items, sheet cells and forms | liveplanner   | a new project        |
+| Tab in the old document                                                                | Goes to       | As                   |
+| -------------------------------------------------------------------------------------- | ------------- | -------------------- |
+| Diagram, Draw, Workshop (Q&A boards and cards included)                                | livediagram   | the same document id |
+| Pages: article, slide and infographic pages (`opensIn` pages, illustrate, infographic) | livedocuments | a new document       |
+| Pages: logo and wireframe pages                                                        | livedesign    | a new design         |
+| Board, Sheet, Dashboard, Form tabs, with their items, sheet cells and forms            | liveplanner   | a new project        |
 
 - **One new document per product**, not per tab: a document with a diagram, two slide decks and a board becomes
   one livediagram document, one livedocuments document holding both decks, and one liveplanner project.
@@ -160,17 +163,28 @@ A livediagram document can hold tabs that now belong to four products. Each tab 
 - **Plan data lives in tables, not tabs** (`items`, `sheets`, `sheet_cells`, `sheet_refs`, `plan_board_statuses`,
   `form_links`, `form_reports`, `form_reads`), so the liveplanner copy reads those by tab id. A form's public link
   keeps working: the old form URL redirects to liveplanner's.
-- **A tab that is mostly a diagram but carried pages** (Pages kept a tab's ordinary elements on the canvas): the
-  elements stay in livediagram, the pages and articles go to livedocuments.
+- **A Pages tab with both kinds of page** (an infographic beside a logo) splits by page: livedocuments knows only
+  article, slide and infographic pages, and livedesign only logo, wireframe and photo pages; each reads the other's
+  as an untyped A4 page. Each element goes with the page it sits on (its centre inside the page's rectangle); an
+  element on no page stays with the documents part. The old site never had photo pages.
+- **Each tab is upgraded before it moves.** liveplanner, livedocuments and livedesign don't run livediagram's
+  older read migrations (whiteboard tabs, schemes, themes, legacy links and the element upgrades), so each tab is
+  run through livediagram's stored-tab upgrades first, without its Pages and Plan drops. liveplanner drops `pages`
+  and `articles` on read, which is fine: only Plan tabs go there.
 
 Each product needs the same migration import door as step 2, and its own writes to the index.
 
 ## 4. Images
 
-1. Copy the bytes from the old `livediagram-images` bucket into the media service, owned by the same `user_` id
-   (`liveworkspace/docs/media.md`).
-2. Rewrite each tab's image references to the media ids, in every product a tab went to, and give a split part an
-   `image_grants` row for each image it places that its owner didn't upload.
+1. Copy the bytes from the old `livediagram-images` bucket into the media service's bucket **under the same ids**
+   (an old image's R2 key is its `images.id`, a UUID, as the media service's is), with its `images` row: owner
+   through the owner map (a guest's as the media service keys guests, `guest:` + SHA-256 of
+   `livediagram.app\n<guest id>`), app `livediagram.app`, its size, type, dimensions, `sha256` and name, and its old
+   `created_at`. Keeping the ids means no tab's image references change. The media service's upload door always
+   makes a new id, so this goes in as SQL and R2 puts, not through it.
+2. Give a split part an `image_grants` row for each image it places that its owner didn't upload, and send each
+   app's references (`POST /refs` with `complete: true`) straight after, so the media service's sweep of
+   unreferenced images never sees an imported image as unplaced.
 3. Previews and share cards are drawn fresh by the previews service; nothing is copied.
 
 ## 5. Community
@@ -196,15 +210,21 @@ Guests' documents are copied. What the two sites do with guests, checked against
 
 So the old id can't simply be reused, and the plan is:
 
-1. Copy guest-owned documents (steps 2–5) under a placeholder owner per old guest, `legacy_guest_<uuid>`, which no
-   live credential can ever hold.
+1. Copy guest-owned documents (steps 2–5) under `guest_<old uuid>`. Old guest ids are lowercase v4 UUIDs, so
+   this is a valid new guest id, but the accounts Worker mints guest ids itself and signs its cookie, so no browser
+   is ever handed one of these: it is held by nobody until it is claimed. The accounts Worker also keeps a
+   `legacy_guest` row per migrated guest (the id, when the old site first saw it, when it was claimed).
 2. The new editor, on first load, looks for `livediagram:v2:self-id`. When it finds one, it sends the old id and
    its signature, with its own guest or account token, to a one-time door on livediagram's api. The door checks
    the signature with the old `GUEST_ID_HMAC_SECRET` (copied as a secret; the owner copies its value from the old
    repository's GitHub secrets, since a Cloudflare secret can't be read back), or, for an unsigned id, accepts it only
-   when the guest's `participants` row predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids. It
-   then asks the index to merge `legacy_guest_<uuid>` into the caller, guest or account, and the editor removes
-   the old keys. A retry merges nothing and is harmless.
+   when the guest's `participants` row predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids.
+   The check runs in the accounts Worker (which holds the secret and the `legacy_guest` rows), reached from
+   livediagram's api with its client credentials. It then merges `guest_<old uuid>` into the caller, guest or
+   account, through the index's `POST /internal/merge`, and the editor removes the old keys. A retry merges
+   nothing and is harmless. The merge today refuses a guest as the target, so it gains a `legacy: true` form that
+   allows one, as do the apps' `people/:guest/merge` doors and the media service's owner merge (which already
+   takes any two ids).
 3. From then on the work is the browser's ordinary new guest's, or the account's if they were signed in (a
    signed-in person whose old guest work never moved is covered by the same door).
 
@@ -218,8 +238,8 @@ read and saves without them (rules, above), which would lose them for good. Befo
 one-time pass over the local store, run before anything reads a document: for each local document holding Pages,
 Plan or design tabs, keep the raw tabs aside, then offer to move them into livedocuments, liveplanner or livedesign
 (through the same splitter as step 3, as the browser's guest or account), and drop them from the local copy only
-once that has succeeded. The same pass covers any old queued offline edits still waiting to be sent. The rehearsal
-should include a browser with a real old local store.
+once that has succeeded. (Queued edits to cloud documents are held in memory only, never in IndexedDB, so there
+are none to carry.) The rehearsal should include a browser with a real old local store.
 
 ## 7. The switch
 
@@ -279,6 +299,61 @@ After a set quiet period (30 days is a starting point):
   account's Workers;
 - archive `~/Code/livediagram` and finish the switch-over in [structure.md](structure.md);
 - a later migration may drop livediagram's unread Plan tables.
+
+## Tooling
+
+Built ahead of the switch, so every step above is a command that can be rehearsed. Four parts, one contract
+(`packages/migration/src/contract.ts`):
+
+**`@liveworkspace/migration`** (`packages/migration`): the contract, and the splitter, `splitOldDocument` and
+`splitLocalDocument` (`src/split.ts`). Pure TypeScript with no product imports, so the tool, the Workers and the
+editor share it; what it needs of a product (livediagram's stored-tab upgrades, a page's rectangle, a tab's picture)
+is handed in. It classifies each tab and page (step 3), builds one `MigrationRoomPayload` per part, freezes
+cross-product references into a picture and a link, and answers the `MovedParts` mapping and what it reports.
+
+**`@liveworkspace/migrate`** (`liveworkspace/apps/migrate`): the Node command that runs from a laptop. Nothing in it
+is deployed.
+
+- `snapshot <export.sql>`: loads a `wrangler d1 export` of the old database into a local SQLite file
+  (`node:sqlite`) and refuses one whose last `d1_migrations` row isn't `OLD_SCHEMA_LEVEL`. Read-only toward the
+  old account, so it never loads production. The old site's production schema is its repository's `origin/main`
+  (100 migrations, to `0099_workbench_workspace.sql`).
+- `plan <snapshot> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>]`: the whole migration as a
+  bundle on disk, written once and read by everything after:
+  `owner-map.json`, `sql/{accounts,index,media,community}.sql`, `r2/images.json`, `rooms/<app>/<id>.json`,
+  `kv/mcp-clients.json`, `moved-parts.json` and `report.json` (counts, owner-map matches, cross-product
+  references, dropped history). Deterministic: the same snapshot and ledger make the same bundle.
+- `apply <bundle> --env staging|production`: runs it in order (accounts, index, media and R2, the rooms through
+  each app's migration door, community, the MCP's KV), each SQL file with `wrangler d1 execute --remote --file`,
+  then records what it wrote in the ledger.
+- `verify <bundle> --env …`: step 9's counts, read back from each database and door.
+
+**Writing without overwriting.** Every SQL row is keyed by its old id. A first run inserts (`INSERT OR IGNORE`); a
+catch-up run updates a row only where it still holds what the last run wrote
+(`ON CONFLICT … DO UPDATE … WHERE <row>.updated_at = <the value in the ledger>`), so a row someone has changed on
+the new side since is left alone and reported. Rows without a time of their own (favourites, tags on a document)
+are only ever inserted. Nothing is deleted. The ledger is a local SQLite file kept with the bundles.
+
+**The apps' migration door** (each app's api): `PUT /api/internal/items/:id/migration` with a
+`MigrationRoomPayload`, behind `Bearer MIGRATION_KEY` (a new secret, set on each api for the migration and removed
+after it) or the app's `INDEX_KEY` (the index's handoff, below); a plain 404 with neither set. It writes the room
+with the times given, its changesets, image owners and grants, and for liveplanner its card types, items, sheets,
+cells and form links, and keeps a `migration_tabs` row per tab (the revision it wrote). On a re-run it replaces a
+tab only while the room still holds that revision. The index item must exist first (the index SQL runs before the
+rooms), since the room's outbox pushes its summary to it.
+
+**API tokens.** `isApiTokenFormat` and the prefix checks accept `lvd_` beside `lwt_`: the accounts Worker
+(`src/tokens.ts`, `src/workbench/revoke.ts`), `packages/api-kit/src/api-token.ts` (and the CLI's credentials, which
+use it), each app's `apps/api/src/index.ts` and `apps/api/src/auth/accounts.ts`, and each CLI's
+`apps/cli/src/commands/local.ts`. Nothing mints `lvd_`.
+
+**Returning guests and Local only documents** (step 6): the accounts Worker's `legacy_guest` table and
+`POST /api/account/internal/legacy-guests/claim`; the index's `legacy: true` merge and
+`POST /app/migration/handoff` (makes an item in another app for the delegated person and calls that app's
+migration door with its `INDEX_KEY`); livediagram's api `POST /api/legacy-guest/claim` and
+`POST /api/migration/local-parts`; and in livediagram's editor, the claim on first load and the one-time pass over
+the Local only store, which sets each document's raw tabs aside in a new `retired-parts` store before anything
+reads it.
 
 ## Checked against the code (2026-10-25)
 
