@@ -383,7 +383,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar
     (`ProfileCard.tsx`) on liveworkspace.app; on an app's address and in an editor, a row with the current name and
     colour and **Edit** on liveworkspace.app, since the profile is the session's.
-  - **Sign-in and Security** (on liveworkspace.app, `AccountHost.security`): **Sign-in Methods** (an emailed code to
+  - **Sign-in Methods** and **Where You’re Signed In**, two sections (on liveworkspace.app, `AccountHost.security`): the methods (an emailed code to
     the account's address, always; Google, **Connected** or **Connect**, when the deployment has Google), and
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
@@ -418,7 +418,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   change up the next time it opens: each app reads its settings once per load, and the server's copy wins over its
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
-  the app's token; its Profile header is the app's session's, and its Name and Colour, Sign-in and Security and API
+  the app's token; its Profile header is the app's session's, and its Name and Colour, Sign-in Methods and API
   Tokens rows link to liveworkspace.app, since the profile, sessions and tokens are the
   session's.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
