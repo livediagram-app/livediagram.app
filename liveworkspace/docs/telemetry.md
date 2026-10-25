@@ -141,8 +141,11 @@ the app's to report, so each change is counted once.
 - **The person's choice.** Signed in, their `telemetryEnabled` setting (the `all` scope every app
   shares, on unless turned off), read with the app's settings once per page; until it is read, a
   few events wait rather than go out unasked. A guest's choice lives in each app's own browser
-  storage, so on liveworkspace.app a guest's browser that asks sites not to track (Global Privacy
-  Control or Do Not Track) sends nothing.
+  storage (`<app>:user-preferences:v1`). On an app's own address the Explorer shares that origin, so
+  it reads the guest's `telemetryEnabled` there, as the app's editor does, and sends nothing once it
+  is off; a change made in another tab holds from the next event. On liveworkspace.app, which can't
+  see that storage, a guest follows the browser. Either way a browser that asks sites not to track
+  (Global Privacy Control or Do Not Track) sends nothing.
 - **The dashboards.** Each app's checks scan the site's emitter beside the accounts Worker
   (`apps/site/app/telemetry/platform-emitters.ts`), through that app's vocabulary, and read its
   computed types from `EXPLORER_TELEMETRY_EVENTS`; every one has a chart on each app's dashboard.

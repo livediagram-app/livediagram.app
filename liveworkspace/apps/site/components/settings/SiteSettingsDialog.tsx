@@ -33,7 +33,7 @@ import {
 import { setSessionColour, signOut, useSession } from '@/lib/session';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
-import { setExplorerConsent } from '@/lib/explorer/telemetry';
+import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
 import { settingsErrorMessage } from './settings-ui';
@@ -149,10 +149,13 @@ export default function SiteSettingsDialog({
     (key: string, value: StoredValue) => {
       const reported = reportSharedSetting(key, value === true, app);
       // Turning telemetry off waits for its own opt-out to be handed over.
-      if (key === 'telemetryEnabled') void reported.then(() => setExplorerConsent(value !== false));
+      if (key === 'telemetryEnabled')
+        void reported.then(() =>
+          isGuest ? setGuestTelemetryChoice(value !== false) : setExplorerConsent(value !== false),
+        );
       return reported;
     },
-    [app],
+    [app, isGuest],
   );
 
   // The page behind the dialog holds still.

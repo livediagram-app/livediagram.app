@@ -9,7 +9,8 @@
 // keeps counting them.
 //
 // The person's choice holds: signed in, their `telemetryEnabled` setting (the `all` scope every app shares, off
-// only when set off); a guest, whose choice lives in each app's own browser storage, sends nothing when the browser
+// only when set off); a guest, whose choice lives in each app's own browser storage, follows it on the app's own
+// address (the same origin, so the same storage the app's editor reads) and sends nothing anywhere when the browser
 // asks sites not to track (Global Privacy Control or Do Not Track). Until the setting is read, events wait (a few
 // at most) rather than go out unasked.
 
@@ -31,6 +32,7 @@ import type {
   WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
 import type { SettingTelemetryEvent } from '@liveworkspace/settings/catalogue';
+import { DEVICE_PREFERENCES } from '@liveworkspace/settings/device';
 import { APP_ITEMS, isAppName, type AppName } from '@liveworkspace/sites';
 import { pageApp, workspaceOrigin } from './page-app';
 
@@ -81,11 +83,59 @@ export function browserOptsOut(): boolean {
   return nav.globalPrivacyControl === true || nav.doNotTrack === '1';
 }
 
+// The app's settings as its editor keeps them in this browser (an app's site is always one of DEVICE_PREFERENCES).
+const devicePreferencesKey = (app: AppName) =>
+  DEVICE_PREFERENCES[APP_ITEMS[app].site as keyof typeof DEVICE_PREFERENCES].storageKey;
+
+/** A guest's own choice on the app's address: `telemetryEnabled` in the app's settings as kept in this browser, the
+ *  key the app's editor reads (unset, unreadable or off this origin reads as on). */
+function guestOptsOut(): boolean {
+  const host = pageApp();
+  if (!host) return false;
+  try {
+    const raw = localStorage.getItem(devicePreferencesKey(host));
+    if (!raw) return false;
+    return (JSON.parse(raw) as { telemetryEnabled?: unknown }).telemetryEnabled === false;
+  } catch {
+    return false;
+  }
+}
+
+// Whether the page is a guest's. Their choice is read once, then again only when another tab writes it (this tab's
+// own Settings hands the new value to setGuestTelemetryChoice), so no event reads storage.
+let guest = false;
+let guestListening = false;
+function listenForGuestChoice() {
+  const host = pageApp();
+  if (guestListening || !host || typeof window === 'undefined') return;
+  guestListening = true;
+  const key = devicePreferencesKey(host);
+  window.addEventListener('storage', (e) => {
+    if (e.key === key && guest) consent = guestConsent();
+  });
+}
+
+const guestConsent = (): Consent => (browserOptsOut() || guestOptsOut() ? 'no' : 'yes');
+
 /** The person's choice, once known: a signed-in person's `telemetryEnabled` (unset reads as on), or for a guest
- *  null, which follows the browser. Events that waited for it are sent or dropped. */
+ *  null, which follows their choice in the app's storage on its address, and the browser. Events that waited for it
+ *  are sent or dropped. */
 export function setExplorerConsent(telemetryEnabled: boolean | null) {
-  consent =
-    telemetryEnabled === null ? (browserOptsOut() ? 'no' : 'yes') : telemetryEnabled ? 'yes' : 'no';
+  guest = telemetryEnabled === null;
+  if (guest) listenForGuestChoice();
+  consent = guest ? guestConsent() : telemetryEnabled ? 'yes' : 'no';
+  release();
+}
+
+/** A guest turned telemetry on or off in the app's Settings here: their choice, and still the browser's. */
+export function setGuestTelemetryChoice(enabled: boolean) {
+  guest = true;
+  listenForGuestChoice();
+  consent = enabled && !browserOptsOut() ? 'yes' : 'no';
+  release();
+}
+
+function release() {
   const held = waiting;
   waiting = [];
   if (consent === 'yes') for (const e of held) engine.track(e.app, e.category, e.action, e.type);
@@ -240,6 +290,7 @@ export const trackShare: ShareHostTelemetry = (action, type, item) => {
 /** For tests: back to the page's first state. */
 export function __resetExplorerTelemetry() {
   consent = 'unknown';
+  guest = false;
   sender = PLATFORM_TELEMETRY_APP;
   waiting = [];
 }
