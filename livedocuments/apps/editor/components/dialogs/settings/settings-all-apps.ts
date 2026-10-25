@@ -8,7 +8,7 @@ import { preferencesKeptLocally } from '@/lib/preferences-sync';
 const PART_KEYS = new Map<string, string>(UI_SCALE_PARTS.map((p) => [`uiScale-${p.id}`, p.key]));
 
 export function rowSharedAcrossApps(rowKey: string): boolean {
-  // Where the api keeps no preferences (self-hosted, no liveworkspace accounts), they stay in this
+  // Where the api keeps no preferences (no liveworkspace accounts, as in local dev), they stay in this
   // browser and are shared with nothing.
   if (preferencesKeptLocally()) return false;
   const part = PART_KEYS.get(rowKey);

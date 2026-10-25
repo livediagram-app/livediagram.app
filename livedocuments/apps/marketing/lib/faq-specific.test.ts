@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
+import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
+
+import { FAQ_CATEGORIES } from './faq-content';
 
 // The FAQ is about livedocuments only (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"). It began
 // as a copy of livediagram's, so this guard keeps the other apps' names and kinds of work from coming back. Another

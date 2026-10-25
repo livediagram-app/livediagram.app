@@ -73,7 +73,6 @@ livedocuments's scenes:
 | Account and Data     | shared, with its own | a profile, synced documents (an article and a deck), and PDF, PNG, SVG and JSON                             |
 | Troubleshooting      | shared, with its own | a document that didn't load and the checklist fixing it                                                     |
 | Privacy and Security | shared, with its own | a livedocuments.app share link with its safeguards                                                          |
-| Self-Hosting         | shared, with its own | `~/livedocuments` deploying api, editor and router to your own domain                                       |
 | Policies             | shared, the same     | the terms and the privacy policy, sealed                                                                    |
 
 ## Home page

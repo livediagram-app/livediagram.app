@@ -1404,7 +1404,7 @@ and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NE
 | `WORKBENCH_TICKET_RATE_LIMITER`     | namespace `1010`, 30 / 60 s  | Spec; its own binding (WB41)                                               | as above            |
 
 Configuration: `APP_BASE_URL` (existing var) builds the URLs; the `WORKBENCH` Durable Object binding and
-`WORKBENCH_TICKET_RATE_LIMITER` in production and `[env.staging]` (`pnpm staging:check`); the limiter is optional on a self-host (absent, it allows).
+`WORKBENCH_TICKET_RATE_LIMITER` in production and `[env.staging]` (`pnpm staging:check`); the limiter is optional elsewhere (absent, it allows).
 
 ## Assets and external resources
 

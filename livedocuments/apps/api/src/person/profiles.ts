@@ -7,7 +7,7 @@
 // name for any comment it adds, costs one request a minute rather than one a save. Writing your own
 // profile replaces the remembered copy at once; anyone else's change shows within that minute.
 //
-// Without the accounts Worker (a self-host with sign-in off) nothing is stored: a read finds no one and
+// Without the accounts Worker (sign-in off, as in local dev) nothing is stored: a read finds no one and
 // a write is answered but kept nowhere, so each browser shows the name and colour it keeps itself.
 
 import {

@@ -12,7 +12,7 @@ import { Glyph } from './featureIcons';
 
 /**
  * Article slug → icon (full <svg>) for the **support** categories (About,
- * Getting Started, Tips, Account, Privacy, Self-Hosting, Troubleshooting),
+ * Getting Started, Tips, Account, Privacy, Troubleshooting),
  * whose cards render through ArticleCard (@liveworkspace/help-site). Feature
  * landings get their icons from {@link ./featureIcons} (FEATURE_ICONS); this
  * map covers the standalone support articles so every card carries a glyph.
