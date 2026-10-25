@@ -1,8 +1,9 @@
 'use client';
 
 // Every Explorer surface (the /explorer page, the editor's panel) draws each design's snapshot as it always did (DesignThumbnail: fetched only once it
-// scrolls into view, cached page-wide, the undrawn sketch for an empty design with no request at all). Another app's
-// item has no snapshot here, so the Explorer shows its own placeholder.
+// scrolls into view, cached page-wide, the undrawn sketch for an empty design with no request at all). Every app's
+// items have their previews at the same address (`/api/previews/items/<id>`, liveworkspace's media service through
+// this site's router), so under All another app's item shows its own picture too, never a bare icon.
 import type { RenderThumbnail } from '@liveworkspace/explorer';
 import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 
@@ -13,14 +14,13 @@ const FILL = 'h-full w-full';
 // to send it.
 const VIEWER = 'viewer';
 
-export const renderDesignThumbnail: RenderThumbnail = (item) =>
-  item.app === 'livedesign' ? (
-    <DesignThumbnail
-      ownerId={VIEWER}
-      designId={item.id}
-      version={item.updatedAt}
-      empty={item.summary.empty === true}
-      shareCode={item.sharedVia}
-      className={FILL}
-    />
-  ) : null;
+export const renderDesignThumbnail: RenderThumbnail = (item) => (
+  <DesignThumbnail
+    ownerId={VIEWER}
+    designId={item.id}
+    version={item.updatedAt}
+    empty={item.summary.empty === true}
+    shareCode={item.sharedVia}
+    className={FILL}
+  />
+);
