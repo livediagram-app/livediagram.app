@@ -42,8 +42,8 @@ import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHapt
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom

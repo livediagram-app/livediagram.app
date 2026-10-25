@@ -15,13 +15,13 @@ import {
   uiScaleStyle,
   uiUnscaleStyle,
   withUiScalePatch,
+  type UiScalePreferences,
 } from './ui-scale';
-import type { UserPreferences } from './user-preferences';
 
 // UI scale (docs/specs/007-editor/ui-scale.md "The setting").
 
-const master = (uiScale: unknown) => resolveUiScale({ uiScale } as UserPreferences);
-const desktop = (prefs: UserPreferences) => resolveUiScales(prefs, { mobile: false });
+const master = (uiScale: unknown) => resolveUiScale({ uiScale } as UiScalePreferences);
+const desktop = (prefs: UiScalePreferences) => resolveUiScales(prefs, { mobile: false });
 
 describe('resolveUiScale', () => {
   it('defaults to 100% when unset', () => {
@@ -104,7 +104,7 @@ describe('resolveUiScales', () => {
 
 describe('writing', () => {
   it('the master sets everything, clearing each part', () => {
-    const prefs: UserPreferences = { uiScale: 1, uiScaleToolbar: 1.2, uiScalePanels: 0.8 };
+    const prefs: UiScalePreferences = { uiScale: 1, uiScaleToolbar: 1.2, uiScalePanels: 0.8 };
     const next = withUiScalePatch(prefs, uiScalePatch(0.9));
     expect(next).toEqual({ uiScale: 0.9 });
     expect(desktop(next)).toEqual({ panels: 0.9, toolbar: 1.03, cornerButtons: 0.9 });

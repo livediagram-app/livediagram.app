@@ -20,6 +20,7 @@ describe('workbench bindings', () => {
     expect(workbench.formatLogScope).toBe('document-format');
     expect(workbench.appRecoveryFlag).toBe('__workbenchChunkRecovery');
     expect(workbench.runningStaleBuild()).toBe(false);
+    expect(workbench.readPreferences()).toEqual({});
     expect(() => workbench.track('Error', 'Client', 'Anything')).not.toThrow();
   });
 

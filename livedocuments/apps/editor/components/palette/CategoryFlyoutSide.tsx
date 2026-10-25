@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { uiUnscaleStyle } from '@/lib/ui-scale';
+import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { visibleTiles, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { CardList, InfoFooter } from './category-flyout-items';

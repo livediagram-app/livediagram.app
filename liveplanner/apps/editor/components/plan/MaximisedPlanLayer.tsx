@@ -40,7 +40,7 @@ import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';
 import { BAND_CARD_PX } from './band-controls';
-import { useUiScale } from '@/components/providers/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import type { PlanPalette } from './plan-palette';
 import {
   CANVAS_ROOT_SELECTOR,

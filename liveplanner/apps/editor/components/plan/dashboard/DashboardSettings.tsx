@@ -26,8 +26,8 @@ import {
   lucideBetweenHorizontalEnd,
 } from '@liveworkspace/icons/lucide';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

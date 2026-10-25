@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { BAND_BLEND, BAND_FLUSH, BAND_TINT } from './toolbar-surface';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 

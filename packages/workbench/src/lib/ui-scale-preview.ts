@@ -1,4 +1,4 @@
-import type { UserPreferences } from './user-preferences';
+import type { UiScalePreferences } from './ui-scale';
 
 // The UI Scale sliders' live preview (docs/specs/007-editor/ui-scale.md "In
 // Settings"): the patch the slider under the thumb would write, held while it
@@ -7,14 +7,14 @@ import type { UserPreferences } from './user-preferences';
 
 type Listener = () => void;
 
-let preview: Partial<UserPreferences> | null = null;
+let preview: UiScalePreferences | null = null;
 const listeners = new Set<Listener>();
 
-export function getUiScalePreview(): Partial<UserPreferences> | null {
+export function getUiScalePreview(): UiScalePreferences | null {
   return preview;
 }
 
-export function setUiScalePreview(next: Partial<UserPreferences> | null): void {
+export function setUiScalePreview(next: UiScalePreferences | null): void {
   if (next === preview) return;
   preview = next;
   for (const listener of listeners) listener();

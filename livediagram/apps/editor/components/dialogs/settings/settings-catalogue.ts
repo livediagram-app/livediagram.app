@@ -41,8 +41,8 @@ import {
   uiScalePatch,
   withUiScalePatch,
   type UiScalePart,
-} from '@/lib/ui-scale';
-import { setUiScalePreview } from '@/lib/ui-scale-preview';
+} from '@liveworkspace/workbench/lib/ui-scale';
+import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import {
   readWhiteboardDockPosition,
   withWhiteboardDockPosition,

@@ -14,7 +14,7 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 import type { UserPreferences } from '@/lib/user-preferences';
-import { getUiScalePreview } from '@/lib/ui-scale-preview';
+import { getUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
 import { SettingsCategoryPane } from './test-pane';
 

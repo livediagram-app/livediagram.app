@@ -4,6 +4,7 @@
 import { configureWorkbench } from '@liveworkspace/workbench/bindings';
 import { runningStaleBuild } from './server-release';
 import { track } from './telemetry';
+import { readUserPreferences } from './user-preferences';
 import { APP_RECOVERY_FLAG, DEBUG_STORAGE_KEY, RELOAD_GUARD_KEY } from './workbench-keys';
 
 let bound = false;
@@ -17,6 +18,7 @@ export function bindWorkbench(): void {
     reloadGuardKey: RELOAD_GUARD_KEY,
     appRecoveryFlag: APP_RECOVERY_FLAG,
     runningStaleBuild,
+    readPreferences: readUserPreferences,
     formatLogScope: 'design-format',
   });
 }

@@ -39,8 +39,8 @@ import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@/components/toast/toast-floor';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 
 // How long the "seven pinned" hint stays up.

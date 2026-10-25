@@ -12,8 +12,8 @@ import {
   lucidePanelRightClose,
 } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedesign/ui';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';

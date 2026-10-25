@@ -16,6 +16,11 @@ export type WorkbenchTrack = (
   type?: string,
 ) => void;
 
+/** The person's preferences, as far as workbench code reads them: a subset of every product's. */
+export type WorkbenchPreferences = {
+  reduceMotion?: boolean;
+};
+
 export type WorkbenchBindings = {
   /** The product's telemetry `track` (docs/specs/017-telemetry/telemetry.md), for the events above. */
   track: WorkbenchTrack;
@@ -27,6 +32,8 @@ export type WorkbenchBindings = {
   appRecoveryFlag: string;
   /** Whether this page runs an older build than the one now live (the product's server release). */
   runningStaleBuild: () => boolean;
+  /** The person's cached preferences (docs/specs/007-editor/user-preferences.md). */
+  readPreferences: () => WorkbenchPreferences;
   /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
   formatLogScope: string;
 };
@@ -38,6 +45,7 @@ export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
   reloadGuardKey: 'workbench:stale-chunk-reloads',
   appRecoveryFlag: '__workbenchChunkRecovery',
   runningStaleBuild: () => false,
+  readPreferences: () => ({}),
   formatLogScope: 'document-format',
 });
 
@@ -66,6 +74,7 @@ export const workbench = {
   track: ((category, action, type) =>
     current().track(category, action, type)) satisfies WorkbenchTrack,
   runningStaleBuild: (): boolean => current().runningStaleBuild(),
+  readPreferences: (): WorkbenchPreferences => current().readPreferences(),
   get debugKey(): string {
     return current().debugKey;
   },

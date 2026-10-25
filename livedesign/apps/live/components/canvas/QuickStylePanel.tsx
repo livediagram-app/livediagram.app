@@ -9,8 +9,8 @@ import { useRef, useState, type PointerEvent } from 'react';
 import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@/hooks/ui/useQuickStylePlacement';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,

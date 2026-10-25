@@ -18,8 +18,8 @@ import { useDockPopoverKeys } from '@liveworkspace/workbench/components/primitiv
 import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
 
 export type { MovablePanelDockProps };

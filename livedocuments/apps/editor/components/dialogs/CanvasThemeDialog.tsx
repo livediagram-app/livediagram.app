@@ -14,8 +14,8 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
-import { useUiScale } from '@/components/providers/ui-scale';
-import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livedocuments/document';

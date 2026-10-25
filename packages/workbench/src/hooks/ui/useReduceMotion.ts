@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { readUserPreferences } from '@/lib/user-preferences';
+import { workbench } from '../../bindings';
 
 // Keep the `.reduce-motion` class on <html> in sync with the user's
 // "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) so flipping the Settings toggle
@@ -8,7 +8,8 @@ import { readUserPreferences } from '@/lib/user-preferences';
 // is always honoured independently) to collapse decorative animations +
 // transitions to ~instant.
 //
-// The initial application happens in a pre-paint inline script in
+// The preference is read through the product's binding (`readPreferences`). The initial
+// application happens in a pre-paint inline script in
 // app/layout.tsx (reading the cached preference) so the class is present
 // before any element's one-shot mount animation fires. This hook only has
 // to handle runtime changes — and must NOT undo that pre-paint class
@@ -22,7 +23,7 @@ export function useReduceMotion(enabled: boolean): void {
     const root = document.documentElement;
     if (enabled) {
       root.classList.add('reduce-motion');
-    } else if (!readUserPreferences().reduceMotion) {
+    } else if (!workbench.readPreferences().reduceMotion) {
       root.classList.remove('reduce-motion');
     }
   }, [enabled]);

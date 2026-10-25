@@ -6,7 +6,7 @@
 // the person's own choice, in their synced preferences (lib/contents-placement.ts).
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, type ReactNode } from 'react';
-import { useUiScale } from '@/components/providers/ui-scale';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import {
   useLocalStorageValue,

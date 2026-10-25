@@ -7,7 +7,7 @@
 // (reduce motion).
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
+import { useReduceMotion } from '@liveworkspace/workbench/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@liveworkspace/workbench/hooks/ui/usePanelOpacity';
 import {
   autoRebindArrowsEnabled,
