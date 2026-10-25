@@ -335,12 +335,13 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
 
 ### Take offline (Cloud → Offline)
 
-Action: **"Take Offline"**, in the editor and in the Explorer on liveplanner's address, which hands it to This
-Browser's page (`/offline?convert=take-offline&item=<id>`, `apps/editor/hooks/persistence/useConversionHandoff.ts`,
-over the shared `@liveworkspace/explorer/conversion-handoff`): the page checks the plan is the person's to move, then
-asks the same confirmation. The Explorer offers it on a plan the person can edit in their library or a team's, never
-on one reached through a link. Its This Browser rows' **Sync Plan** hands over the same way
-(`/offline?convert=sync&item=<id>`), and the page asks before it moves the plan. This is **destructive on the server**
+Action: **"Take Offline"**, in the editor and in the Explorer on liveplanner's address, which hands it to the editor
+at the plan's own address (`/project/<id>?convert=take-offline&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
+over `apps/editor/hooks/persistence/useConversionHandoff.ts` and the shared `@liveworkspace/explorer/conversion-handoff`):
+the editor checks the plan is the person's to move, then asks the same confirmation. The Explorer offers it on a plan
+the person can edit in their library or a team's, never on one reached through a link. Its This Browser rows' **Sync
+Plan** hands over the same way (`/project/<id>?convert=sync&item=<id>`), and the editor asks before it moves the plan;
+in the editor's Explorer panel Sync Plan runs in place. This is **destructive on the server**
 and gated by a confirmation:
 
 - **Confirmation** warns clearly: _"This removes it from your account and every

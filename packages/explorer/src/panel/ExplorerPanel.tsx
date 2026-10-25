@@ -3,8 +3,8 @@
 // The editor's floating Explorer panel, drawn as liveplanner's was before it moved onto the index
 // (components/panels/Explorer.tsx with its explorer-panel/ and explorer-tree/ parts): the open item's card with the
 // host's notice under it, then a rail of sections beside a pane (a row of chips over the pane when stacked). The
-// pane names its section, offers New Folder in a space and Open Page to the Explorer, and shows Home's Jump Back
-// In, the Inbox, a space's folders and items, Favourites or the Trash. Only where the data comes from changed: it
+// pane names its section in full, offers New Folder (an icon) in a space, and shows Home's Jump Back In, the Inbox, a
+// space's folders and items, Favourites, This Browser or the Trash. Only where the data comes from changed: it
 // shares the full Explorer's data layer, so a rename or a star shows here at once and every list is one request a
 // page, read only while its section is shown.
 
@@ -38,6 +38,10 @@ import { OtherAppsHere } from '../explorer/OtherAppsHere';
 import { elsewhereLabel } from '../explorer/FolderMosaic';
 import { useOtherApps } from '../data/useOtherApps';
 import { InboxPane } from '../explorer/InboxPane';
+import { BrowserIcon, HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
+import { useThisBrowserItems, type ThisBrowserHost } from '../explorer/ThisBrowser';
+import { PanelThisBrowser } from './PanelThisBrowser';
+import { Tooltip } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
   TRASH_BIN,
@@ -55,7 +59,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
 import { LibraryHostProvider, useLibraryHost } from '../library/context';
-import { PanelLibrary, PanelTimeline, libraryTabs } from './PanelLibraryTimeline';
+import { PanelLibrary, PanelTimeline } from './PanelLibraryTimeline';
 import type { LibraryHostProps } from '../library/types';
 import { useLatest } from '../ui/useLatest';
 import {
@@ -66,7 +70,7 @@ import {
   ItemIcon,
   LibraryIcon,
   MyWorkIcon,
-  OpenIcon,
+  NewFolderIcon,
   PencilIcon,
   PlusIcon,
   RestoreIcon,
@@ -120,7 +124,6 @@ import {
   panelSectionGroups,
   sectionKey,
   sectionLabel,
-  sectionPage,
   type LibraryTab,
   usePanelSection,
   type PanelSection,
@@ -148,7 +151,7 @@ export type ExplorerPanelProps = {
   onTrashCurrent?: (item: Item) => Promise<boolean>;
   // The item open in the editor took a new title, from its card or any menu: the editor's title follows.
   onRenameCurrent?: (title: string) => void;
-  // Opens the full Explorer at a view (Open Page, See all).
+  // Opens the full Explorer at a view (See all, a view only the page shows).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name (RenderItemMark). */
@@ -168,6 +171,9 @@ export type ExplorerPanelProps = {
   share?: ShareHost;
   /** The Inbox's extras: rows from items only this browser holds, card glyphs, a help article and telemetry. */
   inbox?: InboxHost;
+  /** The app's items kept only in this browser, as the Explorer page's `thisBrowser`, with the editor's own `open`,
+   *  `sync` and `remove`: a This Browser section on the rail (with their count) while there are any. */
+  thisBrowser?: ThisBrowserHost | null;
   /** Folders, default folders, the Trash and team libraries changed from the panel, for the host's telemetry
    *  (OrganiseTelemetry); stable. */
   onOrganise?: OrganiseTelemetry;
@@ -190,26 +196,33 @@ export function ExplorerPanel({
   itemMenu,
   history,
   teamsHost,
+  thisBrowser = null,
   ...props
 }: ExplorerPanelProps) {
+  const extras = useMemo<ExplorerHostExtras>(
+    () => ({ sidebarLinks: [], allLabel: 'All', thisBrowser }),
+    [thisBrowser],
+  );
   return (
     <ToastProvider>
-      <LibraryHostProvider
-        gallery={gallery}
-        shapeLibraries={shapeLibraries}
-        imports={imports}
-        itemMenu={itemMenu}
-        history={history}
-      >
-        <TeamsProvider
-          host={teamsHost}
-          signedIn={Boolean(teamsHost)}
-          tokenTeams={props.teams}
-          eager={false}
+      <HostExtrasProvider value={extras}>
+        <LibraryHostProvider
+          gallery={gallery}
+          shapeLibraries={shapeLibraries}
+          imports={imports}
+          itemMenu={itemMenu}
+          history={history}
         >
-          <PanelInner {...props} />
-        </TeamsProvider>
-      </LibraryHostProvider>
+          <TeamsProvider
+            host={teamsHost}
+            signedIn={Boolean(teamsHost)}
+            tokenTeams={props.teams}
+            eager={false}
+          >
+            <PanelInner {...props} />
+          </TeamsProvider>
+        </LibraryHostProvider>
+      </HostExtrasProvider>
     </ToastProvider>
   );
 }
@@ -241,14 +254,18 @@ function PanelInner({
   notice,
   footer,
   divider = 'titles',
-}: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams'>) {
+}: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams' | 'thisBrowser'>) {
   const { teams } = useTeams();
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
   const { gallery, shapeLibraries } = useLibraryHost();
   const library = Boolean(gallery || shapeLibraries);
-  const groups = useMemo(() => panelSectionGroups(teams, { library }), [teams, library]);
-  // The Library's tab, held here so a menu's Shape Libraries opens on it and Open Page goes to the page shown.
+  const offlineCount = useThisBrowserItems().live.length;
+  const groups = useMemo(
+    () => panelSectionGroups(teams, { library, thisBrowser: offlineCount > 0 }),
+    [teams, library, offlineCount],
+  );
+  // The Library's tab, held here so a menu's Shape Libraries opens on it.
   const [libraryTab, setLibraryTab] = useState<LibraryTab>('gallery');
   const [section, pickSection] = usePanelSection(app, groups, { homeOnOpen: sheet, open });
   // The folder open in the pane, for the section it was opened in: another section starts at its root.
@@ -351,6 +368,7 @@ function PanelInner({
               onPick={pick}
               phone={stacked}
               divider={divider}
+              offlineCount={offlineCount}
             />
             <Pane
               section={section}
@@ -358,8 +376,6 @@ function PanelInner({
               onOpenFolder={(id) => setOpenFolder({ section: sectionKey(section), id })}
               currentId={current?.id ?? currentId}
               onOpenExplorer={onOpenExplorer}
-              basePath={basePath}
-              narrow={stacked}
               libraryTab={libraryTab}
               setLibraryTab={setLibraryTab}
             />
@@ -400,6 +416,7 @@ function sectionOfView(
     case 'timeline':
     case 'shared':
     case 'favourites':
+    case 'offline':
     case 'trash':
       return { section: { kind: v.kind }, folderId: null };
     case 'all':
@@ -524,6 +541,8 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <TeamIcon />;
     case 'favourites':
       return <StarIcon />;
+    case 'offline':
+      return <BrowserIcon />;
     case 'timeline':
       return <TimelineIcon />;
     case 'library':
@@ -539,12 +558,15 @@ function Rail({
   onPick,
   phone,
   divider,
+  offlineCount,
 }: {
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
   phone: boolean;
   divider: 'titles' | 'lines';
+  // How many items this browser keeps only for itself: This Browser's count.
+  offlineCount: number;
 }) {
   const { onCreate, kind, inbox, viewerId, teamName } = useExplorer();
   const canRunTeams = useTeams().canRun;
@@ -553,6 +575,7 @@ function Rail({
   const name = (id: string) => teamName(id);
   const badges: Record<string, number | undefined> = {
     inbox: inboxCount(inbox.data, viewerId) || undefined,
+    offline: offlineCount || undefined,
   };
   // On a phone the picked chip may sit past the row's edge: bring it into view.
   useEffect(() => {
@@ -786,9 +809,28 @@ function RailEntry({
 
 // ---- The pane -------------------------------------------------------------------------------------------
 
-// The header's quiet actions: words with a glyph, a wash on hover, no frame.
-const HEADER_BUTTON =
-  'flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white';
+// The header's quiet actions: a glyph named by its label and tooltip, a wash on hover, no frame. Words would crowd
+// the section's name out of a narrow pane.
+const HEADER_ICON_BUTTON =
+  'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white [&_svg]:size-4';
+
+function HeaderIconButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip label={label}>
+      <button type="button" aria-label={label} onClick={onClick} className={HEADER_ICON_BUTTON}>
+        {children}
+      </button>
+    </Tooltip>
+  );
+}
 
 function Pane({
   section,
@@ -796,8 +838,6 @@ function Pane({
   onOpenFolder,
   currentId,
   onOpenExplorer,
-  basePath,
-  narrow,
   libraryTab,
   setLibraryTab,
 }: {
@@ -806,13 +846,10 @@ function Pane({
   onOpenFolder: (id: string | null) => void;
   currentId: string | null;
   onOpenExplorer?: (view: ExplorerView) => void;
-  basePath?: string;
-  narrow: boolean;
   libraryTab: LibraryTab;
   setLibraryTab: (tab: LibraryTab) => void;
 }) {
   const { teamName, folders } = useExplorer();
-  const libraryHost = useLibraryHost();
   const canRunTeams = useTeams().canRun;
   const [members, setMembers] = useState(false);
   const title = sectionLabel(section, (id) => teamName(id));
@@ -833,15 +870,6 @@ function Pane({
           })
           .then((f) => f && pendingRename.current?.(f.id))
     : undefined;
-  // The Library opens the tab shown, or the only page it has.
-  const tabs = libraryTabs(libraryHost);
-  const page = sectionPage(section, here, tabs.includes(libraryTab) ? libraryTab : tabs[0]);
-  const openPage = onOpenExplorer
-    ? (e: React.MouseEvent) => {
-        e.preventDefault();
-        onOpenExplorer(page);
-      }
-    : undefined;
   const body =
     section.kind === 'home' ? (
       <HomeSection currentId={currentId} onOpenExplorer={onOpenExplorer} />
@@ -853,6 +881,8 @@ function Pane({
       <PanelLibrary tab={libraryTab} setTab={setLibraryTab} />
     ) : section.kind === 'trash' ? (
       <TrashSection />
+    ) : section.kind === 'offline' ? (
+      <PanelThisBrowser />
     ) : (
       <PlaceSection
         section={section}
@@ -865,32 +895,31 @@ function Pane({
     );
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 px-5 pb-3 pt-4 max-sm:px-4 max-sm:pb-1.5 max-sm:pt-2.5">
-        <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-slate-900 dark:text-slate-50">
+      {/* The section's name always shows in full: it takes the room, and wraps rather than truncates (a long team
+          name); the actions are glyphs that never shrink. */}
+      <div className="flex items-center gap-1 px-5 pb-3 pt-4 max-sm:px-4 max-sm:pb-1.5 max-sm:pt-2.5">
+        <h3 className="mr-1 min-w-0 flex-1 text-[15px] font-semibold leading-5 text-balance break-words text-slate-900 dark:text-slate-50">
           {title}
         </h3>
         {newFolder ? (
-          <button type="button" onClick={newFolder} className={HEADER_BUTTON}>
-            <PlusIcon size={12} />
-            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>
-              {here ? 'New Subfolder' : 'New Folder'}
-            </span>
-          </button>
+          <HeaderIconButton label={here ? 'New Subfolder' : 'New Folder'} onClick={newFolder}>
+            <NewFolderIcon />
+          </HeaderIconButton>
         ) : null}
         {section.kind === 'mine' ? (
           <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} />
         ) : null}
         {section.kind === 'team' && canRunTeams ? (
-          <button type="button" onClick={() => setMembers(true)} className={HEADER_BUTTON}>
-            <TeamIcon size={12} />
-            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Members</span>
-          </button>
+          <HeaderIconButton label="Members" onClick={() => setMembers(true)}>
+            <TeamIcon size={16} />
+          </HeaderIconButton>
         ) : null}
-        {section.kind === 'library' ? null : <FilterToggle />}
-        <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
-          <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
-          <OpenIcon />
-        </a>
+        {/* This Browser holds only this app's items, and the Library is the app's own. */}
+        {section.kind === 'library' || section.kind === 'offline' ? null : (
+          <span className="ml-1 shrink-0">
+            <FilterToggle />
+          </span>
+        )}
       </div>
       <div
         data-explorer-pane=""

@@ -7,7 +7,8 @@ served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md]
 "The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
 session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
 (`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
-and its This Browser page (`offlinePath`, which also runs Take Offline and Sync, `offlineConversions`). Teams are made
+and its This Browser view (`offlinePath`, `/explorer/offline`; the editor at a design's own address runs Take Offline
+and Sync handed over from it, `offlineConversions`). `/offline`, the old This Browser page, only redirects there. Teams are made
 and run over liveworkspace's account API through the router (`/api/workspace/account`). Signed in, the header has a **Settings** button beside Appearance that opens
 livedesign's settings in place, and any `?settings=` address opens them here too. A workbench's
 workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
@@ -287,8 +288,9 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
-Shared With Me; My Work, each team and New Team (signed in); Favourites, Library and Trash. Shared With Me carries
-its count (the panel reads no other feed until its section is shown). No
+Shared With Me; My Work, each team and New Team (signed in); Favourites, This Browser (while this browser holds
+designs, with their count), Library and Trash. Shared With Me carries its count (the panel reads no other feed until
+its section is shown). No
 Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
 team's card in a dialog, where the team is run as on the page.
 
@@ -299,7 +301,8 @@ team's card in a dialog, where the team is run as on the page.
 
 ### The pane
 
-A header (the section's name, then quiet actions: the section's own, and **Open Page** to its Explorer page) over its
+A header (the section's name in full, wrapping rather than cut short, then quiet glyphs each named by its label and
+tooltip: the section's own, and the app switch with livedesign's logo and, for All, liveworkspace's) over its
 content, which scrolls inside the pane with room round it. Every section is drawn for the pane from the same parts:
 **cards**: rows (a 60 × 44 thumbnail or tile, the name over one quiet line, a trailing slot for pills and the `⋯`
 menu) and two-column preview cards (a picture across the top, the name and a line under it), each a raised surface that
@@ -315,8 +318,9 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                                                                                                                                                                | None       |
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                                                                                                                  | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                                                                         | New Folder |
+| This Browser   | The designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                                                                                                                                                       | None       |
 | A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                                                                                                           | New Folder |
-| Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`); Open Page goes to the Explorer's gallery view                                                                                                                                                                                           | None       |
+| Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`)                                                                                                                                                                                                                                          | None       |
 | Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                                                                                                        | None       |
 
 - **Every design the pane shows** (a place's rows, Home's cards and What Happened, the Timeline's design events)
@@ -336,7 +340,8 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 - **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
   cascade in as they arrive (the dialogs' view and row motions, a fade alone under reduced motion).
 - The views load only when their section is first shown, so opening the editor costs nothing more. The Timeline's
-  card menus and calendar are the Explorer page's (Open Page).
+  card menus and calendar are the Explorer page's (the footer's Explorer link). There is no Open Page: every
+  section stays in the panel.
 
 ### On a phone
 

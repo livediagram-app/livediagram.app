@@ -74,7 +74,7 @@ export type {
   WelcomeTelemetryType,
 } from './welcome/types';
 export type { SidebarLink } from './explorer/host';
-export type { ThisBrowserHost } from './explorer/ThisBrowser';
+export { useThisBrowserList, type ThisBrowserHost } from './explorer/ThisBrowser';
 export type { ThisBrowserItem } from './this-browser';
 export {
   HeroArt,

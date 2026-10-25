@@ -5,7 +5,7 @@
 import { useCallback, useState } from 'react';
 import type { App } from '@liveworkspace/index-client';
 import type { TeamRef } from '../types';
-import { SIDEBAR_LABELS, type ExplorerView } from '../views';
+import { SIDEBAR_LABELS } from '../views';
 
 export type PanelSection =
   | { kind: 'home' }
@@ -15,6 +15,7 @@ export type PanelSection =
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
   | { kind: 'favourites' }
+  | { kind: 'offline' }
   | { kind: 'library' }
   | { kind: 'trash' };
 
@@ -39,6 +40,7 @@ const SIMPLE = [
   'shared',
   'mine',
   'favourites',
+  'offline',
   'library',
   'trash',
 ] as const;
@@ -49,10 +51,11 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
   return (SIMPLE as readonly string[]).includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-/** The rail's entries: the sidebar's three groups, each team under Spaces, the Library while the host keeps one. */
+/** The rail's entries: the sidebar's three groups, each team under Spaces, This Browser while this browser keeps
+ *  any of the app's items, and the Library while the host keeps one. */
 export function panelSectionGroups(
   teams: readonly TeamRef[],
-  { library = false }: { library?: boolean } = {},
+  { library = false, thisBrowser = false }: { library?: boolean; thisBrowser?: boolean } = {},
 ): PanelSectionGroup[] {
   return [
     {
@@ -67,6 +70,7 @@ export function panelSectionGroups(
       id: 'more',
       sections: [
         { kind: 'favourites' },
+        ...(thisBrowser ? [{ kind: 'offline' as const }] : []),
         ...(library ? [{ kind: 'library' as const }] : []),
         { kind: 'trash' },
       ],
@@ -90,28 +94,12 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return teamName(s.id) ?? 'Team';
     case 'favourites':
       return 'Favourites';
+    case 'offline':
+      return SIDEBAR_LABELS.thisBrowser;
     case 'library':
       return SIDEBAR_LABELS.library;
     case 'trash':
       return SIDEBAR_LABELS.trash;
-  }
-}
-
-/** The Explorer page a section's Open Page goes to, at the folder open in it (the Library's at the tab shown). */
-export function sectionPage(
-  s: PanelSection,
-  folderId: string | null,
-  libraryTab: LibraryTab = 'gallery',
-): ExplorerView {
-  switch (s.kind) {
-    case 'library':
-      return { kind: libraryTab };
-    case 'mine':
-      return folderId ? { kind: 'folder', id: folderId } : { kind: 'all' };
-    case 'team':
-      return folderId ? { kind: 'team', id: s.id, folderId } : { kind: 'team', id: s.id };
-    default:
-      return { kind: s.kind };
   }
 }
 

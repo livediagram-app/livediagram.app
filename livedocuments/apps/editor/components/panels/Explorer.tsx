@@ -2,7 +2,6 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
-import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livedocuments/ui';
@@ -13,6 +12,7 @@ import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
@@ -60,6 +60,7 @@ function ExplorerImpl({
   const viewerId = accountUserId ?? guestId;
   // Take Offline and Sync Document on a document's menu.
   const itemMenu = useOfflineItemMenu(viewerId);
+  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId);
   const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
   const inboxHost = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
@@ -150,6 +151,8 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        // The documents kept only in this browser, which no index list holds: This Browser on the rail, in place.
+        thisBrowser={thisBrowser}
         itemMenu={itemMenu}
         // The Library section: the Image Gallery over this app's API.
         {...explorerLibrary}
@@ -160,16 +163,12 @@ function ExplorerImpl({
         divider={minimalChrome ? 'lines' : 'titles'}
         // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
         notice={minimalChrome ? null : <SignInPrompt bar />}
+        // The product's surfaces, which the editor header no longer carries as a menu.
         footer={
-          <>
-            {/* The documents kept only in this browser, which no Explorer list holds. */}
-            <ThisBrowserRow />
-            {/* The product's surfaces, which the editor header no longer carries as a menu. */}
-            <ProductNavLinks
-              current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-            />
-          </>
+          <ProductNavLinks
+            current="editor"
+            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+          />
         }
       />
     </MovablePanel>

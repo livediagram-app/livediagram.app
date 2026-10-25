@@ -7,13 +7,13 @@ import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livediagram/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
-import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
@@ -62,6 +62,7 @@ function ExplorerImpl({
   // Take Offline and Sync Canvas on a canvas's menu, as the person (an account, or this browser's guest).
   const guestId = useGuestId(authLoaded, accountUserId);
   const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
+  const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   const library = useMemo(() => explorerLibraryHosts(), []);
@@ -156,6 +157,8 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
+        thisBrowser={thisBrowser}
         onOrganise={trackOrganise}
         itemMenu={itemMenu}
         gallery={library.gallery}
@@ -167,16 +170,12 @@ function ExplorerImpl({
         divider={minimalChrome ? 'lines' : 'titles'}
         // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
         notice={minimalChrome ? null : <SignInPrompt bar />}
+        // The product's surfaces, which the editor header no longer carries as a menu.
         footer={
-          <>
-            {/* The canvases kept only in this browser, which no Explorer list holds. */}
-            <ThisBrowserRow />
-            {/* The product's surfaces, which the editor header no longer carries as a menu. */}
-            <ProductNavLinks
-              current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-            />
-          </>
+          <ProductNavLinks
+            current="editor"
+            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+          />
         }
       />
     </MovablePanel>

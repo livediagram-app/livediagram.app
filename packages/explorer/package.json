@@ -11,6 +11,7 @@
     "./hero-manifest": "./src/hero/manifest.tsx",
     "./this-browser": "./src/this-browser.ts",
     "./conversion-handoff": "./src/conversion-handoff.ts",
+    "./offline-redirect": "./src/offline-redirect.tsx",
     "./imports": "./src/library/app-imports.tsx",
     "./search-panel": "./src/search/SearchPanel.tsx",
     "./explorer.css": "./explorer.css"

@@ -83,15 +83,6 @@ test.describe('Optical alignment audit', () => {
     await expectCentred(visitor, 'Join dialog');
     await visitor.context().close();
   });
-
-  // This Browser (/offline), the one listing the editor serves itself: the shared Explorer is liveworkspace's.
-  test('This Browser', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/offline');
-    await page.getByRole('heading', { name: 'This Browser' }).waitFor();
-    await expectCentred(page, 'This Browser');
-    expectNoPageErrors(pageErrors);
-  });
 });
 
 // A capital with a tail (Q, J) drops below the baseline by design, like a descender: an all-caps disc

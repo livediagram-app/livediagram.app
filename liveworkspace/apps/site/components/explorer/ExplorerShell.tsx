@@ -48,16 +48,11 @@ import {
   type RenderAppLogo,
   type SidebarLink,
   type ThisBrowserHost,
-  type ThisBrowserItem,
+  useThisBrowserList,
   type WelcomeManifest,
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
 import { createIndexClient } from '@liveworkspace/index-client';
-import {
-  readThisBrowser,
-  subscribeThisBrowser,
-  thisBrowserKey,
-} from '@liveworkspace/explorer/this-browser';
 import { BrandMark } from '@livediagram/ui';
 import { APP_ITEMS, APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
@@ -95,7 +90,7 @@ import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { renewIdentity } from '@/lib/explorer/new-team';
-import { offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
+import { offlineHandOver, offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
 import {
@@ -235,20 +230,6 @@ function readLanding(): Landing {
 let landing: Landing | null = null;
 const landingNow = () => (landing ??= readLanding());
 const noSubscribe = () => () => {};
-
-// This Browser's list as the app last wrote it, read again only when it changes (one stable array per change).
-const NO_LOCAL: readonly ThisBrowserItem[] = [];
-let localRead: { raw: string | null; items: readonly ThisBrowserItem[] } | null = null;
-function localItems(app: AppName): readonly ThisBrowserItem[] {
-  let raw: string | null;
-  try {
-    raw = localStorage.getItem(thisBrowserKey(app));
-  } catch {
-    return NO_LOCAL;
-  }
-  if (localRead?.raw !== raw) localRead = { raw, items: raw ? readThisBrowser(app) : NO_LOCAL };
-  return localRead.items;
-}
 
 export function ExplorerShell() {
   const pathname = usePathname();
@@ -402,29 +383,23 @@ export function ExplorerShell() {
   );
 
   // This Browser on the app's own address: the app's list, read here and heard as it changes.
-  const subscribeLocal = useCallback(
-    (onChange: () => void) => (host ? subscribeThisBrowser(host, onChange) : () => {}),
-    [host],
-  );
-  const local = useSyncExternalStore(
-    subscribeLocal,
-    () => (host ? localItems(host) : NO_LOCAL),
-    () => NO_LOCAL,
-  );
+  const local = useThisBrowserList(host);
   const syncHref = useMemo(() => offlineSyncHref(host, signedIn), [host, signedIn]);
+  const handOverHref = useMemo(() => offlineHandOver(host), [host]);
   const thisBrowser: ThisBrowserHost | null = useMemo(
     () =>
       host
         ? {
-            items: local as ThisBrowserItem[],
+            items: local,
             itemHref: (item) => `${APP_ITEMS[host].itemPath}${encodeURIComponent(item.id)}`,
             helpHref: '/help/privacy-and-security/offline-mode/',
             ...(syncHref ? { syncHref } : {}),
+            ...(handOverHref ? { handOverHref } : {}),
           }
         : null,
-    [host, local, syncHref],
+    [host, local, syncHref, handOverHref],
   );
-  // Take Offline on the app's own items, handed to the app's This Browser page.
+  // Take Offline on the app's own items, handed to the item in the app's editor.
   const itemMenu = useMemo(() => offlineItemMenu(host), [host]);
 
   // This Browser on liveworkspace.app, which can't read it: a link to the app's own offline view.

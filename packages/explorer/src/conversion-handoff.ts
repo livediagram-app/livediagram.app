@@ -1,13 +1,13 @@
 'use client';
 
 // Take Offline and Sync handed over by the Explorer on an app's address (liveworkspace's shared Explorer, which
-// can't write the app's offline store): the app's This Browser page reads `?convert=…&item=…` once (./this-browser),
-// takes it out of the address, checks the item is the person's to move, and runs the conversion through the same code
-// the editor's panel uses. Both ask first: Take Offline with its own confirm, Sync with one here, since a link alone
-// must never move an item.
+// can't write the app's offline store): the app's editor, opened at the item's own address, reads
+// `?convert=…&item=…` once (./this-browser), takes it out of the address, checks the item is the person's to move, and
+// runs the conversion through the same code the editor's Explorer panel uses. Both ask first: Take Offline with its
+// own confirm, Sync with one here, since a link alone must never move an item.
 //
-// Every app with a This Browser page calls this with its own pieces: its conversions, confirm and toast, its offline
-// list, the index read, and the word for its items.
+// Every app's editor calls this with its own pieces: its conversions, confirm and toast, its offline list, the index
+// read, and the word for its items.
 
 import { useEffect, useRef } from 'react';
 import type { App, Item } from '@liveworkspace/index-client';

@@ -19,6 +19,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -214,6 +215,8 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
+      {/* A Take Offline or Sync the Explorer page handed over in the address. */}
+      <ConversionHandoff />
     </EditorContext.Provider>
   );
 }

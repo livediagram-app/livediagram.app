@@ -17,6 +17,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
+import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -202,6 +203,8 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       {/* Moving this browser's projects in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
+      {/* A Take Offline or Sync the Explorer page handed over in the address. */}
+      <ConversionHandoff />
     </EditorContext.Provider>
   );
 }

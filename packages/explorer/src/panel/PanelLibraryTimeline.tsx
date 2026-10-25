@@ -2,7 +2,7 @@
 
 // The editor panel's Timeline and Library sections (livediagram's explorer-panel PanelViews "TimelineSection" and
 // "LibrarySection"): the Timeline as a list under its days, newest first, and the Library's pages as tabs over one
-// view. The Timeline's card menus, filters and calendar are the Explorer page's (Open Page).
+// view. The Timeline's card menus, filters and calendar are the Explorer page's.
 
 import { useMemo, useSyncExternalStore } from 'react';
 import { useExplorer } from '../explorer/context';
@@ -85,7 +85,9 @@ export function PanelTimeline() {
                   <PaneRow
                     key={event.id}
                     leading={
-                      <PaneTile tone={TILE_TONES[eventTone(event.type)]}>{card.icon}</PaneTile>
+                      <PaneTile size="mark" tone={TILE_TONES[eventTone(event.type)]}>
+                        {card.icon}
+                      </PaneTile>
                     }
                     title={card.subject ?? card.label}
                     meta={

@@ -106,8 +106,9 @@ files", "Keep your files safe"), and the hero asks "what are you working on toda
 app's kind. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
-What a browser keeps offline belongs to its app's origin. On the app's address the Explorer lists it
-(This Browser); on liveworkspace.app, which can't read it, the sidebar links to the app's own offline view.
+What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
+Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
+that view on the app's own address.
 
 #### A place that is empty here but not elsewhere
 
@@ -168,13 +169,16 @@ The page reads where it is from its own address and there is that app's page:
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
   Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
   liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
-  to the app's own `/explorer/offline`, never the app's bare `offlinePath` page, which only takes hand-overs.
-- **Take Offline and Sync.** Where the app's This Browser page runs them (the registry's `offlineConversions`),
-  each of the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live
-  This Browser row has **Sync** for a person signed in. Only the app can write its offline store, so both hand over
-  to that page (`<offlinePath>?convert=take-offline|sync&item=<id>`, `thisBrowserConvertHref`), which takes the
-  request out of the address, checks the item is the person's to move, asks them to confirm, and runs the app's own
-  conversion. A link alone never moves anything.
+  to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
+  apps' old `/offline` pages only redirect to it, their query kept.
+- **Take Offline and Sync.** Where the app's editor runs them (the registry's `offlineConversions`), each of the
+  app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This Browser
+  row has **Sync** for a person signed in. Only the app can write its offline store: in the editor's panel both run
+  in place; the page hands over to the app's editor at the item's own address
+  (`<itemPath><id>?convert=take-offline|sync&item=<id>`, `thisBrowserConvertHref`), which takes the request out of
+  the address, checks the item is the person's to move, asks them to confirm, and runs the app's own conversion. A
+  request that reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on
+  to the editor the same way. A link alone never moves anything.
 - **Teams.** Made, run and answered here, as on liveworkspace.app: the accounts Worker takes the app's token for
   them ([Teams](#teams-are-run-in-the-explorer)). After a change the app is asked for a fresh token, which names
   the teams as they now are.
@@ -194,6 +198,13 @@ from a remembered state, and opens only as a popover from the canvas's top-left 
 press outside, Esc, the button again or opening an item. Its code loads the first time it opens (fetched ahead
 once the editor is idle). The editors' status screens (deleted, couldn't load, not found) show neither the panel
 nor the menu button.
+
+The panel keeps the person in the editor. Its rail's sections each open their pane in place, This Browser among
+them (under More, with its count, while this browser keeps any of the app's items: each opens in the editor, Sync
+moves one into the account and the panel asks before deleting one for good). Each pane's header names its section
+in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder inside a folder) in a space, a team's
+**Members**, each named by its label and tooltip, and the app switch (the app's logo and name, All with
+liveworkspace's). There is no Open Page: the full Explorer is the menu button's own link and Home's See all.
 
 #### Teams are run in the Explorer
 

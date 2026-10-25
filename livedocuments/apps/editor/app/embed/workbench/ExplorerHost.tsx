@@ -17,7 +17,6 @@ import {
   type LensTelemetryType,
   type TimelineTelemetry,
   type HomeTelemetry,
-  type SidebarLink,
   type WelcomeManifest,
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
@@ -25,6 +24,7 @@ import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { indexClient } from '@/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
@@ -49,17 +49,6 @@ const HERO_ART = (
     <HeroTemplateFan />
   </Suspense>
 );
-
-// This Browser: the documents kept only in this browser, which the index never sees, on their own page (/offline).
-const SIDEBAR_LINKS: readonly SidebarLink[] = [
-  {
-    id: 'this-browser',
-    label: 'This Browser',
-    href: '/offline',
-    description: 'Documents kept only in this browser.',
-    icon: 'browser',
-  },
-];
 
 // The welcome manifest as the templates package writes it (its addresses are this site's own), in a chunk of its
 // own, fetched once.
@@ -136,6 +125,8 @@ export function ExplorerHost({
   const viewerId = accountUserId ?? guestId;
   const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
+  // This Browser: the documents kept only in this browser, which the index never sees, as a view of the Explorer.
+  const thisBrowser = useThisBrowserHost(viewerId ?? null, !!accountUserId);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
   // copy merged in once the person is known.
   const { userPreferences: prefs } = useEditorPreferences({
@@ -201,7 +192,7 @@ export function ExplorerHost({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
-        sidebarLinks={SIDEBAR_LINKS}
+        thisBrowser={thisBrowser}
         welcome={welcome}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}

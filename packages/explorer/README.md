@@ -101,7 +101,7 @@ box of its own.
 | `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                                    |
 | `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                                      |
 | `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome.                                      |
-| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, before the Trash (This Browser, linking to the app's offline view).                                               |
+| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, before the Trash (liveworkspace.app's This Browser, linking to an app's view).                                    |
 | `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                                  |
 | `renderAppLogo?`           | `(app: App \| 'all') => ReactNode`     | The filter's logos: the app's on its choice, the platform's on the every-app one (the Explorer page and the panel). The host draws them, since the brands are its. |
 | `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                                 |
@@ -177,15 +177,24 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
 
 - the current item, which can be renamed and has the item menu;
 - a rail with Home, Inbox, Timeline, Shared With Me, My Work, each team, New Team (with a `teamsHost`), Favourites,
-  Library (where the host has a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer;
+  This Browser (with a `thisBrowser` host, its count beside it, while this browser keeps any), Library (where the host
+  has a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer. Every entry opens its pane in place;
+  there is no Open Page;
+- each pane's header: the section's name in full (it wraps, never truncates), then quiet glyphs, each named by its
+  `aria-label` and tooltip: New Folder (New Subfolder inside a folder) in a space, a team's Members, the ⋯ menu, and
+  the app switch with the hosts' logos;
 - a team's pane, whose Members button opens the team card in a dialog (with a `teamsHost`);
-- the Timeline as rows under their days, and the Library's pages as tabs, Open Page going to the tab shown;
+- the Timeline as rows under their days, each with a compact mark for what happened, and the Library's pages as tabs;
+- This Browser's pane: the live items kept only in this browser, each opening with the host's `open`, with Sync
+  (`sync`, for a person signed in) and Delete, asked first (`remove`) where the host gives them;
 - the chosen section as compact rows, paged.
 
 My Work carries the sidebar's own menu (`MyWorkMenu`): from the ⋯ in its pane's header, or a right-click on its
 rail entry. Folders carry the folder menu, and items the item menu, as on the page.
 
-Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, `onTrashCurrent?(item)` (the
+Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, `thisBrowser?` (a
+`ThisBrowserHost`: `items` from `useThisBrowserList(app)`, `itemHref`, and the panel's `open`, `sync` and `remove`),
+`onTrashCurrent?(item)` (the
 host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash),
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.

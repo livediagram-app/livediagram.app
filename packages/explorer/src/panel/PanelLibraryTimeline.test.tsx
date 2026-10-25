@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('the panel’s Timeline', () => {
-  it('lists the events under their days, and opens the Timeline page', async () => {
+  it('lists the events under their days, in place', async () => {
     const index = createFakeIndex({
       items: [makeItem(1)],
       events: [makeEvent(1, { id: 'e1', itemId: 'item-1', type: 'renamed' })],
@@ -55,8 +55,7 @@ describe('the panel’s Timeline', () => {
     const { onOpenExplorer } = renderPanel(index);
     fireEvent.click(rail().getByRole('button', { name: 'Timeline' }));
     expect(await screen.findByText(/Renamed/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('link', { name: /Open Page/ }));
-    expect(onOpenExplorer).toHaveBeenCalledWith({ kind: 'timeline' });
+    expect(onOpenExplorer).not.toHaveBeenCalled();
   });
 
   it('says so when nothing has happened', async () => {
@@ -72,8 +71,8 @@ describe('the panel’s Library', () => {
     expect(rail().queryByRole('button', { name: 'Library' })).toBeNull();
   });
 
-  it('shows the Image Gallery and Shape Libraries as tabs, Open Page at the tab shown', async () => {
-    const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }), {
+  it('shows the Image Gallery and Shape Libraries as tabs', async () => {
+    renderPanel(createFakeIndex({ items: [] }), {
       gallery,
       shapeLibraries,
     });
@@ -87,8 +86,6 @@ describe('the panel’s Library', () => {
     expect(await screen.findByText('photo.png')).toBeTruthy();
     fireEvent.click(within(tabs).getByRole('tab', { name: /Shape Libraries/ }));
     expect(await screen.findByText('Network')).toBeTruthy();
-    fireEvent.click(screen.getByRole('link', { name: /Open Page/ }));
-    expect(onOpenExplorer).toHaveBeenCalledWith({ kind: 'shape-libraries' });
   });
 
   it('shows the one page without tabs when the host keeps only that', async () => {

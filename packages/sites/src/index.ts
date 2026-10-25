@@ -115,11 +115,14 @@ export type AppItems = {
   itemPath: string;
   // Where the app makes one: `${url}${newPath}` (`?folder=`, `?team=` and `?template=` ride on it).
   newPath: string;
-  // The app's view of what is kept only in this browser (its offline items), when it has one.
+  // The app's view of what is kept only in this browser (its offline items), when it has one: This Browser in the
+  // Explorer on the app's own address, `/explorer/offline`, which alone can read the app's list. The app's old
+  // `/offline` page only redirects there.
   offlinePath: string | null;
-  // Whether that page also runs Take Offline and Sync when the Explorer on the app's address hands one over
-  // (`?convert=take-offline|sync&item=<id>`, @liveworkspace/explorer/this-browser `thisBrowserConvertHref`): it asks
-  // the person to confirm and moves the item with the app's own offline code. False: the Explorer offers neither.
+  // Whether the app's editor runs Take Offline and Sync when the Explorer on the app's address hands one over, at
+  // the item's own address (`<itemPath><id>?convert=take-offline|sync&item=<id>`, @liveworkspace/explorer/this-browser
+  // `thisBrowserConvertHref`): it asks the person to confirm and moves the item with the app's own offline code.
+  // False: the Explorer offers neither.
   offlineConversions: boolean;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
@@ -184,7 +187,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     apiNoun: 'document',
     itemPath: '/document/',
     newPath: '/new',
-    offlinePath: '/offline',
+    offlinePath: '/explorer/offline',
     offlineConversions: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
@@ -204,7 +207,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     apiNoun: 'project',
     itemPath: '/project/',
     newPath: '/new',
-    offlinePath: '/offline',
+    offlinePath: '/explorer/offline',
     offlineConversions: true,
     sharePath: '/project/shared?s=',
     imagesPath: null,
@@ -220,7 +223,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     apiNoun: 'document',
     itemPath: '/document/',
     newPath: '/new',
-    offlinePath: '/offline',
+    offlinePath: '/explorer/offline',
     offlineConversions: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
@@ -236,7 +239,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     apiNoun: 'design',
     itemPath: '/design/',
     newPath: '/new',
-    offlinePath: '/offline',
+    offlinePath: '/explorer/offline',
     offlineConversions: true,
     sharePath: '/design/shared?s=',
     imagesPath: '/api/images',

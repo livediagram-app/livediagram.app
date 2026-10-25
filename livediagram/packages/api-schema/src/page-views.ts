@@ -24,7 +24,7 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'join',
   'new',
   'oauth',
-  // This Browser, /offline: the canvases kept only in this browser (docs/specs/006-document/offline-mode.md).
+  // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/006-document/offline-mode.md).
   'offline',
   'sign-in',
 ]);

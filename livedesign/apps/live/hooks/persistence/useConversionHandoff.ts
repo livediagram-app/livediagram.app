@@ -7,9 +7,9 @@ import { indexClient } from '@/lib/index-client';
 import { offlineListDesigns } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 
-// Take Offline and Sync handed over by the Explorer on this app's address, run by the shared handoff
-// (@liveworkspace/explorer/conversion-handoff) with this app's conversions, confirm, toast and offline list
-// (docs/specs/006-design/offline-mode.md).
+// Take Offline and Sync handed over by the Explorer on this app's address to the editor (ConversionHandoff), run by
+// the shared handoff (@liveworkspace/explorer/conversion-handoff) with this app's conversions, confirm, toast and
+// offline list (docs/specs/006-design/offline-mode.md).
 export function useConversionHandoff(ownerId: string | null, signedIn: boolean) {
   const toast = useToast();
   useHandoff({

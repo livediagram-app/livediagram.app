@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 // a page, open a document (a full page load), a deploy lands, press back. Back is a history
 // traversal, for which browsers reuse a cached page even when it is stale, so the first page
 // can come back naming chunk files the deploy removed: a white screen with its styles refused.
-// The page here is This Browser (/offline), a page of the editor's own beside the document page.
+// The page here is /join, a page of the editor's own beside the document page.
 //
 // Real browser caching throughout: no Playwright routes (they turn the HTTP cache off), and the e2e
 // stack serves files with production's caching headers. The deploy is simulated by the stack
@@ -19,13 +19,13 @@ test('a simulated deploy leaves every other browser context on its build', async
   request,
 }) => {
   const chunkOf = (html: string) => /_next\/static\/chunks\/([\w-]+)\.js/.exec(html)?.[1];
-  const before = chunkOf(await (await request.get('/offline')).text());
+  const before = chunkOf(await (await request.get('/join')).text());
   expect(before).toBeTruthy();
 
   expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
 
-  expect(chunkOf(await (await page.request.get('/offline')).text())).toMatch(/-d\d+$/);
-  expect(chunkOf(await (await request.get('/offline')).text())).toBe(before);
+  expect(chunkOf(await (await page.request.get('/join')).text())).toMatch(/-d\d+$/);
+  expect(chunkOf(await (await request.get('/join')).text())).toBe(before);
 });
 
 test('back after a deploy brings the page back, never a white screen', async ({ page }) => {
@@ -38,9 +38,9 @@ test('back after a deploy brings the page back, never a white screen', async ({ 
   await page.emulateMedia({ colorScheme: 'dark' });
 
   expect((await page.request.post('/__e2e/assets-out-of-cache')).ok()).toBe(true);
-  await page.goto('/offline');
+  await page.goto('/join');
   // The page drawn: its heading.
-  const heading = page.getByRole('heading', { name: 'This Browser' });
+  const heading = page.getByRole('heading', { name: 'Teams are in the Explorer' });
   await expect(heading).toBeVisible({ timeout: 30_000 });
   // The page's own colour, styles applied: an unstyled page would be transparent (white).
   const styled = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
@@ -63,7 +63,7 @@ test('back after a deploy brings the page back, never a white screen', async ({ 
   expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
 
   await page.goBack();
-  await expect(page).toHaveURL(/\/offline$/);
+  await expect(page).toHaveURL(/\/join$/);
   await expect(heading).toBeVisible({ timeout: 20_000 });
   // Its styles applied, as before the deploy: not an unstyled white page.
   await expect

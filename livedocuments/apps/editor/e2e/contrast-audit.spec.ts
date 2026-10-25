@@ -64,13 +64,4 @@ test.describe('Contrast audit, dark mode', () => {
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();
   });
-
-  // This Browser (/offline), the one listing the editor serves itself: the shared Explorer is liveworkspace's.
-  test('This Browser', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/offline');
-    await page.getByRole('heading', { name: 'This Browser' }).waitFor();
-    expectAA(await auditContrast(page), 'This Browser');
-    expectNoPageErrors(pageErrors);
-  });
 });

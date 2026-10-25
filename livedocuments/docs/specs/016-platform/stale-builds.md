@@ -6,7 +6,7 @@ navigates within the app asks for chunks that no longer exist. Without care, tha
 on the framework's crash page ("This page couldn't load"), as going back from a document to the
 Explorer did after a deploy, when the editor still served its own Explorer pages. The Explorer is
 liveworkspace's now (the router serves it at `/explorer`); the editor's own pages are `/new`,
-`/document/<id>` and This Browser (`/offline`), and the e2e specs prove these layers on them.
+`/document/<id>` and `/join`, and the e2e specs prove these layers on them.
 
 Two layers handle it: the app **learns when a newer build is live** and stops navigating in-app
 until reloaded, and a **safety net** turns any chunk that still fails to load into a full page
