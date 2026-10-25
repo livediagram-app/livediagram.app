@@ -108,10 +108,14 @@ const SECTIONS: LegalSection[] = [
         <li>
           <strong>Your documents.</strong> What you make is saved so it is there when you come back,
           and so the people you share it with can see it. Each document is stored on its own on
-          Cloudflare, with its comments beside what they are about. A document you make in{' '}
-          <strong>Offline Mode</strong>, which every app has, stays in your browser and never
-          reaches our servers, unless you use an AI feature on it or add a web link to it (our
-          server fetches the link&rsquo;s preview).
+          Cloudflare, with its comments beside what they are about. While people work on one
+          together, each comment, answer, idea and vote that passes through the live session is also
+          noted in that document&rsquo;s own storage, so none is lost or counted twice, and is
+          removed with it. A document you make in <strong>Offline Mode</strong> (This Browser),
+          which every app has, stays in your browser and never reaches our servers, unless you use
+          an AI feature on it or add a web link to it (our server fetches the link&rsquo;s preview).
+          A guest&rsquo;s new documents start in This Browser; someone signed in starts on our
+          servers. Either can move a document between the two.
         </li>
         <li>
           <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every
@@ -434,21 +438,7 @@ const SECTIONS: LegalSection[] = [
     ),
   },
 
-  // App by app.
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-sign-in',
-    title: 'Signing in',
-    body: (
-      <p>
-        livediagram signs you in with your liveworkspace account, and its teams and API tokens are
-        the liveworkspace ones, all as described under{' '}
-        <a href="#your-liveworkspace-account">Your liveworkspace account</a>. Its diagrams are
-        stored as described under <a href="#what-the-apps-store">What the apps store</a>. The
-        sections below are what it does beyond that.
-      </p>
-    ),
-  },
+  // App by app: only what one app does beyond the above (each signs you in with your liveworkspace account).
   {
     app: 'livediagram.app',
     id: 'livediagram-google-drive',
@@ -505,15 +495,13 @@ const SECTIONS: LegalSection[] = [
   },
   {
     app: 'liveplanner.app',
-    id: 'liveplanner-live-sessions',
-    title: 'Live sessions',
+    id: 'liveplanner-everything-above',
+    title: 'Nothing beyond the above',
     body: (
       <p>
-        liveplanner signs you in with your liveworkspace account, and its boards, sheets, dashboards
-        and forms are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. Comments, answers, ideas and votes
-        that pass through a live collaboration session are also kept in that session&rsquo;s own
-        storage on Cloudflare, and that copy is removed with the plan.
+        liveplanner&rsquo;s boards, sheets, dashboards and forms are stored as described under{' '}
+        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
+        its own.
       </p>
     ),
   },
@@ -523,8 +511,7 @@ const SECTIONS: LegalSection[] = [
     title: 'Nothing beyond the above',
     body: (
       <p>
-        livedocuments signs you in with your liveworkspace account, and its articles, slides and
-        infographics are stored as described under{' '}
+        livedocuments&rsquo; articles, slides and infographics are stored as described under{' '}
         <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
         its own.
       </p>
@@ -536,9 +523,9 @@ const SECTIONS: LegalSection[] = [
     title: 'Nothing beyond the above',
     body: (
       <p>
-        livedesign signs you in with your liveworkspace account. Its logos and wireframes are stored
-        as described under <a href="#what-the-apps-store">What the apps store</a>, and photos you
-        edit are images you upload, handled the same way. It handles your data in no way of its own.
+        livedesign&rsquo;s logos and wireframes are stored as described under{' '}
+        <a href="#what-the-apps-store">What the apps store</a>, and photos you edit are images you
+        upload, handled the same way. It handles your data in no way of its own.
       </p>
     ),
   },
