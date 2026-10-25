@@ -5,7 +5,7 @@
 import { formStarter, type QuestionType, type StarterId } from '@liveplanner/forms';
 import { lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
 import { Prims, lucideGlyph } from '@liveplanner/ui';
-import { FILL_BOX } from './story-parts';
+import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 
 const BoardGlyph = lucideGlyph(lucideSquareKanban, 15);
 const SheetGlyph = lucideGlyph(lucideTable, 15);

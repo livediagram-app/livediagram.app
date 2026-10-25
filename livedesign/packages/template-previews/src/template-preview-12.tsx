@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 12: the blanks (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Tab and Blank
 // Illustration, each drawn as its sheet. Static SVG preview tiles (one

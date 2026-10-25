@@ -1,8 +1,8 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
-import { popGroup } from './story-parts';
+import { popGroup } from '@liveworkspace/template-previews/story-parts';
 
 // Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the

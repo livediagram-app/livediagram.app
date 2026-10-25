@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 25: Working Backwards (docs/specs/008-canvas/canvas-and-palette.md "Templates"), drawn small as it opens,
 // with a hover story of what the template does.

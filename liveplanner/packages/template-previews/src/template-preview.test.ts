@@ -1,22 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describeTemplatePreviews } from '@liveworkspace/template-previews/testing';
 import { TEMPLATES } from '@liveplanner/templates';
 import { TemplatePreview } from './template-preview';
 
-// Every catalogue entry must render a preview illustration. The
-// preview groups are hand-authored switches, so a new TemplateKind
-// that lands in TEMPLATES without a matching case falls through every
-// group and the picker shows an empty grey tile (exactly how the
-// first Technical-batch cards shipped before this test existed).
-// TemplatePreview is pure render (no hooks), so calling it as a plain
-// function is enough to assert the dispatch resolves. A hidden template
-// never renders in a grid, so it ships no preview and is skipped here.
-// None ships today (the guided-tour sample was the last; docs/specs/007-editor/templates-by-mode.md "Hidden templates").
-describe('TemplatePreview', () => {
-  it('returns an SVG for every listed template in the catalogue', () => {
-    for (const template of TEMPLATES.filter((t) => !t.hidden)) {
-      const preview = TemplatePreview({ kind: template.kind });
-      expect(preview, `missing preview illustration for '${template.kind}'`).not.toBeNull();
-      expect(preview?.type).toBe('svg');
-    }
-  });
-});
+// The template previews' checks (@liveworkspace/template-previews' testing), over this product's catalogue:
+// every listed template has a preview, none clips at its tile's edge, and every hover story stays hidden at
+// rest and uses only classes the motion stylesheet defines.
+describeTemplatePreviews({ templates: TEMPLATES, TemplatePreview });

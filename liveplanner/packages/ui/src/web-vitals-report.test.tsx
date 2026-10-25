@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { reportWebVital, webVitalApp, webVitalOf } from './web-vitals-report';
+import { reportWebVital, webVitalApp } from './web-vitals-report';
+
+// The report itself is @liveworkspace/ui's (web-vitals.ts, tested there); this pins this product's binding:
+// its apps, its buckets, and the lazily loaded reporter wired to them.
 
 const reported = vi.hoisted(() => ({
   fn: null as null | ((m: { name: string; value: number }) => void),
@@ -14,17 +17,6 @@ vi.mock('next/web-vitals', () => ({
 
 afterEach(() => {
   reported.fn = null;
-});
-
-describe('webVitalOf', () => {
-  it('reads the three Core Web Vitals and nothing else', () => {
-    expect(webVitalOf('LCP')).toBe('Lcp');
-    expect(webVitalOf('INP')).toBe('Inp');
-    expect(webVitalOf('CLS')).toBe('Cls');
-    expect(webVitalOf('FCP')).toBeNull();
-    expect(webVitalOf('TTFB')).toBeNull();
-    expect(webVitalOf('FID')).toBeNull();
-  });
 });
 
 describe('webVitalApp', () => {

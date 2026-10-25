@@ -56,8 +56,8 @@
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
-/* The shared template-browse art (PreviewFan) carries its own utility classes. */
-@source '../../../packages/template-previews/src/PreviewFan.tsx';
+/* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
+@source '../../../../packages/template-previews/src/PreviewFan.tsx';
 /* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */

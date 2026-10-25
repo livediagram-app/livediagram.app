@@ -1,171 +1,23 @@
-// The branded social card (Open Graph + Twitter, 1200x630) every public app renders through next/og at
-// build time (docs/specs/019-marketing/marketing-site.md "SEO and metadata"): marketing's brand card and
-// /features/<id> cards, and the help centre's per-article cards (docs/specs/018-help/help-app.md "SEO").
-// Plain JSX with inline styles, the subset next/og's renderer understands; each app keeps its own
-// ImageResponse route, since per-route config can't be shared through a module.
+// This product's social card (docs/specs/019-marketing/marketing-site.md "SEO and metadata"): @liveworkspace/ui's
+// card, drawn in livedesign's rose with its own wordmark, headline and footer line.
 
+import { createSocialCard } from '@liveworkspace/ui/social-card';
 import { brandMarkSvg } from './brand-app';
 import { sentencePitch } from './site';
 
-// The full mark on the card's light ground, as a data URI for next/og's resvg.
-const MARK_DATA_URI = `data:image/svg+xml,${encodeURIComponent(brandMarkSvg({ variant: 'full', scheme: 'light' }))}`;
+export {
+  CARD_SUBTITLE_MAX,
+  cardSubtitle,
+  type SocialCardOptions,
+} from '@liveworkspace/ui/social-card';
 
-// The subtitle a page's own social card shows (marketing's /features/<id> cards, the help centre's
-// article cards). The card sets it at 32px in an 880px column, so about fifty characters a line; past two lines it runs
-// into the footer pill. The first sentence is used when it fits, otherwise the text is cut at the last
-// whole word that fits, so the card never ends mid-word.
-export const CARD_SUBTITLE_MAX = 100;
-
-export function cardSubtitle(text: string, max = CARD_SUBTITLE_MAX): string {
-  const clean = text.replace(/\s+/g, ' ').trim();
-  if (clean.length <= max) return clean;
-  const sentence = clean.match(/^.+?[.!?](?=\s)/)?.[0];
-  if (sentence && sentence.length <= max) return sentence;
-  const cut = clean.slice(0, max - 1);
-  const space = cut.lastIndexOf(' ');
-  const words = (space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:.]+$/, '');
-  return `${words}…`;
-}
-
-// The social card's JSX, for next/og's ImageResponse (1200x630). Called with no args for the homepage
-// (the default headline + sub); a page with its own card passes `{ kicker, title, subtitle }` to show
-// its own headline on the same branded shell, and `footer` to replace the footer's line (the help
-// centre's cards name the help centre).
-export type SocialCardOptions = {
-  kicker?: string;
-  title?: string;
-  subtitle?: string;
-  footer?: string;
-};
-
-export function renderSocialCard(opts?: SocialCardOptions) {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'linear-gradient(135deg, #fff1f2 0%, #ffffff 60%, #ffe4e6 100%)',
-        padding: '72px 96px',
-        position: 'relative',
-      }}
-    >
-      {/* Decorative grid backdrop, echoing the editor's dot-grid canvas. */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'radial-gradient(circle at center, #cbd5e1 1.5px, transparent 1.5px)',
-          backgroundSize: '32px 32px',
-          opacity: 0.4,
-        }}
-      />
-
-      {/* Foreground content sits above the grid. */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1,
-          flex: 1,
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* The brand lockup: the full Living Prism mark, then the wordmark with
-            "live" in the brand-700 rose the marketing Brand uses (rose-600 is too pale for text on white). */}
-        <div
-          style={{
-            fontSize: 44,
-            fontWeight: 600,
-            color: '#4c0519',
-            letterSpacing: '-0.02em',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <img src={MARK_DATA_URI} width={64} height={64} alt="" />
-          <div style={{ display: 'flex' }}>
-            <span style={{ color: '#be123c' }}>live</span>
-            <span>design</span>
-          </div>
-        </div>
-
-        {/* Headline + sub. Default = the hero copy spine; per-category cards
-            pass their own kicker/title/subtitle. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-          {opts?.kicker ? (
-            <div
-              style={{
-                fontSize: 30,
-                fontWeight: 600,
-                color: '#be123c',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}
-            >
-              {opts.kicker}
-            </div>
-          ) : null}
-          <div
-            style={{
-              fontSize: opts?.title ? 72 : 80,
-              fontWeight: 600,
-              color: '#0f172a',
-              letterSpacing: '-0.03em',
-              lineHeight: 1.05,
-              maxWidth: 980,
-              display: 'flex',
-              flexWrap: 'wrap',
-            }}
-          >
-            {opts?.title ? (
-              <span>{opts.title}</span>
-            ) : (
-              <>
-                <span>Make pages together,&nbsp;</span>
-                <span style={{ color: '#be123c' }}>live</span>
-                <span>.</span>
-              </>
-            )}
-          </div>
-          <div
-            style={{
-              fontSize: 32,
-              color: '#475569',
-              lineHeight: 1.3,
-              maxWidth: 880,
-            }}
-          >
-            {opts?.subtitle ?? sentencePitch()}
-          </div>
-        </div>
-
-        {/* Footer pill. Mirrors the hero CTA text without rendering a button. */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            fontSize: 24,
-            color: '#475569',
-          }}
-        >
-          <div
-            style={{
-              background: '#be123c',
-              color: 'white',
-              borderRadius: 999,
-              padding: '10px 22px',
-              fontWeight: 500,
-            }}
-          >
-            livedesign.app
-          </div>
-          <div>{opts?.footer ?? 'No sign-up. Open the link and start writing.'}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+export const renderSocialCard = /* @__PURE__ */ createSocialCard({
+  markSvg: brandMarkSvg({ variant: 'full', scheme: 'light' }),
+  wordmark: 'design',
+  domain: 'livedesign.app',
+  headline: 'Make pages together,',
+  pitch: sentencePitch,
+  footer: 'No sign-up. Open the link and start writing.',
+  // The brand-700 rose the marketing Brand uses (rose-600 is too pale for text on white).
+  colours: { ground: ['#fff1f2', '#ffe4e6'], ink: '#4c0519', accent: '#be123c' },
+});

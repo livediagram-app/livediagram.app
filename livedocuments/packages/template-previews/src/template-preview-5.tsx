@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
-import { PopDot } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 5: the Storyboard, the Floor Plan and the Project Brief (article). Static SVG preview tiles, one
 // branch per TemplateKind; TemplatePreview chains the groups with ??.

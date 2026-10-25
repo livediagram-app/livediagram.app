@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 22: Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): Pub Quiz, Icebreaker
 // Questions, Two Truths and a Lie, Would You Rather and Find Someone Who Bingo. Each draws its board's centrepiece

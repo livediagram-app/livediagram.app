@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { Pop, popGroup } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { Pop, popGroup } from '@liveworkspace/template-previews/story-parts';
 
 // Group 18: the redesigned process and structure diagrams (the tree mind map, the swimlane, the approval
 // workflow and the system architecture), each a lane or branch per hue as the templates now draw them. Static SVG

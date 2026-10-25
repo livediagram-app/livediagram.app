@@ -21,7 +21,7 @@ export { SiteHeader } from './SiteHeader';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { SiteFooter } from './SiteFooter';
 export { BoardBuildAnimation } from './BoardBuildAnimation';
-export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { DiagramBuildAnimation } from '@liveworkspace/ui/diagram-build-animation';
 export { SheetBuildAnimation } from './SheetBuildAnimation';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';

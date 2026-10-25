@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 9 (plan 0002 new templates): Crazy 8s and User persona. Static SVG
 // preview tiles, one branch per TemplateKind; TemplatePreview chains the

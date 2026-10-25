@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*"
+    "@livediagram/templates": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

@@ -22,7 +22,8 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livedesign/templates": "workspace:*"
+    "@livedesign/templates": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

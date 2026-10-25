@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 12: the Pages templates and the blanks (docs/specs/008-canvas/canvas-and-palette.md
 // "Templates"): Blank Tab, Blank Illustration, Event Poster, Year in Review, Résumé and

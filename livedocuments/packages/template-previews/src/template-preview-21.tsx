@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 21: the slide decks built from slide layouts (docs/specs/008-canvas/canvas-and-palette.md "Templates on
 // pages"): Launch Keynote, Quarterly Review, Team Welcome and Workshop Kickoff. Each is three 16:9 slides fanned

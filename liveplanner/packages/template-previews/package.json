@@ -27,7 +27,8 @@
     "@liveplanner/project": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveplanner/ui": "workspace:*",
-    "@liveworkspace/icons": "workspace:*"
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {
     "@liveplanner/tailwind-config": "workspace:*",
