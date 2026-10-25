@@ -17,7 +17,7 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'join',
   'new',
   'oauth',
-  // This Browser, the documents kept only in this browser (docs/specs/013-workspace/explorer-structure.md).
+  // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/013-workspace/explorer-structure.md).
   'offline',
   'sign-in',
 ]);
