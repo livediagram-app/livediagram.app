@@ -652,6 +652,42 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     ).toBe(401);
     expect((await call('/join/abc', bearer('tok-ada', { method: 'POST' }))).status).toBe(404);
     expect((await call('/tokens', bearer('tok-ada'))).status).toBe(404);
-    expect((await call('/profile', bearer('tok-ada'))).status).toBe(404);
+  });
+
+  it('reads and sets the account’s own profile, for the Settings panel’s Profile in place', async () => {
+    const read = await call('/profile', bearer('tok-ada'));
+    expect(read.status).toBe(200);
+    expect(await read.json()).toMatchObject({ profile: { id: 'user_ada', color: null } });
+    const patched = await call(
+      '/profile',
+      bearer('tok-ada', { method: 'PATCH', body: { name: 'Ada L', color: '#f97316' } }),
+    );
+    expect(patched.status).toBe(200);
+    expect(await patched.json()).toMatchObject({
+      profile: { id: 'user_ada', name: 'Ada L', color: '#f97316' },
+    });
+    expect(await (await call('/profile', bearer('tok-ada'))).json()).toMatchObject({
+      profile: { name: 'Ada L', color: '#f97316' },
+    });
+    // Null clears either; a bad colour is refused as on the session's door.
+    const cleared = await call(
+      '/profile',
+      bearer('tok-ada', { method: 'PATCH', body: { name: null, color: null } }),
+    );
+    expect(await cleared.json()).toMatchObject({ profile: { color: null } });
+    expect(
+      (await call('/profile', bearer('tok-ada', { method: 'PATCH', body: { color: 'url(x)' } })))
+        .status,
+    ).toBe(400);
+    expect((await call('/profile', bearer('tok-ada', { method: 'DELETE' }))).status).toBe(404);
+  });
+
+  it('refuses a guest’s bearer and a forged one on the profile', async () => {
+    expect((await call('/profile', bearer('tok-guest'))).status).toBe(401);
+    expect(
+      (await call('/profile', bearer('tok-guest', { method: 'PATCH', body: { name: 'Bea' } })))
+        .status,
+    ).toBe(401);
+    expect((await call('/profile', bearer('forged'))).status).toBe(401);
   });
 });

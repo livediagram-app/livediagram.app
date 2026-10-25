@@ -319,16 +319,8 @@ async function handleSignedIn(
 
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
-    if (method === 'GET') {
-      const [profile] = await readProfiles(db, [actor.id]);
-      return json({ profile: profile ?? null });
-    }
-    if (method === 'PATCH') {
-      const checked = checkProfilePatch(await readBody(request));
-      if (!checked.ok) return error(400, checked.error);
-      const result = await writeProfile(db, actor.id, checked.patch);
-      return result.ok ? json({ profile: result.value }) : answer(result);
-    }
+    const answered = await profileRoute(request, db, actor.id);
+    if (answered) return answered;
   }
 
   // The settings every app shows; each app's own are its server's to read and write.
@@ -346,6 +338,29 @@ async function handleSignedIn(
   }
 
   return error(404, 'not_found');
+}
+
+// --- The profile, on both doors: the session's on liveworkspace.app, the bearer's on an app's address and in the
+// editors (liveworkspace/docs/accounts.md "Profiles") ---
+
+// GET answers the person's own profile, PATCH `{ name?, color? }` sets either (null clears it). Null for a method
+// that isn't one of these.
+async function profileRoute(
+  request: Request,
+  db: Env['AUTH_DB'],
+  owner: string,
+): Promise<Response | null> {
+  if (request.method === 'GET') {
+    const [profile] = await readProfiles(db, [owner]);
+    return json({ profile: profile ?? null });
+  }
+  if (request.method === 'PATCH') {
+    const checked = checkProfilePatch(await readBody(request));
+    if (!checked.ok) return error(400, checked.error);
+    const result = await writeProfile(db, owner, checked.patch);
+    return result.ok ? json({ profile: result.value }) : answer(result);
+  }
+  return null;
 }
 
 // --- Running teams, on both doors: the session's on liveworkspace.app, the bearer's on an app's address ---
@@ -523,9 +538,10 @@ async function appSettings(
 // --- The Explorer on an app's own address, by the app's bearer (bearer.ts) ---
 
 // What that page and the editors' Explorer panels and Settings need: names for a guest or an account, and for an
-// account its settings (the shared scope and each app's, read and patched) and its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no
-// same-origin check: a page can only send one it holds. Joining by link, API tokens and the profile stay the
-// session's.
+// account its settings (the shared scope and each app's, read and patched), its profile (profileRoute: the app's API
+// already sets the same name and colour with this token, PUT /api/participants/:id, so this grants nothing new) and
+// its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no same-origin check: a
+// page can only send one it holds. Joining by link and API tokens stay the session's.
 async function handleBearer(
   request: Request,
   env: Env,
@@ -565,6 +581,11 @@ async function handleBearer(
   }
   if (section === 'settings' && id && !sub) {
     const answered = await appSettings(request, db, actor, id);
+    if (answered) return answered;
+  }
+  // The Settings panel's Profile there sets the name and colour in place.
+  if (section === 'profile' && !id) {
+    const answered = await profileRoute(request, db, actor.id);
     if (answered) return answered;
   }
   return error(404, 'not_found');
