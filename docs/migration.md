@@ -8,7 +8,8 @@ and started fresh: sign-in is liveworkspace's accounts Worker, each document's c
 Pages and the design pages have left for liveplanner, livedocuments and livedesign.
 
 So this is a move out of Clerk and the old account, not into Clerk. It copies people and documents across, splits
-each mixed document by product, tells everyone, then switches livediagram.app over.
+each mixed document by product, tells everyone, then switches livediagram.app over. livediagram is the only source:
+liveplanner, livedocuments and livedesign have no data from before accounts moved.
 
 Related: [migrating-from-clerk.md](../liveworkspace/docs/migrating-from-clerk.md),
 [livediagram/plans/0002-liveworkspace-accounts.md](../livediagram/plans/0002-liveworkspace-accounts.md),
@@ -23,9 +24,15 @@ Related: [migrating-from-clerk.md](../liveworkspace/docs/migrating-from-clerk.md
   (`dropRetiredPages`, `dropRetiredPlan` in `packages/document`) and saves the result the next time a tab is
   saved. A migration that read old tabs through livediagram's parser would lose every page and board. The
   splitter reads the stored JSON and the Plan tables itself.
+- **Nothing made on either side before the switch is lost.** The old site keeps taking work until the freeze
+  (step 7), and the new account's apps (livediagram on its stand-in, liveplanner, livedocuments, livedesign) may
+  take work too. The migration only adds to the new account: it never deletes, never overwrites a row it didn't
+  write, and the final catch-up run picks up what the old site took since the last run. An imported row that would
+  land on an id the new side already uses is reported and skipped, never written over.
 - **Ids stay.** Accounts keep their Clerk ids (`user_…`), and every document keeps its id in the product that keeps
   most of it, so owners, links, embeds and bookmarks still resolve. Documents made by the split get new ids.
-- **Every step can re-run.** Each writes by id with upsert semantics, so step 0's rehearsal, the full copy and the
+- **Every step can re-run.** Each writes by id, and only over rows an earlier run of the migration wrote (each
+  such row is marked as imported, with the old row's `updated_at`), so step 0's rehearsal, the full copy and the
   final catch-up are the same scripts.
 - **Old livediagram is frozen** for code from step 0 (no more features on `~/Code/livediagram`), so the schema the
   scripts read doesn't move under them.
@@ -51,13 +58,25 @@ the copy takes).
 1. Export users from Clerk (Users → Export) and import them into `liveworkspace-accounts` with
    `apps/accounts/scripts/import-clerk-users.ts` (Clerk id, primary email, name). Google-only people need no
    password: signing in with Google or a code to the same address lands on the same account.
-2. Carry over the per-person data that has a new home:
+2. **Someone who already signed up on the new side.** The script skips an email that already has an account
+   (`INSERT OR IGNORE`), so today their old documents would be left under a Clerk id with no account. Instead the
+   import writes an **owner map** (Clerk id → account id): the Clerk id where the account was imported, the
+   existing account's id where the email was already taken. Every later step writes owners, members and grants
+   through that map, so the person's old and new work land on one account and nothing they made on the new side
+   moves. The script reports each such match.
+3. Carry over the per-person data that has a new home:
    - unsubscribes and email preferences (`email_lifecycle`) into the accounts Worker, **before** step 8 sends
      anything;
    - `user_preferences` into the shared settings (`packages/settings`);
    - `shape_libraries`, `custom_themes` and `placement_defaults` into each person's `PersonStore`.
-3. Left behind, as already decided (0002): old `ld_` API tokens are revoked (only `lwt_` tokens work), teams are
-   managed separately by the owner, workbench pairings and sessions are gone, profile pictures are not kept.
+4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/accounts.md`, Teams) from `teams` and
+   `team_members`: each team with its name, members and roles through the owner map, keeping the old team id where
+   the accounts Worker's id shape allows (otherwise a team map, used like the owner map, so documents keep their
+   team). A member whose email has no account yet becomes a pending invitation, sent only after the switch. This
+   replaces 0002's "teams are managed separately". Recreating writes no `team_*` Timeline events and sends no
+   invitation emails at import time.
+5. Left behind, as already decided (0002): old `ld_` API tokens are revoked (only `lwt_` tokens work), workbench
+   pairings and sessions are gone, profile pictures are not kept.
    Drive connections can't move (their tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client
    changes), so each person reconnects. MCP clients and the CLI sign in again. Step 8's email says all of this.
 
@@ -75,9 +94,14 @@ One script, per document, in batches:
 4. Shared tabs (one tab in several documents, `tab-document-many-to-many.md`) become `tab_shares` rows once every
    document holding the tab has been copied, so run that as a second pass.
 
-Decide per table whether it's history worth keeping: `timeline_events` and `agent_changesets` (the Timeline and
-changeset log), `collab_threads` and `collab_actions` (a projection, rebuilt from the JSON), `change_log`,
-`events` (telemetry, not migrated).
+**History is kept.** The old `timeline_events` (with `timeline_event_scopes`) become Timeline events in the index
+(`apps/index/src/timeline.ts`) with their original times, actors through the owner map, and a mark that they were
+imported so the import doesn't count as fresh activity or notify anyone. `agent_changesets` and their parts go into
+the document's `DocumentRoom` beside the tabs they changed. Where a tab was split off (step 3), its history goes
+with it to the product it went to, if that product keeps a Timeline for it; otherwise it stays on the livediagram
+part. An old event kind with no new equivalent is reported in the rehearsal and dropped rather than guessed.
+Not copied: `collab_threads` and `collab_actions` (a projection, rebuilt from the JSON), `change_log`, `events`
+(telemetry).
 
 ## 3. Split mixed documents by product
 
@@ -126,10 +150,19 @@ holds what was posted. `apps/community` is the last livediagram app on Clerk; it
 
 ## 6. Guests
 
-Guests' work on the old site belongs to guest ids in that browser. Either copy guest-owned documents under the
-same guest ids, so the new site's guest token and `POST /api/migrate` can still adopt them on sign-in, or leave
-guests behind and say so on the old site before the switch. This needs a decision (below); copying is more work
-but loses nobody's work.
+Guests' documents are copied. Guest work on the old site belongs to a guest id held in that browser, so:
+
+1. Copy guest-owned documents (steps 2–5) under their guest ids, with `owner_aliases` to find them.
+2. When that browser first opens the new site, its old guest id has to reach the accounts Worker, which hands out
+   guest tokens (`liveworkspace/docs/accounts.md`, Guests). The old site's browser storage is on the same
+   livediagram.app origin, so the new editor can read the old guest id on first load and swap it for a guest token
+   for that id, once, proven by the old guest token's signature. That needs a small door on the accounts Worker
+   and the old guest signing key as a secret there.
+3. From then on the guest is an ordinary guest: signing in adopts their documents through `POST /api/migrate`, as
+   now.
+
+A guest who never comes back keeps their documents until guest documents' usual expiry. Guests can't be emailed;
+the old site's banner before the switch (step 7) tells them nothing is needed.
 
 ## 7. The switch
 
@@ -153,7 +186,7 @@ Sent after the switch, from `hello@livediagram.app` once that domain is onboarde
   or Google; nothing to do to keep their work;
 - where their split documents went, as a short list of links built from `moved_parts`, for the people who had any;
 - what they must redo: API tokens (old ones stopped), MCP clients and the CLI (sign in again), Google Drive
-  (reconnect), team owners (teams are set up in liveworkspace);
+  (reconnect); their teams came across, managed in liveworkspace now;
 - the updated privacy page (Clerk is no longer a processor), and how to delete their account.
 
 Points to settle: Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota
@@ -164,11 +197,14 @@ surprise.
 
 ## 9. Check
 
-- Per account: documents, tabs per product, items, images and shares on the new side match the old counts,
-  written to a report per run.
+- Per account: documents, tabs per product, items, images, shares, teams and Timeline events on the new side match
+  the old counts, written to a report per run.
+- Nothing made on the new side before the switch changed: compare a count and checksum per table of rows not
+  marked imported, before and after each run.
 - Every split document opens in its product, and its parts link to each other.
 - A sample of old URLs (documents, share links, embeds, forms, Community posts, help) answers the right page.
-- Sign in as a few migrated accounts on staging (Google-only, code, team owner, guest who signs in).
+- Sign in as a few migrated accounts on staging: Google-only, by code, a team owner, someone who had already signed
+  up on the new side, and a guest who comes back and then signs in.
 
 ## 10. Clean up
 
@@ -182,16 +218,18 @@ After a set quiet period (30 days is a starting point):
 - archive `~/Code/livediagram` and finish the switch-over in [structure.md](structure.md);
 - a later migration may drop livediagram's unread Plan tables.
 
+## Decided (owner, 2026-10-25)
+
+- livediagram is the only source. The other apps may take work before the switch, and so may the new livediagram;
+  none of it may be lost (rules, step 1's owner map, step 9's checks).
+- Guests' documents are copied (step 6).
+- History is kept where it has a home (step 2).
+- Teams are recreated in accounts (step 1).
+
 ## Open questions for the owner
 
-1. **liveplanner, livedocuments and livedesign**: do any of them have people or documents of their own from before
-   accounts moved, or is livediagram the only source?
-2. **Guests** (step 6): copy their documents, or leave them behind with notice?
-3. **History**: keep the Timeline and changeset log, or start them fresh?
-4. **Teams**: 0002 says teams are managed separately. Is that still the plan with real team members on the old
-   site, or should step 1 create them in accounts?
-5. **Cross-product references** (step 3): is a static picture plus a link acceptable?
-6. **Email**: one email after the switch, or a notice before as well? Cloudflare Email Service, or a broadcast tool
+1. **Cross-product references** (step 3): is a static picture plus a link acceptable?
+2. **Email**: one email after the switch, or a notice before as well? Cloudflare Email Service, or a broadcast tool
    for this one send?
-7. **Order with liveworkspace.app's own move**: one switch for both domains, or livediagram.app first?
-8. **Quiet period** before step 10, and how long the cold export is kept.
+3. **Order with liveworkspace.app's own move**: one switch for both domains, or livediagram.app first?
+4. **Quiet period** before step 10, and how long the cold export is kept.
