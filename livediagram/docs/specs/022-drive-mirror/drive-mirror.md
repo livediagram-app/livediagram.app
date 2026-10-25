@@ -1,5 +1,13 @@
 # Google Drive mirror
 
+**Off in both hosted environments, pending its move to liveworkspace.** The mirror is becoming a platform
+feature that covers every app ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)
+"Google Drive"). Until that ships, both entries in the hosted profile (`apps/api/hosted-vars.json`) leave
+`GOOGLE_CLIENT_ID` empty, so livediagram offers no Drive entry. It ran in browser-only mode, with no client secret on
+the liveworkspace account, and could show "sync is paused" to someone who had never connected. The client ids were
+`1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2` (production) and `1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut`
+(staging), each `.apps.googleusercontent.com`. This spec describes the mirror as it was built here.
+
 A signed-in user can **mirror My Work to their own Google Drive**.
 Every document becomes a `.livediagram` file in a folder tree that matches their
 livediagram folders, kept in step both ways while a livediagram tab is open.
