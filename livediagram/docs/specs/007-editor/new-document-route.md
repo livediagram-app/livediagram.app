@@ -379,6 +379,11 @@ shows over the canvas. (The in-editor **Quick Start**, the whole catalogue acros
 removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
 switch reaches the others.)
 
+**Where it will be saved.** Under the modes, the wizard shows the **Sync Canvas to Server** switch, which chooses
+where the create goes rather than asking: it starts at the default for who is creating and moves nothing, as nothing
+exists yet ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)). It is not
+drawn when a `/new?folder=` / `?team=` context names a server place.
+
 ### A choice before hydration
 
 `/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in

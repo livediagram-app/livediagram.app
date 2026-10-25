@@ -41,6 +41,41 @@ browser's documents beside the index's ([liveworkspace/docs/one-explorer.md](../
 - There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
   is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
 
+## On the start screen
+
+Nobody is asked, but the start screen offers one switch, **Sync Document to Server**, in a quiet strip under its choices
+(Start Making Pages), so a new document can change place while it is still empty without a trip to the Explorer. It reflects
+where the document is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+person (livedocuments).
+
+- **Turned on** it syncs the document in place ([Offline Mode → Syncing in place](offline-mode.md#syncing-in-place)), a
+  guest's as their guest id; **turned off** it takes it offline in place
+  ([Offline Mode → Taking offline in place](offline-mode.md#taking-offline-in-place)). No confirmation: the document is
+  empty and nobody else has it, so nothing can be lost. No reload: the person stays on the start screen.
+- **While it moves** the switch is busy (a spinner in its knob, `aria-busy`) and its line reads "Syncing to the
+  server…" or "Moving to this browser…"; a polite status says the same, then "Synced to the server." or "Moved to
+  this browser.". **A failure** shows the conversion's toast (`syncFailureMessage`, or "Couldn’t move this to this
+  browser. It stays safe on the server.") and the switch returns to where the document still is.
+- **The line under the label** follows the state, with a small cloud or browser-window icon beside it:
+
+  | State          | Line                                                                        |
+  | -------------- | --------------------------------------------------------------------------- |
+  | Off, signed in | Saved in this browser only. Turn on to open it anywhere and share it.       |
+  | Off, guest     | Saved in this browser only. Turn on to save it to our servers and share it. |
+  | On, signed in  | Saved to your account, on every device.                                     |
+  | On, guest      | Saved on liveworkspace servers. Sign in to open it on any device.           |
+
+- **When it shows** (`showsSaveSwitch`): the document has loaded and the reader and their sign-in are known; the reader
+  owns it and can edit it; it has one tab with nothing on it; it has no live share link, is not open through one and
+  is not in a team; nobody else is in it; and the editor is not embedded or in another app's workbench. Anywhere else
+  the row is hidden, and the Explorer's Sync Document and Take Offline stay the way to move it. Once a move has started the
+  row stays until it lands.
+- **Built once.** The switch (`Switch`) and the row (`SaveSwitch`, `SaveSwitchRow`, its words and `showsSaveSwitch`)
+  are `@liveworkspace/ui`'s (`packages/ui/src/Switch.tsx`, `packages/ui/src/save-switch/`), shared by every app. This
+  app hands in only its kind's word, what it knows of the open document and its two in-place moves
+  (`apps/editor/components/start/StartSaveSwitch.tsx`). It reads only state the editor already holds and loads with the
+  start's own chunk, so the start screen's first paint makes no request for it.
+
 ## The folder browser
 
 Where a document goes within livedocuments is chosen with the shared Explorer's `PlacementBrowser`
@@ -141,6 +176,7 @@ is.
 
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
+- `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Document to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
 - `@liveworkspace/explorer`: the `PlacementBrowser` the Move dialog uses.
 

@@ -150,6 +150,14 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
   ([New project route](../007-editor/new-project-route.md)).
 
+### Where it is saved
+
+Under the choices, a quiet strip holds the **Sync Plan to Server** switch: where this plan is saved, with a line that
+says what that means, and the switch to move it while it is still empty
+([Save Locations → On the start screen](../006-project/save-locations.md#on-the-start-screen)).
+It shows only on a fresh plan that is the reader's alone; anywhere else the strip is not drawn. The panel draws it
+through its `footer`, in the panel's own colours.
+
 ## Old projects
 
 - **A tab a retired mode made** opens in Plan like any other ([Editor mode](../007-editor/editor-modes.md#retired-modes)):
