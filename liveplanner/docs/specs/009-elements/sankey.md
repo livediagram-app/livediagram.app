@@ -192,11 +192,10 @@ sees Show Me. Telemetry: `UI` · `Started` · `SankeyFlowsTour`, and `UI` · `En
 
 ## Element tour
 
-The first time an Editor selects a Sankey, a small **Show Me** toolbar beside its selection toolbar offers the
-[Sankey tour](../007-editor/element-tours.md#the-sankey-tour): it lifts the diagram's widest band and a leftover with
-their readouts, points at the menu's styling and at double-clicking, then opens the Flows dialog, runs its
-[Show Me](#show-me) steps there and closes it on Done. Played or cancelled, it is not offered again until Settings' Tours ›
-Show Me offers it.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Sankey tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it. The Flows dialog's own [Show Me](#show-me) is unchanged.
 
 ## Who may do what
 

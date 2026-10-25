@@ -107,9 +107,9 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
-  `dismissQuickTour` returns at once unless /new's tour handoff flag is in sessionStorage,
-  rather than sitting out a 5-second timeout after every reload or
-  by-URL visit, which cost the suite minutes. `seedTab` returns once the seeded elements have
+  `dismissQuickTour` does nothing, since no tour offers itself (kept so the specs that call it need not change;
+  until 25 October 2026 it returned at once unless /new's tour handoff flag was in sessionStorage, rather than
+  sitting out a 5-second timeout after every reload or by-URL visit). `seedTab` returns once the seeded elements have
   finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
 
 ## The stack under test

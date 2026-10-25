@@ -1,26 +1,28 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-demand cousin of the tours that offer themselves once (the
-[Plan tour](../026-plan/plan-tour.md) and the Forms tour); Show Me never offers itself. It exists for surfaces where people make something real in
-several steps whose ideas are not visible at a glance, and where a tour that offered itself would come at the
-wrong moment. 
+the **Show Me** button. It is the on-the-spot cousin of the tours started from the footer's Start Tour button (the
+[Plan tour](../026-plan/plan-tour.md), the Forms tour and the Dashboards tour, [Editor tours](editor-tour.md) "Where
+it appears"); like them, Show Me never offers itself. It exists for surfaces where people make something real in
+several steps whose ideas are not visible at a glance, and where the button sits on the surface itself. The
+Dashboards tour is Dashboard Settings' Show Me steps, started from the footer instead; Show Me records nothing.
+
 ## Domain language
 
-| Term                | Means                                                                            |
-| ------------------- | -------------------------------------------------------------------------------- |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**       |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                         |
-| **mode tour**       | A tour that offers itself once (the Plan tour, the Forms tour); not this          |
+| Term                | Means                                                                      |
+| ------------------- | -------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
+| **mode tour**       | A tab's own tour on the footer's Start Tour button (Plan, Forms); not this |
 
 ## Where it lives
 
-| Surface                                                             | Where the button sits                            | Who sees it                                  |
-| ------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
-| [Card type editor](../026-plan/item-types.md#editing-a-type)        | The editor's title row                           | Whoever can open the editor (an Editor)      |
-| [Share dialog](editor-app.md#share-dialog)                            | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)       |
-| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)   | The settings panel's title row                   | An Editor (only an Editor sees the settings) |
-| [Sankey Flows dialog](../009-elements/sankey.md#show-me)            | The dialog's title row                           | An Editor (only an Editor opens the dialog)  |
+| Surface                                                           | Where the button sits                            | Who sees it                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
+| [Card type editor](../026-plan/item-types.md#editing-a-type)      | The editor's title row                           | Whoever can open the editor (an Editor)      |
+| [Share dialog](editor-app.md#share-dialog)                        | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)       |
+| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings) | The settings panel's title row                   | An Editor (only an Editor sees the settings) |
+| [Sankey Flows dialog](../009-elements/sankey.md#show-me)          | The dialog's title row                           | An Editor (only an Editor opens the dialog)  |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 
@@ -39,7 +41,7 @@ A new Show Me surface is added to this table, and its own spec says its steps.
 ## The tour
 
 - The shared tour (the step card with Back, Next and Skip, the ring around what it points at with room to
-  breathe, the dim around it). It starts straight on its first step: no welcome card. Steps count from 1, and
+  breathe, the dim around it). It starts straight on its first step, as every tour does. Steps count from 1, and
   a closing card ends it, with **Done** and a link to the surface's help article ("<Topic> Help").
 - **Live controls.** Each step points at a real control, which stays usable while the step is up: the person
   can type, pick or press as the tour goes, and what they do is kept. A step never changes anything on its own

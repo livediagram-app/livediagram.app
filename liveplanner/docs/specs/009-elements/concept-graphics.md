@@ -184,17 +184,10 @@ rows, and the **Flywheel** template's ring is one Cycle. Templates that sit besi
 
 ## Element tours
 
-The first time an Editor selects a concept graphic of a toured kind, a small **Show Me** toolbar beside its selection
-toolbar offers its [element tour](../007-editor/element-tours.md): on the graphic itself, its rows, typing in place,
-the "+" ring's add, the Rows section, the colour ramp and its animation previewed on it. Toured: the
-[layer stack](../007-editor/element-tours.md#the-layer-stack-tour), the
-[pyramid](../007-editor/element-tours.md#the-pyramid-tour), the
-[funnel](../007-editor/element-tours.md#the-funnel-tour), the
-[cycle](../007-editor/element-tours.md#the-cycle-tour), the
-[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour), the
-[onion](../007-editor/element-tours.md#the-onion-tour) and the
-[chevron process](../007-editor/element-tours.md#the-chevrons-tour), whose tour holds a stage's bar open as if pointed
-at.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. Each concept graphic's tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.
 
 ## Share roles
 

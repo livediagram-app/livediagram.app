@@ -134,5 +134,7 @@ for the work.
 
 ## Element tour
 
-The **Lane tour** is offered beside the first lane a person selects, as an Editor on an unlocked element, and walks through it on the element
-itself ([Element tours](../007-editor/element-tours.md) "The Lane tour").
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Lane tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.

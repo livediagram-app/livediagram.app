@@ -1,33 +1,36 @@
-# Avatar tour
+# Avatar tour ("Start Avatar Tour")
 
-A short, optional guided tour of [Avatar mode](avatar-mode.md), offered the first time a person walks as an
-avatar. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same welcome card, anchored step cards,
-glide, dimming ring, Skip, Back and outro card, driven by the same engine. Where this spec is silent, the Draw
-tour's rules hold.
+A short, optional guided tour of [Avatar mode](avatar-mode.md), started from the footer's **Start Avatar Tour**
+button. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same Start Tour button, anchored step
+cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the
+Draw tour's rules hold.
 
 ## Domain language
 
 | Term              | Means                                                                             |
 | ----------------- | --------------------------------------------------------------------------------- |
-| **Avatar tour**   | This tour                                                                         |
+| **Avatar tour**   | This tour. On the Start Tour button: **Start Avatar Tour**                        |
 | **Avatar button** | The bottom-bar button that opens the Avatar panel ([Avatar mode](avatar-mode.md)) |
 | **Avatar panel**  | The character sheet, a popover over the Avatar button                             |
 
 ## Where it appears
 
-- **The first time a person is in Avatar mode**, which they enter by pressing a
-  [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The editor has to be usable (hydrated, no
-  welcome overlay, not an embed). Unlike the Draw tour it is offered **whatever the person's role**: the mode is
-  a Viewer's as much as an Editor's, and a read-only canvas is the mode's normal state, not a reason to hold off.
-- **Not before the synced preferences are in**, so an answer given on another device holds on a new one.
-- **On its own, never at the same time as another tour**, and it waits while a template start panel is on screen.
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
-- **Once ever per person**, through the synced `avatarTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
-  itself again, on any device.
-- **Replayable from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**,
-  built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight
-  away when the person is in Avatar mode, or offers it the next time they enter it.
+- **On the Start Tour button, in Avatar mode**, which a person enters by pressing a
+  [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The footer's button, left of Settings
+  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Avatar Tour** while the avatar is
+  the tool in hand: ahead of the tab's mode tour, behind a selected element's own tour (`TOUR_OFFER_RANK.tool`). The
+  editor has to be usable (hydrated, no welcome overlay, no start panel on screen, not an embed). Unlike the Draw tour
+  it is on offer **whatever the person's role**: the mode is a Viewer's as much as an Editor's, and a read-only
+  canvas is the mode's normal state, not a reason to hold off.
+- **Never on its own.** Until 25 October 2026 it offered itself, once ever, the first time a person walked as an
+  avatar ("Meet Your Avatar", **No** / **Yes**); the button replaced that offer.
+- **It stays on offer once taken.** Pressing the button again reruns it; a press while another tour is on screen
+  does nothing. A press starts the first step.
+- **Taken, on every device.** However a run ends, the synced `avatarTourSeen` user preference
+  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only.
+- **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**, built the
+  same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when
+  the person is in Avatar mode and it is on offer; otherwise the button is there when they get there.
 
 ## Tour content
 
@@ -37,12 +40,9 @@ sends no message and pushes nobody. There is nothing to take away and nothing in
 
 ## The steps
 
-A welcome card, five steps, then an outro card. The bookend cards sit outside the step count. Each step rings an
+Five steps, then an outro card, which sits outside the step count. There is no welcome card. Each step rings an
 element by its `data-tour-id`. The exact strings live in `apps/editor/components/tour/avatar-tour-steps.ts`.
 
-0. **Meet Your Avatar** (the offer): centred card with its own illustration (two pixel characters on a dotted
-   canvas, one waving, a speech bubble rising from the other), offering a quick tour of dressing up, reacting,
-   talking and pushing, then **No** and **Yes**.
 1. **Your Avatar**: rings the Avatar button (`avatar-button`). The character sheet and everything your character
    can do live here.
 2. **Make It Yours**: opens the Avatar panel if it is closed and rings its character section (`avatar-character`):
@@ -79,9 +79,10 @@ bottom bar as the other tours' do.
 
 The Draw tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `AvatarTourOffer` when its welcome card shows; `UI` · `Closed` · `AvatarTourOffer`
-  on No.
-- **Start**: `UI` · `Started` · `AvatarTour`.
+- **Offer**: `UI` · `Opened` · `AvatarTourOffer` the first time the Start Tour button shows this tour in a page
+  load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `AvatarTourOffer` counted
+  **No**; nothing sends Closed now.
+- **Start**: `UI` · `Started` · `AvatarTour` on a press of the button (or the Settings rerun).
 - **Stage views**: `UI` · `View` · `AvatarTourStep<Id>` once per step entry (`AvatarTourStepAvatarButton`,
   `AvatarTourStepCharacter`, `AvatarTourStepActions`, `AvatarTourStepMessage`, `AvatarTourStepPush`,
   `AvatarTourStepOutro`).

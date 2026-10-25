@@ -43,7 +43,7 @@ element; a map's nodes animate one by one as any element does.
 
 ## Element tour
 
-The first time an Editor selects a person node, a small **Show Me** toolbar beside its selection toolbar offers the
+While an Editor has a person node selected, the footer's **Start Org Chart Tour** button offers the
 [Org Chart tour](../007-editor/element-tours.md#the-org-chart-tour): the name, role and initials, a report (Tab) and a
 peer (Enter), a team moved as one, and the menu it shares with mind maps.
 

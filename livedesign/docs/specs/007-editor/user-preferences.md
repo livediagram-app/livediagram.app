@@ -233,16 +233,18 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
+  // The Pages tour's seen record (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Settings' row per kind (Logo Tour, ...) adds or removes its own kind.
+  // The page kinds whose Pages tour track has been taken (completed or skipped; declined too, until 25 October
+  // 2026). Feeds Settings' row per kind (Logo Tour, ...), which adds or removes its own kind, and which page a
+  // Start Pages Tour press prefers; it never hides the button.
   pagesTourKinds?: PageKind[];
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
+  // (Play or Cancel on the offer toolbar, until 25 October 2026). Surfaced in Settings as Tours › Show Me, one switch
+  // per kind (inverted); it never hides the Start Tour button.
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on; written by its preset.
+  // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
   // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
@@ -630,7 +632,7 @@ and the dialog stays as the one complete, browsable index of them.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
   is said **once**, in a **section note** under its heading (`sectionNotes` on
-  the category: Designs' Default Folders, the Tours' "offer again"), not
+  the category: Designs' Default Folders, the Tours' Offer Again), not
   repeated under each row. A row reused outside a group (`SettingsRow`) draws the same cell inside a card of its
   own.
 
@@ -678,27 +680,30 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it offers itself and a **Learn more** to its article, under
-  one **Offer Again** section note: each tour offers itself once; switch one back on and close Settings to take it
-  again. (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
-  for them: a tour is not an accessibility setting.) Every switch is inverted: on means "offer me this tour", the
+  **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
+  one **Offer Again** section note. No tour offers itself any more: every tour is started from the footer's
+  **Start Tour** button, immediately left of Settings, and stays there once taken ([Pages tour](pages-tour.md)).
+  These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
+  tour when it is on offer right now. (The note's words, and the Show Me section's, still describe tours offering themselves
+  once, as they did until 25 October 2026.) (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
+  for them: a tour is not an accessibility setting.) Every switch is inverted: on means "not taken yet", the
   preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
   `...SeenOff`), so each dashboard series keeps its meaning.
 
   The Pages tour is a tour of several tracks (`apps/live/lib/tour-tracks.ts`), one per page kind
   ([Pages tour](pages-tour.md)): **Pages Tours** is one switch over all of them (`tourTracksSwitch`, key
-  `pagesTourSeen`: on while any track is owed, off answers every track, on forgets every answer), and each track
+  `pagesTourSeen`: on while any track is untaken, off marks every track taken, on forgets every record), and each track
   has its own row nested beneath it, named for itself (`tourTrackSwitch`). A track's row is on while its track is
-  owed; off adds its kind to `pagesTourKinds`, on removes it alone, and both clear the single `pagesTourSeen`,
-  folding it into the list first so one track back on leaves the others answered. Power user mode's readout lists
+  untaken; off adds its kind to `pagesTourKinds`, on removes it alone, and both clear the single `pagesTourSeen`,
+  folding it into the list first so one track back on leaves the others taken. Power user mode's readout lists
   the switch over all its tracks (**Pages Tours**). The old single flag `pagesTourSeen` counts every track only
-  while Power user mode is on, so an answer given before the tour split offers each track once more.
+  while Power user mode is on.
 
   Below the Pages tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
   as Pages Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
+  need no relaunch: the Start Tour button offers one whenever its element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are

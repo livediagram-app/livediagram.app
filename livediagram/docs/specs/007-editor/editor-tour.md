@@ -1,4 +1,4 @@
-# Diagram tour ("Getting started with Diagrams?")
+# Diagram tour ("Start Diagram Tour")
 
 A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
 spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
@@ -19,66 +19,56 @@ proved the better introduction.
 
 ## Where it appears
 
-- **Only in Diagram mode.** The tour is offered, and runs, only while the open tab is in Diagram mode. It is
-  never offered on a Draw or Workshop tab; an offer owed there waits until the person is on a Diagram tab. Leaving Diagram mid-tour
-  (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at
-  chrome the other modes do not show.
-- **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
-  the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
-  (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows a **welcome offer banner** at the bottom of the screen once the editor is ready, and once its start is done (a template picked
-  or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
-  **No** dismisses it. A document made from a Draw or Workshop template does not show it
-  there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
-  There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
-  The count is the one from **before** the create: a cloud create waits for it (up to
-  `DOCUMENT_COUNT_WAIT_MS`, 3 s, after identity settles, `apps/editor/app/new/useDocumentCount.ts`), so a pick
-  made before the list fetch lands still offers the tour; only the first count reported is kept, since a
-  re-read after the create already includes the new document. A This Browser create opens at once and takes the
-  count only if it is already in.
-- **The bookend cards ask nothing of the editor.** The welcome offer and the last card are **banners**, built as the
-  sign-in banner is (`TourBanner`): one wide row (up to 768 px) at the bottom centre, standing on whatever chrome is
-  there (the tab bar, the bottom-right cluster), with the tour's own picture small at its left, then its eyebrow,
-  title and words, then its buttons at the right (**No** and **Yes**, or the help link and the finish button); every
-  mode tour's finish button reads just **Start** (`TOUR_FINISH`), and its help link reads **Help** behind a help icon
-  (an element tour's names its article, "Sankey Diagram Help", behind the same icon); on a
-  phone they stack, the picture left out. No backdrop, no focus taken (not even by a press on its buttons, so answering it leaves the focus where the person was working), so someone who would rather carry on working simply does, and answers when they like. Tab reaches
-  their buttons. They are the toasts' floor while up, and the sign-in banner, which takes the same place, steps aside
-  meanwhile: the two are never on screen together. A step card leaves focus alone too: it points at a real control
-  the person is about to use.
+- **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
+  the avatar and Plan tours) is started from one button in the editor's bottom bar, immediately left of Settings:
+  a contained chip with a play glyph in a small accent disc, reading **Start Diagram Tour** (`TourOfferButton`,
+  `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
+  at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
+  wherever its neighbours drop their words, it shows the glyph alone and keeps **Start Diagram Tour** as its
+  accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
+  own: no banner, no card, no toolbar beside an element. This replaced the offer banners ("Getting started with
+  Diagrams?") in October 2026, which people found they had to keep turning down.
+- **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
+  `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
+  tour first, then a tool in hand or a surface on the tab (the Avatar tour, the Dashboards tour), then the tab's
+  mode (Diagram, Draw, Workshop, Pages, Plan, Forms). Between two of the same rank, the one published last wins. With
+  no tour on offer the button is not drawn.
+- **Only in Diagram mode.** This tour is on offer, and runs, only while the open tab is in Diagram mode, to an
+  Editor, once the editor is ready: hydrated, no welcome overlay, no start on screen ([Template
+  starts](start-diagramming.md) "The tours wait"), not read-only and not an embed. Leaving Diagram mid-tour
+  (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at chrome
+  the other modes do not show.
+- **It stays on offer once taken.** Finishing or skipping the tour does not take the button away: pressing it again
+  is how the tour is taken again.
+- **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
+  while another tour is on screen does nothing ("One tour at a time").
+- **The last card is a step card.** "You're ready to diagram" is drawn in the same popover as the steps
+  (`TourPopover`), centred, with the help link and the finish button; every mode tour's finish button reads just
+  **Start** (`TOUR_FINISH`), and its help link reads **Help** behind a help icon (an element tour's names its
+  article, "Sankey Diagram Help", behind the same icon). It takes no focus, so the person carries on where they were.
 - **How a step reads.** Every tour's words, the editor's, each mode's and each element's, are written to get someone
   going fast: what to do first, in one idea and about twenty words at most; the control named exactly as it is
   labelled; a menu path written as it is pressed ("Tools › Boundary", or "In its menu, Mind Map"); no inside terms
   ("accent", "steps toward the fill", "one undo step": say "Undo takes back any change"); no list of every option
-  where the person can see them. An offer says what the tour covers in a line. A detail that changes what the
+  where the person can see them. A detail that changes what the
   person can do stays (a keyboard key, a right-click a phone lacks, how many there are).
-- **Escape is each card's way out.** On the offer it declines (as **No**), on a step it skips the tour (as
-  **Skip tour**), on the last card it finishes (as its finish button). Every tour's cards are the same card
+- **Escape is each card's way out.** On a step it skips the tour (as **Skip tour**), on the last card it finishes
+  (as its finish button). Every tour's cards are the same card
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
-  element tour asks for Escape to put text back, and when another surface has already taken it. The offer and the
-  last card take Escape only from inside themselves, as they ask nothing of the editor: Escape elsewhere is the
-  person's own.
-- **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
-  `tourSeen` user preference ([User preferences](user-preferences.md)) stops it ever reappearing: the offer
-  must never read as nagging, and answering it once covers every device the user signs in from (guests get
-  the same via their owner-keyed preference row + the localStorage warm cache). The preference keeps the
-  welcome tour's name, so an answer given to the welcome tour still holds for this one.
-- **Replayable from Settings.** The Settings dialog's **Tours** category has a
-  **Diagram Tour** switch that surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
-  closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
-  the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
-  the rerun turns it off again.
+  element tour asks for Escape to put text back, and when another surface has already taken it.
+- **Taken, on every device.** However a run ends (skipped mid-tour or completed), the synced `tourSeen` user
+  preference ([User preferences](user-preferences.md)) records it, so Settings' **Diagram Tour** row reads off. It no
+  longer hides the button: it is a record, kept for the Settings row. The preference keeps the welcome tour's name.
+- **Rerun from Settings.** The Settings dialog's **Tours** category has a **Diagram Tour** switch that surfaces
+  `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and closing Settings starts the tour
+  from the top when the open tab is in Diagram and the tour is on offer there; otherwise it does nothing, and the
+  button is there when the person reaches a Diagram tab. Finishing the rerun turns it off again.
 - **One tour at a time.** The
   [Workshop tour](../012-collaboration/workshop-tour.md) and the [Draw tour](../023-draw-mode/draw-tour.md)
-  are this tour's siblings; while any is on screen the others wait.
-  Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
-  this tour never carries theirs.
+  are this tour's siblings; while any is on screen the others do not start.
+  Each belongs to its own mode, so the button offers the open tab's.
 - **Dialogs come first.** A tour never lands over a dialog the person has open (Share, Settings, Export,
-  the Search panel, a confirm, any dialog at all). This holds for every tour on the shared engine, the
-  element tours' offer included:
-  - **An offer waits.** A tour that would be offered while a dialog is open is not skipped: it stays owed and is
-    offered once every dialog has closed (stacked dialogs count until the last one goes), after the tour's usual
-    offer delay. Nothing is remembered as answered while it waits.
+  the Search panel, a confirm, any dialog at all). This holds for every tour on the shared engine:
   - **A running tour steps aside.** When a dialog opens over a running tour (opened by the person, or by
     something else such as a sign-in prompt), the card and the spotlight hide, and the step's live
     tracking pauses, so nothing is reopened under the dialog. When the dialog closes the tour comes back on the
@@ -92,29 +82,20 @@ proved the better introduction.
 
 ## Handoff
 
-Create hard-navigates to `/document/<id>`, so the intent crosses pages via a **sessionStorage flag**
-(`livediagram:v2:tour-pending`), set just before `window.location.assign`. The editor PEEKS at the flag and
-clears it only when the offer is **resolved** (completed, skipped, or declined), never on mere page load, so
-reloading mid-offer or mid-tour brings the offer back instead of silently swallowing an unanswered tour. The
-flag is also what keeps the offer owed across a document that opened in another mode. sessionStorage keeps it
-per-tab; a URL param would survive into copy-pasted links. The editor shows the offer only when it's actually
-usable: hydrated, no welcome overlay, no start on screen, not read-only, not an embed, and the open tab in
-Diagram. The Settings
-relaunch crosses no navigation, so it's a window event (`livediagram:tour-relaunch`), which also re-marks the
-flag, so a mid-rerun reload re-offers the same way.
+None. Until October 2026 a brand-new user's first create set a sessionStorage flag (`livediagram:v2:tour-pending`)
+that the editor read to show the offer banner; with the button as the one way in there is nothing to hand over, and
+`/new` no longer waits for the document count on create. The Settings rerun crosses no navigation, so it is a window
+event (`livediagram:tour-relaunch`, `lib/diagram-tour.ts`).
 
 ## The steps
 
-A welcome offer card, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
+Six steps in palette → canvas → tabs → theme order (five on mobile, where the
 theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
-the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
+the two dropdown steps; three when it is both), and a closing "you're ready" card, which sits outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/editor/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
 words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: a tap, a long-press:
 
-0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "A quick look
-   at the editor? It takes about a minute.", then **No** / **Yes**. Yes and No are every tour's
-   offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top: "Add whatever you need to your canvas to start drawing after the
    tour."
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
@@ -141,7 +122,7 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
    centre (new tab, no underline), and a **Start** button that completes the tour.
 
 Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
-the tour on diagramming; each mode now has a tour of its own, offered when the person enters it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
+the tour on diagramming; each mode now has a tour of its own, on the Start Tour button while the person is in it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
 welcome tour; it describes the whole app rather than diagramming, so the Diagram tour left it out. A **Search**
 step (opening the Cmd/Ctrl+K panel) once followed Theme & Canvas until it was cut to keep the tour short; the
 search panel has its own help article.
@@ -195,14 +176,16 @@ of their steps ask the person to try things.
   avatar, element and Show Me tours;
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
-  too. The bookend cards' words (`TourCardCopy`) and the welcome art are props, defaulting to this tour's.
+  too. The last card's words (`TourCardCopy`) are a prop, defaulting to this tour's. The engine, the stage, the
+  card, the spotlight, the shield, the tour colours and the Start Tour button live once in
+  `@liveworkspace/workbench/components/tour`; each editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
   `setContextMenu`), then anchors the popover to the resulting DOM node found via `data-tour-id` attributes
   (plus the existing `data-palette-dropdown-menu` / `data-element-id` hooks).
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target
   never appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the
-  step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
+  step before; otherwise forward. If an open menu is dismissed mid-step (outside
   click), the step re-prepares itself; a target that still does not come back lets go of its spotlight, and the card
   waits centred.
 - **A target is brought into view before the step lands.** A target below the fold of a scrolling panel (a long
@@ -232,35 +215,30 @@ of their steps ask the person to try things.
 
 ## Look
 
-- **Every tour wears the active tab's colours**, as the start panels do: the card (welcome, step and outro) takes
+- **Every tour wears the active tab's colours**, as the start panels do: the card (step and last) takes
   the tab's palette (`useStartPalette`, the start panels' hook; `tour-colours.ts` reads it into CSS variables).
   Card background, border, title, copy (muted) and the eyebrow, help link, progress dots and primary buttons
   (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
 - **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
   accent.
-- **The banners (the offer and the last card) are the sign-in banner's look in the tab's hue**: a deep gradient, in
-  white, in light and dark alike. The accent keeps its hue and saturation and is deepened until white reads on it at
-  5.9:1, the gradient's far end at 7.6:1 (sign-in's own `brand-700` and `brand-800`), so the eyebrow and words, at 90%
-  white, still clear AA. A dark tab's pale accent is never painted as it is: it drew a washed-out banner with its words
-  in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
-  banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
 - This holds for the Diagram, Workshop and Draw tours and Show Me,
   which all draw through `TourStage` and `TourPopover`.
 
 ## Share roles
 
-Only someone who may edit the tab is offered the tour (an **Editor**): the element step selects an element and
-may place the tour's own square. A **Participant** or a **Viewer** is never offered it (the editor is read-only
+Only someone who may edit the tab sees the button for it (an **Editor**): the element step selects an element and
+may place the tour's own square. A **Participant** or a **Viewer** never sees it (the editor is read-only
 for the tour's purposes: `isReadOnly`).
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 The welcome tour's tokens, unchanged, so the funnel's history reads straight through the rename:
 
-- **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows (first run and Settings relaunch alike);
-  `'UI'/'Closed'/'TourOffer'` on **No**.
-- **Start**: `'UI'/'Started'/'Tour'` on accept.
+- **Offer**: `'UI'/'Opened'/'TourOffer'` the first time the Start Tour button shows this tour in a page load.
+  Until 25 October 2026 it counted the welcome card showing, and `'UI'/'Closed'/'TourOffer'` counted **No**;
+  nothing sends Closed now, and its explanation stays for the history.
+- **Start**: `'UI'/'Started'/'Tour'` on a press of the button (or the Settings rerun).
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry (`TourStepPalette`,
   `TourStepSelectionModes`, `TourStepCategories`, `TourStepContextMenu`, `TourStepTabs`,
   `TourStepThemeCanvas`, `TourStepOutro`, derived from the fixed step ids, never content; a Back re-entry

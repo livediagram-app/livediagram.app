@@ -215,7 +215,7 @@ generic `invalid tab` path.
 | Staggered animations by column                                    | `apps/live/components/canvas/SankeyView.test.tsx`                                                                |
 | Editor gate                                                       | `apps/live/lib/sankey-edit.test.ts`                                                                              |
 | Show Me steps, frozen count, Escape, telemetry                    | `apps/live/components/tour/SankeyFlowsTour.test.tsx`                                                             |
-| Element tour: offer, steps, lift, dialog hand-off                 | `apps/live/components/tour/ElementTourHost.test.tsx`, `sankey-element-tour-steps.test.ts`, `SankeyView.test.tsx` |
+| Element tour: on the button, steps, lift, dialog hand-off         | `apps/live/components/tour/ElementTourHost.test.tsx`, `sankey-element-tour-steps.test.ts`, `SankeyView.test.tsx` |
 
 ## Constants and configuration
 

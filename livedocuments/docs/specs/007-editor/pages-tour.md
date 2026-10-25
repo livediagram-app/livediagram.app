@@ -1,51 +1,56 @@
 # Pages tour
 
 A short, optional guided tour of one [page kind](pages-mode.md#page-kinds): a slide, an infographic or an
-article. It is livedocuments' only tour that offers itself; the others run on demand ([Show Me](show-me.md),
-[Element tours](element-tours.md)). Each kind has its own **track**, which shows how that kind of page is made by
+article. Like every tour it is started from the footer's **Start Pages Tour** button and never offers itself; [Show Me](show-me.md)
+runs the same track from a page's panel, and the [element tours](element-tours.md) share the button. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers, its deck button,
-the Slide Deck and Present) rather than only pointing at them: a welcome card, anchored step cards, a glide, a
-dimming spotlight, Skip, Back and an outro card, driven by the tour engine every tour shares ("How a tour runs").
+the Slide Deck and Present) rather than only pointing at them: anchored step cards, a glide, a
+dimming spotlight, Skip, Back and a closing card, driven by the tour engine every tour shares ("How a tour runs").
 
 ## Domain language
 
-| Term                   | Means                                                                                              |
-| ---------------------- | -------------------------------------------------------------------------------------------------- |
-| **Pages tour**         | This tour, whichever track it runs                                                                 |
-| **Track**              | One page kind's steps: the **Slides**, **Infographic** or **Article** track                        |
-| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts           |
-| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md)), without the welcome card |
-| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                              |
+| Term                   | Means                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| **Pages tour**         | This tour, whichever track it runs                                                       |
+| **Track**              | One page kind's steps: the **Slides**, **Infographic** or **Article** track              |
+| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts |
+| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md))                 |
+| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                    |
 
 ## Where it appears
 
-- **The first time a person works on a page of a kind** on a tab they may edit: opening a tab with such a page
-  on screen, or a page of a kind not yet toured arriving on the tab (added from the +,
-  or the first page's kind chosen). The editor has to be usable (hydrated, no welcome overlay, not read-only, not
-  an embed), and the tab not locked.
-- **The tour page** is the page on screen of a kind not yet toured that shows the most of itself in the window;
-  its kind picks the track. A page that is locked or too small on screen to show its title bar is passed over.
-- **Not before the synced preferences are in**, so an answer given on another device holds on a new one.
-- **Not over Start Making Pages**, nor over the first page's own kind choice ("What Is This Page For?"): the offer
+The footer's Start Tour button is the one way in, for this tour as for every other; the Diagram tour spec (`007-editor/editor-tour.md`) "Where it appears" in livediagram describes the button, which tour it offers when several could run,
+and the closing card. This tour's part:
+
+- **On the button as "Start Pages Tour"**, whatever the page kind, while the open tab is in Pages, to an Editor,
+  once the editor is usable (hydrated, no welcome overlay, not read-only, not an embed), the tab is not locked and at
+  least one of its pages has its kind chosen. The selected element's own tour ([Element tours](element-tours.md))
+  takes the button while that element is selected. A tour never starts, prompts or offers itself: until 25 October
+  2026 each kind offered itself once ("Getting started with ...?", No / Yes) after a short delay.
+- **Not over Start Making Pages**, nor over the first page's own kind choice ("What Is This Page For?"): the button
   waits until a template is picked or the panel closed ([Template start](start-diagramming.md) "The tour
   waits"), or the page's kind is chosen.
-- **On its own, never at the same time as another tour**, and never over an open dialog ("Dialogs come first").
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
-- **Once ever per kind, per person**, through the synced `pagesTourKinds` user preference
-  ([User preferences](user-preferences.md)): the kinds whose track has been taken, skipped mid-way or declined.
-  Each never offers itself again, on any device; a page of another kind still offers its own.
-  `pagesTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
-  answer given before the tour offered each kind once named no kind, so each kind is offered once more
-  (`apps/editor/lib/tour-tracks.ts`, shared with the [element tours](element-tours.md)).
-- **Replayable from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
-  while any is owed; off answers them all, on forgets every answer), and one switch per kind sits nested beneath
-  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**). On means that kind
-  is still owed. Turning one off answers that kind alone; turning one on forgets that kind alone (and folds a
-  Power user's single `pagesTourSeen` into the answered list first, so the other kinds stay as they were).
-  Closing Settings with a kind newly owed runs the track for the page on screen straight away, or offers it the
-  next time such a page is on screen. Power user mode's readout lists **Pages Tours**.
+- **A press starts the first step** of the tour page's track; there is no welcome card. A press while another tour
+  is on screen does nothing ("One tour at a time").
+- **The tour page** is picked at the press: of the pages on screen, unlocked and showing their title bar, the one
+  showing the most of itself in the window, a page of a kind not yet taken first; its kind picks the track. With
+  no such page on screen a press does nothing.
+- **It stays on offer once taken.** Finishing or skipping a track does not take the button away: pressing it again
+  runs it again.
+- **Taken, on every device.** However a run ends (completed or skipped), the synced `pagesTourKinds` user
+  preference ([User preferences](user-preferences.md)) records its kind. The record feeds the Settings rows and
+  which page a press prefers; it no longer hides the button. `pagesTourSeen` true counts every kind as taken only
+  while [Power user mode](power-user-mode.md) is on (`apps/editor/lib/tour-tracks.ts`, shared with the [element
+  tours](element-tours.md)).
+- **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
+  while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
+  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**). On means that kind has not been taken. Turning one off marks that kind alone;
+  turning one on forgets that kind alone (and folds a Power user's single `pagesTourSeen` into the taken list
+  first, so the other kinds stay as they were). Closing Settings with a kind newly on starts the tour when it is on
+  offer right now; otherwise it does nothing, and the button is there when the person is in Pages. Power user
+  mode's readout lists **Pages Tours**.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
-  ([Show Me](show-me.md)), wherever the offer stands.
+  ([Show Me](show-me.md)).
 
 ## Tour content
 
@@ -55,16 +60,13 @@ edit, undoable). The tour places nothing of its own.
 
 ## The steps
 
-A welcome card, then the track's steps, then its outro card; the bookend cards sit outside the step count. Each
+The track's steps, then its closing card, a step card in the same popover (`TourPopover`) that sits outside the
+step count. Each
 step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
 never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
 on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
 
-The welcome card names its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour** or **Article
-tour**, over an illustration of that kind (`components/tour/art/pages-tour-art.tsx`): a
-slide whose words and picture trade sides as layouts are picked beside it, with a Present button; an infographic
-page whose band, headline, bars and ring chart fill in; an article page written line by line, its next page
-behind.
+Each track's cards name its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour** or **Article tour**.
 The exact strings live in `apps/editor/components/tour/<kind>-tour-steps.ts`.
 
 **A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
@@ -76,8 +78,6 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 
 ### Slides track
 
-0. **Getting started with Slides?** (offer): a quick look at making a slide, choosing its layout and background,
-   the deck and presenting.
 1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it;
    Change Theme restyles every page.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
@@ -89,32 +89,30 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
    size.
 7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.
-8. **You're ready to present** (outro).
+8. **You're ready to present** (closing card).
 
 The deck stays open from step 4 to step 7 and closes after them, however the tour leaves them
 (`holdSlideDeck` / `releaseSlideDeck`).
 
 ### Infographic track
 
-0. **Getting started with Infographics?** (offer): a quick look at laying out a page.
 1. **Your Page** (the page's name): press it to fit the page to the screen, drag it to reorder.
 2. **Start From a Layout** (the Layout popover, opened).
 3. **Change the Background** (the Background popover, opened).
 4. **Page Size** (the page's panel, opened on Page): size and orientation; duplicate, move or delete below.
 5. **Add a Page** (the +).
 6. **Present It** (the Slide Deck, opened): any page can be a slide, picked in the deck and presented.
-7. **You're ready to make pages** (outro).
+7. **You're ready to make pages** (closing card).
 
 ### Article track
 
-0. **Getting started with Articles?** (offer): a quick look at writing an article.
 1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
 2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
    only while a page is hovered or written on).
 3. **Article Style** (the Style popover beside the cog, opened by its button, [Article pages](article-pages.md) "Article style"): looks, accent, margins, page numbers, for every page of
    the article.
 4. **Fonts and Spacing** (the Text popover beside it).
-5. **You're ready to write** (outro).
+5. **You're ready to write** (closing card).
 
 ### Filtering
 
@@ -130,14 +128,14 @@ Every tour (this one, [Show Me](show-me.md) and the [element tours](element-tour
 ### Mechanics
 
 - **One engine.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next / Skip) and what it
-  draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared; each tour's host owns its offer, its steps and what
+  draws (`TourStage`: `TourSpotlight`, `TourPopover`, `TourShield`) live once, with the Start Tour button and the tour colours, in `@liveworkspace/workbench/components/tour`; each tour's host owns when it is on offer, its steps and what
   ending means. A step anchors by `data-tour-id`, or by a `selector` resolved when it runs, and an anchorless card's
   `prepare` runs too.
 - The engine drives the **real UI**, not screenshots: a step's `prepare` opens the actual panel, popover or menu
   (pressing the same trigger a person would), then anchors the card to the resulting DOM node.
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target never
   appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the step
-  before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step, the step
+  before; otherwise forward. If an open menu is dismissed mid-step, the step
   re-prepares itself; a target that still does not come back lets go of its spotlight, and the card waits centred.
 - **A target is brought into view before the step lands**: centred in each scrolling ancestor that does not wholly
   show it (`revealInScrollers`, `tour-reveal.ts`), smoothly unless motion is reduced. Only real scroll containers
@@ -154,8 +152,6 @@ A tour never lands over a dialog the person has open (Share, Settings, Export, t
 dialog at all). What counts as a dialog is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`), which the tours
 read through `useOpenModalCount`.
 
-- **An offer waits.** A tour that would be offered while a dialog is open stays owed and is offered once every
-  dialog has closed, after the tour's usual offer delay. Nothing is remembered as answered while it waits.
 - **A running tour steps aside.** When a dialog opens over a running tour the card and the spotlight hide, and the
   step's live tracking pauses. When the dialog closes the tour comes back on the same step. Stepping aside is not
   an answer: the tour neither ends nor counts a new step view.
@@ -175,8 +171,8 @@ the card. The Pages tour and Show Me leave the page usable, as their steps ask t
   of it (`TourSpotlight`); no outline.
 - **Every tour wears the active tab's colours**, as the start panel does (`useStartPalette`; `tour-colours.ts`
   reads it into CSS variables). The primary buttons' label is white or near-black, whichever contrasts more with
-  the accent. The offer and the last card are a deep gradient of the tab's hue in white, deepened until white
-  reads on it at AA.
+  the accent. The closing card is a step card like the others (until 25 October 2026 the offer and the last card were a
+  deep gradient banner of the tab's hue).
 - **Arrival**: the dim fades in (250 ms) and the card settles in with it. **Hand-over**: on Next the spotlight and
   the card stay put while the next step prepares, then glide to it together once (250 ms, ease-in-out) and the
   card's words cross-fade. Between glides the hole follows its target exactly. One spotlight and one card for the
@@ -184,16 +180,17 @@ the card. The Pages tour and Show Me leave the page usable, as their steps ask t
 
 ## Share roles
 
-Only someone who may edit the tab is offered the tour, or sees Show Me: an **Editor**. A **Participant** or a
-**Viewer** is never offered it, since the page controls it opens are not theirs to use.
+Only someone who may edit the tab sees Start Pages Tour, or Show Me: an **Editor**. A **Participant** or a
+**Viewer** never does, since the page controls it opens are not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 The tour's funnel; the track shows in the step tokens:
 
-- **Offer**: `UI` · `Opened` · `PagesTourOffer` when its welcome card shows; `UI` · `Closed` ·
-  `PagesTourOffer` on No.
-- **Start**: `UI` · `Started` · `PagesTour`.
+- **Offer**: `UI` · `Opened` · `PagesTourOffer` the first time the Start Tour button shows this tour in a page load.
+  Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `PagesTourOffer` counted **No**;
+  nothing sends Closed now.
+- **Start**: `UI` · `Started` · `PagesTour` on a press of the button (or the Settings rerun).
 - **Stage views**: `UI` · `View` · `PagesTourStep<Kind><Id>` once per step entry, `<Kind>` the track
   (`Slide`, `Infographic`, `Article`): `PagesTourStepSlideLayouts`,
   `PagesTourStepInfographicPageSize`, `PagesTourStepArticleStyle`, ...
@@ -213,7 +210,7 @@ is on) and every element tour (`elementToursSeen`).
 
 - `<kind>-tour-steps.ts` (`slide-`, `infographic-`, `article-`): each track's steps, against one
   `PageTourApi` (`page-tour-api.ts`); `page-tour-dom.ts` opens and closes a page's title-bar popovers and finds
-  its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the offer or the press so the
+  its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the press so the
   copy stays out of the editor's first load.
-- `PagesTourHost.tsx`: the offer, the tour page and the seen-guard. `PageTour.tsx`: the page panel's Show Me.
+- `PagesTourHost.tsx`: when the tour is on the Start Tour button, the tour page and the seen record. `PageTour.tsx`: the page panel's Show Me.
 - `apps/editor/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

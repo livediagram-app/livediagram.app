@@ -1,36 +1,35 @@
-# Workshop tour
+# Workshop tour ("Start Workshop Tour")
 
-A short, optional guided tour of [Workshop mode](workshop-mode.md), offered the first time a person works in
-Workshop. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
-[Draw tour](../023-draw-mode/draw-tour.md) is: the same welcome card, anchored step cards, glide, dimming ring, Skip,
-Back and outro card, driven by the same engine. Where this spec is silent, the Diagram tour's rules hold.
+A short, optional guided tour of [Workshop mode](workshop-mode.md), started from the footer's **Start Workshop Tour**
+button. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
+[Draw tour](../023-draw-mode/draw-tour.md) is: the same Start Tour button, anchored step cards, glide, dimming ring,
+Skip, Back and closing card, driven by the same engine. Where this spec is silent, the Diagram tour's rules hold.
 
 ## Domain language
 
-| Term              | Means                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| **Workshop tour** | This tour                                                                                              |
-| **Diagram tour**  | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
+| Term              | Means                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| **Workshop tour** | This tour. On the Start Tour button: **Start Workshop Tour**                               |
+| **Diagram tour**  | The Diagram mode tour ("Start Diagram Tour"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears
 
-- **The first time a person is in Workshop mode** on a tab they may edit: switching a tab to Workshop,
-  opening a document whose tab opens in Workshop, or creating one from a Workshop template (a retro, Blank
-  Session). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, not read-only,
-  not an embed), and the tab not locked.
-- **Not before the synced preferences are in.** The offer does not fire until this person's preferences have
-  arrived from the server (or failed to), so an answer given on another device holds on a new one.
-- **On its own, whatever other tours the person has seen.** Until October 2026 a newcomer in Workshop was
-  offered the welcome tour first, with this tour's offer (**Show me Workshop**) on its closing card. The
-  welcome tour is now the Diagram tour and never runs in Workshop, so this tour no longer waits for it: the
-  first time someone is in Workshop it offers itself, never at the same time as another tour.
-- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
-- **Once ever per person**, through the synced `workshopTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
-  itself again, on any device.
-- **Replayable from Settings**: the **Workshop Tour** switch in Settings' **Tours** category
-  control, beside **Diagram Tour** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
-  tour straight away when the person is in Workshop, or offers it the next time they enter Workshop.
+- **On the Start Tour button, in Workshop mode.** The footer's button, left of Settings
+  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Workshop Tour** while the open tab
+  is in Workshop on a tab the person may edit, unless something more specific is on offer (a selected element's own
+  tour). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, no start on screen, not
+  read-only, not an embed), and the tab not locked.
+- **Never on its own.** The tour does not offer or start itself. Until 25 October 2026 it offered itself, once ever,
+  the first time a person was in Workshop ("Getting started with Workshop?", **No** / **Yes**); the button replaced
+  that offer.
+- **It stays on offer once taken.** Taken or skipped, the button still offers it; pressing again reruns it. A press
+  starts the first step; a press while another tour is on screen does nothing.
+- **Taken, on every device.** However a run ends, the synced `workshopTourSeen` user preference
+  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only: it no longer hides the
+  button.
+- **Rerun from Settings**: the **Workshop Tour** switch in Settings' **Tours** category, beside **Diagram Tour** and
+  built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight
+  away when the person is in Workshop and it is on offer; otherwise the button is there when they get there.
 
 ## Tour content
 
@@ -40,12 +39,10 @@ taken away when the tour ends, however it ends. Nothing reaches the document's h
 
 ## The steps
 
-A welcome card, six steps, then an outro card. The bookend cards sit outside the step count. The palette
+Six steps, then an outro card, which sits outside the step count. There is no welcome card: a press of the button
+starts the first step. The palette
 itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
 
-0. **Getting started with Workshop?** (the offer): centred card with its own illustration (a flipchart with two sticky
-   notes and a timer), saying Workshop is for running a session with a team and offering a quick look, then
-   **No** and **Yes**.
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to
    the room, and Session holds the timers, reveals, records, reactions, selection modes and places to go. It opens
@@ -71,17 +68,18 @@ itself is the Diagram tour's, so this tour does not repeat it. The exact strings
 
 ## Share roles
 
-Only someone who may edit the tab is offered the tour: an **Editor**. A **Participant** or a **Viewer** is never
-offered it, since most of what it shows (the palette's full categories, the Session strip's set-up, Share) is
+Only someone who may edit the tab sees the button for this tour: an **Editor**. A **Participant** or a **Viewer**
+never does, since most of what it shows (the palette's full categories, the Session strip's set-up, Share) is
 not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 The Diagram tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` when its welcome card shows; `UI` · `Closed` ·
-  `WorkshopTourOffer` on No.
-- **Start**: `UI` · `Started` · `WorkshopTour`. (`UI` · `Selected` · `WorkshopTourFromWelcome`, sent when the
+- **Offer**: `UI` · `Opened` · `WorkshopTourOffer` the first time the Start Tour button shows this tour in a page
+  load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `WorkshopTourOffer` counted
+  **No**; nothing sends Closed now, and its explanation stays for the history.
+- **Start**: `UI` · `Started` · `WorkshopTour` on a press of the button (or the Settings rerun). (`UI` · `Selected` · `WorkshopTourFromWelcome`, sent when the
   welcome tour's closing card started it, is retired with that card's offer and stays explained for the history.)
 - **Stage views**: `UI` · `View` · `WorkshopTourStep<Id>` once per step entry (`WorkshopTourStepCollaborate`, `WorkshopTourStepSessionStrip`, `WorkshopTourStepShare`,
   `WorkshopTourStepOutro`).

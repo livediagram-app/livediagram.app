@@ -61,5 +61,7 @@ next loads or changes.
 
 ## Element tour
 
-The **Diagram Key tour** is offered beside the first diagram key a person selects, as an Editor on an unlocked element, and walks through it on the element
-itself ([Element tours](../007-editor/element-tours.md) "The Diagram Key tour").
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Diagram Key tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.

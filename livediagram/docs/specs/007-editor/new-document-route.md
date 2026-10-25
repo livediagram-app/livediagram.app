@@ -447,9 +447,9 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - The Diagram tour's welcome offer ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)) is not queued on
-    this path: the create fires before the document count resolves, and a
-    Start Blank user has asked to get straight to the canvas.
+  - No tour is queued on this path, nor on any other: since 25 October 2026 tours start only from
+    the footer's Start Tour button ([Diagram tour ("Start Diagram Tour")](editor-tour.md) "Handoff"),
+    so no create waits for the document count.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
     the query param is only knowable in the browser. A React-side check
@@ -551,9 +551,9 @@ it cannot tell the difference from a direct visit.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
   do after a direct `/document/<id>` visit.
-- **Nothing crosses the handoff but the URL and `sessionStorage`.** The
-  tour's pending flag (`markTourPending`) is written before the swap and
-  read by the editor on mount, as it was across the hard navigation.
+- **Nothing crosses the handoff but the URL and `sessionStorage`.** (Until
+  25 October 2026 the tour's pending flag, `markTourPending`, was one of them;
+  it went with the tour offers.)
 - A failed create never hands off: the retryable error card shows instead.
 
 ### The opening screen

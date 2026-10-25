@@ -1,68 +1,65 @@
 # Plan tour
 
-A guided tour of [Plan mode](plan-mode.md) on the person's own board or Sheet, offered the first time they work
-in Plan with one open. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling: the same welcome card,
-anchored step cards, glide, dimming ring, Skip, Back and outro card, driven by the same engine, so the tours
-read as one product. Where this spec is silent, the Diagram tour's rules hold.
+A guided tour of [Plan mode](plan-mode.md) on the person's own board or Sheet, started from the footer's
+**Start Boards Tour** or **Start Sheets Tour** button while one is open. It runs on the shared tour engine
+([Editor tours](../007-editor/editor-tour.md)): the same anchored step cards, glide, dimming, Skip, Back and last
+card as every other tour, so the tours read as one product. Where this spec is silent, the
+[Editor tours](../007-editor/editor-tour.md) rules hold.
 
 ## Domain language
 
-| Term             | Means                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| **Plan tour**    | This tour                                                                                              |
-| **Diagram tour** | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
-| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                            |
-| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab         |
-| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind      |
+| Term             | Means                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| **Plan tour**    | This tour                                                                                         |
+| **Diagram tour** | The retired Diagram mode tour, [Editor tours](../007-editor/editor-tour.md)                       |
+| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                       |
+| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab    |
+| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind |
 
 ## Where it appears
 
-- **Only once there is plan work to show.** The tour is offered the first time a person is in Plan mode on a
-  tab they may edit **with a board or a Sheet on it**: a Board tab, a Sheet tab, or a Plan tab holding a board
-  or Sheet. An empty Plan tab (which shows Start Planning) and a Dashboard tab have nothing to show, so the
-  offer waits, armed, until the person opens or makes a board or Sheet while still in Plan, then follows after
-  the settle delay. The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, not
-  read-only, not an embed), and the tab not locked.
-- **On the person's own board or Sheet, never an example.** The tour places nothing: it runs on the tour
-  subject (see [Tour subject](#tour-subject)).
-- **Once ever per track, per person**, through the synced `planTourTracks` user preference
-  ([User preferences](../007-editor/user-preferences.md)): the **Boards** and **Sheets** tracks are each offered
-  once, so taking the Boards track still leaves the Sheets track to be offered the first time a Sheet is on the
-  tab, on any device. Whatever ends a track (taken, skipped mid-way or declined) answers that track; declining a
-  choice card answers both, as both were offered. A Sheet arriving beside a toured board (or a board beside a
-  toured Sheet) arms the offer again. The old single flag `planTourSeen` stands for both tracks only while
-  [Power user mode](../007-editor/power-user-mode.md) is on: an answer given before the tour offered each track once
-  named no track, so each is offered once more.
-- **Replayable from Settings**: in Settings' **Tours** category, beside **Diagram**, **Plan Tours** switches every
-  track at once, and one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and
-  **Dashboards Tour** (never "Plan Tour"). On means that track is still owed; a track's switch off answers that
-  track alone, on forgets it alone. Turning one on from off and closing
-  Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
-  offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
-  an empty Plan tab already offers Start Planning, which makes a board or Sheet, and the switch's description
-  says the tour needs one.
-- **One tour at a time**: while the Diagram tour is on screen the Plan tour waits. Each tour
-  belongs to its own mode, so the Plan tour never waits for the Diagram tour's offer to be answered.
-- The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the welcome card
-  names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan
-  canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No**, all with
-  equal weight. Taking the tour answers the track picked; the other is offered on its own next time.
+- **The footer's Start Tour button.** The one way in is the button in the editor's bottom bar, immediately left of
+  Settings ([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It never starts, prompts or offers
+  itself on its own. Until 25 October 2026 it offered itself once per track on a banner ("Getting started with
+  boards?", **No** / **Yes**), and asked **Boards** or **Spreadsheets** on a choice card when both were on the tab.
+- **Only while there is plan work to show.** The tour is on offer while a person may edit a tab **with a board or
+  a Sheet on it**: a Board tab, a Sheet tab, or a Plan tab holding a board or Sheet. An empty Plan tab (which shows
+  Start Planning) and a Dashboard tab have nothing to show, so the button names another tour or is not drawn. The
+  editor has to be usable (hydrated, no welcome overlay, not read-only, not an embed), and the tab not locked.
+- **One track on the button.** The button names one track, **Start Boards Tour** or **Start Sheets Tour**: of the
+  ones with work on the tab, the first not yet taken, Boards between equals. A press runs that track on the board
+  or Sheet on screen (the [tour subject](#tour-subject)). There is no choice card.
+- **On the person's own board or Sheet, never an example.** The tour places no board or Sheet: it runs on the
+  tour subject (see [Tour subject](#tour-subject)).
+- **Taken, on every device**, through the synced `planTourTracks` user preference
+  ([User preferences](../007-editor/user-preferences.md)): however a run ends (completed or skipped mid-way), the
+  track it ran is taken. That record only picks which track the button names and feeds Settings' rows; it never
+  hides the button, and pressing it again reruns the tour. The old single flag `planTourSeen` stands for both
+  tracks only while [Power user mode](../007-editor/power-user-mode.md) is on.
+- **Replayable from Settings**: in Settings' **Tours** category, **Plan Tours** switches every track at once, and
+  one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (never
+  "Plan Tour"). On means that track is not yet taken; a track's switch off marks that track alone, on forgets it
+  alone. Turning one on from off and closing Settings runs the tour straight away when it is on offer (the open
+  tab has a board or Sheet on it); otherwise it does nothing, and the button is there once it is. Nothing is placed
+  to give it something to show: an empty Plan tab already offers Start Planning, which makes a board or Sheet, and
+  the switch's description says the tour needs one.
+- **One tour at a time**: a press while another tour is on screen does nothing.
 
 ## The Dashboards tour
 
 The Plan tour's third track, a tour of its own on a dashboard (`DashboardTour.tsx`): the steps of the dashboard's
-Show Me ([Plan tabs](plan-tabs.md) "Show Me": rows of slots, filling a slot, a slot's cog, Dashboard Settings)
-behind a welcome card, **Getting started with Dashboards?** (eyebrow **Dashboards tour**, its own picture of rows of
-slots filling in), **No** / **Yes**.
+Show Me ([Plan tabs](plan-tabs.md) "Show Me": rows of slots, filling a slot, a slot's cog, Dashboard Settings),
+started from the footer's **Start Dashboards Tour** button. Its cards read **Show Me** whichever way it started.
 
-- **Offered once**, the first time an Editor has a dashboard open in Plan while the `dashboards` track is owed, the
-  synced preferences are in, and no other tour, dialog or start panel is on screen; 800 ms after the dashboard is
-  on screen. Not to a Participant or a Viewer, not in an embed, not while a maximised slot covers the page.
-- **However it ends** (taken, skipped or declined) it answers the `dashboards` track (`planTourTracks`), on every
-  device. Show Me from Dashboard Settings runs the same steps without the welcome card and answers nothing.
-- **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` when offered, `UI` · `Closed` · `DashboardTourOffer` when
-  declined, `UI` · `Started` · `DashboardTour` when accepted (as Show Me's press), and Show Me's
-  `DashboardTourCompleted` | `DashboardTourSkipped` at the end.
+- **On offer** while an Editor's dashboard is on screen: not to a Participant or a Viewer, not in an embed, not
+  while a maximised slot covers the page. It ranks above the Plan and Forms tours, so on a dashboard the button
+  names it. It stays on offer once taken. Until 25 October 2026 it offered itself once, on a banner ("Getting
+  started with Dashboards?", **No** / **Yes**), 800 ms after a dashboard was first on screen.
+- **However it ends** (completed or skipped), a run from the button marks the `dashboards` track taken
+  (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same steps and records nothing.
+- **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` the first time the button shows it in a page load,
+  `UI` · `Started` · `DashboardTour` on a press (as on Show Me's), and Show Me's `DashboardTourCompleted` |
+  `DashboardTourSkipped` at the end. `UI` · `Closed` · `DashboardTourOffer` (No) is no longer sent.
 
 ## Tour content
 
@@ -75,14 +72,14 @@ recorded as tour content (`plan-tour-content` in localStorage) while it exists, 
 ## Tour subject
 
 - The tour subject is the board (Boards track) or Sheet (Sheets track) on the open tab **that the person sees**,
-  read from what is drawn when the tour is offered: one maximised or filling its tab (a Board tab, a Sheet tab)
+  read from what is drawn when the button is pressed: one maximised or filling its tab (a Board tab, a Sheet tab)
   first, then one on screen, then the first in the tab's element order. A Board tab and a Sheet tab hold exactly
   one.
 - **Its steps point at it as drawn**, wherever that is: on the canvas, maximised, or filling its tab. They never
   point at its place on the canvas while it is drawn over the canvas, where it is hidden.
 - **On screen.** Its first step brings it into view when it sits on the canvas out of the window: the view pans to
   it, zooming out only if it is too big to fit. One maximised or filling its tab is already on screen.
-- **Never over Start Planning.** An empty Plan tab shows Start Planning, so the tour is offered only once the tab
+- **Never over Start Planning.** An empty Plan tab shows Start Planning, so the tour is on offer only once the tab
   has a board or Sheet (see [Where it appears](#where-it-appears)).
 - **It changes nothing.** The tour adds no element, card, row or cell, moves nothing, selects no cell and writes
   nothing, so there is nothing to take away, nothing in the project's history, and nothing a collaborator
@@ -100,16 +97,11 @@ recorded as tour content (`plan-tour-content` in localStorage) while it exists, 
 
 ## The steps
 
-A welcome card, then the track's steps, then its outro card. The bookend cards sit outside the step count. Copy
-is one or two short sentences per step and speaks of the person's board or sheet ("your board"); the exact
-strings live in `apps/editor/components/tour/plan-tour-steps.ts`.
-
-0. The offer, a centred card named for its track, never the mode: eyebrow **Boards tour** and title **Getting
-   started with boards?** over a board whose card moves to the next column; eyebrow **Sheets tour** and title
-   **Getting started with Sheets?** over a sheet whose selection steps across as A1 is typed into; on a choice
-   card, eyebrow **Boards and Sheets tour** and title **Getting started with Boards and Sheets?** over both. With
-   one kind on the tab it says the tour will show around this board (or this sheet), without changing anything,
-   then **No** and **Yes**; with both it asks which, then **No**, **Boards** and **Spreadsheets**.
+A press starts the track's first step; then its steps, then its last card, a step card in the same popover that
+sits outside the step count. There is no welcome card: the button already named the track. Copy is one or two
+short sentences per step and speaks of the person's board or sheet ("your board"); the exact strings live in
+`apps/editor/components/tour/plan-tour-steps.ts`. The cards are named for their track, never the mode (**Boards
+tour**, **Sheets tour**).
 
 A step rings a control, never a whole board, column or sheet: a ring that size would light most of the screen, so
 the opening step of each track is a card on its own (centred, counted, no ring).
@@ -151,27 +143,28 @@ Five steps.
 
 ### Both tracks
 
-- Back from a step goes to the step before and shows it again. Back never returns to the welcome card. Leaving a
+- Back from a step goes to the step before and shows it again. Leaving a
   step closes what it opened (the card panel). Plan has no palette, so neither track has a palette step.
-- A step whose target never appears is skipped, as in the Diagram tour; a step list filtered up front keeps the
+- A step whose target never appears is skipped, as in every tour; a step list filtered up front keeps the
   count honest. The steps are the same on a desktop and a phone.
 - If the tour can no longer run where it started (the person's edit rights go, they leave Plan, they open
   another tab, or the tour subject is deleted) it ends as skipped.
 
 ## Share roles
 
-Only someone who may edit the tab is offered the tour: an **Editor**. A **Participant** and a **Viewer** never
-are (the editor is read-only for them), since what it shows (adding cards, card types, a Sheet's toolbar and
+Only someone who may edit the tab sees the button for it: an **Editor**. A **Participant** and a **Viewer** never
+do (the editor is read-only for them), since what it shows (adding cards, card types, a Sheet's toolbar and
 settings) is an Editor's to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Diagram tour's funnel, with its own tokens, so the tours chart apart:
+The editor tours' funnel, with its own tokens, so the tours chart apart:
 
-- **Offer**: `UI` · `Opened` · `PlanTourOffer` when the welcome card shows; `UI` · `Closed` · `PlanTourOffer` on
-  No.
-- **Start**: `UI` · `Selected` · `PlanTourBoards` | `PlanTourSheets` (the track picked, only when the welcome
-  card asked), then `UI` · `Started` · `PlanTour`.
+- **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Start Tour button shows this tour in a page
+  load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `PlanTourOffer` counted
+  **No**; nothing sends Closed now, and its explanation stays for the history.
+- **Start**: `UI` · `Started` · `PlanTour` on a press of the button (or a Settings rerun). `UI` · `Selected` ·
+  `PlanTourBoards` | `PlanTourSheets` (the track picked on the choice card) is no longer sent.
 - **Stage views**: `UI` · `View` · `PlanTourStep<Id>` once per step entry (`PlanTourStepBoard`,
   `PlanTourStepAddCards`, `PlanTourStepMoveCard`, `PlanTourStepCardPanel`, `PlanTourStepBoardHeader`,
   `PlanTourStepCardTypes`; `PlanTourStepSheet`, `PlanTourStepCells`, `PlanTourStepFormulas`,

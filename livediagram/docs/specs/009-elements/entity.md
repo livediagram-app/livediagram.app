@@ -184,5 +184,5 @@ A Participant's element writes (`applyParticipantOp`) do not take `entityFields`
 
 ## Element tour
 
-The **Entity tour** is offered beside the first entity a person selects, as an Editor on an unlocked element, and
-walks through it on the element itself ([Element tours](../007-editor/element-tours.md) "The Entity tour").
+The **Entity tour** is on the footer's **Start Entity Tour** button while an entity is selected, for an Editor on an
+unlocked element, and walks through it on the element itself ([Element tours](../007-editor/element-tours.md) "The Entity tour").

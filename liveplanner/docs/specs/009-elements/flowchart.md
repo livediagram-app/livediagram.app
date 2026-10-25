@@ -41,7 +41,7 @@ The classic flowchart vocabulary (ISO 5807 / ANSI), drawn with shapes the palett
 | Process        | `square`        | 200 × 72  | A step someone or something does        |
 | Decision       | `diamond`       | 200 × 120 | A question with labelled exits          |
 | Input / Output | `parallelogram` | 220 × 72  | Data entering or leaving the flow       |
-| Project       | `project`      | 200 × 84  | A project the flow produces or reads   |
+| Project        | `project`       | 200 × 84  | A project the flow produces or reads    |
 | Database       | `cylinder`      | 160 × 96  | Stored data                             |
 | Preparation    | `hexagon`       | 200 × 72  | Setting up before a step                |
 | Connector      | `circle`        | 56 × 56   | An on-page jump, labelled with a letter |
@@ -227,9 +227,10 @@ on a type change; `Element` · `Added` · `FlowchartLane` on Add Lane; `Element`
 
 ## Element tour
 
-The first time an Editor selects a flowchart step (not on a phone), a small **Show Me** toolbar beside its selection toolbar offers the
-[Flowchart tour](../007-editor/element-tours.md#the-flowchart-tour): Add Step and Add Branch (with Tab and Enter),
-Step Type, Lane on a laned chart, and the Flowchart menu.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Flowchart tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.
 
 ## What it is not
 

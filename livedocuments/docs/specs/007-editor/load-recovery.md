@@ -118,7 +118,7 @@ Repair clears what is safe to lose and keeps what would lose work or identity.
 
 **Cleared:** every `localStorage` and `sessionStorage` key starting with
 `livedocuments:` or `livedocuments-` that is not kept below. This covers editor
-preferences, panel layout, dismissed banners and tours, the recent-documents
+preferences, panel layout, dismissed banners, the recent-documents
 cache, cached share passwords, and the stale-build reload guards.
 
 **Kept, always:**

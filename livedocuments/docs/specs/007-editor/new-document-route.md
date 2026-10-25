@@ -277,8 +277,9 @@ unbroken.
 
 - The placement context params compose with it (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a
   caller can Start Blank straight into a folder or team library.
-- The [Pages tour](pages-tour.md)'s welcome offer is not queued on this path: a Start Blank user has asked to get
-  straight to the canvas.
+- Nothing about tours is queued on this path, or on any other: no tour offers itself, and the
+  [Pages tour](pages-tour.md) waits on the footer's Start Pages Tour button (until 25 October 2026 a welcome
+  offer was queued on the other paths and left out here).
 
 ### The other parameters
 

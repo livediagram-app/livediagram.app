@@ -5,11 +5,11 @@ and from [Avatar tour](../avatar-tour.md).
 
 ## Files
 
-| File                                                   | Role                                                                                              |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/avatar-say.ts`                | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
-| `packages/api-schema/src/room-messages.ts`             | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
-| `apps/api/src/room-op-gate.ts`                         | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
+| File                                                     | Role                                                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/avatar-say.ts`                  | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
+| `packages/api-schema/src/room-messages.ts`               | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
+| `apps/api/src/room-op-gate.ts`                           | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
 | `apps/editor/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
 | `apps/editor/lib/avatar-speech-store.ts`                 | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
 | `apps/editor/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
@@ -22,7 +22,6 @@ and from [Avatar tour](../avatar-tour.md).
 | `apps/editor/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                                 |
 | `apps/editor/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                                  |
 | `apps/editor/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                                          |
-| `apps/editor/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                                   |
 | `apps/editor/lib/avatar-tour.ts`                         | The relaunch event                                                                                |
 
 ## Domain and naming
@@ -106,7 +105,8 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 
 ### Tour
 
-As the Draw tour's host (`DrawTourHost`), with: armed on entering Avatar mode; `canWork` without the
+As the Draw tour's host (`DrawTourHost`), with: on offer on the footer's Start Tour button in Avatar mode, at
+`TOUR_OFFER_RANK.tool`; `canWork` without the
 `isReadOnly` and lock gates; steps filtered by `{ canSpeak, mobile }`; `prepare` of `character` clicks the Avatar
 button when the popover is closed and waits for `avatar-character`; `prepare` of `push` closes the popover;
 `cleanup` on leaving closes the popover if the tour opened it. Ends as skipped when the mode is left or the tab
@@ -211,19 +211,19 @@ canvas. INP: Enter opens the composer in one render.
 
 ## Testing
 
-| Rule                                 | Test                                                     |
-| ------------------------------------ | -------------------------------------------------------- |
-| Limits, word count, clamp            | `packages/api-schema/src/avatar-say.test.ts`             |
-| Parser rejections                    | same                                                     |
-| Presence classification              | `room-messages` tests: `avatar-say` is presence          |
-| Room drops a Viewer's op             | `apps/api` document-room role test                       |
+| Rule                                 | Test                                                       |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Limits, word count, clamp            | `packages/api-schema/src/avatar-say.test.ts`               |
+| Parser rejections                    | same                                                       |
+| Presence classification              | `room-messages` tests: `avatar-say` is presence            |
+| Room drops a Viewer's op             | `apps/api` document-room role test                         |
 | Flight time, motion, cap, seen ids   | `apps/editor/lib/avatar-speech.test.ts`                    |
 | Enter opens; Escape cancels; send    | `apps/editor/hooks/canvas/useAvatarSpeech.test.tsx`        |
-| Viewer cannot open                   | same                                                     |
+| Viewer cannot open                   | same                                                       |
 | Composer and bubbles render          | `apps/editor/components/canvas/AvatarSpeechLayer.test.tsx` |
-| Panel button and message popover     | `AvatarPanel.test.tsx`, `AvatarMessagePopover.test.tsx`  |
-| Avatar button shows only in the mode | `AvatarClusterButton.test.tsx`                           |
-| Tour steps filter, telemetry tokens  | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`   |
+| Panel button and message popover     | `AvatarPanel.test.tsx`, `AvatarMessagePopover.test.tsx`    |
+| Avatar button shows only in the mode | `AvatarClusterButton.test.tsx`                             |
+| Tour steps filter, telemetry tokens  | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`     |
 
 ## Constants and configuration
 

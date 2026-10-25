@@ -484,8 +484,9 @@ hover while the step is up; only when a slot holds something), **Dashboard Setti
 closing card, **That Is a Dashboard**, with a link to the Dashboards article. Which steps it has is fixed when it
 starts, so filling the empty slot mid-tour keeps the count. Only an Editor has the cog, so only an Editor sees Show
 Me; a locked tab has no cog, so none. Telemetry: `UI` · `Started` · `DashboardTour`, and `UI` · `Ended` ·
-`DashboardTourCompleted` or `DashboardTourSkipped`. The same steps, behind a welcome card, are offered once as the Dashboards tour the first time an Editor has a
-dashboard open ([Plan tour](plan-tour.md) "The Dashboards tour").
+`DashboardTourCompleted` or `DashboardTourSkipped`. The same steps are the Dashboards tour, started from the footer's **Start Dashboards Tour** button while an
+Editor has a dashboard open ([Plan tour](plan-tour.md) "The Dashboards tour"); its cards read Show Me either way, and
+only a run from the footer marks the `dashboards` track taken.
 
 ## A row that fills the page
 

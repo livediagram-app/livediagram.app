@@ -21,7 +21,8 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - Every colour swatch was an empty square, so a colour could not be picked.
 - Every template preview (the editor's template step, the Explorer, the marketing gallery) was a flat blank box: the
   dark re-lighting veil (`preview-art-tile`) was repainted black and blended the art away.
-- The tour and sign-in banners, painted only with a gradient, turned see-through over the canvas.
+- The tour and sign-in banners, painted only with a gradient, turned see-through over the canvas. (The tour banner
+  went on 25 October 2026, when tours moved to the footer's Start Tour button.)
 
 ## The rule
 
@@ -49,8 +50,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - `packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/editor/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
   `apps/editor/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
-- `apps/editor/components/tour/TourBanner.tsx`, `apps/editor/components/chrome/SignInBanner.tsx`: a solid background
-  under the gradient.
+- `apps/editor/components/chrome/SignInBanner.tsx`: a solid background under the gradient.
 
 ## Testing
 

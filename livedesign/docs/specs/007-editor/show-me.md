@@ -1,11 +1,10 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-demand cousin of the [Pages tour](pages-tour.md), which offers itself once;
-Show Me never offers itself. It exists for surfaces where people make something real in
-several steps whose ideas are not visible at a glance, and where a tour that offered itself would come at the
-wrong moment. An [element tour](element-tours.md) sits between the two: it offers itself, but quietly, from a small
-toolbar beside a selected element.
+the **Show Me** button. It is the on-the-spot cousin of the [Pages tour](pages-tour.md) and the [element tours](element-tours.md), which
+are started from the footer's Start Tour button; Show Me is started from its own button on the surface it
+teaches, and no tour offers itself. It exists for surfaces where people make something real in
+several steps whose ideas are not visible at a glance.
 
 ## Domain language
 

@@ -68,7 +68,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); signed-in users key their data off their account id instead.
 - **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, laser, spotlight, presentation), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
-- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer, the last active day.
+- **One-off prompts and counters**: the sign-in prompt and banner dismissals, the power-user offer, the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
 
 - **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, for people who edit text and comment without adding, moving or restyling anything; the room applies their changes through the participant content and writing rules.

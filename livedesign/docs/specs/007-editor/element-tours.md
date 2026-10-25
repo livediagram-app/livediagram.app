@@ -1,11 +1,14 @@
 # Element tours
 
 An **element tour** teaches one complex element type, on the element itself: what its parts mean, how to read it and
-how to change it. It is offered from a small toolbar beside the selected element's toolbar, the first time a person
-selects an element of that type, and it walks through the real element the person selected, not a sample.
+how to change it. While an element of a toured kind is selected, the footer's Start Tour button offers its tour
+("Start Sankey Tour"), and a press walks through the real element the person selected, not a sample.
 
-It sits between the [Pages tour](pages-tour.md) (which offers itself once with a centred card) and [Show Me](show-me.md) (never offered, started from a button on one surface). An element
-tour offers itself, but quietly: a small toolbar that waits beside the selection, never a card over the canvas.
+It shares the button with the [Pages tour](pages-tour.md), and takes it while its element is selected: the
+selected element's own tour is the most specific on offer ([Pages tour](pages-tour.md) "Where it appears", in
+livediagram). [Show Me](show-me.md) is started from a button on one surface instead. Until 25 October 2026 an
+element tour offered itself from a small toolbar beside the selection, the first time a person selected that kind;
+nothing offers itself now.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion,
@@ -13,67 +16,51 @@ timeline and chevron process; the [data charts](../009-elements/pie-chart.md); a
 
 ## Domain language
 
-| Term                  | Means                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
-| **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                            |
-| **Tour offer**        | The small toolbar that offers an element tour: the glyph and **Show Me**, **Play** and **Cancel** |
-| **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                                   |
-| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md))      |
+| Term                  | Means                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------- |
+| **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                       |
+| **Start Tour button** | The footer button, left of Settings, that starts every tour ("Start Sankey Tour")            |
+| **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                              |
+| **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 
 ## Naming
 
-An element tour is called **Show Me** wherever a person sees it: the offer's word, its Play button, and its Settings
-section. "Element tour" is the code's and the specs' word only.
+On the Start Tour button an element tour is named from its card's eyebrow, in title case, "tour" dropped: **Start
+Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNameOf`). Its Settings section is
+**Show Me**. "Element tour" is the code's and the specs' word only.
 
-## The tour offer
+## On the Start Tour button
 
-- **Where.** A separate small toolbar immediately to the left of the selection toolbar, on the same line, 8px apart,
-  so it never sits beside Delete and More at the toolbar's right end, where a reach for Delete would land on it.
-  Where the line is too narrow it wraps onto its own line on the far side from the element.
-  styled as that toolbar (white card, border, shadow, 32px buttons). It moves, flips above or below and is nudged
-  inside the canvas with the selection toolbar, as one group.
-- **What it holds.** Show Me's glyph (footprints) and the words **Show Me**, then **Play** (a play glyph) and
-  **Cancel** (a cross), each with a hover card: Play is **Show Me** ("A short walkthrough of how a Sankey diagram
-  works, on this one."), Cancel is **No Thanks** ("Hide this. Settings › Tours › Show Me offers it again."). The
-  toolbar is named "Show Me for this Sankey Diagram". Play wears the tab's accent, as the primary choice.
-- **On a phone** (narrower than 640px, or a phone held sideways: `useIsMobileViewport`) no element tour is offered at
-  all: the selection toolbar alone fills the width there. Nothing is answered, so the offer still comes on a wider
-  screen.
-- **On a narrow canvas** (a tablet in a split view), when the two toolbars together are wider than the canvas less its
-  margins, the offer wraps onto its own line, centred, on the far side from the element (above the selection toolbar
-  when that sits above the element, below it when below), so it never covers the element and never runs off screen.
-  Its buttons keep the selection toolbar's 44px touch targets.
-- **When it shows**, all of these hold:
-  - exactly one element is selected, of a toured kind, and its selection toolbar is showing;
+- **When it is on offer**, all of these hold:
+  - exactly one element is selected, of a toured kind;
   - the person may edit it (for a Sankey, `canEditSankey`: an Editor, on an unlocked diagram);
-  - the person has not answered this kind's tour (below);
-  - the editor is usable: hydrated, the synced preferences in, no welcome overlay, not an embed, not on a phone;
-  - no guided tour is running (`useActiveTour`), no start panel is open, and no dialog is open (the modal guard,
-    [Pages tour](pages-tour.md#dialogs-come-first)): the offer comes back once the last dialog closes.
-- **It fades in** with the selection toolbar, and away with it (a move, a quick-connect ring).
-- **Play** answers the offer and starts the tour on its first step. **Cancel** answers it and the offer goes. Either
-  way, the kind is never offered again, on any device, until Settings offers it again. Simply deselecting is not an
-  answer: the offer comes back the next time an element of that kind is selected.
+  - the editor is usable: hydrated, no welcome overlay, no start panel open, not an embed, not on a phone.
+- **Whether taken or not.** A tour stays on offer after it has been taken: selecting the element again and pressing
+  the button reruns it. Deselecting takes it off the button, and the mode's own tour (Pages) comes back.
+- **On a phone** (narrower than 640px, or a phone held sideways: `useIsMobileViewport`) no element tour is on offer:
+  the button offers the mode's tour, if any.
+- **A press** starts the tour on its first step; there is no welcome card. A press while another tour is on screen
+  does nothing.
 
-## Remembering answers
+## Remembering who has taken it
 
-- A synced user preference, `elementTourKinds`, lists the toured kinds whose offer has been answered (Play or
-  Cancel), so an answer follows the account ([User preferences](user-preferences.md)).
-- `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as answered
+- A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
+  follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows only; it no longer
+  hides the button.
+- `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
   while the mode is on, as `pagesTourSeen` does for its kinds.
 
 ## Settings
 
 Settings' **Tours** category holds element tours in their own section, **Show Me**, below the Pages tours'
 **Offer Again** section. It is a closed accordion (people rarely look for it): its header names the section and
-how many are on (`1 of 1 On`). Opened, it shows the section's line ("The first time you select a complex element, a
-small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again."), then
-**Show Me on Every Element**, one switch over them all ("Every element’s Show Me at once": on while any is still
-offered; off answers every kind, on forgets every answer), with one switch per toured kind nested beneath it, named
-for the element alone: **Sankey Diagram** ("The first time you select a Sankey diagram.", linking the Sankey
-Diagram article). On means "offer it": switching one on forgets its answer, so the offer shows the next time such an
-element is selected. The accordion opens on its own when Settings is opened on one of its rows (a search result) or
-on the section. Power user mode's readout lists the switch over them all as **Show Me on Every Element**.
+how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
+over them all ("Every element’s Show Me at once": on while any kind is untaken; off marks every kind taken, on
+forgets every record), with one switch per toured kind nested beneath it, named for the element alone: **Sankey
+Diagram**, linking the Sankey Diagram article. On means not yet taken. A switch changes the record only: the
+tour is on the Start Tour button whenever its element is selected, either way. The accordion opens on its own when
+Settings is opened on one of its rows (a search result) or on the section. Power user mode's readout lists the
+switch over them all as **Show Me on Every Element**.
 
 ## Menu steps
 
@@ -91,14 +78,14 @@ tour](pages-tour.md#the-page-waits)).
 ## The tour
 
 - **The shared tour**: the anchored step card with Back, Next and Skip, the ring with room to breathe, the dim
-  around it, and a closing card, as [Show Me](show-me.md) draws them. No welcome card: the offer was the welcome.
+  around it, and a closing card, as [Show Me](show-me.md) draws them. No welcome card: the button already said what it starts.
   Steps count from 1.
 - **On the element itself.** The steps ring the selected element's real parts and show what it says about them.
-- **The steps are fixed when Play is pressed**, from the element as it is then: a part it does not have (no
+- **The steps are fixed when the button is pressed**, from the element as it is then: a part it does not have (no
   leftovers, no flows) is left out, so the count is right from the first step.
 - **Live.** What a step rings stays usable, and what the person does is kept.
 - **Ending.** Done ends it as completed, Skip as skipped. It ends as skipped, with nothing remembered beyond the
-  answer already given, when the element goes (deleted, or no longer editable), or the person opens another tab.
+  kind already recorded as taken, when the element goes (deleted, or no longer editable), or the person opens another tab.
 - **Escape** belongs to the tour while a step is over a dialog the tour opened: the dialog does not close under it.
 
 ## The Sankey tour
@@ -299,11 +286,11 @@ On a selected stack, from `stack-tour-steps.ts`.
 
 ## Share roles
 
-| Role        | Element tours                                                                                  |
-| ----------- | ---------------------------------------------------------------------------------------------- |
-| Editor      | Offered, on an unlocked element of a toured kind                                               |
-| Participant | Never offered: an element tour teaches editing the element, which is not a Participant's to do |
-| Viewer      | Never offered                                                                                  |
+| Role        | Element tours                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| Editor      | On offer, on an unlocked element of a toured kind                                               |
+| Participant | Never on offer: an element tour teaches editing the element, which is not a Participant's to do |
+| Viewer      | Never on offer                                                                                  |
 
 The gate is the toured kind's own edit check on the session's `can` (for a Sankey, `canEditSankey`; for a concept
 graphic, a chart or a stack, an Editor on an unlocked element, since its data and its arrangement are an Editor's),
@@ -313,9 +300,10 @@ never `isReadOnly` alone.
 
 Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `ChartTour`, `StackTour`), named in its registry entry:
 
-- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the offer shows in a page load;
-  `UI` · `Closed` · `<Kind>TourOffer` on Cancel.
-- **Start**: `UI` · `Started` · `<Kind>Tour` on Play.
+- **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Start Tour button shows that kind's tour in a
+  page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
+  counted **Cancel**; nothing sends Closed now.
+- **Start**: `UI` · `Started` · `<Kind>Tour` on a press of the button.
 - **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Sankey's `SankeyTourStepBands`,
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
   `...FlowsBalance`, `...FlowsText`, `...FlowsImport`, `...FlowsPreview` and `...Outro`; the Layer Stack's
@@ -334,8 +322,8 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
 
-The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined, started and started
-per element, steps, completed, skipped), as Show Me's is one stack.
+The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined until 25 October 2026, started and
+started per element, steps, completed, skipped), as Show Me's is one stack.
 
 ## Adding an element tour
 
@@ -349,12 +337,10 @@ help article's tour section; and a section here.
 ## Code
 
 - `apps/live/lib/element-tours.ts`: the toured kinds, their names, their edit gates, and the answered list.
-- `apps/live/lib/element-tour-offer.ts`: the offer the host publishes and the selection toolbar reads.
-- `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind the offer and what a step shows.
-- `apps/live/components/tour/ElementTourHost.tsx`: decides the offer, runs the tour, ends it.
+- `../packages/workbench/src/lib/element-keyed-store.ts`: the per-element module store behind what a step shows.
+- `apps/live/components/tour/ElementTourHost.tsx`: puts the tour on the Start Tour button (`useOfferTour`), runs it, ends it.
 - `apps/live/components/tour/element-tour-defs.ts`: one definition per toured kind.
 - `apps/live/components/tour/element-tour-api.ts`: what a step may do on its element.
-- `apps/live/components/tour/ElementTourOffer.tsx`: the offer toolbar.
 - `apps/live/components/tour/sankey-element-tour-steps.ts`: the Sankey tour's steps.
 - `apps/live/components/tour/concept-element-tour-steps.ts`: the steps every concept graphic's tour is built from;
   `layer-stack-tour-steps.ts`, `pyramid-tour-steps.ts`, `funnel-tour-steps.ts`, `cycle-tour-steps.ts`, `hub-tour-steps.ts`, `onion-tour-steps.ts`, `chevrons-tour-steps.ts`, `timeline-tour-steps.ts`: each kind's own.

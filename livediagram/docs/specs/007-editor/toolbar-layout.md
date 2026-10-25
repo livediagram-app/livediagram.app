@@ -363,8 +363,8 @@ better layout. Its parts went with it:
 
 - The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
-- Settings has no Panel Layout row, and the Diagram tour's welcome card no layout picker
-  ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)).
+- Settings has no Panel Layout row, and the Diagram tour no layout picker (it was on the tour's welcome card, itself gone since 25 October 2026)
+  ([Diagram tour ("Start Diagram Tour")](editor-tour.md)).
 - The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
   that names them is ignored ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
@@ -445,7 +445,7 @@ their bottom-row buttons. What changes to fit the width:
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The Diagram tour ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)) follows the layout: its Palette step rings the
+- The Diagram tour ([Diagram tour ("Start Diagram Tour")](editor-tour.md)) follows the layout: its Palette step rings the
   strip's card. (Its Explorer step, which opened the Explorer from the menu button, went when the
   welcome tour became the Diagram tour.)
 

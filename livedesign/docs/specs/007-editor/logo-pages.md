@@ -112,7 +112,8 @@ cog).
 
 The panel is headed by **Show Me** ([Show Me](show-me.md)) and **Help** (the labelled Help link, to the Logo Pages
 article), above the name, on a logo page only. Show Me runs a guided tour of the logo tools, on the page it was
-pressed for; it is never offered or started on its own. Each step rings a real control of that page, which stays
+pressed for; it is never offered or started on its own. The same steps run as the [Pages tour](pages-tour.md)'s Logo track
+from the footer's **Start Pages Tour** button. Each step rings a real control of that page, which stays
 usable. The steps: **Start From a Logo Layout** (the panel, reopened on Layouts; closed again on leaving the step),
 **Draw on Guides** (the Guides button), **Mirror As You Draw** (the Mirror button), **Combine Shapes** (the
 selection toolbar's Combine when two or more shapes were selected as it started, otherwise a centred card saying

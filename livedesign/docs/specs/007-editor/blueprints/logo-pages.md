@@ -212,7 +212,8 @@ buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's 
   (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
   the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
   `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
-  card), `outro`. The same steps follow `LOGO_WELCOME` as the Pages tour's Logo track.
+  card), `outro`. The same steps are the Pages tour's Logo track, started from the footer's Start Pages Tour button (no welcome
+  card before them since 25 October 2026, when `LOGO_WELCOME` went).
 - `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
   finish.
 
