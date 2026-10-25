@@ -77,6 +77,7 @@ describe('moving retired parts', () => {
     moveLocalParts.mockResolvedValue(answer);
     const result = await moveRetiredParts('guest_me', () => {});
     expect(moveLocalParts).toHaveBeenCalledWith('guest_me', {
+      id: 'mixed',
       name: 'Mixed',
       tabs: mixed.tabs,
       createdAt: 1,
@@ -151,6 +152,7 @@ describe('moving retired parts', () => {
     moveLocalParts.mockResolvedValue({ ...answer, keep: [diagramTab] });
     await moveRetiredParts('guest_me', () => {});
     expect(moveLocalParts.mock.calls[0]![1]).toEqual({
+      id: 'planned',
       name: 'Mixed',
       tabs: [diagramTab],
       createdAt: 1,

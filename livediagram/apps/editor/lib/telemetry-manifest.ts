@@ -135,6 +135,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Note·Opened',
   'Note·Used',
   'Participant·Created',
+  'Participant·Moved',
   'Participant·Returned',
   'Search·Opened',
   'Search·Searched',
