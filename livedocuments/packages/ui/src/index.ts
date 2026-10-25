@@ -1,6 +1,7 @@
 export { Brand, BrandMark } from './Brand';
 export {
   BRAND_ACCENT,
+  BRAND_RAMP,
   brandLogoSvg,
   brandMarkSvg,
   BRAND_MARK_VIEWBOX,

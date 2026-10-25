@@ -1,5 +1,5 @@
 // The logo as plain strings and data, for scripts, image routes and the social card.
-export { BRAND_APPS, type BrandApp, type BrandIdentity } from './apps';
+export { BRAND_APPS, type BrandApp, type BrandIdentity, type BrandStep } from './apps';
 export { BRAND_MARK_VIEWBOX, brandMarkSvg, type BrandMarkVariant } from './geometry';
 export { brandLogoSvg } from './logo-svg';
 export {
