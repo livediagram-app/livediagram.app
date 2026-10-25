@@ -37,8 +37,8 @@ hosts, named below.
   `GET /api/shape-libraries/:id/previews` ([Shape libraries](shape-libraries.md)).
 - **The item menu.** In the editor's Explorer panel, **Take Offline** and **Sync Canvas** on a canvas's menu, as the
   person (`apps/editor/hooks/persistence/useOfflineItemMenu.tsx`, the package's `itemMenu`;
-  [Offline Mode](../006-document/offline-mode.md)). The Explorer page, built by liveworkspace.app, has neither: This
-  Browser's page carries Sync Canvas.
+  [Offline Mode](../006-document/offline-mode.md)). The Explorer page, built by liveworkspace.app, hands both over to
+  the editor at the canvas's own address, which runs them.
 - **Share.** What the shared Share dialog needs beyond a link's address: a canvas's tabs (a link can open one), its
   embed and live image, the Help articles and telemetry (`apps/editor/lib/explorer-share-host.ts`). The editor's
   Share is the same dialog with livediagram's Community band below it ([Community](../025-community/community.md)).
@@ -55,20 +55,27 @@ so the editor's per-frame churn never re-renders it.
 ## This Browser
 
 Canvases kept only in this browser ([Offline Mode](../006-document/offline-mode.md)) never reach the index, so none of
-the index's lists holds them. They have their own page, **This Browser** at `/offline`
-(`apps/editor/app/offline/OfflineDocuments.tsx`): every one, newest first, read from this browser alone, each opening
-in the editor. For a signed-in person each row has **Sync Canvas**, which moves it to the account and so into the
-Explorer; each row has **Delete**, which removes it for good after a confirmation, since nothing else holds it. With
-none, the page says so.
+the index's lists holds them. They are the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the
+editor's panel alike: every one, newest first, read from this browser alone, each opening in the editor. For a
+signed-in person each row has **Sync Canvas**, which moves it to the account and so into the Explorer; in the panel
+each row has **Delete**, which removes it for good after a confirmation, since nothing else holds it. With none, the
+view says so.
 
 - **The Explorer on livediagram's address** reads them too: the editor's offline store keeps a small list of them
   (id, title and dates, never content) in the shared `localStorage` key the Explorer reads
   (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). Its sidebar has a **This
   Browser** row with their count, shown while there are some, opening the Explorer's own This Browser view
   (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened. On
-  liveworkspace.app, which cannot read this browser's storage for livediagram, the row links to `/offline` here.
-- **The editor's Explorer panel** has a **This Browser** row with the count, opening the page, shown only while
-  there are some (`apps/editor/components/panels/ThisBrowserRow.tsx`).
+  liveworkspace.app, which cannot read this browser's storage for livediagram, the row links to `/explorer/offline` here.
+- **The editor's Explorer panel** has This Browser as a view of its own: a rail entry under More with the count,
+  shown only while there are some, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
+  the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Canvas**; each row has
+  **Delete**, which asks first.
+- **`/offline`**, the old This Browser page, only redirects to `/explorer/offline`, its query kept
+  (`@liveworkspace/explorer/offline-redirect`). Take Offline and Sync asked by an address run in the editor at the
+  canvas's own address (`/document/<id>?convert=take-offline|sync&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
+  over `apps/editor/hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and
+  asks them to confirm.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
 [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows

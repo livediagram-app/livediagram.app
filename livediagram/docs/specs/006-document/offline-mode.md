@@ -175,17 +175,19 @@ Explorer lists follow after the paint.
   foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
-- **Explorer.** Offline documents never reach liveworkspace's index, so none of the index's lists holds them. They have
-  their own page, **This Browser** at `/offline` (`apps/editor/app/offline/OfflineDocuments.tsx`): every one, newest
-  first, read from this browser alone, each opening in the editor, with **Sync Canvas** for a signed-in person and
-  **Delete**, which removes it for good after a confirmation ("Delete this canvas?", "“Roadmap” is kept only in this
+- **Explorer.** Offline documents never reach liveworkspace's index, so none of the index's lists holds them. They are
+  the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the editor's Explorer panel alike: every
+  one, newest first, read from this browser alone, each opening in the editor, with **Sync Canvas** for a signed-in
+  person and, in the panel, **Delete**, which removes it for good after a confirmation ("Delete this canvas?", "“Roadmap” is kept only in this
   browser, so deleting it removes it for good."): nothing else holds it, so there is no Trash for it
   ([Explorer structure: This Browser](../013-workspace/explorer-structure.md#this-browser)).
 - **Sidebar.** The Explorer on livediagram's address reads the small list the offline store keeps for it (id, title
   and dates, never content) in the shared `localStorage` key (`lib/offline/this-browser.ts`,
   `@liveworkspace/explorer/this-browser`): its **This Browser** row, with the count, opens the Explorer's own This
-  Browser view (`/explorer/offline`). On liveworkspace.app, which cannot read it, the row links to `/offline`. The editor's Explorer panel has the
-  same row, shown only while this browser holds at least one (`components/panels/ThisBrowserRow.tsx`).
+  Browser view (`/explorer/offline`). On liveworkspace.app, which cannot read it, the row links to that view here. The
+  editor's Explorer panel has the same entry on its rail, with the count, opening its pane in place, shown only while
+  this browser holds at least one (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page,
+  only redirects to `/explorer/offline`, its query kept.
 - **Home.** An offline document's opens are counted in this browser only (`lib/offline/offline-opens.ts`), never
   sent anywhere, and carried in that list, so Home's Jump Back In can place it among the reader's other documents
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
@@ -212,10 +214,10 @@ wherever the document is listed: This Browser's page and Home's Jump Back In.
 
 Conversion works **both directions**, from a canvas's menu in the editor's Explorer panel:
 **Take Offline** on a canvas in the person's library or a team's, **Sync Canvas** on one this browser holds
-(`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on This Browser's
-page (`/offline`). The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
-store, so it hands each to This Browser's page (`/offline?convert=take-offline|sync&item=<id>`,
-`hooks/persistence/useConversionHandoff.ts`, over the shared `@liveworkspace/explorer/conversion-handoff`), which checks the canvas is the person's to move and asks the same
+(`hooks/persistence/useOfflineItemMenu.tsx`, the shared Explorer's `itemMenu`), and Sync Canvas on the panel's This
+Browser rows. The Explorer page at livediagram.app/explorer offers both too: it cannot reach this browser's
+store, so it hands each to the editor at the canvas's own address (`/document/<id>?convert=take-offline|sync&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts`), over the shared
+`@liveworkspace/explorer/conversion-handoff`, which checks the canvas is the person's to move and asks the same
 confirmation (Sync with its own). A canvas taken offline on purpose is never offered back by the move prompt after
 signing in. In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by

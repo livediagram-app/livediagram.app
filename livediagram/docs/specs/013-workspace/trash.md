@@ -36,7 +36,7 @@ Two things bypass it:
 
 ## This Browser
 
-A canvas kept only in this browser is never on the index, so it has no Trash. **This Browser** (`/offline`) deletes
+A canvas kept only in this browser is never on the index, so it has no Trash. **This Browser** (in the editor's Explorer panel) deletes
 one for good, after a confirmation: "Delete this canvas?", "“Roadmap” is kept only in this browser, so deleting it
 removes it for good." ([Offline Mode](../006-document/offline-mode.md)).
 

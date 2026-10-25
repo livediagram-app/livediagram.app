@@ -179,10 +179,10 @@ Explorer lists follow after the paint.
   `@liveworkspace/explorer/this-browser`), which the Explorer on livedocuments' own address reads: a **This Browser**
   sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
   place in Home's Jump Back In, each opening in the editor, and **Sync Document** on each live row for a signed-in
-  person. They also have a page of their own, **This Browser** at `/offline` (`apps/editor/app/offline`): every
-  offline document in this browser, newest first, read from this browser alone, never a server fetch, with **Sync
-  Document** on each row for a signed-in person and the move prompt after signing in. The editor's Explorer panel
-  has a **This Browser** row with the count, shown while this browser holds at least one
+  person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
+  this browser holds at least one, opening its pane in place, **Sync Document** run there for a signed-in person
+  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
+  `/explorer/offline`, its query kept
   ([Explorer structure](../013-workspace/explorer-structure.md#this-browser)).
 
 ### This Browser pill
@@ -288,8 +288,8 @@ switch only shows on a fresh document nobody else has, so there is nothing to lo
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Document"** (one name everywhere: the document menu in the editor's Explorer panel, This Browser's
-page (`/offline`), the Share dialog gate and the move prompt after signing in).
+Action: **"Sync Document"** (one name everywhere: the document menu and This Browser's rows in the editor's Explorer panel,
+the Explorer's This Browser view, the Share dialog gate and the move prompt after signing in).
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest's
@@ -335,8 +335,8 @@ page (`/offline`), the Share dialog gate and the move prompt after signing in).
 
 Action: **"Take Offline"**, on a document's menu in the editor's Explorer panel (the shared Explorer's
 `itemMenu`, `hooks/persistence/useOfflineItemMenu.tsx`: only a page on this app's origin reaches the browser's
-store) and in the Explorer on livedocuments's address, which hands it to This Browser's page
-(`/offline?convert=take-offline&item=<id>`, `hooks/persistence/useConversionHandoff.ts`, over the shared `@liveworkspace/explorer/conversion-handoff`): the page checks the document
+store) and in the Explorer on livedocuments's address, which hands it to the editor at the document's own address
+(`/document/<id>?convert=take-offline&item=<id>`, `components/dialogs/ConversionHandoff.tsx` over `hooks/persistence/useConversionHandoff.ts` and the shared `@liveworkspace/explorer/conversion-handoff`): the editor checks the document
 is the person's to move, then asks the same confirmation. It is offered on a document the person can edit in their library or a team's, never on one reached
 through a link. This is **destructive on the server** and gated by a
 confirmation:
