@@ -75,11 +75,15 @@ function merged(data: InboxResponse, local: InboxLocalRows): InboxData {
   };
 }
 
+type LocalRead = InboxHost['localRows'];
+
 type Held = {
   key: string;
   // The index's rows as read, and the host's beside them: merged for the view, so the host's alone can be read again.
   raw: InboxResponse | null;
   local: InboxLocalRows;
+  // The host's read that gave `local`: a host that reads for someone else (the person settled) is read again.
+  localFrom: LocalRead;
   error: boolean;
 };
 
@@ -89,7 +93,13 @@ export function useInbox(
   filter: AppFilter,
   host?: InboxHost,
 ): InboxState {
-  const [state, setState] = useState<Held>({ key: '', raw: null, local: NO_LOCAL, error: false });
+  const [state, setState] = useState<Held>({
+    key: '',
+    raw: null,
+    local: NO_LOCAL,
+    localFrom: undefined,
+    error: false,
+  });
   const [attempt, setAttempt] = useState(0);
   // A re-read on returning to the tab: the same key, so the list stays on screen while it reads.
   const [refresh, setRefresh] = useState(0);
@@ -98,40 +108,51 @@ export function useInbox(
   const key = `${filter}:${attempt}`;
   useEffect(() => {
     const controller = new AbortController();
+    const localFrom = hostRef.current?.localRows;
     Promise.all([
       client.inbox(filter === 'app' ? { app } : {}, { signal: controller.signal }),
       readLocal(hostRef.current, app, filter),
     ])
       .then(([raw, local]) => {
-        if (!controller.signal.aborted) setState({ key, raw, local, error: false });
+        if (!controller.signal.aborted) setState({ key, raw, local, localFrom, error: false });
       })
       .catch((e: unknown) => {
         if (isAbort(e) || controller.signal.aborted) return;
         setState((prev) =>
-          prev.key === key && prev.raw ? prev : { key, raw: null, local: NO_LOCAL, error: true },
+          prev.key === key && prev.raw
+            ? prev
+            : { key, raw: null, local: NO_LOCAL, localFrom, error: true },
         );
       });
     return () => controller.abort();
   }, [client, app, filter, key, refresh]);
   useReturnToTab(() => setRefresh((n) => n + 1));
-  // The host's rows changed (an offline item saved): read them again, and only them.
-  const subscribeLocal = host?.subscribeLocal;
-  useEffect(() => {
-    if (!subscribeLocal) return;
-    let live = true;
-    let reads = 0;
-    const unsubscribe = subscribeLocal(() => {
-      const read = ++reads;
-      void readLocal(hostRef.current, app, filter).then((local) => {
-        if (!live || read !== reads) return;
-        setState((prev) => (prev.raw ? { ...prev, local } : prev));
-      });
+  // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
+  const localReads = useRef(0);
+  const rereadLocal = useCallback(() => {
+    const read = ++localReads.current;
+    const localFrom = hostRef.current?.localRows;
+    void readLocal(hostRef.current, app, filter).then((local) => {
+      if (read !== localReads.current) return;
+      setState((prev) => (prev.raw ? { ...prev, local, localFrom } : prev));
     });
-    return () => {
-      live = false;
-      unsubscribe();
-    };
-  }, [subscribeLocal, app, filter]);
+  }, [app, filter]);
+  useEffect(
+    () => () => {
+      // Unmounted, or app and filter moved on: a read still out lands nowhere.
+      localReads.current++;
+    },
+    [rereadLocal],
+  );
+  // The host's rows changed (an offline item saved).
+  const subscribeLocal = host?.subscribeLocal;
+  useEffect(() => subscribeLocal?.(rereadLocal), [subscribeLocal, rereadLocal]);
+  // The host reads for someone else than the rows on screen were read for.
+  const localRows = host?.localRows;
+  const stale = state.raw !== null && state.localFrom !== localRows;
+  useEffect(() => {
+    if (stale) rereadLocal();
+  }, [stale, localRows, rereadLocal]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
   const clearTimelineNew = useCallback(
     () =>

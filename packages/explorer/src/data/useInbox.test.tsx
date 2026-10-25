@@ -60,4 +60,25 @@ describe('useInbox', () => {
     unmount();
     expect(listeners.size).toBe(0);
   });
+
+  it("reads the host's rows again when it reads for someone else (the person settled after the first read)", async () => {
+    const index = createFakeIndex();
+    const nobody: InboxHost = { localRows: () => Promise.resolve({ actions: [], threads: [] }) };
+    const guest: InboxHost = {
+      localRows: () => Promise.resolve({ actions: [], threads: [thread('offline', 5)] }),
+    };
+    const { result, rerender } = renderHook(
+      ({ host }) => useInbox(index.client, 'liveplanner', 'app', host),
+      { initialProps: { host: nobody } },
+    );
+    await waitFor(() => expect(result.current.data?.threads).toEqual([]));
+    const asked = index.calls.filter((c) => c.method === 'inbox').length;
+    rerender({ host: guest });
+    await waitFor(() =>
+      expect(result.current.data?.threads.map((t) => t.itemId)).toEqual(['offline']),
+    );
+    // The same host again reads nothing more, and the index is not asked again.
+    rerender({ host: guest });
+    expect(index.calls.filter((c) => c.method === 'inbox')).toHaveLength(asked);
+  });
 });

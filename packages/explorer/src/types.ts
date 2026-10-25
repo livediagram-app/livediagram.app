@@ -106,7 +106,9 @@ export type InboxTelemetry = (action: 'Opened' | 'Selected' | 'Loaded', type?: s
 /** What the Inbox needs from the host beyond the index: its own items' rows, a card type's glyph, the help article
  *  on actions its empty state offers, and telemetry. Every member is optional. */
 export type InboxHost = {
-  /** Rows from items only this browser holds. A failure lists none; it never fails the Inbox. */
+  /** Rows from items only this browser holds. A failure lists none; it never fails the Inbox. A different function
+   *  (the host made again for someone else, once the person settles) is read again, so keep it stable between
+   *  renders (memoise the host). */
   localRows?: () => Promise<InboxLocalRows>;
   /** Calls `onChange` when those rows may have changed, so the Inbox reads them again (the index's rows are kept).
    *  Returns the unsubscribe. */
