@@ -18,6 +18,7 @@ import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
 import { DragProvider } from '../drag/store';
+import type { ThisBrowserItem } from '../this-browser';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { defaultEntries, type DefaultEntry, type DefaultFolderOption } from '../defaults/entries';
@@ -77,6 +78,14 @@ export type DialogTarget =
   | { kind: 'empty-trash'; teamId: string | null; title: string }
   // History: the item's own Timeline.
   | { kind: 'history'; item: Item }
+  // This Browser's Delete (its menu, or a drop on the Trash): gone for good, since nothing else holds it.
+  | { kind: 'delete-local'; item: ThisBrowserItem }
+  // A This Browser item dropped on a place: synced to the account first, then moved there where the host can.
+  | {
+      kind: 'sync-local';
+      item: ThisBrowserItem;
+      to: { folderId: string | null; teamId: string | null };
+    }
   | null;
 
 export type ExplorerContextValue = {

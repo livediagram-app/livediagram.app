@@ -15,6 +15,8 @@ import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
+import { useHostExtras } from './host';
+import { SIDEBAR_LABELS } from '../views';
 import { HistoryDialog } from '../library/HistoryDialog';
 import { useTeams } from '../teams/context';
 
@@ -46,6 +48,7 @@ export function ExplorerDialogs() {
     view,
     navigate,
   } = ctx;
+  const { thisBrowser } = useHostExtras();
   const close = () => openDialog(null);
 
   const personal = useMemo(
@@ -177,6 +180,63 @@ export function ExplorerDialogs() {
     }
     case 'history':
       return <HistoryDialog item={dialog.item} onClose={close} />;
+    case 'delete-local': {
+      // Nothing else holds it (the index never saw it), so this is for good, as This Browser's Delete always asks.
+      const item = dialog.item;
+      return (
+        <ConfirmDialog
+          title={`Delete this ${ctx.kind.lowerOne}?`}
+          message={`“${item.title || 'Untitled'}” is kept only in this browser, so deleting it removes it for good.`}
+          confirmLabel="Delete"
+          onCancel={close}
+          onConfirm={() => {
+            close();
+            thisBrowser?.remove?.(item);
+          }}
+        />
+      );
+    }
+    case 'sync-local': {
+      const { item, to } = dialog;
+      const name = item.title || 'Untitled';
+      const place = to.folderId
+        ? (folders.byId.get(to.folderId)?.name ?? 'the folder')
+        : to.teamId
+          ? (ctx.teamName(to.teamId) ?? 'the team')
+          : SIDEBAR_LABELS.myWork;
+      const sync = thisBrowser?.sync;
+      const syncHref = thisBrowser?.syncHref?.(item);
+      if (!sync && !syncHref) return null;
+      return (
+        <ConfirmDialog
+          title={`Sync “${name}” to your account?`}
+          message={
+            sync
+              ? `It’s kept only in this browser. To go into ${place} it moves to your account first, and then it’s on every device you sign in on.`
+              : `It’s kept only in this browser. To go into ${place} it moves to your account first: it opens in the editor to sync, and then you can move it there.`
+          }
+          confirmLabel={sync ? 'Sync and Move' : `Sync ${ctx.kind.one}`}
+          onCancel={close}
+          onConfirm={() => {
+            close();
+            if (!sync) {
+              window.location.assign(syncHref!);
+              return;
+            }
+            // In place (the editor's panel): once it's in the account, under the same id, it moves where it was dropped.
+            void Promise.resolve(sync(item))
+              .then(() => client.getItem(item.id))
+              .then(({ item: synced }) =>
+                synced.folderId === to.folderId && synced.teamId === to.teamId
+                  ? true
+                  : actions.move(synced, to),
+              )
+              .catch(() => false)
+              .finally(ctx.reloadLists);
+          }}
+        />
+      );
+    }
     case 'use-as-default':
       return <UseAsDefaultDialog folderId={dialog.folderId} onClose={close} />;
     case 'default-folders':

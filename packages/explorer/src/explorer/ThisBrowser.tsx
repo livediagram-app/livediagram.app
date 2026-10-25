@@ -7,6 +7,8 @@
 // opens in its app's editor, which does the rest (rename, restore): the index never sees them, so the Explorer only
 // lists them. Where the app moves them into the account, each live row also has Sync: in place in the editor's panel
 // (`sync`), or, on the Explorer page, a hand-over to the app's editor (this-browser.ts `thisBrowserConvertHref`).
+// Jump Back In's card of one has This Browser's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
+// and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
 import {
   useCallback,
@@ -26,6 +28,8 @@ import {
   type ThisBrowserItem,
 } from '../this-browser';
 import { LIST_CARD, MUTED } from '../ui/classes';
+import { OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
+import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
 import { PaneHeader } from './PaneHeader';
@@ -64,6 +68,12 @@ export function thenReload(result: Promise<unknown> | void, reloadLists: () => v
 }
 
 const live = (i: ThisBrowserItem) => i.trashedAt === null;
+
+/** Opens one in its app: the host's `open` (the editor's panel, no page load), else a page load of its address. */
+export function openThisBrowserItem(host: ThisBrowserHost, item: ThisBrowserItem): void {
+  if (host.open) host.open(item);
+  else window.location.assign(host.itemHref(item));
+}
 
 // The list as the app last wrote it, per app, parsed again only when its stored text changes: one stable array per
 // change, so a reader re-renders only when the list does.
@@ -307,27 +317,53 @@ export function ThisBrowserTrashGroup() {
   );
 }
 
-/** A compact Jump Back In card for a local item: opens in the app. */
-export function ThisBrowserCard({ item }: { item: ThisBrowserItem }) {
-  const { thisBrowser } = useHostExtras();
-  const name = item.title || 'Untitled';
+/** This Browser's menu for one live item, from its Jump Back In card's ⋯ or a right-click: Open; Sync (signed in: in
+ *  place with `sync`, or the page's hand-over to the editor with `syncHref`), as This Browser's rows offer it; and
+ *  Delete, asked first, where the host deletes in place (`remove`). */
+export function ThisBrowserItemMenu({
+  item,
+  anchor,
+  onClose,
+}: {
+  item: ThisBrowserItem;
+  anchor: HTMLElement | null;
+  onClose: () => void;
+}) {
+  const { thisBrowser: host } = useHostExtras();
+  const { kind, reloadLists, openDialog } = useExplorer();
+  const title = item.title || 'Untitled';
+  const run = (fn: () => void) => () => {
+    onClose();
+    fn();
+  };
+  if (!host) return null;
+  const syncHref = host.syncHref?.(item);
+  const sync = host.sync
+    ? () => thenReload(host.sync?.(item), reloadLists)
+    : syncHref
+      ? () => window.location.assign(syncHref)
+      : null;
   return (
-    <a
-      data-item-card={item.id}
-      data-this-browser-card=""
-      href={thisBrowser?.itemHref(item)}
-      aria-label={name}
-      className="flex h-[3.875rem] min-w-0 items-center gap-3 rounded-[14px] border border-slate-200 bg-white p-2 transition hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:border-slate-700 dark:bg-slate-800"
-    >
-      <span className="flex h-11 w-16 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-        <BrowserIcon size={18} />
-      </span>
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="block truncate text-sm font-semibold leading-5 text-[#17153a] dark:text-slate-100">
-          {name}
-        </span>
-        <ThisBrowserPill inLink />
-      </span>
-    </a>
+    <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${title}`}>
+      <MenuHeader title={title} aside={<ThisBrowserPill inLink />} />
+      <MenuActionRow
+        label="Open"
+        icon={<OpenIcon />}
+        onClick={run(() => openThisBrowserItem(host, item))}
+      />
+      {sync ? (
+        <MenuActionRow label={`Sync ${kind.one}`} icon={<SyncIcon />} onClick={run(sync)} />
+      ) : null}
+      {host.remove ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuActionRow
+            label={`Delete ${kind.one}`}
+            icon={<TrashIcon />}
+            onClick={run(() => openDialog({ kind: 'delete-local', item }))}
+          />
+        </>
+      ) : null}
+    </PortalMenu>
   );
 }

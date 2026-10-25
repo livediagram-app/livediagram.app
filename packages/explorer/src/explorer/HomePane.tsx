@@ -3,7 +3,8 @@
 // Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (four large cards,
 // the items opened on the most days of the last 90, "Used on N days") then Recent (four compact ones, the latest
 // opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
-// alternating. Last, What Happened: what other people did to the items the person can open, from the index's
+// alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
+// and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
 // Timeline. With the hero hidden, Home takes the ordinary page header. Three requests, each one small page: Recent
 // carries Most Used beside it (the index's `used`), Shared, and one Timeline page.
 
@@ -21,7 +22,7 @@ import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { EmptyState } from '@liveworkspace/ui';
 import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
-import { useItemDrag } from '../drag/drag';
+import { useItemDrag, useThisBrowserDrag } from '../drag/drag';
 import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
 import { useNow } from '../time';
 import type { ExplorerView } from '../views';
@@ -33,7 +34,12 @@ import { useItemBits } from './rows';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import type { ThisBrowserItem } from '../this-browser';
-import { mergeOpened, ThisBrowserCard, useThisBrowserItems } from './ThisBrowser';
+import {
+  mergeOpened,
+  ThisBrowserItemMenu,
+  ThisBrowserPill,
+  useThisBrowserItems,
+} from './ThisBrowser';
 import { BrowserIcon } from './host';
 import {
   useWhatHappened,
@@ -65,7 +71,7 @@ const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 const PANEL_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
-const CARD_SURFACE = `${PANEL_SURFACE} transition hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:hover:border-brand-400/60`;
+const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:hover:border-brand-400/60`;
 const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
 const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
 const THUMB_EDGE =
@@ -343,7 +349,7 @@ function CardGroup({
             {'app' in item ? (
               <JumpBackInCard item={item} large={large} showApp={showApp} />
             ) : (
-              <ThisBrowserCard item={item} />
+              <LocalCard item={item} large={large} showApp={showApp} />
             )}
           </li>
         ))}
@@ -365,7 +371,15 @@ function Thumb({ item, className }: { item: ShownItem; className: string }) {
   );
 }
 
-function OpenedLine({ item, id, large }: { item: ShownItem; id: string; large: boolean }) {
+function OpenedLine({
+  item,
+  id,
+  large,
+}: {
+  item: Parameters<typeof jumpBackInLine>[0];
+  id: string;
+  large: boolean;
+}) {
   const now = useNow();
   return (
     <span
@@ -377,6 +391,92 @@ function OpenedLine({ item, id, large }: { item: ShownItem; id: string; large: b
   );
 }
 
+const cardClass = (large: boolean) =>
+  `flex min-w-0 ${
+    large
+      ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
+      : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
+  } ${CARD_SURFACE} ${FOCUS_RING}`;
+const nameSize = (large: boolean) => (large ? 'text-[15px] leading-5' : 'text-sm leading-5');
+
+/** One Jump Back In card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
+ *  and the line under it, the ⋯ chip, the right-click menu and the drag. The index's cards and This Browser's differ
+ *  only in what fills it. */
+function CardFrame({
+  id,
+  large,
+  app,
+  thumb,
+  name,
+  line,
+  link,
+  menu,
+  menuLabel,
+  renderMenu,
+  drag,
+  attrs,
+}: {
+  id: string;
+  large: boolean;
+  // The app's mark beside the name (under All), or null.
+  app: ShownItem['app'] | null;
+  thumb: ReactNode;
+  name: ReactNode;
+  line: ReactNode;
+  // The card as a link, or null while it can't open (renaming).
+  link: ((className: string, body: ReactNode) => ReactNode) | null;
+  menu: ReturnType<typeof useRowMenu>;
+  menuLabel: string;
+  renderMenu: (anchor: HTMLElement | null, onClose: () => void) => ReactNode;
+  drag: ReturnType<typeof useItemDrag>;
+  attrs?: Record<string, string>;
+}) {
+  const body = (
+    <>
+      <span
+        className={`${large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'} ${THUMB_EDGE}`}
+      >
+        {thumb}
+      </span>
+      <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
+        <span className="flex min-w-0 items-center gap-1.5">
+          {app ? <AppMark app={app} size={14} /> : null}
+          {name}
+        </span>
+        {line}
+      </span>
+    </>
+  );
+  return (
+    <div
+      data-item-card={id}
+      {...attrs}
+      className="group relative min-w-0"
+      onContextMenu={menu.onContextMenu}
+      {...drag}
+    >
+      {link ? (
+        link(cardClass(large), body)
+      ) : (
+        // While renaming the card doesn't open: the field keeps its focus and its clicks.
+        <div className={cardClass(large)}>{body}</div>
+      )}
+      {link ? (
+        <EllipsisTriggerButton
+          {...menu.triggerProps}
+          reveal
+          size="md"
+          label={menuLabel}
+          className={`${MENU_CHIP} ${large ? 'right-3.5 top-3.5' : 'right-2.5 top-1/2 -translate-y-1/2'}`}
+        />
+      ) : null}
+      {menu.open ? renderMenu(menu.triggerRef.current, menu.close) : null}
+    </div>
+  );
+}
+
+const CARD_NAME = 'block truncate font-semibold text-[#17153a] dark:text-slate-100';
+
 const JumpBackInCard = memo(function JumpBackInCard({
   item,
   large,
@@ -386,76 +486,102 @@ const JumpBackInCard = memo(function JumpBackInCard({
   large: boolean;
   showApp: boolean;
 }) {
-  const { Link, renamingId } = useExplorer();
+  const { Link, renamingId, renderThumbnail } = useExplorer();
   const bits = useItemBits(item);
   const renaming = renamingId === item.id;
   const menu = useRowMenu({ disabled: renaming });
   const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
-  const lineId = `jbi-${item.id}-${large ? 'l' : 'c'}`;
-  const nameSize = large ? 'text-[15px] leading-5' : 'text-sm leading-5';
-  const cardClass = `flex min-w-0 ${
-    large
-      ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
-      : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
-  } ${CARD_SURFACE} ${FOCUS_RING}`;
-  const body = (
-    <>
-      <Thumb
-        item={item}
-        className={large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'}
-      />
-      <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
-        <span className="flex min-w-0 items-center gap-1.5">
-          {showApp ? <AppMark app={item.app} size={14} /> : null}
-          {renaming ? (
-            <InlineRenameInput
-              initial={item.title}
-              ariaLabel={`Rename ${title}`}
-              onCommit={bits.commitRename}
-              onCancel={bits.cancelRename}
-              className={`min-w-0 flex-1 ${RENAME_INPUT} ${nameSize}`}
-            />
-          ) : (
-            <span
-              className={`block truncate font-semibold text-[#17153a] dark:text-slate-100 ${nameSize}`}
-            >
-              {title}
-            </span>
-          )}
-        </span>
-        <OpenedLine item={item} id={lineId} large={large} />
-      </span>
-    </>
-  );
   return (
-    <div
-      data-item-card={item.id}
-      className="group relative min-w-0"
-      onContextMenu={menu.onContextMenu}
-      {...drag}
-    >
-      {renaming ? (
-        // While renaming the card doesn't open: the field keeps its focus and its clicks.
-        <div className={cardClass}>{body}</div>
-      ) : (
-        <Link href={bits.href} aria-label={title} className={cardClass}>
+    <CardFrame
+      id={item.id}
+      large={large}
+      app={showApp ? item.app : null}
+      thumb={
+        renderThumbnail?.(item, 'card') ?? (
+          <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-7 [&_svg]:w-7">
+            <ItemIcon />
+          </span>
+        )
+      }
+      name={
+        renaming ? (
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${title}`}
+            onCommit={bits.commitRename}
+            onCancel={bits.cancelRename}
+            className={`min-w-0 flex-1 ${RENAME_INPUT} ${nameSize(large)}`}
+          />
+        ) : (
+          <span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>
+        )
+      }
+      line={<OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />}
+      link={
+        renaming
+          ? null
+          : (className, body) => (
+              <Link href={bits.href} aria-label={title} className={className}>
+                {body}
+              </Link>
+            )
+      }
+      menu={menu}
+      menuLabel={`Menu for ${title}`}
+      renderMenu={(anchor, onClose) => <ItemMenu item={item} anchor={anchor} onClose={onClose} />}
+      drag={drag}
+    />
+  );
+});
+
+/** A Jump Back In card for an item kept only in this browser: the same card, its thumbnail area This Browser's,
+ *  its line led by the This Browser badge, This Browser's menu, and a drag that its targets read as This Browser's
+ *  (drag.tsx). It opens in the app's editor, by its address. */
+const LocalCard = memo(function LocalCard({
+  item,
+  large,
+  showApp,
+}: {
+  item: ThisBrowserItem;
+  large: boolean;
+  showApp: boolean;
+}) {
+  const { app } = useExplorer();
+  const { host } = useThisBrowserItems();
+  const menu = useRowMenu();
+  const drag = useThisBrowserDrag(item);
+  const title = item.title || 'Untitled';
+  return (
+    <CardFrame
+      id={item.id}
+      attrs={{ 'data-this-browser-card': '' }}
+      large={large}
+      app={showApp ? app : null}
+      thumb={
+        <span className="flex h-full w-full items-center justify-center bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+          <BrowserIcon size={large ? 28 : 18} />
+        </span>
+      }
+      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
+      line={
+        <span className="flex min-w-0 items-center gap-1.5">
+          <ThisBrowserPill inLink />
+          <OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />
+        </span>
+      }
+      link={(className, body) => (
+        <a href={host?.itemHref(item)} aria-label={title} className={className}>
           {body}
-        </Link>
+        </a>
       )}
-      {renaming ? null : (
-        <EllipsisTriggerButton
-          {...menu.triggerProps}
-          reveal
-          size="md"
-          label={`Menu for ${title}`}
-          className={`${MENU_CHIP} ${large ? 'right-3.5 top-3.5' : 'right-2.5 top-1/2 -translate-y-1/2'}`}
-        />
+      menu={menu}
+      menuLabel={`Menu for ${title}`}
+      renderMenu={(anchor, onClose) => (
+        <ThisBrowserItemMenu item={item} anchor={anchor} onClose={onClose} />
       )}
-      {menu.open ? (
-        <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
-      ) : null}
-    </div>
+      drag={drag}
+    />
   );
 });
 

@@ -279,10 +279,16 @@ link, nor one being renamed) drags from its row, card or Details row.
   bounce as it swallows an item. An item goes through its own Delete (with the Trash's Undo); one of the person's
   own folders, which also drags, goes through Delete Folder and its confirmation. Never red: the Trash is undoable.
   A live region reads the Trash's words as they change.
+- **An item kept only in this browser.** Its Jump Back In card drags too, through This Browser's own verbs
+  (liveworkspace/docs/one-explorer.md "This Browser in Jump Back In"). On the Trash it is deleted for good after a
+  confirmation where the host has `remove`; elsewhere a toast says to open it to delete it. On a folder, My Work or
+  a team it asks to sync it to the account first: in place with `sync` (then moved there), or the page's hand-over
+  with `syncHref`; with neither, a toast says to sign in and sync it first. Its menu (`ThisBrowserItemMenu`) has
+  Open, Sync and, with `remove`, Delete.
 - **From the keyboard.** Every drop has a menu twin: Change Folder and Delete on the row's menu (`⋯`,
   right-click or Shift+F10).
 
-Drags carry their own types (`application/x-liveworkspace-item`, `-folder`), so a drop outside any target does
+Drags carry their own types (`application/x-liveworkspace-item`, `-folder`, `-this-browser`), so a drop outside any target does
 nothing and a drag from another tab is never taken. Rows and cards do not re-render as a drag starts or ends;
 only the targets do (`drag.test.tsx` holds a 2,000-row page to two commits).
 
