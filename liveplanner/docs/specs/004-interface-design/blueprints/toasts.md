@@ -21,7 +21,7 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
   toast with at least one action (`toastAnswers(entry)`). Every toast **times out**: `toastTimeout(entry)` is
   `TOAST_ANSWER_TIMEOUT_MS` for one with answers, else `TOAST_TIMEOUT_MS[tone]`.
 - **Toast name**: a project, folder or tab name as a toast shows it, `toastName(name)` in
-  `apps/editor/lib/toast-name.ts`: whitespace collapsed, trimmed, cut by code point to `TOAST_NAME_MAX` with the last
+  `../packages/workbench/src/lib/toast-name.ts`: whitespace collapsed, trimmed, cut by code point to `TOAST_NAME_MAX` with the last
   kept character an ellipsis (trailing spaces before it dropped), wrapped in `“` `”`; `null` for a blank name, and
   the caller substitutes its generic word.
 - **Floor**: the stack's CSS `bottom`, in px. **Obstacle**: an element matched by `TOAST_FLOOR_SELECTOR`.

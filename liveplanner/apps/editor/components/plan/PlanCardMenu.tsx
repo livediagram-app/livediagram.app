@@ -7,8 +7,12 @@
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
 import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@liveplanner/ui';
-import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
-import { ContextMenu } from '@/components/palette/ContextMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { ContextMenu } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { isArchived, isFlagged, itemTitle, type PlanBoardSetup } from '@liveplanner/items';
 import { PlanBoardTileArt } from './plan-tile-art';
 import { duplicateItem } from './duplicate-item';

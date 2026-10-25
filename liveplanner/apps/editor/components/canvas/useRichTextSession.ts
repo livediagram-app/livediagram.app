@@ -15,7 +15,7 @@ import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { effectiveRunStyle, elementRunDefaults, labelBasePx, labelRunPx } from './label-style';
 import { offsetsToDomRange, selectRange } from '@/components/rich-text/rich-text-dom';
 import { useRichTextProject } from '@/components/rich-text/useRichTextProject';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 import { track } from '@/lib/telemetry';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 

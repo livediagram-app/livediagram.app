@@ -41,7 +41,7 @@ import {
   usePageReorderDrag,
   type PageReorder,
 } from '@/hooks/canvas/usePageReorderDrag';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { usePageImageSources } from './page-image-access';

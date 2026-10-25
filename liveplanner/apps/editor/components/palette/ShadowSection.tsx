@@ -8,7 +8,7 @@
 // and the multi-select Style flyout (MultiStyleSections), so both surfaces
 // stay pixel-identical.
 
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import {
   DEFAULT_SHADOW,
   SHADOW_LIMITS,
@@ -17,7 +17,7 @@ import {
   type ElementShadow,
 } from '@liveplanner/project';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ShadowMenuGlyph } from '@/components/palette/context-menu-icons';

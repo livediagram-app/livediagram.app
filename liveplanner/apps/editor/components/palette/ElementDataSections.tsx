@@ -37,10 +37,10 @@ import {
   type PieSlice,
 } from '@liveplanner/project';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { DecisionMenuSection } from '@/components/palette/CollabMenuSections';

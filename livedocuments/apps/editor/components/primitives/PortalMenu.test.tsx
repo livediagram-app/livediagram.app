@@ -5,14 +5,14 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { VIEWPORT_EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import {
   MenuAccordionSection,
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from './PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuToolButton } from './MenuTiles';
 import { BESIDE_GAP } from '@liveworkspace/workbench/components/primitives/beside-placement';
 

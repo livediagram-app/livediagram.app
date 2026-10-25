@@ -21,7 +21,7 @@
 @import './scroll-edge-fade.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
- * is PHONE_MEDIA_QUERY (lib/responsive.ts); the two state the same query. Phone-only layout uses
+ * is PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two state the same query. Phone-only layout uses
  * `phone:` rather than `max-sm:`, so a phone in landscape gets it too. */
 @custom-variant phone {
   @media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
@@ -30,7 +30,7 @@
 }
 
 /* A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and the
- * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (lib/responsive.ts); the two
+ * tab bar fold away there. The JS twin is LANDSCAPE_PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two
  * state the same query. */
 @custom-variant landscape-phone {
   @media (pointer: coarse) and (orientation: landscape) and (max-height: 499px) {
@@ -999,7 +999,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   stroke-opacity: 0.88;
 }
 
-/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+/* A Tab Style change (@liveworkspace/workbench/lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
    costs nothing the rest of the time; Reduce motion (above) zeroes it. */
 :root.lvd-style-transition [data-canvas-root],
 :root.lvd-style-transition [data-canvas-root] * {

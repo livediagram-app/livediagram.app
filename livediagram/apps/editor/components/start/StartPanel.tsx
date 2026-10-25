@@ -36,7 +36,7 @@ import { takeStartQuery } from './start-query';
 import { liftBestMatch } from './best-match';
 import { isStartCardKey, nextCardIndex } from './start-card-keys';
 import { noteStartPanelLeft, startPanelJustLeft } from './start-panel-open';
-import { usePalettePopoverOpen } from '@/lib/palette-popover-open';
+import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 

@@ -12,7 +12,7 @@ import {
   type TableElement,
   plural,
 } from '@livediagram/document';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {
   TableAxisMenuPortal,

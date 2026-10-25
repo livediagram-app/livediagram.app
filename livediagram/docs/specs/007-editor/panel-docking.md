@@ -92,7 +92,7 @@ Dragging is still pointer-driven and uses no DnD library, consistent with the re
 editor (element drag, palette-to-canvas drag).
 
 A drag only **starts** once the pointer has travelled past a shared tolerance
-(`isDragTravel` in `lib/press-gestures.ts`), so a click on a panel header that jitters by a
+(`isDragTravel` in `../packages/workbench/src/lib/press-gestures.ts`), so a click on a panel header that jitters by a
 pixel stays a click. That tolerance is one definition for every draggable chrome control —
 panel headers, slide-deck rows, palette tiles, the quick-connect plus, the isometric
 orbit button, avatars — because six of them had their own and the copies had drifted: one

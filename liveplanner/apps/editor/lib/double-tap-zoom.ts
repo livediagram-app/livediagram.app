@@ -5,7 +5,7 @@
 
 import { ZOOM_MAX } from './canvas';
 import { computeFitToScreen, FIT_TO_SCREEN_PADDING } from './viewport';
-import type { ViewPose } from './viewport-glide';
+import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 
 // Each double-tap doubles the zoom: a phone's 60% view lands at 120%, a 200% view at 400%.
 const DOUBLE_TAP_ZOOM_STEP = 2;

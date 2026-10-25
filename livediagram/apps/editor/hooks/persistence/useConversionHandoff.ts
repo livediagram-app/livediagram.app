@@ -1,7 +1,7 @@
 'use client';
 
 import { useConversionHandoff as useHandoff } from '@liveworkspace/explorer/conversion-handoff';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { indexClient } from '@/lib/index-client';
 import { offlineListDocuments } from '@/lib/offline/offline-store';

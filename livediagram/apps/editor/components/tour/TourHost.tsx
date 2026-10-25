@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   clearTourPending,
   hasTourPending,
@@ -15,7 +15,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';

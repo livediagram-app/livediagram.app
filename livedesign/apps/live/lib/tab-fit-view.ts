@@ -13,7 +13,7 @@ import {
   FIT_TO_SCREEN_PADDING,
   topChromeInset,
 } from './viewport';
-import type { ViewPose } from './viewport-glide';
+import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 
 // A tab with nothing on it: back to the origin at 100%.
 const EMPTY_TAB_VIEW: ViewPose = { zoom: 1, offset: { x: 0, y: 0 } };

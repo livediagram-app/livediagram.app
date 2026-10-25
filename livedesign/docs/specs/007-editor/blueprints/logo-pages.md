@@ -180,7 +180,7 @@ Exclude), **Wordmark**, **Logo Kit**.
   (`components/canvas/TitlePopoverButton.tsx`: the button, then an `AnchoredPopover` of 248 px
   named after it). Guides is `LogoGuidesButton` (`components/canvas/LogoGuidesPopover.tsx`)
   holding `LogoGuidesSettings`: the Show Guides `SwitchRow` for the page, then the part tiles and
-  the Strength `SegmentedRadio` (`components/primitives/SegmentedRadio.tsx`), dimmed while off.
+  the Strength `SegmentedRadio` (`../packages/workbench/src/components/primitives/SegmentedRadio.tsx`), dimmed while off.
   Mirror is `LogoMirrorButton` (`components/canvas/LogoMirrorPopover.tsx`) holding
   `LogoMirrorSettings`: the Mirror While Drawing `SwitchRow` (`setMirror`), the Axis radio tiles
   (`MIRROR_AXES`, each with its `MirrorAxisGlyph`), the Copies `SegmentedRadio` (`RADIAL_COPIES`)

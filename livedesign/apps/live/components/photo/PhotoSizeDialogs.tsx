@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Button, DialogHeader } from '@livedesign/ui';
 import { ANCHORS, type Anchor, type Interpolation } from '@livedesign/photo-engine';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { standardGroup } from '@/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';

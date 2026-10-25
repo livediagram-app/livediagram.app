@@ -13,7 +13,7 @@ vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
 vi.mock('@/components/primitives/MovablePanel', () => ({
   MovablePanel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => vi.fn() }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({ useConfirm: () => vi.fn() }));
 
 afterEach(cleanup);
 

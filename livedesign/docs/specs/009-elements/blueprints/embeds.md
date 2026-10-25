@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/live/components/canvas/BoxedElementView.tsx`       | The link badge (`linked`) applies to `video`                                     |
 | `apps/live/components/dialogs/EditorElementDialogs.tsx`  | Builds the `urlOnly` config for a `video` target                                 |
 | `apps/live/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit               |
-| `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                                |
+| `../packages/workbench/src/lib/url-safety.ts`            | `normaliseUrl`, `isSafeFollowUrl`                                                |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                  |
 | `apps/live/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                  |
 | `apps/live/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                        |

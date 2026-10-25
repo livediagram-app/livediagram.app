@@ -18,8 +18,8 @@
 
 import { useEffect } from 'react';
 import { isInMenuSurface, isPressableControl } from '@livedocuments/ui';
-import { anyModalOpen } from '@/lib/modal-guard';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import {
   EDIT_KEYS,
   runModShortcut,
@@ -29,8 +29,8 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { arrowPageDir } from '@/lib/page-step';
-import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
-import { altGraphHeld } from '@/lib/composed-key';
+import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
+import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -127,7 +127,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // checks: even Delete / Backspace bail BEFORE preventDefault
       // when read-only so the browser's default behaviour for
       // those keys stays intact.
-      // AltGr's Ctrl is not one the person pressed (lib/composed-key.ts): AltGr+E types € into a label.
+      // AltGr's Ctrl is not one the person pressed (@liveworkspace/workbench/lib/composed-key.ts): AltGr+E types € into a label.
       const mod = e.metaKey || (e.ctrlKey && !altGraphHeld(e));
       const key = e.key;
       const lower = key.toLowerCase();

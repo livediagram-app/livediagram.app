@@ -7,7 +7,11 @@ import { Fragment, useState } from 'react';
 import { BLEND_MODE_NAMES, type BlendMode } from '@livedesign/photo-engine';
 import { lucideChevronDown } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { blendSwatch } from '@/lib/photo-editor/blend-swatch';
 
 const Chevron = lucideGlyph(lucideChevronDown, 12);

@@ -8,7 +8,7 @@
 import { pageKindOf, type LaidOutPage } from '@livedocuments/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livedocuments/templates';
 import { CloseIcon, Tooltip } from '@livedocuments/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 
 export function LayoutGalleryDialog({

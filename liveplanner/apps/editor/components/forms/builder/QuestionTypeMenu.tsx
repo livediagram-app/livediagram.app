@@ -6,7 +6,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { QUESTION_TYPE_NAMES, type QuestionType } from '@liveplanner/forms';
 import { ChevronDownIcon } from '@liveplanner/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { QUESTION_TYPE_ICONS, QUESTION_TYPE_ORDER } from './question-icons';
 
 export function QuestionTypeList({

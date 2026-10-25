@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
+import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { useCanvasSurfaceGestures } from './useCanvasSurfaceGestures';
 
@@ -195,7 +195,7 @@ describe('a long-press on the empty canvas', () => {
 // the canvas.
 describe('a press that pans through an element', () => {
   it('pans whatever the tool, from inside an element, and arms no menu', async () => {
-    const { markPanThrough } = await import('./pan-through');
+    const { markPanThrough } = await import('@liveworkspace/workbench/hooks/canvas/pan-through');
     vi.useFakeTimers();
     const { result, setPan, setMarquee, onCanvasContextMenu } = setup('select');
     const inner = document.createElement('div');
@@ -296,7 +296,7 @@ describe('Avatar mode presses', () => {
 // docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a press panning through an element hands its tap to the pan.
 describe('a pan-through press with a tap', () => {
   it('carries the tap into the pan', async () => {
-    const { markPanThrough } = await import('./pan-through');
+    const { markPanThrough } = await import('@liveworkspace/workbench/hooks/canvas/pan-through');
     const { result, setPan } = setup('pan');
     const onTap = vi.fn();
     const press = {

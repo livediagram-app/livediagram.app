@@ -13,7 +13,7 @@ import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livediagram/ap
 import type { Tab } from '@livediagram/document';
 import { IndexError } from '@liveworkspace/index-client';
 import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
   offlineLoadDocument,

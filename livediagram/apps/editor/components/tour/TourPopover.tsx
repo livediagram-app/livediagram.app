@@ -11,7 +11,7 @@ import {
 import { clamp } from '@livediagram/document';
 import type { StartPalette } from '@/components/start/start-palette';
 import { tourColourVars } from './tour-colours';
-import { glideTransition } from './tour-motion';
+import { glideTransition } from '@liveworkspace/workbench/components/tour/tour-motion';
 import { placeTourPopover } from './tour-position';
 import type { TourTargetRect } from './useTourEngine';
 

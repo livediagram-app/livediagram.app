@@ -13,7 +13,7 @@ import {
   type WireframeDevicePatch,
   type WireframeFrameTheme,
 } from '@livedesign/design';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DeviceMiniature } from './DeviceMiniature';
 

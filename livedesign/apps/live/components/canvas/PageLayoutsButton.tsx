@@ -12,7 +12,7 @@ import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedesign/ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';

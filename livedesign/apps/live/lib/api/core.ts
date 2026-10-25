@@ -12,7 +12,10 @@ import {
 } from '@livedesign/api-schema';
 import { noteServerBuild, noteServerDesignFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livedesign/design';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
@@ -47,7 +50,7 @@ import {
 //
 // Every request carries the person's Bearer: an account's access token when signed in, else the guest token
 // liveworkspace issued (lib/guest-token.ts).
-// Where the api lives (lib/api/base.ts).
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
 
 // Hard cap on how long the Explorer's design-list spinner spins before

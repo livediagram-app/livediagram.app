@@ -18,7 +18,7 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 import { DateInput } from '@liveplanner/ui';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import {

@@ -7,7 +7,7 @@
 // every width, so the form is what the Tab key and a screen reader reach first.
 import { Brand } from '@liveplanner/ui';
 import type { ReactNode } from 'react';
-import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
+import { useMidnightPalette } from '@liveworkspace/workbench/hooks/ui/useMidnightPalette';
 import { AuthLines } from '@liveworkspace/workbench/components/chrome/AuthLines';
 
 // The card's title (the page's h1), shared by the account and connect pages.

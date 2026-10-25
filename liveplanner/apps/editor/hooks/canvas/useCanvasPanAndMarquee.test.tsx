@@ -138,7 +138,7 @@ describe('useCanvasPanAndMarquee gestures', () => {
 });
 
 // A press that never moved is a tap: it runs the pan's own tap when it has one (a finger panning through a board,
-// hooks/canvas/pan-through.ts), and otherwise deselects. A pinch is never a tap.
+// @liveworkspace/workbench/hooks/canvas/pan-through.ts), and otherwise deselects. A pinch is never a tap.
 describe('useCanvasPanAndMarquee tap', () => {
   function tapSetup(pinching = false) {
     const onDeselect = vi.fn();

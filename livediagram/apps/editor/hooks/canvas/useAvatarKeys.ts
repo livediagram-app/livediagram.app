@@ -8,9 +8,9 @@
 // autorepeat is ignored, so holding Space doesn't pogo.
 
 import { useEffect } from 'react';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
 

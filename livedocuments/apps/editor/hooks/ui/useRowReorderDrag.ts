@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { isDragTravel } from '@/lib/press-gestures';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A list's rows dragged to reorder them (the Slide Deck's slides, docs/specs/012-collaboration/presentation-mode.md;

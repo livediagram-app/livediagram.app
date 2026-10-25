@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
 import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@livediagram/document';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 
 // The code block's edit modal (docs/specs/009-elements/code-block.md): a monospace textarea + a language
 // dropdown. Opened by double-clicking the card or from the context menu's

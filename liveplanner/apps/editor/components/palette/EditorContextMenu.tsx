@@ -31,7 +31,10 @@ import {
   takesAttachments,
 } from '@liveplanner/project';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
-import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   LayerDownIcon,
@@ -44,7 +47,10 @@ import {
   SizeMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';

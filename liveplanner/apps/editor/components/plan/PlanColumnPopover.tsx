@@ -29,9 +29,9 @@ import { lucideBetweenVerticalEnd } from '@liveworkspace/icons/lucide';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
 const ColumnOffIcon = lucideGlyph(lucideBetweenVerticalEnd, 16);
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import {
   COLUMN_NAME_MAX,
   WIP_LIMIT_MAX,

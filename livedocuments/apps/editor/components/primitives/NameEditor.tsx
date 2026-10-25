@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
-import { refocusAfterField } from './refocus-after-field';
+import { refocusAfterField } from '@liveworkspace/workbench/components/primitives/refocus-after-field';
 
 // Inline rename input shared by the document title (EditorHeader), tabs
 // (TabBar), and tab folders (TabFolderChip). Mounts focused with the

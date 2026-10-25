@@ -3,7 +3,7 @@
 // caller whose token names the team. Signed-in only: every endpoint refuses without a verified Bearer token, so
 // callers gate on `isSignedIn` before reaching for these. Administering a team happens on liveworkspace.app.
 import type { TeamMember } from '@livediagram/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
 export type { TeamMember };

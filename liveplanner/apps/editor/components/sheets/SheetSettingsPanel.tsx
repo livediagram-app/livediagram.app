@@ -35,7 +35,7 @@ import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection'
 import { SheetNamedRanges } from './SheetNamedRanges';
 import { SheetFormatRuleList, SheetValidationRules } from './rules/SheetRuleSettings';
 import { ConditionalFormatIcon, ValidationIcon } from './sheet-icons';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { SigmaIcon } from './sheet-icons';
 import { SettingsRowShell, SettingsToggleRowView } from '@liveworkspace/settings-ui';
 import { NumberStepper } from '@/components/primitives/NumberStepper';

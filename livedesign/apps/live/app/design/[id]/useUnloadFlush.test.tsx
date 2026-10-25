@@ -12,8 +12,9 @@ vi.mock('@/lib/api-client', () => ({
 vi.mock('@/lib/design-tombstones', () => ({ isDesignDeleted: () => false }));
 
 const { useUnloadFlush, shouldWarnOnLeave } = await import('./useUnloadFlush');
-const { noteSaveFailing, noteTabTooLarge } = await import('@/lib/save-health');
-const { useCommitOnLeave } = await import('@/hooks/ui/useCommitOnLeave');
+const { noteSaveFailing, noteTabTooLarge } =
+  await import('@liveworkspace/workbench/lib/save-health');
+const { useCommitOnLeave } = await import('@liveworkspace/workbench/hooks/ui/useCommitOnLeave');
 
 const tab = (label: string): Tab => ({
   id: 't1',

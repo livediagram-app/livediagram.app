@@ -12,7 +12,7 @@
 // Escape and the backdrop both decline, like the poll's Skip: dismissing is a
 // real answer, not a silent drop.
 
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function FocusInviteDialog({

@@ -5,7 +5,7 @@
 // the top, then which guides show and how strongly (the person's synced preferences, also in
 // Settings).
 import type { ReactNode } from 'react';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { LOGO_GUIDE_PARTS, LOGO_GUIDE_STRENGTHS } from '@/lib/logo-guide-prefs';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';

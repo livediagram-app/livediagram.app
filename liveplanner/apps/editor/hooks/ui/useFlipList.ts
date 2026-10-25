@@ -7,7 +7,7 @@
 // applied in. A list whose rows have different offset parents (questions in different sections) measures against a
 // common root instead.
 import { useEffectEvent, useLayoutEffect, useRef } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 export type FlipListOptions = {
   // The class that carries the slide's transition, added once a row has its inverted start frame.

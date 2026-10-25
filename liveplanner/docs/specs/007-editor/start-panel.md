@@ -35,7 +35,7 @@ remains, and it cannot be closed.
 - **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
   picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
-  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
+  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `../packages/workbench/src/lib/typing-target.ts`); once something
   is typed in it they undo the typing, as in any text box. A **paste** of canvas content reaches the editor the same
   way: elements copied from another tab (or an image) pasted on a new tab land on the canvas, rather than their JSON
   landing in the search. Pasted text still searches.
@@ -47,7 +47,7 @@ elements; a Dashboard with no rows, a Form tab with no form). A **Participant** 
 A new tab and a new Project open on it.
 
 While one of the palette's popovers is open, the start **steps aside**: it stays mounted, so its search, its group and
-its scroll are kept, but is hidden (`lib/palette-popover-open.ts`; `StartPanel` hides its own root). Plan shows no
+its scroll are kept, but is hidden (`../packages/workbench/src/lib/palette-popover-open.ts`; `StartPanel` hides its own root). Plan shows no
 palette, so this does not arise there today.
 
 ## Default folders

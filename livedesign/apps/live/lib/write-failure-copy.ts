@@ -1,7 +1,7 @@
 // What a failed folder or design write says (docs/specs/013-workspace/folders.md "A write that fails says so"):
 // one wording per verb, shared by the Explorer page, the editor's Explorer panel and a team's library, so the same
 // failure reads the same wherever it happened. Each names what it failed on when the caller knows it (toast-name.ts).
-import { toastName } from './toast-name';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 type FailureCopy = (name?: string | null) => string;
 

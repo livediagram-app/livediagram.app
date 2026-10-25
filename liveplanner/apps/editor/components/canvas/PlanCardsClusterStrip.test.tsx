@@ -13,7 +13,9 @@ const plan = {
 };
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 const dock = { names: true };
-vi.mock('@/hooks/ui/useDockNames', () => ({ useDockNames: () => dock.names }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useDockNames', () => ({
+  useDockNames: () => dock.names,
+}));
 
 afterEach(cleanup);
 

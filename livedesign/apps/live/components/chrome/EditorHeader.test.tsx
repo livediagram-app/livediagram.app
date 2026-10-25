@@ -21,7 +21,8 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { EditorHeader } = await import('./EditorHeader');
-const { HEADER_ICON_SLOT_PX } = await import('./header-action');
+const { HEADER_ICON_SLOT_PX } =
+  await import('@liveworkspace/workbench/components/chrome/header-action');
 
 afterEach(cleanup);
 

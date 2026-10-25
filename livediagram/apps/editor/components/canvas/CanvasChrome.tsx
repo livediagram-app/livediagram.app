@@ -17,7 +17,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -30,7 +30,7 @@ import {
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
   Fragment,
@@ -51,9 +51,9 @@ import { atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from './AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -289,7 +289,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     // A stamp is placed by the lanes, not sized against edges: no box guides.

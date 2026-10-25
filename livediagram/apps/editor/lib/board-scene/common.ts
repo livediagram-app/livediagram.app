@@ -1,7 +1,7 @@
 // What every landed element shares (docs/specs/020-import-export/board-scene.md "Kinds"): rotation,
 // lock, a safe link and opacity, plus the point helpers the point kinds use.
 import type { ElementLink } from '@livediagram/document';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { LANDING_RULES, type LandContext } from './context';
 import type { SceneItem, ScenePoint } from './scene';
 

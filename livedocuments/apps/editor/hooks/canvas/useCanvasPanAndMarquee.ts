@@ -12,8 +12,8 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isPressableControl } from '@livedocuments/ui';
-import { anyModalOpen } from '@/lib/modal-guard';
-import { isTypingTarget } from '@/lib/typing-target';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 // Pan + marquee gesture machinery lifted out of Canvas.tsx so the
 // component file stays focused on JSX + per-element wiring. The

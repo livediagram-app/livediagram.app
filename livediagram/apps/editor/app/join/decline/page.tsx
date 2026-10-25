@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { siteUrl } from '@liveworkspace/sites';
-import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
 
 // /join/decline?token=… — where an invite email's Decline link used to land. Invitations are answered
 // on liveworkspace.app now (liveworkspace/docs/accounts.md "Invitations"), so an old link forwards

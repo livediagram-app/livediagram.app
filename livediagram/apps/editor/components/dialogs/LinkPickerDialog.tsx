@@ -7,9 +7,9 @@ import {
   DialogCloseButton,
   DialogHeader,
 } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import type { ElementLink } from '@livediagram/document';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 

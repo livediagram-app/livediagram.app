@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import {
   useMinimalChrome,
   usePowerUser,

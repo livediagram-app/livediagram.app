@@ -39,7 +39,7 @@ import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
 import { chainDeleteGuards } from '@/lib/delete-guards';
 import { useSheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';
-import { useKeyboardAvoidance } from '@/hooks/canvas/useKeyboardAvoidance';
+import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   stampTabKind,
@@ -77,7 +77,7 @@ import { useProjectHistory } from '@/hooks/canvas/useProjectHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';

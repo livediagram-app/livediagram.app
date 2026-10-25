@@ -11,7 +11,7 @@ import {
   type Element,
   type ThemeDefinition,
 } from '@liveplanner/project';
-import { safeJson } from './local-storage-safe';
+import { safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // An unlocked shape, arrow or text element: the kinds memory records.
 function isRememberedTarget(el: Element): boolean {

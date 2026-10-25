@@ -2,7 +2,7 @@
 
 import { lucideListOrdered } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import { ClusterPopoverSegment } from './ClusterPopoverButton';
+import { ClusterPopoverSegment } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 const ContentsIcon = lucideGlyph(lucideListOrdered, 16);
 

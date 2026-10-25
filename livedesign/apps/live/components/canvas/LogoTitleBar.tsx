@@ -10,7 +10,7 @@ import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { useHasSelectionStore, useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MirrorAxisGlyph } from './logo-glyphs';
 import { LogoMirrorButton } from './LogoMirrorPopover';
 import { LogoGuidesButton } from './LogoGuidesPopover';

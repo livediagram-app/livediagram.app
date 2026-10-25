@@ -2,7 +2,7 @@
 
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livediagram/ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { TabNameInBox } from './TabNameInBox';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 

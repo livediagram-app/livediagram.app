@@ -35,7 +35,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `hooks/canvas/useWhiteboard.ts`                                         | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
 | `lib/palette-search.ts`, `lib/search.ts`                                | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@liveworkspace/icons`, shared  |
 | `lib/user-preferences.ts`                                               | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                         |
-| `components/primitives/SearchInput.tsx`                                 | `listboxId`: the box as a combobox over an always-shown listbox                          |
+| `../packages/workbench/src/components/primitives/SearchInput.tsx`       | `listboxId`: the box as a combobox over an always-shown listbox                          |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | Sentences for the new tokens                                                             |
 
 ## Domain and naming

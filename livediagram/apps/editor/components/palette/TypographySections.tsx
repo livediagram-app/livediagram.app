@@ -1,6 +1,6 @@
 'use client';
 
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/rich-text/rich-text-toolbar-icons';

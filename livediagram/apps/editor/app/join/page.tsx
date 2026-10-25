@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { siteUrl } from '@liveworkspace/sites';
-import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
 
 // /join?token=… — where a team's join link used to land (docs/specs/013-workspace/teams.md). Teams
 // are run on liveworkspace.app now (liveworkspace/docs/accounts.md "The join link"), so an old link

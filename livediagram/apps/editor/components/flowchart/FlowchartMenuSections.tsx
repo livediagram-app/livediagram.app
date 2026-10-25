@@ -16,8 +16,8 @@ import {
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { STEP_TYPE_GLYPH } from '@/components/flowchart/step-type-glyphs';

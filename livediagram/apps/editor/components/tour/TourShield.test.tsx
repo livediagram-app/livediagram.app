@@ -3,7 +3,7 @@
 // not even a document listener such as an open menu's outside-press close.
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TourShield } from './TourShield';
+import { TourShield } from '@liveworkspace/workbench/components/tour/TourShield';
 
 afterEach(cleanup);
 

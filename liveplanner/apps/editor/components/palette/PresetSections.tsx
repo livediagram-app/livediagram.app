@@ -28,7 +28,7 @@ import {
   ShapePresets,
   TablePresets,
 } from '@/components/palette/StylePresets';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 

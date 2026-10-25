@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/api/wrangler.toml`                                                       | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                                                                    |
 | `apps/editor/lib/api/unfurl.ts`                                                | `apiUnfurl`: fail-soft client                                                                                             |
 | `apps/editor/hooks/canvas/useElementLinks.ts`                                  | `applyElementLink`: sets the link, then fetches and commits `meta`                                                        |
-| `apps/editor/lib/url-safety.ts`                                                | `normaliseUrl`, `isSafeFollowUrl`                                                                                         |
+| `../packages/workbench/src/lib/url-safety.ts`                                  | `normaliseUrl`, `isSafeFollowUrl`                                                                                         |
 | `apps/editor/components/canvas/LinkCardView.tsx`                               | Card face: banner, favicon, title, destination, "Open link" row                                                           |
 | `apps/editor/components/canvas/element-variant.ts`                             | The card chrome: 10 px radius, 1 px border, fill                                                                          |
 | `apps/editor/components/canvas/BoxedElementView.tsx`                           | Excludes link cards from the corner link badge                                                                            |

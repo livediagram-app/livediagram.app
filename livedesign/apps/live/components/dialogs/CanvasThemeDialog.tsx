@@ -30,7 +30,7 @@ import {
 } from '@livedesign/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import {
   TabStyleShowMeButton,
@@ -39,7 +39,7 @@ import {
 } from '@/components/tour/TabStyleTour';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 import type { TextSize } from '@livedesign/design';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
 import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
@@ -128,9 +128,9 @@ export function CanvasThemeDialog({
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
-  // behind it (see lib/modal-guard).
+  // behind it (see @liveworkspace/workbench/lib/modal-guard).
   useModalGuard(true);
-  // Every pick eases the canvas into its new colours (lib/tab-style-ease.ts).
+  // Every pick eases the canvas into its new colours (@liveworkspace/workbench/lib/tab-style-ease.ts).
   const onApplyLook = eased(applyLook);
   // The tab's four look settings: which look (or mashup) it wears.
   const lookSettings: LookSettings = {

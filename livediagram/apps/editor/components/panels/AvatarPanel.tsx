@@ -35,11 +35,11 @@ import { RefreshIcon, HoverCard } from '@livediagram/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/document';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/ChevronIcon';
 import { Button } from '@livediagram/ui';
 import { lucideMessageCircle } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { AvatarMessagePopover } from './AvatarMessagePopover';
 
 const MessageIcon = lucideGlyph(lucideMessageCircle, 14);

@@ -4,7 +4,7 @@
 // (@liveworkspace/explorer `ShareDialog`), straight to the index.
 import { IndexError } from '@liveworkspace/index-client';
 import { parseStoredLevel, type DesignResponse } from '@livedesign/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { indexClient } from '../index-client';
 import {
   API_BASE,

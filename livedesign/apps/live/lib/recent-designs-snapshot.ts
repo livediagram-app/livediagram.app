@@ -9,7 +9,7 @@ import {
   RECENT_THUMBS_CACHE,
   RECENT_THUMBS_CACHE_LEGACY,
 } from '@livedesign/api-schema';
-import { removeLocalStorageSafe } from './local-storage-safe';
+import { removeLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export async function forgetRecentDesigns(): Promise<void> {
   removeLocalStorageSafe(RECENT_DESIGNS_KEY);

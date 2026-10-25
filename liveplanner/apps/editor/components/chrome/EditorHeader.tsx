@@ -12,7 +12,10 @@ import {
 } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
+import {
+  HEADER_ACTION_BTN,
+  HeaderGlyph,
+} from '@liveworkspace/workbench/components/chrome/header-action';
 import { useFormShareHost } from '@/lib/form-share-store';
 import { explorerHref } from '@/lib/explorer-href';
 

@@ -1,7 +1,11 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-import { glideEase, TOUR_DIM, TOUR_GLIDE_MS } from './tour-motion';
+import {
+  glideEase,
+  TOUR_DIM,
+  TOUR_GLIDE_MS,
+} from '@liveworkspace/workbench/components/tour/tour-motion';
 import type { TourTargetRect } from './useTourEngine';
 
 // The hole's corner: a soft rectangle, never rounder than half its height (a slim toolbar reads as a pill).

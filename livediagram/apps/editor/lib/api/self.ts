@@ -1,6 +1,6 @@
 // Participant / account calls: load self, save self, account self-
 // deletion.
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import type { Participant } from '../identity';
 import {
   API_BASE,

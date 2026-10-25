@@ -13,7 +13,7 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
+import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
@@ -32,7 +32,7 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
-import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
@@ -43,8 +43,8 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import { atLeastInset } from '@liveplanner/ui';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
-import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
-import { CollaborateClusterButton } from './CollaborateClusterButton';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -145,7 +145,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     useCornerDocking({ zenMode: zenMode === true });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
-  // A tick as a move catches an alignment guide (Android; lib/haptics).
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
 
   // The palette's Edit Cards opens the Card Types popover from its button (docs/specs/026-plan/item-types.md).

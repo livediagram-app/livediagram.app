@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { TableCellStyle, TableElement } from '@livediagram/document';
-import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   TextGlyph,
@@ -12,7 +15,7 @@ import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
 

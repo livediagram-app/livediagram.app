@@ -26,7 +26,7 @@ import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pressLedger } from '@/lib/double-press';
 
@@ -435,7 +435,7 @@ function ArrowViewImpl({
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM
-        // hit-testing (elementsFromPoint, lib/dom-hit-test) resolves an
+        // hit-testing (elementsFromPoint, @liveworkspace/workbench/lib/dom-hit-test) resolves an
         // arrow the same way it resolves a boxed element's wrapper.
         data-element-id={arrow.id}
         ref={hitBandRef}

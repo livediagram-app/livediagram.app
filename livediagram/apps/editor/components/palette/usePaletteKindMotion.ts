@@ -6,7 +6,7 @@
 // settles within the chrome budget (docs/specs/004-interface-design/motion.md: 250 ms). Nothing
 // moves under reduced motion, or on the first render.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // Each item's own rise, and the cascade's whole length (the last item's start plus its rise).
 export const KIND_ITEM_MS = 160;

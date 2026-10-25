@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import type { NewProjectSettings } from './new-project-settings';
 import { ProjectLoading } from '@/components/chrome/ProjectLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
@@ -43,7 +43,7 @@ import {
   newProjectQuery,
   placementParamsFromSearch,
 } from '@/lib/new-project-params';
-import { backOutTarget } from '@/lib/back-out';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';

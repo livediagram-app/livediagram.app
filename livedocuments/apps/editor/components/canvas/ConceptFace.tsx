@@ -33,7 +33,7 @@ import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/Canvas
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
 import { ConceptRowLayer } from './concept-row-layer';
 import { ConceptTimelineBody } from './ConceptTimelineBody';
-import { useConceptTourPreview } from '@/lib/concept-tour-preview';
+import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 
 type Props = {
   element: ShapeElement & { shape: ConceptShape };

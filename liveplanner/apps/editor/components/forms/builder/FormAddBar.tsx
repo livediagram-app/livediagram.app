@@ -19,7 +19,7 @@ import {
   canAddSection,
   questionById,
 } from '@liveplanner/forms';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { track } from '@/lib/telemetry';
 import { QuestionTypeList } from './QuestionTypeMenu';
 import { useFormBuilder } from './form-builder-context';

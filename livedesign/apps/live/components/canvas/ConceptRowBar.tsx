@@ -10,10 +10,10 @@ import {
 } from '@livedesign/design';
 import { FLOATING_CONTROL_CLASS } from '@liveworkspace/workbench/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';
 import { track } from '@/lib/telemetry';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
 // A chevron stage's own controls (docs/specs/009-elements/concept-graphics.md "Editing"): move it left, move it

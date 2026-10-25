@@ -6,7 +6,10 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  setRemoteBesideTab,
+  syncRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedocuments/document';
 import {

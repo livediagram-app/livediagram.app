@@ -20,7 +20,7 @@ import {
   type StatItem,
   type WebRows,
 } from '@livediagram/document';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import {
   MENU_ADD_ROW_BUTTON,

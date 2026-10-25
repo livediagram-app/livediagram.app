@@ -8,7 +8,7 @@
 // scrolls under it.
 import { useRef } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { Hit } from './sheet-geometry';
 import type { SheetPan } from './useSheetPan';
 

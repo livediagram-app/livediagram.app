@@ -10,7 +10,7 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 import { isBoxed, type Element } from '@livedesign/design';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { editMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 export function useEditModeContextMenu({

@@ -30,7 +30,7 @@ import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/design/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';

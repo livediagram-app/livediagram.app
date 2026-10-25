@@ -14,7 +14,9 @@ import {
 // docs/specs/026-plan/plan-board.md "A column's own settings": a column moved left or right glides to its new
 // place, and its neighbour the other way.
 const reduced = { on: false };
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduced.on }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => reduced.on,
+}));
 
 // jsdom lays nothing out: each part's left is set by hand.
 const lefts = new Map<string, number>();

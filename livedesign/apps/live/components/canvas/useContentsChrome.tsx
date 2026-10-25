@@ -8,7 +8,10 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, type ReactNode } from 'react';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
+import {
+  useLocalStorageValue,
+  writeLocalStorageValue,
+} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 import {
   CONTENTS_SIDE_STORAGE_KEY,
   CONTENTS_SIDEBAR_MIN_PAGES,

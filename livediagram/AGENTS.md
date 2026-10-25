@@ -287,7 +287,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 - Split a data file only when it genuinely holds two _different_ catalogues that deserve separate homes.
 - **A fully-decomposed orchestration root is exempt like pure data**; its bar is cohesion, not the number.
 - `useEditorState.ts` and `Canvas.tsx` already sit large; extract new slices out of them rather than adding in.
-- A new dialog / page / overlay → its **own component file** (e.g. `components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
+- A new dialog / page / overlay → its **own component file** (e.g. `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`), not another branch inside an existing screen.
 - New behaviour or a slice of state → its **own hook** (`useXxx.ts`), then composed in. Editor state lives in domain slices, not piled into one hook.
 - When you add to an existing file, confirm it's the _cohesive_ home, not just the convenient one. Wire new pieces in with the smallest edit to the host file.
 - If a file is drifting toward a "kitchen sink", stop and extract — the same way duplication gets extracted on first sight (see the reuse principle above).

@@ -16,7 +16,10 @@
 // incompatibly we'll bump to `v3:` and drop the old keys at read
 // time so a returning guest doesn't end up with mixed-version state.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { readGuestToken } from './guest-token';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { track } from './telemetry';

@@ -10,8 +10,8 @@
 
 import { Fragment, useEffect, useId, useRef, useState, type FragmentInstance } from 'react';
 import { NoMatches, Tooltip } from '@livediagram/ui';
-import { SearchInput } from '@/components/primitives/SearchInput';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
 import type { ShapeSlots, SlotSource } from '@/lib/whiteboard-shape-slots';
 import { ShapePreview, shapeShortcut } from './ShapePreview';

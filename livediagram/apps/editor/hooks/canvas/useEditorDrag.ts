@@ -35,7 +35,7 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
-import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
 import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';

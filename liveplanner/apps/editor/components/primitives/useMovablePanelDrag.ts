@@ -8,7 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import type { PanelDragGeometry } from '@/lib/panel-layout';
-import { isDragTravel } from '@/lib/press-gestures';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import type { MovablePanelProps } from './MovablePanel.types';
 
 // Pointer travel (px) before a header press on the docking path counts

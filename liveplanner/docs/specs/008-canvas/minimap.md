@@ -100,7 +100,7 @@ letterboxing handled for free.
   inside `<main>`, and a child's layout effect runs before its parent's ref
   attaches, so a map mounted with the canvas never measures and loses the
   viewport rectangle.
-- `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
+- `../packages/workbench/src/hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.
 - `Canvas` renders it gated on

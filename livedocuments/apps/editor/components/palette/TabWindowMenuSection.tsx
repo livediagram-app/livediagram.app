@@ -6,7 +6,10 @@
 import { tabWindowMayShow, type ShapeElement } from '@livedocuments/document';
 import { lucideAppWindow, lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
-import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionRow,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { TabWindowTabList } from '@/components/canvas/tab-window/TabWindowTabList';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';

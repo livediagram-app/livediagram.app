@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {
@@ -20,7 +20,7 @@ import {
   type CanvasAnchor,
 } from '@liveworkspace/workbench/lib/split-pane-view';
 import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
-import { setLocalBesideTab } from '@/lib/split-presence';
+import { setLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { SplitDivider } from './SplitDivider';
 import { SplitSeamControls } from './SplitSeamControls';
 import { SplitDropZone } from './SplitDropZone';
@@ -231,7 +231,7 @@ export function SplitViewFrame({
           </div>
         ) : null}
         <div
-          // The box the editor's chrome sizes itself to (lib/editor-viewport): its pane, in a split.
+          // The box the editor's chrome sizes itself to (@liveworkspace/workbench/lib/editor-viewport): its pane, in a split.
           {...{ [EDITOR_VIEWPORT_ATTR]: showing ? 'pane' : 'window' }}
           data-split-arrive={arrival.from ?? undefined}
           className="absolute inset-y-0 z-[1] h-dvh"

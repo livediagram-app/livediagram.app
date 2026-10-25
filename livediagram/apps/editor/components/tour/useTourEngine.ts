@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { openModalCount, useOpenModalCount } from '@/lib/modal-guard';
+import { openModalCount, useOpenModalCount } from '@liveworkspace/workbench/lib/modal-guard';
 import { findTour, waitForSelector } from './tour-dom';
-import { revealInScrollers } from './tour-reveal';
+import { revealInScrollers } from '@liveworkspace/workbench/components/tour/tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
 // The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics"): the Diagram and

@@ -20,7 +20,7 @@ import {
 } from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import { normaliseUrl } from '@/lib/url-safety';
+import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livedocuments/ui';
 
 const BulletGlyph = lucideGlyph(lucideList, 16);

@@ -24,9 +24,9 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
 } from '@livediagram/document';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { PickerIcon, RevealIcon } from '@/components/palette/palette-icons';

@@ -7,7 +7,7 @@ import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList } from './CanvasElementList';
 import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
-import { useFontEpoch } from './useFontEpoch';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
   elementFontId,
   resolveFontStack,

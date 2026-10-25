@@ -25,7 +25,7 @@ import {
   MenuActionRow,
   MenuGroupSeparator,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { ActionGlyph, AdjustGlyph, FilterGlyph } from './photo-menu-icons';
 import { lastPhotoFilter, photoDialogs } from '@/lib/photo-editor/photo-dialog-store';

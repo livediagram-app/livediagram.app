@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ZOOM_OFF_REASON, ZoomControls } from './ZoomControls';
 
 const touch = vi.hoisted(() => ({ coarse: false }));
-vi.mock('@/hooks/ui/useCoarsePointer', () => ({ useCoarsePointer: () => touch.coarse }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useCoarsePointer', () => ({
+  useCoarsePointer: () => touch.coarse,
+}));
 
 // While zoom is off the controls stay, disabled, saying why.
 

@@ -24,7 +24,7 @@ import {
   type SankeyNodeStyle,
   type ShapeElement,
 } from '@livedocuments/document';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
 import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';

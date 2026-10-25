@@ -1,6 +1,6 @@
 'use client';
 
-import { AccordionSection } from '@/components/primitives/AccordionSection';
+import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { HoverCard } from '@livedocuments/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every

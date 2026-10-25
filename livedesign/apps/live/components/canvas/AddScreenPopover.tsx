@@ -13,9 +13,9 @@ import {
   type WireframeDeviceId,
 } from '@livedesign/design';
 import { useClickOutside, useEscape, Portal } from '@livedesign/ui';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { lastWireframeDevice, rememberWireframeDevice } from '@/lib/wireframe-device-memory';
 import { DeviceMiniature } from './wireframe/DeviceMiniature';
 

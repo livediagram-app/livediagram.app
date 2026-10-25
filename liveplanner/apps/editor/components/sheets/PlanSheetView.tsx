@@ -19,7 +19,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { planBandTint, planOwnColours, planPalette } from '@/components/plan/plan-palette';
 import { MaximisableSlot } from '@/components/plan/MaximisedPlanLayer';
 import { PHONE_SHEET_END_CLEARANCE } from '@/components/plan/phone-board';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { SheetCellThreadsProvider } from '@/hooks/sheets/sheet-comments-context';

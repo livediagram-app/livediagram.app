@@ -26,7 +26,10 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
-import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
   ItalicIcon,
@@ -41,8 +44,11 @@ import {
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import {
   ColourRow,
   MarkersMenuGlyph,

@@ -128,7 +128,7 @@ renders immediately rather than showing a spinner over real content.
   plain requests, which land when the page lives on. Two events on the same way out send the content once.
 - A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
   what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
-  flush first commits the open edit (`lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
+  flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
   come back as its first letter.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.

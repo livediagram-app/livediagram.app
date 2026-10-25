@@ -37,7 +37,7 @@ import {
 } from '@liveplanner/project';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { SizeButton } from '@/components/palette/palette-controls';
-import { MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import {
   onMouseHover,

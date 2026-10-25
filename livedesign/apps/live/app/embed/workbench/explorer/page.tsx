@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { EDITOR_VIEWPORT } from '@/lib/page-viewport';
+import { EDITOR_VIEWPORT } from '@liveworkspace/workbench/lib/page-viewport';
 import { WorkbenchPage } from '../WorkbenchPage';
 import { WorkbenchStatus } from '../WorkbenchStatus';
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// The canvas owns zoom when a design is open, so the page is pinned at 1 (lib/page-viewport.ts).
+// The canvas owns zoom when a design is open, so the page is pinned at 1 (@liveworkspace/workbench/lib/page-viewport.ts).
 export const viewport = EDITOR_VIEWPORT;
 
 // The frame reads its place from the address (useSearchParams), which a static export must hold in a Suspense

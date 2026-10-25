@@ -7,7 +7,7 @@
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
 import { useState } from 'react';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
 import { fieldIconOf } from './CustomFieldKindParts';

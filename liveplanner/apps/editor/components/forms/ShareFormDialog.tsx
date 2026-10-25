@@ -10,8 +10,8 @@ import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import type { DestinationProblem, PublishProblem } from '@liveplanner/forms';
 import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
 // The editor's Dialog, so the modal guard counts it (shortcuts behind it go quiet, and the tours wait for it).
-import { Dialog } from '@/components/dialogs/Dialog';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formUrlFor } from '@/lib/form-path';

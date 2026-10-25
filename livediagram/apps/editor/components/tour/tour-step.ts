@@ -1,4 +1,4 @@
-import type { RevealBlock } from './tour-reveal';
+import type { RevealBlock } from '@liveworkspace/workbench/components/tour/tour-reveal';
 
 // The shape of a guided-tour step, shared by the Diagram tour (tour-steps.ts,
 // docs/specs/007-editor/editor-tour.md) and the Workshop tour (docs/specs/012-collaboration/workshop-tour.md). `Api` is the facade each tour's host builds, so a step's prepare

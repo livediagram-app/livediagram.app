@@ -9,7 +9,11 @@
 import type { WorkbenchEndReason } from '@livedesign/api-schema';
 import { lucideArrowLeft } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedesign/ui';
-import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
+import {
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { OpenExternalIcon } from './EmbedChrome';
 import { TOOLBAR_CONTROL_REST } from './toolbar-surface';
 import { ToolbarMenuCard } from './ToolbarMenuCard';

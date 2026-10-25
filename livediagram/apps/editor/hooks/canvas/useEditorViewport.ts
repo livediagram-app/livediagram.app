@@ -23,7 +23,7 @@ import {
 } from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import { onMapShown } from '@/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 
@@ -32,7 +32,7 @@ import { tabFitView } from '@/lib/tab-fit-view';
 // of a single nodes-fill-the-screen view. 30% was too far out, the
 // text on every element became unreadable; 60% keeps labels legible
 // while still showing a workable chunk of canvas around the
-// pointer. Deliberately wider than lib/responsive's MOBILE_BREAKPOINT_PX
+// pointer. Deliberately wider than @liveworkspace/workbench/lib/responsive's MOBILE_BREAKPOINT_PX
 // (640, the "dock the panels" line): tablets in the 640–768 band keep
 // the desktop layout but still benefit from the zoomed-out overview, so
 // this is its own constant rather than the shared one.

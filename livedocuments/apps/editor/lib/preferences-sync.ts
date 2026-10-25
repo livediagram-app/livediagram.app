@@ -21,7 +21,7 @@ import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // The most the whole preferences blob may take, in characters of `{"prefs":...}`. Safe range
 // 2048..12288: the accounts database keeps at most 16 KB a scope.

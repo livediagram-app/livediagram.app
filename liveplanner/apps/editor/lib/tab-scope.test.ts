@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { firstTabToLoad, isTabOutOfScope } from './tab-scope';
+import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
 // docs/specs/013-workspace/tab-scoped-share-links.md: a visitor on a tab-scoped link can open their tab only.
 describe('isTabOutOfScope', () => {

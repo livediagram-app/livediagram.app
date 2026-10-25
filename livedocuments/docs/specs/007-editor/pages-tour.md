@@ -151,7 +151,7 @@ Every tour (this one, [Show Me](show-me.md) and the [element tours](element-tour
 ### Dialogs come first
 
 A tour never lands over a dialog the person has open (Share, Settings, Export, the Search panel, a confirm, any
-dialog at all). What counts as a dialog is one signal, the modal guard (`lib/modal-guard.ts`), which the tours
+dialog at all). What counts as a dialog is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`), which the tours
 read through `useOpenModalCount`.
 
 - **An offer waits.** A tour that would be offered while a dialog is open stays owed and is offered once every

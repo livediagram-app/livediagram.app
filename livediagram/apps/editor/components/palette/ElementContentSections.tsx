@@ -1,5 +1,5 @@
 import type { Element } from '@livediagram/document';
-import { ContextMenuDivider } from '@/components/palette/ContextMenu';
+import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
   ItalicIcon,
@@ -15,7 +15,7 @@ import {
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';

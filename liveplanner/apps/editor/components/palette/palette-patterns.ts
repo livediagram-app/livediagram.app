@@ -20,7 +20,7 @@ import {
   BackgroundRippleIcon,
   BackgroundStripesIcon,
   BackgroundWavesIcon,
-} from '@/components/primitives/background-pattern-icons';
+} from '@liveworkspace/workbench/components/primitives/background-pattern-icons';
 
 // The canvas background-pattern catalogue: one PatternEntry per pattern,
 // consumed by the pattern picker (CanvasStyleControls)

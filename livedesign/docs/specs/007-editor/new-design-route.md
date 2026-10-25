@@ -142,7 +142,7 @@ that FAILS — network down, 5xx, share link unresolvable — means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
-raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
+raises `loadError`, which renders `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`
 instead. That card leads with **Retry** (a reload), because unlike a
 missing design the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a

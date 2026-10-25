@@ -9,7 +9,11 @@ import {
 } from '@livediagram/ui';
 import type { AppearanceSetting } from '@livediagram/ui';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
+import {
+  CHROME_BTN,
+  CHROME_BTN_LABELLED,
+  ChromeLabel,
+} from '@liveworkspace/workbench/components/chrome/chrome-button';
 
 // The editor's Appearance control: one button that CYCLES Light → Dark → System
 // (docs/specs/004-interface-design/appearance.md), hosted in the tab bar's trailing

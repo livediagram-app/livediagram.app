@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
@@ -17,7 +17,7 @@ import {
   type ElementTourKind,
 } from '@/lib/element-tours';
 import { helpArticleHref } from '@/lib/help-articles';
-import { setConceptTourPreview } from '@/lib/concept-tour-preview';
+import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import { chartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { sequenceDialog } from '@/lib/sequence-dialog-handle';
@@ -27,7 +27,7 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
 import { CONTEXT_MENU } from './element-menu-tour';
 import { waitForSelector } from './tour-dom';

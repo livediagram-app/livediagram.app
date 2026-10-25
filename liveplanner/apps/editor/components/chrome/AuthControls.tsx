@@ -33,7 +33,7 @@ import {
   HEADER_ACTION_TONE,
   HEADER_ICON_SLOT_PX,
   HeaderGlyph,
-} from '@/components/chrome/header-action';
+} from '@liveworkspace/workbench/components/chrome/header-action';
 
 // Account self-deletion now lives on the Explorer profile page (docs/specs/014-identity/profile-and-email-notifications.md),
 // reachable from the "Profile" item below, so the destructive action has one

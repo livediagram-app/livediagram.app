@@ -10,7 +10,7 @@
 
 import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
-import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import { useToast } from '@/hooks/ui/useToast';
 import { getSessionSharePassword } from '@/lib/api-client';

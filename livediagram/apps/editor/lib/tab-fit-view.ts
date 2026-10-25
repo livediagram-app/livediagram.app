@@ -12,7 +12,7 @@ import {
   FIT_TO_SCREEN_PADDING,
   topChromeInset,
 } from './viewport';
-import type { ViewPose } from './viewport-glide';
+import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 
 // No chrome beside the content to fit clear of.
 const NO_INSETS: FitInsets = { left: 0, right: 0, top: 0, bottom: 0 };

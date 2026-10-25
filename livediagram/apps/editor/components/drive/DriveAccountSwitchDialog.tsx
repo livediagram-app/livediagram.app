@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { ApiError } from '@/lib/api/core';
 

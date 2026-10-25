@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TOAST_NAME_MAX, toastName } from './toast-name';
+import { TOAST_NAME_MAX, toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { DOCUMENT_FAILURE } from './write-failure-copy';
 
 // docs/specs/004-interface-design/toasts.md "Naming what it acted on".

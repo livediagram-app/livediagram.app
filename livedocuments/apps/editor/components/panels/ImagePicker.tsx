@@ -3,10 +3,10 @@
 import { CountBadge, DialogCloseButton } from '@livedocuments/ui';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';

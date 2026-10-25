@@ -26,8 +26,8 @@ import {
   OPTIONS,
 } from './quick-connect-options';
 import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
-import { isDragTravel } from '@/lib/press-gestures';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';
 
 // Same grace period as the other hover-open surfaces: long enough to cross

@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useRichTextSession.ts`          | Label session (`collapsedScope: 'all'`)                                          |
 | `apps/editor/components/canvas/label-style.ts`                 | `effectiveRunStyle`: label headings in `em`                                      |
 | `apps/editor/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [QD7]                   |
-| `apps/editor/lib/url-safety.ts`                                | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
+| `../packages/workbench/src/lib/url-safety.ts`                  | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming
 
@@ -342,16 +342,16 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 ## Constants and configuration
 
-| Name                    | Value                                        | Provenance / safe range                                  | Home                       |
-| ----------------------- | -------------------------------------------- | -------------------------------------------------------- | -------------------------- |
-| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`          |
-| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`          |
-| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`          |
-| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `lib/clamp-to-viewport.ts` |
-| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                     | `NoteRichTextEditor.tsx`   |
-| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                           | `note-run-style.ts`        |
-| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                     | `note-run-style.ts`        |
-| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; D80 for 3                              | `note-run-style.ts`        |
-| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | D84; each level above the next, all above 1em            | `label-style.ts`           |
-| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`             | `lib/url-safety.ts`        |
-| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                               | `block-type.ts`            |
+| Name                    | Value                                        | Provenance / safe range                                  | Home                                                 |
+| ----------------------- | -------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
+| `WIDTH`                 | `416`                                        | Spec, matches `w-[26rem]`; change both together          | `NotePopover.tsx`                                    |
+| `APPROX_HEIGHT`         | `320`                                        | Estimate at the 11rem minimum; replaced by measure [QD3] | `NotePopover.tsx`                                    |
+| `GAP`                   | `12`                                         | Element to popover, px; 8 to 16                          | `NotePopover.tsx`                                    |
+| `VIEWPORT_EDGE_MARGIN`  | `POPOVER_VIEWPORT_MARGIN` = `8`              | Shared popover margin                                    | `../packages/workbench/src/lib/clamp-to-viewport.ts` |
+| Editor min / max height | `min-h-44` (11rem) / `max-h-96` (24rem)      | Spec                                                     | `NoteRichTextEditor.tsx`                             |
+| `NOTE_BASE_PX`          | `13`                                         | Spec; 12 to 15                                           | `note-run-style.ts`                                  |
+| `NOTE_RUN_PX`           | `{ sm: 11, md: 13, lg: 16 }`                 | Spec                                                     | `note-run-style.ts`                                  |
+| `NOTE_HEADING`          | `1: 17/700, 2: 14.5/600, 3: 13.5/600`        | Spec for 1 and 2; D80 for 3                              | `note-run-style.ts`                                  |
+| `HEADING_SCALE`         | `1: 1.7em/700, 2: 1.35em/700, 3: 1.15em/600` | D84; each level above the next, all above 1em            | `label-style.ts`                                     |
+| `SAFE_SCHEMES`          | `http:`, `https:`, `mailto:`                 | Spec; never widen to `javascript:` / `data:`             | `../packages/workbench/src/lib/url-safety.ts`        |
+| `BLOCK_TYPES`           | six entries, Paragraph first                 | Spec order                                               | `block-type.ts`                                      |

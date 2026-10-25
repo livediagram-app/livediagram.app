@@ -8,7 +8,7 @@
 // fixed body style below.
 
 import { RUN_XS_PX, type RunHeading, type RunSize, type TextRun } from '@livedesign/design';
-import { isSafeFollowUrl } from '@/lib/url-safety';
+import { isSafeFollowUrl } from '@liveworkspace/workbench/lib/url-safety';
 
 // Body size, in px. Small enough to fit a real paragraph in the popover,
 // large enough to read comfortably.

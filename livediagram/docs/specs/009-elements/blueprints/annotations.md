@@ -7,14 +7,14 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                 | `AnnotationElement`                                                 |
-| `packages/document/src/index.ts`                         | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
-| `packages/document/src/factories.ts`                     | `createAnnotation`, `ANNOTATION_SIZE`                               |
-| `packages/document/src/colors.ts`                        | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
-| `packages/document/src/svg-render-describe.ts`           | Export shape: an ellipse                                            |
+| File                                                       | Role                                                                |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                   | `AnnotationElement`                                                 |
+| `packages/document/src/index.ts`                           | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
+| `packages/document/src/factories.ts`                       | `createAnnotation`, `ANNOTATION_SIZE`                               |
+| `packages/document/src/colors.ts`                          | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
+| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `packages/document/src/svg-render-describe.ts`             | Export shape: an ellipse                                            |
 | `apps/editor/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
 | `apps/editor/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
 | `apps/editor/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
 | `apps/editor/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |
 | `apps/editor/components/palette/EditorContextMenu.tsx`     | Size section shown, Rotation hidden for an annotation [QD8]         |
-| `packages/document/src/export-tab-text.ts`               | Markdown outline [QD11]                                             |
+| `packages/document/src/export-tab-text.ts`                 | Markdown outline [QD11]                                             |
 
 ## Domain and naming
 
@@ -217,10 +217,10 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 | Rule                                           | Test                                           | File                                                           |
 | ---------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
 | New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/document/src/factories.test.ts`                      |
-| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/editor/lib/canvas.test.ts`                                 |
-| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/editor/lib/canvas-selection.test.ts`                       |
-| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/editor/lib/element-telemetry.test.ts`                      |
-| Tile routes to an action                       | palette telemetry coverage                     | `apps/editor/lib/palette-telemetry-coverage.test.ts`             |
+| Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/editor/lib/canvas.test.ts`                               |
+| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/editor/lib/canvas-selection.test.ts`                     |
+| Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/editor/lib/element-telemetry.test.ts`                    |
+| Tile routes to an action                       | palette telemetry coverage                     | `apps/editor/lib/palette-telemetry-coverage.test.ts`           |
 | No inline text (I1)                            | `elementHasText` false for annotation          | `packages/document/src/element-has-text.test.ts`               |
 | No shadow; arrows do not hide behind it        | shadow / arrow-behind exclusions               | `packages/document/src/shadow.test.ts`, `arrow-behind.test.ts` |
 | Dark fill a shade above the shape fill (D89)   | lifts an annotation marker a shade above ...   | `packages/document/src/canvas-ink.test.ts`                     |
@@ -234,13 +234,13 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 
 ## Constants and configuration
 
-| Name                      | Value                      | Provenance / safe range                 | Home                       |
-| ------------------------- | -------------------------- | --------------------------------------- | -------------------------- |
-| `ANNOTATION_SIZE`         | `44`                       | Spec "~44 px"; 32 to 56                 | `factories.ts`             |
-| `GAP`                     | `10`                       | Marker to preview, px; 6 to 16          | `AnnotationMarker.tsx`     |
-| `MAX_W`                   | `280`                      | Preview width cap, px; 240 to 360       | `AnnotationMarker.tsx`     |
-| Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`     |
-| Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`     |
-| Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`     |
-| `DARK_INK.annotationFill` | `#1c2533`                  | A shade above `DARK_INK.fill` `#141b26` | `colors.ts`                |
-| `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `lib/clamp-to-viewport.ts` |
+| Name                      | Value                      | Provenance / safe range                 | Home                                                 |
+| ------------------------- | -------------------------- | --------------------------------------- | ---------------------------------------------------- |
+| `ANNOTATION_SIZE`         | `44`                       | Spec "~44 px"; 32 to 56                 | `factories.ts`                                       |
+| `GAP`                     | `10`                       | Marker to preview, px; 6 to 16          | `AnnotationMarker.tsx`                               |
+| `MAX_W`                   | `280`                      | Preview width cap, px; 240 to 360       | `AnnotationMarker.tsx`                               |
+| Flip threshold            | `120`                      | Space needed above, px (inline literal) | `AnnotationMarker.tsx`                               |
+| Preview max height        | `max-h-60` (15rem)         | D87                                     | `AnnotationMarker.tsx`                               |
+| Glyph size                | `58%` of the marker        | Reads at 44px; 50% to 66%               | `AnnotationMarker.tsx`                               |
+| `DARK_INK.annotationFill` | `#1c2533`                  | A shade above `DARK_INK.fill` `#141b26` | `colors.ts`                                          |
+| `EDGE_MARGIN`             | `VIEWPORT_EDGE_MARGIN` = 8 | Shared popover margin                   | `../packages/workbench/src/lib/clamp-to-viewport.ts` |

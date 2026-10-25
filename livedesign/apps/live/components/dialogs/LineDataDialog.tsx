@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livedesign/ui';
 import type { LineSeries } from '@livedesign/design';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerChartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';

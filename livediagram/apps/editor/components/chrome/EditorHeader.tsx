@@ -12,7 +12,10 @@ import {
 } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
-import { HEADER_ACTION_BTN, HeaderGlyph } from '@/components/chrome/header-action';
+import {
+  HEADER_ACTION_BTN,
+  HeaderGlyph,
+} from '@liveworkspace/workbench/components/chrome/header-action';
 import { explorerHref } from '@/lib/explorer-href';
 
 // The autosave's sync state. No header pill shows it any more: the failure

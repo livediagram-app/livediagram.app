@@ -8,7 +8,7 @@ import { Button } from '@livedesign/ui';
 import { lucideScaling } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { FlyoutHeader } from '@/components/palette/CategoryFlyout';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { TOOL_BLURBS } from '@/lib/photo-editor/option-guides';
 import { toolFlyout, useToolFlyoutOpen } from '@/lib/photo-editor/tool-flyout';

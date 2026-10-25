@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mobile = vi.hoisted(() => ({ value: false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
 const track = vi.hoisted(() => vi.fn());

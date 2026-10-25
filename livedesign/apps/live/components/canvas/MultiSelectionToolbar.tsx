@@ -7,7 +7,7 @@ import {
   TOOLBAR_BTN,
   TOOLBAR_BTN_ON,
 } from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import {
   useMinimalChrome,
   usePowerUser,

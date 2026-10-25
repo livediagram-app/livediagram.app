@@ -8,7 +8,7 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
-import { isTabOutOfScope } from '@/lib/tab-scope';
+import { isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { track } from '@/lib/telemetry';
 import { startEditorTiming } from '@/lib/timing';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

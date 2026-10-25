@@ -5,42 +5,42 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Files
 
-| File                                                                | Role                                                                                                            |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/canvas-gesture.ts`                                 | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`                                 |
-| `../packages/workbench/src/components/canvas/CanvasZoomContext.tsx` | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself)                        |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`             | Stable per-element props; per-arrow frame and holes; the grid                                                   |
-| `apps/editor/components/canvas/CanvasElementList.tsx`               | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
-| `apps/editor/hooks/canvas/useLayerDragPreview.ts`                   | The layer's preview store: a drag frame renders each previewed element, not the layer                           |
-| `apps/editor/hooks/canvas/useSnapGuideState.ts`                     | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                                           |
-| `apps/editor/components/canvas/arrow-view-frame.ts`                 | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
-| `apps/editor/components/canvas/ArrowView.tsx`                       | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
-| `apps/editor/components/canvas/BoxedElementView.tsx`                | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
-| `packages/document/src/element-grid.ts`                             | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
-| `packages/document/src/arrow-behind.ts`                             | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
-| `packages/document/src/svg-render-arrows.ts`                        | The export builds one grid per render and queries it                                                            |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                  | `draftLayout` identity-stable across passes                                                                     |
-| `apps/editor/lib/stock-colour-projector.ts`                         | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
-| `apps/editor/hooks/canvas/useSettledElements.ts`                    | What the Map draws: frozen during element gestures, throttled otherwise                                         |
-| `apps/editor/components/canvas/Minimap.tsx`                         | Draws `useSettledElements(elements)`                                                                            |
-| `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                 | Takes `suspended`; never measures while suspended                                                               |
-| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`         | `toolbarsStale` includes `selectionMoving`                                                                      |
-| `apps/editor/hooks/canvas/useCanvasLongTaskLog.ts`                  | The `[canvas-perf] long task` debug log                                                                         |
-| `apps/editor/components/canvas/CanvasArrivalContext.tsx`            | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
-| `apps/editor/components/canvas/useBoxedElementAnimation.ts`         | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
-| `apps/editor/app/globals.css`                                       | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
-| `apps/editor/lib/sticky-peel-image.ts`                              | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
-| `apps/editor/lib/png-encode.ts`                                     | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
-| `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                    | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`           |
-| `apps/editor/e2e/perf/interactive.ts`                               | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                        |
-| `apps/editor/e2e/perf/reference-board.ts`                           | `buildReferenceBoard(seed, count)`                                                                              |
-| `apps/editor/e2e/perf/budget.ts`                                    | `evaluateBudget`, `budgetTable` and the budget constants (pure)                                                 |
-| `apps/editor/e2e/perf/budget-report.ts`                             | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue                             |
-| `apps/editor/e2e/perf/nightly.mjs`                                  | The nightly run's I/O: `previous` and `report`                                                                  |
-| `apps/editor/e2e/perf/calibrate.ts`                                 | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
-| `apps/editor/e2e/perf/trace-tasks.ts`                               | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
-| `apps/editor/e2e/perf/canvas.perf.ts`                               | The probe: seeds, runs each gesture under a trace, writes the report                                            |
-| `.github/workflows/canvas-perf.yml`                                 | The nightly run and the budget issue                                                                            |
+| File                                                                   | Role                                                                                                            |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `apps/editor/lib/canvas-gesture.ts`                                    | The gesture store: `beginCanvasGesture`, `canvasGestureNow`, `useCanvasGesture`                                 |
+| `../packages/workbench/src/components/canvas/CanvasZoomContext.tsx`    | `CanvasZoomProvider`, `useCanvasZoom()`, `CounterScaled` (a div reading the zoom itself)                        |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`                | Stable per-element props; per-arrow frame and holes; the grid                                                   |
+| `apps/editor/components/canvas/CanvasElementList.tsx`                  | Every element in paint order, memoised so an editor render that changes none skips them; the element plane      |
+| `apps/editor/hooks/canvas/useLayerDragPreview.ts`                      | The layer's preview store: a drag frame renders each previewed element, not the layer                           |
+| `apps/editor/hooks/canvas/useSnapGuideState.ts`                        | `SnapGuideStore`: the drag's snap guides, read only by `CanvasChrome`                                           |
+| `apps/editor/components/canvas/arrow-view-frame.ts`                    | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
+| `apps/editor/components/canvas/ArrowView.tsx`                          | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
+| `apps/editor/components/canvas/BoxedElementView.tsx`                   | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
+| `packages/document/src/element-grid.ts`                                | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
+| `packages/document/src/arrow-behind.ts`                                | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
+| `packages/document/src/svg-render-arrows.ts`                           | The export builds one grid per render and queries it                                                            |
+| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                     | `draftLayout` identity-stable across passes                                                                     |
+| `apps/editor/lib/stock-colour-projector.ts`                            | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
+| `apps/editor/hooks/canvas/useSettledElements.ts`                       | What the Map draws: frozen during element gestures, throttled otherwise                                         |
+| `apps/editor/components/canvas/Minimap.tsx`                            | Draws `useSettledElements(elements)`                                                                            |
+| `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                               |
+| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                      |
+| `apps/editor/hooks/canvas/useCanvasLongTaskLog.ts`                     | The `[canvas-perf] long task` debug log                                                                         |
+| `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
+| `apps/editor/app/globals.css`                                          | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
+| `apps/editor/lib/sticky-peel-image.ts`                                 | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
+| `apps/editor/lib/png-encode.ts`                                        | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
+| `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                       | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`           |
+| `apps/editor/e2e/perf/interactive.ts`                                  | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                        |
+| `apps/editor/e2e/perf/reference-board.ts`                              | `buildReferenceBoard(seed, count)`                                                                              |
+| `apps/editor/e2e/perf/budget.ts`                                       | `evaluateBudget`, `budgetTable` and the budget constants (pure)                                                 |
+| `apps/editor/e2e/perf/budget-report.ts`                                | `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue                             |
+| `apps/editor/e2e/perf/nightly.mjs`                                     | The nightly run's I/O: `previous` and `report`                                                                  |
+| `apps/editor/e2e/perf/calibrate.ts`                                    | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
+| `apps/editor/e2e/perf/trace-tasks.ts`                                  | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
+| `apps/editor/e2e/perf/canvas.perf.ts`                                  | The probe: seeds, runs each gesture under a trace, writes the report                                            |
+| `.github/workflows/canvas-perf.yml`                                    | The nightly run and the budget issue                                                                            |
 
 ## Domain and naming
 
@@ -388,7 +388,7 @@ export function arrowViewGeometry(
   arrow: ArrowElement, elementIndex: ElementIndex, grid: ElementGrid,
 ): { frame: ArrowViewFrame; holes: Rect[] };
 
-// apps/editor/components/canvas/CanvasZoomContext.tsx
+// ../packages/workbench/src/components/canvas/CanvasZoomContext.tsx
 export function CanvasZoomProvider(props: { zoom: number; children: ReactNode }): ReactElement;
 export function useCanvasZoom(): number;
 export function CounterScaled(props: ComponentProps<'div'>): ReactElement;
@@ -402,7 +402,7 @@ export function useEdgeAwarePlacement(
   bounds: Bounds, canvasOffset: XY, zoom: number, gap: number, suspended?: boolean,
 ): { ref; placeAbove: boolean; style: CSSProperties };
 
-// apps/editor/hooks/canvas/useCanvasClientOrigin.ts
+// ../packages/workbench/src/hooks/canvas/useCanvasClientOrigin.ts
 export function useCanvasClientOrigin(
   wrapperRef: RefObject<HTMLElement | null>, active: boolean, viewKey: string,
 ): ClientOrigin | null;

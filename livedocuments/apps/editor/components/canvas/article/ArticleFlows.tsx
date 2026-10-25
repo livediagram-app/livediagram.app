@@ -6,7 +6,7 @@
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until an
 // article asks for it.
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   articleMarginPx,
   MAX_PAGES,

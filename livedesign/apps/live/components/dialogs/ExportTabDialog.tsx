@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { DialogCloseButton, DialogHeader } from '@livedesign/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { FormatIcon } from './export-format-icons';
-import { TextExportPanel } from './TextExportPanel';
+import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import { LogoKitPanel } from './LogoKitPanel';
 import {

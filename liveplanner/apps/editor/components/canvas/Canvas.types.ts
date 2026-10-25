@@ -142,7 +142,7 @@ export type CanvasProps = {
   // they pan and zoom with the canvas.
   remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
   // `target` is what the pointer is over, so a paste can tell the canvas from
-  // a floating panel lying on top of it (lib/canvas-pointer.ts).
+  // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (
     canvasX: number | null,
     canvasY: number | null,

@@ -5,9 +5,9 @@ import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { EditorMode } from '@livediagram/document';
 import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livediagram/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';
-import { CanvasModalCard } from './CanvasModalCard';
+import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { NewDocumentModeStep } from './NewDocumentModeStep';
 import { FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
 

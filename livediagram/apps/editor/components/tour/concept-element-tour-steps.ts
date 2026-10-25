@@ -3,7 +3,7 @@
 // previewed there, never stored), the "+" ring opened on the add it offers, the More button, and the closing card.
 // Each kind's own steps and words live in its own file (layer-stack-tour-steps.ts, ...).
 import type { ConceptRow } from '@livediagram/document';
-import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
+import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import type { ElementTourApi } from './element-tour-api';
 import { clearMenuPath, MENU_TARGET, openMenuPath } from './element-menu-tour';
 import { waitForSelector } from './tour-dom';

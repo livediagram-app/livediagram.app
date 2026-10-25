@@ -1,6 +1,10 @@
 import { useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Selection } from '@/lib/selection-store';
-import { armPlainClick, isOnlySelected, plainClickOutcome } from '@/lib/selection-click';
+import {
+  armPlainClick,
+  isOnlySelected,
+  plainClickOutcome,
+} from '@liveworkspace/workbench/lib/selection-click';
 import { debugLog } from '@/lib/debug-log';
 
 // The element / arrow selection-routing callbacks, lifted out of

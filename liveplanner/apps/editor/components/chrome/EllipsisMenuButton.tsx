@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { TabDataRows } from './tab-data-rows';
 import { PortalMenu } from './TabPortalMenu';
-import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 

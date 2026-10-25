@@ -217,7 +217,7 @@ better layout. Its parts went with it:
 
 A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one held sideways:
 844 × 390 was laid out as a desktop, its panels covering the 286px canvas).
-`PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
+`PHONE_MEDIA_QUERY` (`../packages/workbench/src/lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
 button always was. It gets the same chrome as a desktop ([Editor app](editor-app.md)):

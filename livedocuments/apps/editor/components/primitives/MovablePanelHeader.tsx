@@ -3,7 +3,7 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
+import { ResetPositionGlyph } from '@liveworkspace/workbench/components/primitives/ResetPositionGlyph';
 import { HoverCard, Glyph } from '@livedocuments/ui';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 

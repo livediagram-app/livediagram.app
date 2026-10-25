@@ -7,7 +7,7 @@
 import { useState, type ReactNode } from 'react';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import type { PlanPalette } from './plan-palette';
 import { useSlotSettings } from './dashboard/slot-menu';
 

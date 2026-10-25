@@ -1,7 +1,7 @@
 'use client';
 
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { ClusterPopoverSegment } from './ClusterPopoverButton';
+import { ClusterPopoverSegment } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // Whether the Slides button shows: once at least one page is a slide (pages-mode.md "Slides button"), since
 // until then the deck has nothing to hold.

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
 
 // /join/decline — where a team invite email's Decline link used to land (docs/specs/013-workspace/
 // teams.md). Invitations are answered in the Explorer now (liveworkspace/docs/one-explorer.md), so

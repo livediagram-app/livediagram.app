@@ -6,7 +6,7 @@
 // changed and commits once.
 import { useState } from 'react';
 import type { PageFill } from '@livedocuments/document';
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

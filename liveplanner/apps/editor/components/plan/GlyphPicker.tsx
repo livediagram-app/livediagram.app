@@ -22,7 +22,7 @@ import {
   TextInput,
   Tooltip,
 } from '@liveplanner/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 

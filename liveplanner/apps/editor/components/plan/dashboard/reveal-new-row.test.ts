@@ -3,7 +3,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const reduced = vi.hoisted(() => ({ on: false }));
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduced.on }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => reduced.on,
+}));
 
 const { dashboardRowCount, revealNewRow } = await import('./reveal-new-row');
 

@@ -7,7 +7,7 @@ import {
   type TableElement,
 } from '@livediagram/document';
 import { cellKey } from '@/components/canvas/TableCellView';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { track } from '@/lib/telemetry';
 
 // The cell-selection slice (docs/specs/008-canvas/canvas-and-palette.md multi-cell selection + the per-cell

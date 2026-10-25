@@ -6,8 +6,8 @@ import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
 import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
 import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
-import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
-import { ConfirmProvider } from '@/hooks/ui/useConfirm';
+import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
+import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
 };
 
 // Every page can zoom, so a phone can pinch to read it (WCAG 1.4.4). The routes that draw the canvas pin it at 1
-// instead with EDITOR_VIEWPORT (lib/page-viewport.ts), since the canvas owns zoom there. See
+// instead with EDITOR_VIEWPORT (@liveworkspace/workbench/lib/page-viewport.ts), since the canvas owns zoom there. See
 // docs/specs/007-editor/editor-app.md "Mobile / responsive".
 export const viewport: Viewport = {
   width: 'device-width',

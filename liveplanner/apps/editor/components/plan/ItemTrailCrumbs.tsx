@@ -6,7 +6,10 @@
 import { useState } from 'react';
 import { itemTitle, typeIn, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { ChevronLeftIcon, ChevronRightIcon, Tooltip } from '@liveplanner/ui';
-import { PortalMenu, MenuActionRow } from '@/components/primitives/PortalMenu';
+import {
+  PortalMenu,
+  MenuActionRow,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { ITEM_TRAIL_SHOWN, ITEM_TRAIL_SHOWN_PHONE, visibleTrail } from './item-trail';

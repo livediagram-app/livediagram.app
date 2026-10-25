@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { LaidOutPage, Tab } from '@livedocuments/document';
 import { ACTIVE_SEGMENT, Button, SEGMENT_TRACK } from '@livedocuments/ui';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { holdLabel, holdValueText } from '@/lib/gif-export/gif-estimate';
 import type { GifExportErrorCode } from '@/lib/gif-export/gif-export-error';

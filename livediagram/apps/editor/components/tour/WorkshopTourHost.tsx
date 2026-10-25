@@ -7,7 +7,7 @@ import { debugLog } from '@/lib/debug-log';
 import { WORKSHOP_TOUR_RELAUNCH_EVENT } from '@/lib/workshop-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { findTour } from './tour-dom';
 import {

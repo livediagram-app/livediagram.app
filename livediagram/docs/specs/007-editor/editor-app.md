@@ -131,7 +131,7 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 A long document name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left.
 
-The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `apps/editor/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
+The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `../packages/workbench/src/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 
@@ -187,8 +187,8 @@ opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` �
 
 Every irreversible flow (delete a folder or an image gallery row) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back. Two forms:
 
-- **Centre modal** — `apps/editor/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/editor/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
-- **Anchored popover** — `apps/editor/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels, Enter confirms.
+- **Centre modal** — `../packages/workbench/src/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`../packages/workbench/src/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
+- **Anchored popover** — `../packages/workbench/src/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels, Enter confirms.
 
 We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livediagram dialog and underplays the consequences.
 
@@ -238,7 +238,7 @@ On a phone-sized viewport the editor's chrome would crowd the canvas. It tighten
 Held sideways, a phone is short: the header (56px) and the tab bar (48px) took 104px of an iPhone
 15's 393px, leaving the canvas 289px, and 256px of a small Android's 360px (measured 2026-10-17).
 Folded, the canvas gets all of it (393px, 360px). Sideways means a touch screen in landscape under
-500px tall: `LANDSCAPE_PHONE_MEDIA_QUERY` in `lib/responsive.ts`,
+500px tall: `LANDSCAPE_PHONE_MEDIA_QUERY` in `../packages/workbench/src/lib/responsive.ts`,
 `(pointer: coarse) and (orientation: landscape) and (max-height: 499px)`, with the CSS twin the
 `landscape-phone:` variant (`app/globals.css`). The height is `PHONE_MAX_HEIGHT_PX`, the same 500px
 that makes a sideways phone a phone at all (above): the tallest phone held sideways is about 440px
@@ -254,7 +254,7 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   corner) and the strip starts at the left gutter in its place. Unlike the bars, nothing brings
   it back while the phone is sideways: not the handle, not a tour. An Explorer open when the
   phone turns closes. Turning the phone upright brings the button back. `EditorCanvasHost` sets
-  `explorerHidden` from `useIsLandscapePhone` (`hooks/ui/useIsMobileViewport.ts`, the
+  `explorerHidden` from `useIsLandscapePhone` (`../packages/workbench/src/hooks/ui/useIsMobileViewport.ts`, the
   `LANDSCAPE_PHONE_MEDIA_QUERY` above), the same gate the workbench frame uses; the palette keeps
   the phone's swiping row without the menu card (`leading` of `null`).
 - **The bars handle.** A small card at the canvas's top-right corner (12px in, and past a landscape
@@ -293,7 +293,7 @@ Implementation: `useLandscapeBars` (the shown flag, the rename and tour reveals,
 
 These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
-The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`apps/editor/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
+The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`../packages/workbench/src/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
 That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
 zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
@@ -356,7 +356,7 @@ the caret: below the visible area (less a 24px margin) the canvas pans up by jus
 (`useKeyboardAvoidance`). Any touch screen, a tablet as a phone (`hover: none`, or a phone's width). The pan stays when the keyboard closes. A field in a popover, menu or floating panel stays in view too, by moving its surface ([On-screen keyboard](../004-interface-design/tooltips-hover-cards-popovers.md#on-screen-keyboard)).
 
 **Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
-the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)
+the editor gives a short buzz for what a finger cannot see land (`../packages/workbench/src/lib/haptics.ts`): **press** (15ms)
 when a long-press opens its menu or holds a path node, **snap** (8ms) once as a move catches an
 alignment guide (not again while it stays on it), **delete** (a double pulse) when a selection is
 deleted. Never with a mouse.

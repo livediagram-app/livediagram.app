@@ -11,7 +11,10 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';

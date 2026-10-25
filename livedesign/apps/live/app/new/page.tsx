@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
+import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import type { NewDesignSettings } from './new-design-settings';
 import { DesignLoading } from '@/components/chrome/DesignLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
@@ -35,7 +35,7 @@ import {
   newDesignStartsBlank,
   placementParamsFromSearch,
 } from '@/lib/new-design-params';
-import { backOutTarget } from '@/lib/back-out';
+import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';

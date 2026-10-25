@@ -29,9 +29,9 @@ import {
   Portal,
 } from '@livedesign/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import type { PageLayoutId } from '@livedesign/templates';

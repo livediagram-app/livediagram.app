@@ -9,7 +9,7 @@ import {
   nextEntityKey,
   type EntityField,
 } from '@livediagram/document';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 import { EntityKeyGlyph } from './EntityKeyGlyph';
 
 // Where the editor goes once a row is saved: the next field (adding one after the last), the previous one,

@@ -9,7 +9,7 @@ import {
   SettingsSubcategoryGlyph,
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
-import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
+import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (Collaborate under Panels, Notifications and API Tokens under Account)

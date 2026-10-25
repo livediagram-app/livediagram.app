@@ -137,7 +137,7 @@ export type CanvasProps = {
     points: { x: number; y: number; t: number }[];
   }[];
   // `target` is what the pointer is over, so a paste can tell the canvas from
-  // a floating panel lying on top of it (lib/canvas-pointer.ts).
+  // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (
     canvasX: number | null,
     canvasY: number | null,

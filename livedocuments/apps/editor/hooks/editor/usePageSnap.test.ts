@@ -19,7 +19,9 @@ import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity } from './usePageSnap';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Glides land at once, so a test reads where the view ends.
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => true }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => true,
+}));
 
 const SIZE = { width: 1200, height: 800 };
 const tab = {

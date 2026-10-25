@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
+import { useArrivesWithBoard } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 
 // The one-shot pop-in entry of a newly added element (docs/specs/008-canvas/canvas-and-palette.md "Motion and
 // animations"), lifted out of BoxedElementView: the class the wrapper wears and its drop-off timer.

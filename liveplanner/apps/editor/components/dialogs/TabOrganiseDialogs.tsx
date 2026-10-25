@@ -10,7 +10,7 @@
 
 import { lucideFolderX } from '@liveworkspace/icons/lucide';
 import { useState } from 'react';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import {
   FolderPlaceIcon,
   NewFolderTile,

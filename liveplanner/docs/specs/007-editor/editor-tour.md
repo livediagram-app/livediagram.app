@@ -78,7 +78,7 @@ of their steps ask the person to try things.
   anchor with no client rects is treated as absent: it is never clicked and never measured. That is the safety
   net; a tour filters its step list up front (by viewport and what the tab holds) so the "N of M" count stays
   honest instead of a hidden step burning its timeout mid-tour.
-- **What counts as a dialog** is one signal, the modal guard (`lib/modal-guard.ts`): a count of open modal
+- **What counts as a dialog** is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the
   full-screen modals that do not use it calling `useModalGuard` themselves (the Search panel, the canvas theme
   dialog, the identity prompt, the new project wizard, the sign-in reasons and delete account

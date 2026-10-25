@@ -25,8 +25,8 @@ import {
   SheetChartPreview,
   SheetMetricPreview,
 } from './card-previews';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { ToolsBreadcrumb } from '@/components/palette/palette-tools-nav';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { ToolsBreadcrumb } from '@liveworkspace/workbench/components/palette/palette-tools-nav';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideArrowUpDown } from '@liveworkspace/icons/lucide';
 import { PICK_CARD, SlotCategoryCard, type SlotCategory } from './slot-fill-categories';

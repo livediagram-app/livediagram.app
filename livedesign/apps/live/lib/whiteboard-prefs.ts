@@ -13,7 +13,7 @@ import {
   safeJson,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // Named by their place in the palette, never by a colour: the second and third can be any colour.
 export type WhiteboardPenId = 'main' | 'second' | 'third';

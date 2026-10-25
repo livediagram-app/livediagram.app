@@ -18,7 +18,7 @@
 // — leaving one small Hide pill to put it back.
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { REVEAL_COVER_BASE } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';

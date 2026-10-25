@@ -15,7 +15,7 @@
 import { useState } from 'react';
 import { type Element, type ElementLink, type Tab } from '@livedocuments/document';
 import { apiUnfurl } from '@/lib/api-client';
-import { isSafeFollowUrl } from '@/lib/url-safety';
+import { isSafeFollowUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { track } from '@/lib/telemetry';
 
 type ElementLinksDeps = {
@@ -137,7 +137,7 @@ export function useElementLinks(deps: ElementLinksDeps) {
       // Only open http/https/mailto: a stored `javascript:` / `data:` URL would
       // otherwise execute in our origin via window.open (noopener doesn't stop
       // it). normaliseUrl gates this at store time too; this is defence-in-depth
-      // for older data. See lib/url-safety.ts.
+      // for older data. See @liveworkspace/workbench/lib/url-safety.ts.
       if (!isSafeFollowUrl(link.url)) return;
       // External address: new tab, noopener so the opened page can't
       // reach back into this one via window.opener.

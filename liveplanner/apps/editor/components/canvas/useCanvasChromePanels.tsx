@@ -9,7 +9,7 @@ import type { PanelId } from '@/lib/panel-layout';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
-import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
+import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.

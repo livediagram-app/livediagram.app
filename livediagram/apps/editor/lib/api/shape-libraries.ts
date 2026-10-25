@@ -7,7 +7,7 @@ import {
   type ShapeLibraryItem,
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { API_BASE, ApiError, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 type LibraryResponse = { library: ShapeLibrary };

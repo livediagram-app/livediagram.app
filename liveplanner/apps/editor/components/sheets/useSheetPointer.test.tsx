@@ -9,8 +9,8 @@ import { COL_HEADER_PX, ROW_HEADER_PX } from './sheet-geometry';
 import { cellPoint, gridScrolls, installGridDom, mountGrid } from './sheet-grid-test-utils';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/canvas/pan-through', async (orig) => {
-  const real = await orig<typeof import('@/hooks/canvas/pan-through')>();
+vi.mock('@liveworkspace/workbench/hooks/canvas/pan-through', async (orig) => {
+  const real = await orig<typeof import('@liveworkspace/workbench/hooks/canvas/pan-through')>();
   return { ...real, markPanThrough: vi.fn(real.markPanThrough) };
 });
 

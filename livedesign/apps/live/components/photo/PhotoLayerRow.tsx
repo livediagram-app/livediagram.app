@@ -41,9 +41,13 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { BLEND_MODE_NAMES, type PhotoLayer } from '@livedesign/photo-engine';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import type { PhotoSession } from '@/lib/photo-editor/session';
 import { layerThumbnail } from '@/lib/photo-editor/thumbnails';

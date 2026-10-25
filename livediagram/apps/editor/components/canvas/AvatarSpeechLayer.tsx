@@ -14,7 +14,7 @@ import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { bubbleMotion, type SpeechBubble } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
 import { AVATAR_FALLBACK_COLOUR } from '@/lib/avatar-config';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarSpeechBubble';
 
 // The brand cyan a character falls back to with no presence colour (AvatarWalker's).

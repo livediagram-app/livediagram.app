@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
-import { haptic } from '@/lib/haptics';
+import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
@@ -36,7 +36,7 @@ import {
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { pathEditKey } from '@/lib/path-edit-keys';
 import { debugLog } from '@/lib/debug-log';
-import { isTypingTarget } from '@/lib/typing-target';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 type Point = { x: number; y: number };
 

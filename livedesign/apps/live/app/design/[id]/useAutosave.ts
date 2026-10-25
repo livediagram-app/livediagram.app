@@ -37,7 +37,7 @@ import {
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
-import { noteSaveFailing, noteTabTooLarge } from '@/lib/save-health';
+import { noteSaveFailing, noteTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 import { noteTabSaved } from '@/lib/tab-saved';
 
 // Per-tab autosave (docs/specs/006-design/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
@@ -441,7 +441,7 @@ export function useAutosave(opts: {
           const status = saveFailureStatus(err);
           if (status === 'forbidden') writesForbiddenRef.current = true;
           setSaveStatus(status);
-          // A failure the retry may fix keeps the banner up and the leave prompt armed (lib/save-health.ts).
+          // A failure the retry may fix keeps the banner up and the leave prompt armed (@liveworkspace/workbench/lib/save-health.ts).
           noteSaveFailing(status === 'error');
           noteTabTooLarge(status === 'tooLarge');
           if (status === 'error' && retryTimerRef.current === null) {

@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
-import { LongPressRing } from '@/components/primitives/LongPressRing';
+import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
 import {
   useViewportOf,
   useViewportStore,
@@ -40,7 +40,7 @@ import type { Selection } from '@/lib/selection-store';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
-import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
+import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
@@ -51,7 +51,7 @@ import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
 
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
-import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
+import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
@@ -61,7 +61,7 @@ import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontEpoch } from '@/components/canvas/useFontEpoch';
+import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
   loadCanvasPages,
   loadPhotoCanvasOverlays,
@@ -370,7 +370,7 @@ function CanvasView(props: CanvasProps) {
             // ink is tuned for light paper and vanishes on a dark wall. Flagged
             // here so the peel's CSS can respond without knowing about themes.
             data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-            // The Tab Style colour ease scopes to the canvas (lib/tab-style-ease.ts).
+            // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
             data-canvas-root=""
             onContextMenuCapture={surface.onContextMenuCapture}
             onContextMenu={surface.onContextMenu}

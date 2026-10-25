@@ -1,5 +1,5 @@
 import { addTransitionType, startTransition } from 'react';
-import { prefersReducedMotion } from './motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 // A state change animated as a React View Transition (docs/specs/003-system-architecture/react-state-and-effects.md
 // "Animating a state change"): the change runs in a transition named by `type`, and the <ViewTransition> around

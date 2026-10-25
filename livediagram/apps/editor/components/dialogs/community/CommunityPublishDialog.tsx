@@ -13,7 +13,7 @@ import {
   type CommunityPostInput,
 } from '@livediagram/api-schema';
 import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

@@ -9,7 +9,9 @@ import { describe, expect, it, vi } from 'vitest';
 let ctx: Record<string, unknown> = {};
 vi.mock('@/app/project/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
 vi.mock('@/hooks/persistence/useIsOfflineProject', () => ({ useIsOfflineProject: () => false }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => false,
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const { useEditorCommands } = await import('./useEditorCommands');

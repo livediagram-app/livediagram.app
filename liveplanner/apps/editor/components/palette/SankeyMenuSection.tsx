@@ -34,12 +34,12 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideALargeSmall,

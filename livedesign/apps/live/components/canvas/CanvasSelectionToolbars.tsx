@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCommentBadges } from './CommentBadgesContext';
+import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {

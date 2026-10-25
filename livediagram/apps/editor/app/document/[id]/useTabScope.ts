@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { isTabOutOfScope } from '@/lib/tab-scope';
+import { isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
 // The tab this editor session is confined to when it was opened through a
 // tab-scoped share link (docs/specs/013-workspace/tab-scoped-share-links.md); null for everyone else. Set

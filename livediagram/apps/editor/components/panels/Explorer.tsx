@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livediagram/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';

@@ -775,7 +775,7 @@ geometry is `packages/document/src/event-storming-lanes.ts` (including
 that lands notes without a drag is `packages/document/src/event-storming-lane-landing.ts`
 (`landArrivals`, `settleNotesOnLanes`, rows to lanes) and, for a photograph,
 `event-storming-photo-place.ts`; the editor wires them in `lib/paste-placement.ts`,
-`lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
+`../packages/workbench/src/lib/canvas-pointer.ts`, `hooks/canvas/useLaneSettle.ts`, `useNudgeSelection` and
 `useElementDuplication`, and the MCP worker and the edit-operations engine in `landWorkshopArrivals`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second

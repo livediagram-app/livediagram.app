@@ -9,7 +9,7 @@ import {
   type DocumentResponse,
   type ShareRole,
 } from '@livediagram/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   API_BASE,
   apiHeaders,

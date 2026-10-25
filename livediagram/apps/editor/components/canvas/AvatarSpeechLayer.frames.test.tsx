@@ -2,11 +2,13 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SpeechBubble } from '@/lib/avatar-speech';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { AvatarSpeechLayer } from './AvatarSpeechLayer';
 
 // docs/specs/008-canvas/blueprints/avatar-speech.md: the flight is one loop that writes styles, no work it can skip.
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: vi.fn(() => false) }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: vi.fn(() => false),
+}));
 
 afterEach(() => {
   cleanup();

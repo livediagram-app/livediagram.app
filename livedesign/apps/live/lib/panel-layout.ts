@@ -10,7 +10,10 @@
 // the editor reacts to its own write, plus the browser's native
 // `storage` event for cross-tab), but there is no network step.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 

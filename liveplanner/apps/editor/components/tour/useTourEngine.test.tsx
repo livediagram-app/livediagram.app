@@ -17,7 +17,9 @@ vi.mock('./tour-dom', () => ({
   },
 }));
 const reveal = vi.hoisted(() => vi.fn());
-vi.mock('./tour-reveal', () => ({ revealInScrollers: reveal }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-reveal', () => ({
+  revealInScrollers: reveal,
+}));
 
 type Api = { log: string[] };
 

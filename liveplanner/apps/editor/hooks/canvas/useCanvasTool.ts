@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@/lib/responsive';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 
 export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } = {}) {
   // Default to Hand (pan) on a touch / mobile viewport, Select on

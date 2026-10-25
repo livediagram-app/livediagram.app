@@ -1,7 +1,7 @@
 'use client';
 
 import { MAX_SIZE_PX, MIN_SIZE_PX } from '@/hooks/canvas/useShapeStyleSetters';
-import { MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useRef } from 'react';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';

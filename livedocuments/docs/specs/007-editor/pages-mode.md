@@ -1461,7 +1461,7 @@ is while the rest of the tab is worked on.
   no Undo / Redo), while there are two pages or more: a cluster strip of the cluster's own 44 px
   controls, **Previous page**, the place of the page someone is on ("2 of 5"), **Next page**
   (disabled at either end). An arrow fits that neighbouring page in the view, as a press on its label does, gliding
-  there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `apps/editor/lib/viewport-glide.ts`) so the eye follows the
+  there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `../packages/workbench/src/lib/viewport-glide.ts`) so the eye follows the
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
   the pages; not in zen, and not on a phone, whose bottom row has no room for it (a swipe moves

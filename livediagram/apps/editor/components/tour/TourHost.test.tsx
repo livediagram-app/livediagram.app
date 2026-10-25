@@ -7,7 +7,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
+import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';

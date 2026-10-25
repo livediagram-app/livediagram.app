@@ -44,7 +44,7 @@ draws them.
 - **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
   picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords
-  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `lib/typing-target.ts`); once something
+  are the editor's (`data-editor-history` on the box, `passesHistoryChords` in `../packages/workbench/src/lib/typing-target.ts`); once something
   is typed in it they undo the typing, as in any text box.
   A **paste** of canvas content reaches the editor the same way: elements copied from another tab (or an image, or an
   Excalidraw scene) pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the
@@ -77,7 +77,7 @@ The blank appears only in Recommended. Choosing the blank closes the panel, as t
 While one of the palette's popovers is open (a category's flyout, More or Search), the start **steps aside**: it
 stays mounted, so its search, its group and its scroll are kept, but is hidden, and the tiles hang over a clear
 canvas. Closing the popover brings it back as it was; using a tile closes the popover, and the content it lands
-hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides its own root, so every start steps aside alike. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents` wrapper has no box to picture, so a mode change lost its crossfade.
+hides the start for good. The palette publishes the state in `../packages/workbench/src/lib/palette-popover-open.ts`, and `StartPanel` hides its own root, so every start steps aside alike. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents` wrapper has no box to picture, so a mode change lost its crossfade.
 
 A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a

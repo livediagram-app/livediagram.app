@@ -3,7 +3,7 @@
 import type { SettingsIllustrationProps, SettingsUiKit } from '@liveworkspace/settings-ui';
 import { DialogCloseButton, Glyph, NoMatches } from '@livedocuments/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { SearchInput } from '@/components/primitives/SearchInput';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { SettingsIllustration, type SettingsIllustrationId } from './settings-illustrations';
 import { SettingsSignInLink } from './SettingsSignInLink';

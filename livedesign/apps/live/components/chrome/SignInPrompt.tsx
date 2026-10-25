@@ -22,7 +22,10 @@ import { buttonClassName, CloseIcon, ButtonContent } from '@livedesign/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
+import {
+  useLocalStorageValue,
+  writeLocalStorageValue,
+} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livedesign:v2:signin-prompt-dismissed';
 

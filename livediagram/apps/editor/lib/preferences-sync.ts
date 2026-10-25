@@ -19,7 +19,7 @@ import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // The most the whole blob may be, in characters of `{"prefs":...}`. The api takes a patch of up to
 // twice this (apps/api/src/routes/preferences.ts PREFERENCES_PATCH_MAX, which checks

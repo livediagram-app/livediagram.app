@@ -14,7 +14,7 @@ import {
   TextInput,
   withArticle,
 } from '@liveplanner/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 
 type FilterField = { id: string; label: string };
 type FilterValue = { key: string; label: string; count: number };

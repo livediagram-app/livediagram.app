@@ -1,7 +1,7 @@
 import { usePaletteKind } from '@/lib/palette-kind';
 import type { EmbedProvider } from '@livedocuments/document';
 import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';

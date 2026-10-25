@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { TextInput } from '@liveplanner/ui';
 import { formatA1, optionFor, rangeOptions, type ValidationRule } from '@liveplanner/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import type { SheetController } from '../sheet-controller';
 
 // Over this many options, a search field (data-validation.md; blueprint sheet-rules.md "Constants").

@@ -10,7 +10,7 @@
 // behaviour change.
 
 import type { Selection } from '@/lib/selection-store';
-import { haptic } from '@/lib/haptics';
+import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
   arrowReferencesAny,
   createText,

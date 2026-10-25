@@ -12,7 +12,10 @@ import {
 } from '@livedocuments/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import type { Tab } from '@livedocuments/document';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { readGuestToken } from '../guest-token';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
@@ -46,7 +49,7 @@ import {
 //
 // Every request carries the person's Bearer: an account's access token when signed in, else the guest token
 // liveworkspace issued (lib/guest-token.ts).
-// Where the api lives (lib/api/base.ts).
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
 
 // Hard cap on how long the Explorer's document-list spinner spins before

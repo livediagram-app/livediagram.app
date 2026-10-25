@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livedesign/design';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';

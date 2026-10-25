@@ -6,7 +6,10 @@
 
 import { useEffect, useRef } from 'react';
 import type { Element, ThemeDefinition } from '@livediagram/document';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import {
   applyStyleMemory,
   forgetStyleKinds,

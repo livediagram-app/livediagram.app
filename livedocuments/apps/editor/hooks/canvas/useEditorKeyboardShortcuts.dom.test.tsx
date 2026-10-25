@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
-import { modalClosed, modalOpened } from '@/lib/modal-guard';
+import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection

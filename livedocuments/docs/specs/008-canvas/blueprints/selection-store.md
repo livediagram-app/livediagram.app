@@ -179,13 +179,13 @@ export function SelectionStoreProvider(props: {
 export function useSelectionStore(): SelectionStore; // throws outside a provider
 export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b: T) => boolean): T;
 
-// apps/editor/hooks/ui/useStableEventProps.ts
+// ../packages/workbench/src/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
 
 // apps/editor/hooks/ui/useStableObject.ts
 export function useStableObject<T extends object>(value: T): T;
 
-// apps/editor/components/primitives/withStableEventProps.tsx
+// ../packages/workbench/src/components/primitives/withStableEventProps.tsx
 export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P>;
 ```
 

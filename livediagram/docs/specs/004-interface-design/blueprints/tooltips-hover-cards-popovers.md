@@ -258,19 +258,19 @@ surface.
 
 ## Constants and configuration
 
-| Constant                  | Value | Provenance                                                   | Safe range |
-| ------------------------- | ----- | ------------------------------------------------------------ | ---------- |
-| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                         | 300–1000   |
-| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                         | 300–1000   |
-| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                         | 400–1000   |
-| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                         | 300–800    |
-| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed               | 50–300     |
-| `HINT_LONG_PRESS_MS`      | 500   | Spec; `apps/editor/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
-| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                          | 6–16       |
-| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                         | 1000–3000  |
-| `TOOLTIP_GAP_PX`          | 6     | D29                                                          | 4–10       |
-| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                       | 6–14       |
-| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `../packages/ui/src/popover.ts`                    | 4–16       |
+| Constant                  | Value | Provenance                                                                 | Safe range |
+| ------------------------- | ----- | -------------------------------------------------------------------------- | ---------- |
+| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                                       | 300–1000   |
+| `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                                       | 300–1000   |
+| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                                       | 400–1000   |
+| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                                       | 300–800    |
+| `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed                             | 50–300     |
+| `HINT_LONG_PRESS_MS`      | 500   | Spec; `../packages/workbench/src/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
+| `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                                        | 6–16       |
+| `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                                       | 1000–3000  |
+| `TOOLTIP_GAP_PX`          | 6     | D29                                                                        | 4–10       |
+| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                                     | 6–14       |
+| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `../packages/ui/src/popover.ts`                                  | 4–16       |
 
 ## Assets and external resources
 

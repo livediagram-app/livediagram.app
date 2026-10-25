@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
+import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
@@ -56,9 +56,9 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { EditorPhotoImport } from '@/components/chrome/EditorPhotoImport';
-import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
+import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
+import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
@@ -68,9 +68,9 @@ import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
 import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
 import { UiScaleProvider, useUiScalePreview } from '@/components/providers/ui-scale';
-import { DockNamesProvider } from '@/hooks/ui/useDockNames';
+import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { resolveUiScales } from '@/lib/ui-scale';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';

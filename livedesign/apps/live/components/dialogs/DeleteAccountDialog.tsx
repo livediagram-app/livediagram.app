@@ -20,7 +20,7 @@ import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
@@ -36,7 +36,7 @@ export function DeleteAccountDialog({
   onDeleted: () => Promise<void> | void;
 }) {
   // Silence the canvas shortcut/paste listeners behind the modal
-  // (see lib/modal-guard).
+  // (see @liveworkspace/workbench/lib/modal-guard).
   useModalGuard(open);
   const { user, deleteAccount, confirmIdentity } = useDeferredAuth();
   const expectedEmail = user?.email ?? '';

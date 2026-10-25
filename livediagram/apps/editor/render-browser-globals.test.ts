@@ -12,7 +12,7 @@ const OUTSIDE_RENDER: Record<string, string> = {
     'clampFree, called from handlers and an effect',
   'apps/editor/components/drive/DriveMirrorProvider.tsx':
     'connectOutcomeOnce, module state read once in an effect',
-  'apps/editor/components/primitives/PagedCarousel.tsx':
+  '../packages/workbench/src/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
   'apps/editor/components/canvas/ReactionBurst.tsx': 'inside the drawing effect',
   'apps/editor/components/canvas/arrow-flow.tsx': 'inside the pinning effect',

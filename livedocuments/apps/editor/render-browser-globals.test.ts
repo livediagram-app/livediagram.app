@@ -10,7 +10,7 @@ const repo = fileURLToPath(new URL('../../', import.meta.url));
 const OUTSIDE_RENDER: Record<string, string> = {
   'apps/editor/components/primitives/MovablePanel.tsx':
     'clampFree, called from handlers and an effect',
-  'apps/editor/components/primitives/PagedCarousel.tsx':
+  '../packages/workbench/src/components/primitives/PagedCarousel.tsx':
     'prefersReducedMotion, called from a scroll handler',
   'apps/editor/components/canvas/arrow-flow.tsx': 'inside the pinning effect',
   // Hooks: read in effects, handlers, store snapshots and subscriptions, or module state the browser-only Explorer reads.

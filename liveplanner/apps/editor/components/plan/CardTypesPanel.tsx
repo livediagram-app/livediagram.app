@@ -9,7 +9,7 @@ import { AddCardTypeButton } from './AddCardTypeButton';
 import { useMemo, useState } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { usePlan } from './PlanContext';
 import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@liveplanner/items';
 import {

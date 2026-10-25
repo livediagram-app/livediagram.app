@@ -12,7 +12,7 @@ import {
   type ArrowLabelLayout,
 } from '@livedocuments/document';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
-import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
+import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this
 // much extra width so it never wraps a line the layout kept whole.

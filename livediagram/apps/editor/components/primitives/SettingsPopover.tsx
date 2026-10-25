@@ -2,9 +2,9 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { SettingsIcon } from '@/components/chrome/tab-bar-icons';
-import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
+import { ResetPositionGlyph } from '@liveworkspace/workbench/components/primitives/ResetPositionGlyph';
 import { useClickOutside, useEscape, HoverCard, Portal } from '@livediagram/ui';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 
 const GAP = 8; // space between the trigger and the popover
 

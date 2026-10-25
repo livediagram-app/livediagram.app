@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { PhotoReviewOverlay } from './PhotoReviewOverlay';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 
 // The review overlay opens BEFORE the detector has answered (docs/specs/021-event-storming/event-storming.md Phase
 // 9): the photograph is on screen first, and the boxes arrive into it.

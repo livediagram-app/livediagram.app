@@ -6,7 +6,10 @@ import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-i
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@/hooks/ui/useNow';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
-import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
+import {
+  ClusterPopoverSegment,
+  ClusterStrip,
+} from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // The Session strip in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md "The Session
 // strip"): Timer and Vote in one strip left of Layers, as Plan mode's buttons share one. Each

@@ -7,10 +7,10 @@
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import type { ComponentProps } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { SheetControllerProvider } from './sheet-controller';
 import { SheetSettingsPanel } from './SheetSettingsPanel';
-import { MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuGroupSeparator } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useSheetSettingsEntry } from './sheet-settings-registry';
 
 const noop = () => {};

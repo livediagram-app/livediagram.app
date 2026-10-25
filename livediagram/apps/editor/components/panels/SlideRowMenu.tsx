@@ -15,13 +15,16 @@
 
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { lucideGlyph, PlusIcon } from '@livediagram/ui';
 import { lucideGroup, lucideMinus } from '@liveworkspace/icons/lucide';
 
 import { slideName, type Slide } from '@livediagram/document';
 
-import { MenuAccordionSection, PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
   MenuTile,
   MenuTileGrid,

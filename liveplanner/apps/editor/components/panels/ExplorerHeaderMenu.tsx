@@ -3,8 +3,12 @@
 import { explorerHref } from '@/lib/explorer-href';
 import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
-import { MenuActionRow, MenuGroupSeparator, PortalMenu } from '@/components/primitives/PortalMenu';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  PortalMenu,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { SettingsIcon, ScaleIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { Glyph } from '@liveplanner/ui';
 import type { ExplorerMenuActions } from './Explorer.types';

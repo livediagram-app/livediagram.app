@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { noteSaveFailing } from '@/lib/save-health';
+import { noteSaveFailing } from '@liveworkspace/workbench/lib/save-health';
 import { OfflineBanner } from './OfflineBanner';
 
 // docs/specs/007-editor/load-recovery.md "Offline".

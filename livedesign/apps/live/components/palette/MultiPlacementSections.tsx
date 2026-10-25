@@ -7,7 +7,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livedesign/design';
-import { ContextMenuDivider } from '@/components/palette/ContextMenu';
+import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -24,7 +24,7 @@ import {
   MenuAccordionSection,
   MenuActionButton,
   MenuActionRow,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';

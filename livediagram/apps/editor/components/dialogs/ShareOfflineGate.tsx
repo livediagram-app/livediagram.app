@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncDocumentPrompt } from './SyncDocumentPrompt';

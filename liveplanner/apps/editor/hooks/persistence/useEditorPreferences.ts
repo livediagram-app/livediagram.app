@@ -17,7 +17,7 @@ import {
   STORAGE_KEY,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { readLocalStorageSafe } from '@/lib/local-storage-safe';
+import { readLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The preferences cached on this device, as an external store: the server

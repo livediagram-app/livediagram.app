@@ -5,7 +5,7 @@
 // Tab stop (the picked swatch); Escape and a press outside close it, Escape handing focus back to
 // the trigger (AnchoredPopover).
 import { useEffect, useRef } from 'react';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
 import { COLOUR_PICKER_WIDTH, COLOUR_POPOVER_PADDING } from './colour-metrics';
 

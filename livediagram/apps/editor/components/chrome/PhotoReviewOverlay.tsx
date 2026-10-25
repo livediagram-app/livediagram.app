@@ -8,7 +8,7 @@ import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
 import type { ReaderFallback } from '@/lib/reading/types';

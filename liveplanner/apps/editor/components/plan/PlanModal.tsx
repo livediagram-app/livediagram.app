@@ -5,7 +5,7 @@
 // from the bottom with a grab handle on a phone, through the shared Dialog. With the row and field
 // styles the Plan forms share.
 import type { ReactNode } from 'react';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogCloseButton } from '@liveplanner/ui';
 
 type ShellProps = {

@@ -15,7 +15,7 @@ const viewport = vi.hoisted(() => ({ width: 1440 }));
 vi.mock('@liveworkspace/workbench/hooks/ui/useViewportWidth', () => ({
   useViewportWidth: () => viewport.width,
 }));
-vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
 

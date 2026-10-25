@@ -5,7 +5,7 @@ import type { Tab } from '@liveplanner/project';
 import type { Project } from '@liveplanner/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { firstTabToLoad, isTabOutOfScope } from '@/lib/tab-scope';
+import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;

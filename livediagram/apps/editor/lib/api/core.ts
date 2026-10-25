@@ -19,7 +19,10 @@ import {
 } from '@livediagram/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livediagram/document';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
@@ -55,7 +58,7 @@ import {
 // Every request carries a Bearer: the account's access token when an
 // account token provider is wired up (see below), else the guest's guest
 // token (lib/guest-token.ts). The api resolves the owner from it.
-// Where the api lives (lib/api/base.ts).
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
 
 // Hard cap on how long the Explorer's document-list spinner spins before

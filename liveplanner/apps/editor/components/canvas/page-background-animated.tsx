@@ -12,7 +12,7 @@ import {
   type PageColourFill,
   type PageMotion,
 } from '@liveplanner/project';
-import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@liveplanner/ui';
 import { fillCss, type ThemeBackgroundPreset } from '@/lib/page-paint';

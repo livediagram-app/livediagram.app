@@ -3,8 +3,8 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { createSticky } from '@livedesign/design';
-import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
-import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
+import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
+import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)": a finger on an element that runs off the screen pans the

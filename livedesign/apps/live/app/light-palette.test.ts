@@ -182,7 +182,7 @@ describe('solid brand fills in light mode', () => {
 // Brand-coloured ink that carries no meaning a reader needs, so the contrast minimum does not apply
 // (WCAG 1.4.3 and 1.4.11 exempt pure decoration). Everything else in light brand ink is brand-700.
 const DECORATIVE_INK = new Set([
-  'apps/live/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
+  '../packages/workbench/src/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
   'apps/live/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
 ]);
 

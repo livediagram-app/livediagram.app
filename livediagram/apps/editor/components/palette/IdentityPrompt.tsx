@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
-import { CanvasModalCard } from './CanvasModalCard';
+import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
 import { IdentityNameRow } from './IdentityNameRow';
 import { SparkleIcon } from './template-picker-icons';
 
@@ -27,7 +27,7 @@ export function IdentityPrompt({
   onJoin: (name: string) => void;
   onCancel: () => void;
 }) {
-  // Over the canvas: silence its shortcut and paste listeners behind it (lib/modal-guard).
+  // Over the canvas: silence its shortcut and paste listeners behind it (@liveworkspace/workbench/lib/modal-guard).
   useModalGuard(true);
   const nameLocked = !!lockedName;
   const [name, setName] = useState(lockedName ?? participant.name);

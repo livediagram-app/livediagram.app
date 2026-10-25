@@ -11,7 +11,7 @@ import {
 } from '@liveworkspace/settings-ui';
 import { lucideGlyph, EDITOR_MODE_ICONS } from '@livedesign/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
-import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
+import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 // The categories that carry a tile: every top-level one. A sub-category

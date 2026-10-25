@@ -6,13 +6,13 @@
 import { useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, TabsLabelIcon, TrashIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideGripVertical } from '@liveworkspace/icons/lucide';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { GroupId } from './item-type-layout';
 
 // A field's drag handle.

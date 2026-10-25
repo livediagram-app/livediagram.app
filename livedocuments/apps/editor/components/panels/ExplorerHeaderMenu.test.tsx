@@ -6,7 +6,9 @@ import { ExplorerHeaderMenu } from './ExplorerHeaderMenu';
 
 // jsdom lays nothing out, so the keep-on-screen clamp would chase a box that
 // never moves. Where the menu sits is not what this file is about.
-vi.mock('@/lib/clamp-to-viewport', () => ({ clampToViewport: () => ({ x: 0, y: 0 }) }));
+vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', () => ({
+  clampToViewport: () => ({ x: 0, y: 0 }),
+}));
 
 afterEach(() => {
   vi.restoreAllMocks();

@@ -36,7 +36,10 @@ import {
   setServerPreferences,
 } from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { debugLog } from './debug-log';
 
 export type UserPreferences = {

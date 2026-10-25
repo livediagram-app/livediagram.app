@@ -37,7 +37,9 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({ user: null }),
 }));
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => async () => true }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({
+  useConfirm: () => async () => true,
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/api-client', () => ({
   apiGetCapabilities: async () => ({ driveMode: 'broker' }),

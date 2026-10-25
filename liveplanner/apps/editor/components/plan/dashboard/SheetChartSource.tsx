@@ -12,7 +12,7 @@ import {
 } from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChartColumn } from '@liveworkspace/icons/lucide';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import {
   DONE,
   FIELD,

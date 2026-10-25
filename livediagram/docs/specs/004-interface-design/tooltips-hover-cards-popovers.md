@@ -162,8 +162,8 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
 - The canvas's own fields (a label being typed) pan the canvas instead, on a tablet as on a phone
   ([Mobile chrome](../007-editor/editor-app.md)).
 
-Where it lives: `apps/editor/hooks/ui/useFloatingKeyboardAvoidance.ts`, mounted once for every page by
-`components/providers/KeyboardAvoidanceBoot.tsx` in the root layout.
+Where it lives: `../packages/workbench/src/hooks/ui/useFloatingKeyboardAvoidance.ts`, mounted once for every page by
+`../packages/workbench/src/components/providers/KeyboardAvoidanceBoot.tsx` in the root layout.
 
 ## Native `title`
 

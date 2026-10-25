@@ -25,8 +25,8 @@ import {
   DuplicateIcon,
   TrashIcon,
 } from '@liveplanner/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import {

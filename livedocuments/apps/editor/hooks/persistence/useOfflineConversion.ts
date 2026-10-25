@@ -1,6 +1,6 @@
 'use client';
 
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';

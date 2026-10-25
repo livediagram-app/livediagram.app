@@ -13,7 +13,7 @@ import { lucideDices } from '@liveworkspace/icons/lucide';
 import { FINISH_LABELS } from '@/components/palette/FinishSection';
 import { track } from '@/lib/telemetry';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
 import { rollMashup } from '@/lib/look-mashup';
 import { SEASON_LABELS, seasonalLooksFor } from '@/lib/seasonal-looks';

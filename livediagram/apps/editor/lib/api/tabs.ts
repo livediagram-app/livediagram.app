@@ -7,7 +7,7 @@ import {
   type TabSummary,
 } from '@livediagram/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
   isOfflineIdSync,

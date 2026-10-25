@@ -10,7 +10,10 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';

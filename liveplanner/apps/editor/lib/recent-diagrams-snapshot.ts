@@ -15,7 +15,7 @@ import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // Fetches one diagram's snapshot SVG: null when the server has none (404 / 403 / 503), and throws when
 // the request itself failed, which is worth trying again on the next list.

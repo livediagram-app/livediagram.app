@@ -3,7 +3,7 @@
 // below the top strip. The column's box is read off the screen and turned into canvas coordinates through the
 // board element's own place and size (the board is never rotated), then fitted as a page is (computeFitBelow).
 import { computeFitBelow } from '@/lib/viewport';
-import { glideViewport } from '@/lib/viewport-glide';
+import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
 import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';

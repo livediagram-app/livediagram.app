@@ -16,7 +16,7 @@ import { isBoxed, renumberSteps, supportsRotation } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
   type CommandContext,

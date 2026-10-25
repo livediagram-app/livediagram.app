@@ -8,7 +8,9 @@ import { StartModeSwitch } from './StartModeSwitch';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const transition = vi.hoisted(() => vi.fn((_type: string, change: () => void) => change()));
 vi.mock('@/lib/view-transition', () => ({ startTypedTransition: transition }));
-vi.mock('@/hooks/ui/useConfirm', () => ({ useConfirm: () => async () => true }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({
+  useConfirm: () => async () => true,
+}));
 afterEach(cleanup);
 
 // docs/specs/007-editor/start-diagramming.md "Changing mode"

@@ -334,7 +334,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   in force, else `#3b82f6`. Below them, always, a 24 px warning line (`role="status"`,
   `text-amber-800` / `dark:text-amber-300`, at least 4.5:1 on the flyout), empty until
   `penColourHardToSee(hex)` is not: the warning icon, "Hard to see on the {light|dark} board." and a
-  swatch "Use {readable}, readable on both boards" that applies it. `lib/hsv.ts`: `hsvToHex`,
+  swatch "Use {readable}, readable on both boards" that applies it. `../packages/workbench/src/lib/hsv.ts`: `hsvToHex`,
   `hexToHsv`.
 - Telemetry: `Draw·Changed·PenColour` on every marker colour change, never the colour.
 
@@ -975,7 +975,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Canvas and export draw the named colour for the canvas                                        | `apps/editor/lib/stock-colour-projector.test.ts`, `export-as-seen.test.ts`                                              |
 | Marker prefs: ink for any marker, names, custom hex, old colours read as names                | `apps/editor/lib/whiteboard-prefs.test.ts`                                                                              |
 | Commit records a name or a hex                                                                | `apps/editor/hooks/canvas/commit-freehand.test.ts`                                                                      |
-| Picker: standard row by name, Ink as null, custom in force, reserved warning                  | `components/canvas/whiteboard/ColourPicker.test.tsx`, `lib/hsv.test.ts`                                                 |
+| Picker: standard row by name, Ink as null, custom in force, reserved warning                  | `components/canvas/whiteboard/ColourPicker.test.tsx`, `../packages/workbench/src/lib/hsv.test.ts`                       |
 | Marker glyph and cursor in the resolved colour, ink included                                  | `WhiteboardDock.test.tsx`, `useWhiteboardPenCursor.test.tsx`                                                            |
 | Marker rows: nine stock colours, More colours, the tab's customs, Marker 1                    | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`                                         |
 | Swatch rows one line, never clipped, both engines                                             | `e2e/quick-style-swatch-rows.spec.ts`                                                                                   |

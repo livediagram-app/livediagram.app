@@ -29,7 +29,7 @@
 import { useEffect, useRef } from 'react';
 import { arrowReferencesAny, type Element, type Tab } from '@livediagram/document';
 
-import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,

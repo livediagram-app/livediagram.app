@@ -32,7 +32,7 @@
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
 import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/design';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
   clipboardWriteFor,
@@ -48,7 +48,7 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
+import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { DROP_NOT_AN_IMAGE, dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 

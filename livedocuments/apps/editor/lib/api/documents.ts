@@ -12,7 +12,7 @@ import {
 } from '@livedocuments/api-schema';
 import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livedocuments/api-schema';
 import type { Tab } from '@livedocuments/document';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
   offlineLoadDocument,

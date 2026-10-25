@@ -8,8 +8,8 @@ import {
   type ElementAction,
   type ElementActionStatus,
 } from '@livedocuments/document';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';

@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { markPlanTracksSeen, planTrackSeen } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';

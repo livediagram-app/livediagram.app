@@ -8,7 +8,7 @@
 // with what is drawn. A drop on another board moves the item there (its column, and its row when
 // that board has rows); a drop on the canvas leaves a Plan card there.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { isDragTravel } from '@/lib/press-gestures';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import type { Item } from '@liveplanner/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';

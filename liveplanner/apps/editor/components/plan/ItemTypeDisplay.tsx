@@ -42,7 +42,7 @@ import {
 import { Button, CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { FIELD_GLYPHS } from './card-field-glyphs';
 import { CARD_FIELD_LABELS } from './board-setup-edits';

@@ -12,8 +12,14 @@ import {
   type FilterCondition,
   type SortKey,
 } from '@liveplanner/sheets';
-import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
-import { MenuActionRow, MenuHeader } from '@/components/primitives/PortalMenu';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
+import {
+  MenuActionRow,
+  MenuHeader,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 import { useSheetClipboard } from './useSheetClipboard';

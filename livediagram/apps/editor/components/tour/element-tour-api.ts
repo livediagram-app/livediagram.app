@@ -1,4 +1,4 @@
-import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
+import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import type { SankeyFlowsTourApi } from './sankey-flows-tour-steps';
 

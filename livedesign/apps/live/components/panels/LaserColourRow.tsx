@@ -6,7 +6,7 @@
 // the picker is wider than the panel. "Your colour" (the presence colour) leads it; then the strong
 // standard colours by name, drawn for the canvas; Custom colours and +.
 import { useState } from 'react';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/ChevronIcon';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup } from '@/components/colour/colour-options';

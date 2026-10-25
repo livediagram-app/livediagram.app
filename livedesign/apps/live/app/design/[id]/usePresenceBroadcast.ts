@@ -1,5 +1,5 @@
 import { useEffect, type MutableRefObject } from 'react';
-import { useLocalBesideTab } from '@/lib/split-presence';
+import { useLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { MAX_SELECTION_IDS } from '@livedesign/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';

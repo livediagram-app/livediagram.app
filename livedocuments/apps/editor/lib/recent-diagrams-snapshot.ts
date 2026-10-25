@@ -2,7 +2,7 @@
 // Cache Storage, for a landing-page hero that is gone (docs/specs/019-marketing/marketing-site.md "Hero").
 // Nothing writes them now; sign-out and account deletion still clear any a browser kept, so the next
 // person on a shared computer never sees the account's document names.
-import { removeLocalStorageSafe } from './local-storage-safe';
+import { removeLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
 
 const RECENT_NOTE_KEY = 'livedocuments:recent-diagrams:v1';
 const RECENT_THUMB_CACHES = ['livedocuments-recent-thumbs-v2', 'livedocuments-recent-thumbs-v1'];

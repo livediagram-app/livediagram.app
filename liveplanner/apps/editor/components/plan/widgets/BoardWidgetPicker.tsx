@@ -9,7 +9,7 @@ import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'r
 import { BOARD_WIDGET_KINDS, type BoardWidgetKind } from '@liveplanner/items';
 import { CheckIcon, CompactEmptyState, NoMatches, lucideGlyph } from '@liveplanner/ui';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
 import { BoardWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';

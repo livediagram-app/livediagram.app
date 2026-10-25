@@ -1,8 +1,8 @@
-import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
+import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { scrollLeftToReveal } from './tab-strip-scroll';
+import { scrollLeftToReveal } from '@liveworkspace/workbench/components/chrome/tab-strip-scroll';
 import {
   folderNamesInDocument,
   groupTabsIntoRuns,
@@ -13,7 +13,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livedocuments/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
-import { useTabReorderDrag } from './useTabReorderDrag';
+import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)

@@ -26,7 +26,7 @@ import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // How big the whole set may grow, in characters of `{"prefs":...}`. The api takes a PUT body of twice
 // this (apps/api/src/routes/preferences.ts PREFERENCES_PUT_MAX), so a patch of the whole set with a

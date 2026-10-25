@@ -2,7 +2,7 @@
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
-import { pastePointer } from '@/lib/canvas-pointer';
+import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ import { track } from '@/lib/telemetry';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
+import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { BackBar } from '@/components/primitives/BackBar';
+import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
 import { Button, trustedHtml } from '@livedocuments/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

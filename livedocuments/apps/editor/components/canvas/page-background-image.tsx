@@ -21,7 +21,7 @@ import { Button } from '@livedocuments/ui';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 import { PageGalleryPicker } from './PageGalleryPicker';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 import { DISPLAY_EDGE_TILE } from '@/lib/image-display';

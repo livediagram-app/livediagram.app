@@ -5,32 +5,32 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 
 ## Files
 
-| Path                                                          | Role                                                                                                                            |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/tailwind-config/theme.css`                       | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                       |
-| `../packages/tailwind-config/src/optical-utilities.test.ts`   | The utilities' contracts                                                                                                        |
-| `../packages/ui/src/optical/GlyphDisc.tsx`                    | Glyph disc                                                                                                                      |
-| `../packages/ui/src/optical/Chip.tsx`                         | Chip                                                                                                                            |
-| `../packages/ui/src/optical/IconSlot.tsx`                     | Icon slot                                                                                                                       |
-| `../packages/ui/src/optical/index.ts`                         | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                           |
-| `../packages/ui/src/optical/optical.test.tsx`                 | Primitive contracts                                                                                                             |
-| `../packages/ui/src/Button.tsx`                               | `ButtonContent`; `optical-edges` in the button base                                                                             |
-| `apps/editor/components/chrome/header-action.tsx`             | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                       |
-| `../packages/icons/src/svg-cap-band.ts`                       | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                      |
-| `../packages/style-guards/src/optical-guard.ts`               | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                            |
-| `apps/{live,help,telemetry,community}/optical-guard.test.ts`  | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                                       |
-| `../packages/marketing-site/src/guards/source-guards.test.ts` | The guard over every product's marketing app and the shared marketing pages                                                     |
-| `packages/ui/optical-guard.test.ts`                           | The guard over `packages/ui/src`                                                                                                |
-| `apps/editor/e2e/optical.ts`                                  | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                              |
-| `apps/editor/e2e/optical-discover.ts`                         | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                           |
-| `apps/editor/e2e/optical-snap.ts`                             | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure) |
-| `apps/editor/e2e/optical-snap.test.ts`                        | Their contracts (Vitest)                                                                                                        |
-| `apps/editor/e2e/optical-snap.spec.ts`                        | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                       |
-| `apps/editor/e2e/optical-audit.spec.ts`                       | The editor's audited screens                                                                                                    |
-| `apps/editor/e2e/optical-audit-sites.spec.ts`                 | The help centre, telemetry dashboard, Community and marketing site                                                              |
-| `apps/editor/e2e/audit-screens.ts`                            | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                          |
-| `scripts/e2e-stack.mjs`                                       | Also serves `apps/help/out` at `/help/*`, `apps/community/out` at `/community/*`, marketing on its own port                     |
-| `.github/workflows/e2e.yml`                                   | Its Sites audit job builds help, telemetry, community and marketing beside live and runs the `sites` project                    |
+| Path                                                            | Role                                                                                                                            |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/tailwind-config/theme.css`                         | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                       |
+| `../packages/tailwind-config/src/optical-utilities.test.ts`     | The utilities' contracts                                                                                                        |
+| `../packages/ui/src/optical/GlyphDisc.tsx`                      | Glyph disc                                                                                                                      |
+| `../packages/ui/src/optical/Chip.tsx`                           | Chip                                                                                                                            |
+| `../packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                                       |
+| `../packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                           |
+| `../packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                                             |
+| `../packages/ui/src/Button.tsx`                                 | `ButtonContent`; `optical-edges` in the button base                                                                             |
+| `../packages/workbench/src/components/chrome/header-action.tsx` | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                       |
+| `../packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                      |
+| `../packages/style-guards/src/optical-guard.ts`                 | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                            |
+| `apps/{live,help,telemetry,community}/optical-guard.test.ts`    | Each app runs the guard over its own sources (as `motion-budget.test.ts`)                                                       |
+| `../packages/marketing-site/src/guards/source-guards.test.ts`   | The guard over every product's marketing app and the shared marketing pages                                                     |
+| `packages/ui/optical-guard.test.ts`                             | The guard over `packages/ui/src`                                                                                                |
+| `apps/editor/e2e/optical.ts`                                    | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts)                                                              |
+| `apps/editor/e2e/optical-discover.ts`                           | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                           |
+| `apps/editor/e2e/optical-snap.ts`                               | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure) |
+| `apps/editor/e2e/optical-snap.test.ts`                          | Their contracts (Vitest)                                                                                                        |
+| `apps/editor/e2e/optical-snap.spec.ts`                          | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                       |
+| `apps/editor/e2e/optical-audit.spec.ts`                         | The editor's audited screens                                                                                                    |
+| `apps/editor/e2e/optical-audit-sites.spec.ts`                   | The help centre, telemetry dashboard, Community and marketing site                                                              |
+| `apps/editor/e2e/audit-screens.ts`                              | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                          |
+| `scripts/e2e-stack.mjs`                                         | Also serves `apps/help/out` at `/help/*`, `apps/community/out` at `/community/*`, marketing on its own port                     |
+| `.github/workflows/e2e.yml`                                     | Its Sites audit job builds help, telemetry, community and marketing beside live and runs the `sites` project                    |
 
 ## Names
 

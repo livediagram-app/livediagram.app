@@ -12,7 +12,10 @@ import {
 } from '@liveplanner/api-schema';
 import { noteServerBuild, noteServerProjectFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@liveplanner/project';
-import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { readGuestToken } from '../guest-token';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
@@ -46,7 +49,7 @@ import {
 //
 // Every request carries the person's Bearer: an account's access token when signed in, else the guest token
 // liveworkspace issued (lib/guest-token.ts).
-// Where the api lives (lib/api/base.ts).
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts).
 export { API_BASE };
 
 // How long an autosave write may take before it is abandoned (docs/specs/006-project/per-tab-storage.md "Retrying a

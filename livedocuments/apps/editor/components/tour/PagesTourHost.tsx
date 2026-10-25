@@ -8,7 +8,7 @@ import { debugLog } from '@/lib/debug-log';
 import { PAGES_TOUR_RELAUNCH_EVENT, pagesKindSeen, markPagesKindSeen } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { resetPageTour, tidyPageTour } from './page-tour-dom';

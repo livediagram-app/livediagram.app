@@ -5,7 +5,7 @@ import { editorModeLabel, type EditorMode, type Element } from '@livediagram/doc
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livediagram/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-import { SearchInput } from '@/components/primitives/SearchInput';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';

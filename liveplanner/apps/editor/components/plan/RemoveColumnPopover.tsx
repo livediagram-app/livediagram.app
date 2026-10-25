@@ -8,7 +8,7 @@
 import { useId, useState, type ReactNode } from 'react';
 import type { PlanColumn } from '@liveplanner/items';
 import { Button, Select, TrashIcon } from '@liveplanner/ui';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 
 type RemoveColumnChoice = { kind: 'move'; to: string } | { kind: 'trash' };

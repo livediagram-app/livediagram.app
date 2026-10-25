@@ -17,7 +17,7 @@
 // double-tap-to-zoom) and this way a tap and a click behave identically.
 
 import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 'react';
-import { isDragTravel } from '@/lib/press-gestures';
+import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import { DOUBLE_PRESS_MS } from '@/lib/double-press';
 
 // Pure so the window itself is testable: was this press the second half of a

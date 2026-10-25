@@ -13,7 +13,7 @@ import {
   useSheetComments,
 } from '@/hooks/sheets/sheet-comments-context';
 import { registerCellFocuser, registerCellNamer } from '@/hooks/sheets/sheet-cell-refs';
-import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
+import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';

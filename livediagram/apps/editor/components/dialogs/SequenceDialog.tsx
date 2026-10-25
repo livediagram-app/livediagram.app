@@ -21,7 +21,7 @@ import {
   type SequenceElementParticipant,
   type ShapeElement,
 } from '@livediagram/document';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';

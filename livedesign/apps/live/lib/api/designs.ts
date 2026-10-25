@@ -11,7 +11,7 @@ import {
 } from '@livedesign/api-schema';
 import type { LiveDoc, DesignResponse, DesignSummary } from '@livedesign/api-schema';
 import type { Tab } from '@livedesign/design';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadDesign, offlineSaveDesignMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '../index-client';

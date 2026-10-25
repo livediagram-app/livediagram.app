@@ -5,7 +5,7 @@
 // page never scrolls under a finger that selects.
 import { act, fireEvent } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { LONG_PRESS_MS } from '@/hooks/ui/useLongPress';
+import { LONG_PRESS_MS } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { COL_HEADER_PX, ROW_HEADER_PX } from './sheet-geometry';
 import { cellPoint, installGridDom, mountGrid } from './sheet-grid-test-utils';
 

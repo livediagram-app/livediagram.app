@@ -6,7 +6,7 @@ import {
   SettingsCategoryPane as SharedPane,
   SettingsUiKitProvider,
 } from '@liveworkspace/settings-ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { SETTINGS_CATEGORIES, type SettingsCategorySpec } from './settings-catalogue';
 import { SETTINGS_KIT } from './settings-kit';

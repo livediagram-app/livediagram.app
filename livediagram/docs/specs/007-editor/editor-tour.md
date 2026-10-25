@@ -218,7 +218,7 @@ of their steps ask the person to try things.
   count stays honest instead of a hidden step burning its timeout mid-tour.
 - **The strip** ([Toolbar layout](toolbar-layout.md)): the Palette step anchors to the strip's card, not the
   full-width row it is centred in; the selection-mode and category steps use the strip's own pickers.
-- **What counts as a dialog** is one signal, the modal guard (`lib/modal-guard.ts`): a count of open modal
+- **What counts as a dialog** is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the
   full-screen modals that do not use it calling `useModalGuard` themselves (the Search panel, the canvas theme
   dialog, Photo Review, the identity prompt, the new document wizard, the sign-in reasons and delete account

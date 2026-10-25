@@ -14,7 +14,7 @@ import {
 } from '@liveplanner/api-schema';
 import type { Project, ProjectResponse, ProjectSummary } from '@liveplanner/api-schema';
 import type { Tab } from '@liveplanner/project';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadProject, offlineSaveProjectMeta } from '../offline/offline-store';
 import { IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '../index-client';

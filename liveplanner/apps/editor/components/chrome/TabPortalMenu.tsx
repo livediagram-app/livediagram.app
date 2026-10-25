@@ -2,10 +2,10 @@ import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import type { TabDataRows } from './tab-data-rows';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
-import { BottomSheet } from '@/components/primitives/BottomSheet';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { clampToViewport } from '@/lib/clamp-to-viewport';
+import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
 import {
   ClearIcon,
@@ -13,7 +13,10 @@ import {
   MoveIcon,
   TabLockIcon,
 } from '@/components/chrome/tab-bar-icons';
-import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import {

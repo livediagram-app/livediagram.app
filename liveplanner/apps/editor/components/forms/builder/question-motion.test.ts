@@ -5,7 +5,9 @@ import { OPEN_MS, QUESTION_FLIP, growBetween, leaveThen } from './question-motio
 // The builder's question motion (docs/specs/030-forms/forms.md "Building a form").
 
 let reduce = false;
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduce }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => reduce,
+}));
 afterEach(() => {
   reduce = false;
   vi.useRealTimers();

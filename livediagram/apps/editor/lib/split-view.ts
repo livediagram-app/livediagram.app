@@ -10,7 +10,7 @@ import {
   removeLocalStorageSafe,
   safeJson,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // The narrowest either pane may get. Either can hold the editor, so both keep the editor's floor:
 // Tailwind's `sm` (640 px), the width its palette, Explorer and canvas are laid out for. Under it

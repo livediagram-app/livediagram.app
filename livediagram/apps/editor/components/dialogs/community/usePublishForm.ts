@@ -8,7 +8,7 @@ import {
   type CommunityInputField,
   type CommunityOwnPost,
 } from '@livediagram/api-schema';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
   publishFieldErrors,
   publishServerFieldError,

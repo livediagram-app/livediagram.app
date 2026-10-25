@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { elementKindLabel, type Element } from '@liveplanner/project';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { HoverCard, Glyph } from '@liveplanner/ui';
 import {

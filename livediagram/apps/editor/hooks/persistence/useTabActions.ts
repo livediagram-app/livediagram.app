@@ -30,9 +30,9 @@ import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
-import type { useConfirm } from '@/hooks/ui/useConfirm';
+import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
-import { toastName } from '@/lib/toast-name';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 type TabActionsDeps = {
   tabs: Tab[];

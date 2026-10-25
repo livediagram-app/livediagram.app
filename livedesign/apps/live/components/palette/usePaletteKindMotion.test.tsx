@@ -8,7 +8,9 @@ import {
   usePaletteKindMotion,
 } from './usePaletteKindMotion';
 
-vi.mock('@/lib/motion-preference', () => ({ prefersReducedMotion: () => reduced }));
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => reduced,
+}));
 let reduced = false;
 
 // docs/specs/007-editor/pages-mode.md "The palette's kind": a change of kind cascades in.

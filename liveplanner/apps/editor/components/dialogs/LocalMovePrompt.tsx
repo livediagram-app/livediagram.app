@@ -1,9 +1,9 @@
 'use client';
 
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { ImportChecklist } from '@/components/dialogs/ImportChecklist';
+import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Spinner } from '@/components/palette/template-picker-icons';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';

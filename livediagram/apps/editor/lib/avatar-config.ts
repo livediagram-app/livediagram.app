@@ -15,7 +15,7 @@ import {
   pickOption,
   storedRecord,
   writeLocalStorageSafe,
-} from './local-storage-safe';
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 import { randomPick } from '@liveworkspace/workbench/lib/random';
 
 // The costume vocabulary itself lives in @livediagram/api-schema, because the

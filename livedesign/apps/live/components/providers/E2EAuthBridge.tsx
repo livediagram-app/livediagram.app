@@ -10,7 +10,7 @@
 // a settled guest.
 
 import { useEffect } from 'react';
-import { readLocalStorageSafe, safeJson } from '@/lib/local-storage-safe';
+import { readLocalStorageSafe, safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
 export const E2E_SESSION_KEY = 'livedesign:e2e:session';

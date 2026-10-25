@@ -5,7 +5,10 @@
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
-import { useLocalBesideTab, useRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  useLocalBesideTab,
+  useRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import type { Tab } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
 import type { PresenceClock } from './usePresenceState';

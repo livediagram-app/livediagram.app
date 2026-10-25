@@ -1,4 +1,7 @@
-import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
+import {
+  readLocalStorageSafe,
+  writeLocalStorageSafe,
+} from '@liveworkspace/workbench/lib/local-storage-safe';
 
 // "Not Now" on the move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving
 // documents in This Browser after signing in"), remembered per account in this browser with the count of

@@ -5,7 +5,7 @@
 // the design. A colleague opening the same design gets their own. Never sent
 // to the api.
 
-import { readLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
 import type { UserPreferences } from './user-preferences';
 
 const KEY = 'livedesign:v2:presentation-config';

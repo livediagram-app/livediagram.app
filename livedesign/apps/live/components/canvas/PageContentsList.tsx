@@ -14,13 +14,13 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip, trustedHtml } from '@livedesign/ui';
 import { DropCaret } from '@/components/primitives/DropCaret';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
+import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
-} from '@/components/primitives/PortalMenu';
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
 import type { SlideThumb } from '@/lib/slide-thumb';

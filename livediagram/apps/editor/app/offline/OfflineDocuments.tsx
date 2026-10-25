@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { DocumentSummary } from '@livediagram/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@livediagram/ui';
-import { ConfirmDialog } from '@/components/dialogs/ConfirmDialog';
+import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';

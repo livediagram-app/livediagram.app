@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { WorkbenchPage } from './WorkbenchPage';
-import { EDITOR_VIEWPORT } from '@/lib/page-viewport';
+import { EDITOR_VIEWPORT } from '@liveworkspace/workbench/lib/page-viewport';
 
 // The workbench embed (docs/specs/013-workspace/workbench-embeds.md): the editor inside a developer
 // tool's frame, signed in by a workbench session. Static like /embed; the editor worker leaves every
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// The canvas owns zoom here, so the page is pinned at 1 (lib/page-viewport.ts).
+// The canvas owns zoom here, so the page is pinned at 1 (@liveworkspace/workbench/lib/page-viewport.ts).
 export const viewport = EDITOR_VIEWPORT;
 
 export default function Page() {

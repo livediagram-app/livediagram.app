@@ -18,7 +18,7 @@ import {
 import { notifyApiWrite, subscribeApiWrites } from '@/lib/api/write-signal';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
-import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 import { createBrowserTokens, type BrowserTokens } from '@/lib/drive/browser-tokens';
 import { driveUiMode, googleClientId, googlePickerApiKey } from '@/lib/drive/config';

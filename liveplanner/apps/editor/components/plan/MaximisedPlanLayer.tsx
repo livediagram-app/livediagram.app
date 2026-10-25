@@ -35,7 +35,7 @@ import { SketchFace } from '@/components/canvas/SketchFace';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
 import { useCanvasPattern } from '@/components/canvas/canvas-pattern-context';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';

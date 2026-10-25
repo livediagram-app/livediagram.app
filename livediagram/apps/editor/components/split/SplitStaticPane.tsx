@@ -5,7 +5,7 @@ import { tabHasDrawing, type Tab } from '@livediagram/document';
 import { isTextEditFocused } from '@livediagram/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { anyModalOpen } from '@/lib/modal-guard';
+import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
 import { legibleTabAccent } from '@/lib/tab-accent';

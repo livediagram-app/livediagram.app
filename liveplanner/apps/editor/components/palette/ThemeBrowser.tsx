@@ -7,7 +7,7 @@
 // Selection is reported via callbacks; the caller decides what "select" means (apply live). `onCommit` is the
 // double-click shortcut (defaults to onSelect when not given).
 
-import { PagedCarousel } from '@/components/primitives/PagedCarousel';
+import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { THEMES } from '@/lib/themes';
 import { ThemeCard } from '@/components/palette/theme-picker-cards';
 

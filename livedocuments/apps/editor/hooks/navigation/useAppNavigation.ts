@@ -7,7 +7,7 @@ import { browserNavigationDeps, navigateTo } from '@/lib/stale-build-navigation'
 
 // The app's own programmatic navigation (docs/specs/016-platform/stale-builds.md): the router's
 // transition, or a full page load once a newer build is live. Same shape as the router's push and
-// replace, so call sites read as before. A workspace frame takes the move first (lib/app-location.ts).
+// replace, so call sites read as before. A workspace frame takes the move first (@liveworkspace/workbench/lib/app-location.ts).
 export function useAppNavigation(): {
   push: (url: string) => void;
   replace: (url: string) => void;

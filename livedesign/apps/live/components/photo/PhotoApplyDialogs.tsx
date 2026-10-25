@@ -13,7 +13,7 @@ import {
   type AdjustmentId,
   type ParamSpec,
 } from '@livedesign/photo-engine';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { rasterize } from '@/lib/photo-editor/layer-ops';

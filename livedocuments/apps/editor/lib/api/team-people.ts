@@ -2,7 +2,7 @@
 // comment-mentions.md). Teams are liveworkspace's; the api reads their people from the accounts Worker for a
 // caller whose token names the team.
 import type { TeamMember } from '@livedocuments/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 export type { TeamMember };

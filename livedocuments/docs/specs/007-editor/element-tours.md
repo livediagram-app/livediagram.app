@@ -363,5 +363,5 @@ help article's tour section; and a section here.
 - `../packages/workbench/src/lib/dialog-handle.ts`: the slot an open dialog registers its tabs and close in, for a tour that runs inside
   it (`sankey-flows-dialog-handle.ts`, `chart-data-dialog-handle.ts`).
 - `../packages/workbench/src/lib/sankey-tour-focus.ts`: the band or node a step lifts on a Sankey.
-- `apps/editor/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
+- `../packages/workbench/src/lib/concept-tour-preview.ts`: what a step shows on a concept graphic or a chart: an animation previewed
   (a chart's Grow), or a chevron stage's bar held open.

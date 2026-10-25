@@ -4,7 +4,7 @@ import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@liveplanner/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
 import { BAND_BLEND, BAND_FLUSH, BAND_TINT } from './toolbar-surface';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';

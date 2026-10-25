@@ -26,7 +26,10 @@ import {
   IconCategoryGlyph,
   PaletteMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionButton,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { AnimationSections } from '@/components/palette/AnimationSections';

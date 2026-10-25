@@ -2,7 +2,7 @@
 // comment-mentions.md). Teams are liveworkspace's; the api reads their people from the accounts Worker for a
 // caller whose token names the team.
 import type { TeamMember } from '@livedesign/api-schema';
-import { dedupeInFlight } from '../dedupe';
+import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 export type { TeamMember };
@@ -16,7 +16,10 @@ async function _apiTeamMembers(ownerId: string, teamId: string): Promise<TeamMem
   return (await expectOk<{ members: TeamMember[] }>(res, 'load team members')).members;
 }
 
-export const apiTeamMembers = dedupeInFlight(_apiTeamMembers, (ownerId, teamId) => `${ownerId} ${teamId}`);
+export const apiTeamMembers = dedupeInFlight(
+  _apiTeamMembers,
+  (ownerId, teamId) => `${ownerId} ${teamId}`,
+);
 
 // Email a teammate about an action just assigned to them on this design. Best-effort: the assignment is already
 // saved, so callers fire and forget. The api checks the team, the design and the assignee, and resolves every name

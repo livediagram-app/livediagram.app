@@ -7,7 +7,7 @@
 // no panel.
 import { useState } from 'react';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
+import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { track } from '@/lib/telemetry';

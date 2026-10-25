@@ -8,7 +8,7 @@ import {
   type ImportDrawioDocuments,
   type ImportDrawioLibraries,
 } from '@/hooks/persistence/useDrawioFileImport';
-import { ImportChecklist } from './ImportChecklist';
+import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
 import { pluralGrouped } from '@livediagram/document';

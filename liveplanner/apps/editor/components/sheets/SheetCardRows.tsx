@@ -29,7 +29,7 @@ import {
 } from '@liveplanner/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { cardFieldChoice } from './card-field-options';
 import { cellBox } from './sheet-geometry';
 import { useSheetController, type SheetController } from './sheet-controller';

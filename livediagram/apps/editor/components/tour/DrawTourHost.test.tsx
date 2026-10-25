@@ -8,7 +8,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
+import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
 import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';

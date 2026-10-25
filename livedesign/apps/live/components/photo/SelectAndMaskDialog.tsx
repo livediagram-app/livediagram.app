@@ -22,7 +22,7 @@ import {
   type Mask8,
   type Raster,
 } from '@livedesign/photo-engine';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { photoWorkers } from '@/lib/photo-editor/photo-worker-client';

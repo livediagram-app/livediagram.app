@@ -29,7 +29,7 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
-import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';

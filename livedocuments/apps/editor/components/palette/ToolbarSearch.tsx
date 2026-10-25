@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { Element } from '@livedocuments/document';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livedocuments/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { SearchInput } from '@/components/primitives/SearchInput';
+import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';

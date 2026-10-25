@@ -5,7 +5,7 @@
 // context-menu-rows.tsx (which re-exports everything here) so that file
 // keeps the generic look-and-feel rows.
 
-import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
+import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { type ReactNode } from 'react';
 import {
   animationLabel,

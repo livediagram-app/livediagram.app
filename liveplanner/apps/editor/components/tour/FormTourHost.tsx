@@ -19,7 +19,7 @@ import { debugLog } from '@/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@/lib/modal-guard';
+import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { FormStarterPicture } from '@liveplanner/template-previews';
 import { formTourSteps, formTourStepTelemetryType, type FormTourApi } from './form-tour-steps';

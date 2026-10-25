@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
-import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';
+import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
 import { buildIndicatorItems, type IndicatorItem } from './indicator-items';

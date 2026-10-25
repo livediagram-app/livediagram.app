@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@livediagram/document';
-import { isMobileViewportSync } from '@/lib/responsive';
-import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
+import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 

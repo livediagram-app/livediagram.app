@@ -36,7 +36,7 @@ import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from 
 import type { ArticlesView } from './useArticles';
 import { pageEdits, type PageEdits } from './page-edits';
 import type { PageLayoutId } from '@livedocuments/templates';
-import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';

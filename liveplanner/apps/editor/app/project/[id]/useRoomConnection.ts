@@ -7,7 +7,10 @@ import {
   type SetStateAction,
 } from 'react';
 import { explorerHref } from '@/lib/explorer-href';
-import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import {
+  setRemoteBesideTab,
+  syncRemoteBesideTabs,
+} from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@liveplanner/project';
 import {

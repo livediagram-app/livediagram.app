@@ -7,7 +7,7 @@
 // slot's first frame and costs nothing after.
 import { useLayoutEffect, type RefObject } from 'react';
 import { MOTION_MS, cascadeDelayMs } from '@liveworkspace/style-guards/motion';
-import { prefersReducedMotion } from '@/lib/motion-preference';
+import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 
 const SLOT_ENTER_KEYFRAMES: Keyframe[] = [
   { opacity: 0, transform: 'translateY(8px) scale(0.96)' },

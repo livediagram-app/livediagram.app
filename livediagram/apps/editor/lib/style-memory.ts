@@ -12,7 +12,7 @@ import {
   type Element,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { safeJson } from './local-storage-safe';
+import { safeJson } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
 // `shape:<ShapeKind>` for a shape, `arrow` for every arrow, `text` for every

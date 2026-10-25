@@ -5,7 +5,7 @@
 
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { overFloatingPanel } from '@/lib/canvas-pointer';
+import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 type PaletteDropDeps = {
   viewportZoom: number;

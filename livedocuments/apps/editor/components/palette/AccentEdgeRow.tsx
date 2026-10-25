@@ -14,7 +14,7 @@ import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { BorderColourIcon } from '@/components/palette/context-menu-icons';
-import { MenuActionButton } from '@/components/primitives/PortalMenu';
+import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';

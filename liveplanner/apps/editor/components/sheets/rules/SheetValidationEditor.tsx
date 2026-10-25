@@ -23,7 +23,7 @@ import {
   type ValidationRule,
 } from '@liveplanner/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
+import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
 import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@liveplanner/project';

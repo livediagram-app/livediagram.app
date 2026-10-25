@@ -11,10 +11,10 @@ import {
   type AccountHost,
 } from '@liveworkspace/settings-ui';
 import { workspaceOriginFor } from '@liveworkspace/sites';
-import { Dialog } from '@/components/dialogs/Dialog';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';

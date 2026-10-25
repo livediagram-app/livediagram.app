@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TOUR_GLIDE_MS } from './tour-motion';
+import { TOUR_GLIDE_MS } from '@liveworkspace/workbench/components/tour/tour-motion';
 import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 

@@ -9,10 +9,10 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
-import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@/lib/debug-log';
-import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
+import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -298,7 +298,7 @@ export function useCanvasSurfaceGestures({
 
   const onPointerDown = (e: ReactPointerEvent) => {
     // A finger on a board's empty space, or on an element too big for the screen, pans, whatever the tool, and
-    // never opens the canvas menu (hooks/canvas/pan-through.ts).
+    // never opens the canvas menu (@liveworkspace/workbench/hooks/canvas/pan-through.ts).
     if (isPanThrough(e)) {
       startPan(e, panThroughTap(e));
       return;
