@@ -11,6 +11,7 @@ import {
   routeToPreviews,
   forwardToIndex,
   PRODUCTION_INDEX_ORIGIN,
+  statusRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
@@ -225,6 +226,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, LIVE_PATH)) {
     return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
   }
+  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/site.md "Status"): an old link
+  // lands on it at livedesign's group.
+  const status = statusRedirect(url, 'livedesign', env.WORKSPACE_ORIGIN);
+  if (status) return status;
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
     // for every app: an old link lands on it with livedesign picked.

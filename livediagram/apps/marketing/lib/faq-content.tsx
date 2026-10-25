@@ -10,7 +10,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livediagram/ui';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL, STATUS_PAGE_URL } from '@livediagram/ui';
 import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -640,12 +640,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is livediagram up right now?',
         a: (
           <>
-            The <a href="/status">status page</a> lists every part of the service and notes any
-            incident we are working on. If it loads, the site is up.
+            The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
+            livediagram&rsquo;s services from your browser while you watch, beside the services
+            every app shares.
           </>
         ),
         aText:
-          'The status page lists every part of the service and notes any incident we are working on. If it loads, the site is up.',
+          'The liveworkspace status page checks each of livediagram’s services from your browser while you watch, beside the services every app shares.',
       },
       {
         q: 'Who makes livediagram?',

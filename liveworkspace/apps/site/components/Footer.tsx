@@ -37,6 +37,9 @@ export function Footer() {
           <a href="/telemetry" className={linkClass}>
             Telemetry
           </a>
+          <a href="/status" className={linkClass}>
+            Status
+          </a>
         </FooterColumn>
         <FooterColumn title="Legal">
           <a href="/privacy" className={linkClass}>
