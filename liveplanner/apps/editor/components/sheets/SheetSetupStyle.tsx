@@ -3,10 +3,10 @@
 // Setup Sheet's last step, Style (docs/specs/029-sheets/sheet.md "Setup Sheet"): an option row per look with a small
 // drawn preview, Freeze Header Row (not for Blank), and the cell size.
 import type { SheetCellSize, SheetLook } from '@liveplanner/sheets';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { CELL_SIZE_OPTIONS } from './sheet-cell-sizes';
 import type { PlanPalette } from '@/components/plan/plan-palette';
+import { SwitchRow } from '@liveplanner/ui';
 
 export const LOOKS: readonly { id: SheetLook; label: string; hint: string }[] = [
   { id: 'header', label: 'Header', hint: 'A bold, tinted first row' },
