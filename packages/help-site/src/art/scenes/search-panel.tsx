@@ -10,7 +10,12 @@ export const SEARCH_GLYPHS = {
     <path d="M-4.5 -6 h6 l3 3 v9 h-9 Z" className={G} strokeWidth={1.3} strokeLinejoin="round" />
   ),
   tab: (
-    <path d="M-6 -3 h5 l1 -2 h6 v10 h-12 Z" className={G} strokeWidth={1.3} strokeLinejoin="round" />
+    <path
+      d="M-6 -3 h5 l1 -2 h6 v10 h-12 Z"
+      className={G}
+      strokeWidth={1.3}
+      strokeLinejoin="round"
+    />
   ),
   sticky: (
     <rect
