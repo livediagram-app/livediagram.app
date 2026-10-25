@@ -1,6 +1,6 @@
 'use client';
 
-// Every view that lists items (My Work, a folder, a team, Unsorted, Recent, Favourites, Shared With Me,
+// Every view that lists items (My Work, a folder, a team, Recent, Favourites, Shared With Me,
 // Search, the Trash): its header, its folder rows from the folder tree, and its items from one paged list,
 // in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
@@ -263,12 +263,7 @@ function subtreeOf(folders: FolderStore, root: string): ReadonlySet<string> {
 const FOLDER_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['all', 'folder', 'team']);
 // Shared With Me and the Trash keep one layout (livediagram's fixed lists).
 // The places whose emptiness may be only this app's: they also hold other apps' items.
-const PLACE_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
-  'all',
-  'folder',
-  'team',
-  'unsorted',
-]);
+const PLACE_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['all', 'folder', 'team']);
 const FIXED_LAYOUT: ReadonlySet<ExplorerView['kind']> = new Set(['shared', 'trash']);
 const NO_LOAD = async () => ({ items: [], nextCursor: null });
 
@@ -280,7 +275,6 @@ export function placement(
     case 'all':
     case 'home':
     case 'recent':
-    case 'unsorted':
     case 'favourites':
     case 'search':
       return { folderId: null, teamId: null };

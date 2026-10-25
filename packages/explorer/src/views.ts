@@ -13,8 +13,6 @@ export type ExplorerView =
   | { kind: 'home' }
   // My Work: your root folders and the items in no folder.
   | ({ kind: 'all' } & Lensed)
-  // Every item in no folder, yours and your teams'.
-  | ({ kind: 'unsorted' } & Lensed)
   | ({ kind: 'recent' } & Lensed)
   | ({ kind: 'favourites' } & Lensed)
   // Shared with me: items reached through a link.
@@ -50,7 +48,6 @@ const LENS_VIEWS: Partial<Record<ExplorerView['kind'], LensViewKind>> = {
   favourites: 'aggregate',
   shared: 'aggregate',
   search: 'aggregate',
-  unsorted: 'aggregate',
 };
 
 export function lensViewOf(kind: ExplorerView['kind']): LensViewKind | null {
@@ -120,7 +117,6 @@ export function viewFromLocation(
   const lensed = (view: ExplorerView) => withLens(view, q);
   switch (section) {
     case 'all':
-    case 'unsorted':
     case 'recent':
     case 'favourites':
     case 'shared':
@@ -137,6 +133,9 @@ export function viewFromLocation(
       return { kind: 'gallery' };
     case 'search':
       return { kind: 'search', q };
+    // The old Unsorted view: My Work's root already lists what is in no folder.
+    case 'unsorted':
+      return lensed({ kind: 'all' });
     // The old Generated view: Search results, made by AI.
     case 'generated':
       return { kind: 'search', q: 'made-by:ai' };
@@ -164,7 +163,6 @@ export const SIDEBAR_LABELS = {
   timeline: 'Timeline',
   shared: 'Shared With Me',
   myWork: 'My Work',
-  unsorted: 'Unsorted',
   library: 'Library',
   trash: 'Trash',
   newTeam: 'New Team',
@@ -180,7 +178,6 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myWork,
-  unsorted: SIDEBAR_LABELS.unsorted,
   trash: SIDEBAR_LABELS.trash,
   recent: 'Recent',
   favourites: 'Favourites',

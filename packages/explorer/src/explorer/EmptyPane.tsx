@@ -17,7 +17,6 @@ import {
   TeamIcon,
   TimelineIcon,
   TrashIcon,
-  UnsortedIcon,
 } from '../ui/icons';
 import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
@@ -35,13 +34,6 @@ export function emptyCopy(
         title: `No ${w.lowerMany} yet`,
         description: `Create your first ${w.lowerOne} and it will appear here.`,
         cta: true,
-      };
-    case 'unsorted':
-      return {
-        icon: <UnsortedIcon />,
-        title: 'Nothing unsorted',
-        description: `Every ${w.lowerOne} is in a folder.`,
-        cta: false,
       };
     case 'recent':
       return {

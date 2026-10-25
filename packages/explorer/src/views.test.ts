@@ -7,7 +7,6 @@ describe('views and their addresses', () => {
   const views: ExplorerView[] = [
     { kind: 'home' },
     { kind: 'all' },
-    { kind: 'unsorted' },
     { kind: 'recent' },
     { kind: 'favourites' },
     { kind: 'shared' },
@@ -46,6 +45,9 @@ describe('views and their addresses', () => {
     expect(viewFromLocation('/explorer/inbox', 'q=road')).toEqual({ kind: 'inbox' });
     // The old Generated view is Search results, made by AI.
     expect(viewFromLocation('/explorer/generated')).toEqual({ kind: 'search', q: 'made-by:ai' });
+    // Unsorted is gone: its address is My Work, whose root lists what is in no folder.
+    expect(viewFromLocation('/explorer/unsorted')).toEqual({ kind: 'all' });
+    expect(viewFromLocation('/explorer/unsorted', 'q=road')).toEqual({ kind: 'all', q: 'road' });
     // The sidebar's highlight is the place, whatever the lens.
     expect(sameView({ kind: 'recent', q: 'edited:7d' }, { kind: 'recent' })).toBe(true);
   });

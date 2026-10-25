@@ -1,8 +1,5 @@
-import type { Metadata } from 'next';
-
-// The Explorer's Unsorted view: ExplorerShell (the layout) renders it from the address.
-export const metadata: Metadata = { title: 'Unsorted · liveworkspace' };
-
+// A retired Explorer address, kept so links already out there land somewhere real: ExplorerShell (the layout)
+// replaces it with My Work, whose root lists what is in no folder (lib/explorer/host.ts).
 export default function Page() {
   return null;
 }

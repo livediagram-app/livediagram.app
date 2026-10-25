@@ -13,7 +13,6 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'explorer/my-work', label: 'My Work' },
   { slug: 'explorer/folders', label: 'Folders' },
   { slug: 'explorer/team-spaces', label: 'Team Spaces' },
-  { slug: 'explorer/unsorted', label: 'Unsorted' },
   { slug: 'explorer/recent', label: 'Recent' },
   { slug: 'explorer/shared-with-you', label: 'Shared With You' },
   { slug: 'explorer/activity', label: 'Activity and the Inbox' },

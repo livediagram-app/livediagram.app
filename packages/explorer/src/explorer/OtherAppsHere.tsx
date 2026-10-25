@@ -42,8 +42,6 @@ function placeName(view: ExplorerView): string {
       return 'This folder';
     case 'team':
       return view.folderId ? 'This folder' : 'This team';
-    case 'unsorted':
-      return 'Unsorted';
     default:
       return 'My Work';
   }
