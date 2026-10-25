@@ -8,7 +8,7 @@
 
 import { COMPONENT_SCHEMAS } from './schemas.generated';
 import { ROUTE_MANIFEST, type AuthMode, type RouteSpec } from './manifest';
-import type { BodySchema, JsonSchema, OpenApiDesign } from './types';
+import type { BodySchema, JsonSchema, OpenApiDocument } from '@liveworkspace/api-kit/openapi-types';
 
 // The error envelope every 4xx/5xx shares (`responses.ts`: `{ error, message? }`).
 // Not a named DTO in api-schema (it's a worker response shape), so it's defined
@@ -201,7 +201,7 @@ const TAGS = [
 ];
 
 /** Build the full OpenAPI 3.1 design. Deterministic; safe to memoise. */
-export function buildOpenApiDesign(): OpenApiDesign {
+export function buildOpenApiDesign(): OpenApiDocument {
   const paths: Record<string, Record<string, unknown>> = {};
   for (const route of ROUTE_MANIFEST) {
     const path = route.path;

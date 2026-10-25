@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util';
 import type { Verb } from '@liveplanner/agent-verbs';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
-import { fieldsOf, flagOf, keyOf, restName, type Field } from './fields';
+import { fieldsOf, flagOf, keyOf, restName, type Field } from '@liveworkspace/cli-kit/fields';
 
 const usage = (verb: Verb, message: string) =>
   new CliError({

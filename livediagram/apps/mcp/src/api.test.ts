@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, apiFetch, apiJson, apiText, postTelemetry } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
 
 // Telemetry leaves by the global fetch, to the liveworkspace service; it lands in the same `calls`.

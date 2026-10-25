@@ -10,7 +10,7 @@ import { servableImageIds } from '../db/image-grants';
 import { imageRefAddStatements } from '../db/image-refs';
 import { blobRefsOfTabs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DesignEnv, TabSummaryDTO } from '../types';
 

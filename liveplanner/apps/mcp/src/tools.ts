@@ -40,7 +40,7 @@ import {
 import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readProject } from './read-project';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   bringBoardCardTypes,
   fetchTeamLibraries,

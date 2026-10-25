@@ -12,7 +12,7 @@ import {
   type ChangesetRoomOp,
   type RoomOp,
 } from '@liveplanner/api-schema';
-import type { AgentPresenceWrite } from './room-agent-presence';
+import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
 import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@liveplanner/api-schema';
 import type { Env } from './types';
 

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { VERBS } from '@livediagram/agent-verbs';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { legacyToolName } from './legacy-tool-names';
 import { TOOL_ANNOTATIONS } from './tool-annotations';
 import { registerTools } from './tools';
@@ -11,7 +11,7 @@ import { registerTools } from './tools';
 // the server registers is its verb, word for word and schema for schema, and every tool verb is registered.
 
 // The wasm rasteriser does not load under Node; registering tools never renders.
-vi.mock('./render', () => ({ svgToPngBase64: async () => '' }));
+vi.mock('@liveworkspace/mcp-kit/render', () => ({ svgToPngBase64: async () => '' }));
 
 type Registered = { name: string; config: Record<string, unknown> };
 

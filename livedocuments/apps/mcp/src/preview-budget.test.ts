@@ -13,7 +13,7 @@ import {
   PREVIEW_IMAGE_MAX_BYTES,
   PREVIEW_MAX_SIDE_PX,
   previewLeftOutNote,
-} from './preview-budget';
+} from '@liveworkspace/mcp-kit/preview-budget';
 
 // The picture budget holds a preview inside a Worker (docs/specs/015-api/mcp-server.md §5 "Picture budget"): the
 // worst page it lets through, drawn by the real resvg, must stay within the memory a Worker has, and draw in time.
@@ -135,7 +135,7 @@ describe('the preview picture budget', () => {
   );
 
   it('words the note for one picture and for several', () => {
-    expect(previewLeftOutNote(1)).toMatch(/^1 picture is drawn as a placeholder/);
-    expect(previewLeftOutNote(3)).toMatch(/^3 pictures are drawn as a placeholder/);
+    expect(previewLeftOutNote(1, 'document')).toMatch(/^1 picture is drawn as a placeholder/);
+    expect(previewLeftOutNote(3, 'document')).toMatch(/^3 pictures are drawn as a placeholder/);
   });
 });

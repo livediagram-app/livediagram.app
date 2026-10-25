@@ -7,7 +7,7 @@ import { redactTabDataAuthors } from '../comments';
 import { redactTabDataForCommunity } from '../community-redact';
 import { servableImageIds } from '../db/image-grants';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
 

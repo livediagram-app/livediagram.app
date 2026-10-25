@@ -16,7 +16,7 @@
 import { TAB_VIEW_NAMES, TEAM_RECENT_INCLUDE, TEAM_RECENT_LIMIT } from '@liveplanner/api-schema';
 import { NAME_MAX_LENGTH } from '@liveplanner/project';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@liveplanner/project-views';
-import type { BodySchema } from './types';
+import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.

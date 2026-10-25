@@ -19,7 +19,7 @@ import {
 // the renderer's box-with-label fallback.
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { getTab, getTabBody, type StoredTabBody, servableImageIds } from './db';
-import { imageRefIds } from './image-refs/extract';
+import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
 import { mediaClient } from './media';
 import type { DocumentEnv } from './types';
 

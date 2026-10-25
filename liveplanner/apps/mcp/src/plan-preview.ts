@@ -23,7 +23,7 @@ import {
   type PlanArtData,
 } from '@liveplanner/plan-art';
 import { apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 // The most other tabs a Dashboard's preview reads, for its tab slots and its boards' statuses.
 export const PLAN_PREVIEW_TABS_MAX = 20;

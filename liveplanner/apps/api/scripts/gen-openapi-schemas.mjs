@@ -182,7 +182,7 @@ function writeGeneratedFile() {
 // Produced by scripts/gen-openapi-schemas.mjs from @liveplanner/api-schema.
 // Regenerate with: pnpm --filter @liveplanner/api gen:openapi
 // Served as the \`components.schemas\` of GET /api/openapi.json (docs/specs/015-api/api-documentation.md).
-import type { ComponentSchemas } from './types';
+import type { ComponentSchemas } from '@liveworkspace/api-kit/openapi-types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = ${JSON.stringify(schemas, null, 2)};
 `;

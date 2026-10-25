@@ -387,6 +387,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      `testing/fake-io.ts` and the suites on it). Those follow `api-schema` and `agent-verbs` in
      step 3.
 
+   - Second slices, the copies the first ones left, each one copy now:
+     - `cli-kit`: the verbs' flag fields, the real `nodeIo` and the suites' `fakeIo`. Each CLI's `testing/fake-io.ts`
+       binds it to its `PRODUCT` and its host's capabilities, and livediagram's io and fake io spread them for the
+       repository link.
+     - `mcp-kit`: the Worker's `Env`, the preview budget and `svgToPngBase64`, and the `show_my_<record>` prompt every
+       server registers with its own nouns.
+     - `api-kit`: the room's access closes, follows, multiplayer count and agent presence (each room hands in its
+       trashed op), the image reference extractor, the telemetry relay's localhost check and the OpenAPI document
+       types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.
+     - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
+       `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
+
 ## Before step 1: deciding when to switch over
 
 liveplanner has switched over: its work happens here, and the old `~/Code/liveplanner` repo is

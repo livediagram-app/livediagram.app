@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { defineVerb, verbById, type Verb } from '@livedocuments/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { didYouMean } from '@liveworkspace/cli-kit/did-you-mean';
-import { fieldsOf, flagOf } from './fields';
+import { fieldsOf, flagOf } from '@liveworkspace/cli-kit/fields';
 import { splitGlobals } from './globals';
 import { parseVerbArgs } from './parse-flags';
 import { route } from './route';

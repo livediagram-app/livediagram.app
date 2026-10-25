@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 // `./image-result` reaches the resvg WASM renderer, which cannot load in the
 // plain-node test environment — the reason that file exists as its own module in
 // the first place (see its header). Stubbing it is what makes tools.ts

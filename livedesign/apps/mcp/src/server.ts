@@ -3,14 +3,14 @@
 // token arrives per-request via the transport's authInfo and is read inside
 // each tool, so a fresh server per request carries no cross-request state.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,
   SERVER_INSTRUCTIONS,
 } from '@livedesign/agent-verbs/mcp';
 import { registerTools } from './tools';
-import { registerPrompts } from './prompts';
+import { registerShowMyPrompt } from '@liveworkspace/mcp-kit/prompts';
 
 export function buildServer(env: Env): McpServer {
   const server = new McpServer(
@@ -34,6 +34,12 @@ export function buildServer(env: Env): McpServer {
   );
 
   registerTools(server, env);
-  registerPrompts(server);
+  // The one prompt (docs/specs/015-api/mcp-server.md §4.10): show_my_design.
+  registerShowMyPrompt(server, {
+    product: 'livedesign',
+    record: 'design',
+    shown: { one: 'design', many: 'designs' },
+    called: 'design',
+  });
   return server;
 }

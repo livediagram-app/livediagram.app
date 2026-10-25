@@ -35,10 +35,10 @@ import {
   answerAgentPresence,
   clearAgentsForOp,
   RoomAgentPresence,
-} from '../room-agent-presence';
+} from '@liveworkspace/api-kit/room-agent-presence';
 import type { ClientMessage, DocumentEnv, Env, ParticipantPresence, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
-import { multiplayerDecision } from '../room-multiplayer';
+import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
 import {
   type LoggedOp,
   MAX_TAB_ID_LEN,
@@ -46,12 +46,15 @@ import {
   helloPresence,
   resolveCatchup,
 } from '../document-room-rules';
-import { followerIdsOf, followTargetOf } from '../room-follows';
+import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
-import { sessionMatchesAccessClose, type AccessCloseMatch } from '../room-access';
+import {
+  sessionMatchesAccessClose,
+  type AccessCloseMatch,
+} from '@liveworkspace/api-kit/room-access';
 import type { FacilitatorState } from '../facilitator';
 import { RoomFacilitator } from '../room-facilitator';
 
@@ -1676,7 +1679,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // A trashed document or a changed link clears agent entries (room-agent-presence.ts, PR15).
   private async clearAgentsFor(op: unknown): Promise<void> {
-    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence());
+    await clearAgentsForOp(this.agents, op, () => this.broadcastPresence(), 'document-trashed');
     this.armAlarm();
   }
 

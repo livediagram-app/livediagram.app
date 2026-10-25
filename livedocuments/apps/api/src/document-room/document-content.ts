@@ -6,7 +6,7 @@ import { remapTabLinks, type Element } from '@livedocuments/document';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { servableImageIds } from '../db/image-grants';
-import { imageRefIdsFromData } from '../image-refs/extract';
+import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
 

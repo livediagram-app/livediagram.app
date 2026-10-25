@@ -4,7 +4,7 @@
 // logged rather than failing the request. Sharing and team changes are the index's: it tells the room itself
 // (`/api/internal/items/:id/revoke`), and a removed member's grant lapses within ten minutes.
 
-import type { AccessCloseMatch } from './room-access';
+import type { AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
 import { roomFetch } from './room-client';
 import type { Env } from './types';
 

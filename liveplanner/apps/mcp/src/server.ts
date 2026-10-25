@@ -3,7 +3,7 @@
 // token arrives per-request via the transport's authInfo and is read inside
 // each tool, so a fresh server per request carries no cross-request state.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,

@@ -16,7 +16,7 @@ Scope, by file (all under `apps/api/`):
 | File                                                       | Role                                                                           |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | apps/api/migrations/0001_livedesign_baseline.sql (removed) | `image_refs`, `image_refs_image_idx`, `image_refs_backfill` and its single row |
-| `src/image-refs/extract.ts`                                | The JavaScript extractor: what a reference is                                  |
+| `../packages/api-kit/src/image-refs.ts`                    | The JavaScript extractor: what a reference is                                  |
 | `src/db/image-refs.ts`                                     | Every statement on `image_refs` / `image_refs_backfill`; the SQL extractor     |
 | src/image-refs/backfill.ts (removed)                       | One backfill run                                                               |
 | src/image-refs/retention.ts (removed)                      | The daily image job: backfill, then sweep                                      |
@@ -173,7 +173,7 @@ foreign keys (migration 0075, which also grants every reference that already cro
 ## Interfaces and contracts
 
 ```ts
-// src/image-refs/extract.ts
+// packages/api-kit/src/image-refs.ts (the monorepo's)
 export const IMAGE_REF_ID_MAX_LENGTH = 128;
 export function isGalleryImageId(value: unknown): value is string;
 export function imageRefIds(elements: unknown): string[];
@@ -337,7 +337,7 @@ bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limi
 
 | Rule                                                        | Test                                                    |
 | ----------------------------------------------------------- | ------------------------------------------------------- |
-| What a reference is                                         | `src/image-refs/extract.test.ts`                        |
+| What a reference is                                         | `../packages/api-kit/src/image-refs.test.ts`            |
 | SQL extraction equals the JavaScript extractor              | src/db/image-refs.test.ts (removed) "the SQL extractor" |
 | Migration on an empty and a populated database              | src/db/image-refs.test.ts (removed) "migration 0050"    |
 | Each writer maintains the index (I1), routes included       | `src/db/image-refs-writers.test.ts`                     |

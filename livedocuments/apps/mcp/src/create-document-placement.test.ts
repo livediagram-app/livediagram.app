@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 // `./image-result` reaches the resvg WASM renderer, which cannot load here; the stub hands back the
 // structured result so the reported folder can be read.

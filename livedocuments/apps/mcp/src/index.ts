@@ -4,7 +4,7 @@
 // binding, forwarding the caller's `Authorization: Bearer lwt_…`. OAuth 2.1
 // endpoints mount alongside.
 import { createMcpApp } from '@liveworkspace/mcp-kit/app';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { OAUTH } from './oauth';
 import { buildServer } from './server';
 

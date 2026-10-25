@@ -2,7 +2,7 @@
 // within its token budget.
 
 import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@livedesign/agent-verbs';
-import { fieldsOf, flagOf, keyOf, restName } from '../dispatch/fields';
+import { fieldsOf, flagOf, keyOf, restName } from '@liveworkspace/cli-kit/fields';
 
 export const HELP_TOP_MAX_TOKENS = 520;
 export const HELP_RESOURCE_MAX_TOKENS = 250;

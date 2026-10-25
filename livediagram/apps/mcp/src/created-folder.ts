@@ -3,7 +3,7 @@
 // the user's My Work; the name of the default folder the server filed it in otherwise.
 
 import { ApiError, apiJson } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 
 const ROOT_FOLDER = 'My Work';
 /** Said when the default folder's name cannot be read: the document is filed, the name unknown. */

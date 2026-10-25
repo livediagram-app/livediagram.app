@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, apiFetch, apiJson, apiText, postTelemetry } from './api';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
 
 // The api's binding and the central telemetry service (plain fetch) both record into `calls`.

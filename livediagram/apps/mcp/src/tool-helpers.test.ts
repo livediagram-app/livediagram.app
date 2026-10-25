@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Env } from './env';
+import type { Env } from '@liveworkspace/mcp-kit/env';
 import {
   deepLink,
   errorResult,
