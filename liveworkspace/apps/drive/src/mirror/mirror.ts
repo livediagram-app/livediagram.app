@@ -31,6 +31,7 @@ import { importCopy, resolveOpen, type ImportOutcome, type OpenTarget } from '..
 import { connectionAnswer, marksAnswer } from './answers';
 import { cancelSwitch, confirmSwitch, connect, disconnect, type ConnectOutcome } from './connect';
 import { PassAborted, type MirrorDeps, type Runtime } from './context';
+import { meteredDoors, meteredFetch, SubrequestMeter } from './meter';
 import { nextPassAt, runPass } from './pass';
 import { PassState } from './pass-state';
 import { NeedsReconnect, NotConnected, TokenSource } from './tokens';
@@ -52,11 +53,20 @@ export class Mirror {
   private runtime(personId: string): Runtime {
     const epoch = this.epoch;
     const tokens = this.tokens;
+    const { google, index, doors } = this.deps;
+    // A fresh budget for each pass and each call: every one is its own invocation.
+    const meter = this.deps.newMeter?.() ?? new SubrequestMeter();
+    const googleFetch = google.fetch ?? ((input, init) => fetch(input, init));
     return {
       deps: this.deps,
       personId,
       tokens,
-      drive: createDriveClient(this.deps.google, (opts) => tokens.get(opts)),
+      meter,
+      drive: createDriveClient({ ...google, fetch: meteredFetch(googleFetch, meter) }, (opts) =>
+        tokens.get(opts),
+      ),
+      index: index.forPerson(personId, meter),
+      doors: meteredDoors(doors, meter),
       guard: () => {
         if (this.epoch !== epoch) throw new PassAborted();
       },
@@ -168,7 +178,7 @@ export class Mirror {
     const rt = this.runtime(personId);
     const { origin, newId } = this.deps;
     try {
-      const index = this.deps.index.forPerson(personId);
+      const { index } = rt;
       const state = PassState.build(rt, index, connection.rootId, await index.picture());
       const picked = await rt.drive.getFile(folderId);
       if (picked.mimeType !== DRIVE_FOLDER_MIME) return { refused: 'invalid_request' };

@@ -3,6 +3,7 @@
 // the person, and the snapshot follows along so later changes in the same read see what earlier ones did.
 
 import {
+  DRIVE_PASS_MAX_INBOUND,
   DRIVE_PROP_ORIGIN,
   orderChanges,
   planAdoption,
@@ -186,15 +187,40 @@ async function applyDecision(
   }
 }
 
-/** Apply one read of changes, folders first. Returns how many effects reached liveworkspace. */
-export async function applyInbound(state: PassState, changes: DriveChange[]): Promise<number> {
+// The subrequests one change's effects may take in the usual case (a rename, a move and a restore; a folder made
+// again and its children listed). A folder binned with many items in it takes more, and the meter stops it mid-way
+// (BudgetSpent): the next pass reads the change again and finishes it.
+const INBOUND_CHANGE_COST = 4;
+
+export type InboundRun = {
+  // Effects that reached liveworkspace.
+  applied: number;
+  // Every change was planned; false when the batch stopped at DRIVE_PASS_MAX_INBOUND or the budget.
+  complete: boolean;
+};
+
+/** Apply one read of changes, folders first, at most DRIVE_PASS_MAX_INBOUND of them with an effect. A run that stops
+ *  short leaves the page token where it was: the next pass reads the same changes again, and the ones applied here
+ *  read as echoes, since each recorded its row. */
+export async function applyInbound(state: PassState, changes: DriveChange[]): Promise<InboundRun> {
   const queue = orderChanges(changes, state.snapshot);
+  const { meter } = state.rt;
   let applied = 0;
+  let changed = 0;
   while (queue.length > 0) {
-    const change = queue.shift()!;
-    applied += await applyDecision(state, planInbound(change, state.snapshot), change, queue);
+    const change = queue[0]!;
+    const decision = planInbound(change, state.snapshot);
+    if (decision.kind === 'apply') {
+      if (changed >= DRIVE_PASS_MAX_INBOUND || !meter.afford(INBOUND_CHANGE_COST)) {
+        driveLog('inbound-batch', { applied: changed, left: queue.length });
+        return { applied, complete: false };
+      }
+      changed += 1;
+    }
+    queue.shift();
+    applied += await applyDecision(state, decision, change, queue);
   }
-  return applied;
+  return { applied, complete: true };
 }
 
 /** After a (re)connect, the files the service made earlier: recorded instead of made a second time. */

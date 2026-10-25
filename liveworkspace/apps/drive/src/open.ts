@@ -76,8 +76,8 @@ export async function resolveOpen(rt: Runtime, target: OpenTarget): Promise<Driv
     driveLog('open-with', { outcome: 'copy' });
     return { action: 'import', app, name, reason: 'copy' };
   }
-  const own = await rt.deps.index.forPerson(rt.personId).ownItem(itemId);
-  const url = own && isAppName(own.app) ? rt.deps.doors.itemUrl(own.app, itemId) : null;
+  const own = await rt.index.ownItem(itemId);
+  const url = own && isAppName(own.app) ? rt.doors.itemUrl(own.app, itemId) : null;
   if (!own || !url || !isAppName(own.app)) {
     driveLog('open-with', { outcome: 'shared' });
     return { action: 'import', app, name, reason: 'shared' };
@@ -116,7 +116,7 @@ export async function importCopy(rt: Runtime, target: OpenTarget): Promise<Impor
     driveWarn('import-refused', { fileId: file.id, reason: 'not_an_envelope' });
     return { refused: 'invalid_request' };
   }
-  const { doors } = rt.deps;
+  const { doors } = rt;
   const answer = await doors.importFile(format.app, {
     owner: rt.personId,
     folderId: null,

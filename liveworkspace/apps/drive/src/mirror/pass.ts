@@ -20,7 +20,8 @@ import { DriveApiError } from '@liveworkspace/drive/server';
 import { driveLog, driveWarn, errorKind } from '../log';
 import { channelLive, maintainChannel, pageTokenOf } from './channel';
 import { PassAborted, type Runtime } from './context';
-import { adoptExisting, applyInbound, readChanges } from './inbound';
+import { adoptExisting, applyInbound, readChanges, type InboundRun } from './inbound';
+import { BudgetSpent } from './meter';
 import { runOutbound } from './outbound';
 import { PassState } from './pass-state';
 import type { Connection, StoredRow } from './store';
@@ -64,21 +65,22 @@ async function ensureRoot(
 
 // Inbound, behind the gate: the start token names the position after the latest change, so one equal to the stored
 // token means nothing new. Returns how many changes reached liveworkspace (adoptions count, so the picture is read
-// again), or `root-gone` when the root was deleted for good.
-async function inbound(state: PassState): Promise<number | 'root-gone'> {
+// again) and whether all were applied (the page token moves on only then), or `root-gone` when the root was deleted
+// for good.
+async function inbound(state: PassState): Promise<InboundRun | 'root-gone'> {
   const { rt } = state;
   const { store } = rt.deps;
   const stored = store.connection()?.pageToken ?? null;
   const start = await rt.drive.getStartPageToken();
   if (stored === null || stored === start) {
     if (stored === null) store.updateConnection({ pageToken: start });
-    return 0;
+    return { applied: 0, complete: true };
   }
   const read = await readChanges(state, stored);
   if ('rejected' in read) {
     // A token Drive no longer takes: start again from now, and adopt what the lost stretch may have made.
     store.updateConnection({ pageToken: read.startToken });
-    return adoptExisting(state);
+    return { applied: await adoptExisting(state), complete: true };
   }
   const rootId = state.snapshot.rootFolderId;
   const root = read.changes.findLast((c) => c.fileId === rootId);
@@ -89,10 +91,10 @@ async function inbound(state: PassState): Promise<number | 'root-gone'> {
     return 'root-gone';
   }
   if (root?.file) store.updateConnection({ rootName: root.file.name });
-  const applied = await applyInbound(state, read.changes);
+  const run = await applyInbound(state, read.changes);
   rt.guard();
-  store.updateConnection({ pageToken: read.nextToken });
-  return applied;
+  if (run.complete) store.updateConnection({ pageToken: read.nextToken });
+  return run;
 }
 
 export async function runPass(rt: Runtime): Promise<PassOutcome> {
@@ -105,13 +107,26 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
     await rt.tokens.get();
     const root = await ensureRoot(rt, connection);
     await maintainChannel(rt);
-    const index = rt.deps.index.forPerson(rt.personId);
+    const { index } = rt;
     let picture = await index.picture();
     const state = PassState.build(rt, index, root.rootId, picture);
     let adopted = root.fresh ? await adoptExisting(state) : 0;
-    const applied = await inbound(state);
-    if (applied === 'root-gone') {
+    const read = await inbound(state);
+    if (read === 'root-gone') {
       store.updateConnection({ syncing: false, progress: null });
+      return { kind: 'done', more: true, nextDueAt: null };
+    }
+    const applied = read.applied;
+    if (!read.complete) {
+      // Drive's side first: outbound waits until every change is in, so it never writes back over one not yet read.
+      store.updateConnection({ syncing: true, status: 'ok', lastPassAt: clock() });
+      driveLog('pass', {
+        person: rt.personId,
+        in: applied,
+        out: 0,
+        more: true,
+        used: rt.meter.used,
+      });
       return { kind: 'done', more: true, nextDueAt: null };
     }
     adopted += applied;
@@ -140,7 +155,13 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
       lastPassAt: clock(),
       ...(run.more ? {} : { lastSyncedAt: clock(), flushNext: false }),
     });
-    driveLog('pass', { person: rt.personId, in: applied, out: run.written, more: run.more });
+    driveLog('pass', {
+      person: rt.personId,
+      in: applied,
+      out: run.written,
+      more: run.more,
+      used: rt.meter.used,
+    });
     return { kind: 'done', more: run.more, nextDueAt: plan.nextDueAt };
   } catch (err) {
     return failed(rt, err);
@@ -150,6 +171,13 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
 function failed(rt: Runtime, err: unknown): PassOutcome {
   const { store, now: clock } = rt.deps;
   if (err instanceof PassAborted) return { kind: 'stopped' };
+  if (err instanceof BudgetSpent) {
+    // Not a failure: the rest is the next alarm's. Rows written so far stand, and the page token moved only if
+    // inbound finished.
+    driveLog('budget-spent', { person: rt.personId, used: rt.meter.used });
+    store.updateConnection({ syncing: true, status: 'ok', lastPassAt: clock() });
+    return { kind: 'done', more: true, nextDueAt: null };
+  }
   if (err instanceof NeedsReconnect) {
     store.updateConnection({ syncing: false, progress: null });
     return { kind: 'stopped' };

@@ -43,6 +43,15 @@ export const DRIVE_CHECK_MIN_GAP_MS = 30 * SECOND;
 export const DRIVE_PASS_MAX_WRITES = 40;
 // How soon the next batch of a pass that stopped at DRIVE_PASS_MAX_WRITES runs.
 export const DRIVE_PASS_CONTINUE_MS = 1 * SECOND;
+// Drive-side changes a pass applies to liveworkspace before it hands over to the next alarm (DRIVE_PASS_CONTINUE_MS).
+// Only changes with an effect count (an echo or an ignored change costs no call); most cost one or two index calls.
+// Safe range: 50 to 300, so a full batch's index calls stay well inside DRIVE_PASS_SUBREQUEST_BUDGET.
+export const DRIVE_PASS_MAX_INBOUND = 200;
+// The most subrequests (Google, the index, the apps' doors) one pass, or one call to the object, may make. Every one
+// is counted before it is sent; a pass that reaches the budget stops cleanly and continues in DRIVE_PASS_CONTINUE_MS.
+// Sized against Cloudflare's per-invocation limit of 1,000 on the paid plan's default, with room for what isn't
+// counted (an access-token refresh, a revoke). Safe range: 300 to 900.
+export const DRIVE_PASS_SUBREQUEST_BUDGET = 800;
 // Google's maximum, so a catch-up is usually one call.
 export const DRIVE_CHANGES_PAGE_SIZE = 1000;
 // Back-off returns to the base intervals after this long without errors.

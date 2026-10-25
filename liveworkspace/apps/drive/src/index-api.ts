@@ -20,6 +20,7 @@ import {
   type Page,
 } from '@liveworkspace/index-client';
 import { setting, type Env } from './env';
+import { meteredFetch, type Charge } from './mirror/meter';
 
 /** The person's own work, as one pass reads it. */
 export type Picture = { items: MirrorItem[]; folders: MirrorFolder[]; trash: MirrorTrashed[] };
@@ -40,7 +41,8 @@ export interface PersonIndex {
 }
 
 export interface IndexApi {
-  forPerson(personId: string): PersonIndex;
+  // Each request charged to `meter`, when given (a pass's subrequest budget).
+  forPerson(personId: string, meter?: Charge): PersonIndex;
   setMirrored(personId: string, mirrored: boolean): Promise<void>;
   // Null when the index couldn't say.
   isMirrored(personId: string): Promise<boolean | null>;
@@ -84,12 +86,12 @@ export function createIndexApi(env: Env): IndexApi {
   }
 
   return {
-    forPerson(personId) {
+    forPerson(personId, meter) {
       const client = createIndexClient({
         baseUrl: base,
         getToken: () => key,
         headers: { [INDEX_APP_HEADER]: DRIVE_DELEGATE, [INDEX_PERSON_HEADER]: personId },
-        fetch: doFetch,
+        fetch: meter ? meteredFetch(doFetch, meter) : doFetch,
       });
       return {
         async picture() {

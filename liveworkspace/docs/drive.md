@@ -172,6 +172,10 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
 - **The gate.** Each pass first asks for `changes.getStartPageToken` and reads `changes.list` only when it moved.
 - **Batches.** A pass writes at most `DRIVE_PASS_MAX_WRITES` (40) files and continues in the next alarm straight
   away, so a first mirror of thousands of items stays inside a Worker invocation's limits.
+- **Drive's side in batches.** A pass applies at most `DRIVE_PASS_MAX_INBOUND` (200) Drive-side changes that have an
+  effect (echoes and ignored changes don't count). When it stops short, the page token stays where it was and the
+  next alarm, `DRIVE_PASS_CONTINUE_MS` later, reads the same changes again. The ones already applied read as echoes,
+  because each recorded its row. Outbound waits until every change is in, so it never writes over one not yet read.
 - **Back-off.** On `403 userRateLimitExceeded` or `429`, the person's intervals double (up to 60 minutes), returning
   to normal after an hour without errors.
 
@@ -375,9 +379,16 @@ app name them from one place.
 
 - **Google quota:** a pass costs 5 units with nothing new, about 100 more when Drive changed, plus one write per
   changed item; far inside Drive's per-user limits at the cadence above.
-- **Worker limits:** a pass is bounded by `DRIVE_PASS_MAX_WRITES`, each write a handful of subrequests (export,
-  thumbnail, upload), well under the paid plan's per-invocation subrequest limit. A file over 5 MB uses a resumable
-  upload.
+- **Worker limits:** every request a pass makes (Google, the index, the apps' doors) is charged to one meter before
+  it is sent, against `DRIVE_PASS_SUBREQUEST_BUDGET` (800, under the paid plan's default of 1,000 per invocation,
+  with room for an uncounted token refresh). Each call to the object gets its own meter. Before each change or write
+  the pass checks that the usual cost still fits (4 for a change, 6 for a write) and stops cleanly if not. A charge
+  past the budget, such as a binned folder with many items, ends the pass as a batch to continue in the next alarm,
+  not as a failure. Within that, a pass is also bounded by `DRIVE_PASS_MAX_WRITES` and `DRIVE_PASS_MAX_INBOUND`. A file
+  over 5 MB uses a resumable upload.
+- **A very large library** (tens of thousands of items) spends much of the budget reading the index's picture, up to
+  3 lists × `DRIVE_LIST_PAGES_MAX` pages. At the extreme, the picture alone could take the whole budget and a pass
+  would make no progress.
 - **Thumbnails** load the 3 MB renderer on first use in an isolate, as the share card does.
 - **No one connected costs nothing:** the index sends no signal and no object exists.
 

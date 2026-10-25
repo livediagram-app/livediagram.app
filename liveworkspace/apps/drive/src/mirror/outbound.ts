@@ -21,12 +21,17 @@ import {
 import { DriveApiError, type DriveFile } from '@liveworkspace/drive/server';
 import { driveLog, driveWarn, errorKind } from '../log';
 import { PassAborted } from './context';
+import { BudgetSpent } from './meter';
 import type { PassState } from './pass-state';
 import { NeedsReconnect } from './tokens';
 
+// The subrequests one op may take at most: an export, an SVG, an upload, and a file made again after a 404.
+const OUTBOUND_OP_COST = 6;
+
 /** A failure that ends the whole run rather than one op. */
 export function isRunFatal(err: unknown): boolean {
-  if (err instanceof PassAborted || err instanceof NeedsReconnect) return true;
+  if (err instanceof PassAborted || err instanceof NeedsReconnect || err instanceof BudgetSpent)
+    return true;
   if (err instanceof DriveApiError) return err.isRateLimit || err.isAuth;
   // fetch's network failure, or a call that timed out.
   return err instanceof TypeError || (err instanceof Error && err.name === 'TimeoutError');
@@ -52,7 +57,8 @@ function rowFromFile(
 // The file's contents and thumbnail, or null when the app no longer has the item. `updatedAt` is the later of the
 // content's version and the index's (a rename moves the index's without a save), so the next pass sees it mirrored.
 async function contentFor(state: PassState, item: MirrorItem) {
-  const { doors, rasterise } = state.rt.deps;
+  const { doors } = state.rt;
+  const { rasterise } = state.rt.deps;
   const exported = await doors.exportFile(item.app, item.id);
   if (!exported) {
     driveLog('export-missing', { id: item.id, app: item.app });
@@ -252,7 +258,8 @@ export async function runOutbound(
   const failures = store.failures();
   let written = 0;
   for (const op of ops) {
-    if (written >= budget) return { written, more: true };
+    if (written >= budget || !state.rt.meter.afford(OUTBOUND_OP_COST))
+      return { written, more: true };
     state.rt.guard();
     const itemId = itemOf(op);
     try {

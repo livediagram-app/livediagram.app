@@ -15,7 +15,9 @@ import { IndexError } from '@liveworkspace/index-client';
 import type { AppDoors, ImportAnswer } from './app-doors';
 import type { IndexApi, PersonIndex, Picture } from './index-api';
 import type { Scheduler } from './mirror/context';
+import type { Charge } from './mirror/meter';
 import { Mirror } from './mirror/mirror';
+import { SubrequestMeter } from './mirror/meter';
 import { MirrorStore, type Sql } from './mirror/store';
 
 export const ORIGIN = 'https://lw.test';
@@ -68,6 +70,8 @@ export class FakeIndex implements IndexApi {
   folders = new Map<string, MirrorFolder>();
   mirrored = new Set<string>();
   writes: string[] = [];
+  // Requests the real index would have answered (each write, each list page).
+  requests = 0;
   private readonly clock: Clock;
   private seq = 0;
 
@@ -136,12 +140,25 @@ export class FakeIndex implements IndexApi {
     this.folders.delete(id);
   }
 
-  forPerson(personId: string): PersonIndex {
-    const log = (w: string) => this.writes.push(w);
+  // Each call charged as the real index's requests are: one per write, one per list page (LIST_LIMIT_MAX a page).
+  forPerson(personId: string, meter?: Charge): PersonIndex {
+    const log = (w: string) => {
+      meter?.charge();
+      this.requests += 1;
+      this.writes.push(w);
+    };
     const now = () => this.clock.now();
     void personId;
     return {
-      picture: async () => this.picture(),
+      picture: async () => {
+        const picture = this.picture();
+        const pages = (n: number) => Math.max(1, Math.ceil(n / 200));
+        const count =
+          pages(picture.items.length) + pages(picture.folders.length) + pages(picture.trash.length);
+        meter?.charge(count);
+        this.requests += count;
+        return picture;
+      },
       renameItem: async (id, name) => {
         log(`rename-item ${id} ${name}`);
         this.items.set(id, { ...this.item(id), name, updatedAt: now() });
@@ -180,6 +197,7 @@ export class FakeIndex implements IndexApi {
         this.deleteFolderHere(id);
       },
       ownItem: async (id) => {
+        meter?.charge();
         const item = this.items.get(id);
         return item && item.trashedAt === null ? { app: item.app } : null;
       },
@@ -209,6 +227,7 @@ export class FakeDoors implements AppDoors {
   exports: string[] = [];
   imports: { app: AppName; owner: string; name: string; file: string }[] = [];
   missing = new Set<string>();
+  requests = 0;
   svg: string | null = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>';
   private readonly index: FakeIndex;
 
@@ -217,6 +236,7 @@ export class FakeDoors implements AppDoors {
   }
 
   async exportFile(app: AppName, itemId: string) {
+    this.requests += 1;
     this.exports.push(itemId);
     const item = this.index.items.get(itemId);
     if (!item || this.missing.has(itemId)) return null;
@@ -224,6 +244,7 @@ export class FakeDoors implements AppDoors {
   }
 
   async exportSvg() {
+    this.requests += 1;
     return this.svg;
   }
 
@@ -231,6 +252,7 @@ export class FakeDoors implements AppDoors {
     app: AppName,
     input: { owner: string; name: string; file: string },
   ): Promise<ImportAnswer> {
+    this.requests += 1;
     this.imports.push({ app, owner: input.owner, name: input.name, file: input.file });
     return { ok: true, id: this.index.addItem({ name: input.name, app }).id };
   }
@@ -240,9 +262,16 @@ export class FakeDoors implements AppDoors {
   }
 }
 
-export function harness() {
+export function harness(options: { budget?: number } = {}) {
   const clock = new Clock();
   const google = new FakeGoogle({ now: clock.now });
+  // Every request the mirror makes, counted at the fakes apart from its own meter, and the meters it made.
+  let googleRequests = 0;
+  const googleFetch: typeof fetch = (input, init) => {
+    googleRequests += 1;
+    return google.fetch(input, init);
+  };
+  const meters: SubrequestMeter[] = [];
   const index = new FakeIndex(clock);
   const doors = new FakeDoors(index);
   const alarm = new FakeAlarm();
@@ -255,7 +284,7 @@ export function harness() {
       clientId: 'client',
       clientSecret: 'secret',
       baseUrl: 'https://google.test',
-      fetch: google.fetch,
+      fetch: googleFetch,
     },
     tokenKey: TOKEN_KEY,
     origin: ORIGIN,
@@ -266,13 +295,22 @@ export function harness() {
     rasterise: async () => fakePngBase64Url(440),
     now: clock.now,
     newId: () => `id${++ids}`,
+    newMeter: () => {
+      const meter = new SubrequestMeter(options.budget);
+      meters.push(meter);
+      return meter;
+    },
   });
+  const requests = () => googleRequests + index.requests + doors.requests;
 
   async function connect(user = GOOGLE_USER) {
     return mirror.connect(PERSON, google.consent(user), REDIRECT_URI);
   }
 
   /** Every alarm due by now, in turn (a batched pass continues straight away). */
+  // How many alarms ran, and the most requests one of them made, counted at the fakes.
+  let alarms = 0;
+  let alarmPeak = 0;
   async function runDue(limit = 20) {
     for (let i = 0; i < limit && alarm.at !== null; i++) {
       const wait = alarm.at - clock.now();
@@ -280,7 +318,10 @@ export function harness() {
       if (wait > 1000) break;
       if (wait > 0) clock.advance(wait);
       alarm.at = null;
+      const before = requests();
       await mirror.alarm();
+      alarms += 1;
+      alarmPeak = Math.max(alarmPeak, requests() - before);
     }
   }
 
@@ -303,6 +344,12 @@ export function harness() {
     alarm,
     store,
     mirror,
+    meters,
+    alarmStats: () => ({ alarms, peak: alarmPeak }),
+    resetAlarmStats: () => {
+      alarms = 0;
+      alarmPeak = 0;
+    },
     connect,
     runDue,
     pass,

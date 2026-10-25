@@ -5,8 +5,9 @@
 import type { DriveEnvironment } from '@liveworkspace/drive';
 import type { DriveClient, GoogleConfig } from '@liveworkspace/drive/server';
 import type { AppDoors } from '../app-doors';
-import type { IndexApi } from '../index-api';
+import type { IndexApi, PersonIndex } from '../index-api';
 import type { Rasterise } from '../thumbnail';
+import type { SubrequestMeter } from './meter';
 import type { MirrorStore } from './store';
 import type { TokenSource } from './tokens';
 
@@ -33,14 +34,20 @@ export type MirrorDeps = {
   rasterise: Rasterise;
   now: () => number;
   newId: () => string;
+  // Tests: a meter of another budget, or one to watch. A pass or call otherwise gets DRIVE_PASS_SUBREQUEST_BUDGET.
+  newMeter?: () => SubrequestMeter;
 };
 
-/** One person's mirror at work: its deps, its tokens and Drive client, and a check that it is still connected. */
+/** One person's mirror at work: its deps, its tokens, and its Drive client, index and doors, every request of
+ *  theirs charged to `meter` (meter.ts), and a check that it is still connected. */
 export type Runtime = {
   deps: MirrorDeps;
   personId: string;
   tokens: TokenSource;
+  meter: SubrequestMeter;
   drive: DriveClient;
+  index: PersonIndex;
+  doors: AppDoors;
   // Throws PassAborted once the person disconnected or switched Google account since this work began.
   guard: () => void;
 };
