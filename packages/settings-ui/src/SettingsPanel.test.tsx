@@ -116,14 +116,9 @@ describe('SettingsPanel', () => {
       '/settings/livedocuments.app',
     ]);
     const headings = [...rail().querySelectorAll('[role="group"] > p')].map((p) => p.textContent);
-    expect(headings).toEqual([
-      'Account',
-      'Common',
-      'livediagram',
-      'liveplanner',
-      'livedocuments',
-      'livedesign',
-    ]);
+    // livedocuments' own settings outside Common are its email switch alone, folded into Account › Notifications,
+    // so it has no heading of its own.
+    expect(headings).toEqual(['Account', 'Common', 'livediagram', 'liveplanner', 'livedesign']);
     // The editor's own Privacy held only a shared switch, which the Account section has.
     const planner = within(rail()).getByRole('group', { name: 'liveplanner' });
     expect(within(planner).queryByRole('button', { name: /^Privacy/ })).toBeNull();
@@ -189,10 +184,15 @@ describe('SettingsPanel', () => {
       method: 'PATCH',
       body: { all: { alignmentGuides: false } },
     });
-    // An app's own row, to its own scope.
+    // An app's own row, to its own scope: its email switch, folded into Account › Notifications under its name.
     const planner = within(rail()).getByRole('group', { name: 'liveplanner' });
     expect(within(planner).queryByRole('button', { name: /^Plans/ })).toBeNull();
-    fireEvent.click(within(planner).getByRole('button', { name: /^Notifications/ }));
+    expect(within(planner).queryByRole('button', { name: /^Notifications/ })).toBeNull();
+    fireEvent.click(
+      within(within(rail()).getByRole('group', { name: 'Account' })).getByRole('button', {
+        name: /^Notifications/,
+      }),
+    );
     await act(async () => {
       fireEvent.click(within(pane()).getByRole('switch', { name: 'Someone Joins My Plan' }));
     });

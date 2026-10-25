@@ -37,14 +37,25 @@ describe("the header's session", () => {
   it("carries the profile's colour from /get-session, and only one that is safe to paint", async () => {
     call.mockResolvedValue({
       ok: true,
-      data: { user: { givenName: 'Ada', name: 'Ada Lovelace', color: '#ef4444' } },
+      data: {
+        user: {
+          givenName: 'Ada',
+          name: 'Ada Lovelace',
+          color: '#ef4444',
+          email: 'ada@example.com',
+          createdAt: '2026-10-23T15:13:54.270Z',
+        },
+      },
     });
     const { shown } = await mount();
+    // With the address and when the account was made, for Settings' Profile header.
     expect(shown()).toEqual({
       state: 'in',
       name: 'Ada',
       fullName: 'Ada Lovelace',
       colour: '#ef4444',
+      email: 'ada@example.com',
+      joined: '2026-10-23T15:13:54.270Z',
     });
     expect(call).toHaveBeenCalledTimes(1);
   });
