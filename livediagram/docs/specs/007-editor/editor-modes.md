@@ -336,6 +336,9 @@ mode until it moved out into its own product, liveplanner (https://liveplanner.a
   ordinary Diagram tab (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and
   `opensIn` go, with its Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps
   the data it last read and loses its `chartSource`. The tab is saved without them the next time it is saved.
+  That is why nothing on the old site is ever read this way: the migration splits each old document's Plan tabs
+  out to liveplanner from the raw rows first, and a browser's Local only documents are split before the editor
+  reads them ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6).
 - The help articles about Plan, boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
   liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.
 - Workshop's Q&A board and the diagram [card](../009-elements/card.md) are not Plan, and stay.
@@ -350,8 +353,11 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   ordinary elements on the canvas.
 - The stored-tab migration drops what only Pages read (`dropRetiredPages`, `packages/document/src/retired-pages.ts`):
   the tab's `pages`, `articles` and `pageOrientation`, and the elements that only made sense on a page (a tab
-  window, an article's margin note). It runs wherever a tab is read, so no data migration is needed; the tab is
-  saved without them the next time it is saved. The same object comes back when there is nothing to drop.
+  window, an article's margin note). It runs wherever a tab is read, and the tab is saved without them the next
+  time it is saved. Content still wanted elsewhere is moved before this can run: the migration splits Pages tabs
+  out to livedocuments (and logo, wireframe and photo pages to livedesign) from the old site's raw rows, and a
+  browser's Local only documents are split before the editor reads them
+  ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6). The same object comes back when there is nothing to drop.
 - A former Pages tab's ordinary elements keep what Pages gave them, and livediagram still draws and exports it, though
   it no longer offers the controls that set it: a text's **wordmark type** (its tracking, weight, case and arc,
   `packages/document/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours (Combine's

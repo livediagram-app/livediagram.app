@@ -30,7 +30,7 @@ unless it has the `global_fetch_strictly_public` compatibility flag, so every li
 carries it while they answer on stand-ins. Service bindings are unaffected.
 
 The data starts fresh on this account: documents, people and the pre-move image bytes stay on the previous one
-until they are migrated. Google sign-in and Drive work on a stand-in only once its address is a redirect URI of the
+until they are migrated ([docs/migration.md](../../../../docs/migration.md)), which happens before the zone moves. Google sign-in and Drive work on a stand-in only once its address is a redirect URI of the
 Google client for that environment.
 
 ## When livediagram.app moves

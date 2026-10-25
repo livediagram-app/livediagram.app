@@ -70,10 +70,13 @@ the copy takes).
    - `user_preferences` into the shared settings (`packages/settings`);
    - `shape_libraries`, `custom_themes` and `placement_defaults` into each person's `PersonStore`.
 4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/accounts.md`, Teams) from `teams` and
-   `team_members`: each team with its name, members and roles through the owner map, keeping the old team id where
-   the accounts Worker's id shape allows (otherwise a team map, used like the owner map, so documents keep their
-   team). A member whose email has no account yet becomes a pending invitation, sent only after the switch. This
-   replaces 0002's "teams are managed separately". Recreating writes no `team_*` Timeline events and sends no
+   `team_members`: each team with its name, organisation, members and roles through the owner map, **keeping the
+   old team id** (both sides use a plain UUID as the key, `team.id` here and `teams.id` there, so documents keep
+   their team with no team map). Roles map one to one (`admin`, `member` on both). An old member row with a
+   `user_id` becomes `joined`; one with only an `email` (the old site's pending invitation) becomes `invited`, its
+   email sent only after the switch. An old creator row may have no `email` (the old table allowed null, the new
+   `team_member.email` doesn't), so it takes the account's email. This replaces 0002's "teams are managed
+   separately". Recreating writes no `team_*` Timeline events and sends no
    invitation emails at import time.
 5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old
    tokens are revoked at the switch"). Checked against both codebases:
@@ -98,8 +101,9 @@ the copy takes).
      live, so when a token lapses the tool signs in again on its own instead of failing on an unknown client.
      Some tools may still ask to be reconnected, which step 8's email says.
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
-   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes), so each person reconnects.
-   Step 8's email says so.
+   tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has the
+   Drive mirror off for now (both hosted client ids are empty, `drive-mirror.md`), so a person reconnects once it
+   is back; until then step 8's email says Drive sync is paused, not that it needs reconnecting.
 
 ## 2. Copy documents into livediagram
 
@@ -107,8 +111,14 @@ One script, per document, in batches:
 
 1. Read the document's row, its tabs (`diagrams`, `diagram_tabs`, `tabs`) and their Plan rows from the old D1.
 2. Hand the tabs to the splitter (step 3). What stays in livediagram is written into the document's new
-   `DocumentRoom` through an import door (the `importCopy` RPC, or a migration-only route behind a secret that
-   reuses it), with its `image_refs`, `tab_stats`, comments and actions (these live in the element JSON already).
+   `DocumentRoom` through a **migration import door** (a new `importMigrated` RPC, reached by a route behind
+   `MIGRATION_KEY`), with its `image_refs`, `tab_stats`, comments and actions (these live in the element JSON
+   already). The existing `importCopy` is not enough, checked against `document-content.ts`: it carries tabs,
+   their folders and image grants, but no changesets; it stamps every time as now (`saved_at`, `updated_at`,
+   `created_at` 0) where the migration keeps the old ones; and it refuses a document that already has content
+   (`document_not_empty`), so a catch-up run could never update one. The migration door writes the old times,
+   takes changesets, marks what it wrote as imported with the old row's `updated_at`, and on a re-run replaces
+   a tab only when it is still the imported revision (no one has edited it on the new side since).
 3. Register the document with the index: owner, team, folder, tags, favourites, Trash state, recent opens
    (`document_opens`), and who it's shared with (`shared_with`, `share_links`, keeping each link's token so old
    share URLs still work).
@@ -153,7 +163,7 @@ A livediagram document can hold tabs that now belong to four products. Each tab 
 - **A tab that is mostly a diagram but carried pages** (Pages kept a tab's ordinary elements on the canvas): the
   elements stay in livediagram, the pages and articles go to livedocuments.
 
-Each product needs the same import door as step 2 (or its own `importCopy`), and its own writes to the index.
+Each product needs the same migration import door as step 2, and its own writes to the index.
 
 ## 4. Images
 
@@ -190,7 +200,8 @@ So the old id can't simply be reused, and the plan is:
    live credential can ever hold.
 2. The new editor, on first load, looks for `livediagram:v2:self-id`. When it finds one, it sends the old id and
    its signature, with its own guest or account token, to a one-time door on livediagram's api. The door checks
-   the signature with the old `GUEST_ID_HMAC_SECRET` (copied as a secret), or, for an unsigned id, accepts it only
+   the signature with the old `GUEST_ID_HMAC_SECRET` (copied as a secret; the owner copies its value from the old
+   repository's GitHub secrets, since a Cloudflare secret can't be read back), or, for an unsigned id, accepts it only
    when the guest's `participants` row predates `GUEST_SIGNING_LIVE_AT`, the old site's own rule for legacy ids. It
    then asks the index to merge `legacy_guest_<uuid>` into the caller, guest or account, and the editor removes
    the old keys. A retry merges nothing and is harmless.
@@ -235,7 +246,7 @@ Sent at the end of the migration, once step 9's checks have passed, from `hello@
   came across, managed in liveworkspace too;
 - connected AI tools (MCP) keep working, but some may need reconnecting, especially when their token comes up for
   renewal: remove livediagram from the tool and add it again;
-- what they must redo: reconnect Google Drive;
+- Google Drive sync is paused for now, and how they'll know when it is back;
 - the updated privacy page (Clerk is no longer a processor), and how to delete their account.
 
 Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota that starts low;
@@ -268,6 +279,20 @@ After a set quiet period (30 days is a starting point):
   account's Workers;
 - archive `~/Code/livediagram` and finish the switch-over in [structure.md](structure.md);
 - a later migration may drop livediagram's unread Plan tables.
+
+## Checked against the code (2026-10-25)
+
+- **Old guest signing is on** in production and staging: the old site's `POST /api/guest-id` (stateless, writes
+  nothing) answers with an `ownerSig` on both. So every guest since 2026-09-25 12:00 UTC has a signed id, and step
+  6's door can prove possession for them.
+- **`importCopy` doesn't fit the migration** (step 2): no changesets, times stamped as now, and it refuses a
+  document with content. The migration has its own import door per product.
+- **Team ids carry over** (step 1): plain UUIDs on both sides, the same two roles.
+- **Tokens carry over** (step 1): the same SHA-256 lowercase hex of the whole token on both sides, the same six
+  months, the same read-only flag; the old MCP's client registrations have the same KV key and shape as the new
+  one's.
+- **Guests and Local only documents** (step 6): the same origin (`www.livediagram.app`) and the same IndexedDB
+  database (`livediagram-offline`, version 2) on both editors.
 
 ## Decided (owner, 2026-10-25)
 

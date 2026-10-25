@@ -172,10 +172,10 @@ new setting. Each app's `wrangler.toml` drops its own `WorkbenchStore` with a `d
 None of the four apps' copies here has been deployed, so no pairing made with them exists. livediagram.app in
 production still runs from its own repository, where workbench embeds are live: pairings and sessions in its D1
 tables (`workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`), each tied to
-a livediagram API token (`lvd_`). When livediagram moves to liveworkspace accounts its people get new tokens
-(`lwt_`), so those pairings have no token to belong to and are not carried over: each person runs
-`livediagram workbench pair` once more and approves it on liveworkspace.app. The old tables go with the old
-deployment.
+a livediagram API token (`lvd_`). The migration carries the tokens over ([docs/migration.md](../../docs/migration.md),
+step 1), but not the pairings: they live in the old D1, while pairings here live in each person's Durable Object and
+are approved on liveworkspace.app, so each person runs `livediagram workbench pair` once more. The old tables go with
+the old deployment.
 
 ## Locally
 
