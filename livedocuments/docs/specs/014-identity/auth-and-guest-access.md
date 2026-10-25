@@ -140,7 +140,7 @@ Signed-in status surfaces in the editor header via `<AuthControls>` (initial bub
 
 ## Identity display name
 
-A signed-in user's participant `name` is driven by their liveworkspace account's name (split at its first space into `firstName + lastName`, falling back to the email's local part when the account has no name; `namesOf` in `AccountsBridge.tsx`). On every editor mount we seed the participant record with the current account name, and re-`PUT` it whenever it has drifted from the persisted value — so renaming yourself on the accounts site propagates to everything that reads the participant row on the next load.
+A person's participant (display name and presence colour) is their **liveworkspace profile**, one per person across every app (liveworkspace/docs/accounts.md "Profiles"; `apps/api/src/person/profiles.ts`). A signed-in account with no display name of its own shows its liveworkspace account name, so renaming yourself on the accounts site shows on the next read (each api isolate remembers a profile for up to a minute); a name set in any app, or in Settings › Profile, wins over it and shows in every app. The editor never overwrites a stored name with the account name. On a first visit with no profile at all it seeds one: the account name when signed in (split at its first space into `firstName + lastName`, falling back to the email's local part; `namesOf` in `AccountsBridge.tsx`), a random placeholder for a guest (`resolve-participant.ts`).
 
 Two welcome-modal rules follow from that:
 
