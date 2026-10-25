@@ -1,0 +1,179 @@
+// Palette-category illustrations (docs/specs/018-help/help-app.md): the Shapes and Arrows the palette
+// places, morphing one shape kind into another, shape markers, style presets,
+// arrow styles, draggable curve / elbow handles, and arrow-to-arrow snapping.
+// Composed only from the shared primitives so the house style holds.
+
+import { Scene, Shape, Arrow, Cursor, Label, TextBar } from '../primitives';
+
+/** A gallery of the shape kinds the Shapes tab offers, in a tidy grid. */
+export function ShapeGallery() {
+  const cells: { kind: Parameters<typeof Shape>[0]['kind']; label: string }[] = [
+    { kind: 'rect', label: 'Square' },
+    { kind: 'circle', label: 'Circle' },
+    { kind: 'diamond', label: 'Diamond' },
+    { kind: 'cylinder', label: 'Cylinder' },
+    { kind: 'hexagon', label: 'Hexagon' },
+    { kind: 'parallelogram', label: 'Parallelogram' },
+    { kind: 'stadium', label: 'Stadium' },
+    { kind: 'triangle', label: 'Triangle' },
+  ];
+  const cw = 100;
+  const ch = 56;
+  return (
+    <Scene w={420} h={240}>
+      {cells.map((c, i) => {
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        const sx = 12 + col * cw;
+        const sy = 26 + row * (ch + 56);
+        return (
+          <g key={i}>
+            <Shape x={sx + 16} y={sy} w={cw - 32} h={ch} kind={c.kind} accent={i === 0} />
+            <Label x={sx + cw / 2} y={sy + ch + 16} anchor="middle" size={9} tone="muted">
+              {c.label}
+            </Label>
+          </g>
+        );
+      })}
+    </Scene>
+  );
+}
+
+/** A traffic-light status dot inside one shape and a checkbox marker in
+ *  another, sitting just left of each shape's label. */
+export function ShapeMarkers() {
+  return (
+    <Scene w={420} h={170}>
+      {/* Traffic-light dot */}
+      <Shape x={44} y={56} w={140} h={58} kind="rect" label="" />
+      <circle cx={70} cy={85} r={9} className="fill-emerald-500 stroke-white" strokeWidth={2} />
+      <Label x={90} y={86} size={10} weight={500} tone="strong">
+        On track
+      </Label>
+      {/* Checkbox marker */}
+      <Shape x={236} y={56} w={140} h={58} kind="rect" label="" />
+      <g transform="translate(254 76)">
+        {/* Done: a box filled with the text colour and a white tick (ShapeMarker.tsx) */}
+        <rect width={18} height={18} rx={4} className="fill-slate-800 dark:fill-slate-100" />
+        <path
+          d="M3 9 L7 13 L15 4"
+          className="stroke-white dark:stroke-slate-900"
+          strokeWidth={2.5}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <Label x={284} y={86} size={10} weight={500} tone="strong">
+        Done
+      </Label>
+    </Scene>
+  );
+}
+
+/** Three shapes wired up with arrows of different styles: straight, curved,
+ *  and an elbow. */
+export function ArrowsConnecting() {
+  return (
+    <Scene w={420} h={220}>
+      <Shape x={40} y={88} w={88} h={48} kind="rect" label="Start" />
+      <Shape x={186} y={40} w={88} h={48} kind="diamond" />
+      <Shape x={300} y={140} w={88} h={48} kind="rect" accent label="Done" />
+      {/* Straight, into the diamond's left corner */}
+      <Arrow from={[128, 104]} to={[186, 64]} kind="straight" />
+      <Arrow from={[274, 64]} to={[344, 140]} kind="curved" />
+      {/* Angled: down out of Start's bottom edge, then across into Done, never along a border */}
+      <Arrow from={[84, 136]} to={[84, 168]} dashed head={false} />
+      <Arrow from={[84, 168]} to={[300, 168]} dashed />
+    </Scene>
+  );
+}
+
+/** The same connector shown straight, curved, and elbow side by side. */
+export function ArrowStyles() {
+  const cols: { kind: 'straight' | 'curved' | 'elbow'; label: string }[] = [
+    { kind: 'straight', label: 'Straight' },
+    { kind: 'curved', label: 'Curved' },
+    { kind: 'elbow', label: 'Angled' },
+  ];
+  const cw = 140;
+  return (
+    <Scene w={420} h={190}>
+      {cols.map((c, i) => {
+        const x0 = i * cw;
+        const ax = x0 + 22;
+        const bx = x0 + cw - 22;
+        return (
+          <g key={i}>
+            <Shape x={ax} y={48} w={36} h={28} kind="rect" />
+            <Shape x={bx - 36} y={104} w={36} h={28} kind="rect" />
+            <Arrow from={[ax + 36, 62]} to={[bx - 36, 118]} kind={c.kind} />
+            <Label x={x0 + cw / 2} y={168} anchor="middle" size={10} weight={600} tone="muted">
+              {c.label}
+            </Label>
+          </g>
+        );
+      })}
+    </Scene>
+  );
+}
+
+/** A curved arrow being reshaped by dragging its midpoint handle. */
+export function CurveElbowHandles() {
+  return (
+    <Scene w={420} h={210}>
+      <Shape x={36} y={120} w={80} h={46} kind="rect" label="A" />
+      <Shape x={304} y={120} w={80} h={46} kind="rect" accent label="B" />
+      {/* The curved path being shaped */}
+      <Arrow from={[116, 143]} to={[304, 143]} kind="curved" />
+      {/* The curve handle, as the app draws it (arrow-handles.tsx): a small white rounded square
+          at the curve's control point, just off the bow, under the pointer dragging it. */}
+      <rect
+        x={204}
+        y={78}
+        width={12}
+        height={12}
+        rx={3}
+        className="fill-white stroke-brand-600"
+        strokeWidth={2}
+      />
+      <Cursor x={214} y={88} colour="brand" />
+    </Scene>
+  );
+}
+
+/** A message arrow whose endpoint is snapped onto a vertical lifeline arrow,
+ *  the sequence-diagram pattern, with the lifeline's snap points showing. */
+export function ArrowToArrow() {
+  const lifelineX = 280;
+  return (
+    <Scene w={420} h={230}>
+      <Shape x={66} y={24} w={92} h={40} kind="rect" label="Caller" />
+      <Shape x={234} y={24} w={92} h={40} kind="rect" label="Service" />
+      {/* Two lifeline arrows */}
+      <Arrow from={[112, 64]} to={[112, 212]} tone="muted" head={false} />
+      <Arrow from={[lifelineX, 64]} to={[lifelineX, 212]} tone="muted" head={false} />
+      {/* Snap points along the target lifeline */}
+      {/* About 24px apart, as arrow-snapping.ts spaces them */}
+      {[88, 112, 136, 160, 184, 208].map((y) => (
+        <circle key={y} cx={lifelineX} cy={y} r={3} className="fill-brand-300" />
+      ))}
+      {/* The snapped endpoint, drawn under the arrow so its head stays visible */}
+      <circle
+        cx={lifelineX}
+        cy={136}
+        r={5}
+        className="fill-brand-500 stroke-white"
+        strokeWidth={2}
+      />
+      {/* The message arrow, endpoint snapped onto the lifeline */}
+      <Arrow from={[112, 136]} to={[lifelineX, 136]} kind="straight" />
+      <Label x={150} y={126} size={10} weight={500} tone="muted">
+        request
+      </Label>
+      {/* The return message */}
+      <Arrow from={[lifelineX, 184]} to={[112, 184]} kind="straight" dashed />
+      <TextBar x={150} y={192} w={48} tone="faint" />
+    </Scene>
+  );
+}

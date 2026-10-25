@@ -1,129 +1,99 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Sparkle, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Kbd, Shadow } from '@liveworkspace/help-site/art/parts';
+import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the editor's helpers. An AI prompt drawing a sign-up flow, the appearance switch set to Dark, and Zen
-// mode tucking the chrome away.
+// The dark board's columns, each with its head dot and its cards' tags.
+const COLUMNS = [
+  { x: 254, head: 'fill-slate-400', tags: ['fill-amber-400', 'fill-sky-400', 'fill-emerald-400'] },
+  { x: 298, head: 'fill-amber-400', tags: ['fill-sky-400', 'fill-rose-400'] },
+  { x: 342, head: 'fill-emerald-400', tags: ['fill-emerald-400'] },
+];
+
+// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"). liveplanner's Tools are Dark Mode and
+// Zen Mode: the Z key and what Zen mode hides, and a board in Zen mode and the Dark appearance, nothing round it but
+// the work.
 export function ToolsArt() {
   return (
-    <Stage>
-      {/* The AI prompt. */}
+    <Scene>
+      {/* Zen mode's key and what it hides. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
-        <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />
-        <Sparkle cx={47} cy={33} r={3.5} className="fill-violet-300" />
-        <Label x={54} y={41} size={10.5} weight={700} tone="strong">
-          Ask AI
+        <Kbd x={36} y={40} w={34} h={34} label="Z" />
+        <Label x={84} y={46} size={10.5} weight={700} tone="strong">
+          Just the board
         </Label>
-        <rect
-          x={32}
-          y={56}
-          width={180}
-          height={34}
-          rx={8}
-          className="fill-slate-50 stroke-violet-300"
-          strokeWidth={1.4}
-        />
-        <Label x={42} y={73.5} size={10} tone="body">
-          Draw a sign-up flow
+        <Label x={84} y={62} size={9} tone="muted">
+          No header, tab bar or
         </Label>
-        <rect x={149} y={65} width={1.5} height={17} className="fill-violet-500" />
-        <rect
-          x={160}
-          y={62}
-          width={46}
-          height={22}
-          rx={6}
-          className="fill-violet-500 dark:fill-violet-700"
-        />
-        <Label x={183} y={73.5} anchor="middle" size={9} weight={700} tone="onAccent">
-          Draw
+        <Label x={84} y={75} size={9} tone="muted">
+          corner buttons
         </Label>
       </Card>
 
-      {/* The flow it draws. */}
-      <Shape
-        x={262}
-        y={18}
-        w={104}
-        h={36}
-        label="Sign up"
-        fill="fill-violet-50"
-        stroke="stroke-violet-400"
-      />
-      <Shape x={262} y={88} w={104} h={36} label="Verify email" />
-      <Shape x={262} y={158} w={104} h={36} accent label="Welcome" />
-      <Arrow
-        from={[314, 54]}
-        to={[314, 85]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Arrow
-        from={[314, 124]}
-        to={[314, 155]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Sparkle cx={372} cy={20} r={6} className="fill-amber-400" />
-      <Sparkle cx={254} cy={98} r={4.5} className="fill-violet-400" />
-      <Sparkle cx={378} cy={150} r={4} className="fill-amber-300" />
+      {/* A board in Zen mode, in the Dark appearance: the work and nothing else. */}
       <path
-        d="M226 62 C240 62 246 40 258 37"
-        className="fill-none stroke-violet-300"
+        d="M224 134 C232 134 234 116 240 112"
+        className="fill-none stroke-brand-300"
         strokeWidth={1.6}
         strokeDasharray="3 4"
         strokeLinecap="round"
       />
-
-      {/* Appearance. */}
-      <Card x={22} y={116} w={200} h={36} r={10}>
-        <rect x={30} y={123} width={60} height={22} rx={6} className="fill-transparent" />
-        <circle cx={42} cy={134} r={4} className="fill-amber-400" />
-        <path
-          d="M42 126 v2 M42 140 v2 M34 134 h2 M48 134 h2 M36.5 128.5 l1.4 1.4 M46.1 138.1 l1.4 1.4 M36.5 139.5 l1.4 -1.4 M46.1 129.9 l1.4 -1.4"
-          className="stroke-amber-400"
-          strokeWidth={1.3}
-          strokeLinecap="round"
-        />
-        <Label x={54} y={134.5} size={9.5} weight={500} tone="body">
-          Light
-        </Label>
-        <rect
-          x={92}
-          y={122}
-          width={64}
-          height={24}
-          rx={7}
-          className="fill-slate-800 help-art-as-drawn"
-        />
-        <path
-          d="M108 128 a6 6 0 1 0 6 8.5 a5 5 0 0 1 -6 -8.5 Z"
-          className="fill-brand-200 help-art-as-drawn"
-        />
-        <Label x={120} y={134.5} size={9.5} weight={700} className="fill-white help-art-as-drawn">
-          Dark
-        </Label>
-        <Label x={170} y={134.5} size={9.5} weight={500} tone="body">
-          System
-        </Label>
-      </Card>
-
-      {/* Zen mode. */}
-      <Card x={22} y={166} w={130} h={36} r={10}>
-        <path
-          d="M34 184 c4 -6 14 -6 18 0 c-4 6 -14 6 -18 0 Z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.4}
-        />
-        <path
-          d="M33 192 l20 -16"
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-        <Label x={62} y={184.5} size={9.5} weight={600} tone="body">
-          Zen mode
-        </Label>
-        <rect x={112} y={177} width={30} height={16} rx={8} className="fill-brand-500" />
-        <circle cx={134} cy={185} r={6} className="fill-white help-art-as-drawn" />
-      </Card>
-    </Stage>
+      <Shadow x={242} y={22} w={142} h={176} r={12} />
+      <g className="help-art-as-drawn">
+        <rect x={242} y={22} width={142} height={176} rx={12} className="fill-slate-900" />
+        <rect x={254} y={36} width={46} height={5} rx={2.5} className="fill-slate-300" />
+        <rect x={326} y={36} width={46} height={5} rx={2.5} className="fill-slate-700" />
+        <rect x={326} y={36} width={28} height={5} rx={2.5} className="fill-brand-400" />
+        {COLUMNS.map((col) => (
+          <g key={col.x}>
+            <rect x={col.x} y={52} width={40} height={134} rx={6} className="fill-slate-800" />
+            <circle cx={col.x + 8} cy={61} r={2.5} className={col.head} />
+            <rect
+              x={col.x + 14}
+              y={59.5}
+              width={18}
+              height={3}
+              rx={1.5}
+              className="fill-slate-500"
+            />
+            {col.tags.map((tag, i) => (
+              <g key={i}>
+                <rect
+                  x={col.x + 4}
+                  y={70 + i * 34}
+                  width={32}
+                  height={28}
+                  rx={4}
+                  className="fill-slate-700"
+                />
+                <rect
+                  x={col.x + 9}
+                  y={77 + i * 34}
+                  width={20}
+                  height={3.5}
+                  rx={1.7}
+                  className="fill-slate-300"
+                />
+                <rect
+                  x={col.x + 9}
+                  y={85 + i * 34}
+                  width={14}
+                  height={3.5}
+                  rx={1.7}
+                  className="fill-slate-500"
+                />
+                <rect
+                  x={col.x + 9}
+                  y={91 + i * 34}
+                  width={10}
+                  height={3.5}
+                  rx={1.7}
+                  className={tag}
+                />
+              </g>
+            ))}
+          </g>
+        ))}
+      </g>
+    </Scene>
   );
 }

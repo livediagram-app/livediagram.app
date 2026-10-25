@@ -1,93 +1,65 @@
-import { Arrow, Cursor, Label, SelectionBox, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Cursor, Label, SelectionBox } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+import { MiniWireframe } from './design-parts';
 
-// Canvas: the infinite canvas itself, mid-flowchart. A decision branching to two outcomes, a sticky note pinned
-// beside it, the palette strip floating above and the zoom and undo controls in their corners.
+// Canvas: a design's pages side by side on the canvas. A logo artboard with its construction circle and the mark
+// selected (its rotate handle above it), a phone wireframe beside it, and the undo and zoom controls in their corners.
 export function CanvasArt() {
   return (
     <Stage>
-      {/* The palette strip. */}
-      <Card x={112} y={14} w={176} h={28} r={9}>
-        <path
-          d="M124 21 v13 l3.5 -3.2 2.3 4.8 2.3 -1 -2.2 -4.6 4.6 -0.3 Z"
-          className="fill-brand-500"
-        />
-        <rect
-          x={146}
-          y={22}
-          width={13}
-          height={12}
-          rx={2.5}
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-        />
-        <ellipse
-          cx={177}
-          cy={28}
-          rx={7}
-          ry={6}
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
+      {/* The logo artboard. */}
+      <Label x={34} y={24} size={8.5} weight={600} tone="muted">
+        1024 x 1024 · Logo
+      </Label>
+      <Card x={34} y={32} w={140} h={140} r={4}>
+        <circle
+          cx={104}
+          cy={102}
+          r={50}
+          className="fill-none stroke-sky-300"
+          strokeWidth={1}
+          strokeDasharray="4 4"
         />
         <path
-          d="M200 21 l7 7 -7 7 -7 -7 Z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-          strokeLinejoin="round"
+          d="M104 32 V172 M34 102 H174"
+          className="fill-none stroke-sky-200"
+          strokeWidth={0.8}
         />
-        <path
-          d="M216 34 l12 -12 m-6 0 h6 v6"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Label x={244} y={28.5} anchor="middle" size={13} weight={700} tone="body">
-          T
+        <path d="M104 68 L138 128 H70 Z" className="fill-brand-500" />
+        <circle cx={104} cy={106} r={12} className="fill-white help-art-as-drawn" />
+        <Label x={104} y={160} anchor="middle" size={10} weight={800} tone="strong">
+          PEAK
         </Label>
-        <rect
-          x={259}
-          y={21}
-          width={14}
-          height={14}
-          rx={2}
-          className="fill-amber-200 stroke-amber-400"
-          strokeWidth={1.2}
-        />
       </Card>
+      <SelectionBox x={66} y={64} w={76} h={68} />
+      {/* The rotate handle. */}
+      <line x1={104} y1={64} x2={104} y2={52} className="stroke-brand-500" strokeWidth={1.2} />
+      <circle cx={104} cy={50} r={3.5} className="fill-white stroke-brand-500" strokeWidth={1.4} />
+      <Cursor x={136} y={124} colour="brand" />
 
-      {/* The flow. */}
-      <Arrow from={[102, 112]} to={[127, 112]} />
-      <Arrow from={[194, 112]} to={[223, 80]} kind="elbow" />
-      <Arrow from={[194, 112]} to={[223, 146]} kind="elbow" />
-      <Shape x={30} y={95} w={72} h={34} kind="stadium" label="Start" />
-      <Shape x={130} y={83} w={64} h={58} kind="diamond" label="Ready?" />
-      <Shape x={226} y={62} w={84} h={36} accent label="Ship it" />
-      <Shape x={226} y={128} w={84} h={36} label="Iterate" />
-      <SelectionBox x={221} y={57} w={94} h={46} />
+      {/* The phone wireframe. */}
+      <Label x={206} y={24} size={8.5} weight={600} tone="muted">
+        iPhone · Wireframe
+      </Label>
+      <rect x={206} y={32} width={84} height={160} rx={14} className="fill-slate-800" />
+      <MiniWireframe x={210} y={36} w={76} h={152} />
 
-      {/* A sticky note, pinned at a slight angle. */}
-      <g transform="rotate(5 352 132)" className="help-art-as-drawn">
-        <rect
-          x={325}
-          y={106}
-          width={56}
-          height={54}
-          rx={3}
-          className="fill-slate-900/[0.06]"
-          transform="translate(2 4)"
-        />
-        <rect x={325} y={106} width={56} height={54} rx={3} className="fill-amber-200" />
-        <rect x={325} y={106} width={56} height={9} rx={3} className="fill-amber-300" />
-        <Label x={332} y={127} size={9} weight={600} className="fill-amber-900 help-art-as-drawn">
-          Launch
-        </Label>
-        <Label x={332} y={140} size={9} weight={600} className="fill-amber-900 help-art-as-drawn">
-          on Friday!
-        </Label>
-      </g>
-
-      <Cursor x={300} y={92} colour="brand" />
+      {/* A sticky note beside the screens. */}
+      <rect
+        x={306}
+        y={44}
+        width={74}
+        height={56}
+        rx={3}
+        className="fill-amber-100 stroke-amber-300"
+        strokeWidth={1}
+      />
+      <Label x={314} y={60} size={8.5} weight={600} className="fill-amber-800 dark:fill-amber-200">
+        Try the mark
+      </Label>
+      <Label x={314} y={73} size={8.5} weight={600} className="fill-amber-800 dark:fill-amber-200">
+        on the splash
+      </Label>
 
       {/* Undo and zoom. */}
       <Card x={14} y={184} w={56} h={24} r={8}>

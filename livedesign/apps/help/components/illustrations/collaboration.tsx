@@ -2,7 +2,17 @@
 // sharing (links, passwords, expiry, embeds) and teams.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Cursor, Avatar, Panel, Button, Label, TextBar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Cursor,
+  Avatar,
+  Panel,
+  Button,
+  Label,
+  TextBar,
+} from '@liveworkspace/help-site/art/primitives';
 
 // --- Comments ----------------------------------------------------------------
 

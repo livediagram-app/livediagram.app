@@ -3,8 +3,8 @@
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from './primitives';
-import { IsoCard, iso } from './palette-modes-parts';
+import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
+import { IsoCard, iso } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
 import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------

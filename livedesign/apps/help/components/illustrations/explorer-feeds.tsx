@@ -4,7 +4,7 @@
 // so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Avatar, Label, Scene, Tabs } from './primitives';
+import { Avatar, Label, Scene, Tabs } from '@liveworkspace/help-site/art/primitives';
 
 // --- Local parts -------------------------------------------------------------
 

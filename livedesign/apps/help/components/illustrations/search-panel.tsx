@@ -5,7 +5,7 @@
 // every article fills with different result rows.
 
 import type { ReactNode } from 'react';
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared pieces -----------------------------------------------------------
 

@@ -8,7 +8,7 @@
 // the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Dialog, Label } from './primitives';
+import { Scene, Dialog, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared bits -------------------------------------------------------------------------------
 

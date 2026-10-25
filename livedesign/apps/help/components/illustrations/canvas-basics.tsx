@@ -8,7 +8,16 @@
 // the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, SelectionBox, Panel, Dialog, Label, Menu } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  SelectionBox,
+  Panel,
+  Dialog,
+  Label,
+  Menu,
+} from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
 // --- Shared bits -------------------------------------------------------------------------------

@@ -3,7 +3,15 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Dialog,
+  Button,
+  Label,
+  Avatar,
+} from '@liveworkspace/help-site/art/primitives';
 
 /** The New Document wizard, its one question: "What are you making today?", the
  *  three mode cards in a row at one height (Diagram first and chosen),

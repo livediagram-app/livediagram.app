@@ -1,7 +1,7 @@
 // Share dialog and share-gate scenes for the Collaboration › Sharing articles
 // (docs/specs/018-help/help-app.md). Labels are the real UI strings.
 
-import { Button, Label, Scene } from './primitives';
+import { Button, Label, Scene } from '@liveworkspace/help-site/art/primitives';
 
 // --- Shared pieces -----------------------------------------------------------
 

@@ -10,6 +10,19 @@ hands over in `art.categoryArt` (its `components/category-art/`), so each help c
 story in its own brand colours. An app picks the Start here steps in its layout: `startHere.steps` is either a count
 (the walkthrough's first guides) or a list of `categorySlug/slug` articles.
 
+What every help centre draws alike lives once in `src/art/`:
+
+- `art/primitives` and `art/parts`: the illustration kit (`Scene`, `Shape`, `Arrow`, `Label`, …) and the category
+  stage with its motifs (`Stage`, `Window`, `Card`, `Chip`, `Kbd`, `Callout`, `DocThumb`, …).
+- `art/scenes/<slug>`: the category scenes whose story is the same in every product. Each takes the product's
+  content as props (its name, share host, export formats, commands and keys, its work drawn on a screen), and the
+  app's `components/category-art/<slug>.tsx` binds it. Policies takes nothing.
+- `art/illustrations/<area>`: in-article figures that are the same in every product that shows them.
+- `art/tool-picker`: the Pages editors' tool picker (Edit, Present and Preview bands), which livedocuments's and
+  livedesign's Selection Modes scenes open beside their own work.
+
+A scene or figure that shows one product's own work stays in that app.
+
 Specs: `docs/specs/018-help/help-app.md` and `help-pages.md` in each product.
 
 ## Binding a help app

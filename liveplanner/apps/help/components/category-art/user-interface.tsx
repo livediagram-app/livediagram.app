@@ -1,162 +1,216 @@
-import { Arrow, Label, Shape, DiscText } from '@/components/illustrations/primitives';
-import { Stage, Window } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Callout, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
-// A numbered callout: the anatomy diagram's way of pointing at one part of the editor.
-function Callout({ cx, cy, n }: { cx: number; cy: number; n: number }) {
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={9} className="fill-brand-500 stroke-white" strokeWidth={2} />
-      <DiscText cx={cx} cy={cy} size={10} weight={800}>
-        {n}
-      </DiscText>
-    </g>
-  );
-}
+// The board's columns: their names, head dots, and the tag on each of their cards.
+const COLUMNS = [
+  { x: 26, name: 'To do', head: 'fill-slate-300', tags: ['fill-amber-300', 'fill-sky-300'] },
+  { x: 108, name: 'Doing', head: 'fill-amber-400', tags: ['fill-rose-300', 'fill-sky-300'] },
+  { x: 190, name: 'Done', head: 'fill-emerald-400', tags: ['fill-emerald-300'] },
+];
 
-// User Interface: the whole editor laid out, with numbered callouts on its parts: the menu and tab name,
-// the palette strip, the style panel, and the tab bar and zoom along the foot.
+// The bottom-right cluster's buttons and their centres, left to right (Panel Layout): Undo and Redo, then the
+// card strip (Trash is left out for room), then Style.
+const CLUSTER = [
+  { label: '↶', x: 212 },
+  { label: '↷', x: 232 },
+  { label: 'New', x: 260 },
+  { label: 'Find', x: 290 },
+  { label: 'Types', x: 322 },
+  { label: 'Style', x: 356 },
+];
+
+// User Interface: the plan editor laid out, with numbered callouts on its four fixed pieces of chrome (Panel
+// Layout): the header with the plan's name, its pills and Share; the board header with the menu button, the done
+// count and Filter cards; the cluster of buttons in the bottom-right corner; and the tab bar with the quick controls.
 export function UserInterfaceArt() {
   return (
     <Stage>
-      <Window x={14} y={10} w={372} h={200} title="Product launch · liveplanner">
-        {/* Menu button and the tab's name. */}
+      <Window x={14} y={10} w={372} h={200} title="Sprint 14 · liveplanner">
+        {/* 1: the header. */}
+        <rect x={24} y={40} width={12} height={12} rx={3} className="fill-brand-500" />
+        <Label x={42} y={46.5} size={9} weight={700} tone="strong">
+          Sprint 14
+        </Label>
+        <rect
+          x={92}
+          y={39}
+          width={40}
+          height={15}
+          rx={7.5}
+          className="fill-emerald-50 stroke-emerald-200"
+          strokeWidth={1}
+        />
+        <Label x={112} y={47} anchor="middle" size={7.5} weight={600} className="fill-emerald-700">
+          Shared
+        </Label>
+        <rect
+          x={137}
+          y={39}
+          width={42}
+          height={15}
+          rx={7.5}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1}
+        />
+        <Label x={158} y={47} anchor="middle" size={7.5} weight={600} tone="body">
+          Editing
+        </Label>
+        <rect x={330} y={38} width={46} height={17} rx={6} className="fill-brand-500" />
+        <Label x={353} y={47} anchor="middle" size={8.5} weight={700} tone="onAccent">
+          Share
+        </Label>
+        <line x1={14} y1={62} x2={386} y2={62} className="stroke-slate-100" strokeWidth={1} />
+
+        {/* 2: the board header. */}
         <rect
           x={24}
-          y={42}
-          width={58}
-          height={22}
-          rx={7}
+          y={68}
+          width={20}
+          height={18}
+          rx={5}
           className="fill-white stroke-slate-200"
           strokeWidth={1.2}
         />
         <path
-          d="M31 49 h10 M31 53 h10 M31 57 h10"
+          d="M29 73.5 h10 M29 77 h10 M29 80.5 h10"
+          className="stroke-slate-500"
+          strokeWidth={1.3}
+          strokeLinecap="round"
+        />
+        <Label x={52} y={77.5} size={9.5} weight={700} tone="strong">
+          Board
+        </Label>
+        <Label x={86} y={77.5} size={8} weight={600} tone="accent">
+          60% · 3 of 5
+        </Label>
+        <rect
+          x={148}
+          y={69}
+          width={58}
+          height={16}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <Label x={177} y={77.5} anchor="middle" size={7.5} weight={600} tone="body">
+          Filter cards
+        </Label>
+        <Label x={216} y={77.5} anchor="middle" size={11} weight={600} tone="body">
+          +
+        </Label>
+        <circle cx={232} cy={77} r={4.5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
+        <circle cx={232} cy={77} r={1.5} className="fill-slate-400" />
+
+        {/* The board. */}
+        {COLUMNS.map((col) => (
+          <g key={col.name}>
+            <rect x={col.x} y={92} width={76} height={76} rx={6} className="fill-slate-50" />
+            <circle cx={col.x + 9} cy={101} r={2.6} className={col.head} />
+            <Label x={col.x + 16} y={101.5} size={8} weight={700} tone="body">
+              {col.name}
+            </Label>
+            {col.tags.map((tag, i) => (
+              <g key={i}>
+                <rect
+                  x={col.x + 5}
+                  y={110 + i * 28}
+                  width={66}
+                  height={23}
+                  rx={4}
+                  className="fill-white stroke-slate-200"
+                  strokeWidth={1}
+                />
+                <rect
+                  x={col.x + 11}
+                  y={116 + i * 28}
+                  width={42}
+                  height={3.5}
+                  rx={1.7}
+                  className="fill-slate-300"
+                />
+                <rect
+                  x={col.x + 11}
+                  y={124 + i * 28}
+                  width={18}
+                  height={3.5}
+                  rx={1.7}
+                  className={tag}
+                />
+              </g>
+            ))}
+          </g>
+        ))}
+
+        {/* 3: the bottom-right cluster. */}
+        <rect
+          x={196}
+          y={150}
+          width={180}
+          height={22}
+          rx={7}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        {CLUSTER.map((b) => (
+          <Label
+            key={b.label}
+            x={b.x}
+            y={161.5}
+            anchor="middle"
+            size={b.label.length === 1 ? 10 : 7.5}
+            weight={600}
+            tone="body"
+          >
+            {b.label}
+          </Label>
+        ))}
+
+        {/* 4: the tab bar and the quick controls. */}
+        <line x1={14} y1={180} x2={386} y2={180} className="stroke-slate-100" strokeWidth={1} />
+        <rect
+          x={24}
+          y={185}
+          width={44}
+          height={16}
+          rx={5}
+          className="fill-white stroke-brand-400"
+          strokeWidth={1.2}
+        />
+        <Label x={46} y={193.5} anchor="middle" size={7.5} weight={700} tone="accent">
+          Board
+        </Label>
+        <rect x={72} y={185} width={46} height={16} rx={5} className="fill-slate-100" />
+        <Label x={95} y={193.5} anchor="middle" size={7.5} weight={500} tone="body">
+          Backlog
+        </Label>
+        <rect x={122} y={185} width={42} height={16} rx={5} className="fill-slate-100" />
+        <Label x={143} y={193.5} anchor="middle" size={7.5} weight={500} tone="body">
+          Budget
+        </Label>
+        <Label x={174} y={193.5} anchor="middle" size={11} weight={600} tone="muted">
+          +
+        </Label>
+        <circle cx={330} cy={193} r={4} className="fill-none stroke-slate-500" strokeWidth={1.4} />
+        <path
+          d="M333 196 l3 3"
           className="stroke-slate-500"
           strokeWidth={1.4}
           strokeLinecap="round"
         />
-        <line x1={46} y1={47} x2={46} y2={59} className="stroke-slate-200" strokeWidth={1} />
-        <Label x={64} y={53.5} anchor="middle" size={7.5} weight={600} tone="strong">
-          Tab 1
-        </Label>
-
-        {/* Palette strip. */}
-        <rect
-          x={110}
-          y={42}
-          width={168}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+        <circle
+          cx={350}
+          cy={193}
+          r={4.5}
+          className="fill-none stroke-slate-500"
+          strokeWidth={1.4}
         />
-        {['Shapes', 'Draw', 'Build', 'Icons'].map((t, i) => (
-          <Label
-            key={t}
-            x={138 + i * 38}
-            y={53.5}
-            anchor="middle"
-            size={8.5}
-            weight={i === 0 ? 700 : 500}
-            tone={i === 0 ? 'accent' : 'body'}
-          >
-            {t}
-          </Label>
-        ))}
-
-        {/* Style panel. */}
-        <rect
-          x={296}
-          y={42}
-          width={80}
-          height={116}
-          rx={9}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <Label x={306} y={54} size={8} weight={700} tone="muted">
-          STYLE
-        </Label>
-        {[
-          'fill-brand-400',
-          'fill-violet-400',
-          'fill-emerald-400',
-          'fill-amber-400',
-          'fill-rose-400',
-        ].map((c, i) => (
-          <circle key={c} cx={311 + i * 13} cy={70} r={5} className={c} />
-        ))}
-        <circle cx={311} cy={70} r={7.5} className="fill-none stroke-brand-500" strokeWidth={1.4} />
-        {[88, 108, 128].map((y, i) => (
-          <g key={y}>
-            <rect x={306} y={y} width={60} height={4} rx={2} className="fill-slate-200" />
-            <rect
-              x={306}
-              y={y}
-              width={[38, 22, 48][i]}
-              height={4}
-              rx={2}
-              className="fill-brand-400"
-            />
-            <circle
-              cx={306 + [38, 22, 48][i]!}
-              cy={y + 2}
-              r={4}
-              className="fill-white stroke-brand-500"
-              strokeWidth={1.4}
-            />
-          </g>
-        ))}
-        <rect x={306} y={140} width={60} height={10} rx={3} className="fill-slate-100" />
-
-        {/* Canvas content. */}
-        <Shape x={66} y={94} w={70} h={34} label="Plan" />
-        <Shape x={168} y={94} w={78} h={34} accent label="Launch" />
-        <Arrow from={[136, 111]} to={[165, 111]} />
-
-        {/* Tab bar and zoom. */}
-        <rect
-          x={24}
-          y={178}
-          width={150}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <rect
-          x={28}
-          y={182}
-          width={56}
-          height={14}
-          rx={4}
-          className="fill-white stroke-brand-400"
-          strokeWidth={1.2}
-        />
-        <Label x={56} y={189.5} anchor="middle" size={7.5} weight={700} tone="accent">
-          Overview
-        </Label>
-        <rect x={88} y={182} width={46} height={14} rx={4} className="fill-slate-100" />
-        <Label x={111} y={189.5} anchor="middle" size={7.5} weight={500} tone="body">
-          Flows
-        </Label>
-        <rect
-          x={296}
-          y={178}
-          width={80}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <Label x={336} y={189.5} anchor="middle" size={8.5} weight={700} tone="strong">
-          − 100% +
-        </Label>
+        <circle cx={350} cy={193} r={1.5} className="fill-slate-500" />
+        <path d="M370 188 a5 5 0 1 0 5 7 a4 4 0 0 1 -5 -7 Z" className="fill-slate-500" />
       </Window>
-      <Callout cx={24} cy={40} n={1} />
-      <Callout cx={110} cy={40} n={2} />
-      <Callout cx={376} cy={40} n={3} />
-      <Callout cx={24} cy={176} n={4} />
+      <Callout cx={24} cy={38} n={1} />
+      <Callout cx={24} cy={66} n={2} />
+      <Callout cx={376} cy={148} n={3} />
+      <Callout cx={24} cy={183} n={4} />
     </Stage>
   );
 }

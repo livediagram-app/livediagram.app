@@ -5,7 +5,7 @@
 // (apps/editor/components/palette/palette-tile-defs.tsx), so the picture reads the
 // way the editor does. Composed from the shared primitives.
 
-import { Scene, Panel, Label } from './primitives';
+import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { STRIP_W, Strip } from './toolbar-layout';
 
 type Row = { caption: string; blurb: string; key?: string };

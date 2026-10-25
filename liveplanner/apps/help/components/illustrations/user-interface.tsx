@@ -7,7 +7,7 @@
 // primitives so the house style holds.
 
 import type {} from 'react';
-import { Scene, Shape, Panel, Label } from './primitives';
+import { Scene, Shape, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Glyphs ------------------------------------------------------------------
 

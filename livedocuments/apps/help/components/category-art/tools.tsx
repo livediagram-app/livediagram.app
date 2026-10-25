@@ -1,128 +1,110 @@
-import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Sparkle, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Shadow } from '@liveworkspace/help-site/art/parts';
+import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the editor's helpers. Auto Layout tidying a sign-up flow, the appearance switch set to Dark, and Zen
-// mode tucking the chrome away.
+const MONO = {
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  whiteSpace: 'pre',
+} as const;
+
+// The Markdown pasted into the Import box, one line each.
+const MARKDOWN = ['# Launch plan', '- Goals', '- [x] Brief'];
+
+// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livedocuments's helper: Markdown
+// Import (the tab menu's Import, then Markdown) turning `#`, `-` and `- [x]` lines into an article's heading, bullet
+// and ticked to-do, beside the shared appearance switch and Zen mode.
 export function ToolsArt() {
   return (
-    <Stage>
-      {/* Auto Layout. */}
+    <Scene>
+      {/* The Import box. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
-        <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />
-        <Sparkle cx={47} cy={33} r={3.5} className="fill-violet-300" />
-        <Label x={54} y={41} size={10.5} weight={700} tone="strong">
-          Auto Layout
+        <Label x={34} y={38} size={10.5} weight={700} tone="strong">
+          Import Markdown
         </Label>
         <rect
           x={32}
-          y={56}
-          width={180}
-          height={34}
-          rx={8}
-          className="fill-slate-50 stroke-violet-300"
-          strokeWidth={1.4}
-        />
-        <Label x={42} y={73.5} size={10} tone="body">
-          Arrange by its arrows
-        </Label>
-        <rect
-          x={160}
-          y={62}
-          width={46}
-          height={22}
+          y={48}
+          width={124}
+          height={44}
           rx={6}
-          className="fill-violet-500 dark:fill-violet-700"
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.2}
         />
-        <Label x={183} y={73.5} anchor="middle" size={9} weight={700} tone="onAccent">
-          Tidy
+        {MARKDOWN.map((line, i) => (
+          <text
+            key={line}
+            x={40}
+            y={58 + i * 12}
+            fontSize={8.5}
+            dominantBaseline="middle"
+            className={i === 0 ? 'fill-brand-600' : 'fill-slate-600'}
+            style={MONO}
+          >
+            {line}
+          </text>
+        ))}
+        <rect x={164} y={60} width={48} height={22} rx={6} className="fill-brand-500" />
+        <Label x={188} y={71.5} anchor="middle" size={9} weight={700} tone="onAccent">
+          Import
         </Label>
       </Card>
-
-      {/* The flow it lays out. */}
-      <Shape
-        x={262}
-        y={18}
-        w={104}
-        h={36}
-        label="Sign up"
-        fill="fill-violet-50"
-        stroke="stroke-violet-400"
-      />
-      <Shape x={262} y={88} w={104} h={36} label="Verify email" />
-      <Shape x={262} y={158} w={104} h={36} accent label="Welcome" />
-      <Arrow
-        from={[314, 54]}
-        to={[314, 85]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Arrow
-        from={[314, 124]}
-        to={[314, 155]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Sparkle cx={372} cy={20} r={6} className="fill-amber-400" />
-      <Sparkle cx={254} cy={98} r={4.5} className="fill-violet-400" />
-      <Sparkle cx={378} cy={150} r={4} className="fill-amber-300" />
       <path
-        d="M226 62 C240 62 246 40 258 37"
-        className="fill-none stroke-violet-300"
+        d="M226 62 C238 62 242 48 252 44"
+        className="fill-none stroke-brand-300"
         strokeWidth={1.6}
         strokeDasharray="3 4"
         strokeLinecap="round"
       />
 
-      {/* Appearance. */}
-      <Card x={22} y={116} w={200} h={36} r={10}>
-        <rect x={30} y={123} width={60} height={22} rx={6} className="fill-transparent" />
-        <circle cx={42} cy={134} r={4} className="fill-amber-400" />
-        <path
-          d="M42 126 v2 M42 140 v2 M34 134 h2 M48 134 h2 M36.5 128.5 l1.4 1.4 M46.1 138.1 l1.4 1.4 M36.5 139.5 l1.4 -1.4 M46.1 129.9 l1.4 -1.4"
-          className="stroke-amber-400"
-          strokeWidth={1.3}
-          strokeLinecap="round"
-        />
-        <Label x={54} y={134.5} size={9.5} weight={500} tone="body">
-          Light
-        </Label>
+      {/* The article it becomes. */}
+      <Shadow x={256} y={18} w={128} h={176} r={6} />
+      <rect
+        x={256}
+        y={18}
+        width={128}
+        height={176}
+        rx={6}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={270} y={40} size={13} weight={800} tone="strong">
+        Launch plan
+      </Label>
+      <rect x={270} y={52} width={100} height={4} rx={2} className="fill-slate-200" />
+      <rect x={270} y={61} width={84} height={4} rx={2} className="fill-slate-200" />
+      <circle cx={273} cy={80} r={2.2} className="fill-slate-500" />
+      <Label x={281} y={80.5} size={9.5} weight={500} tone="body">
+        Goals
+      </Label>
+      <rect
+        x={268}
+        y={92}
+        width={10}
+        height={10}
+        rx={2.5}
+        className="fill-brand-500 stroke-brand-500"
+      />
+      <path
+        d="M270.5 97 l2 2 3.5 -4"
+        className="fill-none stroke-white help-art-as-drawn"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Label x={284} y={97.5} size={9.5} weight={500} className="fill-slate-400 line-through">
+        Brief
+      </Label>
+      {[0, 1, 2, 3, 4].map((i) => (
         <rect
-          x={92}
-          y={122}
-          width={64}
-          height={24}
-          rx={7}
-          className="fill-slate-800 help-art-as-drawn"
+          key={i}
+          x={270}
+          y={118 + i * 11}
+          width={i === 4 ? 60 : 100}
+          height={4}
+          rx={2}
+          className="fill-slate-200"
         />
-        <path
-          d="M108 128 a6 6 0 1 0 6 8.5 a5 5 0 0 1 -6 -8.5 Z"
-          className="fill-brand-200 help-art-as-drawn"
-        />
-        <Label x={120} y={134.5} size={9.5} weight={700} className="fill-white help-art-as-drawn">
-          Dark
-        </Label>
-        <Label x={170} y={134.5} size={9.5} weight={500} tone="body">
-          System
-        </Label>
-      </Card>
-
-      {/* Zen mode. */}
-      <Card x={22} y={166} w={130} h={36} r={10}>
-        <path
-          d="M34 184 c4 -6 14 -6 18 0 c-4 6 -14 6 -18 0 Z"
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.4}
-        />
-        <path
-          d="M33 192 l20 -16"
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-        <Label x={62} y={184.5} size={9.5} weight={600} tone="body">
-          Zen mode
-        </Label>
-        <rect x={112} y={177} width={30} height={16} rx={8} className="fill-brand-500" />
-        <circle cx={134} cy={185} r={6} className="fill-white help-art-as-drawn" />
-      </Card>
-    </Stage>
+      ))}
+    </Scene>
   );
 }

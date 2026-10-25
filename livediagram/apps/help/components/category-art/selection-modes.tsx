@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Label, Shape } from '@/components/illustrations/primitives';
-import { Card, Stage } from './parts';
+import { Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 const ICON = 'fill-none stroke-current';
 

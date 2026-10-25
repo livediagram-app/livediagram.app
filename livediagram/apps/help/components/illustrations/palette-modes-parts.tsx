@@ -11,7 +11,7 @@
 // Palette-specific by design: ./primitives holds the house style every
 // illustration category shares.
 
-import { Label } from './primitives';
+import { Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Mode glyphs ------------------------------------------------------------
 //

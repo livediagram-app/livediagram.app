@@ -2,7 +2,15 @@
 // (docs/specs/012-collaboration/bring-focus.md, docs/specs/009-elements/chair.md,
 // docs/specs/010-palette/build-category.md), drawn with the labels the editor prints.
 
-import { Scene, Label, Dialog, Button, Avatar, TextBar, Panel } from './primitives';
+import {
+  Scene,
+  Label,
+  Dialog,
+  Button,
+  Avatar,
+  TextBar,
+  Panel,
+} from '@liveworkspace/help-site/art/primitives';
 
 /** The invitation everyone else gets when somebody presses Bring Focus. */
 export function BringFocusInvite() {

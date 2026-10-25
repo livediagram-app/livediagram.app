@@ -4,7 +4,7 @@
 // ShapeLibrariesPane and GalleryPane) so the figures match what a reader sees. Composed from the
 // shared primitives.
 
-import { Scene, Label, Button, Dialog } from './primitives';
+import { Scene, Label, Button, Dialog } from '@liveworkspace/help-site/art/primitives';
 
 // --- Local parts -------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Label } from '@/components/illustrations/primitives';
-import { Window, Stage } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Window, Stage } from '@liveworkspace/help-site/art/parts';
 
 const G = 'fill-none stroke-current';
 

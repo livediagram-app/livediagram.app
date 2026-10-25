@@ -3,7 +3,15 @@
 // dialog scenes in sharing.tsx.)
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Panel, Dialog, Label, TextBar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Panel,
+  Dialog,
+  Label,
+  TextBar,
+} from '@liveworkspace/help-site/art/primitives';
 
 /** A small shield motif with a tick, the recurring "protected" mark. */
 function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {

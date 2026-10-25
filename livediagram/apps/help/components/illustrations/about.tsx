@@ -4,7 +4,7 @@
 // About figures reuse canvas / collaboration scenes (CanvasOverview,
 // LiveCursors) rather than redrawing them.
 
-import { Scene, Shape, Arrow, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
 
 /** A montage of the diagram kinds livediagram covers: a flowchart, a mind map,
  *  and a wireframe, side by side as three mini-canvases. */

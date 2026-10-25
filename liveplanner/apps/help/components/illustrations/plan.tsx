@@ -4,7 +4,15 @@
 // holds; the labels are the editor's own (PlanColumnPopover, ItemPanel, PlanCardMenu, CardTypesPanel...).
 
 import type {} from 'react';
-import { Scene, Panel, Label, TextBar, Cursor, Menu, Tabs } from './primitives';
+import {
+  Scene,
+  Panel,
+  Label,
+  TextBar,
+  Cursor,
+  Menu,
+  Tabs,
+} from '@liveworkspace/help-site/art/primitives';
 
 // The five built-in card types' stripes: Project black, Task gray, Note blue, Idea yellow, Action red.
 type CardType = 'project' | 'task' | 'note' | 'idea' | 'action';

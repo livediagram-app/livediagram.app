@@ -1,5 +1,5 @@
-import { Avatar, DiscText, Label } from '@/components/illustrations/primitives';
-import { Card, Stage, TickDisc } from './parts';
+import { Avatar, DiscText, Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Stage, TickDisc } from '@liveworkspace/help-site/art/parts';
 
 // A numbered step disc, sitting on the top edge of its card.
 function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {

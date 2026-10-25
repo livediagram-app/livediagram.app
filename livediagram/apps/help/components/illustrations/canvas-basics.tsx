@@ -17,7 +17,7 @@ import {
   Dialog,
   Label,
   Menu,
-} from './primitives';
+} from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 import { ModeMark } from './mode-mark';
 

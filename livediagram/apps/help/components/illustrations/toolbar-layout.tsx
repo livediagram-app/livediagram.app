@@ -3,7 +3,7 @@
 // are exported so other scenes draw the editor's top row the same way.
 // Composed only from the shared primitives, like every other help scene.
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene, Tile } from './primitives';
+import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
 import { SelectGlyph } from './palette-modes-parts';
 
 // The strip's element tiles, drawn as the simple outlines the real tiles use.

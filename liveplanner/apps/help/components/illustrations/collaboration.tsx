@@ -2,7 +2,7 @@
 // session tools.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Panel, Button, Label, Tabs } from './primitives';
+import { Scene, Shape, Panel, Button, Label, Tabs } from '@liveworkspace/help-site/art/primitives';
 
 // --- Sharing ------------------------------------------------------------------
 

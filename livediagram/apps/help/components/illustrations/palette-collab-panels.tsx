@@ -3,7 +3,7 @@
 // a conversation of bubbles over the composer, and a list of actions, each a
 // round check, a name and an assignee, over the dashed Add Action bar.
 
-import { Scene, Label, Avatar, Shape, Arrow } from './primitives';
+import { Scene, Label, Avatar, Shape, Arrow } from '@liveworkspace/help-site/art/primitives';
 import { CollabCard } from './palette-collaborate';
 
 /** A comment panel beside the element it is about, joined by an ordinary

@@ -7,7 +7,7 @@
 // article formatting toolbar (article/PageToolbar.tsx). Composed from the shared primitives.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, TextBar, Tabs } from './primitives';
+import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
 import {
   BackgroundGlyph,
   LayoutGlyph,

@@ -1,7 +1,7 @@
 // The second round of diagram-building elements' figures (docs/specs/009-elements/): Pointer note, Stack, Diagram key
 // and tag colours, Org chart and Sequence diagram. Each is drawn the way the element draws on the canvas.
 
-import { Arrow, Label, Scene, Shape } from './primitives';
+import { Arrow, Label, Scene, Shape } from '@liveworkspace/help-site/art/primitives';
 
 // --- Pointer note ------------------------------------------------------------------
 

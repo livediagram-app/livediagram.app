@@ -10,7 +10,7 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Panel, Label } from './primitives';
+import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 
 const PX = 60;
 const PW = 300;

@@ -2,7 +2,17 @@
 // selecting elements, grouping, themes, templates and links.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label, Tile } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  SelectionBox,
+  Cursor,
+  Panel,
+  Tabs,
+  Label,
+  Tile,
+} from '@liveworkspace/help-site/art/primitives';
 import { Strip, stripCategory } from './toolbar-layout';
 
 /** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
