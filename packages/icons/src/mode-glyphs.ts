@@ -1,9 +1,9 @@
 // The selection-mode glyphs (docs/specs/009-elements/mode-button.md), as data: the ONE drawing of each mode that
 // the editor's palette and Mode button (through <Prims>) and the export (through
 // iconPrimsMarkup) all render, so an exported Mode button shows the same glyph
-// as the canvas. Keyed by the mode ids in each product's SELECTION_MODES (livediagram has them all; a product with fewer
-// draws only its own, and a test there checks every mode has one), plus the Highlighter, a former mode whose
-// glyph its Draw tile kept; `units` is the glyph's viewBox.
+// as the canvas. Keyed by the mode ids two or more products' SELECTION_MODES share (a product with a mode of its own
+// spreads this table and adds that glyph in its own code, and a test there checks every mode has one), plus the
+// Highlighter, a former mode whose glyph its Draw tile kept; `units` is the glyph's viewBox.
 
 import {
   lucideFootprints,
@@ -66,15 +66,6 @@ export const MODE_GLYPHS: Record<string, ModeGlyph> = {
     ],
   },
   format: { units: 24, prims: lucidePaintRoller },
-  // A cube: the top rhombus and the two front faces.
-  isometric: {
-    units: 16,
-    prims: [
-      { t: 'path', d: 'M8 1.8l5.2 3v0L8 7.8 2.8 4.8z' },
-      { t: 'path', d: 'M2.8 4.8v5.4L8 13.2v-5.4' },
-      { t: 'path', d: 'M13.2 4.8v5.4L8 13.2' },
-    ],
-  },
   // A marker over a faint, heavy stroke of highlight. Not a selection mode any more: the
   // Highlighter is a Draw tile (docs/specs/008-canvas/highlighter.md), which keeps this drawing.
   highlighter: {

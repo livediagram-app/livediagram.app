@@ -148,8 +148,9 @@ its body label under the rule, and turns back its bottom-right corner over the
 paper. A box label breaks a word wider than its line between characters, as
 the canvas's `break-words` does; an icon caption keeps the word whole.
 
-The Mode button's glyph is shared data: the nine selection-mode glyphs live in
-`@liveworkspace/icons/mode-glyphs` (`MODE_GLYPHS`), which the editor's palette and
+The Mode button's glyph is shared data: the selection-mode glyphs live in
+`MODE_GLYPHS` (`packages/document/src/mode-glyphs.ts`: the shared
+`@liveworkspace/icons/mode-glyphs` table plus Isometric's cube, which is livediagram's alone), which the editor's palette and
 button face render through `<Prims>` and the export through `iconPrimsMarkup`,
 so the chip carries the same drawing in both. A glyph with a filled dot or a
 heavier stroke says so on the primitive (`StyledPrim`), and the export converts

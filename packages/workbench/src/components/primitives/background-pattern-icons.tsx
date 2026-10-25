@@ -187,37 +187,6 @@ export function BackgroundBricksIcon() {
   );
 }
 
-export function BackgroundIsometricIcon() {
-  // Two shallow (~30°) diagonal families forming isometric rhombi.
-  return (
-    <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden>
-      <rect width="28" height="20" rx="2" fill="white" stroke="currentColor" strokeWidth="0.5" />
-      {[-2, 12, 26].map((x) => (
-        <line
-          key={`u${x}`}
-          x1={x}
-          y1="20"
-          x2={x + 22}
-          y2="0"
-          stroke="currentColor"
-          strokeWidth="0.6"
-        />
-      ))}
-      {[-22, -8, 6].map((x) => (
-        <line
-          key={`d${x}`}
-          x1={x}
-          y1="0"
-          x2={x + 22}
-          y2="20"
-          stroke="currentColor"
-          strokeWidth="0.6"
-        />
-      ))}
-    </svg>
-  );
-}
-
 export function BackgroundCheckerboardIcon() {
   // Alternating filled squares.
   return (

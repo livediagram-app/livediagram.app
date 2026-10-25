@@ -20,7 +20,6 @@ describe('isAnimatedPattern', () => {
       'diagonal',
       'waves',
       'bricks',
-      'isometric',
       'hexagonal',
       'engineering',
       'checkerboard',

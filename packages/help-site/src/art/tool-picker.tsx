@@ -4,8 +4,8 @@ import { Card } from './parts';
 
 // The palette's tool picker, opened: its tiles in three bands, the current tool tinted and a tool's key in its
 // tile's corner. This is the picker of the editors whose pages are made in Pages mode (the Select article in their
-// help: Edit holds Select, Hand and Format; Present holds Laser, Spotlight and Slide Deck; Preview holds Zen;
-// livediagram's own picker keeps Isometric). Each glyph is drawn about its centre in `currentColor`, so the tile tints it.
+// help: Edit holds Select, Hand and Format; Present holds Laser, Spotlight and Slide Deck; Preview holds Zen). Each
+// glyph is drawn about its centre in `currentColor`, so the tile tints it.
 
 const ICON = 'fill-none stroke-current';
 
