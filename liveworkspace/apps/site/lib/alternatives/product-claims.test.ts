@@ -196,11 +196,17 @@ const FALSE_CLAIMS: Partial<Record<SiteId, { pattern: RegExp; why: string }[]>> 
 const copyOf = (app: SiteId) =>
   ALTERNATIVES.filter((a) => a.apps.includes(app)).flatMap((a) => [
     { where: `alternatives/${a.slug}`, text: JSON.stringify(a) },
-    { where: `competitor-look/${a.slug}`, text: COMPETITOR_LOOK[a.slug]?.highlights.join(' ') ?? '' },
+    {
+      where: `competitor-look/${a.slug}`,
+      text: COMPETITOR_LOOK[a.slug]?.highlights.join(' ') ?? '',
+    },
   ]);
 
 describe('product claims on the comparisons', () => {
-  for (const [app, claims] of Object.entries(FALSE_CLAIMS) as [SiteId, { pattern: RegExp; why: string }[]][]) {
+  for (const [app, claims] of Object.entries(FALSE_CLAIMS) as [
+    SiteId,
+    { pattern: RegExp; why: string }[],
+  ][]) {
     describe(app, () => {
       const copy = copyOf(app);
       it('reads every comparison it guards', () => {
@@ -218,7 +224,8 @@ describe('product claims on the comparisons', () => {
 // None of the apps offers a copy to run yourself, so no comparison says otherwise: not as a table row,
 // a highlight, an answer or a paragraph.
 describe('no comparison offers a copy to host yourself', () => {
-  const pattern = /self[- ]?host|host (?:it )?yourself|run your own copy|your own cloudflare account/i;
+  const pattern =
+    /self[- ]?host|host (?:it )?yourself|run your own copy|your own cloudflare account/i;
   it.each(ALTERNATIVES.map((a) => a.slug))('%s', (slug) => {
     const alt = ALTERNATIVES.find((a) => a.slug === slug);
     const text = `${JSON.stringify(alt)} ${COMPETITOR_LOOK[slug]?.highlights.join(' ') ?? ''}`;

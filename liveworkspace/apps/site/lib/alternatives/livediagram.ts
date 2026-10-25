@@ -178,7 +178,7 @@ export const LIVEDIAGRAM: AppAlternative[] = [
         heading: 'Free means free, not a free tier',
         paragraphs: [
           "Miro's free tier is real, but it's the top of a pricing funnel: board limits and gated features exist to move teams onto paid seats. livediagram has no paid tier and no plan to introduce one. The hosted version at livediagram.app is free, every user gets every feature, and there is nothing to upgrade to.",
-          "The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.",
+          'The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.',
         ],
       },
       {
