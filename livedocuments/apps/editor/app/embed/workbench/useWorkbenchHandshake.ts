@@ -9,7 +9,7 @@ import { useEffect, useReducer, useRef, useState, type Dispatch } from 'react';
 import { WORKBENCH_HANDSHAKE_MS, type HelloAckMessage } from '@livedocuments/api-schema';
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
 import { createWorkbenchPort, type WorkbenchPort } from '@/lib/workbench/workbench-port';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { takeTicketFromAddress } from './workbench-fragment';
 import {
   INITIAL_WORKBENCH_PHASE,
@@ -65,7 +65,10 @@ export async function runWorkbenchHandshake(
   if (!sessionFitsAddress(session, address)) {
     console.warn('[workbench] redeem-failed', { status: 201, reason: 'mismatch' });
     void apiEndWorkbenchSession(session.session);
-    win.parent.postMessage({ type: 'livedocuments:ended', v: 1, reason: 'refused' }, session.origin);
+    win.parent.postMessage(
+      { type: 'livedocuments:ended', v: 1, reason: 'refused' },
+      session.origin,
+    );
     return null;
   }
 

@@ -6,7 +6,7 @@
 import { useMemo } from 'react';
 import { snapTabColours, snappableCustomColours, type Element } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type SnapColoursApi = {
   // The distinct custom colours a snap would convert, most recently drawn first.

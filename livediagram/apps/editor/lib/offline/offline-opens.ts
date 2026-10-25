@@ -16,7 +16,7 @@ import {
   serializeOfflineWrite,
   type LocalOpens,
 } from './offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type { LocalOpens };
 

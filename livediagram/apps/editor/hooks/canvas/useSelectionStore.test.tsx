@@ -2,7 +2,11 @@
 import { act, render, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { createSelectionStore, elementSelectionFlags, sameFlags } from '@/lib/selection-store';
+import {
+  createSelectionStore,
+  elementSelectionFlags,
+  sameFlags,
+} from '@liveworkspace/workbench/lib/selection-store';
 import { SelectionStoreProvider, useSelectionOf, useSelectionStore } from './useSelectionStore';
 
 // docs/specs/008-canvas/blueprints/selection-store.md "Subscribing".

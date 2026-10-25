@@ -10,7 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { TrashedDesign } from '@/components/chrome/DesignTrashedCard';
 import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDesignDeleted } from '@/lib/design-tombstones';
 
 type DesignTrashedState = {

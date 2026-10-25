@@ -9,7 +9,7 @@ import {
 import type { Tab } from '@livedocuments/document';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { createRevealStore } from '@/lib/changeset-reveals';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // The editor's workbench messages (docs/specs/013-workspace/blueprints/workbench-embeds.md "Workbench
 // messages"): ready once, tab on each later change, the selection after it settles (only when its

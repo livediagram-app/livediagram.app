@@ -19,7 +19,7 @@ import { placementOffset, translateItem, type BoardScenePlacement } from './plac
 import { mergeNotes, type BoardSceneReport } from './report';
 import { compactLanded } from './compact';
 import type { BoardScene, SceneAsset, SceneItem, SceneItemKind } from './scene';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { withinImportReach } from '@/lib/import-coords';
 
 export type { BoardScenePlacement } from './placement';

@@ -11,7 +11,7 @@ import {
   type AgentPresence,
   type ParticipantPresence,
 } from '@livedesign/api-schema';
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { Participant } from './identity';
 import { isRecord } from '@livedesign/design';
 

@@ -41,7 +41,7 @@ import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 
 const selectionAsSet = (s: Selection): ReadonlySet<string> =>
   new Set([...s.multiSelectedIds, ...(s.selectedId ? [s.selectedId] : [])]);

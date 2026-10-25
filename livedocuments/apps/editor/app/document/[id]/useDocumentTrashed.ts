@@ -10,7 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { TrashedDocument } from '@/components/chrome/DocumentTrashedCard';
 import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 
 type DocumentTrashedState = {

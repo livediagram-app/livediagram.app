@@ -6,7 +6,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { parseAvatarSay } from '@livediagram/api-schema';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   admitBubble,
   bubbleEndsAt,

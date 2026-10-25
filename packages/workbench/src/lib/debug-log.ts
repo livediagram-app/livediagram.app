@@ -3,8 +3,9 @@
 // production build writes it only when the browser's debug flag asks for it, so a real user's
 // console stays clean. Warnings and errors are not trace lines: they use console.warn / .error.
 
-/** The browser's debug flag: `*`, or a comma-separated list of fingerprint scopes. */
-export const DEBUG_STORAGE_KEY = 'livedocuments:debug';
+// The browser's debug flag is `*`, or a comma-separated list of fingerprint scopes, stored under the
+// product's key (the `debugKey` binding: `livediagram:debug`, `liveplanner:debug`, …).
+import { workbench } from '../bindings';
 
 type FlagStore = Pick<Storage, 'getItem'> | null;
 
@@ -21,7 +22,7 @@ export function debugLogEnabled(scope: string, env: string | undefined, store: F
   if (env !== 'production') return true;
   let flag: string | null;
   try {
-    flag = store?.getItem(DEBUG_STORAGE_KEY) ?? null;
+    flag = store?.getItem(workbench.debugKey) ?? null;
   } catch {
     return false;
   }

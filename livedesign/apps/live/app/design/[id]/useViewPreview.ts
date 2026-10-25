@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { AccessLevel, ShareRole } from '@livedesign/api-schema';
 import { ADDER_KEY_LENGTH } from '@livedesign/design';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/live-app.md#role-pill): someone whose role allows editing can preview
 // the design as a Participant or as a Viewer, a press stepping Editing, Participating, Viewing and back to Editing.

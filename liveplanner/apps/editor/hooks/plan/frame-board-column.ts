@@ -5,7 +5,7 @@
 import { computeFitBelow } from '@/lib/viewport';
 import { glideViewport } from '@liveworkspace/workbench/lib/viewport-glide';
 import { topStripInset } from '@/lib/top-strip-inset';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 type Box = { left: number; top: number; width: number; height: number };

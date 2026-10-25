@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { newItemId } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   markPlanTracksSeen,
   PLAN_TOUR_RELAUNCH_EVENT,

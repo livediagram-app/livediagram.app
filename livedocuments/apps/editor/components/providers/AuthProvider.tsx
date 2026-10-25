@@ -14,6 +14,10 @@ import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { e2eAuthEnabled } from '@/lib/auth-config';
 import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
+import { bindWorkbench } from '@/lib/workbench-bindings';
+
+// This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).
+bindWorkbench();
 
 // Test builds only (see e2eAuthEnabled): never part of a real bundle. It stands in for the accounts
 // bridge, so a test build shows every sign-in surface while the test picks the session.

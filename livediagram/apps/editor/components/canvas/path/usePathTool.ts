@@ -24,7 +24,7 @@ import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useToast } from '@/hooks/ui/useToast';
 import { boardShape } from '@/lib/whiteboard-tool';
 

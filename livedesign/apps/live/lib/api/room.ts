@@ -23,7 +23,7 @@ import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDesignFormat } from '../server-release';
 import { startEditorTiming } from '../timing';
 import { wsUrl } from './core';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
@@ -302,8 +302,7 @@ export function connectRoom(
               asking.send(JSON.stringify({ kind: 'grant', grant } satisfies RoomOutgoing));
             }
           });
-        }
-        else if (msg.kind === 'cursor') {
+        } else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
           // different epoch is a restarted room: leave the cursor for the
           // sync / catchup exchange to reconcile.

@@ -8,7 +8,7 @@
 // kept routing a project's writes to the store it had left.
 
 import { reportApiWarning } from '../api/error-report';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { OfflineStoreUnavailableError, offlineBackend } from './offline-backend';
 import { publishThisBrowser } from './this-browser';
 

@@ -52,7 +52,7 @@ import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
 import { lockedElementIds } from '@/lib/locked-element-ids';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';

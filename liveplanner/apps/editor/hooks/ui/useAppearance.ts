@@ -2,7 +2,7 @@
 
 import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The editor's Appearance hook: the shared one (docs/specs/004-interface-design/appearance.md)
 // plus a log and the editor's `UI / Toggled / <setting>` event on every explicit pick. The

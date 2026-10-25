@@ -32,7 +32,7 @@ import {
 } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type SaveActionInput = {
   name: string;

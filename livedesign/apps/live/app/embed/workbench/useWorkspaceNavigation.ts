@@ -9,7 +9,7 @@
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { setAppNavigationInterceptor } from '@liveworkspace/workbench/lib/app-location';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   framePathOfAppHref,
   isNewDesignHref,

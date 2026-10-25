@@ -19,7 +19,7 @@ import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useR
 import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;

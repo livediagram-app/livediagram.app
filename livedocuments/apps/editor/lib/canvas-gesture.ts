@@ -6,7 +6,7 @@
 // gesture changes.
 
 import { useSyncExternalStore } from 'react';
-import { debugLog } from './debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type CanvasGesture =

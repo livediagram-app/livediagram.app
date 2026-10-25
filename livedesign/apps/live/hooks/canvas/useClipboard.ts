@@ -29,7 +29,7 @@
 // the hook registers, so `pasteFromClipboard` / `pasteImageFile` stay
 // internal.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
 import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/design';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';

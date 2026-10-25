@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ArticleZoneBlock, LaidOutPage, PageRect } from '@livedocuments/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type DropCaret = { x: number; y: number; width: number };
 

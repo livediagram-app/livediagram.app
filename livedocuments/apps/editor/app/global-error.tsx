@@ -8,6 +8,10 @@ import { useEffect } from 'react';
 import { Button } from '@livedocuments/ui';
 import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
 import './globals.css';
+import { bindWorkbench } from '@/lib/workbench-bindings';
+
+// This editor's facts for the workbench code, before anything renders (lib/workbench-bindings.ts).
+bindWorkbench();
 
 export default function GlobalError({
   error,

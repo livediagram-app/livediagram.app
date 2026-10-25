@@ -4,7 +4,7 @@
 // api's own checks first (readItemWrite, writtenItemsRefusal) and is refused as the api refuses it, so
 // the record never holds what Sync to Cloud would refuse.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,

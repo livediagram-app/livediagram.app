@@ -7,7 +7,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
 import {
   canTourElement,
@@ -22,7 +22,7 @@ import { chartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-
 import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { sequenceDialog } from '@/lib/sequence-dialog-handle';
 import { setSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';

@@ -16,7 +16,7 @@ import {
   type LandingSeams,
   type NewBoardDocument,
 } from '@/lib/board-scene-import';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-import';
 

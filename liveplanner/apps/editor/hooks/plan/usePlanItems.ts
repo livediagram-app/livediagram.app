@@ -1,7 +1,7 @@
 'use client';
 
 import { subscribeOfflineIds } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@liveplanner/api-schema';
 import {

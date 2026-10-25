@@ -16,7 +16,7 @@ import {
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';

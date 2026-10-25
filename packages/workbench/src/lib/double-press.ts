@@ -11,7 +11,7 @@
 // Counted from presses rather than the browser's `dblclick`, which is
 // unreliable on touch and targets whatever sits under the second click.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from './debug-log';
 
 /** Milliseconds between two presses that still count as one double-press. The
  *  platform default sits around 500ms; a touch below that keeps a deliberate

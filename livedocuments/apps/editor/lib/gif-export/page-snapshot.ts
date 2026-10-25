@@ -2,7 +2,7 @@
 // animated-gif-export.md "The snapshot"): the canvas's own rendering of the page, cloned once, with every CSS
 // animation on it recorded so a frame can pin each one at any moment of the page's clock. A frame is then an SVG
 // whose <foreignObject> holds the clone, drawn into a canvas (page-frames.ts).
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { GifExportError } from './gif-export-error';
 import { GIF_OMIT_SELECTOR } from './gif-omit';
 import { inlineMedia, type ImageInliner } from './snapshot-media';

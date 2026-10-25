@@ -20,7 +20,7 @@ import {
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
 import { isProjectDeleted } from '@/lib/project-tombstones';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isProjectTrashedError } from '@/lib/project-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { prepareTabSave, relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';

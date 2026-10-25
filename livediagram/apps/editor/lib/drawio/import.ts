@@ -20,7 +20,7 @@ import {
   DRAWIO_REPORT_NAMES_MAX,
 } from './limits';
 import { DrawioRefused, refusalMessage } from './refusals';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type { DrawioInput } from './envelope';
 

@@ -15,7 +15,7 @@ import {
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';

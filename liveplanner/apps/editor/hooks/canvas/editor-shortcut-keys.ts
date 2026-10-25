@@ -5,7 +5,7 @@
 // wiring; the unit test asserts the key -> action mapping against
 // these tables directly.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 

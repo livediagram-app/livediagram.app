@@ -6,7 +6,7 @@
 // does not render for the selection (docs/specs/008-canvas/blueprints/selection-store.md).
 
 import { useLayoutEffect } from 'react';
-import type { SelectionStore } from '@/lib/selection-store';
+import type { SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 export function usePruneInertSelection(inertIds: ReadonlySet<string>, selection: SelectionStore) {
   useLayoutEffect(() => {

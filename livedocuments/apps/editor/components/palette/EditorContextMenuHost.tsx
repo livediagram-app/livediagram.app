@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
 import { resolveLayerId, tagColoursOf } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';

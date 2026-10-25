@@ -6,7 +6,7 @@ import { offlineIdCount, offlineListDesigns } from '@/lib/offline/offline-store'
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { dismissLocalMove, shouldOfferLocalMove } from '@/lib/offline/local-move-dismissal';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser

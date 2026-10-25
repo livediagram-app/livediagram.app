@@ -20,7 +20,7 @@ import { track } from '@/lib/telemetry';
 import type { DrawioLibraryFile } from './files';
 import { attachDrawioImages } from './images';
 import { drawioSceneReport } from './report';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** The host's create (the provider's `createLibrary`). */
 type CreateShapeLibrary = (input: {

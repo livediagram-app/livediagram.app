@@ -16,7 +16,7 @@ import {
   recogniseBoardStroke,
   stillSince,
 } from '@/lib/recognition-preview';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

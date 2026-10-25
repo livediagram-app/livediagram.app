@@ -37,7 +37,7 @@ import {
   type CreateImageSession,
   type HugText,
 } from '@/lib/board-scene-browser';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // A board whose document the server refuses as too large (413): its own failure, never "try again".
 export const BOARD_TOO_BIG = 'This board is too big for one canvas';

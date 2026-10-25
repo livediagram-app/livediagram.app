@@ -36,7 +36,7 @@ import { SlotGhost } from './SlotGhost';
 import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@/components/toast/toast-floor';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';

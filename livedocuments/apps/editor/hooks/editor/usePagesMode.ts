@@ -29,7 +29,7 @@ import { besideSideInsets, computeFitBelow, computeReadingFrame } from '@/lib/vi
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
 import { topStripInset } from '@/lib/top-strip-inset';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';

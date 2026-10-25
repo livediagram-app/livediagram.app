@@ -28,7 +28,7 @@
 // editor, and the capture has to be in place synchronously, before the very
 // next keydown, which no render cycle guarantees.
 
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** How a segment of typed text was left. */
 export type HandoffEnd = 'child' | 'sibling' | 'escape';

@@ -4,7 +4,7 @@
 import type { LiveStroke } from './live-stroke';
 import { recogniseBoardStroke } from './recognition-preview';
 import { track } from './telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type RecognitionFlip = 'recognised' | 'broken';
 /** How the flip was asked for: the Alt key, or a tap on the chip. */

@@ -11,7 +11,7 @@ import { runningStaleBuild } from './server-release';
 import { createNavigationIntents, recoverFromChunkError, type ChunkRecovery } from './stale-chunks';
 import { track } from './telemetry';
 import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type NavigationDeps = {
   win: Window;

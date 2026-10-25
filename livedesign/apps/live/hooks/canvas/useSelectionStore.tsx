@@ -6,7 +6,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 const SelectionStoreContext = createContext<SelectionStore | null>(null);
 

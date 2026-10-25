@@ -3,7 +3,7 @@
 // duplicate and the marquee-cluster duplicate (duplicateElements). The host mounts this and
 // folds the two handlers into its return, so callers are unchanged.
 
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   duplicateElements,
   freshCopyFields,

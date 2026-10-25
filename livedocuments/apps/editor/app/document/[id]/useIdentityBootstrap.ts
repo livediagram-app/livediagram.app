@@ -18,7 +18,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveParticipant } from './resolve-participant';
 import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';

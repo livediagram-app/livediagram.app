@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useShapeDrawing } from './useShapeDrawing';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { DEFAULT_WHITEBOARD_PREFS, saveWhiteboardPrefs } from '@/lib/whiteboard-prefs';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));

@@ -1,4 +1,4 @@
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   type EventStormingNoteKind,

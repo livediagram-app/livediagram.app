@@ -9,7 +9,7 @@ who re-renders when it changes.
 
 | File                                                                       | Role                                                                     |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `apps/editor/lib/selection-store.ts`                                       | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
+| `../packages/workbench/src/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
 | `apps/editor/hooks/canvas/useSelectionStore.tsx`                           | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
 | `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable         |
 | `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props            |
@@ -131,7 +131,7 @@ Selection` instead and reads it where it acts. By kind:
 ## Interfaces and contracts
 
 ```ts
-// apps/editor/lib/selection-store.ts
+// ../packages/workbench/src/lib/selection-store.ts
 export type Selection = {
   readonly selectedId: string | null;
   readonly multiSelectedIds: ReadonlySet<string>;

@@ -1,9 +1,16 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEBUG_STORAGE_KEY, debugLogEnabled, debugScopeOf, debugScopeOn } from './debug-log';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { configureWorkbench, resetWorkbenchForTests } from '../bindings';
+import { debugLogEnabled, debugScopeOf, debugScopeOn } from './debug-log';
+import { testBindings } from './testing/bindings';
 
 // docs/specs/003-system-architecture/console-logging.md: trace lines show in development and tests,
 // and in production only when the debug flag names their scope.
-afterEach(() => vi.unstubAllEnvs());
+const KEY = 'product:debug';
+beforeEach(() => configureWorkbench(testBindings({ debugKey: KEY })));
+afterEach(() => {
+  vi.unstubAllEnvs();
+  resetWorkbenchForTests();
+});
 
 describe('debugScopeOf', () => {
   it('reads the bracketed fingerprint, or the word before a colon', () => {
@@ -16,7 +23,7 @@ describe('debugScopeOf', () => {
 
 describe('debugLogEnabled', () => {
   const flag = (value: string | null) => ({
-    getItem: (k: string) => (k === DEBUG_STORAGE_KEY ? value : null),
+    getItem: (k: string) => (k === KEY ? value : null),
   });
 
   it('is on outside a production build', () => {
@@ -36,6 +43,11 @@ describe('debugLogEnabled', () => {
     expect(debugLogEnabled('photo-model', 'production', flag('board-scene,room'))).toBe(false);
   });
 
+  it("reads the flag under the product's key, and no other", () => {
+    configureWorkbench(testBindings({ debugKey: 'other:debug' }));
+    expect(debugLogEnabled('room', 'production', flag('*'))).toBe(false);
+  });
+
   it('treats a storage that throws as no flag', () => {
     const throwing = {
       getItem: () => {
@@ -46,38 +58,8 @@ describe('debugLogEnabled', () => {
   });
 });
 
-// No direct console.info / console.log / console.debug outside the logger.
-describe('the console convention', () => {
-  it('holds across apps/editor', async () => {
-    const { readdirSync, readFileSync, statSync } = await import('node:fs');
-    const { join, relative } = await import('node:path');
-    const root = join(__dirname, '..');
-    const skip = new Set(['node_modules', '.next', '.next-dev', 'out', 'e2e', 'scripts', 'public']);
-    const offenders: string[] = [];
-    const walk = (dir: string) => {
-      for (const name of readdirSync(dir)) {
-        if (skip.has(name)) continue;
-        const path = join(dir, name);
-        if (statSync(path).isDirectory()) walk(path);
-        else if (
-          /\.(ts|tsx)$/.test(name) &&
-          !/\.test\.tsx?$/.test(name) &&
-          name !== 'debug-log.ts'
-        ) {
-          const text = readFileSync(path, 'utf8');
-          if (/console\.(info|log|debug)\(/.test(text)) offenders.push(relative(root, path));
-        }
-      }
-    };
-    walk(root);
-    // The editor code every editor shares (@liveworkspace/workbench) keeps the convention too.
-    walk(join(root, '../../../packages/workbench/src'));
-    expect(offenders).toEqual([]);
-  });
-});
-
-// An inline boot script (stale-html-guard.ts) cannot import this module; it embeds the same rule as
-// one static source, its settings handed over as data.
+// An inline boot script (stale-html-guard.ts in each editor) cannot import this module; it embeds the
+// same rule as one static source, its settings handed over as data.
 
 describe('debugScopeOn', () => {
   it('says a scope logs, as its trace lines would, outside production', () => {

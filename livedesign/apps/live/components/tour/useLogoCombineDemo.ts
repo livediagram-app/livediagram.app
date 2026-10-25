@@ -12,7 +12,7 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { combineElements } from '@/lib/combine/combine';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { registerCombineDemo } from './logo-combine-demo';
 import { waitForSelector } from './tour-dom';

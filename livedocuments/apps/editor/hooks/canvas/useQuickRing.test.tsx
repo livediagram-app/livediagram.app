@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useQuickRing } from './useQuickRing';
 
 // One quick-connect ring opens at a time, and a new selection closes it.

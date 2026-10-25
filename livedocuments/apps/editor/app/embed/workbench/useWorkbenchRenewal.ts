@@ -12,7 +12,7 @@ import {
   type WorkbenchSessionResponse,
 } from '@livedocuments/api-schema';
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { renewalFits, type WorkbenchEvent, type WorkbenchPhase } from './workbench-machine';
 

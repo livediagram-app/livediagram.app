@@ -10,7 +10,7 @@
 // mutating command withheld inside the pure builder.
 
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
 import { isBoxed, renumberSteps, supportsRotation } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';

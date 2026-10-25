@@ -68,7 +68,7 @@ import { caretCanvasRect, createArticleHandle, writingScale } from './article-ed
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import { articlePasteProps } from '@/lib/article/article-paste';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { slashInsertEvent } from '@/lib/article/article-telemetry';
 

@@ -35,7 +35,7 @@ import {
 } from '@/lib/path-edit';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { pathEditKey } from '@/lib/path-edit-keys';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 type Point = { x: number; y: number };

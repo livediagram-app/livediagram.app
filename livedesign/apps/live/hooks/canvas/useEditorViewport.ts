@@ -13,7 +13,7 @@ import {
   createViewportStore,
   type ViewportStore,
 } from '@liveworkspace/workbench/lib/viewport-store';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livedesign/design';

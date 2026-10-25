@@ -26,7 +26,7 @@ import {
   withAnchor,
   type PathDraft,
 } from '@/lib/path-draw';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };
 

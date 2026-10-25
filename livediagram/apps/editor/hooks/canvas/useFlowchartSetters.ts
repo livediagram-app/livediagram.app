@@ -13,7 +13,7 @@ import {
 } from '@livediagram/document';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type FlowchartSetterDeps = {
   currentSelectionIds: () => Set<string>;

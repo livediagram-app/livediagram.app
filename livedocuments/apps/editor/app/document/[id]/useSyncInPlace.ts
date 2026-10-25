@@ -3,7 +3,7 @@ import type { Tab } from '@livedocuments/document';
 import { saveOfflineToCloud, SyncStillSavingError } from '@/lib/offline/offline-convert';
 import { rewriteImageIds } from '@/lib/offline/offline-images';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // How long Sync Document waits for this browser's last save to land before it reads the record it

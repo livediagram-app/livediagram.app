@@ -5,7 +5,7 @@
 // did not take is revoked straight away.
 
 import { ApiError } from './api/core';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type HandoverFailure = 'expired' | 'token_limit' | 'failed';
 type HandoverResult<T> = { ok: true; value: T } | { ok: false; reason: HandoverFailure };

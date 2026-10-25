@@ -18,7 +18,7 @@ import {
   offlineWriteItemComment,
 } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
-import { debugLog } from '../debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type ItemsScope = {
   ownerId: string;

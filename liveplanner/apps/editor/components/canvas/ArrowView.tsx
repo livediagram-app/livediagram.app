@@ -28,7 +28,7 @@ import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { pressLedger } from '@/lib/double-press';
+import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
 
 // The mask region + backdrop for route-behind (docs/specs/008-canvas/arrow-route-behind.md) and label
 // knockouts (docs/specs/008-canvas/arrow-labels.md). Deliberately vast

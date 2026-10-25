@@ -9,7 +9,7 @@ Scope, by file:
 | File                                                     | Role                                                                                            |
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `packages/design/src/arrow-bend.ts`                      | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
-| `apps/live/lib/double-press.ts`                          | The press ledger: double-press pairing and echo detection                                       |
+| `../packages/workbench/src/lib/double-press.ts`          | The press ledger: double-press pairing and echo detection                                       |
 | `apps/live/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                                  |
 | `apps/live/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
 | `apps/live/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |

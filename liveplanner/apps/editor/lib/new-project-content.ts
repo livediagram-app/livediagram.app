@@ -15,7 +15,7 @@ import {
   isPlanTemplateKind,
   type TemplateKind,
 } from '@liveplanner/templates';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { markPendingFormStart } from '@/lib/pending-form-start';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';

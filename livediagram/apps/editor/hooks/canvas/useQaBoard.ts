@@ -30,7 +30,7 @@ import { apiQaAction } from '@/lib/api-client';
 import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Pending = { seq: number; action: QaAction; actor: QaActor };
 

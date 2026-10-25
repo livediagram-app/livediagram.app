@@ -19,7 +19,7 @@ import { announce, getAnnouncementSnapshot } from '@liveworkspace/workbench/lib/
 import { describeMany, describeSelected } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import type { Selection, SelectionStore } from '@/lib/selection-store';
+import type { Selection, SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // The traversal step, pure so it's unit-testable: which element index a
 // Tab (dir 1) / Shift+Tab (dir -1) press should select, or null when the

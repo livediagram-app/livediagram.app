@@ -8,7 +8,7 @@ import { clampSayText } from '@livediagram/api-schema';
 import { addOwnBubble } from '@/lib/avatar-speech-store';
 import { headPoint, SPEECH_COOLDOWN_MS } from '@/lib/avatar-speech';
 import type { AvatarPoint } from '@/lib/avatar-walk';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { track } from '@/lib/telemetry';
 import { isEnterActivatedTarget, isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';

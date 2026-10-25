@@ -18,7 +18,7 @@ import {
   type SheetWrite,
 } from '@liveplanner/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { pullChanges, pushPlan, rowSave } from './card-table-sync';
 import type { SheetController } from './sheet-controller';
 

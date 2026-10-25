@@ -1,7 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { FrameHandle } from '@liveplanner/project';
 import type { DragMode } from '@/lib/canvas';
-import { handlePressStarts } from '@/lib/double-press';
+import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
 import { EdgeResizeHandle, ResizeHandles } from './element-parts';
 
 // Clearance between the arrow's drawn route and its frame, in canvas px: enough

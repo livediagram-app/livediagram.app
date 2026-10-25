@@ -18,7 +18,7 @@ import {
   type ShareRole,
 } from '@/lib/api-client';
 import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveParticipant } from './resolve-participant';
 import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
@@ -353,7 +353,6 @@ export function useIdentityBootstrap(opts: {
         // immediately echo the same name/color back via PUT.
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
-
 
       // An address that names no design and carries no share link (docs/specs/007-editor/new-design-route.md
       // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a

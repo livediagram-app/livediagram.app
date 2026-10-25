@@ -31,7 +31,7 @@ import { buildSnapshot, itemKey, ldFolderForParent, type MirrorSnapshot } from '
 import type { Rasteriser } from './thumbnail';
 import { seenRowsOf, type SeenStore } from './tombstones';
 import { DriveTokenError, type TokenSource } from './token-source';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type PassKind = 'arrival' | 'poll' | 'focus' | 'write' | 'flush' | 'manual';
 

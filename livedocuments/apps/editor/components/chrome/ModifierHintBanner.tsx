@@ -4,7 +4,7 @@ import { useCallback, type ComponentProps } from 'react';
 import type { Element } from '@livedocuments/document';
 import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';

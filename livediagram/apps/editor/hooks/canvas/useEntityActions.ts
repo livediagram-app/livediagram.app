@@ -12,7 +12,7 @@ import {
   type RelatedSide,
   type Tab,
 } from '@livediagram/document';
-import type { Selection } from '@/lib/selection-store';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { track } from '@/lib/telemetry';
 import type { EditorDragApi } from './useEditorDrag.types';

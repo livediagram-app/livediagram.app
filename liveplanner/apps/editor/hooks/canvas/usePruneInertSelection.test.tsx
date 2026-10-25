@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createSelectionStore } from '@/lib/selection-store';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { usePruneInertSelection } from './usePruneInertSelection';
 
 // docs/specs/006-project/layers.md: a layer turning hidden or locked drops its elements from the live

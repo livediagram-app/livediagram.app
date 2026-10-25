@@ -10,7 +10,7 @@ import {
   type PathElement,
   type PathNode,
 } from '@livedesign/design';
-import { debugLog } from '@/lib/debug-log';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { elementRings, isCombinable, type Ring } from './outline';
 import { simplifyRing } from './simplify';
 

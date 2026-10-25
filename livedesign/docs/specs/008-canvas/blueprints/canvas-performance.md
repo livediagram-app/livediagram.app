@@ -406,7 +406,7 @@ export function useCanvasClientOrigin(
   wrapperRef: RefObject<HTMLElement | null>, active: boolean, viewKey: string,
 ): ClientOrigin | null;
 
-// apps/live/lib/debug-log.ts
+// ../packages/workbench/src/lib/debug-log.ts
 export function debugScopeOn(scope: string): boolean;
 
 // apps/live/e2e/perf/budget.ts
