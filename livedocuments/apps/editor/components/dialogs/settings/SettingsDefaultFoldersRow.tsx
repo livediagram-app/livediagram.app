@@ -4,7 +4,7 @@ import { DefaultFoldersSettings } from '@liveworkspace/explorer';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { trackOrganise } from '@/lib/explorer-organise';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import type { SettingsDefaultFoldersRowSpec } from './settings-catalogue';
 

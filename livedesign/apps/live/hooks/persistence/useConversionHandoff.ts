@@ -3,7 +3,7 @@
 import { useConversionHandoff as useHandoff } from '@liveworkspace/explorer/conversion-handoff';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { offlineListDesigns } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 

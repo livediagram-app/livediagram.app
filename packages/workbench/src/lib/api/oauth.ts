@@ -1,8 +1,9 @@
 // MCP OAuth consent (docs/specs/015-api/mcp-server.md §3): the consent page calls this to mint the
 // lwt_ token that gets handed to the connecting MCP client. Signed-in only —
-// apiHeaders attaches the account Bearer, and the api's /api/oauth/exchange
+// the api headers (the product's, through the `api` binding) attach the account Bearer, and the api's /api/oauth/exchange
 // rejects a guest.
-import { API_BASE, apiHeaders, expectOk, apiFetch } from './core';
+import { workbench } from '../../bindings';
+import { API_BASE } from './base';
 
 type OauthExchangeResult = {
   token: string;
@@ -16,10 +17,11 @@ export async function apiExchangeOauthToken(
   clientName: string,
   readOnly = false,
 ): Promise<OauthExchangeResult> {
-  const res = await apiFetch(`${API_BASE}/oauth/exchange`, {
+  const { api } = workbench;
+  const res = await api.fetch(`${API_BASE}/oauth/exchange`, {
     method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
+    headers: await api.headers(ownerId, { body: true }),
     body: JSON.stringify({ clientName, readOnly }),
   });
-  return expectOk<OauthExchangeResult>(res, 'oauth exchange');
+  return api.expectOk<OauthExchangeResult>(res, 'oauth exchange');
 }

@@ -4,7 +4,7 @@
 // Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
 // moment, so a later visit offers nothing.
 import { explorerHref } from './explorer-href';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markDesignDeleted, unmarkDesignDeleted } from '@/lib/design-tombstones';
 import { track } from '@/lib/telemetry';
 

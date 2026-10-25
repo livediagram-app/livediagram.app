@@ -9,7 +9,7 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';

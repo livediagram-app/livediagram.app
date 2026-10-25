@@ -8,7 +8,7 @@
 // per edit; a reader who cannot manage links (a 403) keeps what the load said.
 import { useEffect } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 export function hasLiveLink(links: readonly Pick<ShareLink, 'expiresAt'>[], now: number): boolean {
   return links.some((link) => link.expiresAt === null || link.expiresAt > now);

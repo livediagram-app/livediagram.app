@@ -9,7 +9,7 @@
 
 import { DOCUMENT_CONVERSION_HEADER } from '@livedocuments/api-schema';
 import { apiCreateDocument } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { uploadEmbeddedImages } from './offline-images';
 import {

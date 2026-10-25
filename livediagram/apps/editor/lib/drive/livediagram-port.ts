@@ -4,7 +4,7 @@
 // (so authorisation, the Timeline and realtime rooms behave exactly as if
 // the user had done it here), and the mirror's own rows. My Work's canvases,
 // folders and Trash are the liveworkspace index's, read and written as the
-// person (lib/index-client.ts); a canvas's content is the api's, and the
+// person (@liveworkspace/workbench/lib/index-client.ts); a canvas's content is the api's, and the
 // mirror's rows stay at /api/drive. The engine only ever sees this interface;
 // tests give it an in-memory livediagram.
 
@@ -40,7 +40,7 @@ import {
   apiSaveDocumentMeta,
 } from '../api-client';
 import { apiFetch, apiHeaders } from '../api/core';
-import { indexClient } from '../index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // The most index pages a My Work list reads (LIST_LIMIT_MAX each). The mirror takes a canvas or folder missing from
 // a list as gone and removes its Drive file, so a list that would be cut short throws instead: the pass stops and

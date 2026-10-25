@@ -2,6 +2,7 @@
 // over once at startup: the root providers and app/global-error.tsx call bindWorkbench at module scope,
 // before anything renders.
 import { configureWorkbench } from '@liveworkspace/workbench/bindings';
+import { apiFetch, apiHeaders, currentBearer, expectOk, expectOkVoid } from './api/core';
 import { runningStaleBuild } from './server-release';
 import { track } from './telemetry';
 import { readUserPreferences } from './user-preferences';
@@ -19,6 +20,7 @@ export function bindWorkbench(): void {
     appRecoveryFlag: APP_RECOVERY_FLAG,
     runningStaleBuild,
     readPreferences: readUserPreferences,
+    api: { fetch: apiFetch, headers: apiHeaders, expectOk, expectOkVoid, currentBearer },
     formatLogScope: 'design-format',
   });
 }

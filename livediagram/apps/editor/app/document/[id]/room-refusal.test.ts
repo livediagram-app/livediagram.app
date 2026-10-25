@@ -12,7 +12,9 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadDocument: (...a: Parameters<typeof apiLoadDocument>) => apiLoadDocument(...a),
 }));
 const getItem = vi.fn<(id: string) => Promise<{ item: { trashedAt: number | null } }>>();
-vi.mock('@/lib/index-client', () => ({ indexClient: { getItem: (id: string) => getItem(id) } }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: { getItem: (id: string) => getItem(id) },
+}));
 const { joinRefusedBecauseTrashed } = await import('./room-refusal');
 
 beforeEach(() => {

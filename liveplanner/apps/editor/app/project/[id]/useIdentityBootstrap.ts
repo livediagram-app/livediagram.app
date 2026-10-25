@@ -28,7 +28,7 @@ import { resolveProjectSession } from './editor-page-helpers';
 import { makeSeedFetchedProject } from './seed-fetched-project';
 import { isProjectTrashedError } from '@/lib/project-trashed';
 import { planGrant } from '@/lib/api/plan-grants';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // Whether the index has this plan in its Trash, for the person (the deleted card rather than not found).
 async function isTrashedInIndex(id: string): Promise<boolean> {

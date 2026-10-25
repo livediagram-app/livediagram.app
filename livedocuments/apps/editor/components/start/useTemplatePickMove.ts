@@ -10,7 +10,7 @@ import {
   takeTemplatePick,
 } from '@liveworkspace/explorer';
 import { useToast } from '@/hooks/ui/useToast';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // A template picked from a start screen on a document /new just made goes to the default folder for new documents
 // (docs/specs/013-workspace/default-folders.md "A template picked after creation"). livedocuments has one entry, its

@@ -4,7 +4,7 @@
 // Explorer, which offers the Undo on arrival. The shared Explorer takes the canvas from its address
 // (`?trashed=<id>&title=<name>`, dropped from the address once read); the workbench frame's Explorer takes it from
 // sessionStorage, kept for one page load and only for a moment, so a later visit offers nothing.
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { track } from '@/lib/telemetry';
 import { explorerHref } from '@/lib/explorer-href';

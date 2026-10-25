@@ -5,7 +5,7 @@
 
 import { DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
 import { ApiError } from './api/core';
-import { indexClient } from './index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 export class DocumentTrashedError extends Error {
   readonly documentId: string;

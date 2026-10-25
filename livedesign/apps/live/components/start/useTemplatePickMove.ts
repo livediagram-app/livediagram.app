@@ -12,7 +12,7 @@ import {
 import type { TemplateKind } from '@livedesign/templates';
 import { creationIntentOf } from '@livedesign/api-schema';
 import { useToast } from '@/hooks/ui/useToast';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { intentWord } from '@/lib/api/designs';
 
 // A template picked from Start Planning on a design /new just made goes to the template's default folder

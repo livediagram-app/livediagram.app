@@ -2,7 +2,7 @@
 // a token is only minted for a request that can still take it, and a token the MCP did not take is revoked, so a
 // failed Connect never leaves a live six-month token counting towards the per-account cap.
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from './api/core';
+import { ApiError } from './api/api-error';
 import { handoverFailureCopy, mintAndHandOver, type HandoverSteps } from './oauth-handover';
 
 const MINTED = { token: 'lwt_secret', id: 'tok-1', expiresAt: 1_800_000_000_000 };

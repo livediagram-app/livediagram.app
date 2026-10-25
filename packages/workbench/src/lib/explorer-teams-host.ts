@@ -6,9 +6,10 @@
 // createTeamsHost); the panel asks nothing until one of those opens.
 
 import { createTeamsHost } from '@liveworkspace/explorer';
-import { currentBearer } from './api/core';
+import { workbench } from '../bindings';
 
 export const explorerTeamsHost = createTeamsHost({
   baseUrl: '/api/workspace/account',
-  token: currentBearer,
+  // The product's Bearer (the `api` binding), read when a request goes out.
+  token: () => workbench.api.currentBearer(),
 });

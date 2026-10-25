@@ -27,7 +27,7 @@ import { resolveDesignSession } from './editor-page-helpers';
 import { makeSeedFetchedDesign } from './seed-fetched-design';
 import { isDesignTrashedError } from '@/lib/design-trashed';
 import { designGrant } from '@/lib/api/design-grants';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // Whether the index has this design in its Trash, for the person (the deleted card rather than not found).
 async function isTrashedInIndex(id: string): Promise<boolean> {

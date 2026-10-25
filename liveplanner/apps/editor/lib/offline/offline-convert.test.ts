@@ -21,7 +21,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 
 // The person's star on a plan is the index's (liveworkspace/docs/one-explorer-contracts.md).
-vi.mock('@/lib/index-client', () => ({
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: {
     getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
     favourite: vi.fn(async () => {
@@ -89,7 +89,7 @@ const core = await import('@/lib/api/core');
 const items = await import('../api/items');
 const sheets = await import('../api/sheets');
 const store = await import('./offline-store');
-const { indexClient } = await import('@/lib/index-client');
+const { indexClient } = await import('@liveworkspace/workbench/lib/index-client');
 const {
   ConversionInProgressError,
   conversionInProgress,

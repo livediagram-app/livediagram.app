@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
 
 const index = vi.hoisted(() => ({ grant: vi.fn() }));
-vi.mock('../index-client', () => ({ indexClient: index }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 vi.unmock('@/lib/api/document-grants');
 
 const {

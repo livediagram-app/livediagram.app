@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { DocumentListItem } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 
 // One page: the pickers show the most recent few, and search filters what is here.
 export const DOCUMENT_LIST_LIMIT = 100;

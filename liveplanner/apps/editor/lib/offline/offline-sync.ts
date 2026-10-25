@@ -12,7 +12,7 @@
 import { storeAsCreates } from '@liveplanner/items';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { apiCreateProject } from '@/lib/api-client';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { fetchCloudItems } from '../api/items';
 import { fetchCloudSheets, sheetAsCreate } from '../api/sheets';

@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const index = vi.hoisted(() => ({ copyItem: vi.fn(), deleteItem: vi.fn() }));
-vi.mock('@/lib/index-client', () => ({ indexClient: index }));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));

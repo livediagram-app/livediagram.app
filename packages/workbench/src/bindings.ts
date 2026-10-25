@@ -21,6 +21,23 @@ export type WorkbenchPreferences = {
   reduceMotion?: boolean;
 };
 
+/** The product's api transport (its lib/api/core.ts), as far as workbench code calls it. */
+export type WorkbenchApi = {
+  /** Every api request: the product's apiFetch, with its grants, confinement and release signals. */
+  fetch: (input: string, init?: RequestInit) => Promise<Response>;
+  /** A request's headers when made as `ownerId`: its Bearer, and the JSON content type for a body. */
+  headers: (ownerId: string, opts?: { body?: boolean }) => Promise<HeadersInit>;
+  /** A 2xx's JSON, else the ApiError (lib/api/api-error.ts), reported on the way out. */
+  expectOk: <T>(res: Response, action: string) => Promise<T>;
+  /** Nothing on a 2xx, else the ApiError, reported on the way out. */
+  expectOkVoid: (res: Response, action: string) => Promise<void>;
+  /** The Bearer this page sends outside the api's own headers: the account's, else the guest's. */
+  currentBearer: () => Promise<string | null>;
+};
+
+const unbound = (): Promise<never> =>
+  Promise.reject(new Error('[workbench] the api binding is not configured'));
+
 export type WorkbenchBindings = {
   /** The product's telemetry `track` (docs/specs/017-telemetry/telemetry.md), for the events above. */
   track: WorkbenchTrack;
@@ -34,6 +51,8 @@ export type WorkbenchBindings = {
   runningStaleBuild: () => boolean;
   /** The person's cached preferences (docs/specs/007-editor/user-preferences.md). */
   readPreferences: () => WorkbenchPreferences;
+  /** The product's api transport. */
+  api: WorkbenchApi;
   /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
   formatLogScope: string;
 };
@@ -46,6 +65,14 @@ export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
   appRecoveryFlag: '__workbenchChunkRecovery',
   runningStaleBuild: () => false,
   readPreferences: () => ({}),
+  // Unconfigured, no request goes out: an anonymous call would act as nobody, so each refuses.
+  api: Object.freeze({
+    fetch: unbound,
+    headers: unbound,
+    expectOk: unbound,
+    expectOkVoid: unbound,
+    currentBearer: () => Promise.resolve(null),
+  }),
   formatLogScope: 'document-format',
 });
 
@@ -75,6 +102,9 @@ export const workbench = {
     current().track(category, action, type)) satisfies WorkbenchTrack,
   runningStaleBuild: (): boolean => current().runningStaleBuild(),
   readPreferences: (): WorkbenchPreferences => current().readPreferences(),
+  get api(): WorkbenchApi {
+    return current().api;
+  },
   get debugKey(): string {
     return current().debugKey;
   },

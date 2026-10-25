@@ -26,7 +26,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';

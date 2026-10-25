@@ -39,7 +39,7 @@ vi.mock('@liveworkspace/explorer', () => ({
     </div>
   ),
 }));
-vi.mock('@/lib/index-client', () => ({
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { listShareLinks: async () => ({ links: [], passwordSet: false }) },
 }));
 vi.mock('./CommunitySection', () => ({

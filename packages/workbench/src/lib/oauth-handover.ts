@@ -4,8 +4,8 @@
 // six months and count towards the per-account cap, so: the session is checked before the mint, and a token the MCP
 // did not take is revoked straight away.
 
-import { ApiError } from './api/core';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { ApiError } from './api/api-error';
+import { debugLog } from './debug-log';
 
 export type HandoverFailure = 'expired' | 'token_limit' | 'failed';
 type HandoverResult<T> = { ok: true; value: T } | { ok: false; reason: HandoverFailure };

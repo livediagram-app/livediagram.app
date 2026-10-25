@@ -24,6 +24,14 @@ describe('workbench bindings', () => {
     expect(() => workbench.track('Error', 'Client', 'Anything')).not.toThrow();
   });
 
+  it('sends no api request until the editor binds its transport', async () => {
+    const fetch = vi.spyOn(globalThis, 'fetch');
+    await expect(workbench.api.fetch('/api/x')).rejects.toThrow('not configured');
+    await expect(workbench.api.headers('owner')).rejects.toThrow('not configured');
+    await expect(workbench.api.currentBearer()).resolves.toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("forwards track to the product's, at the time of the call", () => {
     const track = vi.fn();
     const send = workbench.track;

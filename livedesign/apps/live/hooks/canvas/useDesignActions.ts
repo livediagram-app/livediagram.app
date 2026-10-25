@@ -8,7 +8,7 @@
 // load, and the current design is already autosaved, so a reload is
 // the simplest correct handoff (docs/specs/007-editor/new-design-route.md).
 
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { trashOpenDesign } from '@/lib/design-delete-undo';

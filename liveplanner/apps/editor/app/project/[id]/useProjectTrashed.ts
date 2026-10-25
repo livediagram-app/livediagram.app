@@ -8,7 +8,7 @@
 // or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
 import type { TrashedPlan } from '@/components/chrome/ProjectTrashedCard';
-import { indexClient } from '@/lib/index-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isProjectDeleted } from '@/lib/project-tombstones';
