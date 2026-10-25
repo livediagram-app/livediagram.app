@@ -46,7 +46,8 @@ export const folderDeletedHere = (snapshot: MirrorSnapshot, folderId: string) =>
 export function putSnapshotRow(snapshot: MirrorSnapshot, row: DriveRow): void {
   const key = rowKey(row.kind, row.id);
   const previous = snapshot.rows.get(key);
-  if (previous && previous.driveFileId !== row.driveFileId) snapshot.rowsByFile.delete(previous.driveFileId);
+  if (previous && previous.driveFileId !== row.driveFileId)
+    snapshot.rowsByFile.delete(previous.driveFileId);
   snapshot.rows.set(key, row);
   snapshot.rowsByFile.set(row.driveFileId, row);
 }
@@ -67,20 +68,34 @@ export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null):
 
 // Where a file belongs. Something at the top level because it was moved in Drive into a folder liveworkspace can't
 // see stays where the person put it, so the notice's folder is its expected parent until it moves again.
-function expectedParent(snapshot: MirrorSnapshot, localParent: string | null, row: DriveRow | undefined) {
-  if (localParent === null && row?.notice === 'unseen_folder' && row.noticeParentId) return row.noticeParentId;
+function expectedParent(
+  snapshot: MirrorSnapshot,
+  localParent: string | null,
+  row: DriveRow | undefined,
+) {
+  if (localParent === null && row?.notice === 'unseen_folder' && row.noticeParentId)
+    return row.noticeParentId;
   return folderFileId(snapshot, localParent);
 }
 
-export const expectedItemParent = (snapshot: MirrorSnapshot, item: MirrorItem, row: DriveRow | undefined) =>
-  expectedParent(snapshot, item.folderId, row);
+export const expectedItemParent = (
+  snapshot: MirrorSnapshot,
+  item: MirrorItem,
+  row: DriveRow | undefined,
+) => expectedParent(snapshot, item.folderId, row);
 
-export const expectedFolderParent = (snapshot: MirrorSnapshot, folder: MirrorFolder, row: DriveRow | undefined) =>
-  expectedParent(snapshot, folder.parentId, row);
+export const expectedFolderParent = (
+  snapshot: MirrorSnapshot,
+  folder: MirrorFolder,
+  row: DriveRow | undefined,
+) => expectedParent(snapshot, folder.parentId, row);
 
 /** The liveworkspace folder a Drive parent id stands for: null for the root, the folder id for a mirrored folder,
  *  undefined for a folder liveworkspace can't see (or no parent at all). */
-export function localFolderForParent(snapshot: MirrorSnapshot, parentId: string | null): string | null | undefined {
+export function localFolderForParent(
+  snapshot: MirrorSnapshot,
+  parentId: string | null,
+): string | null | undefined {
   if (parentId === null) return undefined;
   if (parentId === snapshot.rootFolderId) return null;
   const row = snapshot.rowsByFile.get(parentId);
@@ -88,7 +103,9 @@ export function localFolderForParent(snapshot: MirrorSnapshot, parentId: string 
 }
 
 /** The Drive state a row records for a file. */
-export function fileState(file: DriveFile): Pick<DriveRow, 'name' | 'parentId' | 'trashed' | 'md5' | 'headRevisionId'> {
+export function fileState(
+  file: DriveFile,
+): Pick<DriveRow, 'name' | 'parentId' | 'trashed' | 'md5' | 'headRevisionId'> {
   return {
     name: file.name,
     parentId: file.parents[0] ?? null,
@@ -100,20 +117,29 @@ export function fileState(file: DriveFile): Pick<DriveRow, 'name' | 'parentId' |
 
 /** Folders parents first, so a child's Drive parent exists before it does. */
 export function foldersParentsFirst(snapshot: MirrorSnapshot): MirrorFolder[] {
+  // Each id's depth is worked out once: a walk up stops at the first ancestor already known, so a deep tree costs
+  // linear time, not depth × folders. A parent missing from the list counts as one level; a cycle ends the walk.
   const depths = new Map<string, number>();
   const depth = (f: MirrorFolder): number => {
-    const known = depths.get(f.id);
-    if (known !== undefined) return known;
-    let d = 0;
-    let cursor = f.parentId;
-    const seen = new Set<string>([f.id]);
-    while (cursor && !seen.has(cursor)) {
-      seen.add(cursor);
-      d += 1;
+    const chain: string[] = [];
+    const onChain = new Set<string>();
+    let above = -1;
+    let cursor: string | null = f.id;
+    while (cursor) {
+      const known = depths.get(cursor);
+      if (known !== undefined) {
+        above = known;
+        break;
+      }
+      if (onChain.has(cursor)) break;
+      onChain.add(cursor);
+      chain.push(cursor);
       cursor = snapshot.folders.get(cursor)?.parentId ?? null;
     }
-    depths.set(f.id, d);
-    return d;
+    for (let i = chain.length - 1; i >= 0; i--) depths.set(chain[i]!, ++above);
+    return depths.get(f.id)!;
   };
-  return [...snapshot.folders.values()].sort((a, b) => depth(a) - depth(b) || a.id.localeCompare(b.id));
+  return [...snapshot.folders.values()].sort(
+    (a, b) => depth(a) - depth(b) || a.id.localeCompare(b.id),
+  );
 }
