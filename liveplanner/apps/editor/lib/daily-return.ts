@@ -1,43 +1,20 @@
-// Once-per-UTC-day "returning visitor" signal (docs/specs/017-telemetry/telemetry.md).
+// Once-per-UTC-day "returning visitor" signal (docs/specs/017-telemetry/telemetry.md): `Participant`/`Returned`,
+// typed `Anonymous` (guest) or `Authenticated` (signed in), the counterpart to `Participant`/`Created` (the
+// new-visitor signal). It goes through the shared gate (@liveworkspace/telemetry-client createDailyReturn) on this
+// app's `liveplanner:v2:last-active-day` key: at most once per browser per UTC day, and nothing on a browser's first
+// observed day, which is a new visitor rather than a return.
 //
-// Emits `Participant`/`Returned` with type `Anonymous` (guest) or
-// `Authenticated` (signed in) at most once per browser per UTC day,
-// gated by the `liveplanner:v2:last-active-day` key. It is the
-// counterpart to `Participant`/`Created` (the once-per-browser
-// new-visitor signal): together they answer "how many people showed up
-// today, and how many of them had been here before". Querying
-// `Participant`/`Returned` and ignoring the type sums both cohorts.
-//
-// Called from every app-open bootstrap (editor `useIdentityBootstrap`,
-// `/new`, `/explorer`). The date gate makes calling from several entry
-// points safe — the first open of the day wins and the rest no-op, so a
-// user who lands on the Explorer and then the editor still counts once.
-//
-// A browser's FIRST observed day only seeds the key and emits nothing:
-// a first-ever visit is a new visitor (`Participant`/`Created`), not a
-// return. One consequence worth naming: a pre-existing user's first day
-// after this ships looks like a first observed day and is skipped, a
-// one-day ramp undercount that clears itself the next day.
-//
-// No identifier ever leaves the browser — the per-day dedup is entirely
-// local, consistent with the anonymous-by-construction telemetry model.
+// Called from every app-open bootstrap here (editor `useIdentityBootstrap`, `/new`). The Explorer at /explorer is
+// liveworkspace's page served on this address, and runs the same gate on the same key
+// (liveworkspace/apps/site/lib/explorer/daily-return.ts), so the first open of the day wins wherever it happens: a
+// user who lands on the Explorer and then the editor counts once, and one who only opens the Explorer still counts.
 
-import { getLastActiveDay, setLastActiveDay } from './local-identity';
+import { createDailyReturn } from '@liveworkspace/telemetry-client';
+import { LOCAL_IDENTITY_KEYS } from './local-identity';
 import { track } from './telemetry';
-import { utcDay } from '@liveplanner/api-schema';
 
-export function trackDailyReturn(authenticated: boolean): void {
-  if (typeof window === 'undefined') return;
-  // The UTC day, so the gate rolls at 00:00 UTC, matching the dashboard's `date(ts/1000,'unixepoch')` day
-  // bucketing (docs/specs/017-telemetry/telemetry.md).
-  const today = utcDay(Date.now());
-  const last = getLastActiveDay();
-  // Already counted this browser today — nothing to do.
-  if (last === today) return;
-  setLastActiveDay(today);
-  // First day we have ever observed this browser: it is a new visitor,
-  // not a return. `Participant`/`Created` already covers that, so don't
-  // double-signal here.
-  if (last === null) return;
-  track('Participant', 'Returned', authenticated ? 'Authenticated' : 'Anonymous');
-}
+export const trackDailyReturn = createDailyReturn({
+  storageKey: LOCAL_IDENTITY_KEYS.lastActiveDay,
+  report: (authenticated) =>
+    track('Participant', 'Returned', authenticated ? 'Authenticated' : 'Anonymous'),
+});

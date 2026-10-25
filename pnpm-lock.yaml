@@ -5024,6 +5024,9 @@ importers:
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
+      '@liveworkspace/telemetry-client':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry-client
       '@liveworkspace/trusted-types':
         specifier: workspace:*
         version: link:../../../packages/trusted-types

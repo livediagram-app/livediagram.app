@@ -106,6 +106,17 @@ guest's sign-in banner. They keep the names the apps always gave them, so each a
 counting them. An app that draws the shared Explorer itself (its panel, its Explorer page, the
 Workbench) reports the same events through its own hosts, so each is counted once, where it happened.
 
+**Returning visitors.** Shown on an app's own address (`liveplanner.app/explorer/…`), the Explorer also
+counts the app's daily return, `Participant·Returned·Anonymous` / `Authenticated`, once the person is
+known, exactly as the app's editor and `/new` do: through the one gate (`createDailyReturn` in
+`@liveworkspace/telemetry-client`) and the app's own `<app>:v2:last-active-day` key on that origin, so the
+first open of the day wins wherever it happens and a visitor who only opens the Explorer still counts. It
+is not one of the Explorer's events: it goes out only from the app's own origin, which the service already
+takes the app's whole vocabulary from, so liveworkspace.app itself still can't send it in an app's name
+(`apps/site/lib/explorer/daily-return.ts`). On liveworkspace.app, in no app's name, nothing counts it.
+New visitors, returns and sign-ups are all per app: a browser that has used livedocuments is still new
+to liveplanner on its first visit there.
+
 Settings changed on liveworkspace.app count for their app too. In the Settings panel, a change to an
 app's row reports the event the app's own Settings sends for that row; a switch of its Account section
 (every app shares it) counts for the app the panel was opened for, and opened for no app it counts

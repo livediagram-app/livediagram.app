@@ -253,3 +253,15 @@ export function __resetExplorerTelemetry() {
 export function trackSetting(app: TelemetrySender, event: SettingTelemetryEvent) {
   send(app, event.category, event.action, event.type);
 }
+
+// ---------- The app's own events, on its address ------------------------------------------------------------
+
+/** One of the app's own events, outside the Explorer's list, sent only where the page is on that app's address
+ *  (page-app.ts): the service takes the app's whole vocabulary from the app's own origin, and none of it from
+ *  liveworkspace.app, so on liveworkspace.app this sends nothing. The person's choice holds as for every event. Its
+ *  callers name the category and action at the call (daily-return.ts), for the dashboards' emitter scan. */
+export function trackAppEvent(category: string, action: string, type: string | null) {
+  const host = pageApp();
+  if (!host) return;
+  send(senderOfApp(host), category, action, type);
+}

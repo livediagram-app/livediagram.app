@@ -90,6 +90,7 @@ import {
 import { inboxActionsFor, inboxHost, localInboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
+import { trackExplorerDailyReturn } from '@/lib/explorer/daily-return';
 import { renewIdentity } from '@/lib/explorer/new-team';
 import { offlineHandOver, offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
@@ -299,6 +300,12 @@ export function ExplorerShell() {
   setExplorerSender(app, shownFilter);
   // Home's banner (synced for an account) and whether events may be sent.
   const settings = useExplorerSettings(app, identity?.kind ?? null);
+  // On an app's own address, the app's returning visitor once the person is known, as its editor counts it (once a
+  // day at most, whichever page opens first).
+  const identityKind = identity?.kind ?? null;
+  useEffect(() => {
+    if (identityKind) trackExplorerDailyReturn(identityKind === 'account');
+  }, [identityKind]);
 
   const view: ExplorerView = useMemo(
     () => viewFromLocation(pathname, searchParams.toString()),

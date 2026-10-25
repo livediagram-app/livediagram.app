@@ -38,7 +38,8 @@ const KEYS = {
   // UTC day string (YYYY-MM-DD) of this browser's most recent app
   // open. Gates the once-per-day 'Participant'/'Returned' telemetry
   // signal (docs/specs/017-telemetry/telemetry.md) so a returning visitor counts once per UTC day,
-  // not once per page load. Written by lib/daily-return.ts only.
+  // not once per page load. Written by lib/daily-return.ts, and by liveworkspace's Explorer on this
+  // address, through the one shared gate (@liveworkspace/telemetry-client createDailyReturn).
   lastActiveDay: `${NS}last-active-day`,
   // Per-browser random that ties this browser's tabs together in presence (one person, one avatar).
   //
@@ -98,17 +99,6 @@ export function ensureCollabKey(): string {
   const fresh = crypto.randomUUID();
   writeLocalStorageSafe(KEYS.collabKey, fresh);
   return fresh;
-}
-
-// The UTC day this browser was last seen active, or null if never
-// recorded. The daily-return signal (docs/specs/017-telemetry/telemetry.md) reads this to decide
-// whether it has already counted today. See lib/daily-return.ts.
-export function getLastActiveDay(): string | null {
-  return readLocalStorageSafe(KEYS.lastActiveDay);
-}
-
-export function setLastActiveDay(day: string): void {
-  writeLocalStorageSafe(KEYS.lastActiveDay, day);
 }
 
 export function hasConfirmedName(): boolean {

@@ -33,6 +33,7 @@ export {
   type ClientErrorTokens,
   type ErrorTrack,
 } from './errors';
+export { createDailyReturn } from './daily-return';
 export { onPageHide } from './page-hide';
 export * from './timing';
 
