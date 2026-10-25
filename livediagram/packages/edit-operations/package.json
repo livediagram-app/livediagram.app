@@ -20,6 +20,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/document": "workspace:*",
     "@livediagram/templates": "workspace:*",
+    "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {

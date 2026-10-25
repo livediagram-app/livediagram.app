@@ -2,6 +2,7 @@
 // contracts"). The answer's wire shapes (result lines, warnings, rejections) live in
 // @liveplanner/api-schema, where the changeset response carries them.
 
+import type { EditLog } from '@liveworkspace/edit-operations/parse';
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@liveplanner/api-schema';
 import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@liveplanner/project';
 import type { DashboardSpec } from '@liveplanner/templates';
@@ -27,10 +28,7 @@ export type EditOperation = AddOperation | SetOperation | RmOperation | TestOper
 
 export type ParseOutcome = { operations: EditOperation[] } | { errors: EditRejection[] };
 
-export type EditLog = (
-  fingerprint: string,
-  fields: Readonly<Record<string, string | number | boolean>>,
-) => void;
+export type { EditLog };
 
 export type ApplyOptions = {
   // The owner's selection; null: the room was not read.

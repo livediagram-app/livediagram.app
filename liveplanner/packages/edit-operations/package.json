@@ -19,9 +19,10 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
-    "@liveplanner/templates": "workspace:*"
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/templates": "workspace:*",
+    "@liveworkspace/edit-operations": "workspace:*"
   },
   "devDependencies": {
     "@liveplanner/project-views": "workspace:*",

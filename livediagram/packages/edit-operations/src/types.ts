@@ -2,6 +2,7 @@
 // contracts"). The answer's wire shapes (result lines, warnings, rejections) live in
 // @livediagram/api-schema, where the changeset response carries them.
 
+import type { EditLog } from '@liveworkspace/edit-operations/parse';
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livediagram/api-schema';
 import type {
   ElementId,
@@ -115,10 +116,7 @@ export type EditOperation =
 
 export type ParseOutcome = { operations: EditOperation[] } | { errors: EditRejection[] };
 
-export type EditLog = (
-  fingerprint: string,
-  fields: Readonly<Record<string, string | number | boolean>>,
-) => void;
+export type { EditLog };
 
 export type ApplyOptions = {
   // The owner's selection; null: the room was not read.

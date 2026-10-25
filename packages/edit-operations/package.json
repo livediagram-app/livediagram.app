@@ -1,0 +1,26 @@
+{
+  "name": "@liveworkspace/edit-operations",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
