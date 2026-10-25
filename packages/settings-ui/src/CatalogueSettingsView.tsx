@@ -13,9 +13,17 @@ import type {
   CatalogueBinding,
   StoredValue,
 } from '@liveworkspace/settings/catalogue';
-import { commonCatalogue, withoutCommonRows } from '@liveworkspace/settings/common';
+import {
+  commonCatalogue,
+  withoutCommonRows,
+  type CommonCatalogue,
+} from '@liveworkspace/settings/common';
 import { accountCategories, type AccountSection } from './account-model';
 import { catalogueModel } from './catalogue-model';
+import { foldIntoAccount } from './fold-account';
+import { SettingsCategoryTile } from './glyphs';
+import { guestProfileRows } from './profile/profile-rows';
+import type { AccountGuest } from './profile/ProfileHeader';
 import { COMMON_GROUP, commonModel, commonRowIds } from './common-model';
 import { groupCategories } from './groups';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
@@ -45,6 +53,8 @@ export type AccountHost = Omit<AccountSection, 'all' | 'set'> & {
   // Where the host holds the `all` scope itself (an editor's preferences): read and written there rather than over
   // the accounts API.
   shared?: Pick<AccountSection, 'all' | 'set'>;
+  // A guest (the app's side alone): their Profile, first, with the way to sign in.
+  guest?: AccountGuest | null;
 };
 
 export type CatalogueSettingsViewProps = {
@@ -212,67 +222,10 @@ function ReadyView({
   );
 
   // Rebuilt only when what it reads changes, so a search keystroke keeps every row's identity (and the view's memo).
-  const { shared } = account;
-  const model = useMemo((): { categories: SettingsCategory[]; groups?: SettingsGroupHeading[] } => {
-    const appModel = (app: SettingsAppId) => {
-      const catalogue = catalogues[app];
-      if (!catalogue) return [];
-      return catalogueModel(
-        // In All, an app's group holds only its own settings: the common ones are under Common.
-        mode === 'all' ? withoutCommonRows(catalogue) : catalogue,
-        { all: shared?.all ?? value.all, app: value.apps[app] ?? {} },
-        (binding, stored) => saver.changeApp(app, binding, stored),
-      );
-    };
-    if (mode === 'app') return { categories: current ? appModel(current) : [] };
-
-    const groups: SettingsGroupHeading[] = [
-      { id: ACCOUNT_GROUP, label: 'Account', icon: renderLogo('all') },
-    ];
-    const categories: SettingsCategory[] = groupCategories(
-      ACCOUNT_GROUP,
-      accountCategories({
-        ...account,
-        all: shared?.all ?? value.all,
-        set: shared?.set ?? ((key, next) => saver.changeShared(key, next)),
-      }),
-    );
-    const commonIds = common ? commonRowIds(common) : new Set<string>();
-    if (common) {
-      const listed = commonModel({
-        common,
-        all: value.all,
-        apps: value.apps,
-        // An app's old copy of a common setting: the app the panel was opened for first.
-        order: current
-          ? [current, ...SETTINGS_APP_IDS.filter((app) => app !== current)]
-          : SETTINGS_APP_IDS,
-        ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
-        change: (app, binding, stored) => saver.changeApp(app, binding, stored),
-      });
-      if (listed.length > 0) {
-        groups.push({ id: COMMON_GROUP, label: 'Common', icon: renderLogo('all') });
-        categories.push(...listed);
-      }
-    }
-    for (const app of SETTINGS_APP_IDS) {
-      const listed =
-        own && app === current
-          ? // The Account section holds the shared switches and Common the common settings, so the app's copies of
-            // them are left out here (a readout line pointing at a common row points under Common).
-            groupCategories(app, own, {
-              omit: (row) =>
-                (row.allApps === true && ACCOUNT_KEYS.has(row.key)) || commonIds.has(row.key),
-              groupOf: (rowKey) => (commonIds.has(rowKey) ? COMMON_GROUP : app),
-            })
-          : groupCategories(app, appModel(app));
-      // An app left with no settings of its own is left out of the rail, rather than shown with a note.
-      if (listed.length === 0) continue;
-      groups.push({ id: app, label: APP_NAMES[app], icon: renderLogo(app) });
-      categories.push(...listed);
-    }
-    return { categories, groups };
-  }, [mode, current, own, catalogues, common, value, shared, account, renderLogo, saver]);
+  const model = useMemo(
+    () => panelModel({ mode, current, own, catalogues, common, value, account, renderLogo, saver }),
+    [mode, current, own, catalogues, common, value, account, renderLogo, saver],
+  );
 
   return (
     <SettingsView
@@ -297,6 +250,114 @@ function ReadyView({
       }
     />
   );
+}
+
+/** The panel's categories and the rail's headings: one app's (its side of the switch), or All's. Plain, so a test can
+ *  read the whole of All for every app's catalogue. */
+export function panelModel({
+  mode,
+  current,
+  own,
+  catalogues,
+  common,
+  value,
+  account,
+  renderLogo,
+  saver,
+}: {
+  mode: 'app' | 'all';
+  current: SettingsAppId | null;
+  own?: readonly SettingsCategory[] | undefined;
+  catalogues: Partial<Record<SettingsAppId, AppCatalogue>>;
+  common: CommonCatalogue | null;
+  value: PanelScopes;
+  account: AccountHost;
+  renderLogo: (id: SettingsAppId | 'all') => ReactNode;
+  saver: Pick<ScopesSaver, 'changeApp' | 'changeShared'>;
+}): { categories: SettingsCategory[]; groups?: SettingsGroupHeading[] } {
+  const { shared } = account;
+  const appModel = (app: SettingsAppId) => {
+    const catalogue = catalogues[app];
+    if (!catalogue) return [];
+    return catalogueModel(
+      // In All, an app's group holds only its own settings: the common ones are under Common.
+      mode === 'all' ? withoutCommonRows(catalogue) : catalogue,
+      { all: shared?.all ?? value.all, app: value.apps[app] ?? {} },
+      (binding, stored) => saver.changeApp(app, binding, stored),
+    );
+  };
+  if (mode === 'app') {
+    const listed = current ? appModel(current) : [];
+    return {
+      categories: account.guest
+        ? [
+            {
+              id: 'profile',
+              label: 'Profile',
+              icon: <SettingsCategoryTile id="account" />,
+              rows: guestProfileRows(account.guest),
+            },
+            ...listed,
+          ]
+        : listed,
+    };
+  }
+
+  const groups: SettingsGroupHeading[] = [
+    { id: ACCOUNT_GROUP, label: 'Account', icon: renderLogo('all') },
+  ];
+  // The Account section's categories, which each app's own copies are folded into below, so it shows once.
+  const accountListed: SettingsCategory[] = groupCategories(
+    ACCOUNT_GROUP,
+    accountCategories({
+      ...account,
+      all: shared?.all ?? value.all,
+      set: shared?.set ?? ((key, next) => saver.changeShared(key, next)),
+    }),
+  );
+  const categories: SettingsCategory[] = [];
+  const commonIds = common ? commonRowIds(common) : new Set<string>();
+  if (common) {
+    const listed = commonModel({
+      common,
+      all: value.all,
+      apps: value.apps,
+      // An app's old copy of a common setting: the app the panel was opened for first.
+      order: current
+        ? [current, ...SETTINGS_APP_IDS.filter((app) => app !== current)]
+        : SETTINGS_APP_IDS,
+      ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
+      change: (app, binding, stored) => saver.changeApp(app, binding, stored),
+    });
+    if (listed.length > 0) {
+      groups.push({ id: COMMON_GROUP, label: 'Common', icon: renderLogo('all') });
+      categories.push(...listed);
+    }
+  }
+  for (const app of SETTINGS_APP_IDS) {
+    const filed =
+      own && app === current
+        ? // The Account section holds the shared switches and Common the common settings, so the app's copies of
+          // them are left out here (a readout line pointing at a common row points under Common).
+          groupCategories(app, own, {
+            omit: (row) =>
+              (row.allApps === true && ACCOUNT_KEYS.has(row.key)) || commonIds.has(row.key),
+            groupOf: (rowKey) => (commonIds.has(rowKey) ? COMMON_GROUP : app),
+          })
+        : groupCategories(app, appModel(app));
+    const listed = foldIntoAccount({
+      account: accountListed,
+      accountGroup: ACCOUNT_GROUP,
+      app: filed,
+      appGroup: app,
+      appName: APP_NAMES[app],
+    });
+    // An app left with no settings of its own is left out of the rail, rather than shown with a note.
+    if (listed.length === 0) continue;
+    groups.push({ id: app, label: APP_NAMES[app], icon: renderLogo(app) });
+    categories.push(...listed);
+  }
+  return { categories: [...accountListed, ...categories], groups };
 }
 
 function ErrorNote({ children }: { children: ReactNode }) {

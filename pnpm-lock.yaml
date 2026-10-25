@@ -5671,9 +5671,15 @@ importers:
 
   packages/settings-ui:
     dependencies:
+      '@liveworkspace/account-menu':
+        specifier: workspace:^
+        version: link:../account-menu
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
+      '@liveworkspace/ui':
+        specifier: workspace:^
+        version: link:../ui
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.3

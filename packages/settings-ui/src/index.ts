@@ -50,6 +50,19 @@ export {
 } from './SettingsPanel';
 export type { AccountHost } from './CatalogueSettingsView';
 export { accountCategories, type AccountSection } from './account-model';
+export {
+  ProfileHeaderCard,
+  colourLabel,
+  type AccountGuest,
+  type AccountIdentity,
+} from './profile/ProfileHeader';
+export {
+  deviceName,
+  type AccountSecurity,
+  type AccountSession,
+  type AccountSignInMethods,
+} from './profile/SecurityRows';
+export { foldIntoAccount } from './fold-account';
 export { ownToggleSetter } from './own-toggle';
 export {
   catalogueModel,
