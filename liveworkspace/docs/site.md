@@ -121,7 +121,7 @@ moves between them, and the one account that joins them.
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
-   comparisons, and the telemetry dashboard) and Legal (the
+   comparisons, the telemetry dashboard and Status) and Legal (the
    privacy policy and terms).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
@@ -156,6 +156,68 @@ The public dashboard for every app's anonymous events, all apps at once or one a
 as its own header does, the prism and the wordmark in the app's accent. It reads its numbers from
 `/api/telemetry/summary`. Its styles (and each sending app's shared UI, which its views render) are in
 their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't carry them.
+
+### Status (`/status`)
+
+One status page for liveworkspace and every app, linked from this site's footer and from every app's footer
+as **Status** (`@liveworkspace/ui` SiteFooter, `${PLATFORM_SITE.url}/status`, so a dev server links to the local
+site). The apps had a page each at `/status`, a static list that said "Operational" whatever happened; those
+pages are gone, and each app's router sends its old `/status` here permanently, to the app's own group
+(`/status#livediagram`, `statusPageUrl` in `@liveworkspace/sites/workspace-proxy`).
+
+The page checks the services live, from the visitor's browser: the site is static, so there is no server of
+its own to check from, and nothing here invents one. Every check is an endpoint the service already answers,
+chosen to be cheap (no database read where one can be avoided, or one the edge caches):
+
+| Group         | Service            | Check                                              | Up when                      |
+| ------------- | ------------------ | -------------------------------------------------- | ---------------------------- |
+| liveworkspace | Website            | `HEAD /robots.txt`                                 | 200                          |
+|               | Accounts & sign-in | `GET /.well-known/openid-configuration`            | 200, JSON                    |
+|               | Explorer index     | `GET /api/index/jwks`                              | 200, JSON                    |
+|               | Community          | `GET /api/community/facets?app=livediagram.app`    | 200, JSON (edge cached)      |
+|               | Telemetry          | `OPTIONS /api/telemetry/events`                    | 204 (no database)            |
+|               | Media & previews   | `GET /api/previews`                                | 404 JSON from the Worker     |
+| each app      | API                | `GET <app>/api/capabilities` (no auth, CORS `*`)   | 200, JSON                    |
+|               | Realtime rooms     | none of its own: the rooms are the API Worker's    | as the API                   |
+|               | Router             | none of its own: every check below goes through it | any check through it answers |
+|               | Editor             | `HEAD <app>/icon.svg`                              | the browser reaches it       |
+|               | Marketing site     | `HEAD <app>/robots.txt`                            | the browser reaches it       |
+|               | Help centre        | `HEAD <app>/help/robots.txt`                       | the browser reaches it       |
+|               | Community pages    | `HEAD <app>/community/` (livediagram only)         | the browser reaches it       |
+|               | MCP server         | `GET mcp.<app>/health` (CORS `*`)                  | 200, JSON                    |
+
+liveworkspace's own checks are on this origin, so the page reads their answers. Each app's API and MCP server
+answer any origin (CORS `*`), so those are read too. An app's pages send no CORS headers, so the browser can only
+learn that the site answered (an opaque `no-cors` request), not what it said: the page calls that **Reached**
+and says so in the legend, rather than claiming more. The Media Worker answers only the apps' Workers, so its
+check is that the Worker itself answers (its JSON 404, which the site's own 404 page never is). Realtime and the
+router have no check of their own, and the page says which check stands for them. On staging the apps are their
+`staging.` addresses and the MCP servers aren't checked; on a dev server, each app's router port and its MCP
+Worker's port.
+
+Each service shows its state as an icon and a word, never colour alone: **Operational** (answered as expected),
+**Slow** (answered, after more than 1.5 s), **Down** (no answer in 10 s, a network error, or an answer it shouldn't
+give), **Checking**, and **Reached** for the pages above. Beside it: how long the answer took, what it was
+(`HTTP 200`, `Reached`, `Through the API`; where a bare code would mislead, what it means instead: Media's expected
+404 reads "Answers; storage not checked", Telemetry's 204 "Answers; database not checked") and a strip of the checks made since the page was opened (at most 30
+each, kept in memory and gone on reload). There is no uptime history: nothing records one, so the page shows none.
+
+On top, the overall state (all operational, some slow, or some down), how many services answered, the median
+answer time, when the last round finished and a countdown to the next. A round runs on load and then every 60
+seconds while the tab is visible (a hidden tab pauses, and checks again on return), and **Check now** runs one at
+once. A change of overall state is announced politely to screen readers. A legend explains every state.
+
+Groups: liveworkspace first (its wordmark), then each app in `@liveworkspace/sites` order under its own logo,
+never a coloured dot, each with its own summary and an anchor (`#livediagram`). Under the summary, a jump link per
+group carries the group's state as the rows do, an icon and words ("All up", "1 slow", "2 down"), never a dot. The page follows the site's
+landing design: the tinted radial hero, rounded cards, light and dark, a 16px gutter on a phone. Its motion (the
+live pulse, the strip settling, the countdown ring) is in `app/status/status-motion.css`, paced as content, and
+stops for reduced motion. The catalogue is `lib/status/services.ts`, the checks `lib/status/probe.ts`.
+
+**What it costs**: one round is 6 requests on liveworkspace.app and up to 6 per app (23 for four apps, with
+livediagram's Community pages; 29 in all),
+every one a `HEAD`, an `OPTIONS` or a small JSON `GET` with `cache: no-store`, and only while someone has the page
+open and visible.
 
 ### The Explorer (`/explorer/…`)
 
@@ -481,10 +543,11 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   signs in. Served under an app's address, the sign-in pages leave only short-lived `lw_flow.`
   cookies there, on `/api/workspace/auth`, which the hand-off clears. Every page asks the
   accounts API whether someone is signed in; the dashboard, the Explorer and the
-  Settings panel also call their APIs. All of it is on this origin.
+  Settings panel also call their APIs. All of it is on this origin, but for Status, which also checks each
+  app's own addresses ([Status](#status-status)).
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
-- The front door, Comparison, the dashboard and the privacy policy and terms are indexable: title, description, canonical,
+- The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`.
 
 ## Hosting

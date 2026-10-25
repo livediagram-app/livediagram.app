@@ -14,10 +14,9 @@ export const dynamic = 'force-static';
 // Next.js convention: app/sitemap.ts → /sitemap.xml at build time.
 // See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
-// Lists the indexable pages on the marketing origin, plus the public
-// operational surface (/status) that hangs off the footer. (/telemetry
-// redirects to liveworkspace's dashboard, docs/specs/017-telemetry/telemetry.md,
-// so it is not a page here.) The editor (/live/*) and API (/api/*) live on the same
+// Lists the indexable pages on the marketing origin. /status and /telemetry
+// redirect to liveworkspace.app's pages, one for every app (liveworkspace/docs/site.md),
+// so neither is listed. The editor (/live/*) and API (/api/*) live on the same
 // domain but aren't public-content surfaces, so they don't belong in
 // the sitemap (robots.ts Disallows them too).
 //
@@ -70,26 +69,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // /terms and /privacy are intentionally omitted: both legal pages moved
     // into the help centre (its own sitemap lists the canonical articles), and
     // each marketing route is now a noindex redirect there.
-    // Operational surfaces reachable from the footer (docs/specs/019-marketing/marketing-site.md). Lower
-    // priority than the marketing content above: they're transparency
-    // pages, not landing destinations, but they're public + indexable
-    // (each sets robots index:true and a self-canonical), so listing
-    // them lets crawlers find them without relying on footer links
-    // alone. Build-time `now`: /status reflects the latest deployed state,
-    // so it is "fresh as of this build" rather than carrying a tracked
-    // revision constant.
     // Community (docs/specs/025-community/community.md): the public gallery of shared boards, new posts daily.
     {
       url: `${base}/community/`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.6,
-    },
-    {
-      url: `${base}/status`,
-      lastModified: now,
-      changeFrequency: 'weekly',
-      priority: 0.4,
     },
     // Third-party licences (docs/specs/002-project-scope/third-party-licences.md):
     // a transparency page, regenerated every build (blueprint D13).

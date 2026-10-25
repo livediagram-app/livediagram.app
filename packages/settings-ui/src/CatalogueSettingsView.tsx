@@ -134,8 +134,8 @@ export default function CatalogueSettingsView({
           const app = apps[i]!;
           catalogues[app] = catalogue;
           scopes.apps[app] = read.data.app;
-          // Every answer carries the `all` scope; the last one read is the newest.
-          scopes.all = read.data.all;
+          // Every answer carries the `all` scope; the last one read is the newest. An answer without one leaves it.
+          scopes.all = read.data.all ?? scopes.all;
         });
         setLoad({ state: 'ready', catalogues, scopes });
       },

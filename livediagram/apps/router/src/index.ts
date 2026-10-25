@@ -11,6 +11,7 @@ import {
   routeToPreviews,
   forwardToIndex,
   PRODUCTION_INDEX_ORIGIN,
+  statusRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
@@ -236,6 +237,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, LIVE_PATH)) {
     return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, LIVE_PATH);
   }
+  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/site.md "Status"): an old link
+  // lands on it at livediagram's group.
+  const status = statusRedirect(url, 'livediagram', env.WORKSPACE_ORIGIN);
+  if (status) return status;
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     return Response.redirect(telemetryDashboardUrl(env), 301);
   }
