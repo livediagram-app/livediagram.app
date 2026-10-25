@@ -235,9 +235,8 @@ const SECTIONS: LegalSection[] = [
     title: 'The software',
     body: (
       <p>
-        livediagram&rsquo;s source code is public and MIT-licensed: you are free to read it, fork it
-        and run your own copy. These terms cover only the hosted livediagram.app, not a copy you
-        host yourself, which is yours to run.
+        livediagram&rsquo;s source code is public and MIT-licensed, and that licence governs the
+        code itself. These terms cover your use of the hosted livediagram.app.
       </p>
     ),
   },

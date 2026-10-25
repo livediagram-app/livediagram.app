@@ -41,7 +41,6 @@ export const LIVEDOCUMENTS: AppAlternative[] = [
         us: 'Articles and infographics in the same document',
         them: 'One of several Google Workspace apps',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
@@ -60,7 +59,7 @@ export const LIVEDOCUMENTS: AppAlternative[] = [
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
       '23 templates to start from, from a launch keynote to a quarterly review.',
-      'Free, MIT-licensed and self-hostable.',
+      'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [
       {
@@ -86,7 +85,7 @@ export const LIVEDOCUMENTS: AppAlternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel, or the whole deck as an animated GIF.',
+          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel, or the whole deck as an animated GIF.',
         ],
       },
     ],

@@ -45,7 +45,6 @@ export const LIVEDESIGN: AppAlternative[] = [
         us: 'PDF, PNG, SVG, a Logo Kit, and JPEG, WebP or PSD for photos',
         them: 'PNG, JPG, SVG and PDF',
       },
-      { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
     ],
     themBest: [
       'A complete product design tool: components, variants, variables and auto layout for a design system that grows with the product.',
@@ -62,7 +61,7 @@ export const LIVEDESIGN: AppAlternative[] = [
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can add logo and wireframe pages for you.',
       '15 templates to start from, from a logo design to app and website wireframes and a photo to edit.',
-      'Free, MIT-licensed and self-hostable.',
+      'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [
       {
@@ -81,7 +80,7 @@ export const LIVEDESIGN: AppAlternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Figma has a free plan and paid plans for teams. livedesign has no paid tier at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed, and you can run your own copy on your own Cloudflare account.',
+          'Figma has a free plan and paid plans for teams. livedesign has no paid tier at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed.',
         ],
       },
     ],

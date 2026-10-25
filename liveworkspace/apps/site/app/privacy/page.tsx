@@ -509,17 +509,6 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    app: 'livediagram.app',
-    id: 'livediagram-self-hosting',
-    title: 'Self-hosting',
-    body: (
-      <p>
-        livediagram is open source. If you run your own copy, you are responsible for your own
-        deployment, and this policy does not apply to it.
-      </p>
-    ),
-  },
-  {
     app: 'liveplanner.app',
     id: 'liveplanner-everything-above',
     title: 'Nothing beyond the above',

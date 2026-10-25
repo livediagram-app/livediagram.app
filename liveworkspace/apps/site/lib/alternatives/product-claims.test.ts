@@ -215,6 +215,17 @@ describe('product claims on the comparisons', () => {
   }
 });
 
+// None of the apps offers a copy to run yourself, so no comparison says otherwise: not as a table row,
+// a highlight, an answer or a paragraph.
+describe('no comparison offers a copy to host yourself', () => {
+  const pattern = /self[- ]?host|host (?:it )?yourself|run your own copy|your own cloudflare account/i;
+  it.each(ALTERNATIVES.map((a) => a.slug))('%s', (slug) => {
+    const alt = ALTERNATIVES.find((a) => a.slug === slug);
+    const text = `${JSON.stringify(alt)} ${COMPETITOR_LOOK[slug]?.highlights.join(' ') ?? ''}`;
+    expect(text).not.toMatch(pattern);
+  });
+});
+
 // A sentence that walks through livediagram's modes lists them in the editor's own order, the order
 // its mode switch shows.
 describe("livediagram's mode lists", () => {

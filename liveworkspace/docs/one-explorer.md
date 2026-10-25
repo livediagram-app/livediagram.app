@@ -164,5 +164,4 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 ## Not decided yet
 
 - Moving livediagram's existing documents.
-- Self-hosting an app without liveworkspace.
 - The CLI and MCP server across apps.

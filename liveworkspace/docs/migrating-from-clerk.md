@@ -10,8 +10,8 @@ while.
 - **The API's shape.** The browser still sends `Authorization: Bearer <JWT>`, and the API still
   checks it locally against a JWKS. Only the issuer, the key URL and where the browser gets the
   token change.
-- **Guest mode.** Without the accounts config set, the app is still guest-only, so self-hosting
-  keeps working.
+- **Guest mode.** Without the accounts config set, the app is still guest-only, so local
+  development keeps working.
 
 ## Steps
 
@@ -39,7 +39,7 @@ while.
    a Clerk-authed consent page. Point that consent page at the new sign-in (simplest), or later
    register the MCP server as its own client.
 7. **Remove Clerk** once the Clerk fallback has stopped seeing traffic: `@clerk/react`,
-   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_JWKS_URL` and the self-hosting docs section.
+   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_JWKS_URL`.
 
 ## Things to check during the switch
 
@@ -48,4 +48,3 @@ while.
 - **`isClerkIdShape`** (`packages/api-schema/src/request-auth.ts`) still holds: new accounts get
   `user_` ids too. It's worth renaming once Clerk is gone.
 - **Teams invites** match on the verified `email` claim, which every access token now carries.
-  The Clerk dashboard step in `docs/operations/self-hosting.md` goes away.
