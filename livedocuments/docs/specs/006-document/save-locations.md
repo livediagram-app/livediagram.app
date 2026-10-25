@@ -36,8 +36,11 @@ browser's documents beside the index's ([liveworkspace/docs/one-explorer.md](../
   livedocuments whoever is creating.
 - Before sign-in has answered, `signedIn` is the `ldoc_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
-  A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a document in This Browser; a guest never waits.
+  A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
+  signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
+  sign-in (it then carries on as a guest) is not that answer: a slow session used to make the document This Browser,
+  and the move prompt then offered the document just made. Only a known account saves on livedocuments; a session that
+  still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
   is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
 

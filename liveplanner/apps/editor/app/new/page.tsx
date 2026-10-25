@@ -75,7 +75,7 @@ export default function NewProjectPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, accountUserId } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -118,7 +118,11 @@ export default function NewProjectPage() {
 
   // Where a new project is stored: This Browser for a guest (docs/specs/006-project/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewProjectLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation } = useNewProjectLocation({
+    authLoaded,
+    sessionAnswered,
+    accountUserId,
+  });
 
   useEffect(() => {
     document.title = 'New Plan | liveplanner';

@@ -29,6 +29,8 @@ import { inboxSnapshot } from '@/lib/offline/inbox-snapshot';
 type BootstrapResult = {
   isSignedIn: boolean | undefined;
   authLoaded: boolean;
+  // Whether the session itself has answered: `authLoaded` also turns true at the 5 s give-up below, with no one in it.
+  sessionAnswered: boolean;
   accountUserId: string | null | undefined;
   // Best-guess display name for the signed-in account. Used to
   // seed the participant record on first load so a signed-in user
@@ -48,6 +50,7 @@ function workbenchResult(session: WorkbenchSession): BootstrapResult {
   return {
     isSignedIn: true,
     authLoaded: true,
+    sessionAnswered: true,
     accountUserId: session.person.id,
     accountDisplayName: session.person.name,
   };
@@ -58,6 +61,7 @@ function workbenchResult(session: WorkbenchSession): BootstrapResult {
 const HELD: BootstrapResult = {
   isSignedIn: false,
   authLoaded: false,
+  sessionAnswered: false,
   accountUserId: null,
   accountDisplayName: null,
 };
@@ -133,5 +137,11 @@ export function useAccountBootstrap(): BootstrapResult {
 
   if (workbench) return workbenchResult(workbench);
   if (held) return HELD;
-  return { isSignedIn, authLoaded, accountUserId, accountDisplayName };
+  return {
+    isSignedIn,
+    authLoaded,
+    sessionAnswered: sessionLoaded,
+    accountUserId,
+    accountDisplayName,
+  };
 }

@@ -111,7 +111,7 @@ export default function NewDocumentPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (the token provider), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, accountUserId } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -174,7 +174,11 @@ export default function NewDocumentPage() {
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation, signedIn } = useNewDocumentLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation, signedIn } = useNewDocumentLocation({
+    authLoaded,
+    sessionAnswered,
+    accountUserId,
+  });
   // The wizard's Sync Canvas to Server switch (save-locations.md "On the start screen"): null until flipped, so
   // the create follows the default. Drawn only once the page runs in the browser: the prerender knows no sign-in,
   // and a switch that flipped on at hydration would jolt.

@@ -73,7 +73,7 @@ export default function NewDocumentPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, accountUserId } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -115,7 +115,11 @@ export default function NewDocumentPage() {
 
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation } = useNewDocumentLocation({
+    authLoaded,
+    sessionAnswered,
+    accountUserId,
+  });
 
   useEffect(() => {
     document.title = 'New Document | livedocuments';

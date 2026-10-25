@@ -15,7 +15,7 @@ function setHint(signedIn: boolean) {
     : 'ldes_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 }
 
-type Props = { authLoaded: boolean; accountUserId: string | null };
+type Props = { authLoaded: boolean; sessionAnswered?: boolean; accountUserId: string | null };
 const render = (initial: Props) =>
   renderHook((p: Props) => useNewDesignLocation(p), { initialProps: initial });
 
@@ -54,6 +54,16 @@ describe('useNewDesignLocation', () => {
       const hook = render({ authLoaded: false, accountUserId: null });
       const settle = async () => hook.rerender({ authLoaded: true, accountUserId: null });
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
+    });
+
+    it('waits past the 5 s give-up for a slow session, so a signed-in person still saves on livedesign', async () => {
+      setHint(true);
+      // The page gave up on sign-in: authLoaded with no one in it, the session not yet answered.
+      const hook = render({ authLoaded: true, sessionAnswered: false, accountUserId: null });
+      const pending = hook.result.current.resolveSaveLocation(false, vi.fn());
+      await new Promise((r) => setTimeout(r, 250));
+      hook.rerender({ authLoaded: true, sessionAnswered: true, accountUserId: 'user_1' });
+      await expect(pending).resolves.toBe('livedesign');
     });
 
     it('keeps a folder or team link on livedesign', async () => {

@@ -33,8 +33,11 @@ Why a guest starts local: [Auth + guest access → Guest designs start local](..
   livedesign whoever is creating.
 - Before sign-in has answered, `signedIn` is the `ldes_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
-  A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a design in This Browser; a guest never waits.
+  A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
+  signed-in person is never handed a design in This Browser; a guest never waits. The page's 5-second give-up on
+  sign-in (it then carries on as a guest) is not that answer: a slow session used to make the design This Browser,
+  and the move prompt then offered the design just made. Only a known account saves on livedesign; a session that
+  still hasn't answered after the wait keeps the design in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a design is **filed** on livedesign is the
   person's to set, in Settings > Designs > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   A preference that once did both, "Always save new designs in <place> and skip this step" (`skipLocationStep`),
