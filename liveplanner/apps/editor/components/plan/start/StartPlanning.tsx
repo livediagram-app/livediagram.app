@@ -17,6 +17,7 @@ import {
   lucideStar,
 } from '@liveworkspace/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
+import { StartSaveSwitch } from '@/components/start/StartSaveSwitch';
 import type { PlanTemplateKind } from '@liveplanner/templates';
 import type { Tab } from '@liveplanner/project';
 import { TemplatePicture } from '@/components/start/template-card';
@@ -224,6 +225,8 @@ export function StartPlanning({
         }))
       }
       onChoose={choose}
+      // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
+      footer={(p) => <StartSaveSwitch palette={p} />}
     />
   );
 }

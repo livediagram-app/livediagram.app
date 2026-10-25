@@ -4,7 +4,14 @@
 // categories beside a grid of large cards (StartCard), each a picture of what it makes over its name and line; a
 // search across all of them. Choosing a card acts at once. Start Planning says what the categories and cards are; this
 // draws them, in the tab's own light or dark look (the palette).
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import {
   CompactEmptyState,
   CountBadge,
@@ -63,6 +70,7 @@ export function StartPanel<C extends string>({
   cardsIn,
   search,
   onChoose,
+  footer,
 }: {
   titleId: string;
   title: string;
@@ -80,6 +88,9 @@ export function StartPanel<C extends string>({
   // Every match, grouped by category, in rail order.
   search: (query: string) => readonly StartPanelResult<C>[];
   onChoose: (cardId: string) => void;
+  // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
+  // (save-locations.md "On the start screen").
+  footer?: ((palette: PlanPalette) => ReactNode) | undefined;
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
@@ -394,6 +405,14 @@ export function StartPanel<C extends string>({
             )}
           </div>
         </div>
+        {footer ? (
+          <footer
+            className="shrink-0 border-t px-4 py-1.5 sm:px-6"
+            style={{ borderColor: palette.border }}
+          >
+            {footer(palette)}
+          </footer>
+        ) : null}
       </section>
     </div>
   );
