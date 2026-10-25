@@ -20,6 +20,7 @@ import { SearchField } from './SearchField';
 import { useFirstRun } from '../welcome/context';
 import { WelcomeSearch } from '../welcome/HomeWelcome';
 import { WELCOME_COPY } from '../welcome/types';
+import { HeroBackdrop, heroBackdropOf, heroHeadingFace } from '../hero/HeroBackdrop';
 
 const HEADING_ID = 'explorer-home-hero';
 
@@ -101,8 +102,20 @@ export function HomeHero({
   /** Hides the banner for good (the host's setting, or this browser's). */
   onHide?: () => void;
 }) {
-  const { kind, words, inbox, viewerId, viewHref, navigate, onCreate, openNav, heroWords } =
-    useExplorer();
+  const {
+    app,
+    filter,
+    kind,
+    words,
+    inbox,
+    viewerId,
+    viewHref,
+    navigate,
+    onCreate,
+    openNav,
+    heroWords,
+  } = useExplorer();
+  const backdrop = heroBackdropOf(app, filter);
   const hour = useHour();
   const { heroFirstRun, welcome } = useFirstRun();
   // A first run greets rather than asks what the person is doing today, and searches templates, not their work.
@@ -144,12 +157,9 @@ export function HomeHero({
     <section
       aria-labelledby={HEADING_ID}
       data-home-hero=""
-      className="relative overflow-hidden border-b border-slate-200 bg-brand-50/70 bg-[radial-gradient(var(--color-brand-200)_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(color-mix(in_oklab,var(--color-brand-800)_45%,var(--color-slate-900))_1px,transparent_1px)]"
+      className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
     >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--color-brand-600)_30%,transparent),transparent)] dark:block"
-      />
+      <HeroBackdrop kind={backdrop} />
       <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
           {/* A phone: the menu button and the corner share their own row, so the pills never push Help onto
@@ -200,7 +210,7 @@ export function HomeHero({
             id={HEADING_ID}
             // Two lines held, so the band's height never moves as the greeting lands after mount. Whole-pixel
             // line heights, so everything under the hero lands on whole pixels.
-            className="min-h-[2lh] max-w-3xl text-4xl leading-[37px] font-extrabold tracking-[-0.04em] text-[#17153a] sm:text-5xl sm:leading-[49px] lg:text-[3.5rem] lg:leading-[57px] dark:text-white"
+            className={`min-h-[2lh] max-w-3xl text-4xl leading-[37px] ${heroHeadingFace(backdrop)} text-[#17153a] sm:text-5xl sm:leading-[49px] lg:text-[3.5rem] lg:leading-[57px] dark:text-white`}
           >
             {greeting ? `${greeting} ${question}` : null}
           </h1>

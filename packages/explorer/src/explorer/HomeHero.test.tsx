@@ -237,6 +237,30 @@ describe('Home’s hero', () => {
     ).toEqual(['board', 'sheet', 'dashboard', 'form']);
   });
 
+  it.each([
+    ['liveplanner', 'dots'],
+    ['livediagram', 'blueprint'],
+    ['livedocuments', 'typesetter'],
+    ['livedesign', 'shapes'],
+  ] as const)('draws %s’s own backdrop behind the band', async (app, backdrop) => {
+    renderHome(createFakeIndex(), { app, filter: 'app' });
+    const heading = await screen.findByRole('heading', { level: 1 });
+    const layer = document.querySelector('[data-home-hero] [data-hero-backdrop]');
+    expect(layer?.getAttribute('data-hero-backdrop')).toBe(backdrop);
+    expect(layer?.getAttribute('aria-hidden')).toBe('true');
+    // Only the Typesetter sets the heading in serif.
+    expect(heading.className.includes('font-serif')).toBe(backdrop === 'typesetter');
+  });
+
+  it('keeps the dots under All, whichever app hosts it', async () => {
+    renderHome(createFakeIndex(), { app: 'livedocuments', filter: 'all' });
+    const heading = await screen.findByRole('heading', { level: 1 });
+    expect(document.querySelector('[data-hero-backdrop]')?.getAttribute('data-hero-backdrop')).toBe(
+      'dots',
+    );
+    expect(heading.className).not.toContain('font-serif');
+  });
+
   it('pairs Help with a close wherever it draws them, and the close hides the banner', async () => {
     const onHideHero = vi.fn();
     const index = createFakeIndex();

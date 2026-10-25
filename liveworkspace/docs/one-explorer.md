@@ -133,6 +133,25 @@ All Apps.
 | livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)        |
 | livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`) |
 
+#### Each app's backdrop, on Home's hero
+
+The hero's words, pills, search and tiles are the same in every app; the **backdrop** behind them tells the apps apart
+(`HeroBackdrop` in `@liveworkspace/explorer`). It follows the app the list is filtered to: under All Apps, and on
+liveworkspace.app in no app, the hero keeps the dotted band.
+
+| App           | Backdrop                                                                                                                                                                                                                                                                                 |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| liveplanner   | **Dots**: the brand-tinted band with a dot every 22 px, and a soft brand glow in dark. Also All Apps' and no app's.                                                                                                                                                                      |
+| livediagram   | **Blueprint**: engineering paper, a fine 24 px grid with a heavier line every five squares, crop marks in the band's corners, a dimension line in the gap between the words and the tiles, and a drawing's title block ("HOME · SHEET 1 OF 1", "1:1") in the bottom right. Navy in dark. |
+| livedocuments | **Typesetter**: warm paper with an 8 px baseline grid, the heading set in serif, dashed rules marking the heading's measure, and a large pilcrow (¶) behind the tiles' edge.                                                                                                             |
+| livedesign    | **Shape kit**: a few bold primitives placed like a composition in progress: a circle (selected, with handles) and a square turned on its corner in the gap, a triangle beside the pills, a quarter disc in the bottom left and a ring in the bottom right.                               |
+
+The textures (dots, grid, baseline grid) and the corner pieces run the band's full width at every size. The pieces
+drawn in the gap between the words and the tiles show only from `xl`, where that gap is wide enough that they never
+touch the words; the title block and the triangle show from `lg`. The serif heading is the system's serif (`ui-serif`,
+Georgia, Times New Roman), so no font is fetched for it. Every backdrop is static SVG and CSS in the brand ramp, with no
+motion and nothing fetched; it is hidden from screen readers and takes no pointer events.
+
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
 Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
 that view on the app's own address.
