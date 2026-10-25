@@ -233,6 +233,12 @@ identity it sends the browser to `GET /api/auth/guest?client_id=&redirect_uri=&s
 - redirects to `<redirect_uri>#guest_token=<jwt>&state=<state>`. The token is signed by the jwt
   plugin with the same keys as access tokens (`/api/auth/jwks`): `iss` the issuer, `aud` the client's
   API, `sub` the guest id, `kind: "guest"`, for a year.
+- once the client and `redirect_uri` have checked out, never leaves the browser on an error page: if
+  anything after that fails (reading or setting the cookie, the seen stamp's database, signing the
+  token) it logs it and redirects to `<redirect_uri>#error=server_error&state=<state>`, with no cookie
+  set, so the app records a failed hand-off (and doesn't start another for five minutes) and carries
+  on without a guest identity; the Explorer then says it couldn't reach the account rather than
+  staying blank.
 
 It is limited to 60 a minute per IP (`GUEST_LIMITER`).
 

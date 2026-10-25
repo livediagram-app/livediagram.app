@@ -138,6 +138,30 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
     params.get('resource') ?? (client.resources.length === 1 ? client.resources[0] : null);
   if (!resource || !client.resources.includes(resource)) return refuse('invalid_resource');
 
+  // From here the browser is always sent back to the app: a failure goes back saying so, rather than leaving it on
+  // an error page the app never hears from (docs/accounts.md "Guests").
+  try {
+    return await handOff(request, env, auth, { redirectUri, state, resource });
+  } catch (error) {
+    console.error('Guest hand-off failed:', error);
+    const back = new URLSearchParams({ error: 'server_error', state });
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: `${redirectUri}#${back}`,
+        'cache-control': 'no-store',
+        'referrer-policy': 'no-referrer',
+      },
+    });
+  }
+}
+
+async function handOff(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  { redirectUri, state, resource }: { redirectUri: string; state: string; resource: string },
+): Promise<Response> {
   const secret = env.BETTER_AUTH_SECRET;
   const guestId =
     (await readGuestCookie(readCookie(request.headers.get('cookie'), GUEST_COOKIE), secret)) ??

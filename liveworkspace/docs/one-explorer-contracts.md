@@ -61,6 +61,9 @@ A guest's id lives on liveworkspace.app, so it is the same in every app.
    `liveworkspace.app/api/auth/guest?client_id=<app's accounts client>&redirect_uri=<registered>&state=<random>`.
 2. accounts reads (or sets) its long-lived `lw_guest` cookie, and redirects to
    `<redirect_uri>#guest_token=<jwt>&state=<state>`. The fragment keeps the token out of logs.
+   If it fails after checking the client and `redirect_uri`, it still goes back there, with
+   `#error=server_error&state=<state>`, so the app carries on without a guest rather than the browser
+   stopping on an error page.
 3. The app keeps the token (local storage) and sends it as the Bearer token.
 
 Guest token: a JWT signed with accounts' keys, `iss` the accounts issuer, `aud` the client's API

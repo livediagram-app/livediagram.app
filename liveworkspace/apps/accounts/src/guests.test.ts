@@ -219,6 +219,19 @@ describe('the guest hand-off', () => {
     expect(claims.sub).toBe(await readGuestCookie(cookieValueOf(setGuestCookie(response)), SECRET));
   });
 
+  it('goes back to the app saying so when signing fails, never stopping on an error page', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(auth.api, 'signJWT').mockRejectedValueOnce(new Error('keys unavailable'));
+    const response = await handoff();
+    expect(response.status).toBe(302);
+    const { uri, params } = fragmentOf(response);
+    expect(uri).toBe(GUEST_RETURN);
+    expect(params.get('error')).toBe('server_error');
+    expect(params.get('state')).toBe('s1');
+    expect(params.get('guest_token')).toBeNull();
+    expect(setGuestCookie(response)).toBeUndefined();
+  });
+
   it('refuses an unregistered redirect without redirecting', async () => {
     for (const redirect of [
       'https://evil.example/auth/guest',
