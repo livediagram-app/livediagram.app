@@ -774,8 +774,10 @@ and the dialog stays as the one complete, browsable index of them.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedocuments**
-  (this app's logo and name) and **All** (liveworkspace's logo). livedocuments shows this app's own
-  Settings, exactly as above, and asks the network for nothing. All shows every setting the account
+  (this app's logo and name) and **All** (liveworkspace's logo). livedocuments shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
+  own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
+  at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
+  for nothing. All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then **Common**
   (liveworkspace's logo): every editor setting two or more apps have (`COMMON_SETTING_KEYS`,
   liveworkspace/docs/accounts.md "Common settings"), once, in the categories the apps file them under

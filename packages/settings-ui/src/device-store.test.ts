@@ -24,7 +24,10 @@ describe('the device store (a guest’s settings in this browser)', () => {
     );
     expect(await store.loadApp('liveplanner.app')).toEqual({
       ok: true,
-      data: { all: { telemetryEnabled: false, reduceMotion: true }, app: { notifyProjectJoin: false } },
+      data: {
+        all: { telemetryEnabled: false, reduceMotion: true },
+        app: { notifyProjectJoin: false },
+      },
     });
   });
 
@@ -46,10 +49,17 @@ describe('the device store (a guest’s settings in this browser)', () => {
     // Another tab (the editor) changes a key meanwhile.
     localStorage.setItem(KEY, JSON.stringify({ notifyProjectJoin: false, uiScale: 1.25 }));
     const result = await store.patchApp('liveplanner.app', { notifyFormResponses: false });
-    expect(stored()).toEqual({ notifyProjectJoin: false, uiScale: 1.25, notifyFormResponses: false });
+    expect(stored()).toEqual({
+      notifyProjectJoin: false,
+      uiScale: 1.25,
+      notifyFormResponses: false,
+    });
     expect(result).toEqual({
       ok: true,
-      data: { all: { uiScale: 1.25 }, app: { notifyProjectJoin: false, notifyFormResponses: false } },
+      data: {
+        all: { uiScale: 1.25 },
+        app: { notifyProjectJoin: false, notifyFormResponses: false },
+      },
     });
     expect(localStorage.getItem(MARK)).toBe('guest_1');
   });

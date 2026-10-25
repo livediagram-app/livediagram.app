@@ -63,7 +63,7 @@ function Host({
 }
 
 describe('SettingsPanel', () => {
-  it("shows an editor's own settings at once, with nothing fetched, and the switch in the header", () => {
+  it("shows an editor's own settings at once, before anything is read, and the switch in the header", () => {
     const { calls, request } = fakeRequest();
     renderWithKit(<Host own={fixtureCategories()} request={request} />);
     expect(within(pane()).getByRole('switch', { name: 'Alignment Guides' })).toBeTruthy();
@@ -76,7 +76,23 @@ describe('SettingsPanel', () => {
     ).toBe('true');
     expect(switcher.querySelector('[data-logo="liveplanner.app"]')).not.toBeNull();
     expect(switcher.querySelector('[data-logo="all"]')).not.toBeNull();
-    expect(calls).toEqual([]);
+    // Only reads: the Account section and Common are fetched beside the editor's own, nothing written.
+    expect(calls.every((call) => call.method === 'GET')).toBe(true);
+  });
+
+  it("keeps the Account section and Common on an app's own side, signed in", async () => {
+    const { request } = fakeRequest();
+    renderWithKit(<Host own={fixtureCategories()} request={request} initial="app" />);
+    await waitFor(() =>
+      expect(within(rail()).getByRole('button', { name: /^API Tokens/ })).toBeTruthy(),
+    );
+    const rows = within(rail())
+      .getAllByRole('button')
+      .map((b) => b.textContent);
+    expect(rows).toContain('Account');
+    expect(rows).toContain('liveplanner');
+    for (const other of ['livediagram', 'livedocuments', 'livedesign'])
+      expect(rows).not.toContain(other);
   });
 
   it('offers no switch when All is not allowed (a guest)', () => {
@@ -243,7 +259,7 @@ describe('SettingsPanel', () => {
     ).toBe('true');
   });
 
-  it("shows every setting on an app's own side, the common ones marked All apps", async () => {
+  it("shows the app's own side's settings, a common one under Common, written to the shared scope", async () => {
     const { calls, request } = fakeRequest((call) =>
       call.method === 'PATCH'
         ? { all: (call.body as { all: SettingsBlob }).all }
@@ -251,12 +267,18 @@ describe('SettingsPanel', () => {
     );
     renderWithKit(<Host request={request} initial="app" />);
     await waitFor(() =>
-      expect(within(rail()).getByRole('button', { name: /^Plans/ })).toBeTruthy(),
+      expect(within(rail()).getByRole('button', { name: /^Explorer/ })).toBeTruthy(),
     );
-    fireEvent.click(within(rail()).getByRole('button', { name: /^Plans/ }));
+    // The account's own, then Common, then this app's: no other app's.
+    const rows = within(rail())
+      .getAllByRole('button')
+      .map((b) => b.textContent);
+    expect(rows.indexOf('Account')).toBeLessThan(rows.indexOf('Common'));
+    expect(rows.indexOf('Common')).toBeLessThan(rows.indexOf('liveplanner'));
+    expect(rows).not.toContain('livediagram');
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Explorer/ }));
     const banner = within(pane()).getByRole('switch', { name: 'Show Home Banner' });
     expect(banner.getAttribute('aria-checked')).toBe('false');
-    expect(within(pane()).getByText('All apps')).toBeTruthy();
     await act(async () => {
       fireEvent.click(banner);
     });

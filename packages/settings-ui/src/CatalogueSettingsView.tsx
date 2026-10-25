@@ -59,6 +59,9 @@ export type AccountHost = Omit<AccountSection, 'all' | 'set'> & {
 
 export type CatalogueSettingsViewProps = {
   mode: 'app' | 'all';
+  // The app's own view also shows the Account section and the Common settings the app has, above the app's own
+  // (signed in: they are the account's, and shape the app as much as its own settings do).
+  withShared?: boolean;
   // The app the panel was opened for, if any.
   current: SettingsAppId | null;
   // That app's own Settings, when the host has it (an editor): shown in place of its catalogue.
@@ -99,19 +102,20 @@ export default function CatalogueSettingsView({
 }: CatalogueSettingsViewProps) {
   const store = useMemo(() => storeFor(source), [source]);
   const props = { ...rest, store, errorMessage };
-  const { mode, current, own } = props;
+  const { mode, current, own, withShared = false } = props;
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [attempt, setAttempt] = useState(0);
   // The apps read here: just the one in its own view; in All every app but the one whose own Settings the host
   // already has.
+  // With the shared ones, the app's view reads every app too: Common is the settings two or more apps have.
   const apps = useMemo(
     () =>
-      mode === 'app'
+      mode === 'app' && !withShared
         ? current
           ? [current]
           : []
         : SETTINGS_APP_IDS.filter((app) => !(own && app === current)),
-    [mode, current, own],
+    [mode, current, own, withShared],
   );
 
   useEffect(() => {
@@ -142,6 +146,10 @@ export default function CatalogueSettingsView({
     };
   }, [apps, store, attempt]);
 
+  // An editor's own settings are drawn at once while the Account section and Common load beside them.
+  if (load.state === 'loading' && mode === 'app' && own) {
+    return <SettingsView {...view(props)} categories={own} memoryKey={props.memoryKey ?? null} />;
+  }
   if (load.state !== 'ready') {
     return (
       <SettingsView
@@ -179,6 +187,7 @@ export default function CatalogueSettingsView({
 
 function ReadyView({
   mode,
+  withShared = false,
   current,
   own,
   store,
@@ -210,7 +219,7 @@ function ReadyView({
   // The Common group's rows, from every catalogue read, in the apps' order: built once.
   const common = useMemo(
     () =>
-      mode === 'all'
+      mode === 'all' || withShared
         ? commonCatalogue(
             SETTINGS_APP_IDS.flatMap((app) => {
               const catalogue = catalogues[app];
@@ -223,8 +232,20 @@ function ReadyView({
 
   // Rebuilt only when what it reads changes, so a search keystroke keeps every row's identity (and the view's memo).
   const model = useMemo(
-    () => panelModel({ mode, current, own, catalogues, common, value, account, renderLogo, saver }),
-    [mode, current, own, catalogues, common, value, account, renderLogo, saver],
+    () =>
+      panelModel({
+        mode,
+        withShared,
+        current,
+        own,
+        catalogues,
+        common,
+        value,
+        account,
+        renderLogo,
+        saver,
+      }),
+    [mode, withShared, current, own, catalogues, common, value, account, renderLogo, saver],
   );
 
   return (
@@ -256,6 +277,7 @@ function ReadyView({
  *  read the whole of All for every app's catalogue. */
 export function panelModel({
   mode,
+  withShared = false,
   current,
   own,
   catalogues,
@@ -266,6 +288,7 @@ export function panelModel({
   saver,
 }: {
   mode: 'app' | 'all';
+  withShared?: boolean;
   current: SettingsAppId | null;
   own?: readonly SettingsCategory[] | undefined;
   catalogues: Partial<Record<SettingsAppId, AppCatalogue>>;
@@ -281,12 +304,12 @@ export function panelModel({
     if (!catalogue) return [];
     return catalogueModel(
       // In All, an app's group holds only its own settings: the common ones are under Common.
-      mode === 'all' ? withoutCommonRows(catalogue) : catalogue,
+      mode === 'all' || withShared ? withoutCommonRows(catalogue) : catalogue,
       { all: shared?.all ?? value.all, app: value.apps[app] ?? {} },
       (binding, stored) => saver.changeApp(app, binding, stored),
     );
   };
-  if (mode === 'app') {
+  if (mode === 'app' && !withShared) {
     const listed = current ? appModel(current) : [];
     return {
       categories: account.guest
@@ -316,10 +339,13 @@ export function panelModel({
     }),
   );
   const categories: SettingsCategory[] = [];
+  // The app's own view: Common's rows that app has, then its group alone.
+  const shownCommon = common && mode === 'app' && current ? commonFor(common, current) : common;
+  const shownApps = mode === 'app' ? (current ? [current] : []) : SETTINGS_APP_IDS;
   const commonIds = common ? commonRowIds(common) : new Set<string>();
-  if (common) {
+  if (shownCommon) {
     const listed = commonModel({
-      common,
+      common: shownCommon,
       all: value.all,
       apps: value.apps,
       // An app's old copy of a common setting: the app the panel was opened for first.
@@ -334,7 +360,7 @@ export function panelModel({
       categories.push(...listed);
     }
   }
-  for (const app of SETTINGS_APP_IDS) {
+  for (const app of shownApps) {
     const filed =
       own && app === current
         ? // The Account section holds the shared switches and Common the common settings, so the app's copies of
@@ -383,4 +409,45 @@ export function SettingsSkeleton() {
       ))}
     </div>
   );
+}
+
+// The Common settings one app has: the rest don't touch it.
+function commonFor(common: CommonCatalogue, app: SettingsAppId): CommonCatalogue {
+  const has = (id: string) => common.apps.get(id)?.includes(app) ?? false;
+  return {
+    ...common,
+    catalogue: {
+      ...common.catalogue,
+      categories: common.catalogue.categories
+        .map((category) => ({ ...category, rows: category.rows.filter((row) => has(row.id)) }))
+        .filter((category) => category.rows.length > 0),
+    },
+  };
+}
+
+// The SettingsView's own props, from the view's.
+function view({
+  isMobile,
+  onClose,
+  title,
+  leading,
+  footer,
+  switcher,
+  focus,
+  initialCategoryId,
+  initialSectionId,
+  onCategoryOpened,
+}: CatalogueSettingsViewProps) {
+  return {
+    isMobile,
+    onClose,
+    title,
+    leading,
+    footer,
+    switcher,
+    focus,
+    initialCategoryId,
+    initialSectionId,
+    onCategoryOpened,
+  };
 }

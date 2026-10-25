@@ -115,14 +115,17 @@ export function SettingsPanel({
     initialSectionId,
   };
 
-  // An editor's own settings: drawn at once, with nothing fetched.
-  if (shown === 'app' && own) {
+  // Signed in, the app's own view also holds the Account section and Common: they shape this app too.
+  const withShared = shown === 'app' && allowAll && !account.guest;
+  // A guest's editor: its own settings, drawn at once, with nothing fetched.
+  if (shown === 'app' && own && !withShared) {
     return <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />;
   }
 
   const catalogueProps: CatalogueSettingsViewProps = {
     ...common,
     mode: shown,
+    withShared,
     current: app?.id ?? null,
     ...(own ? { own } : {}),
     store,
@@ -136,11 +139,16 @@ export function SettingsPanel({
   return (
     <Suspense
       fallback={
-        <SettingsView
-          {...common}
-          categories={[]}
-          placeholder={<div aria-busy className="h-40" />}
-        />
+        withShared && own ? (
+          // An editor's own settings at once, while the rest of its side loads.
+          <SettingsView {...common} categories={own} memoryKey={memoryKey} />
+        ) : (
+          <SettingsView
+            {...common}
+            categories={[]}
+            placeholder={<div aria-busy className="h-40" />}
+          />
+        )
       }
     >
       <CatalogueSettingsView key={shown} {...catalogueProps} />

@@ -330,11 +330,13 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   the app's accent), then **Settings** ("liveplanner Settings"), on the front screen of either side of the switch. A
   pushed pane's back bar takes its place. Opened for no app, the title is **Settings** alone.
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
-  liveworkspace's logo. The app's side shows that app's settings, from its plain-data catalogue
-  (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](accounts.md#scopes)), in the app's own Settings view: its
-  rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes, search,
-  the phone's push layout and back bar. Every setting the app uses is there, the common ones (below) included,
-  each of those marked **All apps** under its description. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
+  liveworkspace's logo. The app's side shows, signed in, the **Account** group and the **Common** settings that app
+  has (below), then the app's own group, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
+  [accounts.md](accounts.md#scopes)): the account's and the shared settings shape that app as much as its own do,
+  so they are never hidden behind All. Only the other apps' groups are left out. It is drawn in the app's own Settings
+  view: its rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes,
+  search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read.
+  A guest's side is the app's settings alone. Its footer links into the app ("More in <app> Settings", `<app>/explorer/home`)
   for what only makes sense inside the editor (appearance, shortcuts, the editors' shared chrome such as UI scale).
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
