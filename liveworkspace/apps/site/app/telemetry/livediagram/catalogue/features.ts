@@ -715,7 +715,7 @@ export const MIND_OUTLINE_OPENED = opened(
 
 export const TOUR_OFFERED = opened(
   'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered.',
+  'The Diagram tour (the welcome tour until October 2026) offered. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'TourOffer',
 );
 
@@ -723,21 +723,21 @@ export const TOUR_OFFERED = opened(
 // the Visitors tab.
 export const WORKSHOP_TOUR_OFFERED = opened(
   'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
+  'The Workshop tour offered, the first time someone works in Workshop mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'WorkshopTourOffer',
 );
 
 // The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
 export const DRAW_TOUR_OFFERED = opened(
   'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
+  'The Draw tour offered, the first time someone works in Draw mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'DrawTourOffer',
 );
 
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar.',
+  'The Avatar tour offered, the first time someone walks as an avatar. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'AvatarTourOffer',
 );
 
@@ -745,7 +745,7 @@ export const AVATAR_TOUR_OFFERED = opened(
 // the Visitors tab, which names the kinds.
 export const ELEMENT_TOURS_OFFERED = opened(
   'Element Tours Offered',
-  'An element tour offered beside a selected element, once per kind per visit.',
+  'An element tour offered beside a selected element, once per kind per visit. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 

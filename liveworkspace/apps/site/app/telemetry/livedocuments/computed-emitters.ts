@@ -401,9 +401,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·Closed': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
   'apps/editor/components/tour/PagesTourHost.tsx UI·View': {
     values: PAGES_TOUR_STEP_SOURCE,
   },

@@ -753,7 +753,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
-  'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
+  'UI|Closed|PagesTourOffer':
+    'Someone turned the Pages tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
     "Someone used Repair This Browser on a failed document load: livedocuments's settings and caches in that browser were cleared and the page reloaded.",
@@ -912,31 +913,31 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|PagesTourOffer':
-    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
+    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|LayerStackTourOffer':
-    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
+    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PyramidTourOffer':
-    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
+    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|FunnelTourOffer':
-    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
+    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|CycleTourOffer':
-    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
+    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|HubTourOffer':
-    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
+    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|OnionTourOffer':
-    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|TimelineTourOffer':
-    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
+    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|ChevronsTourOffer':
-    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
+    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|ChartTourOffer':
-    'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit).',
+    'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|StackTourOffer':
-    'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit).',
+    'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|TabWindowTourOffer':
-    'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit).',
+    'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|SankeyTourOffer':
-    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
+    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':

@@ -132,7 +132,7 @@ export const PAGES_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Pages Tours Declined',
-  'The Pages tour turned down on its welcome card, before it started.',
+  'The Pages tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
   { types: ['PagesTourOffer'], rising: 'neutral' },
 );
 

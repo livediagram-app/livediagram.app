@@ -1262,14 +1262,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer':
-    "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
-  'UI|Closed|PagesTourOffer': 'Someone turned the Pages tour down with No on its own card.',
-  'UI|Closed|AvatarTourOffer': 'Someone turned the Avatar tour down with No on its own card.',
-  'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
+    "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it. Nothing sends this since 25 October 2026, when tours stopped offering themselves.",
+  'UI|Closed|PagesTourOffer':
+    'Someone turned the Pages tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
+  'UI|Closed|AvatarTourOffer':
+    'Someone turned the Avatar tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
+  'UI|Closed|DrawTourOffer':
+    'Someone turned the Draw tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
   'UI|Closed|WorkshopTourOffer':
-    'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop).',
-  'UI|Closed|FormTourOffer': 'Someone turned the Forms tour down with No on its own card.',
-  'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
+    'Someone turned the Workshop tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Workshop). Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
+  'UI|Closed|FormTourOffer':
+    'Someone turned the Forms tour down with No on its own card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
+  'UI|Closed|PlanTourOffer':
+    "Someone dismissed the Plan tour's offer card without starting it. Nothing sends this since 25 October 2026, when tours stopped offering themselves.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
     "Someone used Repair This Browser on a failed document load: livediagram's settings and caches in that browser were cleared and the page reloaded.",
@@ -1515,63 +1520,63 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PagesTourOffer':
-    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
+    'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|AvatarTourOffer':
-    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour".',
+    'The Avatar tour was offered: as its own card the first time someone walked as an avatar, or replayed from Settings\' Tours › "Avatar Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|AvatarPanel':
     'Someone opened the Avatar panel from its button beside Undo and Redo, in Avatar mode.',
   'UI|Opened|LayerStackTourOffer':
-    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit).',
+    'The Layer Stack tour was offered, as a small Tour toolbar beside a selected layer stack (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PyramidTourOffer':
-    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit).',
+    'The Pyramid tour was offered, as a small Tour toolbar beside a selected pyramid (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|FunnelTourOffer':
-    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit).',
+    'The Funnel tour was offered, as a small Tour toolbar beside a selected funnel (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|CycleTourOffer':
-    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit).',
+    'The Cycle tour was offered, as a small Tour toolbar beside a selected cycle (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|HubTourOffer':
-    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit).',
+    'The Hub and Spoke tour was offered, as a small Tour toolbar beside a selected hub and spoke (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|OnionTourOffer':
-    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit).',
+    'The Onion tour was offered, as a small Tour toolbar beside a selected onion (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|TimelineTourOffer':
-    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit).',
+    'The Timeline tour was offered, as a small Tour toolbar beside a selected timeline (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|ChevronsTourOffer':
-    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit).',
+    'The Chevrons tour was offered, as a small Tour toolbar beside a selected chevron process (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|MindMapTourOffer':
-    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit).',
+    'The Mind Map tour was offered, as a small Tour toolbar beside a selected mind map node (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|FlowchartTourOffer':
-    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit).',
+    'The Flowchart tour was offered, as a small Tour toolbar beside a selected flowchart step (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|OrgChartTourOffer':
-    'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit).',
+    'The Org Chart tour was offered, as a small Tour toolbar beside a selected person in an org chart (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|SequenceTourOffer':
-    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit).',
+    'The Sequence tour was offered, as a small Tour toolbar beside a selected sequence diagram (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|ChartTourOffer':
-    'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit).',
+    'The Chart tour was offered, as a small Tour toolbar beside a selected chart (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|StackTourOffer':
-    'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit).',
+    'The Stack tour was offered, as a small Tour toolbar beside a selected stack (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|EntityTourOffer':
-    'The Entity tour was offered, as a small Tour toolbar beside a selected entity (counted once per visit).',
+    'The Entity tour was offered, as a small Tour toolbar beside a selected entity (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|TabWindowTourOffer':
-    'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit).',
+    'The Tab Window tour was offered, as a small Tour toolbar beside a selected tab window (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|LaneTourOffer':
-    'The Lane tour was offered, as a small Tour toolbar beside a selected lane (counted once per visit).',
+    'The Lane tour was offered, as a small Tour toolbar beside a selected lane (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|BoundaryTourOffer':
-    'The Boundary tour was offered, as a small Tour toolbar beside a selected boundary (counted once per visit).',
+    'The Boundary tour was offered, as a small Tour toolbar beside a selected boundary (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|DiagramKeyTourOffer':
-    'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit).',
+    'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PortalTourOffer':
-    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit).',
+    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|SankeyTourOffer':
-    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit).',
+    'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|DrawTourOffer':
-    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
+    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|FormTourOffer':
-    'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour".',
+    'The Forms tour was offered: as its own card the first time an Editor opened a Form tab, or replayed from Show Me Around in the form cog or Settings\' Tours › "Forms Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|WorkshopTourOffer':
-    'The Workshop tour was offered: as its own card the first time someone worked in Workshop mode, or replayed from Settings\' Tours › "Workshop Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Workshop").',
+    'The Workshop tour was offered: as its own card the first time someone worked in Workshop mode, or replayed from Settings\' Tours › "Workshop Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Workshop"). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour". Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1607,9 +1612,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Selected|WorkshopTourFromWelcome':
     "Someone pressed Show me Workshop on the welcome tour's closing card, going straight into the Workshop tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Workshop.",
   'UI|Selected|PlanTourBoards':
-    "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board).",
+    "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board). Nothing sends this since 25 October 2026: the Start Tour button names one track and runs it.",
   'UI|Selected|PlanTourSheets':
-    "Someone picked Spreadsheets on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example sheet).",
+    "Someone picked Spreadsheets on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example sheet). Nothing sends this since 25 October 2026: the Start Tour button names one track and runs it.",
   // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
   'UI|Selected|Sidebar.Activity':
     "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
@@ -1986,8 +1991,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DashboardsTourSeenOn':
     'Someone switched off Tours › "Dashboards Tour" in Settings, marking the Dashboards tour as answered.',
   'UI|Opened|DashboardTourOffer':
-    'The Dashboards tour offered itself, the first time an Editor had a dashboard open in Plan.',
-  'UI|Closed|DashboardTourOffer': 'Someone declined the Dashboards tour from its welcome card.',
+    'The Dashboards tour offered itself, the first time an Editor had a dashboard open in Plan. Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
+  'UI|Closed|DashboardTourOffer':
+    'Someone declined the Dashboards tour from its welcome card. Nothing sends this since 25 October 2026, when tours stopped offering themselves.',
   'UI|Toggled|LandscapeBarsOff':
     'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
   'UI|Toggled|LandscapeBarsOn':

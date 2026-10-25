@@ -508,9 +508,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·Closed': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/editor/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
