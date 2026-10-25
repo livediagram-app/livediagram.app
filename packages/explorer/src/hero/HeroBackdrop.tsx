@@ -198,26 +198,6 @@ function Typesetter() {
           >
             ¶
           </text>
-          <path
-            d="M24.5 0V420M792.5 0V420"
-            strokeDasharray="4 4"
-            className="stroke-brand-300 dark:stroke-brand-700/70"
-          />
-          <g className="fill-brand-600 stroke-brand-600 dark:fill-brand-400 dark:stroke-brand-400">
-            <path d="M30 12H786" strokeWidth="0.8" />
-            <path d="M30 9l-5 3 5 3zM786 9l5 3-5 3z" stroke="none" />
-            <text
-              x="408"
-              y="8"
-              textAnchor="middle"
-              fontSize="9"
-              letterSpacing="1"
-              stroke="none"
-              className="font-mono"
-            >
-              MEASURE
-            </text>
-          </g>
         </svg>
       </div>
     </div>
