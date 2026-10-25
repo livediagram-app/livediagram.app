@@ -119,7 +119,11 @@ export type ExplorerContextValue = {
   inboxHost?: InboxHost;
   // The person's API tokens page, for a token's Timeline card.
   tokensUrl?: string;
-  onCreate: (placement: Placement) => void;
+  // New: an item of `app`'s kind (the host's own when not given) at this placement.
+  onCreate: (placement: Placement, app?: App) => void;
+  // The apps New offers while the list mixes every app (the All filter, with the host's newApps); null when New
+  // makes the host app's kind alone.
+  createChoices: readonly App[] | null;
   // Inline rename: one row at a time, by id (item or folder).
   renamingId: string | null;
   setRenamingId: (id: string | null) => void;
@@ -200,7 +204,9 @@ export type ExplorerProviderProps = {
   setFilter: (filter: AppFilter) => void;
   onNavigate: (view: ExplorerView, href: string, options?: NavigateOptions) => void;
   itemHref: ItemHref;
-  onCreate: (placement: Placement) => void;
+  onCreate: (placement: Placement, app?: App) => void;
+  // The apps New can make where the list shows every app (liveworkspace.app), in the order offered.
+  newApps?: readonly App[];
   onOpenItem?: (href: string, item: Item) => void;
   Link?: LinkComponent;
   basePath?: string;
@@ -248,6 +254,7 @@ export function ExplorerProvider({
   onNavigate,
   itemHref,
   onCreate,
+  newApps,
   onOpenItem,
   Link = DefaultLink,
   basePath,
@@ -385,13 +392,14 @@ export function ExplorerProvider({
       inboxHost,
       tokensUrl,
       onCreate,
+      createChoices: filter === 'all' && newApps && newApps.length > 1 ? newApps : null,
       renamingId,
       setRenamingId,
       dialog,
       openDialog,
       openNav,
       helpHref,
-      heroWords: heroWords ?? heroWordsFor(app),
+      heroWords: heroWords ?? heroWordsFor(app, filter),
       onTimeline,
       onHome,
       lensTemplates,
@@ -432,6 +440,7 @@ export function ExplorerProvider({
       inboxHost,
       tokensUrl,
       onCreate,
+      newApps,
       renamingId,
       dialog,
       openNav,

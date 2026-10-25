@@ -6,7 +6,7 @@
 import { useExplorer } from './context';
 
 export function SidebarSignInNudge({ href }: { href: string }) {
-  const { kind } = useExplorer();
+  const { words } = useExplorer();
   return (
     <a
       href={href}
@@ -19,7 +19,7 @@ export function SidebarSignInNudge({ href }: { href: string }) {
       />
       <span className="relative text-sm font-semibold text-white">Sign in to access Teams</span>
       <span className="relative text-[12.5px] leading-normal text-[#a9b8d0]">
-        Free, and your guest {kind.lowerMany} come with you.
+        Free, and your guest {words.lowerMany} come with you.
       </span>
     </a>
   );

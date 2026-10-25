@@ -196,7 +196,7 @@ export function SearchField({
   trailing?: ReactNode;
   className?: string;
 }) {
-  const { kind, lensSubjects } = useExplorer();
+  const { kind, words, lensSubjects } = useExplorer();
   const lens = useFieldLens();
   const { input, caret, context, now, setField, setInput, blur } = lens;
   const id = useId();
@@ -213,7 +213,7 @@ export function SearchField({
   // Backspace at the start selects the last pill first; a second press removes it.
   const [selectedPill, setSelectedPill] = useState(false);
   const look = SIZES[size];
-  const placeholder = `Search or filter ${kind.lowerMany}`;
+  const placeholder = `Search or filter ${words.lowerMany}`;
 
   // The header field mounting after typing in the hero takes the focus, caret at the end. A layout effect: it runs
   // in the commit that removes the hero's field, so no keystroke lands on the page between.
@@ -378,7 +378,7 @@ export function SearchField({
           ref={field}
           type="text"
           role="combobox"
-          aria-label={`Filter ${kind.lowerMany}`}
+          aria-label={`Filter ${words.lowerMany}`}
           aria-autocomplete="list"
           aria-expanded={listOpen}
           aria-controls={listId}

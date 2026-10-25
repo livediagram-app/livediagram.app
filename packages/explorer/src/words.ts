@@ -1,6 +1,6 @@
 // The words the Explorer says about what it lists. liveplanner's Explorer says "plan" everywhere; here each
 // app's own kind (Canvas, Plan, Document, Design) takes its place, and the All filter, which mixes every app,
-// says "item". New always makes the host app's kind, whatever the filter shows.
+// says "file". New always makes the host app's kind, whatever the filter shows.
 
 import {
   APP_KINDS,
@@ -39,11 +39,11 @@ export function kindWords(app: App): Words {
   return words(w.one, w.many);
 }
 
-const ITEM_WORDS = words('Item', 'Items');
+const FILE_WORDS = words('File', 'Files');
 
-/** The words a list uses: the app's kind, or "item" while it shows every app. */
+/** The words a list uses: the app's kind, or "file" while it shows every app ("12 files" sums them all). */
 export function listWords(app: App, filter: AppFilter): Words {
-  return filter === 'all' ? ITEM_WORDS : kindWords(app);
+  return filter === 'all' ? FILE_WORDS : kindWords(app);
 }
 
 // Home's hero: the question after the greeting ("Good morning, what are you planning today?") and the lead
@@ -59,9 +59,12 @@ const HERO_WORDS: Record<Kind, HeroWords> = {
   design: { question: 'what are you designing today?', lead: LEAD },
 };
 
-/** The hero's words for one app's kind. */
-export function heroWords(app: App): HeroWords {
-  return HERO_WORDS[APP_KINDS[app]];
+// The hero while the list mixes every app: no one kind's verb.
+const ALL_HERO_WORDS: HeroWords = { question: 'what are you working on today?', lead: LEAD };
+
+/** The hero's words for one app's kind, or every app's while the All filter shows them all. */
+export function heroWords(app: App, filter: AppFilter = 'app'): HeroWords {
+  return filter === 'all' ? ALL_HERO_WORDS : HERO_WORDS[APP_KINDS[app]];
 }
 
 /** The greeting by the reader's hour: morning from 5 to 11, afternoon from 12 to 17, evening the rest. */

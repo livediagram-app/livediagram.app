@@ -2,6 +2,7 @@
 
 // What a view says when it has nothing (liveplanner's ExplorerEmptyState), in the list's own words.
 
+import type { App } from '@liveworkspace/index-client';
 import type { ReactNode } from 'react';
 import { EmptyState } from '@liveworkspace/ui';
 import { FOCUS_RING, SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
@@ -22,6 +23,7 @@ import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
 import { BrowserIcon } from './host';
+import { NewItemButton } from './NewChoices';
 
 export function emptyCopy(
   view: ExplorerView,
@@ -157,8 +159,8 @@ export function EmptyPane({
   view: ExplorerView;
   compact?: boolean;
   words: Words;
-  /** New, offered where the view's words call for it. */
-  onCreate?: () => void;
+  /** New, offered where the view's words call for it: the host's kind, or the chosen app's (NewItemButton). */
+  onCreate?: (app?: App) => void;
   createLabel?: string;
   children?: ReactNode;
 }) {
@@ -171,10 +173,12 @@ export function EmptyPane({
       compact={compact}
     >
       {copy.cta && onCreate ? (
-        <button type="button" onClick={onCreate} className={EMPTY_CTA}>
-          <PlusIcon size={14} />
-          {createLabel ?? `New ${words.one}`}
-        </button>
+        <NewItemButton
+          label={createLabel ?? `New ${words.one}`}
+          onCreate={onCreate}
+          icon={<PlusIcon size={14} />}
+          className={EMPTY_CTA}
+        />
       ) : null}
       {children}
     </EmptyState>

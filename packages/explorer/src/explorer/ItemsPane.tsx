@@ -6,7 +6,7 @@
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
 
 import { useEffect, useMemo, useRef } from 'react';
-import type { Folder } from '@liveworkspace/index-client';
+import type { App, Folder } from '@liveworkspace/index-client';
 import { folderPath, type FolderStore } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
 import { useOtherApps } from '../data/useOtherApps';
@@ -113,7 +113,11 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
             .then((made) => made && ctx.setRenamingId(made.id));
         }
       : undefined;
-  const createItem = place ? () => onCreate(place) : undefined;
+  const createItem = place
+    ? (app?: App) => (app ? onCreate(place, app) : onCreate(place))
+    : undefined;
+  // The empty states' one button makes the host app's kind.
+  const createOwn = createItem ? () => createItem() : undefined;
 
   const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;
   // Empty in this app, a place may still hold other apps' items: say so, so it is never deleted as empty.
@@ -167,7 +171,7 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
     />
   ) : empty && others ? (
-    <OtherAppsHere view={view} others={others} onCreate={createItem} />
+    <OtherAppsHere view={view} others={others} onCreate={createOwn} />
   ) : empty ? (
     <EmptyPane
       view={view}

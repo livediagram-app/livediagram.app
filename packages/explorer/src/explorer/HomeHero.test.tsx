@@ -141,6 +141,25 @@ describe('Home’s hero', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
+  it('under All counts files, asks no one app’s question, and New asks which app', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1), makeItem(2, { app: 'livediagram', kind: 'canvas' })],
+    });
+    const { onCreate } = renderHome(index, {
+      filter: 'all',
+      newApps: ['livediagram', 'liveplanner'],
+    });
+    expect(await screen.findByRole('link', { name: '2 files' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain(
+      'what are you working on today?',
+    );
+    const newButton = screen.getByRole('button', { name: 'New' });
+    expect(newButton.getAttribute('aria-haspopup')).toBe('menu');
+    fireEvent.click(newButton);
+    fireEvent.click(screen.getByRole('menuitem', { name: /New Canvas/ }));
+    expect(onCreate).toHaveBeenCalledWith({ folderId: null, teamId: null }, 'livediagram');
+  });
+
   it('counts what this browser keeps beside My Work, its trashed ones not', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     const kept = (n: number, trashedAt: number | null = null) => ({

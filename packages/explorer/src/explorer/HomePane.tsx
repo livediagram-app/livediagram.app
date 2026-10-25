@@ -269,13 +269,13 @@ export function phoneOrder(items: ShownItem[]): ShownItem[] {
 
 // Jump Back In with nothing opened yet: the Explorer's one empty state, as every other list shows it.
 function HomeEmpty() {
-  const { kind } = useExplorer();
+  const { words } = useExplorer();
   return (
     <EmptyState
       compact
       icon={<ClockIcon />}
-      title={`No ${kind.lowerMany} yet`}
-      description={`The ${kind.lowerMany} you open will gather here.`}
+      title={`No ${words.lowerMany} yet`}
+      description={`The ${words.lowerMany} you open will gather here.`}
     />
   );
 }

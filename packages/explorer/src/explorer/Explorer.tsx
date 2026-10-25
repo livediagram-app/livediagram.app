@@ -73,8 +73,11 @@ export type ExplorerProps = {
   onNavigate: (view: ExplorerView, href: string, options?: NavigateOptions) => void;
   /** An item's address in its own app (another app's item opens there), optionally at a tab and element. */
   itemHref: ItemHref;
-  /** New: make an item of this app's kind at this placement, then open it. */
-  onCreate: (placement: Placement) => void;
+  /** New: make an item of this app's kind (or `app`'s, one of `newApps`) at this placement, then open it. */
+  onCreate: (placement: Placement, app?: App) => void;
+  /** Where the list can show every app (the All filter): the apps New offers, as a choice. Without it, or with
+   *  one app, New makes this app's kind. */
+  newApps?: readonly App[];
   /** A preview for a row (small) or a card (large); without it rows show the kind's icon. */
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
@@ -267,6 +270,7 @@ function ExplorerInner({
   onNavigate,
   itemHref,
   onCreate,
+  newApps,
   renderThumbnail,
   renderItemMark,
   renderAppLogo,
@@ -340,6 +344,7 @@ function ExplorerInner({
       onNavigate={navigate}
       itemHref={itemHref}
       onCreate={onCreate}
+      newApps={newApps}
       onOpenItem={onOpenItem}
       Link={Link}
       basePath={basePath}

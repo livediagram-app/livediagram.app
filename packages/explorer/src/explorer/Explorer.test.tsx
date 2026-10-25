@@ -148,6 +148,32 @@ describe('<Explorer>', () => {
     expect(await screen.findAllByText('New Canvas')).not.toHaveLength(0);
   });
 
+  it('offers each app’s New under All where the host passes newApps, and only the host’s under This app', async () => {
+    const { onCreate } = renderExplorer(
+      createFakeIndex(),
+      { kind: 'folder', id: 'f9' },
+      {
+        newApps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
+      },
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Create' }));
+    expect(screen.queryByRole('menuitem', { name: /New Canvas/ })).toBeNull();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'New Plan' }));
+    expect(onCreate).toHaveBeenLastCalledWith({ folderId: 'f9', teamId: null });
+    fireEvent.click(screen.getByRole('button', { name: 'All' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Create' }));
+    const tiles = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(tiles).toEqual([
+      'New Canvaslivediagram',
+      'New Planliveplanner',
+      'New Documentlivedocuments',
+      'New Designlivedesign',
+      'New Subfolder',
+    ]);
+    fireEvent.click(screen.getByRole('menuitem', { name: /New Design/ }));
+    expect(onCreate).toHaveBeenLastCalledWith({ folderId: 'f9', teamId: null }, 'livedesign');
+  });
+
   it('shows every app’s items with their marks under All, each linking to its own app', async () => {
     const index = createFakeIndex({
       items: [makeItem(1), makeItem(2, { app: 'livediagram', kind: 'canvas', title: 'Flow' })],

@@ -11,6 +11,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { ItemCount } from '../data/useItemCount';
 import { inboxTotal } from './inbox/sections';
 import { CloseIcon, HamburgerIcon, HelpMarkIcon, PlusIcon } from '../ui/icons';
+import { NewItemButton } from './NewChoices';
 import { FOCUS_RING } from '../ui/classes';
 import type { ExplorerView } from '../views';
 import { heroGreeting, type Words } from '../words';
@@ -100,7 +101,8 @@ export function HomeHero({
   /** Hides the banner for good (the host's setting, or this browser's). */
   onHide?: () => void;
 }) {
-  const { kind, inbox, viewerId, viewHref, navigate, onCreate, openNav, heroWords } = useExplorer();
+  const { kind, words, inbox, viewerId, viewHref, navigate, onCreate, openNav, heroWords } =
+    useExplorer();
   const hour = useHour();
   const { heroFirstRun, welcome } = useFirstRun();
   // A first run greets rather than asks what the person is doing today, and searches templates, not their work.
@@ -115,7 +117,7 @@ export function HomeHero({
             tone: 'sky' as const,
           },
         ].filter((p) => p.label)
-      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, kind);
+      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, words);
   const greeting = firstRun
     ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
     : hour === null
@@ -125,16 +127,17 @@ export function HomeHero({
   const lead = firstRun ? WELCOME_COPY.lead : heroWords.lead;
 
   const newItem = (
-    <button
-      type="button"
-      aria-label={`New ${kind.one}`}
-      onClick={() => onCreate({ folderId: null, teamId: null })}
+    <NewItemButton
+      label={`New ${kind.one}`}
+      onCreate={(app) =>
+        app
+          ? onCreate({ folderId: null, teamId: null }, app)
+          : onCreate({ folderId: null, teamId: null })
+      }
+      icon={<PlusIcon size={14} />}
+      iconOnlyOnPhone
       className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
-    >
-      <PlusIcon size={14} />
-      {/* The label folds to the plus on a phone; the button keeps its name. */}
-      <span className="hidden sm:inline">New {kind.one}</span>
-    </button>
+    />
   );
 
   return (

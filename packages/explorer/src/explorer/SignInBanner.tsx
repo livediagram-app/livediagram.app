@@ -20,7 +20,7 @@ const SignInReasons = lazy(() =>
 export const SIGN_IN_BANNER_KEY = 'liveworkspace:explorer-signin-banner-dismissed';
 
 export function SignInBanner({ href, host }: { href: string; host: SignInBannerHost }) {
-  const { kind } = useExplorer();
+  const { words } = useExplorer();
   // Read after the first paint, so a prerendered page and the browser agree.
   const [dismissed, setDismissed] = useState(true);
   const [reasons, setReasons] = useState(false);
@@ -46,7 +46,7 @@ export function SignInBanner({ href, host }: { href: string; host: SignInBannerH
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
             <p className="mt-0.5 text-xs text-white/90 sm:text-sm">
-              Share with your team, build with AI, and keep your {kind.lowerMany} on every device.
+              Share with your team, build with AI, and keep your {words.lowerMany} on every device.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">

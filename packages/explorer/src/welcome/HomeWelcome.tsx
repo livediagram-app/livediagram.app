@@ -12,6 +12,7 @@ import { useExplorer } from '../explorer/context';
 import { useFirstRun } from './context';
 import { useLibraryHost } from '../library/context';
 import { ImportToolbar } from '../library/ImportToolbar';
+import { NewItemButton } from '../explorer/NewChoices';
 import { importLine, signInLine, WELCOME_COPY, type WelcomeStart } from './types';
 
 const SECTION_HEADING =
@@ -126,7 +127,7 @@ function StartSkeleton({ count, tall }: { count: number; tall: boolean }) {
 
 export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
   const { welcome } = useFirstRun();
-  const { kind } = useExplorer();
+  const { kind, words } = useExplorer();
   const { imports } = useLibraryHost();
   const onOpened = welcome?.onOpened;
   useEffect(() => {
@@ -192,7 +193,7 @@ export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
                   {WELCOME_COPY.signInTitle}
                 </h3>
                 <p className="relative text-sm leading-relaxed text-[#a9b8d0]">
-                  {signInLine(m?.name ?? 'liveworkspace', kind.lowerMany)}
+                  {signInLine(m?.name ?? 'liveworkspace', words.lowerMany)}
                 </p>
                 <a
                   href={welcome.signInHref}
@@ -228,8 +229,11 @@ export function HomeWelcome({ withSearch = false }: { withSearch?: boolean }) {
 
 /** The first run's field: the hero's large field, searching the app's templates (there is nothing of the
  *  person's to search). Enter opens the app's New wizard on the words; Start Blank sits inside its end. */
+const START_BLANK = `flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`;
+
 export function WelcomeSearch() {
   const { welcome } = useFirstRun();
+  const { createChoices, onCreate } = useExplorer();
   const [words, setWords] = useState('');
   const m = welcome?.manifest ?? null;
   return (
@@ -257,17 +261,33 @@ export function WelcomeSearch() {
           autoComplete="off"
           className="h-full min-w-[8rem] flex-1 bg-transparent text-base text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-400"
         />
-        <a
-          href={m?.startBlankHref ?? '#'}
-          aria-label={WELCOME_COPY.startBlank}
-          aria-disabled={!m || undefined}
-          onClick={() => welcome?.onSelected?.('Welcome.StartBlank')}
-          className={`flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
-        >
-          <PlusIcon size={14} />
-          {/* The label folds to the plus on a phone; the link keeps its name. */}
-          <span className="hidden sm:inline">{WELCOME_COPY.startBlank}</span>
-        </a>
+        {createChoices ? (
+          // Every app's on offer (liveworkspace.app in no app): which app's blank, first.
+          <NewItemButton
+            label={WELCOME_COPY.startBlank}
+            onCreate={(app) =>
+              app
+                ? onCreate({ folderId: null, teamId: null }, app)
+                : onCreate({ folderId: null, teamId: null })
+            }
+            onPressed={() => welcome?.onSelected?.('Welcome.StartBlank')}
+            icon={<PlusIcon size={14} />}
+            iconOnlyOnPhone
+            className={START_BLANK}
+          />
+        ) : (
+          <a
+            href={m?.startBlankHref ?? '#'}
+            aria-label={WELCOME_COPY.startBlank}
+            aria-disabled={!m || undefined}
+            onClick={() => welcome?.onSelected?.('Welcome.StartBlank')}
+            className={START_BLANK}
+          >
+            <PlusIcon size={14} />
+            {/* The label folds to the plus on a phone; the link keeps its name. */}
+            <span className="hidden sm:inline">{WELCOME_COPY.startBlank}</span>
+          </a>
+        )}
       </div>
     </form>
   );

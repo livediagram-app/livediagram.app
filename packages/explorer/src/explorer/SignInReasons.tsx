@@ -17,15 +17,15 @@ export function SignInReasons({
   onSignIn: () => void;
   onClose: () => void;
 }) {
-  const { kind } = useExplorer();
+  const { words } = useExplorer();
   const reasons = [
     {
-      title: `Keep your ${kind.lowerMany} safe`,
-      body: `A guest's ${kind.lowerMany} are tied to this browser, so clearing its data can lose them. Signing in keeps them with your account.`,
+      title: `Keep your ${words.lowerMany} safe`,
+      body: `A guest's ${words.lowerMany} are tied to this browser, so clearing its data can lose them. Signing in keeps them with your account.`,
     },
     {
       title: 'Open them anywhere',
-      body: `Your ${kind.lowerMany} wait for you on your laptop, desktop and phone.`,
+      body: `Your ${words.lowerMany} wait for you on your laptop, desktop and phone.`,
     },
     {
       title: 'Work as a team',

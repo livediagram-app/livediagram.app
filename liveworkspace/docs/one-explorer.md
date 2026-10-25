@@ -99,7 +99,11 @@ letter. Its title and a screen-reader label say "<Kind> in <app>". It is a state
 motion, so a list of thousands pays for paths only.
 
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
-Canvas, and so on. It goes to the app's new-item route, where the app creates the Durable Object and
+Canvas, and so on. On liveworkspace.app in no app, where the list shows every app, New (the hero's and the pane's
+Create) is a menu of every app's kind, each with its logo and its app's name; New Folder sits beside them where the
+view takes one. Words about the person's whole collection follow the list: under All Apps they are **files** ("12
+files", "Keep your files safe"), and the hero asks "what are you working on today?"; words about one item keep its
+app's kind. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
 What a browser keeps offline belongs to its app's origin. On the app's address the Explorer lists it

@@ -5,6 +5,7 @@
 // has an article for the view), and Create (New <kind> and New Folder as two tiles in one menu where both
 // apply, else the one button).
 
+import type { App } from '@liveworkspace/index-client';
 import { useState, type ReactNode } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { PortalMenu } from '../ui/Menu';
@@ -21,6 +22,7 @@ import {
 import { siteOf, type AppFilter } from '../words';
 import { useExplorer } from './context';
 import { HelpButton } from './HomeHero';
+import { ChoiceTile, NewChoices } from './NewChoices';
 import { useHostExtras } from './host';
 import { useExtras, type ViewModeTelemetry } from './extras';
 import { HoverCard } from '@liveworkspace/ui';
@@ -43,7 +45,8 @@ export function PaneHeader({
 }: {
   title: string;
   crumbs?: Crumb[];
-  onCreateItem?: () => void;
+  // New: the host app's kind, or `app`'s when New offers a choice (createChoices).
+  onCreateItem?: (app?: App) => void;
   onCreateFolder?: () => void;
   folderLabel?: string;
   onOpenNav?: () => void;
@@ -52,15 +55,17 @@ export function PaneHeader({
   onSetViewMode?: (mode: ViewMode) => void;
   showFilter?: boolean;
 }) {
-  const { kind, helpHref, view } = useExplorer();
+  const { kind, helpHref, view, createChoices } = useExplorer();
   const help = helpHref?.(view);
   const [createOpen, setCreateOpen] = useState(false);
   const [createButton, setCreateButton] = useState<HTMLButtonElement | null>(null);
-  const both = Boolean(onCreateItem && onCreateFolder);
+  // Every app's New (and New Folder) in one menu while the list mixes every app.
+  const choices = onCreateItem ? createChoices : null;
+  const both = Boolean(onCreateItem && onCreateFolder) || Boolean(choices);
   const single = both
     ? null
     : onCreateItem
-      ? { label: `New ${kind.one}`, onClick: onCreateItem }
+      ? { label: `New ${kind.one}`, onClick: () => onCreateItem() }
       : onCreateFolder
         ? { label: folderLabel, onClick: onCreateFolder }
         : null;
@@ -116,25 +121,47 @@ export function PaneHeader({
           ) : null}
           {createOpen && both ? (
             <PortalMenu anchor={createButton} onClose={() => setCreateOpen(false)} label="Create">
-              {/* Icon-over-label tiles, two across: bigger targets than thin rows. */}
-              <div className="grid grid-cols-2 gap-1 px-1.5 py-0.5">
-                <MenuTile
-                  label={`New ${kind.one}`}
-                  icon={<ItemIcon size={20} />}
-                  onClick={() => {
+              {choices ? (
+                <NewChoices
+                  apps={choices}
+                  onPick={(app) => {
                     setCreateOpen(false);
-                    onCreateItem!();
+                    onCreateItem!(app);
                   }}
+                  after={
+                    onCreateFolder ? (
+                      <ChoiceTile
+                        label={folderLabel}
+                        icon={<FolderOutlineIcon size={20} />}
+                        onClick={() => {
+                          setCreateOpen(false);
+                          onCreateFolder();
+                        }}
+                      />
+                    ) : null
+                  }
                 />
-                <MenuTile
-                  label={folderLabel}
-                  icon={<FolderOutlineIcon size={20} />}
-                  onClick={() => {
-                    setCreateOpen(false);
-                    onCreateFolder!();
-                  }}
-                />
-              </div>
+              ) : (
+                /* Icon-over-label tiles, two across: bigger targets than thin rows. */
+                <div className="grid grid-cols-2 gap-1 px-1.5 py-0.5">
+                  <MenuTile
+                    label={`New ${kind.one}`}
+                    icon={<ItemIcon size={20} />}
+                    onClick={() => {
+                      setCreateOpen(false);
+                      onCreateItem!();
+                    }}
+                  />
+                  <MenuTile
+                    label={folderLabel}
+                    icon={<FolderOutlineIcon size={20} />}
+                    onClick={() => {
+                      setCreateOpen(false);
+                      onCreateFolder!();
+                    }}
+                  />
+                </div>
+              )}
             </PortalMenu>
           ) : null}
         </div>

@@ -51,7 +51,7 @@ function TeamMembersSkeleton() {
 }
 
 function TeamNotFound() {
-  const { navigate, kind } = useExplorer();
+  const { navigate, words } = useExplorer();
   return (
     <div className="flex items-center justify-center px-6 py-16" data-team-not-found="">
       <div className="flex max-w-md flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30">
@@ -61,14 +61,14 @@ function TeamNotFound() {
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           This team doesn’t exist, or you’re not a member of it. Ask an admin for an invite, or head
-          back to your own {kind.lowerMany}.
+          back to your own {words.lowerMany}.
         </p>
         <button
           type="button"
           onClick={() => navigate({ kind: 'all' })}
           className="mt-6 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
         >
-          Back to your {kind.lowerMany}
+          Back to your {words.lowerMany}
         </button>
       </div>
     </div>

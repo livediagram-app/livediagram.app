@@ -59,7 +59,7 @@ import {
   thisBrowserKey,
 } from '@liveworkspace/explorer/this-browser';
 import { BrandMark } from '@livediagram/ui';
-import { APP_ITEMS, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
@@ -330,8 +330,10 @@ export function ExplorerShell() {
     },
     [router],
   );
+  // New makes the chosen app's kind, where the page offers every app's (newApps), else this app's.
   const onCreate = useCallback(
-    (placement: Placement) => window.location.assign(newItemHref(app, placement)),
+    (placement: Placement, chosen?: AppName) =>
+      window.location.assign(newItemHref(chosen ?? app, placement)),
     [app],
   );
   const teams = useMemo(() => teamsOfToken(identity?.token ?? null), [identity]);
@@ -558,6 +560,7 @@ export function ExplorerShell() {
           onNavigate={onNavigate}
           itemHref={itemHref}
           onCreate={onCreate}
+          {...(host ? {} : { newApps: APP_NAMES })}
           renderThumbnail={renderPreview}
           prefetchThumbnail={prefetchPreview}
           Link={ExplorerLink}
