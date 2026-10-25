@@ -63,9 +63,6 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service, until
-  // they are migrated. Previews are liveworkspace's now (liveworkspace/docs/previews.md); nothing here writes it.
-  IMAGES?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

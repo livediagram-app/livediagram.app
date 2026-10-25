@@ -44,7 +44,7 @@ export function makeTestRouteContext(
     grant?: ItemGrant | null;
     // The canvas's Community post's link, as its room reads it.
     community?: { code: string; open: boolean } | null;
-    // Per-test bindings (e.g. the images tests' IMAGES stub); an empty
+    // Per-test bindings (e.g. the images tests' media stub); an empty
     // Env otherwise.
     env?: Env | DocumentEnv;
     // Provide to observe background dispatches; absent = the unit-test

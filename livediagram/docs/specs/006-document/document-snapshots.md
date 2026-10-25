@@ -239,6 +239,6 @@ document, so a per-card badge is noise — the team list omits it as well).
 ## Without optional services
 
 Pictures come from liveworkspace's media service. A deploy without `MEDIA_KEY` has no image service and no export
-door key from it: the Explorer row shows its sketch and a link previews with the brand card. livediagram's own
-`IMAGES` bucket is no longer part of this feature; it is kept only for image bytes uploaded before images moved to
-the media service.
+door key from it: the Explorer row shows its sketch and a link previews with the brand card. livediagram has no
+bucket of its own: the image bytes uploaded before images moved to the media service are still in the previous
+Cloudflare account's `livediagram-images` bucket, until they are migrated.

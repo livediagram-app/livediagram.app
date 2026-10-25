@@ -188,7 +188,6 @@ export async function probeDispatch(
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder canvas, so a canvas route reaches its own routing instead of answering "no access".
   const env = {
-    IMAGES: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     PERSON_STORE: trap('PERSON_STORE'),
     TELEMETRY_ENABLED: 'true',

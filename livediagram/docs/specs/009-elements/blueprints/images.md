@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/api/src/index.ts`                                 | Pre-dispatch size gate, write limiter                                   |
 | `apps/api/src/document-room/document-outbox.ts`         | Sends a document's image set to the service as it changes               |
 | `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the drawing the export door gives the previews |
-| `apps/api/wrangler.toml`                                | `IMAGES` bucket (legacy image bytes only), `MEDIA_KEY` note             |
+| `apps/api/wrangler.toml`                                | `MEDIA_KEY` note (no bucket of its own)                                 |
 | `apps/api/hosted-vars.json`                             | Hosted livediagram.app's `MEDIA_URL` per environment                    |
 | `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
 | `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
@@ -319,8 +319,9 @@ read a 503 as `null` and `{}`.
   `mediaImageOwner`'s memo, and per document in its `image_owners` (an account id, a media guest
   owner, or `''` for an id the service does not know) beside its `image_grants`
   ([Image reference index](image-reference-index.md#data-and-persistence)).
-- **R2 `IMAGES`** keeps only the image bytes uploaded before the move, unserved; document previews are
-  liveworkspace's ([Document SVG snapshots](../../006-document/document-snapshots.md)).
+- **No bucket of its own.** The image bytes uploaded before the move are still in the previous Cloudflare
+  account's `livediagram-images` bucket, unserved, until they are migrated into the media service; document
+  previews are liveworkspace's ([Document SVG snapshots](../../006-document/document-snapshots.md)).
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: the owner and the hash (`imageSummary` also drops `app`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image

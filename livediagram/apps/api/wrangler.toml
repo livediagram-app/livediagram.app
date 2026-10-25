@@ -66,12 +66,9 @@ OAUTH_ISSUER = "https://mcp.livediagram.app"
 # Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
 # shows no Drive entry, which is the default when unset.
 
-# R2 bucket kept only for the image bytes uploaded before images moved to liveworkspace's media service
-# (MEDIA_KEY below), until they are migrated. Snapshots and share cards are liveworkspace's previews now
-# (liveworkspace/docs/previews.md), so nothing writes here; its old thumb/ and share-card objects can go.
-[[r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livediagram-images"
+# No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
+# its previews (liveworkspace/docs/previews.md). The bytes uploaded before that move are still in the previous
+# Cloudflare account's livediagram-images bucket, until they are migrated into the media service.
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -329,11 +326,6 @@ OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
 # No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.
-
-# Own bucket, kept like production's only for legacy uploaded image bytes.
-[[env.staging.r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livediagram-images-staging"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livediagram-api-staging` is a different

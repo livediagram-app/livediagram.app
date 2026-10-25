@@ -18,7 +18,6 @@ reaches people's documents.
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `livediagram-<app>`                  | `livediagram-<app>-staging`                |
 | Index        | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
-| R2           | `livediagram-images`                 | `livediagram-images-staging`               |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
@@ -72,7 +71,7 @@ prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **R2 bucket** and **KV namespace**, and talks to liveworkspace's
+Staging gets its own **KV namespace**, and talks to liveworkspace's
 staging services (`staging.liveworkspace.app`: the index, media, Community and telemetry).
 Durable Objects come free: a different script is a different DO namespace, so the staging
 `DOCUMENT_ROOM` (and every document's content in it), `PERSON_STORE` and `WORKBENCH` are
@@ -206,14 +205,13 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the two data stores exist:
+**Done** — the data store exists:
 
-| Resource | Name                         | Where the id lives       |
-| -------- | ---------------------------- | ------------------------ |
-| R2       | `livediagram-images-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
+| Resource | Name                   | Where the id lives       |
+| -------- | ---------------------- | ------------------------ |
+| KV       | `mcp-oauth-kv-staging` | `apps/mcp/wrangler.toml` |
 
-They were created in `ENAM`, Cloudflare's default for the account rather than a
+It was created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
 staging ever needs to reproduce production's read latency, that is the knob.
 
