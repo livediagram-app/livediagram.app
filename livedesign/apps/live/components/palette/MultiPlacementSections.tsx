@@ -8,7 +8,6 @@ import {
   type ShapeElement,
 } from '@livedesign/design';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
@@ -33,6 +32,7 @@ import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import { Switch } from '@livedesign/ui';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -128,11 +128,7 @@ export function MultiPlacementSections({
                 </span>
                 Lock Aspect Ratio
               </span>
-              <ToggleSwitch
-                presentational
-                checked={!!boxedSel[0]!.aspectLocked}
-                label="Lock Aspect Ratio"
-              />
+              <Switch presentational size="sm" checked={!!boxedSel[0]!.aspectLocked} />
             </button>
           </>
         ) : null}

@@ -4,10 +4,9 @@
 // "The device grant"): the Night Band frame (docs/specs/014-identity/
 // auth-and-guest-access.md "The look: Night Band") with the connect pitch beside the card, and the help link to the
 // connect-an-AI-tool article.
-import { Glyph, SOLID_BRAND_DARK_CONTROL } from '@livedesign/ui';
+import { Glyph, SOLID_BRAND_DARK_CONTROL, Switch } from '@livedesign/ui';
 import { AuthStage } from '@/components/chrome/AuthStage';
 import { ConnectPitch } from '@/components/chrome/auth-pitches';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 // The primary action of every page in the shell (Allow, Approve, Continue). White on brand-700 in light
 // (about 5.9:1; brand-600 was 4.1:1, under WCAG 2.2 AA), darker still on hover; the shared solid brand
@@ -60,7 +59,7 @@ export function ReadOnlyAccessToggle({
         for full read + write.
       </span>
       <span className="mt-0.5 shrink-0">
-        <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
+        <Switch presentational size="sm" checked={readOnly} />
       </span>
     </button>
   );

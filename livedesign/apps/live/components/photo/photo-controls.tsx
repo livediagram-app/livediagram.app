@@ -3,7 +3,7 @@
 // The photo chrome's small controls (docs/specs/031-photo/photo-pages.md "The options flyout"): a slider
 // that shows its value and takes typing, a toggle and a choice, each labelled for a screen reader,
 // at the strip's height.
-import { Select } from '@livedesign/ui';
+import { Select, SwitchChip } from '@livedesign/ui';
 import { SliderRow } from './flyout-controls';
 
 const LABEL = 'shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400';
@@ -56,11 +56,9 @@ export function OptionToggle({
   onChange: (on: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={() => onChange(!on)}
+    <SwitchChip
+      checked={on}
+      onChange={onChange}
       className={`shrink-0 rounded-md border px-2 py-1 text-[11px] font-medium ${
         on
           ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
@@ -68,7 +66,7 @@ export function OptionToggle({
       }`}
     >
       {label}
-    </button>
+    </SwitchChip>
   );
 }
 
