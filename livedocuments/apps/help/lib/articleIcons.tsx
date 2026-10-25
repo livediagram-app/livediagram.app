@@ -377,16 +377,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <circle cx="19" cy="7.5" r="1.2" />
     </Glyph>
   ),
-  // A server with a plug beneath it: the MCP Worker a deployment runs.
-  'mcp-server': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="7" rx="1.5" />
-      <path d="M7 6.5h.01" />
-      <path d="M10 13v2.5M14 13v2.5" />
-      <path d="M8.5 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
-      <path d="M12 20.5v1.5" />
-    </Glyph>
-  ),
 };
 
 /** Document glyph: the fallback for any support article without a bespoke icon
