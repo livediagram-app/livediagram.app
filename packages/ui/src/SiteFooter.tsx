@@ -72,7 +72,6 @@ const columns = ({
     links: [
       { href: `${PLATFORM_SITE.url}/terms`, label: TERMS_LABEL },
       { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
-      { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).
       { href: '/help/policies/report-a-vulnerability/', label: 'Report a Vulnerability' },
       // Third-party licences (docs/specs/002-project-scope/third-party-licences.md).

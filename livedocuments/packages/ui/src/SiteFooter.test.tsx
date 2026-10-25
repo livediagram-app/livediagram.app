@@ -22,7 +22,6 @@ describe('SiteFooter', () => {
     expect(labels.slice(labels.indexOf('Terms of Use'))).toEqual([
       'Terms of Use',
       'Privacy Policy',
-      'Data &amp; Security',
       'Report a Vulnerability',
       'Licences',
       'Contact',
