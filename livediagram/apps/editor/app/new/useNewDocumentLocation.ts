@@ -24,8 +24,12 @@ export function useNewDocumentLocation(opts: {
   const resolveSaveLocation = async (
     hasPlacementParams: boolean,
     settle: () => Promise<unknown>,
+    // The wizard's Sync Canvas to Server switch, once the person has flipped it (save-locations.md "On the start
+    // screen"); null follows the default.
+    chosen: SaveLocationId | null = null,
   ): Promise<SaveLocationId> => {
     if (hasPlacementParams) return 'livediagram';
+    if (chosen) return chosen;
     if (!latest.current.authLoaded && latest.current.signedInHint) await settle();
     const now = latest.current;
     const location = defaultSaveLocationFor({
@@ -35,5 +39,8 @@ export function useNewDocumentLocation(opts: {
     return location;
   };
 
-  return { resolveSaveLocation };
+  // Whether the person looks signed in now, for the wizard's switch before anything is flipped: the settled answer, or
+  // the hint until sign-in answers.
+  const signedIn = opts.authLoaded ? !!opts.accountUserId : signedInHint;
+  return { resolveSaveLocation, signedIn };
 }

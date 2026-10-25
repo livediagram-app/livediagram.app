@@ -218,6 +218,8 @@ in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
 the move prompt ([Auth + guest access → Moving projects in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-projects-in-this-browser-after-signing-in)).
 
+On a fresh, unshared plan's start screen the **Sync Plan to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
+
 ### Sharing a project in This Browser
 
 Share is how most people find out a project needs the server. Pressing it never
@@ -266,6 +268,23 @@ reload:
 
 The Explorer's row menu and the move prompt after signing in still reload after a
 sync: the project there is not the one on screen, or several move at once.
+
+### Taking offline in place
+
+Take Offline from the start screen's **Sync Plan to Server** switch
+([Save Locations → On the start screen](save-locations.md#on-the-start-screen)), `useTakeOfflineInPlace` in
+`app/project/[id]/useTakeOfflineInPlace.ts`, converts the open plan without a reload and without the confirmation: the
+switch only shows on a fresh plan nobody else has, so there is nothing to lose.
+
+1. **It waits for this browser's last save**, as a sync in place does (`SYNC_SAVE_WAIT_MS`, then
+   `SyncStillSavingError`).
+2. **It closes the room first** (`projectServerStored` turns false), so the server delete's echo never reaches the open
+   editor as a deletion. A failure opens it again and the plan stays on the server.
+3. **It takes the plan offline** with `takeCloudOffline`, exactly as Take Offline below.
+4. **The offline index announces the move**: the header badge and every `useIsOfflineProject` follow, and every later save
+   goes to IndexedDB by the plan's id.
+5. **The template-pick note is dropped** (a template picked now has no server folder to go to), the move prompt after
+   signing in is told the plan stays here, and the Explorer list refreshes.
 
 ### Save to server (Offline → Cloud)
 

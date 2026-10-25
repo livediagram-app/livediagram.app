@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { Button, CloseIcon, useEscape } from '@livediagram/ui';
 import type { EditorMode } from '@livediagram/document';
 import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livediagram/templates';
@@ -22,6 +22,7 @@ export function NewDocumentWizard({
   onSkip,
   onBackOut,
   onOpenExisting,
+  saveSwitch,
 }: {
   // The create is in flight: Create shows its spinner and nothing else creates.
   busy?: boolean;
@@ -35,6 +36,9 @@ export function NewDocumentWizard({
   onBackOut: () => void;
   // To the Explorer, to open a document that exists.
   onOpenExisting?: () => void;
+  // Where the new canvas will be saved: the Sync Canvas to Server switch, under the modes
+  // (docs/specs/006-document/save-locations.md "On the start screen"). Absent where /new names a server place.
+  saveSwitch?: ReactNode;
 }) {
   useModalGuard(true);
   const [chosen, setChosen] = useState<EditorMode | null>(null);
@@ -86,6 +90,11 @@ export function NewDocumentWizard({
       <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
         <NewDocumentModeStep selected={mode} creating={busy} onChoose={create} />
       </div>
+      {saveSwitch ? (
+        <div className="border-t border-slate-100 px-6 py-1.5 dark:border-slate-800">
+          {saveSwitch}
+        </div>
+      ) : null}
       <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
         {onOpenExisting ? (
           <button

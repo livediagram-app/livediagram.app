@@ -114,6 +114,7 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
+import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
 import { useAutosave } from './useAutosave';
 import { useProjectTrashed } from './useProjectTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
@@ -686,6 +687,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Sync Project from the Share dialog, with no reload (docs/specs/006-project/offline-mode.md "Syncing
   // in place").
   const syncToCloud = useSyncInPlace({
+    projectId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    setProjectServerStored: realtime.setProjectServerStored,
+    refreshProjectList: () => refreshProjectList(),
+  });
+  // Take Offline in place, for the start screen's switch (docs/specs/006-project/offline-mode.md "Taking offline in place").
+  const takeOfflineInPlace = useTakeOfflineInPlace({
     projectId,
     ownerId: selfParticipant.id,
     hasUnsavedChanges,
@@ -2476,6 +2485,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
     syncToCloud,
+    takeOfflineInPlace,
+    // Whether sign-in has answered, so the start screen's switch never words a signed-in person as a guest.
+    authLoaded,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

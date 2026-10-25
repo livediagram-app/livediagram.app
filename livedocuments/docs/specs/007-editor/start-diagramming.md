@@ -119,6 +119,14 @@ A `/new?q=<words>` link (the marketing site's **Build yours**, a gallery search)
 new document's start, so the templates it meant are the ones shown. They are kept for the browser tab only and read
 once (`start-query.ts`).
 
+## Where it is saved
+
+Under the choices, a quiet strip holds the **Sync Document to Server** switch: where this document is saved, with a line that
+says what that means, and the switch to move it while it is still empty
+([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)).
+It shows only on a fresh document that is the reader's alone; anywhere else the strip is not drawn. The panel draws it
+through its `footer`, in the panel's own colours.
+
 ## Look
 
 - **The tab's colours.** The panel's paper is the tab's canvas colour, its accent (the chosen category, the focus

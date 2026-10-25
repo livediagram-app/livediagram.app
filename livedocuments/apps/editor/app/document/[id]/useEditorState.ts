@@ -109,6 +109,7 @@ import {
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
+import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
@@ -730,6 +731,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     hasUnsavedChanges,
     resetTabs,
     lastSavedTabsRef,
+    setDocumentServerStored: realtime.setDocumentServerStored,
+    refreshDocumentList: () => refreshDocumentList(),
+  });
+  // Take Offline in place, for the start screen's switch (docs/specs/006-document/offline-mode.md "Taking offline in place").
+  const takeOfflineInPlace = useTakeOfflineInPlace({
+    documentId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
     setDocumentServerStored: realtime.setDocumentServerStored,
     refreshDocumentList: () => refreshDocumentList(),
   });
@@ -2515,6 +2524,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
     syncToCloud,
+    takeOfflineInPlace,
+    // Whether sign-in has answered, so the start screen's switch never words a signed-in person as a guest.
+    authLoaded,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

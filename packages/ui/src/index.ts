@@ -98,3 +98,6 @@ export { ShareRail } from './ShareRail';
 export { SITE_FOOTER_LINK, SiteFooter, type SiteFooterProps } from './SiteFooter';
 export { ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { ExplorerLink } from './ExplorerLink';
+// The iOS-style switch, and the start screen's "Sync <Kind> to Server" row built on it (save-switch/).
+export { Switch } from './Switch';
+export * from './save-switch';

@@ -60,5 +60,39 @@ describe('useNewDocumentLocation', () => {
       const { result } = render({ authLoaded: false, accountUserId: null });
       await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livediagram');
     });
+
+    // save-locations.md "On the start screen": the wizard's switch, once flipped, decides the create.
+    it('goes where the wizard’s switch says, without waiting for identity', async () => {
+      setHint(true);
+      const settle = vi.fn(() => new Promise<void>(() => {}));
+      const guest = render({ authLoaded: true, accountUserId: null });
+      await expect(
+        guest.result.current.resolveSaveLocation(false, vi.fn(), 'livediagram'),
+      ).resolves.toBe('livediagram');
+      const waiting = render({ authLoaded: false, accountUserId: null });
+      await expect(
+        waiting.result.current.resolveSaveLocation(false, settle, 'browser'),
+      ).resolves.toBe('browser');
+      expect(settle).not.toHaveBeenCalled();
+    });
+
+    it('keeps a folder or team link on livediagram whatever the switch says', async () => {
+      const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
+      await expect(result.current.resolveSaveLocation(true, vi.fn(), 'browser')).resolves.toBe(
+        'livediagram',
+      );
+    });
+  });
+
+  describe('signedIn', () => {
+    it('is the hint until sign-in answers, then the answer', () => {
+      setHint(true);
+      const hook = render({ authLoaded: false, accountUserId: null });
+      expect(hook.result.current.signedIn).toBe(true);
+      hook.rerender({ authLoaded: true, accountUserId: null });
+      expect(hook.result.current.signedIn).toBe(false);
+      hook.rerender({ authLoaded: true, accountUserId: 'user_1' });
+      expect(hook.result.current.signedIn).toBe(true);
+    });
   });
 });
