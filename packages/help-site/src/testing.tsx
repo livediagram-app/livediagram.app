@@ -94,6 +94,13 @@ export function describeHelpSite(
       expect([...editor.categories].sort()).toEqual([...featureSlugs].sort());
     });
 
+    it('names a real article for every Start here step', () => {
+      const { steps } = home.startHere;
+      const paths = typeof steps === 'number' ? [] : steps;
+      const missing = paths.filter((p) => !articles.some((a) => `${a.categorySlug}/${a.slug}` === p));
+      expect(missing).toEqual([]);
+    });
+
     it.each(home.popular.map((t) => [t.label, t.path]))(
       'popular topic %s names a real article',
       (_, path) => {
