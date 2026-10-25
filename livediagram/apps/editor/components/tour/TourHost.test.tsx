@@ -1,14 +1,16 @@
 // @vitest-environment jsdom
 
-// The Diagram tour's offer (docs/specs/007-editor/editor-tour.md "Where it appears"): a /new handoff offers
-// the tour once the editor is ready on a Diagram tab, and waits for one when the document opened in another
-// mode; a user who has already seen it gets no offer and the stale handoff is cleared, and it stays resolved
-// even if the preference later flips back. Leaving Diagram mid-tour ends it as skipped.
+// The Diagram tour's way in (docs/specs/007-editor/editor-tour.md "Where it appears"): the footer's Start Tour button
+// offers it on a Diagram tab the person can work on, taken or not; a press there (or the Settings row) starts it, and it
+// never starts on its own. Leaving Diagram mid-tour ends it as skipped.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
-import { hasTourPending, markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
+import {
+  resetTourOffersForTests,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
+import { requestTourRelaunch } from '@/lib/diagram-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourHost } from './TourHost';
 
@@ -16,25 +18,18 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const popover = vi.hoisted(() => ({
   props: null as null | {
-    card?: string;
+    outro?: unknown;
     title?: string;
     onNext: () => void;
   },
 }));
-vi.mock('./TourPopover', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/TourPopover', () => ({
   TourPopover: (props: NonNullable<typeof popover.props>) => {
     popover.props = props;
     return null;
   },
 }));
-// The offer and the last card are the banner's (TourBanner): read the same way.
-vi.mock('./TourBanner', () => ({
-  TourBanner: (props: NonNullable<typeof popover.props>) => {
-    popover.props = props;
-    return null;
-  },
-}));
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => null,
   waitForTour: async () => null,
@@ -67,199 +62,90 @@ const editor = (over: Record<string, unknown> = {}) => {
 const writeUserPreferences = vi.fn();
 const tourSquareRemove = vi.fn((): string[] => []);
 const setSelectedId = vi.fn();
-const offered = () => track.mock.calls.some((c) => c[0] === 'UI' && c[2] === 'TourOffer');
+const started = () =>
+  track.mock.calls.some((c) => c[0] === 'UI' && c[1] === 'Started' && c[2] === 'Tour');
 
 beforeEach(() => {
   vi.useFakeTimers();
-  sessionStorage.clear();
   track.mockReset();
+  popover.props = null;
 });
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
   setActiveTour('workshop', false);
-  while (anyModalOpen()) modalClosed();
+  resetTourOffersForTests();
 });
 
 describe('TourHost offer', () => {
-  it('offers the tour after a /new handoff once ready', () => {
-    markTourPending();
+  it('offers the Diagram tour on the footer button once the editor is ready', () => {
+    editor();
+    render(<TourHost />);
+    expect(tourOffer()?.name).toBe('Diagram');
+  });
+
+  it('never starts on its own', () => {
     editor();
     render(<TourHost />);
     act(() => {
-      vi.advanceTimersByTime(800);
+      vi.advanceTimersByTime(5000);
     });
-    expect(offered()).toBe(true);
+    expect(started()).toBe(false);
+    expect(popover.props).toBeNull();
   });
 
-  it('waits until the editor is ready', () => {
-    markTourPending();
-    editor({ hydrated: false });
-    const { rerender } = render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  it('makes no offer without a handoff', () => {
+  it('starts when the button is pressed', () => {
     editor();
     render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    act(() => tourOffer()!.start());
+    expect(started()).toBe(true);
   });
 
-  // docs/specs/007-editor/editor-tour.md "Where it appears": Diagram mode only.
-  it.each(['draw', 'workshop'])(
-    'makes no offer on a tab in %s, and keeps it owed for a Diagram tab',
-    (mode) => {
-      markTourPending();
-      editor({ editorMode: { mode } });
-      const { rerender } = render(<TourHost />);
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-      expect(offered()).toBe(false);
-      expect(hasTourPending()).toBe(true);
-      editor();
-      rerender(<TourHost />);
-      act(() => {
-        vi.advanceTimersByTime(800);
-      });
-      expect(offered()).toBe(true);
-    },
-  );
-
-  it('is never owed in Workshop without a handoff', () => {
-    editor({ editorMode: { mode: 'workshop' } });
-    render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-  });
-
-  it('clears a stale handoff for a user who has seen it, and stays resolved', () => {
-    markTourPending();
+  it('stays on offer once the tour has been taken, so it can be taken again', () => {
     editor({ userPreferences: { tourSeen: true } });
-    const { rerender } = render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    expect(hasTourPending()).toBe(false);
-    editor({ userPreferences: { tourSeen: false } });
-    rerender(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-  });
-});
-
-// docs/specs/007-editor/editor-tour.md "Dialogs come first".
-describe('TourHost with a dialog open', () => {
-  it('holds the offer until the last dialog closes, then offers', () => {
-    markTourPending();
-    editor();
-    act(() => {
-      modalOpened();
-      modalOpened();
-    });
     render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => modalClosed());
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => modalClosed());
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-    // Waiting was not an answer: the handoff stays owed until the offer is.
-    expect(hasTourPending()).toBe(true);
+    expect(tourOffer()?.name).toBe('Diagram');
   });
 
-  it('holds a Settings rerun while a dialog is still open', () => {
-    editor();
-    act(() => modalOpened());
+  it.each([
+    ['before the editor is ready', { hydrated: false }],
+    ['to a reader', { isReadOnly: true }],
+    ['in an embed', { embedMode: true }],
+    ['on a Draw tab', { editorMode: { mode: 'draw' } }],
+    ['on a Workshop tab', { editorMode: { mode: 'workshop' } }],
+  ])('offers nothing %s', (_label, over) => {
+    editor(over);
     render(<TourHost />);
-    act(() => requestTourRelaunch());
-    expect(offered()).toBe(false);
-    act(() => modalClosed());
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-});
-
-describe('TourHost alongside the Workshop tour', () => {
-  it('waits while the Workshop tour is on screen, then offers', () => {
-    // One tour at a time (docs/specs/012-collaboration/workshop-tour.md).
-    setActiveTour('workshop', true);
-    markTourPending();
-    editor();
-    render(<TourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('workshop', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(tourOffer()).toBeNull();
   });
 
-  it('holds a Settings rerun until the Workshop tour ends', () => {
+  it('starts nothing while another tour is on screen', () => {
     setActiveTour('workshop', true);
     editor();
     render(<TourHost />);
-    act(() => requestTourRelaunch());
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('workshop', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    act(() => tourOffer()!.start());
+    expect(started()).toBe(false);
   });
+});
 
-  it('reruns from Settings at once when nothing else is on screen', () => {
+describe('TourHost from Settings', () => {
+  it('reruns at once on a Diagram tab', () => {
     editor();
     render(<TourHost />);
     act(() => requestTourRelaunch());
-    expect(offered()).toBe(true);
-    expect(hasTourPending()).toBe(true);
+    expect(started()).toBe(true);
   });
 
-  it('holds a Settings rerun off a Diagram tab until the person is on one', () => {
+  it('does not start later off a Diagram tab: the button is there when the person is', () => {
     editor({ editorMode: { mode: 'workshop' } });
     const { rerender } = render(<TourHost />);
     act(() => requestTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
     editor();
     rerender(<TourHost />);
     act(() => {
-      vi.advanceTimersByTime(800);
+      vi.advanceTimersByTime(2000);
     });
-    expect(offered()).toBe(true);
+    expect(started()).toBe(false);
   });
 });
 
@@ -267,24 +153,16 @@ describe('TourHost running', () => {
   const runToOutro = async () => {
     editor();
     render(<TourHost />);
-    act(() => requestTourRelaunch());
-    act(() => popover.props!.onNext());
-    // Every anchored step finds no target in this harness and is skipped, so it runs to the outro.
+    act(() => tourOffer()!.start());
+    // Every anchored step finds no target in this harness and is skipped, so it runs to the last card.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(60000);
     });
-    expect(popover.props!.card).toBe('outro');
+    expect(popover.props!.outro).toBeTruthy();
   };
 
-  it('welcomes the person to Diagram and sends them off to diagram', async () => {
-    editor();
-    render(<TourHost />);
-    act(() => requestTourRelaunch());
-    expect(popover.props!.title).toBe('Getting started with Diagrams?');
-    act(() => popover.props!.onNext());
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(60000);
-    });
+  it('sends the person off to diagram on its last card', async () => {
+    await runToOutro();
     expect(popover.props!.title).toBe("You're ready to diagram");
   });
 
@@ -301,13 +179,11 @@ describe('TourHost running', () => {
   it('ends as skipped when the tab leaves Diagram mid-tour', () => {
     editor();
     const { rerender } = render(<TourHost />);
-    act(() => requestTourRelaunch());
-    act(() => popover.props!.onNext());
+    act(() => tourOffer()!.start());
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'Tour');
     editor({ editorMode: { mode: 'draw' } });
     rerender(<TourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'TourSkipped');
     expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true }, 'me');
-    expect(hasTourPending()).toBe(false);
   });
 });

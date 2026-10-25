@@ -1,7 +1,7 @@
 import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, pressWord, type MenuTourEnv } from './menu-tour-step';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector, escapeId } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Diagram Key tour (docs/specs/007-editor/element-tours.md "The Diagram Key tour"), on a selected diagram key: rows

@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setElementTourOffer } from '@/lib/element-tour-offer';
+import { describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@livediagram/document';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
@@ -61,20 +60,5 @@ describe('selection toolbar gap', () => {
       to: { kind: 'free', x: 200, y: 0 },
     } as Element;
     expect(compactFor(arrow)).toBe(false);
-  });
-});
-
-// The element tour offer (docs/specs/007-editor/element-tours.md) rides beside the toolbar of the element it is for.
-describe('selection toolbar tour offer', () => {
-  afterEach(() => setElementTourOffer(null));
-
-  it('draws the offer beside the toolbar only for its element', () => {
-    const sankey = createShape('sankey', 0, 0);
-    setElementTourOffer({ elementId: sankey.id, kind: 'sankey', play: vi.fn(), dismiss: vi.fn() });
-    compactFor(sankey);
-    expect(seen.at(-1)?.aside).toBeTruthy();
-    setElementTourOffer({ elementId: 'another', kind: 'sankey', play: vi.fn(), dismiss: vi.fn() });
-    compactFor(sankey);
-    expect(seen.at(-1)?.aside).toBeUndefined();
   });
 });

@@ -311,7 +311,7 @@ function tourSwitch(
 }
 
 // A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
-// forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
+// forgets those answered. Its telemetry tokens are its seen flag's, as above.
 // One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
 // (Plan Tours): the Plan tour's Boards and Sheets
 // (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
@@ -570,13 +570,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), one switch each, a tour of several
-    // tracks one per track ("Boards Tour", "Slides Tour"). A tour offers itself once, in its own mode, and its switch
-    // turns itself off once taken or dismissed.
+    // tracks one per track ("Boards Tour", "Slides Tour"). A tour starts from the footer's Start Tour button
+    // (docs/specs/007-editor/editor-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
     label: 'Tours',
     sectionNotes: {
       'Offer Again': {
-        note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+        note: 'Start a tour from the Start Tour button in the bottom bar, left of Settings: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
     },
     rows: [
@@ -628,7 +628,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Forms Tour',
         event: { category: 'UI', on: 'FormTourSeenOff', off: 'FormTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
-        description: 'The first time you open a Form tab.',
+        description: 'On a Form tab.',
         helpArticle: 'planForms',
       }),
     ],

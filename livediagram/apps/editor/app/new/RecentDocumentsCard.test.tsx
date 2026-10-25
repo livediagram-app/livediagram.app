@@ -30,10 +30,9 @@ const item = (id: string, updatedAt: number, over: Partial<Item> = {}): Partial<
 });
 
 describe('RecentDocumentsCard', () => {
-  it('merges team canvases by save time, marks them, and counts them', async () => {
+  it('merges team canvases by save time and marks them', async () => {
     page.items = [item('mine', 1), item('team', 2, { teamId: 'team-1' })];
-    const onCount = vi.fn();
-    render(<RecentDocumentsCard ownerId="owner" onCount={onCount} />);
+    render(<RecentDocumentsCard ownerId="owner" />);
 
     await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(3));
     const [team, mine] = screen.getAllByRole('link');
@@ -41,7 +40,6 @@ describe('RecentDocumentsCard', () => {
     expect(team!.textContent).toContain('Design team: Doc team');
     expect(mine!.getAttribute('href')).toBe('/document/mine');
     expect(mine!.textContent).not.toContain('team:');
-    expect(onCount).toHaveBeenCalledWith(2);
   });
 
   it('leaves out the Trash, link-only canvases and the ones hidden from Recent', async () => {
@@ -51,9 +49,8 @@ describe('RecentDocumentsCard', () => {
       item('linked', 3, { sharedVia: 'code' }),
       item('hidden', 4, { hiddenFromRecent: true }),
     ];
-    const onCount = vi.fn();
-    render(<RecentDocumentsCard ownerId="owner" onCount={onCount} />);
-    await waitFor(() => expect(onCount).toHaveBeenCalledWith(2));
+    render(<RecentDocumentsCard ownerId="owner" />);
+    await waitFor(() => expect(screen.getAllByRole('link').length).toBeGreaterThan(0));
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     expect(hrefs).toContain('/document/kept');
     expect(hrefs).not.toContain('/document/binned');

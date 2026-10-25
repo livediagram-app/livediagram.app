@@ -18,7 +18,9 @@ const setSelection = vi.hoisted(() => vi.fn<(s: Selection) => void>());
 vi.mock('@/hooks/canvas/useSelectionStore', () => ({
   useOptionalSelectionStore: () => ({ setSelection }),
 }));
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => document.body }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => document.body,
+}));
 const combine = vi.hoisted(() => ({
   result: { ok: true, path: { id: 'united' } } as Record<string, unknown>,
 }));

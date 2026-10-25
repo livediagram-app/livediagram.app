@@ -7,7 +7,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { sequenceTourSteps, type SequenceTourContext } from './sequence-tour-steps';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 const ctxOf = (over: Partial<SequenceTourContext> = {}): SequenceTourContext => ({
   elementId: 'sq',

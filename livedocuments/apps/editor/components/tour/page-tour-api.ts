@@ -2,7 +2,7 @@
 // tab or closed. Shared by every track and by both ways a track runs: offered (PagesTourHost) and from the
 // page's panel (Show Me, PageTour.tsx).
 import type { PagePanelTab } from '@/components/canvas/PagePanel';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 export type PageTourApi = {
   // The page the tour runs on.

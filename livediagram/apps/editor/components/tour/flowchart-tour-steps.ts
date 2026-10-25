@@ -1,6 +1,6 @@
 import type { ElementTourApi } from './element-tour-api';
 import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Flowchart tour (docs/specs/007-editor/element-tours.md "The Flowchart tour"), on a selected step: growing the

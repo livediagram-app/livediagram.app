@@ -183,8 +183,8 @@ export type UserPreferences = {
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
   // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
   pagesTourKinds?: PageKind[];
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Show Me, one switch
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,
+  // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.

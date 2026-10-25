@@ -6023,6 +6023,9 @@ importers:
 
   packages/workbench:
     dependencies:
+      '@liveworkspace/brand':
+        specifier: workspace:*
+        version: link:../brand
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../explorer

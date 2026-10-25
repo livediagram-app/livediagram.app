@@ -14,14 +14,7 @@ import {
   SLIDE_DECK,
   SLIDES_BUTTON,
 } from './page-tour-dom';
-import { opensFrom } from './tour-open';
-
-export const SLIDE_WELCOME: PageTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Slides?',
-  body: 'A quick look at slide layouts, backgrounds and presenting? Try anything as we go.',
-};
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 export function slideTourSteps(): PageTourStep[] {
   return [

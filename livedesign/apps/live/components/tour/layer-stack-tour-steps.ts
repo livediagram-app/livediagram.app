@@ -6,7 +6,7 @@ import {
   onGraphic,
   type ConceptTourContext,
 } from './concept-element-tour-steps';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Layer Stack tour (docs/specs/007-editor/element-tours.md "The Layer Stack tour").

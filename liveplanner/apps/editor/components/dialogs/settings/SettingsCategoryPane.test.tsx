@@ -146,7 +146,7 @@ describe('SettingsCategoryPane tours', () => {
     );
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
-    expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);
+    expect(screen.getAllByText(/Start a tour from the Start Tour button/)).toHaveLength(1);
     fireEvent.click(plan);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'BoardsTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({

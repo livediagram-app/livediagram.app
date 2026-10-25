@@ -21,7 +21,6 @@ const step = (id: string, destination: 'board' | 'sheet' | null = 'sheet') =>
 describe('formTourSteps', () => {
   it('adds, edits and types a question, previews, then shows where responses go and sharing', () => {
     expect(formTourSteps({ destination: 'board' }).map((s) => s.id)).toEqual([
-      'welcome',
       'add',
       'edit',
       'type',

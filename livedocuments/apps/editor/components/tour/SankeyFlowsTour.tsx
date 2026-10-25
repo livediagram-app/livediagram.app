@@ -12,7 +12,10 @@ import {
   type SankeyFlowsTourContext,
 } from './sankey-flows-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 // The tour, and `freeze`, which fixes its steps from the dialog as it is when Show Me is pressed, so typing a flow
 // mid-tour (which may add the first node or balance a node) never shifts the steps out from under the person.

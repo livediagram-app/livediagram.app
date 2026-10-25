@@ -40,7 +40,7 @@ describe('ELEMENT_TOUR_DEFS', () => {
       });
       expect(steps.length).toBeGreaterThan(2);
       expect(steps.at(-1)?.card).toBe('outro');
-      expect(steps.filter((s) => s.card === 'welcome')).toEqual([]);
+      expect(steps.filter((s) => s.card).length).toBe(1);
     },
   );
 

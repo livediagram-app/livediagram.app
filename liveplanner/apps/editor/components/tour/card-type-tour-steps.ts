@@ -2,8 +2,8 @@
 // making a card type, run on the editor itself. Each step opens the editor tab it is about and rings a real
 // control, which stays usable, so the person builds their type as the tour goes.
 import type { TypeEditorTab } from '@/components/plan/ItemTypeEditorTabs';
-import type { TourStepOf } from './tour-step';
-import { waitForSelector } from './tour-dom';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 
 export type CardTypeTourApi = {
   // Opens a tab of the editor (the draft is kept: switching loses nothing).

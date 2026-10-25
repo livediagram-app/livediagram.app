@@ -23,8 +23,6 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
-import { useElementTourOffer } from '@/lib/element-tour-offer';
-import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
@@ -58,8 +56,6 @@ export function CanvasSelectionToolbars({
     showMultiToolbar,
   } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
   const multiSelectedIds = useSelectionOf(multiOf);
-  // The element tour offer (docs/specs/007-editor/element-tours.md): ElementTourHost decides it; drawn beside the toolbar.
-  const tourOffer = useElementTourOffer(selected?.id ?? null);
   // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
   // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
   const showing = selected !== null || showMultiToolbar;
@@ -191,7 +187,6 @@ export function CanvasSelectionToolbars({
             // Plan board or card, an annotation). An arrow keeps the wide gap: its move
             // frame sits there, and a toolbar over it would take the press that drags the arrow.
             compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
-            aside={tourOffer ? <ElementTourOffer offer={tourOffer} /> : undefined}
           />
         </div>
       ) : null}

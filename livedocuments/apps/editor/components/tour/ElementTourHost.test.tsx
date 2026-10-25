@@ -1,14 +1,16 @@
 // @vitest-environment jsdom
 
-// Element tours (docs/specs/007-editor/element-tours.md): the offer beside a selected Sankey, Play and Cancel answering
-// it once ever, the share-role gate, one tour at a time, and the tour ending when its diagram goes.
+// Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected Sankey's
+// tour, taken or not, a press starting it, the share-role gate, one tour at a time, and the tour ending when its diagram goes.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import { createShape, type Element } from '@livedocuments/document';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { elementTourOffer } from '@/lib/element-tour-offer';
+import {
+  resetTourOffersForTests,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import {
   createSelectionStore,
@@ -16,7 +18,7 @@ import {
 } from '@liveworkspace/workbench/lib/selection-store';
 import { setActiveTour, activeTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import type { TourEngine } from './useTourEngine';
+import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { SankeyElementTourApi } from './sankey-element-tour-steps';
 import { ElementTourHost } from './ElementTourHost';
 
@@ -30,7 +32,7 @@ vi.mock('./TourStage', () => ({
   },
 }));
 // Every anchor is there, so no step is skipped for a missing one.
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => document.body,
 }));
@@ -93,45 +95,34 @@ afterEach(() => {
   setActiveTour('pages', false);
   setActiveTour('element', false);
   setStartPanelOpen(false);
-  while (anyModalOpen()) modalClosed();
+  resetTourOffersForTests();
 });
 
 describe('ElementTourHost offer', () => {
   it('offers the tour for a selected Sankey, and nothing for a square', () => {
     editor();
     mount();
-    expect(elementTourOffer()).toBeNull();
+    expect(tourOffer()).toBeNull();
     act(() => store.setSelectedId('sq1'));
-    expect(elementTourOffer()).toBeNull();
+    expect(tourOffer()).toBeNull();
     act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()).toMatchObject({ elementId: 'sk1', kind: 'sankey' });
+    expect(tourOffer()).toMatchObject({ name: 'Sankey' });
+    act(() => tourOffer()!.onShown!());
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'SankeyTourOffer');
   });
 
-  it('counts the offer once per page load, however often it shows', () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    act(() => store.setSelectedId(null));
-    act(() => store.setSelectedId('sk1'));
-    expect(track.mock.calls.filter((c) => c[2] === 'SankeyTourOffer')).toHaveLength(1);
-  });
-
   it.each([
-    ['answered', { userPreferences: { elementTourKinds: ['sankey'] } }],
-    ['a power user', { userPreferences: { powerUserMode: true, elementToursSeen: true } }],
     ['a Participant', { can: { level: 'participate' } }],
     ['a Viewer', { can: { level: 'view' } }],
     ['locked', { activeTab: { id: 'tab1', elements: [{ ...sankey, locked: true }] } }],
     ['not hydrated', { hydrated: false }],
-    ['before the synced preferences are in', { prefsSettled: false }],
     ['embedded', { embedMode: true }],
     ['under a welcome overlay', { anyWelcomeOpen: true }],
-  ])('makes no offer when %s', (_why, over) => {
+  ])('offers nothing when %s', (_why, over) => {
     editor(over);
     mount();
     act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()).toBeNull();
+    expect(tourOffer()).toBeNull();
   });
 
   it('never offers a tour on a phone', () => {
@@ -139,73 +130,61 @@ describe('ElementTourHost offer', () => {
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()).toBeNull();
-    expect(track).not.toHaveBeenCalledWith('UI', 'Opened', 'SankeyTourOffer');
+    expect(tourOffer()).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
   });
 
   it('makes no offer for a multi-selection', () => {
     editor();
     mount();
     act(() => store.setMultiSelectedIds(new Set(['sk1', 'sq1'])));
-    expect(elementTourOffer()).toBeNull();
+    expect(tourOffer()).toBeNull();
   });
 
-  it('waits while another tour is on screen', () => {
+  it('starts nothing while another tour is on screen', () => {
     editor();
     mount();
     act(() => setActiveTour('pages', true));
     act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()).toBeNull();
-    act(() => setActiveTour('pages', false));
-    expect(elementTourOffer()?.elementId).toBe('sk1');
-  });
-
-  // docs/specs/007-editor/pages-tour.md "Dialogs come first".
-  it('goes while a dialog is open, and comes back once it closes', () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()?.elementId).toBe('sk1');
-    act(() => modalOpened());
-    expect(elementTourOffer()).toBeNull();
-    act(() => modalClosed());
-    expect(elementTourOffer()?.elementId).toBe('sk1');
-  });
-
-  it('Cancel answers it for good and says so', () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.dismiss());
-    expect(setUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['sankey'] });
-    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['sankey'] }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'SankeyTourOffer');
+    act(() => tourOffer()!.start());
     expect(stage.engine?.active).toBe(false);
+  });
+
+  it('stays on offer once taken, so it can be taken again', () => {
+    editor({ userPreferences: { elementTourKinds: ['sankey'] } });
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    expect(tourOffer()?.name).toBe('Sankey');
+  });
+
+  it('never starts on its own', () => {
+    editor();
+    mount();
+    act(() => store.setSelectedId('sk1'));
+    expect(stage.engine?.active).toBe(false);
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
   });
 });
 
 describe('ElementTourHost tour', () => {
-  it('Play answers the offer, starts on the first step and holds the tour slot', () => {
+  it('a press records the kind as taken, starts on the first step and holds the tour slot', () => {
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['sankey'] }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.hasWelcome).toBe(false);
     expect(stage.engine?.step?.id).toBe('bands');
     expect(track).toHaveBeenCalledWith('UI', 'View', 'SankeyTourStepBands');
     expect(activeTour()).toBe('element');
-    // The offer is gone while the tour runs.
-    expect(elementTourOffer()).toBeNull();
   });
 
   it('opens the Flows dialog for its diagram on the dialog steps', async () => {
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     const seen: string[] = [];
     while (stage.engine?.active && !stage.engine.step?.id.startsWith('flows-')) {
       seen.push(stage.engine.step!.id);
@@ -221,7 +200,7 @@ describe('ElementTourHost tour', () => {
     editor();
     const r = mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     editor({ activeTab: { id: 'tab1', elements: [square] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
@@ -232,7 +211,7 @@ describe('ElementTourHost tour', () => {
     editor();
     const r = mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     editor({ activeTab: { id: 'tab2', elements: [sankey] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
@@ -244,7 +223,7 @@ describe('ElementTourHost tour', () => {
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     while (stage.engine?.step?.card !== 'outro') await act(async () => stage.engine!.next());
     close.mockClear();
     await act(async () => stage.engine!.next());
@@ -260,7 +239,7 @@ describe('ElementTourHost tour', () => {
     editor();
     mount();
     act(() => store.setSelectedId('sk1'));
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     while (!stage.engine?.step?.id.startsWith('flows-'))
       await act(async () => stage.engine!.next());
     close.mockClear();
@@ -277,9 +256,10 @@ describe('ElementTourHost with a layer stack', () => {
     editor();
     mount();
     act(() => store.setSelectedId('ls1'));
-    expect(elementTourOffer()).toMatchObject({ elementId: 'ls1', kind: 'layer-stack' });
+    expect(tourOffer()).toMatchObject({ name: 'Layer Stack' });
+    act(() => tourOffer()!.onShown!());
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'LayerStackTourOffer');
-    act(() => elementTourOffer()!.play());
+    act(() => tourOffer()!.start());
     expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['layer-stack'] }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'LayerStackTour');
     expect(stage.engine?.step?.id).toBe('layers');
@@ -288,22 +268,5 @@ describe('ElementTourHost with a layer stack', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LayerStackTourCompleted');
     // Nothing of the Sankey's is put away for a layer stack.
     expect(setSankeyFlowsOpenForId).not.toHaveBeenCalled();
-  });
-
-  it('answers each kind on its own: a Sankey answered still offers a layer stack', () => {
-    editor({ userPreferences: { elementTourKinds: ['sankey'] } });
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    expect(elementTourOffer()).toBeNull();
-    act(() => store.setSelectedId('ls1'));
-    expect(elementTourOffer()?.kind).toBe('layer-stack');
-  });
-
-  it('cancels under its own token', () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('ls1'));
-    act(() => elementTourOffer()!.dismiss());
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LayerStackTourOffer');
   });
 });

@@ -11,8 +11,11 @@ import { requestPagePanel } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import { isOnScreen } from './tour-dom';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import { isOnScreen } from '@liveworkspace/workbench/components/tour/tour-dom';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 /** The page's panel, opened on a tab or closed, through the request CanvasPages follows. */
 export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {

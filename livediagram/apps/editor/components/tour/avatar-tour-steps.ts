@@ -1,9 +1,15 @@
-// The steps of the Avatar tour (docs/specs/008-canvas/avatar-tour.md "The steps"): a welcome card, the Avatar
-// button, the character sheet, Behaviour and Reactions, speaking, pushing, then the outro. It changes nothing: it
+// The steps of the Avatar tour (docs/specs/008-canvas/avatar-tour.md "The steps"): the Avatar button, the character sheet, Behaviour and Reactions, speaking, pushing, then the outro. It changes nothing: it
 // opens the Avatar panel to show it, and closes it again for the push step and on the way out.
 
-import { clickTour, findTour, waitForTour } from './tour-dom';
-import { stepTelemetryType, type TourStepOf } from './tour-step';
+import {
+  clickTour,
+  findTour,
+  waitForTour,
+} from '@liveworkspace/workbench/components/tour/tour-dom';
+import {
+  stepTelemetryType,
+  type TourStepOf,
+} from '@liveworkspace/workbench/components/tour/tour-step';
 
 // Whether the panel was open when the tour began, so leaving puts it back as it found it: open again if the person
 // had it open (the push step closes it), closed if the tour opened it.
@@ -44,19 +50,14 @@ export type AvatarTourStep = TourStepOf<AvatarTourApi> & {
 
 export const AVATAR_TOUR_STEPS: AvatarTourStep[] = [
   {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Meet Your Avatar',
-    body: 'A quick look at dressing up your character, reacting, talking and pushing?',
-    prepare: () => {
-      panelOpenAtStart = panelOpen();
-    },
-  },
-  {
     id: 'avatar-button',
     title: 'Your Avatar',
     body: 'Your character sheet, and everything your character can do.',
     target: 'avatar-button',
+    // The panel as the tour found it, taken once as the tour starts (Back to here keeps it).
+    prepare: () => {
+      panelOpenAtStart ??= panelOpen();
+    },
   },
   {
     id: 'character',

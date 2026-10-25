@@ -16,13 +16,6 @@ import {
   SLIDES_BUTTON,
 } from './page-tour-dom';
 
-export const INFOGRAPHIC_WELCOME: PageTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Infographics?',
-  body: 'A quick look at layouts, backgrounds, page size and presenting?',
-};
-
 export function infographicTourSteps(): PageTourStep[] {
   return [
     {

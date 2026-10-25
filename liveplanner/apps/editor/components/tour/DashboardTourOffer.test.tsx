@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
-// The Dashboards tour's offer (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): once, the first time an Editor
-// has a dashboard open in Plan, while its track is owed and nothing else is on screen; answered however it ends.
+// The Dashboards tour's way in (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): the footer's Start Tour button,
+// while an Editor has a dashboard open in Plan, taken or not; a press starts it, never beside another tour, and its
+// track is taken however it ends. It never starts on its own.
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setActiveTour } from '@/lib/tour-active';
+import {
+  resetTourOffersForTests,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 import { useDashboardTour, useDashboardTourOffer } from './DashboardTour';
 
 const track = vi.hoisted(() => vi.fn());
@@ -11,11 +16,6 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 const ctx = vi.hoisted(() => ({ current: null as Record<string, unknown> | null }));
 vi.mock('@/app/project/[id]/EditorContext', () => ({
   useOptionalEditorContext: () => ctx.current,
-}));
-const modal = vi.hoisted(() => ({ open: false }));
-vi.mock('@liveworkspace/workbench/lib/modal-guard', async (actual) => ({
-  ...(await actual<typeof import('@liveworkspace/workbench/lib/modal-guard')>()),
-  useAnyModalOpen: () => modal.open,
 }));
 
 const setUserPreferences = vi.fn();
@@ -42,14 +42,11 @@ function useOffered(canWork: boolean) {
   return tour;
 }
 
-const offered = () =>
-  track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'DashboardTourOffer');
 const wait = (ms = 1000) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
 
 beforeEach(() => {
   vi.useFakeTimers();
   editor();
-  modal.open = false;
 });
 afterEach(() => {
   cleanup();
@@ -57,58 +54,61 @@ afterEach(() => {
   track.mockClear();
   setUserPreferences.mockClear();
   writeUserPreferences.mockClear();
+  setActiveTour('plan', false);
+  resetTourOffersForTests();
 });
 
 describe('useDashboardTourOffer', () => {
-  it('offers the tour on its welcome card once the dashboard has been on screen a moment', async () => {
+  it('offers "Dashboards" on the footer button, and never starts on its own', async () => {
     const { result } = renderHook(() => useOffered(true));
-    expect(offered()).toBe(false);
-    await wait();
-    expect(offered()).toBe(true);
-    expect(result.current.active).toBe(true);
-    expect(result.current.step?.id).toBe('welcome');
+    expect(tourOffer()?.name).toBe('Dashboards');
+    await wait(5000);
+    expect(result.current.active).toBe(false);
   });
 
-  it('answers the track when turned down, sending Closed rather than Ended', async () => {
+  it('starts on its first step from the button', () => {
     const { result } = renderHook(() => useOffered(true));
-    await wait();
+    act(() => tourOffer()!.start());
+    expect(result.current.active).toBe(true);
+    expect(result.current.step?.id).toBe('rows');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+  });
+
+  it('takes the track however it ends', () => {
+    const { result } = renderHook(() => useOffered(true));
+    act(() => tourOffer()!.start());
     act(() => result.current.skip());
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'DashboardTourOffer');
-    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
     const written = writeUserPreferences.mock.calls[0]![0] as { planTourTracks?: string[] };
     expect(written.planTourTracks).toContain('dashboards');
+  });
+
+  it('stays on offer once taken, so it can be taken again', () => {
+    editor({ userPreferences: { planTourTracks: ['dashboards'] } });
+    renderHook(() => useOffered(true));
+    expect(tourOffer()?.name).toBe('Dashboards');
   });
 
   it.each([
     ['a Viewer or a covered dashboard', false, {}],
     ['a read-only project', true, { isReadOnly: true }],
     ['an embed', true, { embedMode: true }],
-    ['before the synced preferences are in', true, { prefsSettled: false }],
-    ['once answered', true, { userPreferences: { planTourTracks: ['dashboards'] } }],
-  ])('waits with %s', async (_, canWork, over) => {
+  ])('offers nothing with %s', (_, canWork, over) => {
     editor(over);
     renderHook(() => useOffered(canWork));
-    await wait();
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
   });
 
-  it('waits while another tour or a dialog is up', async () => {
-    modal.open = true;
-    renderHook(() => useOffered(true));
-    await wait();
-    expect(offered()).toBe(false);
-    modal.open = false;
+  it('starts nothing while another tour is up', () => {
     act(() => setActiveTour('plan', true));
-    renderHook(() => useOffered(true));
-    await wait();
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('plan', false));
+    const { result } = renderHook(() => useOffered(true));
+    act(() => tourOffer()!.start());
+    expect(result.current.active).toBe(false);
   });
 
-  it('never offers outside an editor', async () => {
+  it('never offers outside an editor', () => {
     ctx.current = null;
     renderHook(() => useOffered(true));
-    await wait();
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
   });
 });

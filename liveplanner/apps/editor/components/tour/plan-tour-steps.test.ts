@@ -38,9 +38,8 @@ afterEach(() => {
 });
 
 describe('PLAN_TOUR_STEPS', () => {
-  it('runs welcome, six steps, then the outro', () => {
+  it('runs six steps, then the outro', () => {
     expect(PLAN_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'welcome',
       'board',
       'add-cards',
       'move-card',
@@ -49,17 +48,13 @@ describe('PLAN_TOUR_STEPS', () => {
       'card-types',
       'outro',
     ]);
-    expect(PLAN_TOUR_STEPS[0]!.card).toBe('welcome');
+    expect(PLAN_TOUR_STEPS[0]!.card).toBeUndefined();
     expect(PLAN_TOUR_STEPS.at(-1)!.card).toBe('outro');
     expect(PLAN_TOUR_STEPS.filter((s) => !s.card)).toHaveLength(6);
   });
 
   it('keeps its copy short and free of em dashes', () => {
-    for (const s of [
-      ...PLAN_TOUR_STEPS,
-      ...SHEET_STEPS,
-      planTourSteps('boards', { offer: 'choice' })[0]!,
-    ]) {
+    for (const s of [...PLAN_TOUR_STEPS, ...SHEET_STEPS]) {
       expect(s.body.length, s.id).toBeLessThanOrEqual(180);
       expect(`${s.title}${s.body}`).not.toContain('\u2014');
     }
@@ -121,7 +116,6 @@ describe('PLAN_TOUR_STEPS', () => {
   it('adds its own card, moves it along and opens it, on any board', async () => {
     const a = api();
     expect(planTourSteps('boards').map((s) => s.id)).toEqual([
-      'welcome',
       'board',
       'add-cards',
       'move-card',
@@ -145,31 +139,9 @@ describe('PLAN_TOUR_STEPS', () => {
   });
 });
 
-describe('the welcome card', () => {
-  it('names the track on offer in its title, never the mode', () => {
-    expect(planTourSteps('boards')[0]!.title).toBe('Getting started with Boards?');
-    expect(planTourSteps('sheets')[0]!.title).toBe('Getting started with Sheets?');
-    expect(planTourSteps('boards', { offer: 'choice' })[0]!.title).toMatch(/Boards and Sheets/);
-    for (const offer of ['boards', 'sheets', 'choice'] as const)
-      expect(planTourSteps('boards', { offer })[0]!.title).not.toMatch(/Plan/);
-  });
-
-  it('names the one track on offer, and asks which when the tab has both', () => {
-    expect(planTourSteps('boards')[0]!.body).toMatch(/your board/);
-    expect(planTourSteps('sheets')[0]!.body).toMatch(/your sheet/);
-    expect(planTourSteps('boards', { offer: 'choice' })[0]!.body).toMatch(/Which/);
-    expect(planTourSteps('sheets', { offer: 'choice' })[0]!.body).toMatch(/Which/);
-    // Honest about what it does: the boards track adds an example card and takes it away; the sheets track only points.
-    expect(planTourSteps('boards')[0]!.body).toMatch(/example card/);
-    expect(planTourSteps('sheets')[0]!.body).toMatch(/never change anything/);
-    expect(planTourSteps('boards', { offer: 'choice' })[0]!.body).toMatch(/goes when we finish/);
-  });
-});
-
 describe("planTourSteps('sheets')", () => {
-  it('runs a welcome, five sheet steps, then its own outro', () => {
+  it('runs five sheet steps, then its own outro', () => {
     expect(SHEET_STEPS.map((s) => s.id)).toEqual([
-      'welcome',
       'sheet',
       'cells',
       'formulas',

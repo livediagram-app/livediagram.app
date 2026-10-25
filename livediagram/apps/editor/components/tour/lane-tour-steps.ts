@@ -1,7 +1,7 @@
 import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { doublePressWord, menuStep, type MenuTourEnv } from './menu-tour-step';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Lane tour (docs/specs/007-editor/element-tours.md "The Lane tour"), on a selected lane: a band per role, its

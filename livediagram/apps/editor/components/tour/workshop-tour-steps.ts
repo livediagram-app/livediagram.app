@@ -1,10 +1,13 @@
-// The steps of the Workshop tour (docs/specs/012-collaboration/workshop-tour.md "The steps"): a welcome card, then Ask
+// The steps of the Workshop tour (docs/specs/012-collaboration/workshop-tour.md "The steps"): Ask
 // and Session on the category bar, then the session's key elements shown on the canvas (a Timer, a Dot Vote and a
 // Poll, placed by the tour and taken away when it ends), the Session strip and Share, then the outro.
 
 import { ensurePaletteOpen } from './tour-steps';
-import { stepTelemetryType, type TourStepOf } from './tour-step';
-import { opensFrom } from './tour-open';
+import {
+  stepTelemetryType,
+  type TourStepOf,
+} from '@liveworkspace/workbench/components/tour/tour-step';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The session elements the tour shows (spec "Tour content"): placed once, in a row in view, with no history, and taken
@@ -32,12 +35,6 @@ function demoStep(id: WorkshopDemo, title: string, body: string): WorkshopTourSt
 export type WorkshopTourStep = TourStepOf<WorkshopTourApi>;
 
 export const WORKSHOP_TOUR_STEPS: WorkshopTourStep[] = [
-  {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Getting started with Workshop?',
-    body: 'Run a retro, workshop or town hall with your team. A quick look at where everything is?',
-  },
   {
     id: 'collaborate',
     title: 'Collaborate',

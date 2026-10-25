@@ -10,6 +10,7 @@ import {
 } from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
+import { TOUR_RELAUNCH_EVENT } from '@/lib/diagram-tour';
 
 const VIEW_KEY = 'livediagram:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
@@ -182,22 +183,15 @@ describe('SettingsDialog', () => {
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
   });
 
-  it('arms the Diagram tour it promises when the row is left on', () => {
-    // The row reads `tourSeen !== true` and says the tour will be offered
-    // next time, but TourHost also needs the per-tab pending flag, which
-    // only /new sets. Without arming it here the row sat on, promising a
-    // tour that never came.
+  it('leaves the Diagram tour be when its row was on already', () => {
     setViewport(false);
+    const relaunch = vi.fn();
+    window.addEventListener(TOUR_RELAUNCH_EVENT, relaunch);
     renderDialog({ tourSeen: false });
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(sessionStorage.getItem('livediagram:v2:tour-pending')).toBe('1');
-  });
-
-  it('does not arm the tour once it has been taken', () => {
-    setViewport(false);
-    renderDialog({ tourSeen: true });
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(sessionStorage.getItem('livediagram:v2:tour-pending')).toBeNull();
+    // Left on, not turned on from off: nothing reruns.
+    expect(relaunch).not.toHaveBeenCalled();
+    window.removeEventListener(TOUR_RELAUNCH_EVENT, relaunch);
   });
 
   describe('reopening where it was left', () => {

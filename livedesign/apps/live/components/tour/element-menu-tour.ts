@@ -2,7 +2,7 @@
 // steps"): a step that names a menu path ("Tools › Rows") opens the menu, opens each named row in turn (an accordion
 // section, or a flyout such as Tools) and rings the last one open, instead of pointing at More and leaving the person
 // to find it.
-import { waitForSelector } from './tour-dom';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 
 /** The element's menu (ContextMenu). */
 export const CONTEXT_MENU = '[data-tour-id="context-menu"]';

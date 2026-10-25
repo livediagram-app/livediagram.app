@@ -14,8 +14,8 @@ import { registerCombineDemo } from './logo-combine-demo';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the design" here.
-vi.mock('./tour-dom', async (actual) => ({
-  ...(await actual<typeof import('./tour-dom')>()),
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/components/tour/tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
   isOnScreen: (selector: string) => document.querySelector(selector) !== null,
 }));

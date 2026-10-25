@@ -200,8 +200,8 @@ export type UserPreferences = {
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Show Me, one switch
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,
+  // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.

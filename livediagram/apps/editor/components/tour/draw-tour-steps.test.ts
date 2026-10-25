@@ -3,16 +3,15 @@ import { DRAW_TOUR_STEPS, drawTourSteps, drawTourStepTelemetryType } from './dra
 
 // docs/specs/023-draw-mode/draw-tour.md "The steps"
 describe('the Draw tour steps', () => {
-  it('runs welcome, the Drawing tools, Quick Style, Shapes and Settings, then the outro', () => {
+  it('runs the Drawing tools, Quick Style, Shapes and Settings, then the outro', () => {
     expect(DRAW_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'welcome',
       'drawing-tools',
       'quick-style',
       'shapes',
       'settings',
       'outro',
     ]);
-    expect(DRAW_TOUR_STEPS.slice(1, -1).map((s) => s.target)).toEqual([
+    expect(DRAW_TOUR_STEPS.slice(0, -1).map((s) => s.target)).toEqual([
       'dock-drawing',
       'quick-style',
       'dock-shapes',
@@ -25,11 +24,8 @@ describe('the Draw tour steps', () => {
     expect(drawTourSteps({ mobile: true }).map((s) => s.id)).not.toContain('quick-style');
   });
 
-  it('offers itself as the Diagram tour does, and closes ready to draw', () => {
-    expect(DRAW_TOUR_STEPS[0]).toMatchObject({
-      card: 'welcome',
-      title: 'Getting started with Draw?',
-    });
+  it('opens on a step, with no welcome card, and closes ready to draw', () => {
+    expect(DRAW_TOUR_STEPS[0]?.card).toBeUndefined();
     expect(DRAW_TOUR_STEPS.at(-1)).toMatchObject({ card: 'outro', title: "You're ready to draw" });
   });
 

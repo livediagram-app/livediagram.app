@@ -3,13 +3,6 @@
 // Each step rings a real control of the page it was started on, which stays usable.
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 
-export const PHOTO_WELCOME: PageTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with photos?',
-  body: 'A quick look at the tools, layers, adjustments and filters?',
-};
-
 const TOOLS: PageTourStep = {
   id: 'tools',
   title: 'Pick a Tool',

@@ -406,7 +406,7 @@ function tourSwitch(
 }
 
 // A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
-// forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
+// forgets those answered. Its telemetry tokens are its seen flag's, as above.
 // One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
 // its kind is still offered; on forgets its answer, off answers it.
 function elementTourSwitch(
@@ -1097,17 +1097,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     // The guided tours (docs/specs/007-editor/user-preferences.md "Tours"), a tour of several tracks one switch per
-    // track ("Slides Tour"). A tour offers itself once, on its own kind of page, and its switch turns itself off once
-    // taken or dismissed.
+    // track ("Slides Tour"). A tour starts from the footer's Start Tour button
+    // (docs/specs/007-editor/pages-tour.md "Where it appears"), and its switch turns itself off once taken.
     id: 'tours',
     label: 'Tours',
     collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
       [ELEMENT_TOURS_SECTION]: {
-        note: 'The first time you select a complex element, a small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
+        note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
       },
       'Offer Again': {
-        note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are on its kind of page, or the next time you are.',
+        note: 'Start a tour from the Start Tour button in the bottom bar, left of Settings: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
     },
     rows: [
@@ -1166,21 +1166,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Sankey Diagram',
         event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
         keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
-        description: 'The first time you select a Sankey diagram.',
+        description: 'With a Sankey diagram selected.',
         helpArticle: 'sankeyDiagram',
       }),
       elementTourSwitch('layer-stack', {
         label: 'Layer Stack',
         event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
         keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
-        description: 'The first time you select a layer stack.',
+        description: 'With a layer stack selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('pyramid', {
         label: 'Pyramid',
         event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
         keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
-        description: 'The first time you select a pyramid.',
+        description: 'With a pyramid selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('funnel', {
@@ -1188,7 +1188,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
         keywords:
           'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
-        description: 'The first time you select a funnel.',
+        description: 'With a funnel selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('cycle', {
@@ -1196,14 +1196,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
         keywords:
           'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
-        description: 'The first time you select a cycle.',
+        description: 'With a cycle selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('hub', {
         label: 'Hub and Spoke',
         event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
         keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
-        description: 'The first time you select a hub and spoke.',
+        description: 'With a hub and spoke selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('onion', {
@@ -1211,7 +1211,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
         keywords:
           'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
-        description: 'The first time you select an onion.',
+        description: 'With an onion selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('chevrons', {
@@ -1219,7 +1219,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
         keywords:
           'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
-        description: 'The first time you select a chevron process.',
+        description: 'With a chevron process selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('timeline', {
@@ -1227,28 +1227,28 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
         keywords:
           'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'The first time you select a timeline.',
+        description: 'With a timeline selected.',
         helpArticle: 'conceptGraphics',
       }),
       elementTourSwitch('chart', {
         label: 'Chart',
         event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
         keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'The first time you select a chart.',
+        description: 'With a chart selected.',
         helpArticle: 'dataElements',
       }),
       elementTourSwitch('stack', {
         label: 'Stack',
         event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
         keywords: 'stack row column grid layout container reflow tour',
-        description: 'The first time you select a stack.',
+        description: 'With a stack selected.',
         helpArticle: 'stacks',
       }),
       elementTourSwitch('tab-window', {
         label: 'Tab Window',
         event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
         keywords: 'tab window live slide embed another tab tour',
-        description: 'The first time you select a tab window.',
+        description: 'With a tab window selected.',
         helpArticle: 'tabWindows',
       }),
     ],

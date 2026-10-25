@@ -8,7 +8,9 @@ import type { ElementTourApi } from './element-tour-api';
 import { cycleTourSteps } from './cycle-tour-steps';
 import type { ConceptTourContext } from './concept-element-tour-steps';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 const rows = [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }];
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({

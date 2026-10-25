@@ -1,0 +1,60 @@
+import type { RevealBlock } from './tour-reveal';
+
+// The shape of a guided-tour step, shared by every editor's tours (docs/specs/007-editor/editor-tour.md in each
+// product). `Api` is the facade each tour's host builds, so a step's prepare and cleanup always see fresh editor
+// handlers.
+export type TourStepOf<Api> = {
+  id: string;
+  title: string;
+  body: string;
+  // data-tour-id of the element the popover anchors to + highlights.
+  // Absent (and no `selector`) = no anchor: the card centres itself (the last card, a step about the whole page).
+  target?: string;
+  // A CSS selector for an anchor that has no data-tour-id of its own (a board element, a card on it),
+  // resolved through the api when the step runs. Takes precedence over `target`; null = no anchor yet.
+  selector?: (api: Api) => string | null;
+  // Optional second anchor folded into the highlight rect (union of the
+  // two). The dropdown steps use it so the ring wraps the trigger button
+  // AND its portalled menu as one region, not the floating menu alone;
+  // the tabs step wraps the active pill + the add button the same way.
+  alsoHighlight?: string;
+  // Draw the ring above the open menu its target sits inside (one band of a dropdown, the Workshop
+  // tour's Collaborate step), so the dim spotlights part of the menu; otherwise the later-portalled menu
+  // paints over a ring at the same layer.
+  ringOverMenu?: boolean;
+  // The layer this step's ring draws at, over the stage's own: 'modal' for a step inside a dialog the tour opened
+  // (the Sankey tour's Flows dialog steps, docs/specs/007-editor/element-tours.md), so the ring is not under it.
+  layer?: 'overlay' | 'modal';
+  // Where the engine scrolls the target to (tour-reveal.ts): 'center' (the default) centres it in its scroller when it
+  // is not wholly in view; 'start' brings it to the top (a section further down a dialog, read from its heading).
+  // The step puts the caret somewhere on purpose (the card type editor's Name, to type into straight away): the engine
+  // leaves that focus be, where it otherwise releases a field a step's surface focused on opening.
+  keepFocus?: true;
+  revealAt?: RevealBlock;
+  // The tour's last card, outside the step count: drawn in the step card, centred, with the finish button and a
+  // help-centre link (docs/specs/007-editor/editor-tour.md "The last card"). There is no welcome card: the footer's
+  // Start Tour button is the way in.
+  card?: 'outro';
+  // Skip this step entirely on mobile viewports (desktop-only chrome, like
+  // the paintbrush dock button).
+  mobileSkip?: boolean;
+  // Runs on entering the step, anchored or not (an anchorless outro can tidy up here).
+  prepare?: (api: Api) => void | Promise<void>;
+  cleanup?: (api: Api) => void;
+};
+
+// Whether a step points at something (otherwise it is a centred card).
+export function hasAnchor<Api>(step: TourStepOf<Api>): boolean {
+  return step.target !== undefined || step.selector !== undefined;
+}
+
+// Telemetry `type` token for a step-viewed event (docs/specs/017-telemetry/telemetry.md: preset tokens
+// only, never content; step ids are a fixed catalogue, so deriving is
+// safe): ('TourStep', 'selection-modes') → 'TourStepSelectionModes'.
+export function stepTelemetryType(prefix: string, stepId: string): string {
+  const camel = stepId
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  return `${prefix}${camel}`;
+}

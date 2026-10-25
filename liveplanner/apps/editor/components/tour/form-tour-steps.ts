@@ -2,8 +2,11 @@
 // person's own Form tab it adds an example question, opens it to edit, opens its type menu, previews the form as a
 // respondent, opens where responses go, visits where they land and opens sharing, then takes the example question
 // away again (no undo step, so Undo never brings it back) and leaves Preview, whatever ends the tour.
-import { stepTelemetryType, type TourStepOf } from './tour-step';
-import { opensFrom } from './tour-open';
+import {
+  stepTelemetryType,
+  type TourStepOf,
+} from '@liveworkspace/workbench/components/tour/tour-step';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 export type FormTourApi = {
   destination: () => { tabId: string; kind: 'board' | 'sheet' } | null;
@@ -18,13 +21,6 @@ export type FormTourApi = {
 };
 
 export type FormTourStep = TourStepOf<FormTourApi>;
-
-const WELCOME: FormTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Forms?',
-  body: 'A hands-on look: we add a question, try your form as a respondent, and show where answers go and how to share it. Our example question goes when we finish.',
-};
 
 const question = (api: FormTourApi, inner = '') => {
   const id = api.questionId();
@@ -125,7 +121,6 @@ export function formTourSteps({
   destination: 'board' | 'sheet' | null;
 }): FormTourStep[] {
   return [
-    WELCOME,
     ADD,
     EDIT,
     TYPE,

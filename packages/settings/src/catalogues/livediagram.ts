@@ -767,7 +767,7 @@ export const CATALOGUE: AppCatalogue = {
       tile: 'tours',
       sectionNotes: {
         'Offer Again':
-          'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+          'Start a tour from the Start Tour button in the bottom bar, left of Settings: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
       rows: [
         {
@@ -792,7 +792,7 @@ export const CATALOGUE: AppCatalogue = {
           kind: 'toggle',
           id: 'workshopTourSeen',
           label: 'Workshop Tour',
-          description: 'The first time you work in Workshop.',
+          description: 'In Workshop.',
           keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
           section: 'Offer Again',
           key: 'workshopTourSeen',
@@ -809,7 +809,7 @@ export const CATALOGUE: AppCatalogue = {
           kind: 'toggle',
           id: 'drawTourSeen',
           label: 'Draw Tour',
-          description: 'The first time you work in Draw.',
+          description: 'In Draw.',
           keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
           section: 'Offer Again',
           key: 'drawTourSeen',
@@ -826,7 +826,7 @@ export const CATALOGUE: AppCatalogue = {
           kind: 'toggle',
           id: 'avatarTourSeen',
           label: 'Avatar Tour',
-          description: 'The first time you walk as an avatar.',
+          description: 'While you walk as an avatar.',
           keywords:
             'tour walkthrough onboarding tutorial avatar character walk speech message push replay',
           section: 'Offer Again',

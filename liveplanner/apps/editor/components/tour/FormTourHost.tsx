@@ -1,8 +1,8 @@
 'use client';
 
 // Orchestrates the Forms tour (docs/specs/030-forms/forms.md "The Forms tour"). Mounted in EditorView once a Form tab
-// has been open; renders nothing until an Editor who has not seen it has a Form tab open, no other tour is on screen
-// and the settle delay has passed, or Show Me Around in the form's cog asks for a rerun. Its destination step opens the board
+// has been open. While an Editor has a Form tab open, it offers the tour on the footer's Start Tour button ("Start
+// Forms Tour"); a press there, or Show Me Around in the form's cog, starts it. It never starts or prompts on its own. Its destination step opens the board
 // or sheet the form feeds and comes back to the form after; any other move away ends it.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -19,32 +19,17 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { FormStarterPicture } from '@liveplanner/template-previews';
 import { formTourSteps, formTourStepTelemetryType, type FormTourApi } from './form-tour-steps';
 import { TourStage } from './TourStage';
-import { useTourEngine, type TourOutcome } from './useTourEngine';
-
-const OFFER_DELAY_MS = 800;
+import {
+  useTourEngine,
+  type TourOutcome,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 const FORM_TOUR_COPY = {
-  welcomeEyebrow: 'Forms tour',
   helpHref: '/help/plan/forms/',
-};
-
-// The welcome card's picture: a form in the art's light colours.
-const ART_PALETTE = {
-  surface: '#ffffff',
-  border: '#e2e8f0',
-  column: '#f1f5f9',
-  card: '#ffffff',
-  cardBorder: '#e2e8f0',
-  text: '#0f172a',
-  muted: '#64748b',
-  warning: '#b45309',
-  warningBg: '#fef3c7',
-  focus: '#7c3aed',
 };
 
 // The example question's wording.
@@ -120,7 +105,7 @@ export function FormTourHost() {
     },
   });
 
-  // The steps fixed as the tour starts: the form as it was when offered.
+  // The steps fixed as the tour starts: the form as it was then.
   const [shape, setShape] = useState({ destination: destKind });
   const steps = useMemo(() => formTourSteps(shape), [shape]);
   const engine = useTourEngine<FormTourApi>({
@@ -134,32 +119,17 @@ export function FormTourHost() {
 
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'form';
-  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
-  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('form', active);
   }, [active]);
 
-  const seen = ctx.userPreferences?.formTourSeen === true;
   const canWork =
     ctx.hydrated &&
-    ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
     ctx.can.level === 'edit' &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     tab.locked !== true;
-
-  // Armed on opening a Form tab, and by Show Me Around; disarmed once offered or answered.
-  const [armed, setArmed] = useState(false);
-  // Show Me Around asked for it: offered at once, even to someone who has seen it.
-  const [rerun, setRerun] = useState(false);
-  const [wasOn, setWasOn] = useState(false);
-  if (onForm !== wasOn) {
-    setWasOn(onForm);
-    if (onForm) setArmed(true);
-  }
-  if (armed && seen && !rerun) setArmed(false);
 
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.backToForm();
@@ -175,54 +145,44 @@ export function FormTourHost() {
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     debugLog('[form-tour] end', { outcome });
-    if (outcome === 'declined') track('UI', 'Closed', 'FormTourOffer');
-    else track('UI', 'Ended', outcome === 'completed' ? 'FormTourCompleted' : 'FormTourSkipped');
+    track('UI', 'Ended', outcome === 'completed' ? 'FormTourCompleted' : 'FormTourSkipped');
   };
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  // The offer: armed, on a Form tab, usable, not seen (a rerun clears that), and no other tour on screen.
-  useEffect(() => {
-    if (!armed || active || (seen && !rerun)) return;
-    if (!onForm || !canWork || otherTour || modalOpen) return;
-    const t = setTimeout(
-      () => {
-        setArmed(false);
-        setRerun(false);
-        formTabRef.current = tab.id;
-        destTabRef.current = destTabId;
-        setShape({ destination: destKind });
-        debugLog('[form-tour] offer');
-        engineRef.current.start();
-        track('UI', 'Opened', 'FormTourOffer');
-      },
-      rerun ? 0 : OFFER_DELAY_MS,
-    );
-    return () => clearTimeout(t);
-  }, [
-    armed,
-    active,
-    seen,
-    rerun,
-    onForm,
-    canWork,
-    otherTour,
-    modalOpen,
-    engineRef,
-    tab.id,
-    destTabId,
-    destKind,
-  ]);
+  const start = () => {
+    if (active || otherTour) return;
+    formTabRef.current = tab.id;
+    destTabRef.current = destTabId;
+    setShape({ destination: destKind });
+    debugLog('[form-tour] start');
+    engineRef.current.start();
+  };
+  const canStart = onForm && canWork;
+  // The footer's Start Tour button: offered on a Form tab the person can edit, taken or not (it is how it is taken
+  // again).
+  useOfferTour(
+    'form',
+    canStart
+      ? {
+          name: 'Forms',
+          rank: TOUR_OFFER_RANK.mode,
+          start,
+          onShown: () => track('UI', 'Opened', 'FormTourOffer'),
+        }
+      : null,
+  );
 
-  // Show Me Around: offers again at once.
+  // Show Me Around in the form's cog: runs it at once.
+  const startRef = useLatest(start);
+  const canStartRef = useLatest(canStart);
   useEffect(() => {
     const onRelaunch = () => {
-      setRerun(true);
-      setArmed(true);
+      if (canStartRef.current) startRef.current();
     };
     window.addEventListener(FORM_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(FORM_TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, []);
+  }, [canStartRef, startRef]);
 
   // Ends as skipped when it can no longer run: edit rights gone, or a tab opened that is neither the form nor where
   // its responses go.
@@ -237,12 +197,5 @@ export function FormTourHost() {
 
   useEffect(() => () => setActiveTour('form', false), []);
 
-  return (
-    <TourStage
-      engine={engine}
-      ariaPrefix="Forms tour"
-      copy={FORM_TOUR_COPY}
-      welcomeArt={<FormStarterPicture starter="feedback" palette={ART_PALETTE} />}
-    />
-  );
+  return <TourStage engine={engine} ariaPrefix="Forms tour" copy={FORM_TOUR_COPY} />;
 }

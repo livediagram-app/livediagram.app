@@ -8,9 +8,12 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import type { PhotoReviewTourApi } from './photo-review-tour-steps';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 // The tour over the review. Its box, and so its steps, are fixed when Show Me is pressed (`freeze`): deleting that
 // box mid-tour must not swap the steps out from under the person. The steps load at the press, so their copy stays

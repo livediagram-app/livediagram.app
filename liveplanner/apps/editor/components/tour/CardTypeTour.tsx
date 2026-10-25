@@ -7,7 +7,10 @@ import { track } from '@/lib/telemetry';
 import type { TypeEditorTab } from '@/components/plan/ItemTypeEditorTabs';
 import { CARD_TYPE_TOUR_STEPS, type CardTypeTourApi } from './card-type-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 export function useCardTypeTour(
   showTab: (tab: TypeEditorTab) => void,

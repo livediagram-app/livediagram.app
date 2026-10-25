@@ -10,7 +10,7 @@ import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import { stackTourSteps } from './stack-tour-steps';
 import { tabWindowTourSteps } from './tab-window-tour-steps';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 const env: MenuTourEnv = { elementId: 'el', hasMore: true, touch: false };
 type Step = TourStepOf<ElementTourApi>;

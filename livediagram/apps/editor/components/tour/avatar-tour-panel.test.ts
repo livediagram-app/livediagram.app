@@ -33,7 +33,7 @@ afterEach(() => {
 describe('the Avatar tour and the panel', () => {
   it('reopens a panel the person had open, which the push step closed', async () => {
     document.querySelector<HTMLButtonElement>('[data-tour-id="avatar-button"]')!.click();
-    await run('welcome');
+    await run('avatar-button');
     await run('character');
     await run('push');
     expect(panelOpen()).toBe(false);
@@ -42,7 +42,7 @@ describe('the Avatar tour and the panel', () => {
   });
 
   it('closes a panel the tour opened', async () => {
-    await run('welcome');
+    await run('avatar-button');
     await run('character');
     expect(panelOpen()).toBe(true);
     await run('outro');
@@ -50,7 +50,7 @@ describe('the Avatar tour and the panel', () => {
   });
 
   it('on a Skip, closes a panel the tour opened and leaves one the person opened', async () => {
-    await run('welcome');
+    await run('avatar-button');
     await run('character');
     tidyAvatarTour();
     expect(panelOpen()).toBe(false);

@@ -7,9 +7,8 @@ import {
 
 // docs/specs/008-canvas/avatar-tour.md "The steps"
 describe('the Avatar tour steps', () => {
-  it('runs welcome, the button, the character, the actions, speaking and pushing, then the outro', () => {
+  it('runs the button, the character, the actions, speaking and pushing, then the outro', () => {
     expect(AVATAR_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'welcome',
       'avatar-button',
       'character',
       'actions',
@@ -17,7 +16,7 @@ describe('the Avatar tour steps', () => {
       'push',
       'outro',
     ]);
-    expect(AVATAR_TOUR_STEPS.slice(1, -1).map((s) => s.target)).toEqual([
+    expect(AVATAR_TOUR_STEPS.slice(0, -1).map((s) => s.target)).toEqual([
       'avatar-button',
       'avatar-character',
       'avatar-actions',
@@ -43,8 +42,8 @@ describe('the Avatar tour steps', () => {
     ).toMatch(/Enter/);
   });
 
-  it('offers itself and closes ready to roam', () => {
-    expect(AVATAR_TOUR_STEPS[0]).toMatchObject({ card: 'welcome', title: 'Meet Your Avatar' });
+  it('opens on a step, with no welcome card, and closes ready to roam', () => {
+    expect(AVATAR_TOUR_STEPS[0]?.card).toBeUndefined();
     expect(AVATAR_TOUR_STEPS.at(-1)).toMatchObject({
       card: 'outro',
       title: "You're Ready to Roam",

@@ -1,6 +1,6 @@
 import { inTheMenu } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 // What a round-two element tour knows of where it runs (docs/specs/007-editor/element-tours.md "Menu steps on the
 // elements of round two").

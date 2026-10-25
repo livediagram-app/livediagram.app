@@ -4,6 +4,7 @@ import {
   CHROME_BTN_LABELLED,
   ChromeLabel,
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
+import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { HoverCard } from '@liveplanner/ui';
 
@@ -46,6 +47,9 @@ export function ChromeControls({
           </button>
         </HoverCard>
       ) : null}
+      {/* The Start Tour button, immediately left of Settings: the one way into a tour, drawn only while one is on
+          offer (docs/specs/007-editor/editor-tour.md "Where it appears"). */}
+      <TourOfferButton labelled={labelled} />
       {onOpenSettings ? (
         <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

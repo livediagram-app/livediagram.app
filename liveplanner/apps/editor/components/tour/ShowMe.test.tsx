@@ -3,11 +3,11 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import type { TourStepOf } from './tour-step';
-import { useTourEngine } from './useTourEngine';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import { useTourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 
-vi.mock('./tour-dom', async (actual) => ({
-  ...(await actual<typeof import('./tour-dom')>()),
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/components/tour/tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
 }));
 afterEach(cleanup);

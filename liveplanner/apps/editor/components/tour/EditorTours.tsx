@@ -23,7 +23,7 @@ export function EditorTours() {
   const mountFormTour = useEverTrue(activeTab.kind === 'form');
   return (
     <>
-      {/* The Plan tour (docs/specs/026-plan/plan-tour.md): offered once a board or Sheet is on the tab. */}
+      {/* The Plan tour (docs/specs/026-plan/plan-tour.md): on the Start Tour button once a board or Sheet is on the tab. */}
       <PlanTourHost />
       {/* The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab. */}
       {mountFormTour ? <FormTourHost /> : null}

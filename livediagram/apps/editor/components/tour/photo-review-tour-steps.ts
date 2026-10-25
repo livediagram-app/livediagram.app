@@ -1,7 +1,7 @@
 // The steps of Show Me in the photo import review (docs/specs/021-event-storming/event-storming.md "Show Me"): a tour
 // of checking what was found on the wall, run on the review itself. The box steps point at the first box found, and
 // every control stays usable, so the person can untick, retype or redraw while the step is up.
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 export type PhotoReviewTourApi = {
   // The box the box steps point at: the first one on the photo when the tour started.

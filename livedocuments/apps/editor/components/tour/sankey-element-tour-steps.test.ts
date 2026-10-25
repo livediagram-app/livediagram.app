@@ -13,7 +13,9 @@ import {
   type SankeyElementTourContext,
 } from './sankey-element-tour-steps';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 const budget = createShape('sankey', 0, 0);
 

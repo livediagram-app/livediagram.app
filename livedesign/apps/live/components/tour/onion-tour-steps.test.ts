@@ -8,7 +8,9 @@ import type { ElementTourApi } from './element-tour-api';
 import { onionTourSteps } from './onion-tour-steps';
 import type { ConceptTourContext } from './concept-element-tour-steps';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 const rows = ['Domain', 'Application', 'Adapters', 'Infrastructure'].map((label) => ({ label }));
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({

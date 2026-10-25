@@ -9,7 +9,7 @@ import { lucideFootprints } from '@liveworkspace/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
 import { setActiveTour } from '@/lib/tour-active';
 import { TourStage } from './TourStage';
-import type { TourEngine } from './useTourEngine';
+import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 // A walkthrough's footprints, at the Help link's size.
 const FootprintsIcon = lucideGlyph(lucideFootprints, 14);

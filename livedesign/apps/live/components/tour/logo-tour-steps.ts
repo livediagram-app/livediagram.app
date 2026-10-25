@@ -4,18 +4,11 @@
 // or turn the guides on while the step is up.
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { pageCog, pageSheet } from './page-tour-dom';
-import { opensFrom } from './tour-open';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 import { combineDemoShape, placeCombineDemo, uniteCombineDemo } from './logo-combine-demo';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 type LogoTourStep = PageTourStep;
-
-export const LOGO_WELCOME: LogoTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Logos?',
-  body: 'A quick look at logo layouts, guides, mirror drawing and combining shapes?',
-};
 
 const titleButton = (name: string) => (api: PageTourApi) =>
   `[data-logo-title-bar="${api.pageId}"] button[aria-label="${name}"]`;

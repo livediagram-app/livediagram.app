@@ -8,11 +8,9 @@ import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePoi
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
 import {
   canTourElement,
   elementTourKindOf,
-  elementTourSeen,
   markElementTourSeen,
   type ElementTourKind,
 } from '@/lib/element-tours';
@@ -26,21 +24,29 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import type { ElementTourApi } from './element-tour-api';
 import { CONTEXT_MENU } from './element-menu-tour';
-import { waitForSelector } from './tour-dom';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import { TourStage } from './TourStage';
-import type { TourStepOf } from './tour-step';
-import { useTourEngine, type TourOutcome } from './useTourEngine';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import {
+  useTourEngine,
+  type TourOutcome,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import {
+  TOUR_OFFER_RANK,
+  tourNameOf,
+  useOfferTour,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
 
 // The one selected element, or null for none or a multi-selection.
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
 // Element tours (docs/specs/007-editor/element-tours.md): decides whether the selected element is offered its tour,
-// publishes the offer for the selection toolbar to draw, and runs the tour when Play is pressed. Mounted once in
+// offers it on the footer's Start Tour button ("Start Sankey Tour", ahead of the mode's own tour), and runs the tour
+// when the button is pressed. It never starts or prompts on its own. Mounted once in
 // EditorView beside the other tour hosts. Each toured kind's steps, copy and token are its ELEMENT_TOUR_DEFS entry.
 export function ElementTourHost() {
   const ctx = useEditorContext();
@@ -131,13 +137,14 @@ export function ElementTourHost() {
   };
   const endTourRef = useLatest(endTour);
 
-  // One tour at a time: publish this one while it runs, and offer nothing while any tour is on screen.
+  // One tour at a time: publish this one while it runs, and start nothing while any tour is on screen.
   const shown = useActiveTour();
   useEffect(() => {
     setActiveTour('element', active);
   }, [active]);
 
-  // Answers the offer for good: onto the freshest preferences, not this render's, since the whole blob is written.
+  // Records the kind as taken (Settings › Tours): onto the freshest preferences, not this render's, since the whole blob
+  // is written.
   const answer = (k: ElementTourKind) => {
     const next = rebaseUserPreferences(
       ctx.userPreferences,
@@ -163,64 +170,32 @@ export function ElementTourHost() {
     setTouring({ id: el.id, kind: k });
     engineRef.current.start();
   };
-  const dismiss = (k: ElementTourKind) => {
-    answer(k);
-    debugLog('[element-tour] cancel', { kind: k });
-    track('UI', 'Closed', `${ELEMENT_TOUR_DEFS[k].token}Offer`);
-  };
   const playRef = useLatest(play);
-  const dismissRef = useLatest(dismiss);
 
   const startPanelOpen = useStartPanelOpen();
-  // Dialogs come first (docs/specs/007-editor/pages-tour.md): the offer goes while one is open and comes back after.
-  const modalOpen = useAnyModalOpen();
-  const usable =
-    ctx.hydrated &&
-    // The synced preferences are in, so an answer given on another device holds here too.
-    ctx.prefsSettled &&
-    !startPanelOpen &&
-    !ctx.anyWelcomeOpen &&
-    !ctx.embedMode;
+  const usable = ctx.hydrated && !startPanelOpen && !ctx.anyWelcomeOpen && !ctx.embedMode;
   const offered =
-    usable &&
-    !phone &&
-    !active &&
-    shown === null &&
-    !modalOpen &&
-    element !== null &&
-    kind !== null &&
-    canTourElement(ctx.can, element, kind) &&
-    !elementTourSeen(ctx.userPreferences, kind);
+    usable && !phone && element !== null && kind !== null && canTourElement(ctx.can, element, kind);
 
-  // The offer, one object per element offered, so the toolbar re-renders only when it comes or goes.
+  // The footer's Start Tour button, while the selected element is one with a tour, taken or not. One offer per kind, so
+  // the button counts each kind's first showing in this page load.
   const offerId = offered ? element.id : null;
-  const offer = useMemo<ElementTourOffer | null>(
-    () =>
-      offerId && kind
-        ? {
-            elementId: offerId,
-            kind,
-            play: () => {
-              const el = activeTabRef.current.elements.find((e) => e.id === offerId);
-              if (el) playRef.current(el, kind);
-            },
-            dismiss: () => dismissRef.current(kind),
-          }
-        : null,
-    [offerId, kind, playRef, dismissRef, activeTabRef],
+  const offerKind = offered ? kind : null;
+  useOfferTour(
+    offerKind ? `element-${offerKind}` : 'element',
+    offerId && offerKind
+      ? {
+          name: tourNameOf(ELEMENT_TOUR_DEFS[offerKind].eyebrow),
+          rank: TOUR_OFFER_RANK.element,
+          start: () => {
+            if (shown !== null) return;
+            const el = activeTabRef.current.elements.find((e) => e.id === offerId);
+            if (el) playRef.current(el, offerKind);
+          },
+          onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
+        }
+      : null,
   );
-  useEffect(() => {
-    setElementTourOffer(offer);
-  }, [offer]);
-  useEffect(() => () => setElementTourOffer(null), []);
-
-  // The offer's first showing in this page load, per kind.
-  const offeredKinds = useRef(new Set<ElementTourKind>());
-  useEffect(() => {
-    if (!offer || offeredKinds.current.has(offer.kind)) return;
-    offeredKinds.current.add(offer.kind);
-    track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offer.kind].token}Offer`);
-  }, [offer]);
 
   // Ends as skipped when the tour can no longer run on its element: deleted, no longer editable, or another tab.
   const touredElement = touring

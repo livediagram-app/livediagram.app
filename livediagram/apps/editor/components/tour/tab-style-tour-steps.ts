@@ -3,7 +3,7 @@
 // control into view; the Finish steps open the Finish panel, and one of them really redraws the tab in another finish,
 // putting the person's own back as it ends, however it ends.
 import type { Finish } from '@livediagram/document';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 export type TabStyleTourApi = {
   // Brings the home (the looks and the Fine-tune rows) forward.
