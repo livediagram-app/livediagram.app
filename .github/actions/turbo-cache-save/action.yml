@@ -1,0 +1,14 @@
+name: Turbo cache, save
+description: >-
+  Saves the Turborepo cache turbo-cache restored in the same job, on main only: pull requests read
+  main's cache but never write their own, so they cannot evict it from the repository's cache storage.
+
+runs:
+  using: composite
+  steps:
+    - name: Save turbo cache
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('.turbo/cache/**') != ''
+      uses: actions/cache/save@v6
+      with:
+        path: .turbo/cache
+        key: ${{ env.TURBO_CACHE_KEY }}

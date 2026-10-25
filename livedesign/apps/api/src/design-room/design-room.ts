@@ -53,7 +53,10 @@ import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
-import { sessionMatchesAccessClose, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
+import {
+  sessionMatchesAccessClose,
+  type AccessCloseMatch,
+} from '@liveworkspace/api-kit/room-access';
 import {
   newSessionAttachment,
   readSessionAttachment,
@@ -610,7 +613,10 @@ export class DesignRoom extends DurableObject<Env> {
 
   // An old livediagram.app document's livedesign part (the migration door, design-migration.ts): one transaction,
   // with its own times; the outbox pushes it to the index and the media service as any write.
-  async importMigrated(designId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer> {
+  async importMigrated(
+    designId: string,
+    payload: MigrationRoomPayload,
+  ): Promise<MigrationDoorAnswer> {
     this.bindDesign(designId);
     this.requireEnv();
     return importMigratedDesign(this.db, payload);

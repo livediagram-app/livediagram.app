@@ -1,0 +1,20 @@
+# Codecov for the monorepo's CI (docs/ci.md). A run uploads only the groups a change reached, so each
+# group's flag carries forward from its last upload, and nothing waits on a fixed number of uploads.
+codecov:
+  notify:
+    wait_for_ci: true
+
+flag_management:
+  default_rules:
+    carryforward: true
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+
+comment: false

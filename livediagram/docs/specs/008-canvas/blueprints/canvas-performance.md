@@ -58,7 +58,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | Settled elements | `useSettledElements`              | The elements the Map draws                                                                    |
 | Reference board  | `buildReferenceBoard`             | The seeded synthetic board                                                                    |
 | Budget row       | `BudgetRow`                       | One line of the spec's budget table, with its measured value and verdict                      |
-| Budget issue     | title `Canvas performance budget` | The one GitHub issue the nightly run opens, comments on and closes                            |
+| Budget issue     | title `Canvas performance budget: livediagram` | The one GitHub issue the nightly run opens, comments on and closes                            |
 
 "Drag" in the spec maps to the gestures `move` and `resize`; arrow handle drags are `reshape`.
 
@@ -351,7 +351,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
   `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf` with
   `retention-days: 14`.
 - `nightly.mjs report` writes the table to `$GITHUB_STEP_SUMMARY`, finds the open issue titled
-  `Canvas performance budget` (by title; no label), and acts on `budgetIssueAction`
+  `Canvas performance budget: livediagram` (by title; no label), and acts on `budgetIssueAction`
   (`budget-report.ts`): a miss opens it or comments on it, an all-pass run comments "Back within
   budget at <sha>" and closes it. `budgetIssueComment` carries the table,
   `git log --oneline <previous-sha>..<sha>` and the run's link.
@@ -436,7 +436,7 @@ export function evaluateBudget(m: readonly Measurement[]): BudgetRow[];
 export function budgetTable(rows: readonly BudgetRow[]): string;
 
 // apps/editor/e2e/perf/budget-report.ts
-export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
+export const BUDGET_ISSUE_TITLE = 'Canvas performance budget: livediagram';
 export function budgetIssueAction(run: { misses: number; issueOpen: boolean; onMain: boolean }): 'open' | 'comment' | 'close' | 'none';
 export function budgetIssueComment(report: BudgetIssueReport): string;
 ```

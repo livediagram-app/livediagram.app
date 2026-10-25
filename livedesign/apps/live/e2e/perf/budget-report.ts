@@ -1,7 +1,7 @@
 // What the nightly run does with the budget issue (docs/specs/008-canvas/canvas-performance.md
 // "Measuring"), and what it says. Pure: nightly.ts does the I/O.
 
-export const BUDGET_ISSUE_TITLE = 'Canvas performance budget';
+export const BUDGET_ISSUE_TITLE = 'Canvas performance budget: livedesign';
 
 type BudgetIssueAction = 'open' | 'comment' | 'close' | 'none';
 

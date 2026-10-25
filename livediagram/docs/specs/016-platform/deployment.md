@@ -29,6 +29,11 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 
 ## CI
 
+In the liveworkspace monorepo these run from the root's `.github/` ([docs/ci.md](../../../../docs/ci.md)): one CI,
+E2E, CodeQL and canvas performance workflow for every product, running livediagram's jobs only when a change reaches it.
+The `livediagram/.github/` copies are inert there, deploys included: the monorepo doesn't deploy yet (docs/ci.md
+"Deploys").
+
 `.github/workflows/ci.yml` runs on **every PR** and **every push to `main`**.
 
 Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slowest rather than their sum:
@@ -48,7 +53,7 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 `.github/workflows/codeql.yml` runs CodeQL (advanced setup) on every PR, every push to `main`, and weekly. A single `Analyze` job scans both `actions` and `javascript-typescript`, so it shows as one check. The repository's CodeQL default setup stays disabled: GitHub rejects advanced-setup uploads while it is on. GitHub Code Quality remains a separate, GitHub-managed check.
 
-`.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
+`.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget: livediagram**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
 
 `.github/workflows/mcp-registry.yml` publishes the root `server.json` to the official MCP Registry when that file changes on `main`, or on manual dispatch. It authenticates with GitHub OIDC, so it needs no secret. See [MCP server §4.16](../015-api/mcp-server.md#416-registry-listing).
 

@@ -4,11 +4,7 @@
 // written, replaced or left as edited) are the kit's (@liveworkspace/index-app migration-room.ts); this names the
 // document's tables and its own stats and image references.
 
-import {
-  writeMigratedRoom,
-  type ItemDb,
-  type MigrationRoomShape,
-} from '@liveworkspace/index-app';
+import { writeMigratedRoom, type ItemDb, type MigrationRoomShape } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { tabStatsOfData } from '../db/tab-stats';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';

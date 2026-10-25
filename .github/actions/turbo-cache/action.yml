@@ -1,0 +1,32 @@
+name: Turbo cache, restore
+description: >-
+  Restores Turborepo's local cache (.turbo/cache) for one job from the latest run on main, so a
+  workspace whose inputs haven't changed since replays its result instead of running again
+  (docs/ci.md "Only what changed"). Sets TURBO_CACHE_KEY for turbo-cache-save.
+
+inputs:
+  name:
+    description: The cache's name, one per job and group (e.g. checks-livediagram).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Name the cache
+      id: key
+      shell: bash
+      env:
+        NAME: ${{ inputs.name }}
+        LOCK: ${{ hashFiles('pnpm-lock.yaml') }}
+      run: |
+        set -euo pipefail
+        prefix="turbo-v1-${NAME}-${LOCK}-"
+        echo "prefix=${prefix}" >> "${GITHUB_OUTPUT}"
+        echo "TURBO_CACHE_KEY=${prefix}${GITHUB_SHA}" >> "${GITHUB_ENV}"
+
+    - name: Restore turbo cache
+      uses: actions/cache/restore@v6
+      with:
+        path: .turbo/cache
+        key: ${{ steps.key.outputs.prefix }}${{ github.sha }}
+        restore-keys: ${{ steps.key.outputs.prefix }}

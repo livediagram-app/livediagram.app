@@ -55,6 +55,6 @@ describe('budgetIssueComment', () => {
   });
 
   it('names the issue once', () => {
-    expect(BUDGET_ISSUE_TITLE).toBe('Canvas performance budget');
+    expect(BUDGET_ISSUE_TITLE).toBe('Canvas performance budget: livediagram');
   });
 });

@@ -53,7 +53,10 @@ import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
-import { sessionMatchesAccessClose, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
+import {
+  sessionMatchesAccessClose,
+  type AccessCloseMatch,
+} from '@liveworkspace/api-kit/room-access';
 import {
   newSessionAttachment,
   readSessionAttachment,
@@ -590,7 +593,10 @@ export class PlanRoom extends DurableObject<Env> {
 
   // An old livediagram.app document's liveplanner part (the migration door, plan-migration.ts): one transaction, with
   // its own times and Plan rows; the outbox pushes it to the index as any write.
-  async importMigrated(planId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer> {
+  async importMigrated(
+    planId: string,
+    payload: MigrationRoomPayload,
+  ): Promise<MigrationDoorAnswer> {
     this.bindPlan(planId);
     this.requireEnv();
     return importMigratedPlan(this.db, payload);

@@ -1,0 +1,134 @@
+name: E2E
+
+# Each product's end-to-end suites (e2e-product.yml), for the products whose editor a change reaches
+# (docs/ci.md): the same plan as CI, so a change to liveplanner alone never boots livediagram's stack.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      e2e: ${{ steps.plan.outputs.e2e }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Plan
+        id: plan
+        env:
+          BASE: >-
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
+            github.event_name == 'push' && github.event.before || '' }}
+          HEAD: ${{ github.sha }}
+        run: node .github/scripts/ci-plan.mjs
+
+  livediagram:
+    name: livediagram
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'livediagram')
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: livediagram
+      editor: '@livediagram/editor'
+      editor-dir: apps/editor
+      sites: --filter @livediagram/help --filter @livediagram/community
+      sites-cache: |
+        apps/editor/.next/cache
+        apps/help/.next/cache
+        apps/community/.next/cache
+        apps/marketing/.next/cache
+      smoke-explorer: true
+      signed-in-cache: editor-signed-in
+
+  liveplanner:
+    name: liveplanner
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'liveplanner')
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: liveplanner
+      editor: '@liveplanner/editor'
+      editor-dir: apps/editor
+      sites: --filter @liveplanner/help
+      sites-cache: |
+        apps/editor/.next/cache
+        apps/help/.next/cache
+        apps/marketing/.next/cache
+      smoke-explorer: true
+      sites-explorer: true
+      signed-in-explorer: true
+
+  livedesign:
+    name: livedesign
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'livedesign')
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: livedesign
+      editor: '@livedesign/live'
+      editor-dir: apps/live
+      sites: --filter @livedesign/help
+      sites-cache: |
+        apps/live/.next/cache
+        apps/help/.next/cache
+        apps/marketing/.next/cache
+
+  livedocuments:
+    name: livedocuments
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'livedocuments')
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: livedocuments
+      editor: '@livedocuments/editor'
+      editor-dir: apps/editor
+      sites: --filter @livedocuments/help
+      sites-cache: |
+        apps/editor/.next/cache
+        apps/help/.next/cache
+        apps/marketing/.next/cache
+
+  # One check to require, whatever ran.
+  e2e:
+    name: E2E
+    needs: [plan, livediagram, liveplanner, livedesign, livedocuments]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Result
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: ${RESULTS}"
+          case " ${RESULTS} " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac

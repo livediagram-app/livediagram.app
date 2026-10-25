@@ -1,0 +1,232 @@
+name: CI
+
+# The monorepo's CI (docs/ci.md): each product's CI from its own repository, run here for only what a
+# change affects. A `plan` job asks Turborepo which workspaces the change reaches (the ones it touched
+# and everything depending on them) and groups them by product; every later job runs per group, so a
+# product the change never reached runs nothing.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: CI only checks out and verifies. The jobs that upload coverage add id-token: write,
+# the OIDC token Codecov accepts in place of a secret.
+permissions:
+  contents: read
+
+# A pull request's newer push replaces its older run. On main every commit runs to the end, in a group
+# of its own, so a burst of merges never drops the middle ones.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      groups: ${{ steps.plan.outputs.groups }}
+      editors: ${{ steps.plan.outputs.editors }}
+      any: ${{ steps.plan.outputs.any }}
+    steps:
+      # The whole history, so turbo can diff against the base commit.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # A pull request against its base; a push to main against the commit before it. A manual run
+      # has no base and runs everything.
+      - name: Plan
+        id: plan
+        env:
+          BASE: >-
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
+            github.event_name == 'push' && github.event.before || '' }}
+          HEAD: ${{ github.sha }}
+        run: node .github/scripts/ci-plan.mjs
+
+  checks:
+    name: Checks (${{ matrix.group }})
+    needs: plan
+    if: needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.groups) }}
+    steps:
+      # The history, so the format check can diff against the base.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      - name: Restore turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          name: checks-${{ matrix.group }}
+
+      - name: Lint and type check
+        run: pnpm turbo run lint typecheck --concurrency=2 ${{ matrix.filters }}
+
+      # The files the change touched, each product's with its own ignore file (format-check.sh).
+      - name: Format check
+        env:
+          BASE: ${{ matrix.base }}
+          PRODUCT: ${{ matrix.format }}
+        run: bash .github/scripts/format-check.sh
+
+      - name: Save turbo cache
+        uses: ./.github/actions/turbo-cache-save
+
+  tests:
+    name: Tests (${{ matrix.group }})
+    needs: plan
+    if: needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.groups) }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      - name: Restore turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          name: tests-${{ matrix.group }}
+
+      # Every workspace runs its suite once: those with test:coverage run that (it enforces their
+      # per-file thresholds, so the coverage tooling itself is exercised), the rest plain `test`. The
+      # product's editor runs in the sharded job below. Two at a time: each vitest fills the cores.
+      - name: Test
+        if: matrix.plain != ''
+        run: pnpm turbo run test --concurrency=2 ${{ matrix.plain }}
+
+      - name: Coverage thresholds
+        if: matrix.coverage != ''
+        run: pnpm turbo run test:coverage --concurrency=2 ${{ matrix.coverage }}
+
+      # A Codecov outage must not hold back a merge: the upload logs its error and the job passes.
+      - name: Upload coverage
+        if: matrix.coverage != ''
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          flags: ${{ matrix.group }}
+          fail_ci_if_error: false
+
+      - name: Save turbo cache
+        uses: ./.github/actions/turbo-cache-save
+
+  editor-tests:
+    name: Editor unit tests (${{ matrix.group }}) ${{ matrix.shard }}/${{ matrix.total }}
+    needs: plan
+    if: needs.plan.outputs.editors != '[]' && needs.plan.outputs.editors != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.editors) }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      - name: Test
+        run: pnpm --filter ${{ matrix.editor }} exec vitest run --coverage --shard=${{ matrix.shard }}/${{ matrix.total }}
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          flags: ${{ matrix.group }}-editor
+          files: ${{ matrix.dir }}/coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: false
+
+  build:
+    name: Build (${{ matrix.group }})
+    needs: plan
+    if: needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.groups) }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      # The affected workspaces with a build, and whatever they build on.
+      - name: Build
+        run: pnpm turbo run build ${{ matrix.filters }}
+
+      # The CLI as npm would publish it: its file list and size, without publishing.
+      - name: CLI package dry run
+        if: matrix.cli != ''
+        working-directory: ${{ matrix.cli }}/dist
+        run: npm pack --dry-run
+
+      # Resolve the staging wrangler configs without deploying anything: a binding left out of an
+      # `[env.staging]` block, or a `service =` that lost its `-staging` suffix, shows up here
+      # rather than at a deploy.
+      - name: Staging config check
+        run: pnpm turbo run staging:check ${{ matrix.filters }}
+
+  # One check to require on main, whatever ran: it fails when any job above failed or was cancelled,
+  # and passes when the change reached nothing.
+  ci:
+    name: CI
+    needs: [plan, checks, tests, editor-tests, build]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Result
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: ${RESULTS}"
+          case " ${RESULTS} " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac

@@ -1,0 +1,241 @@
+name: E2E (one product)
+
+# One product's end-to-end suites, as its own repository's e2e workflow ran them (each product's
+# docs/specs/003-system-architecture/e2e-smoke.md), called by e2e.yml for each product a change
+# reaches. Every step runs in the product's folder.
+on:
+  workflow_call:
+    inputs:
+      product:
+        description: The product's folder (livediagram, liveplanner, livedesign, livedocuments).
+        type: string
+        required: true
+      editor:
+        description: Its editor app's package (e.g. @livediagram/editor).
+        type: string
+        required: true
+      editor-dir:
+        description: The editor app's folder inside the product (apps/editor, or apps/live).
+        type: string
+        required: true
+      sites:
+        description: The other sites the audit builds beside the editor, as pnpm filters (marketing comes after).
+        type: string
+        required: true
+      sites-cache:
+        description: Their `.next/cache` folders inside the product, one per line.
+        type: string
+        required: true
+      smoke-explorer:
+        description: Whether the smoke specs open liveworkspace's Explorer, so its site is built.
+        type: boolean
+        default: false
+      sites-explorer:
+        description: Whether the sites audit opens it.
+        type: boolean
+        default: false
+      signed-in-explorer:
+        description: Whether the signed-in specs open it.
+        type: boolean
+        default: false
+      signed-in-cache:
+        description: The signed-in build's cache name.
+        type: string
+        default: live-signed-in
+
+permissions:
+  contents: read
+
+env:
+  BUILD_SKIP_TYPECHECK: '1'
+
+jobs:
+  smoke:
+    name: Smoke shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-latest
+    # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001 --ipc=host
+    defaults:
+      run:
+        working-directory: ${{ inputs.product }}
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+        with:
+          editor: ${{ inputs.editor }}
+
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: ${{ inputs.product }}-live
+          paths: ${{ inputs.product }}/${{ inputs.editor-dir }}/.next/cache
+
+      # Built the way production builds it: no NEXT_PUBLIC_API_BASE or sign-in flag, so it calls
+      # same-origin `/api` (the e2e stack proxies it) and runs in guest mode. A build id, so the stale
+      # build spec can make the server report a newer one.
+      - name: Build editor app
+        env:
+          NEXT_PUBLIC_BUILD_ID: e2e-build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build
+
+      - name: Build liveworkspace's site (the Explorer)
+        if: inputs.smoke-explorer
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
+      # Playwright's webServer boots scripts/e2e-stack.mjs (the api worker on local D1 and the static
+      # serve). CI=1 makes it always start fresh.
+      - name: Run smoke shard
+        run: pnpm --filter ${{ inputs.editor }} test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      # Every shard builds the same thing: one of them saves it.
+      - name: Save build cache
+        if: matrix.shard == 1
+        uses: ./.github/actions/next-cache-save
+
+      - name: Upload report with traces
+        if: >-
+          always() && hashFiles(format('{0}/{1}/test-results/**/trace.zip', inputs.product, inputs.editor-dir),
+          format('{0}/{1}/playwright-report/data/*.zip', inputs.product, inputs.editor-dir)) != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.product }}-playwright-report-shard-${{ matrix.shard }}
+          path: |
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/playwright-report
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
+          retention-days: 7
+
+  sites:
+    name: Sites audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001 --ipc=host
+    defaults:
+      run:
+        working-directory: ${{ inputs.product }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+        with:
+          editor: ${{ inputs.editor }}
+
+      - name: Name the cache folders
+        id: paths
+        shell: bash
+        env:
+          PRODUCT: ${{ inputs.product }}
+          PATHS: ${{ inputs.sites-cache }}
+        run: |
+          {
+            echo "paths<<PATHS_END"
+            printf '%s\n' "${PATHS}" | sed '/^$/d' | sed "s#^#${PRODUCT}/#"
+            echo "PATHS_END"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: ${{ inputs.product }}-sites
+          paths: ${{ steps.paths.outputs.paths }}
+
+      # The audit needs the other sites' exports, and the stack serves help (and the Community) on the
+      # editor's origin, so the editor is built beside them. Marketing comes last: its licences page
+      # runs Next's analyzer in every other app, on that app's Turbopack cache, and beside the app's own
+      # build the two corrupt it.
+      - name: Build the editor and the other sites
+        env:
+          NEXT_PUBLIC_BUILD_ID: e2e-build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} ${{ inputs.sites }} build
+
+      - name: Build marketing
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @${{ inputs.product }}/marketing build
+
+      - name: Build liveworkspace's site (the Explorer)
+        if: inputs.sites-explorer
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
+      - name: Run sites audit
+        run: pnpm --filter ${{ inputs.editor }} test:e2e:sites
+
+      - name: Save build cache
+        uses: ./.github/actions/next-cache-save
+
+      - name: Upload report with traces
+        if: >-
+          always() && hashFiles(format('{0}/{1}/test-results*/**/trace.zip', inputs.product, inputs.editor-dir),
+          format('{0}/{1}/playwright-report*/data/*.zip', inputs.product, inputs.editor-dir)) != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.product }}-playwright-report-sites
+          path: |
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/playwright-report
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
+          retention-days: 7
+
+  signed-in:
+    name: Signed-in specs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001 --ipc=host
+    defaults:
+      run:
+        working-directory: ${{ inputs.product }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+        with:
+          editor: ${{ inputs.editor }}
+
+      # The signed-in build keeps its cache in the same folder as the guest build, under its own name.
+      - name: Restore build cache
+        uses: ./.github/actions/next-cache-restore
+        with:
+          name: ${{ inputs.product }}-${{ inputs.signed-in-cache }}
+          paths: ${{ inputs.product }}/${{ inputs.editor-dir }}/.next/cache
+
+      # Sign-in is a build-time switch: the specs run against their own export with the test-only auth
+      # bridge and the stack standing in for the accounts Worker; no account or secret is involved.
+      - name: Build editor app with sign-in on
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build:signed-in
+
+      - name: Build liveworkspace's site (the Explorer)
+        if: inputs.signed-in-explorer
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
+      - name: Run signed-in specs
+        run: pnpm --filter ${{ inputs.editor }} test:e2e:signed-in
+
+      - name: Save build cache
+        uses: ./.github/actions/next-cache-save
+
+      - name: Upload report with traces
+        if: >-
+          always() && hashFiles(format('{0}/{1}/test-results-signed-in/**/trace.zip', inputs.product, inputs.editor-dir),
+          format('{0}/{1}/playwright-report-signed-in/data/*.zip', inputs.product, inputs.editor-dir)) != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.product }}-playwright-report-signed-in
+          path: |
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/playwright-report-signed-in
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results-signed-in
+          retention-days: 7
