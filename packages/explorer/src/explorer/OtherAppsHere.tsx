@@ -12,6 +12,7 @@ import type { ExplorerView } from '../views';
 import { FOCUS_RING } from '../ui/classes';
 import { ItemIcon, PlusIcon } from '../ui/icons';
 import { kindWords, siteOf } from '../words';
+import { AppMark } from './badges';
 import { useExplorer } from './context';
 import { EMPTY_CTA } from './EmptyPane';
 
@@ -91,7 +92,7 @@ export function OtherAppsHere({
                 {renderThumbnail?.(item, 'card') ?? <ItemIcon />}
               </span>
               <span className="flex items-center gap-1.5 border-t border-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                <span className="size-2 shrink-0 rounded-full bg-[var(--accent)]" />
+                <AppMark app={item.app} size={12} />
                 <span className="truncate">{site.name}</span>
               </span>
             </span>
@@ -117,7 +118,7 @@ export function OtherAppsHere({
             style={{ '--accent': siteOf(other).accent } as CSSProperties}
             className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
-            <span className="size-2 rounded-full bg-[var(--accent)]" />
+            <AppMark app={other} size={14} />
             {countOf(other, n)} in {siteOf(other).name}
           </li>
         ))}

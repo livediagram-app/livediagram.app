@@ -96,7 +96,8 @@ liveworkspace."), never to the app whose starts it shows. Opening an item goes t
 Under All Apps each row, card and Timeline entry wears its **app's mark**: the app's logo, the Living Prism, drawn at
 rest in the app's accent with each face at its own opacity (`BrandGlyph` from `@liveworkspace/brand`), never a
 letter. Its title and a screen-reader label say "<Kind> in <app>". It is a stateless drawing with no gradients or
-motion, so a list of thousands pays for paths only.
+motion, so a list of thousands pays for paths only. Wherever the Explorer names another app (the Details view's Type
+cell, a folder's "isn't empty" note and its counts), it is that mark, never a coloured dot.
 
 Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
 Canvas, and so on. On liveworkspace.app in no app, where the list shows every app, New (the hero's and the pane's

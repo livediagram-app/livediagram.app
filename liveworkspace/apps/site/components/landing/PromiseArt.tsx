@@ -355,7 +355,7 @@ export function DataArt() {
             key={app.id}
             className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400"
           >
-            <span className="size-2 rounded-sm" style={{ backgroundColor: app.accent }} />
+            <AppMark app={app} className="size-3 shrink-0" />
             {app.name}
           </span>
         ))}

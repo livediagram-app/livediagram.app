@@ -9,6 +9,7 @@ import type { ShownItem } from '../../data/overlay';
 import type { App, Level } from '@liveworkspace/index-client';
 import { EyeIcon, FolderSolidIcon, Glyph, PencilLineIcon, VoteIcon } from '../../ui/icons';
 import { siteOf } from '../../words';
+import { AppMark } from '../badges';
 import type { DetailsColumn } from './details-columns';
 import {
   formatAgo,
@@ -47,18 +48,16 @@ export function NoValue({ label }: { label: string }) {
   );
 }
 
-/** What the item is, in its app's colour: a dot and its kind ("Plan", "Canvas"). */
+/** What the item is: its app's logo and its kind ("Plan", "Canvas"). */
 export function TypeCell({ app, label }: { app: App; label: string }) {
   return (
     <span
       title={`${label} in ${siteOf(app).name}`}
       className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-slate-100 py-0.5 pr-2 pl-1.5 text-xs font-medium text-slate-700 dark:bg-slate-700/60 dark:text-slate-200"
     >
-      <span
-        aria-hidden
-        className="size-2 shrink-0 rounded-full"
-        style={{ backgroundColor: siteOf(app).accent }}
-      />
+      <span aria-hidden className="inline-flex">
+        <AppMark app={app} size={12} />
+      </span>
       <span className="truncate">{label}</span>
     </span>
   );
