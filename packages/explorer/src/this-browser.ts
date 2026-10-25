@@ -196,10 +196,12 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
 
 // ---------- Moving an item in or out of this browser ----------------------------------------------------------------
 // Take Offline (an account's item into this browser, out of the account) and Sync (back again) are the app's own
-// conversions: only its code knows how to copy its items in and out of its offline store. So the Explorer on the app's
-// address offers them and hands over to the app's This Browser page (the registry's `offlinePath`) with what to do in
-// its query; that page asks the person to confirm, checks the item is theirs to move, and runs the conversion. Every
-// app that converts reads the same query through these, so the two sides can't drift.
+// conversions: only its code knows how to copy its items in and out of its offline store. The editor's Explorer panel
+// runs them in place. The Explorer page on the app's address (liveworkspace's build) offers them and hands over to the
+// app's editor, at the item's own address with what to do in its query; the editor asks the person to confirm, checks
+// the item is theirs to move, and runs the conversion (conversion-handoff.ts). A request that reaches the Explorer's
+// This Browser view instead (`/explorer/offline?convert=…`, an older `/offline` link redirected) goes on to the
+// editor the same way. Every app that converts reads the same query through these, so the sides can't drift.
 
 export type ThisBrowserConversion = 'take-offline' | 'sync';
 
@@ -208,9 +210,9 @@ export const THIS_BROWSER_ITEM_PARAM = 'item';
 
 const CONVERSIONS: readonly ThisBrowserConversion[] = ['take-offline', 'sync'];
 
-/** The app's This Browser page, asked to run one conversion on one item. */
+/** An address of the app's (the item's own, in its editor), asked to run one conversion on one item. */
 export function thisBrowserConvertHref(
-  offlinePath: string,
+  address: string,
   conversion: ThisBrowserConversion,
   id: string,
 ): string {
@@ -218,7 +220,7 @@ export function thisBrowserConvertHref(
     [THIS_BROWSER_CONVERT_PARAM]: conversion,
     [THIS_BROWSER_ITEM_PARAM]: id,
   });
-  return `${offlinePath}?${params}`;
+  return `${address}${address.includes('?') ? '&' : '?'}${params}`;
 }
 
 /** The conversion a This Browser page's address asks for, or null. */
