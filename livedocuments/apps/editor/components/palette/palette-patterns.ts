@@ -14,7 +14,6 @@ import {
   BackgroundGraphIcon,
   BackgroundGridIcon,
   BackgroundHexagonalIcon,
-  BackgroundIsometricIcon,
   BackgroundLinesIcon,
   BackgroundRibbonsIcon,
   BackgroundRippleIcon,
@@ -107,14 +106,6 @@ export const PATTERNS: PatternEntry[] = [
     description: 'Offset masonry brickwork.',
     extra: true,
     icon: BackgroundBricksIcon,
-  },
-  {
-    id: 'isometric',
-    label: 'Isometric',
-    shortLabel: 'Iso',
-    description: 'Isometric rhombic grid for 3D / technical diagrams.',
-    extra: true,
-    icon: BackgroundIsometricIcon,
   },
   {
     id: 'checkerboard',

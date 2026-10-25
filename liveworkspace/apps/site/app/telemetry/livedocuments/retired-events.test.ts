@@ -27,8 +27,9 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'isometric-mode')).toBe(true);
     expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
-    // The Isometric background pattern is a pattern, not the view, and carries on.
-    expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(false);
+    // The Isometric background pattern followed the view on 2026-10-25; the other patterns carry on.
+    expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
   });
 
   it('retires the palette Favourites events', () => {

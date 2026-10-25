@@ -219,6 +219,11 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Changed', 'TextFormat')).toBe(false);
   });
 
+  it('retires the Isometric background pattern, not the other patterns', () => {
+    expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
+  });
+
   it('retires entity editing, not the elements that carry on', () => {
     expect(isRetiredEvent('Element', 'Created', 'RelatedEntity')).toBe(true);
     expect(isRetiredEvent('Element', 'Added', 'EntityField')).toBe(true);

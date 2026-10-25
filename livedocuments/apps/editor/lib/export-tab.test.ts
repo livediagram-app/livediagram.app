@@ -395,11 +395,11 @@ describe('exportScale', () => {
 
 // The SVG draws arrows as the PNG / PDF do (docs/specs/020-import-export/export-fidelity.md).
 // Old work after the isometric view went (docs/specs/008-canvas/canvas-and-palette.md "Retired features"): nothing
-// stored was ever isometric, so a tab, even one wearing the Isometric background pattern, and even an old caller
+// stored was ever isometric, so a tab with a background pattern, and even an old caller
 // still passing the export's `isometric` option, exports flat and top-down with its pattern kept.
 describe('renderTabToSvg after the isometric view', () => {
   const old = tab({
-    backgroundPattern: 'isometric',
+    backgroundPattern: 'crosshatch',
     elements: [shape('a'), shape('b', { x: 200 })],
   });
   const legacyOpts = { isometric: true, pattern: true } as Parameters<typeof renderTabToSvg>[1];
