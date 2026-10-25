@@ -85,7 +85,7 @@ import {
   workspaceToken,
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
-import { inboxHost } from '@/lib/explorer/inbox';
+import { inboxHost, localInboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { renewIdentity } from '@/lib/explorer/new-team';
@@ -356,7 +356,12 @@ export function ExplorerShell() {
     [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
   const share = useMemo(() => shareHostFor(app), [app]);
-  const inbox = useMemo(() => ({ ...inboxHost, onTelemetry: trackInbox }), []);
+  // On the app's address, its This Browser rows too, for the person reading (lib/explorer/inbox.tsx).
+  const viewerId = identity?.sub ?? null;
+  const inbox = useMemo(
+    () => localInboxHost({ ...inboxHost, onTelemetry: trackInbox }, host, viewerId),
+    [host, viewerId],
+  );
   const signInBanner = useMemo(
     () => ({
       helpHref: `${siteOfApp(app).url}/help/getting-started/guest-vs-account/`,

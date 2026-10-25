@@ -108,6 +108,9 @@ export type InboxTelemetry = (action: 'Opened' | 'Selected' | 'Loaded', type?: s
 export type InboxHost = {
   /** Rows from items only this browser holds. A failure lists none; it never fails the Inbox. */
   localRows?: () => Promise<InboxLocalRows>;
+  /** Calls `onChange` when those rows may have changed, so the Inbox reads them again (the index's rows are kept).
+   *  Returns the unsubscribe. */
+  subscribeLocal?: (onChange: () => void) => () => void;
   /** A card's type glyph, by its type id; a plain card glyph otherwise. */
   cardGlyph?: (type: string) => ReactNode;
   actionsHelpHref?: string;

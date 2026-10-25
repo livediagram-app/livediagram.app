@@ -9,6 +9,9 @@
 
 import type { App } from '@liveworkspace/index-client';
 
+// The Inbox's rows from the same items, kept beside the list for the page (this-browser-inbox.ts).
+export * from './this-browser-inbox';
+
 export type ThisBrowserItem = {
   id: string;
   title: string;
@@ -170,10 +173,12 @@ export type OfflineRecordFields = {
 export type OfflineWriteOutcome<R> = R | 'delete' | undefined;
 
 /** What an app's offline store calls to keep its list: `publish` with every record (once per page load), `note` after
- *  each write. `lastOpenedAt` reads the record's opens in the app's own format. */
+ *  each write. `lastOpenedAt` reads the record's opens in the app's own format. `onWrite` hears both, after the list
+ *  is written, whether or not the list changed (the Inbox's snapshot, `inboxSnapshotKeeper`, reads the content). */
 export function thisBrowserPublisher<R extends OfflineRecordFields>(
   app: App,
   lastOpenedAt: (opens: unknown) => number | null,
+  onWrite?: () => void,
 ) {
   const itemOf = (rec: R): ThisBrowserItem => ({
     id: rec.id,
@@ -186,10 +191,15 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
   });
   return {
     itemOf,
-    publish: (recs: readonly R[]) => writeThisBrowser(app, recs.map(itemOf)),
+    publish: (recs: readonly R[]) => {
+      writeThisBrowser(app, recs.map(itemOf));
+      onWrite?.();
+    },
     note: (id: string, after: OfflineWriteOutcome<R>) => {
       if (after === 'delete') dropThisBrowserItem(app, id);
       else if (after) putThisBrowserItem(app, itemOf(after));
+      else return;
+      onWrite?.();
     },
   };
 }

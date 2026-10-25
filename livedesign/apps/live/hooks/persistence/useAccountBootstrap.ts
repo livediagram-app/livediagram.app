@@ -8,6 +8,7 @@ import {
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
 import { clearGuestToken } from '@/lib/guest-token';
+import { inboxSnapshot } from '@/lib/offline/inbox-snapshot';
 
 // Two things every page that talks to the api needs to do once a
 // session can exist:
@@ -117,6 +118,17 @@ export function useAccountBootstrap(): BootstrapResult {
     if (held || !isSignedIn) return;
     return registerTokenProvider((opts) => getToken(opts));
   }, [held, isSignedIn, getToken]);
+
+  // 3. Who the Inbox's This Browser snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
+  // address lists those rows only to them.
+  const settledAccount = workbench
+    ? workbench.person.id
+    : held || !authLoaded
+      ? undefined
+      : (accountUserId ?? null);
+  useEffect(() => {
+    if (settledAccount !== undefined) inboxSnapshot.setAccount(settledAccount);
+  }, [settledAccount]);
 
   if (workbench) return workbenchResult(workbench);
   if (held) return HELD;
