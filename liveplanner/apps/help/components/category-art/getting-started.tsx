@@ -47,7 +47,14 @@ export function GettingStartedArt() {
           <g key={col.x}>
             <rect x={col.x} y={68} width={28} height={86} rx={5} className="fill-slate-50" />
             <circle cx={col.x + 6} cy={75} r={2.2} className={col.head} />
-            <rect x={col.x + 11} y={73.5} width={12} height={3} rx={1.5} className="fill-slate-300" />
+            <rect
+              x={col.x + 11}
+              y={73.5}
+              width={12}
+              height={3}
+              rx={1.5}
+              className="fill-slate-300"
+            />
             {col.tags.map((tag, i) => (
               <g key={i}>
                 <rect
@@ -118,14 +125,7 @@ export function GettingStartedArt() {
           const y = 82 + i * 17.5;
           return (
             <g key={i}>
-              <line
-                x1={156}
-                y1={y}
-                x2={244}
-                y2={y}
-                className="stroke-slate-200"
-                strokeWidth={1}
-              />
+              <line x1={156} y1={y} x2={244} y2={y} className="stroke-slate-200" strokeWidth={1} />
               <rect
                 x={162}
                 y={y + 7}

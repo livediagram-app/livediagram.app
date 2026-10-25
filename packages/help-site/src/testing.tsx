@@ -97,7 +97,9 @@ export function describeHelpSite(
     it('names a real article for every Start here step', () => {
       const { steps } = home.startHere;
       const paths = typeof steps === 'number' ? [] : steps;
-      const missing = paths.filter((p) => !articles.some((a) => `${a.categorySlug}/${a.slug}` === p));
+      const missing = paths.filter(
+        (p) => !articles.some((a) => `${a.categorySlug}/${a.slug}` === p),
+      );
       expect(missing).toEqual([]);
     });
 
