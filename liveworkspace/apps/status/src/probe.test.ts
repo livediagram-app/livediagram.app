@@ -134,8 +134,28 @@ describe('probeTargets', () => {
     await probeAll(targets);
     expect(viaBinding).toHaveLength(6);
     expect(viaBinding).toContain('https://lw.example/robots.txt');
-    expect(viaFetch).toContain('https://www.livediagram.app/api/capabilities');
+    expect(viaFetch).toContain('https://www.liveplanner.app/api/capabilities');
     expect(viaFetch).toContain('https://mcp.livedesign.app/health');
+  });
+
+  it('reaches an app standing in on this account’s workers.dev through its Workers’ bindings', async () => {
+    const viaRouter: string[] = [];
+    const viaMcp: string[] = [];
+    const viaFetch: string[] = [];
+    const answer = (into: string[]) =>
+      ({
+        fetch: async (r: Request) => (into.push(r.url), new Response('{}', { status: 200 })),
+      }) as unknown as Fetcher;
+    const env = testEnv({
+      PLATFORM: answer([]),
+      LIVEDIAGRAM_ROUTER: answer(viaRouter),
+      LIVEDIAGRAM_MCP: answer(viaMcp),
+    });
+    await probeAll(probeTargets(env, async (r) => (viaFetch.push(r.url), new Response('{}'))));
+    const router = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+    expect(viaRouter).toContain(`${router}/api/capabilities`);
+    expect(viaMcp).toEqual(['https://livediagram-mcp.liveworkspace-easing509.workers.dev/health']);
+    expect(viaFetch.some((u) => u.includes('livediagram'))).toBe(false);
   });
 
   it('checks staging’s addresses on staging, and this machine’s in development, without the binding', async () => {

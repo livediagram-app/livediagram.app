@@ -99,7 +99,7 @@ describe('the status page’s services', () => {
     );
     expect(api!.id).toBe('livediagram:api');
     expect(resolveProbeUrl(api!.check.probe, 'https://lw.example')).toBe(
-      'https://www.livediagram.app/api/capabilities',
+      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/capabilities',
     );
   });
 

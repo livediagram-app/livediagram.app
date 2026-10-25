@@ -97,7 +97,11 @@ From the Worker, liveworkspace's own services go through a service binding to th
 [gateway.md](gateway.md)): a Worker can't fetch another Worker's `workers.dev` address on the same account, and
 the gateway is where `liveworkspace.app` lives until the zone moves. Each app is fetched at its live address
 (`https://www.<app>`, `https://mcp.<app>/health`), or its `staging.` one from staging, where the MCP servers aren't
-checked. Locally (`ENVIRONMENT = "development"`) everything is fetched on this machine's ports: the site on 3000 and
+checked. An app standing in on a `workers.dev` address on this account (`STAND_INS` in `@liveworkspace/sites`,
+livediagram until livediagram.app moves; livediagram/docs/specs/016-platform/stand-in-addresses.md) is reached the
+same way as liveworkspace's own services, through service bindings to its Workers: `LIVEDIAGRAM_ROUTER` for its router's
+address and `LIVEDIAGRAM_MCP` for its MCP server's. The bindings drop when the domain moves. Locally (`ENVIRONMENT =
+"development"`) everything is fetched on this machine's ports: the site on 3000 and
 each app's router and MCP Worker.
 
 When liveworkspace.app moves to this account, a Worker on a route can't fetch another Worker on the same zone either,

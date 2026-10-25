@@ -27,6 +27,16 @@ migrations_dir = "migrations"
 binding = "PLATFORM"
 service = "liveworkspace-gateway"
 
+# livediagram stands in on this account's workers.dev until livediagram.app moves (STAND_INS, @liveworkspace/sites;
+# livediagram/docs/specs/016-platform/stand-in-addresses.md), so its checks go through its Workers' bindings too.
+[[services]]
+binding = "LIVEDIAGRAM_ROUTER"
+service = "livediagram-router"
+
+[[services]]
+binding = "LIVEDIAGRAM_MCP"
+service = "livediagram-mcp"
+
 # Per-network budget for reads the edge cache missed: each is one D1 row, so this only stops a flood.
 [[ratelimits]]
 name = "READ_RATE_LIMITER"
@@ -56,6 +66,10 @@ migrations_dir = "migrations"
 [[env.staging.services]]
 binding = "PLATFORM"
 service = "liveworkspace-gateway-staging"
+
+[[env.staging.services]]
+binding = "LIVEDIAGRAM_ROUTER"
+service = "livediagram-router-staging"
 
 [[env.staging.ratelimits]]
 name = "READ_RATE_LIMITER"

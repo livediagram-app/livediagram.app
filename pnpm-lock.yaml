@@ -4977,6 +4977,9 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/status':
         specifier: workspace:*
         version: link:../../../packages/status
