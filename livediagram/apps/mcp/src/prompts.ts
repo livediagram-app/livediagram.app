@@ -77,10 +77,10 @@ export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
     'show_my_document',
     {
-      title: 'Show my document',
-      description: 'Find one of your documents by name and display it inline.',
+      title: 'Show my canvas',
+      description: 'Find one of your canvases by name and display it inline.',
       argsSchema: {
-        name: z.string().describe('Part of the document’s name.'),
+        name: z.string().describe('Part of the canvas’s name.'),
       },
     },
     ({ name }) => ({

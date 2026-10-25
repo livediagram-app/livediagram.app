@@ -46,7 +46,7 @@ const COMPONENTS: Component[] = [
   {
     name: 'Community',
     description:
-      'The public gallery of shared documents at https://livediagram.app/community. Static export served by a Cloudflare Worker.',
+      'The public gallery of shared canvases at https://livediagram.app/community. Static export served by a Cloudflare Worker.',
   },
   {
     name: 'API',

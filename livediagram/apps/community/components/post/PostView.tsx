@@ -59,7 +59,7 @@ export function PostView() {
       ) : load.status === 'notFound' ? (
         <PostNotFound />
       ) : load.status === 'error' ? (
-        <LoadError title="We couldn't load this document." onRetry={retry} />
+        <LoadError title="We couldn't load this canvas." onRetry={retry} />
       ) : (
         <>
           <article

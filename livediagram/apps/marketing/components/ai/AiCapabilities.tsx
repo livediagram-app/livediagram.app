@@ -24,17 +24,17 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideTrash2, 20),
     title: 'Tidy up',
-    body: 'Renames documents, moves the ones you no longer need to the Trash, and restores them again if you change your mind.',
+    body: 'Renames canvases, moves the ones you no longer need to the Trash, and restores them again if you change your mind.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
     title: 'Find and read',
-    body: 'Searches your documents and your teams’, and reads any tab back as an outline and a picture.',
+    body: 'Searches your canvases and your teams’, and reads any tab back as an outline and a picture.',
   },
   {
     icon: lucideGlyph(lucideShare2, 20),
     title: 'Share links',
-    body: 'Turns a document into a link for your team, as a Participant link unless you ask for another role.',
+    body: 'Turns a canvas into a link for your team, as a Participant link unless you ask for another role.',
   },
   {
     icon: lucideGlyph(lucideUndo2, 20),

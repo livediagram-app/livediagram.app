@@ -86,7 +86,7 @@ export function CommunityShowcase() {
           <p className={EYEBROW}>From the Community</p>
           <h2 className={BAND_TITLE}>Made by people like you</h2>
           <p className={BAND_LEAD}>
-            Documents people are proud of, shared for anyone to open and make their own. Find a
+            Canvases people are proud of, shared for anyone to open and make their own. Find a
             starting point, or share yours.
           </p>
         </div>
@@ -94,7 +94,7 @@ export function CommunityShowcase() {
         {empty ? (
           <div className="mx-auto mt-12 max-w-md rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
             <p className="text-slate-600 dark:text-slate-300">
-              The Community is just getting started. Be one of the first to share a document.
+              The Community is just getting started. Be one of the first to share a canvas.
             </p>
           </div>
         ) : (

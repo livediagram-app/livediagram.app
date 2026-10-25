@@ -75,9 +75,9 @@ export function GalleryView() {
         {mine ? <AccountSession onSession={setSession} /> : null}
       </div>
 
-      <section aria-label={mine ? 'My Shares' : 'Documents'}>
+      <section aria-label={mine ? 'My Shares' : 'Canvases'}>
         {/* The cards are h3s under the page's h1: this names their level for screen readers. */}
-        <h2 className="sr-only">{mine ? 'My Shares' : 'Documents'}</h2>
+        <h2 className="sr-only">{mine ? 'My Shares' : 'Canvases'}</h2>
         {mine && gallery.totals && gallery.totals.posts > 0 ? (
           <MineSummary totals={gallery.totals} />
         ) : null}

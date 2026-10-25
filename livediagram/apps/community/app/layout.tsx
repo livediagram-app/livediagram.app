@@ -22,7 +22,7 @@ import {
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 const COMMUNITY_SITE_NAME = 'livediagram Community';
 const COMMUNITY_DESCRIPTION =
-  'Documents people are proud of. Browse diagrams, drawings and workshops made with livediagram, then make your own copy.';
+  'Canvases people are proud of. Browse diagrams, drawings and workshops made with livediagram, then make your own copy.';
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, and this app's own scripts under its asset prefix.

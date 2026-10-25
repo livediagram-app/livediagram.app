@@ -59,7 +59,7 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'livediagram: read, build, edit and discuss documents.',
+    'livediagram: read, build, edit and discuss canvases.',
     'Usage: livediagram <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [

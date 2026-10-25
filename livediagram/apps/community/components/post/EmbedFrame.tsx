@@ -50,7 +50,7 @@ export function EmbedFrame({ shareCode, title }: { shareCode: string; title: str
           className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-sm font-semibold text-slate-700 shadow-md ring-1 ring-slate-900/5 transition-colors duration-micro hover:text-brand-700 dark:bg-slate-900/95 dark:text-slate-200 dark:ring-white/10 dark:hover:text-brand-300"
         >
           <FullScreenIcon aria-hidden />
-          Open Document
+          Open Canvas
         </a>
       )}
     </div>

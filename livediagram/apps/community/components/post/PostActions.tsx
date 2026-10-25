@@ -49,7 +49,7 @@ export function PostActions({ post }: { post: CommunityPost }) {
           })}
         >
           <FullScreenIcon aria-hidden />
-          <ButtonContent>Open Document</ButtonContent>
+          <ButtonContent>Open Canvas</ButtonContent>
         </a>
       </div>
       <div className="flex items-center gap-1 border-t border-slate-100 pt-2 dark:border-slate-800">

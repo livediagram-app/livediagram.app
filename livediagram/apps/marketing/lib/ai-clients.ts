@@ -51,6 +51,6 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Find and improve',
     prompt:
-      'Find my livediagram document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livediagram canvas about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

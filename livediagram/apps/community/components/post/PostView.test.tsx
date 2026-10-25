@@ -82,7 +82,7 @@ describe('the post page', () => {
     expect(screen.getByRole('link', { name: /Make a Copy/ }).getAttribute('href')).toBe(
       '/document/shared?s=CODE1&copy=1',
     );
-    expect(screen.getByRole('link', { name: /Open Document/ }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: /Open Canvas/ }).getAttribute('href')).toBe(
       '/document/shared?s=CODE1',
     );
     expect(screen.getByRole('button', { name: 'Like (3 likes)' })).toBeTruthy();
@@ -102,14 +102,14 @@ describe('the post page', () => {
   it('says a missing, hidden or removed post is not in the Community', async () => {
     answer = () => new Response(null, { status: 404 });
     render(<PostView />);
-    expect(await screen.findByText("This document isn't in the Community any more.")).toBeTruthy();
+    expect(await screen.findByText("This canvas isn't in the Community any more.")).toBeTruthy();
     expect(h.telemetry.openedPost).not.toHaveBeenCalled();
   });
 
   it('treats a page with no id as not found, without asking the api', async () => {
     h.id = null;
     render(<PostView />);
-    expect(screen.getByText("This document isn't in the Community any more.")).toBeTruthy();
+    expect(screen.getByText("This canvas isn't in the Community any more.")).toBeTruthy();
     expect(calls).toHaveLength(0);
   });
 
@@ -127,7 +127,7 @@ describe('the post page', () => {
     answer = () =>
       fail ? new Response(null, { status: 500 }) : Response.json({ post, related: [] });
     render(<PostView />);
-    expect(await screen.findByText("We couldn't load this document.")).toBeTruthy();
+    expect(await screen.findByText("We couldn't load this canvas.")).toBeTruthy();
     fail = false;
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     expect(await screen.findByRole('heading', { name: 'Payments Platform' })).toBeTruthy();
@@ -139,7 +139,7 @@ describe('reporting', () => {
     render(<PostView />);
     await screen.findByRole('heading', { name: 'Payments Platform' });
     fireEvent.click(screen.getByRole('button', { name: /Report/ }));
-    return screen.getByRole('dialog', { name: 'Report This Document' });
+    return screen.getByRole('dialog', { name: 'Report This Canvas' });
   }
 
   it('sends a reason and the trimmed note, then says what happens next', async () => {
@@ -153,7 +153,7 @@ describe('reporting', () => {
     fireEvent.click(within(dialog).getByRole('radio', { name: 'Spam' }));
     fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: '  buy now  ' } });
     fireEvent.click(send);
-    expect(await within(dialog).findByText(/When enough people report a document/)).toBeTruthy();
+    expect(await within(dialog).findByText(/When enough people report a canvas/)).toBeTruthy();
     const sent = calls.find((c) => new URL(c.url).pathname.endsWith('/report'))!;
     expect(sent.url).toBe(
       'https://liveworkspace.app/api/community/posts/post1/report?app=livediagram.app',
@@ -173,9 +173,9 @@ describe('reporting', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Send Report' }));
     expect(await within(dialog).findByRole('button', { name: 'Sending...' })).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.getByRole('dialog', { name: 'Report This Document' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Report This Canvas' })).toBeTruthy();
     release(new Response(null, { status: 204 }));
-    expect(await within(dialog).findByText(/When enough people report a document/)).toBeTruthy();
+    expect(await within(dialog).findByText(/When enough people report a canvas/)).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
@@ -198,7 +198,7 @@ describe('reporting', () => {
 });
 
 describe('the embed frame', () => {
-  it('shows the card image under the live preview, and Open Document if the preview never loads', async () => {
+  it('shows the card image under the live preview, and Open Canvas if the preview never loads', async () => {
     vi.useFakeTimers();
     render(<EmbedFrame shareCode="CODE1" title="Payments Platform" />);
     expect(screen.getByRole('img', { name: 'Payments Platform' }).getAttribute('src')).toBe(
@@ -209,7 +209,7 @@ describe('the embed frame', () => {
     );
     await act(async () => vi.advanceTimersByTime(15_000));
     expect(screen.queryByTitle('Interactive preview of Payments Platform')).toBeNull();
-    expect(screen.getByRole('link', { name: /Open Document/ }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: /Open Canvas/ }).getAttribute('href')).toBe(
       '/document/shared?s=CODE1',
     );
   });
