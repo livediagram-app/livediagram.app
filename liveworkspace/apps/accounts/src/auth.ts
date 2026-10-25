@@ -5,7 +5,14 @@ import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
 import { guestMergeConfig, mergeGuestOfRequest } from './guests.ts';
 import { ACCOUNTS_ON_APP_PATH } from '@liveworkspace/sites/workspace-proxy';
-import { APP_SITES, appOrigins, type AppEnvironment, type AppSiteId } from '@liveworkspace/sites';
+import {
+  APP_SITES,
+  appOfOrigin,
+  appOrigins,
+  type AppEnvironment,
+  type AppSiteId,
+} from '@liveworkspace/sites';
+import { appOriginOfProxy } from './handoff.ts';
 import { queueWelcome, startLifecycle } from './lifecycle.ts';
 import { RESOURCES } from './resources.ts';
 import { readProfileColour } from './profiles.ts';
@@ -39,7 +46,16 @@ function build(env: Env, googleRedirectURI?: string) {
               userId,
             ),
         },
-        sendCode: (email, code) => sendCodeEmail(env, email, code),
+        // Through an app's address (its router's proxy, handoff.ts), the code wears that app's brand.
+        sendCode: (email, code, request) => {
+          const origin = request ? appOriginOfProxy(request, env.ENVIRONMENT) : null;
+          return sendCodeEmail(
+            env,
+            email,
+            code,
+            origin ? appOfOrigin(origin, env.ENVIRONMENT) : null,
+          );
+        },
         teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
         colourFor: (userId) => readProfileColour(env.AUTH_DB, userId),
         guestMerge: guestMergeConfig(env),

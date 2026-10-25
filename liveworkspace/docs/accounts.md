@@ -621,6 +621,19 @@ The app is always the calling client's own ([Which app a client is](#which-app-a
   `{ emails: { [id]: address } }`, verified addresses only, in one query: where an app sends its
   notifications (a comment on what someone owns, a form response). An app keeps no addresses of its own.
 
+## Emails
+
+Every email accounts sends is drawn in one frame (`src/email-layout.ts`), the same as the apps' own: a card on
+the brand's palest tint, its prism's colours in a band across the top, the logo mark beside the wordmark, and a
+sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on each site (liveworkspace's in
+`apps/site/public/email/`), because Gmail and Outlook drop SVG.
+
+- **The sign-in code** wears the brand of the app it was asked for through: a send that comes through an app's
+  address (its router's proxy, [Signing in on the app's own address](#signing-in-on-the-apps-own-address)) is in that app's colours and logo, and
+  its subject names the app (`123456 is your liveplanner sign-in code`). One on liveworkspace.app's own page is
+  liveworkspace's. The code sits alone in a tinted panel.
+- **The onboarding series** is liveworkspace's, whichever app it speaks for.
+
 ## Notification emails
 
 An app's notification emails (someone commented on, joined or filled in something you own; a teammate

@@ -3,8 +3,9 @@
 // for someone who has been away. One series per account, from liveworkspace, whichever apps the person
 // uses. The same timings and the same tips as each app's series had, worded for all four apps. Plain,
 // inline-styled HTML that email clients keep; nothing a person wrote is ever in one.
-import { APP_SITES, LOCAL_PORTS, type SiteId } from '@liveworkspace/sites';
+import { APP_SITES, type SiteId } from '@liveworkspace/sites';
 import { settingsUrl } from './email.ts';
+import { appUrl, emailBrand, frame, INK, MUTED, paragraph } from './email-layout.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 
@@ -18,19 +19,11 @@ export interface LifecycleEmail {
   unsubscribeUrl?: string;
 }
 
-const INK = '#0f172a';
-const MUTED = '#475569';
 const SLATE = '#334155';
-const CANVAS = '#f1f5f9';
 
 const origin = (url: string) => url.replace(/\/+$/, '');
 
-// An app's address in this environment: its live site, staging's, or its local port (AGENTS.md).
-export function appUrl(env: Pick<Env, 'ENVIRONMENT'>, app: SiteId): string {
-  if (env.ENVIRONMENT === 'development') return `http://localhost:${LOCAL_PORTS[app]}`;
-  if (env.ENVIRONMENT === 'staging') return `https://staging.${app}`;
-  return `https://www.${app}`;
-}
+export { appUrl };
 
 // Who the email is for: the app it speaks for (the one they signed up through, else the first they
 // used), where its links go. Null speaks for liveworkspace itself: someone who signed up on
@@ -87,8 +80,8 @@ const TIPS_FOOTER =
 // Tags out, for the plain-text part: the points carry a little markup for the HTML part.
 const plain = (html: string) => html.replace(/<[^>]*>/g, '');
 
-function render(env: Pick<Env, 'BASE_URL'>, section: Section): LifecycleEmail {
-  const site = origin(env.BASE_URL);
+// In liveworkspace's frame (email-layout.ts), whichever app it speaks for: the series is liveworkspace's.
+function render(env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>, section: Section): LifecycleEmail {
   const points = section.points?.html ?? [];
   const list = points.length
     ? `<ul style="margin:18px 0 0;padding-left:20px">${points
@@ -98,38 +91,23 @@ function render(env: Pick<Env, 'BASE_URL'>, section: Section): LifecycleEmail {
         )
         .join('')}</ul>`
     : '';
-  const outro = section.outro
-    ? `<p style="margin:20px 0 0;color:${MUTED};font-size:15px;line-height:1.6">${section.outro}</p>`
-    : '';
+  const outro = section.outro ? paragraph(section.outro, 20) : '';
   const footer = section.unsubscribeUrl
     ? `${TIPS_FOOTER} <a href="${section.unsubscribeUrl}" style="color:${SLATE};text-decoration:underline">Manage your notifications</a> to turn these off.`
     : ACCOUNT_FOOTER;
-  const html = `<!doctype html>
-<html><body style="margin:0;background:${CANVAS};padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
-  <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;overflow:hidden">${section.intro}</span>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
-      <tr><td style="height:6px;line-height:6px;font-size:0;background-color:${SLATE}">&nbsp;</td></tr>
-      <tr><td style="padding:24px 32px 0">
-        <a href="${site}" style="text-decoration:none;font-size:18px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${SLATE}">live</span>workspace</a>
-      </td></tr>
-      <tr><td style="padding:20px 32px 32px">
-        <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:${INK}">${section.heading}</h1>
-        <p style="margin:0;color:${MUTED};font-size:15px;line-height:1.6">${section.intro}</p>
+  const html = frame(emailBrand(env, null), {
+    preheader: section.intro,
+    heading: section.heading,
+    body: `${paragraph(section.intro)}
         ${list}
         ${outro}
         <table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0 0">
           <tr><td style="border-radius:8px;background:${INK}">
             <a href="${section.cta.href}" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px">${section.cta.text}</a>
           </td></tr>
-        </table>
-      </td></tr>
-      <tr><td style="padding:0 32px 28px">
-        <p style="margin:24px 0 0;border-top:1px solid #e2e8f0;padding-top:16px;color:#94a3b8;font-size:12px;line-height:1.6">${footer}</p>
-      </td></tr>
-    </table>
-  </td></tr></table>
-</body></html>`;
+        </table>`,
+    footer,
+  });
   const text = [
     section.heading,
     '',

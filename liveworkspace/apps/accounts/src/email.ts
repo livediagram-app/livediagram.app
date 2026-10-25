@@ -1,4 +1,6 @@
 import { sendEmail as send } from '@liveworkspace/email';
+import type { AppSiteId } from '@liveworkspace/sites';
+import { emailBrand, frame, INK, paragraph, type EmailBrand } from './email-layout.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 import { reportServerEvent } from './telemetry.ts';
@@ -25,23 +27,42 @@ export async function sendEmail(env: Env, email: Email): Promise<void> {
   await send(env.EMAIL, { from: `liveworkspace <${env.EMAIL_FROM}>`, ...email });
 }
 
-export function codeEmail(code: string) {
-  const subject = `${code} is your liveworkspace sign-in code`;
-  const text = [
-    `Your sign-in code is ${code}`,
-    '',
-    'It works for 10 minutes. If you did not try to sign in, you can ignore this email.',
-  ].join('\n');
-  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
-<p>Your liveworkspace sign-in code is</p>
-<p style="font-size:32px;font-weight:600;letter-spacing:6px;margin:16px 0">${code}</p>
-<p style="color:#555">It works for 10 minutes. If you did not try to sign in, you can ignore this email.</p>
-</body></html>`;
+// The sign-in code, in the frame of the app it was asked for through (null: liveworkspace's own sign-in page), so
+// someone signing in to livediagram gets a livediagram email. The code sits alone in a tinted panel, large and
+// spaced, so it reads at a glance and copies cleanly.
+export function codeEmail(code: string, brand: EmailBrand) {
+  const name = `live${brand.word}`;
+  const subject = `${code} is your ${name} sign-in code`;
+  const lead = `Enter this code to sign in to ${name}. It works for 10 minutes.`;
+  const ignore =
+    'If you didn’t try to sign in, you can ignore this email: nobody can sign in without the code.';
+  const footer =
+    'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments and livedesign.';
+  const text = [`Your ${name} sign-in code is ${code}`, '', lead, '', ignore, '', footer].join(
+    '\n',
+  );
+  const html = frame(brand, {
+    preheader: `${code} is your sign-in code. It works for 10 minutes.`,
+    heading: 'Your sign-in code',
+    body: `${paragraph(lead)}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 0">
+          <tr><td align="center" style="background:${brand.panel};border:1px solid ${brand.panelEdge};border-radius:12px;padding:20px 12px">
+            <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:${INK}">${code}</span>
+          </td></tr>
+        </table>
+        ${paragraph(ignore, 24)}`,
+    footer,
+  });
   return { subject, text, html };
 }
 
-export async function sendCodeEmail(env: Env, email: string, code: string): Promise<void> {
-  await sendEmail(env, { to: email, ...codeEmail(code) });
+export async function sendCodeEmail(
+  env: Env,
+  email: string,
+  code: string,
+  app: AppSiteId | null = null,
+): Promise<void> {
+  await sendEmail(env, { to: email, ...codeEmail(code, emailBrand(env, app)) });
 }
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);

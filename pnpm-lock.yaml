@@ -4666,6 +4666,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/brand':
+        specifier: workspace:^
+        version: link:../../../packages/brand
       '@liveworkspace/email':
         specifier: workspace:*
         version: link:../../../packages/email

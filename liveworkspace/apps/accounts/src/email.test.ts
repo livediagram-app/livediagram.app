@@ -1,11 +1,52 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { inviteResponseEmail, sendCodeEmail } from './email.ts';
+import { codeEmail, inviteResponseEmail, sendCodeEmail } from './email.ts';
+import { emailBrand } from './email-layout.ts';
 import type { Env } from './env.ts';
 
 const env = (over: Partial<Env>) =>
-  ({ ENVIRONMENT: 'production', EMAIL_FROM: 'sign-in@liveworkspace.app', ...over }) as Env;
+  ({
+    ENVIRONMENT: 'production',
+    BASE_URL: 'https://liveworkspace.test',
+    EMAIL_FROM: 'sign-in@liveworkspace.app',
+    ...over,
+  }) as Env;
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe('codeEmail', () => {
+  it('wears liveworkspace’s brand on its own sign-in page', () => {
+    const email = codeEmail('123456', emailBrand(env({}), null));
+
+    expect(email.subject).toBe('123456 is your liveworkspace sign-in code');
+    expect(email.html).toContain(
+      '<img src="https://liveworkspace.test/email/liveworkspace-mark-64.png"',
+    );
+    expect(email.html).toContain('>live</span>workspace<');
+    expect(email.html).toContain('>123456</span>');
+    expect(email.text).toContain('Your liveworkspace sign-in code is 123456');
+  });
+
+  it('wears the app’s logo and colours when sent through its address', () => {
+    const email = codeEmail('123456', emailBrand(env({}), 'liveplanner.app'));
+
+    expect(email.subject).toBe('123456 is your liveplanner sign-in code');
+    expect(email.html).toContain(
+      '<img src="https://www.liveplanner.app/email/liveplanner-mark-64.png"',
+    );
+    expect(email.html).toContain('>live</span>planner<');
+    // Its brand-50 behind the card, and its prism in the band.
+    expect(email.html).toContain('background:#f5f3ff');
+    expect(email.html).toContain('linear-gradient(90deg,');
+  });
+
+  it('links staging’s app in staging', () => {
+    const email = codeEmail(
+      '123456',
+      emailBrand(env({ ENVIRONMENT: 'staging' }), 'livedesign.app'),
+    );
+    expect(email.html).toContain('https://staging.livedesign.app/email/livedesign-mark-64.png');
+  });
+});
 
 describe('sendCodeEmail', () => {
   const binding = (send: () => Promise<{ messageId: string }>) => ({ send: vi.fn(send) });

@@ -31,7 +31,8 @@ export interface AuthConfig {
   appOrigins?: string[];
   // The hand-off that brings a session made on an app's address here (handoff.ts).
   handoff?: HandoffPluginConfig;
-  sendCode: (email: string, code: string) => Promise<void>;
+  // `request` is the send's own, when there is one: whose address it came through picks the email's brand.
+  sendCode: (email: string, code: string, request?: Request) => Promise<void>;
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
   teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
@@ -135,11 +136,11 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         expiresIn: 600,
         allowedAttempts: 3,
         storeOTP: 'hashed',
-        async sendVerificationOTP({ email, otp, type }) {
+        async sendVerificationOTP({ email, otp, type }, ctx) {
           // Sign-in is the only flow here: there are no passwords to reset, and signing in
           // with a code is what verifies the address.
           if (type !== 'sign-in') return;
-          await config.sendCode(email, otp);
+          await config.sendCode(email, otp, ctx?.request);
         },
       }),
       captcha({
