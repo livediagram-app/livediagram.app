@@ -6,7 +6,7 @@ First-party, anonymous product analytics, surfaced on a **public** dashboard so 
 
 - **Anonymous, aggregate, first-party.** Events carry no user id, no IP, no user-generated content (never a document name, tab name, participant name, element text, share code, or document id). Only a fixed, app-defined vocabulary of enum values is ever stored.
 - **No external vendors.** Events go to the **liveworkspace telemetry service** ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)), our own Worker on `liveworkspace.app/api/telemetry` (its dashboard is `liveworkspace.app/telemetry`) that counts usage for livediagram and its sister apps, and are stored in its own D1 database. The dashboard is its own app too. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
-- **Off by default.** A single env var gates the whole system, so OSS self-hosters and forks emit/serve nothing unless they opt in. No committed config turns it on: livediagram.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
+- **Off by default.** A single env var gates the whole system, so forks emit/serve nothing unless they opt in. No committed config turns it on: livediagram.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
 - **Transparent.** The dashboard is public (`liveworkspace.app/telemetry`; `livediagram.app/telemetry` redirects there with livediagram picked), and the privacy policy + landing page say plainly what we capture and why, and link to it.
 
 ## Event schema
@@ -54,15 +54,15 @@ The dashboard surfaces three fixed windows that top out at **30 days**, and comp
 
 ### The relay
 
-The CLI can do neither: it runs on somebody's machine, has no page origin and holds no key, and it posts to its profile's api (which may be a self-host). So the api keeps **`POST /api/events`** as a thin relay: body `{ events }`, validated against the vocabulary, server-emitted pairs dropped, capped at 100, then passed on under the api's key. Always 204. It keeps the old guards (same-origin filter, the per-IP `EVENTS_RATE_LIMITER`) and stays exempt from the document write limiter. Nothing in the browser uses it.
+The CLI can do neither: it runs on somebody's machine, has no page origin and holds no key, and it posts to its profile's api (which may be a deployment). So the api keeps **`POST /api/events`** as a thin relay: body `{ events }`, validated against the vocabulary, server-emitted pairs dropped, capped at 100, then passed on under the api's key. Always 204. It keeps the old guards (same-origin filter, the per-IP `EVENTS_RATE_LIMITER`) and stays exempt from the document write limiter. Nothing in the browser uses it.
 
 The dashboard's data, `GET /api/summary?app=`, is the service's too; the api no longer serves `/api/telemetry/summary`.
 
 ## On/off env var
 
-`TELEMETRY_ENABLED` (worker var, default off; livediagram.app sets it through the hosted profile in `apps/api/hosted-vars.json`, a self-host in its own `wrangler.toml [vars]`) gates everything the api worker sends, its own events and the relay's. Every emitting frontend (editor, help centre, marketing, Community) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` (baked at build; the deploy mirrors it from the hosted profile) to skip emitting entirely when off.
+`TELEMETRY_ENABLED` (worker var, default off; livediagram.app sets it through the hosted profile in `apps/api/hosted-vars.json`, a deployment in its own `wrangler.toml [vars]`) gates everything the api worker sends, its own events and the relay's. Every emitting frontend (editor, help centre, marketing, Community) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` (baked at build; the deploy mirrors it from the hosted profile) to skip emitting entirely when off.
 
-Two more, from the same profile and secrets: **`TELEMETRY_URL`** (per environment: staging sends to `staging.liveworkspace.app/api/telemetry`, and the frontends get it as `NEXT_PUBLIC_TELEMETRY_URL`) and **`TELEMETRY_KEY`** (a worker secret, the same value on the **api and mcp** workers and on the service as `TELEMETRY_KEY_LIVEDIAGRAM`). Without a key the workers send nothing, which is what a self-host gets with no configuration.
+Two more, from the same profile and secrets: **`TELEMETRY_URL`** (per environment: staging sends to `staging.liveworkspace.app/api/telemetry`, and the frontends get it as `NEXT_PUBLIC_TELEMETRY_URL`) and **`TELEMETRY_KEY`** (a worker secret, the same value on the **api and mcp** workers and on the service as `TELEMETRY_KEY_LIVEDIAGRAM`). Without a key the workers send nothing, which is what a deployment gets with no configuration.
 
 ## Abuse controls
 
@@ -175,7 +175,7 @@ The bounds matter more than the retry:
 
 **Fixed — `sendBeacon`'s return value is no longer ignored.** It returns `false` when the UA's queue is full, and that batch was simply gone, at exactly the moment it mattered (page-hide, the tail of a session). It now falls through to the `keepalive` fetch, which is the same "outlive the page" guarantee by another route.
 
-**Fixed, then made moot — internal callers no longer share one rate-limit bucket.** (Since October 2026 the workers post to the liveworkspace service with their key and skip any rate limit; what follows is the history.) Our own workers reach `/api/events` over a service binding, which carries no `CF-Connecting-IP`, so `clientIp` fell back to the literal `'anonymous'` and every internal caller worldwide contended for a single 120/min key, with the overflow dropped as a 204 nobody could observe. Since the MCP worker posts one request per tool call, that ceiling was roughly two tool calls per second globally — enough to make a growing integration look flat. A matching `INTERNAL_EVENTS_KEY` (a worker secret on both sides, compared in constant time) now exempts them from the per-IP limiter, which exists to stop _anonymous_ abuse of a public endpoint and was never aimed at us. Unset on either side means nobody is exempt, exactly as before, so self-hosting needs no configuration.
+**Fixed, then made moot — internal callers no longer share one rate-limit bucket.** (Since October 2026 the workers post to the liveworkspace service with their key and skip any rate limit; what follows is the history.) Our own workers reach `/api/events` over a service binding, which carries no `CF-Connecting-IP`, so `clientIp` fell back to the literal `'anonymous'` and every internal caller worldwide contended for a single 120/min key, with the overflow dropped as a 204 nobody could observe. Since the MCP worker posts one request per tool call, that ceiling was roughly two tool calls per second globally — enough to make a growing integration look flat. A matching `INTERNAL_EVENTS_KEY` (a worker secret on both sides, compared in constant time) now exempts them from the per-IP limiter, which exists to stop _anonymous_ abuse of a public endpoint and was never aimed at us. Unset on either side means nobody is exempt, exactly as before, so deploying needs no configuration.
 
 **Still accepted:** client errors, and the editor's api errors, cap at 10 per kind per page load (an error loop must not flood the pipeline, and the dashboard reads presence and order of magnitude, not exact storm size); events buffered when a tab is hard-killed are gone (nothing is persisted, deliberately: telemetry must not own storage); and a second consecutive failure discards the batch, per the one-retry bound above. All of these under-count rather than over-count, which is the safer direction for a usage chart.
 
@@ -241,7 +241,7 @@ Charts render in inline SVG (a line with a shaded selected-window span and a das
 ## Provisioning (one-time, owner only)
 
 1. Generate livediagram's key (`openssl rand -hex 32`) and set it on the service as `TELEMETRY_KEY_LIVEDIAGRAM`, and as the `TELEMETRY_KEY` GitHub secret (`TELEMETRY_KEY_STAGING` for staging), which the deploy puts on the api and mcp workers. A mismatch produces no error, just missing server-side counts, so verify with `wrangler secret list` on all three.
-2. `TELEMETRY_ENABLED` and `TELEMETRY_URL` come from the hosted profile; a self-host sets them itself, with a service of its own to send to (the hosted one only takes livediagram.app's origins and key).
+2. `TELEMETRY_ENABLED` and `TELEMETRY_URL` come from the hosted profile; a deployment sets them itself, with a service of its own to send to (the hosted one only takes livediagram.app's origins and key).
 
 ## Privacy posture
 

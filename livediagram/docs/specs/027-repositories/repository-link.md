@@ -36,7 +36,7 @@ monorepo). It holds identifiers and settings, never a credential.
 
 ```toml
 # This repository's diagrams live in livediagram; see https://livediagram.app/help/developers/repositories/
-host = "https://livediagram.app"   # optional; a self-host names its own
+host = "https://livediagram.app"   # optional; a deployment names its own
 
 [covers]
 folder = "fld_8k2m4q"              # a personal or team folder, its subfolders included
@@ -60,7 +60,7 @@ These are every table and key a link file holds; [Diagram sources](diagram-sourc
   may be absent, not both. A document moved out of the folder leaves the link's coverage; a listed document stays
   covered wherever it moves.
 - **Host.** Absent means the CLI's active profile's host. A link naming another host than the active profile is
-  refused with the profile to use; a self-host link never contacts livediagram.app.
+  refused with the profile to use; a deployment link never contacts livediagram.app.
 - **Several links.** A command acts on the nearest `livediagram.toml` at or above the working directory; `--all`
   acts on every link below it. Two links covering one document each keep their own snapshot.
 - **Unknown keys** are refused by name, so a typo never silently does nothing.

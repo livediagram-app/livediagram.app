@@ -4,14 +4,14 @@
 
 Browsers keep some Web APIs for **secure contexts**: a page served over HTTPS or from `localhost`, and, for a page
 in a frame, only when every frame above it is secure too. The editor runs outside one, so that an embed on a
-plain-http wiki and a self-hosted instance on a LAN address both open.
+plain-http wiki and an instance on a LAN address both open.
 
 ## Why
 
 The editor mints ids (documents, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
 than a hundred call sites across `apps/editor` and the shared packages. `randomUUID` is secure-context only. On
 livediagram.app the editor itself is always HTTPS, but an [embed](../013-workspace/embeds.md) on an `http://` page is
-not secure (its ancestor is not), and neither is a self-hosted instance reached as `http://192.168.1.20`. There the
+not secure (its ancestor is not), and neither is an instance reached as `http://192.168.1.20`. There the
 first id the editor minted threw `crypto.randomUUID is not a function` while it booted, and the frame showed only
 "This page couldn't load".
 

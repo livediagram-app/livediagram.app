@@ -306,7 +306,7 @@ Other reads (a signed-in or guest `GET`, and every `OPTIONS`) are unmetered. The
 
 Before any limiter, a write whose `Content-Length` exceeds its body cap is refused with `413`: `MAX_BODY_BYTES` (8 MB), or `MAX_IMAGE_BYTES` for `/api/images`, or `PHOTO_BATCH_BYTES` (24 MB) for a photo blob batch (`limits.ts`).
 
-Self-host: every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature still serve. The bindings are a Cloudflare paid-tier capability; the open-source path stays unaffected (per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+Every limiter is optional. When a binding is absent its check short-circuits to "allow", so deployments without the feature still serve. The bindings are a Cloudflare paid-tier capability; the open-source path stays unaffected (per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## Storage
 

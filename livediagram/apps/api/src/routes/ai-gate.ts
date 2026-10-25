@@ -27,7 +27,7 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   if (!resolveAiProvider(env)) return json({ error: 'ai_not_configured' }, { status: 503 });
 
   // Origin allow-list. Optional: unset accepts any Origin, matching
-  // the historical OSS self-host story. When set, the request's Origin must
+  // the historical open default. When set, the request's Origin must
   // match one of the comma-separated entries exactly — case-sensitive against
   // the raw header, because every modern browser sends a canonical lower-case
   // scheme + host and we want a strict deny default.

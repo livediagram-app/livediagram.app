@@ -8,7 +8,7 @@ describe('embedUrlFor', () => {
     );
   });
 
-  it('works for self-hosted origins (docs/specs/013-workspace/embeds.md self-hosting)', () => {
+  it('works for any origin (docs/specs/013-workspace/embeds.md)', () => {
     expect(embedUrlFor('https://diagrams.internal.example', 'abc123')).toBe(
       'https://diagrams.internal.example/embed?s=abc123',
     );

@@ -4,7 +4,7 @@
 // @liveworkspace/settings. The editor still sees one flat set of preferences: a read joins the
 // scopes, a write splits them. livedocuments keeps no copy.
 //
-// Without the accounts Worker (a self-host with sign-in off) nothing is stored server-side, and the
+// Without the accounts Worker (sign-in off, as in local dev) nothing is stored server-side, and the
 // editor keeps its preferences in the browser.
 
 import { upgradeLegacyPreferences } from '@livedocuments/api-schema';

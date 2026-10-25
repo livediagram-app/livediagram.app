@@ -143,9 +143,9 @@ In order of precedence:
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
   `watch` ran) is read again from the store, and the refused request is retried once with the new token.
   `LIVEDESIGN_TOKEN` is never re-read.
-- `LIVEDESIGN_TOKEN` goes to whichever host is active; set `LIVEDESIGN_HOST` beside it for a self-host.
+- `LIVEDESIGN_TOKEN` goes to whichever host is active; set `LIVEDESIGN_HOST` beside it for another host.
 
-## Profiles and self-hosting
+## Profiles and hosts
 
 - `~/.config/livedesign/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEDESIGN_HOST` and
   `LIVEDESIGN_PROFILE` choose one. The default is `https://livedesign.app`.
@@ -153,7 +153,7 @@ In order of precedence:
   design format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer design format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
-- A self-host profile never contacts livedesign.app.
+- A profile for another host never contacts livedesign.app.
 
 ## Local files
 

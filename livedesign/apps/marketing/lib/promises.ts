@@ -32,7 +32,7 @@ export const PROMISES: readonly Promise[] = [
     id: 'open-source',
     value: 'MIT',
     title: 'Open Source',
-    line: 'Read every line, host it yourself, make it yours.',
+    line: 'Read every line, fork it, make it yours.',
     link: { href: REPO_URL, label: 'See the code', external: true },
   },
   {

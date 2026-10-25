@@ -132,8 +132,7 @@ a team building a diagram together need this in the room?".
 ## How it ships
 
 livediagram is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. Anyone can self-host the entire codebase; the hosted
-version is the easy default. See
+for everyone, no paid tier. The codebase is public for anyone to read. See
 [03-open-source-and-business-model.md](../002-project-scope/open-source-and-business-model.md).
 
 The canvas is **always available without signing in**: a visitor can build a

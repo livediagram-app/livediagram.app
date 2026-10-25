@@ -156,7 +156,7 @@ Open a [GitHub issue](https://github.com/livediagram-app/livediagram.app/issues)
 - What you expected vs what happened.
 - The browser / OS if visible UI is involved.
 - A document id, share code, or repro steps if applicable.
-- Whether you're on the hosted livediagram.app or a self-host.
+- Whether you're on livediagram.app or staging.livediagram.app.
 
 For feature requests, link to (or propose) a spec entry. A new feature without a spec is hard to review meaningfully; one with a spec is straightforward.
 

@@ -25,7 +25,7 @@ got invented text.
 | SmolVLM-256M-Instruct q4                          | browser                     | ~190 MB   | 13/24 | 78%   | 15%  | 0/4 (says "No.") | 7 s WASM 1-thread · 0.5 s WebGPU |
 | SmolVLM-256M-Instruct q4, image splitting         | browser                     | ~190 MB   | 16/24 | 81%   | 10%  | 0/4              | ~4× the above                    |
 | SmolVLM-500M-Instruct q4                          | browser                     | ~360 MB   | 17/24 | 82%   | 13%  | 0/4              | ~14 s WASM 1-thread              |
-| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090         | self-hosted `AI_BASE_URL`   | 5 GB once | 22/24 | 96%   | 3.7% | 0/4              | 0.25 s                           |
+| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090         | local `AI_BASE_URL`         | 5 GB once | 22/24 | 96%   | 3.7% | 0/4              | 0.25 s                           |
 | **gemini-2.5-flash-lite**, batched 6              | cloud (hosted default tier) | none      | 23/24 | 99%   | 0.2% | 0/4              | 0.2 s (5.9 s for the wall)       |
 | gemini-3.6-flash, batched 6 (the assistant model) | cloud                       | none      | 22/24 | 95%   | 1.1% | 0/4              | 0.9 s (26 s for the wall)        |
 

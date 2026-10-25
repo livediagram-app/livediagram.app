@@ -17,7 +17,7 @@ doesn't have (see "Not yet shipped" there): that means no `diagrams`,
 
 **Tier 2, strong supporting**
 
-`articles` · `posters` · `design` · `opensource` · `selfhosted` · `free`
+`articles` · `posters` · `design` · `opensource` · `free`
 
 **Tier 3, context-dependent (when a directory wants more, or is dev-focused)**
 
@@ -41,7 +41,7 @@ tags belong here):
 
 ```
 documents presentations slides infographics writing collaboration
-multiplayer realtime open-source self-hosted mcp nextjs cloudflare
+multiplayer realtime open-source mcp nextjs cloudflare
 typescript durable-objects
 ```
 
@@ -55,7 +55,7 @@ Productivity · Presentation Software · Writing · Design Tools · Open Source
 
 ```
 documents presentations slides infographics posters writing articles
-collaboration multiplayer realtime free open source self-hosted
+collaboration multiplayer realtime free open source
 ```
 
 **App store / short keyword field** (tightest, highest-fit only):

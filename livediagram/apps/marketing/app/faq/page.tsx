@@ -11,7 +11,7 @@ import { FAQ_CATEGORIES } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · livediagram';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about livediagram: getting started, collaboration, sharing, AI and MCP, import and export, privacy, and self-hosting.';
+  'Answers to common questions about livediagram: getting started, collaboration, sharing, AI and MCP, import and export, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -46,7 +46,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about livediagram, from your first diagram to running your own copy."
+          lede="Everything you might want to know about livediagram, from your first diagram to getting help."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">

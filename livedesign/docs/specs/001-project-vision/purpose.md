@@ -111,8 +111,7 @@ making pages together need this?".
 ## How it ships
 
 livedesign is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. Anyone can self-host the entire codebase; the hosted
-version is the easy default. See
+for everyone, no paid tier. The whole codebase is publicly viewable. See
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md).
 
 The editor is **always available without signing in**: a visitor can make a

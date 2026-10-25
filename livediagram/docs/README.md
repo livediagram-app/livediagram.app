@@ -4,9 +4,9 @@ Follow the references below only as needed; never upfront.
 
 Documentation for livediagram, the open-source real-time diagram editor.
 
-livediagram is a multiplayer canvas in the browser: teams build diagrams, whiteboards, mind maps and workshops together in real time, with shared cursors and live selections. The canvas works without signing in, so starting is "open the link, start drawing". The hosted product runs free at [livediagram.app](https://livediagram.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+livediagram is a multiplayer canvas in the browser: teams build diagrams, whiteboards, mind maps and workshops together in real time, with shared cursors and live selections. The canvas works without signing in, so starting is "open the link, start drawing". The hosted product runs free at [livediagram.app](https://livediagram.app), and the codebase is MIT-licensed. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 
-These docs are the practical guide: what the app does, how to run it locally, how to host it on your own Cloudflare account, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
+These docs are the practical guide: what the app does, how to run it locally, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 
 ## Contents
 
@@ -15,7 +15,6 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./development/architecture.md - when you need the repo shape: eight apps, twenty-two packages, Cloudflare-only deploys
 - ./development/local-development.md - when cloning, installing, and running the apps locally
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
-- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + Durable Objects, optionally with sign-in through liveworkspace accounts
 - ./research/README.md - when you need measurements and experiment reports, such as sticky detection in wall photos
 - ./research/migration-readiness.md - when designing the Google Drive mirror or importing boards from Miro or Microsoft Whiteboard
 - ./demo/sticky-vision/index.html - when watching the sticky detector run live on a synthetic wall (`pnpm demo:sticky-vision`)
@@ -29,4 +28,4 @@ If a doc disagrees with a spec, the spec wins (and the doc is the bug). Docs lin
 
 ## License
 
-[MIT](../LICENSE). Self-host, fork, embed, modify, commercial or otherwise. The hosted version at [livediagram.app](https://livediagram.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.
+[MIT](../LICENSE). Fork, embed, modify, commercial or otherwise. The hosted version at [livediagram.app](https://livediagram.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.

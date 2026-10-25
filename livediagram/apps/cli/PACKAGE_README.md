@@ -28,7 +28,7 @@ or store it for this machine:
 printf %s "$TOKEN" | livediagram auth login --with-token
 ```
 
-The CLI never prompts. A self-hosted livediagram is reached with `--host https://…` or `LIVEDIAGRAM_HOST`.
+The CLI never prompts. Another livediagram server, such as local development, is reached with `--host https://…` or `LIVEDIAGRAM_HOST`.
 
 ## Start
 

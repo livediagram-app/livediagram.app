@@ -18,7 +18,7 @@ import {
 } from '@livediagram/ui';
 
 // The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
-// under /community by the router. No third-party scripts, and the session is asked for only by My Shares; it stays self-host-clean
+// under /community by the router. No third-party scripts, and the session is asked for only by My Shares; it stays free of required services
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 const COMMUNITY_SITE_NAME = 'livediagram Community';
 const COMMUNITY_DESCRIPTION =

@@ -12,7 +12,7 @@ import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 // served decides whether it shows: calibration happens on a developer's own
 // machine, against photographs on that machine's disk, so localhost has it and
 // the hosted site never does. A flag overrules the host either way, for a
-// self-host that wants it off on localhost or a developer labelling against a
+// a deployment that wants it off on localhost or a developer labelling against a
 // deployed build.
 //
 // The flag alone was not enough, and failing it taught the lesson: `?truth=1`

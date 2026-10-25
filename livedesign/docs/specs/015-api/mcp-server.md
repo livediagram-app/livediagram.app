@@ -32,9 +32,9 @@ shared helpers from `packages/design`; the MCP adds no business logic that
 isn't reusable.
 
 This must not weaken the friction-free guest model
-([Auth + guest access](../014-identity/auth-and-guest-access.md)) or self-hosting
+([Auth + guest access](../014-identity/auth-and-guest-access.md)) or the optional-services rule
 ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)). Like API tokens and teams,
-the MCP is **signed-in only** and **absent end-to-end** on a no-auth self-host.
+the MCP is **signed-in only** and **absent end-to-end** on a deployment without sign-in.
 
 ## 2. Architecture
 
@@ -155,10 +155,10 @@ web connectors expects OAuth, and the user chose the OAuth path. Because it stil
 resolves to an `lwt_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
-**Self-hosting / sign-in gating.** OAuth depends on the consent page authenticating
+**Sign-in gating.** OAuth depends on the consent page authenticating
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
 same gate as every token's ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
-no-auth self-host: the exchange endpoint rejects every caller and the consent
+deployment without sign-in: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
@@ -596,10 +596,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                    |
-| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                     |
+| Name               | Where                          | Absent means                                                                                                                                                  |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so OAuth callers land on the hosted consent screen unless it is set. Also the host of every tool's `url` and share link |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                   |
 
 `TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
@@ -694,7 +694,7 @@ them) ingest from, so one listing reaches several catalogues.
 login github-oidc` then `mcp-publisher publish` when `server.json` changes on
   `main`, or on manual dispatch. The registry rejects a version it already
   holds, so republishing means bumping `version` in `server.json`.
-- **Self-hosts** are not listed: the descriptor names the hosted origin only.
+- **Other hosts** are not listed: the descriptor names the hosted origin only.
 
 ### 4.17 Structured output and described parameters
 
@@ -863,7 +863,7 @@ Worker (no DOM, no React).
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.
    - `docs/development/architecture.md` — the new `apps/mcp` worker in the layout + deploy
-     order; `docs/operations/self-hosting.md` — MCP needs sign-in (like tokens/teams) and is
+     order — MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).
 

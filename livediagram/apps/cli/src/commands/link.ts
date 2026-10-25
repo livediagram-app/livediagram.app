@@ -50,7 +50,7 @@ function profileFor(config: ConfigFile, host: string): string | null {
 }
 
 // The nearest link, or with --all every one below; a link naming another host than the profile's is refused before
-// any request, so a self-host link never reaches livediagram.app (RL5).
+// any request, so a link to another host never reaches livediagram.app (RL5).
 export async function linksFor(
   io: CliIo,
   all: boolean,

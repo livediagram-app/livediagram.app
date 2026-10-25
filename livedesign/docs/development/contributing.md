@@ -155,7 +155,7 @@ Open a [GitHub issue](https://github.com/livedesign-app/livedesign.app/issues). 
 - What you expected vs what happened.
 - The browser / OS if visible UI is involved.
 - A design id, share code, or repro steps if applicable.
-- Whether you're on the hosted livedesign.app or a self-host.
+- Whether you're on livedesign.app, staging or local development.
 
 For feature requests, link to (or propose) a spec entry. A new feature without a spec is hard to review meaningfully; one with a spec is straightforward.
 

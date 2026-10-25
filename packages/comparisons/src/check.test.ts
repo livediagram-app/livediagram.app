@@ -36,6 +36,16 @@ describe('comparisonProblems', () => {
     expect(problems).toContain('no-such-tool: no look in COMPETITOR_LOOK');
   });
 
+  it('finds a comparison that offers a copy to host yourself', () => {
+    const offering = {
+      ...alternative('miro', 'Miro'),
+      usBest: ['Free, and you can run your own copy on your own Cloudflare account.'],
+    };
+    expect(comparisonProblems(comparisons({ alternatives: [offering] }))).toContain(
+      'miro: offers a copy to host yourself',
+    );
+  });
+
   it('finds a description that will not fit a search result, or is too thin', () => {
     const long = { ...alternative('miro', 'Miro'), description: 'x'.repeat(161) };
     const thin = { ...alternative('trello', 'Trello'), description: 'Short.' };

@@ -150,7 +150,7 @@ bound their access levels, and what that means for livedocuments's proposed four
   server maps every tool to an API route, so "read-only keys expose read-only tools" and "MCP does not bypass API
   permissions" ([MCP auth and permissions](https://plus.excalidraw.com/docs/mcp/auth-and-permissions)).
 - **tldraw:** the SDK leaves access control to the host; the demo sync server's rooms "are publicly accessible", and
-  production needs a self-hosted sync server where the integrator enforces permissions
+  production needs a sync server you run, where the integrator enforces permissions
   ([Collaboration](https://tldraw.dev/docs/collaboration)). The commenting package is separate from editing.
 
 ### Whimsical and Canva (unverified)

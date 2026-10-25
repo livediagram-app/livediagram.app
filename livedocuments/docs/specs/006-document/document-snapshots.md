@@ -138,7 +138,7 @@ and the pass opens every tab) so the copied URL / snippet can target any tab, no
 to the default (no `?tab=`); picking another appends `?tab=<id>`. The choice applies to every pass while the dialog
 is open.
 
-## Self-hosting
+## Without the bucket
 
 livedocuments binds no bucket for previews. A deployment without liveworkspace's media service has none: the Explorer
 row shows its sketch and a link previews as the brand card.

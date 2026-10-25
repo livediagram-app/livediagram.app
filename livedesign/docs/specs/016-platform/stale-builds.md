@@ -88,7 +88,7 @@ two paths cannot drift apart. Storage that cannot be read refuses the reload.
 
 - **The build id** is the commit the deploy built (the build job's checkout), baked into the editor's static export as
   `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="livedesign-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
-  without one (local development, a self-host that sets neither) disables this layer; the safety
+  without one (local development, a deployment that sets neither) disables this layer; the safety
   net still works.
 - **The running app learns the live one** from the server release signal it already hears for the
   design format number ([New version prompt](./new-version-prompt.md)): every api response

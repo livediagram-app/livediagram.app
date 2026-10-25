@@ -16,7 +16,7 @@ The api worker ([API app](api.md)) is documented two ways today:
 - **Prose** in [API app](api.md) plus the per-feature specs (teams → [Teams](../013-workspace/teams.md), images → [Image element + per-owner gallery](../009-elements/images.md), telemetry → [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), share password / expiry → [Share password](../013-workspace/share-password.md) / [Share-link expiry](../013-workspace/share-link-expiry.md)).
 - **Compile-time payload shapes** in `@livedesign/api-schema` — every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
 
-What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. A self-hoster or integrator can't point a client generator, a Postman import, or a docs viewer at anything.
+What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. An integrator can't point a client generator, a Postman import, or a docs viewer at anything.
 
 The goal is an **OpenAPI 3.1 design** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
 
@@ -26,7 +26,7 @@ The goal is an **OpenAPI 3.1 design** for `/api/*` that is generated from the ex
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@livedesign/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
-- Self-hostable: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
+- No outside service: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (sign-in unset).
 
 ## Non-goals (v1)
 
@@ -79,7 +79,7 @@ A human-facing viewer (Scalar / Redoc / Stoplight Elements) is nice but pulls a 
 ## Hard constraints honored
 
 - Served by the **api worker**, not Next.js — no SSR, no Node runtime added ([AGENTS.md](../../../AGENTS.md) static-only rule).
-- **Self-hostable** with no external dependency; the doc generates at build time and ships in the worker bundle.
+- **No external dependency**; the doc generates at build time and ships in the worker bundle.
 - **Reuse over duplication**: component schemas come from `@livedesign/api-schema`, the existing single source of truth, never re-typed.
 
 ## Future direction

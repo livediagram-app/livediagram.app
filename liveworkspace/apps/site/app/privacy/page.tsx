@@ -391,17 +391,6 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    body: (
-      <p>
-        livediagram, liveplanner, livedocuments and livedesign are MIT-licensed. If you run your own
-        copy of one, you are responsible for your own deployment, and this policy does not apply to
-        it.
-      </p>
-    ),
-  },
-  {
     id: 'security',
     title: 'Security',
     body: (

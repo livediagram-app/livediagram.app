@@ -38,7 +38,7 @@ export type Env = {
   INDEX_ORIGIN?: string;
   INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
-  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
+  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
@@ -71,29 +71,29 @@ export type Env = {
   PHOTO_BLOBS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
-  // wrangler.toml. Optional so self-host deployments without the
+  // wrangler.toml. Optional so deployments without the
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real design writes. Keyed on CF-Connecting-IP. Optional: absent
-  // (self-host) falls through to "allow", same as the write limiter.
+  // (when unbound) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
   // which carries the optional share password and is otherwise an
   // unauthenticated read exempt from WRITE_RATE_LIMITER. Bounds blind
   // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent (when unbound) → "allow".
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md) — an unauthenticated
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent (when unbound) → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
-  // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never send analytics unless they opt in.
+  // Absent/anything-else keeps telemetry fully off — the
+  // default, so a deployment never sends analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
@@ -116,12 +116,12 @@ export type Env = {
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
-  // (self-host) falls through to "allow".
+  // (when unbound) falls through to "allow".
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
   // The most bytes of photo blobs one tab may hold (docs/specs/031-photo/photo-store.md "Limits").
-  // Unset, blank or non-positive = no limit (the self-host default). Hosted livedesign.app sets
+  // Unset, blank or non-positive = no limit (the default when unset). Hosted livedesign.app sets
   // "536870912" (512 MB).
   PHOTO_MAX_BYTES_PER_TAB?: string;
 };

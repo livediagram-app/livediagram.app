@@ -1,0 +1,9 @@
+# Retired help articles (docs/specs/018-help/help-app.md "Retired articles"). The old category is gone,
+# so each of its URLs moves permanently to the help centre home, and search results and old links keep landing.
+# The router strips /help before forwarding and puts it back on a relative Location, so paths here
+# carry no /help prefix. Workers Static Assets reads this file from out/ (Next copies public/).
+# lib/retired-articles.test.ts pins every target to a live page.
+
+/self-hosting / 301
+/self-hosting/ / 301
+/self-hosting/* / 301

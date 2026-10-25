@@ -65,7 +65,7 @@ The unit of value is the team, not the individual.
 
 ## Open source and price
 
-- MIT-licensed, publicly viewable, self-hostable end to end.
+- MIT-licensed and publicly viewable.
 - Hosted free at livedesign.app. No paid tier and no plan to introduce one.
 - The open-source core never calls home and never gates features behind a
   license check. Sign-in through liveworkspace accounts is the one optional

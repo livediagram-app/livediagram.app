@@ -49,12 +49,11 @@ is the team, not the individual.
   read-only, like it and make their own copy. Posts stay in step with later
   edits, and enough reports from different people take a post down for good.
 - Anonymous first-party telemetry with a public dashboard at `/telemetry`. No
-  third-party analytics, no identifiers on the wire. Off in self-hosted forks
-  unless configured.
+  third-party analytics, no identifiers on the wire.
 
 ## Open source and price
 
-- MIT-licensed, publicly viewable, self-hostable end to end.
+- MIT-licensed and publicly viewable.
 - Hosted free at livediagram.app. No paid tier and no plan to introduce one.
 - The OSS core never calls home and never gates features behind a license
   check. Sign-in through liveworkspace accounts is the one optional dependency;

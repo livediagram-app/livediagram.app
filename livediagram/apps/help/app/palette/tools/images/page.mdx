@@ -85,16 +85,10 @@ Every image you upload is indexed in a personal gallery, shared across all your 
 </Figure>
 
 - **Reuse, no re-upload.** The **Gallery** tab in the image picker shows everything you have uploaded. Pick a tile to reuse it. If you upload the same file twice, livediagram recognises it and reuses the existing copy rather than storing it again.
-- **A gallery has a limit.** On livediagram.app each person's gallery holds up to 100 images and 100 MB in total. Once either is reached, a new upload is turned away with "Your image gallery is full", and deleting images you no longer use makes room. A self-hosted deployment has no limit unless its operator sets one.
+- **A gallery has a limit.** Each person's gallery holds up to 100 images and 100 MB in total. Once either is reached, a new upload is turned away with "Your image gallery is full", and deleting images you no longer use makes room.
 - **Manage it from the Explorer.** The Explorer's [Image gallery](/help/explorer/image-gallery/) lists every image with its size and dimensions, a "Used in N canvases" badge, and a delete action, so you can spot unused files and clean them up.
 - Deleting an image from the gallery removes the stored file. Any element still pointing at it shows a broken-image fallback, so delete only what you are sure is unused.
 - **Unused uploads are cleared automatically.** Once a day, livediagram removes images that are both more than 30 days old and used in no canvas, so abandoned uploads do not pile up. An image any canvas still uses is kept no matter its age, and recent uploads are left alone until the 30-day window passes.
-
-<Note>
-  Image uploads rely on storage that a self-hosted deployment may not have configured. When uploads
-  are not available, the Image and Avatar tiles are hidden, and an upload attempt explains that
-  uploads are not available on that server.
-</Note>
 
 <Tip>
   Before deleting from the gallery, open the "Used in N canvases" badge to see exactly where an

@@ -8,13 +8,13 @@ export type Env = {
   OAUTH_KV: KVNamespace;
   // Base URL of the app that hosts the OAuth consent page (apps/editor). The
   // authorize endpoint redirects the signed-in user there. Defaults to the
-  // hosted app; self-hosters point it at their own live origin.
+  // hosted app; other deployments point it at their own live origin.
   CONSENT_BASE_URL?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
   // https://liveworkspace.app/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // livediagram's secret on that service, sent as X-Telemetry-Key (the same value as the api
   // worker's TELEMETRY_KEY). A secret; unset means this worker sends no telemetry, which is also
-  // what a self-hosted deployment gets with no configuration.
+  // what a deployment gets with no configuration.
   TELEMETRY_KEY?: string;
 };

@@ -242,7 +242,7 @@ export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
 // The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and self-hosts without accounts included, because
+// Here for everyone, guests and deployments without accounts included, because
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 

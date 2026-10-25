@@ -453,32 +453,32 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 
 ## Testing
 
-| Rule                                                 | Test                                                  | File                                           |
-| ---------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------- |
-| 503 without the media service                        | `503 without the media service (self-host without …)` | `apps/api/src/routes/images.test.ts`           |
-| Owner required                                       | `400 listing the gallery with no owner`, usage        | `apps/api/src/routes/images.test.ts`           |
-| Gallery is owner-scoped                              | `200 lists the owner-scoped gallery`                  | `apps/api/src/routes/images.test.ts`           |
-| Upload, dedupe, guest hash, refusals passed on       | upload tests and `the hash-only dedupe shortcut`      | `apps/api/src/routes/images.test.ts`           |
-| Read: owner, share + grant, other app, 404 otherwise | `the byte read` suite                                 | `apps/api/src/routes/images.test.ts`           |
-| Tab-scoped read                                      | `asks whether the scoped tab…`                        | `apps/api/src/routes/images.test.ts`           |
-| Delete: owner, idempotent, 403                       | three DELETE tests                                    | `apps/api/src/routes/images.test.ts`           |
-| Outbox, its push, account delete and merge           | `a design's references`, `the account`                | `apps/api/src/media.test.ts`                   |
-| Hosted profile points at each media service          | `turns telemetry on and points each environment…`     | `apps/api/src/hosted-vars.test.ts`             |
-| Caps, sniff, strip, dedupe                           | the media service's own tests                         |                                                |
-| Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`             | `packages/api-schema/src/image-limits.test.ts` |
-| Usage and share read from the index                  | `imageUsageByOwner`, `designServesImage`              | apps/api/src/db/images.test.ts (removed)       |
-| Snapshot embeds, missing keeps placeholder           | two `drawDesign` tests                                | `apps/api/src/thumbnail.test.ts`               |
-| Embed budget in document order                       | `spends a total budget in document order…`            | `packages/api-schema/src/embed-images.test.ts` |
-| Export embeds `<image>`, placeholder without href    | `image elements` suite                                | `packages/design/src/svg-render.test.ts`       |
-| Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                              | `apps/live/lib/upload-image.test.ts`           |
-| Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites              | `apps/live/lib/api-client.test.ts`             |
-| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`            | `packages/design/src/factories.test.ts`        |
-| No colour controls                                   | `supportsColours covers … freehand; not image`        | `packages/design/src/geometry.test.ts`         |
-| Offline data-URI rewrite                             | `offline-images` suites                               | `apps/live/lib/offline/offline-images.test.ts` |
-| Palette hides without the media service `[QB1]`      | none                                                  |                                                |
-| Set / Cleared image log `[QB4]` (retired)            | n/a                                                   |                                                |
-| Picker, placeholder states, paste, export in browser | none (GB8)                                            |                                                |
-| Escaped `href`, validated `imageId` (GB1)            | none                                                  |                                                |
+| Rule                                                 | Test                                                     | File                                           |
+| ---------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| 503 without the media service                        | `503 without the media service (a deployment without …)` | `apps/api/src/routes/images.test.ts`           |
+| Owner required                                       | `400 listing the gallery with no owner`, usage           | `apps/api/src/routes/images.test.ts`           |
+| Gallery is owner-scoped                              | `200 lists the owner-scoped gallery`                     | `apps/api/src/routes/images.test.ts`           |
+| Upload, dedupe, guest hash, refusals passed on       | upload tests and `the hash-only dedupe shortcut`         | `apps/api/src/routes/images.test.ts`           |
+| Read: owner, share + grant, other app, 404 otherwise | `the byte read` suite                                    | `apps/api/src/routes/images.test.ts`           |
+| Tab-scoped read                                      | `asks whether the scoped tab…`                           | `apps/api/src/routes/images.test.ts`           |
+| Delete: owner, idempotent, 403                       | three DELETE tests                                       | `apps/api/src/routes/images.test.ts`           |
+| Outbox, its push, account delete and merge           | `a design's references`, `the account`                   | `apps/api/src/media.test.ts`                   |
+| Hosted profile points at each media service          | `turns telemetry on and points each environment…`        | `apps/api/src/hosted-vars.test.ts`             |
+| Caps, sniff, strip, dedupe                           | the media service's own tests                            |                                                |
+| Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                | `packages/api-schema/src/image-limits.test.ts` |
+| Usage and share read from the index                  | `imageUsageByOwner`, `designServesImage`                 | apps/api/src/db/images.test.ts (removed)       |
+| Snapshot embeds, missing keeps placeholder           | two `drawDesign` tests                                   | `apps/api/src/thumbnail.test.ts`               |
+| Embed budget in document order                       | `spends a total budget in document order…`               | `packages/api-schema/src/embed-images.test.ts` |
+| Export embeds `<image>`, placeholder without href    | `image elements` suite                                   | `packages/design/src/svg-render.test.ts`       |
+| Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                 | `apps/live/lib/upload-image.test.ts`           |
+| Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                 | `apps/live/lib/api-client.test.ts`             |
+| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`               | `packages/design/src/factories.test.ts`        |
+| No colour controls                                   | `supportsColours covers … freehand; not image`           | `packages/design/src/geometry.test.ts`         |
+| Offline data-URI rewrite                             | `offline-images` suites                                  | `apps/live/lib/offline/offline-images.test.ts` |
+| Palette hides without the media service `[QB1]`      | none                                                     |                                                |
+| Set / Cleared image log `[QB4]` (retired)            | n/a                                                      |                                                |
+| Picker, placeholder states, paste, export in browser | none (GB8)                                               |                                                |
+| Escaped `href`, validated `imageId` (GB1)            | none                                                     |                                                |
 
 ## Constants and configuration
 

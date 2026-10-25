@@ -391,7 +391,7 @@ describe('sync and the link’s host', () => {
     expect((await sync(io)).err).toContain('hint: livediagram --host https://self.example sync');
   });
 
-  it('talks only to a self-hosted link’s host', async () => {
+  it('talks only to a link’s own host', async () => {
     const host: LinkHost = linkHost([home()], folders);
     const self = 'https://self.example';
     const io = fakeIo({

@@ -72,7 +72,6 @@ livediagram's scenes:
 | Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                               |
 | Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                |
 | Privacy and Security | shared, with its own | a livediagram.app share link with its safeguards                                     |
-| Self-Hosting         | shared, with its own | `~/livediagram` deploying api, editor and router to your own domain                  |
 | Policies             | shared, the same     | the terms and the privacy policy, sealed                                             |
 
 ## Home page
@@ -89,7 +88,7 @@ Top to bottom:
    Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
-5. **Developers and self-hosting.** Developers and Self-Hosting, as wide cards.
+5. **Developers.** Developers, as a wide card.
 6. **Still stuck?** A dark closing band: the contact form and GitHub issues as buttons, beside the
    Troubleshooting card.
 

@@ -20,7 +20,8 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // became the Diagram Tour. Infographics became Illustrate mode and then Pages mode, which has
 // since left livediagram for livedocuments: every article of all three sections lands on the
 // Editor Modes article. Plan mode left for liveplanner the same way, its articles landing there too, and the API's
-// Plan Items, Sheets and Images article became Images, Copies and Libraries. The old addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+// Plan Items, Sheets and Images article became Images, Copies and Libraries. The Self-Hosting category was retired; its pages land on the help centre home
+// (an empty target). The old addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -60,7 +61,8 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/plan-mode/sheets': 'canvas/editor-modes',
   'canvas/plan-mode/sheet-functions': 'canvas/editor-modes',
   'canvas/plan-mode/visualisations': 'canvas/editor-modes',
-  'developers/working-with-documents/plan-sheets-images': 'developers/working-with-documents/images-and-copies',
+  'developers/working-with-documents/plan-sheets-images':
+    'developers/working-with-documents/images-and-copies',
   'canvas/facilitate-mode': 'canvas/workshop-mode',
   'canvas/facilitate-mode/facilitate-tour': 'canvas/workshop-mode/workshop-tour',
   'selection-modes/highlighter': 'palette/tools/highlighter',
@@ -71,13 +73,21 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'activity-panel/redo': 'canvas/redo',
   'activity-panel/reverting-changes': 'canvas/undo',
   'getting-started/welcome-tour': 'getting-started/diagram-tour',
+  'self-hosting': '',
+  'self-hosting/self-hosting-overview': '',
+  'self-hosting/deploying-livediagram': '',
+  'self-hosting/configuration': '',
+  'self-hosting/configuration/drive-and-mcp': '',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {
   const match = /^\/help\/(.+?)(\/?)$/.exec(url.pathname);
-  const next = match ? LEGACY_HELP_ARTICLES[match[1]!] : undefined;
-  if (!match || !next) return null;
+  const next =
+    match && Object.prototype.hasOwnProperty.call(LEGACY_HELP_ARTICLES, match[1]!)
+      ? LEGACY_HELP_ARTICLES[match[1]!]
+      : undefined;
+  if (!match || next === undefined) return null;
   const target = new URL(url.toString());
-  target.pathname = `/help/${next}${match[2]}`;
+  target.pathname = next ? `/help/${next}${match[2]}` : '/help/';
   return Response.redirect(target.toString(), 308);
 }

@@ -17,6 +17,10 @@ const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const DESCRIPTION = { min: 50, max: 160 };
 // A card's chip stays on one line.
 const CHIP_MAX = 24;
+// None of the apps offers a copy to run yourself, so no comparison may say one does: not in a row, a
+// highlight, a reason, a paragraph or an answer.
+const HOST_IT_YOURSELF =
+  /self[- ]?host|host (?:it )?yourself|run your own copy|deploy (?:it|the same code) to your own|your own cloudflare account/i;
 
 export function comparisonProblems(c: Comparisons): string[] {
   const problems: string[] = [];
@@ -75,6 +79,8 @@ export function comparisonProblems(c: Comparisons): string[] {
     // Each answer feeds the FAQPage JSON-LD.
     if (alt.faqs.length === 0) add(at, 'no FAQs');
     for (const faq of alt.faqs) if (!faq.q || !faq.a) add(at, `FAQ "${faq.q}" is unanswered`);
+
+    if (HOST_IT_YOURSELF.test(JSON.stringify(alt))) add(at, 'offers a copy to host yourself');
   }
   return problems;
 }

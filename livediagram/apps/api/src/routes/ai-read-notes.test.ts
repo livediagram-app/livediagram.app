@@ -69,7 +69,7 @@ function makeCtx(
 const answer = async (res: Response) => await res.json<{ texts: NoteText[] }>();
 
 describe('the shared gate still guards this route', () => {
-  it('503 without a key — the self-host default', async () => {
+  it('503 without a key — the default when unset', async () => {
     const res = await handleAiReadNotes(makeCtx({ env: { GOOGLE_AI_STUDIO_API_KEY: undefined } }));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'ai_not_configured' });

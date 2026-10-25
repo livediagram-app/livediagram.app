@@ -4,7 +4,7 @@ A standalone help centre at `/help`, modelled on the Manager Toolkit help centre
 
 ## Why
 
-The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account/privacy/self-hosting questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
+The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account and privacy questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
 
 ## Shape
 
@@ -19,7 +19,9 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 ### No paid tier
 
-livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Instead it carries a **Self-hosting** category, reflecting that anyone can run their own instance.
+livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Its support categories cover the account, privacy, developer tooling and the hosted service's policies.
+
+**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away.
 
 ## Information architecture
 
@@ -33,7 +35,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedesign API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Designs_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included (a self-hosted copy is the operator's responsibility), so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
+**Policies.** A support category, not a feature one. It holds **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The **Terms of Service** and **Privacy Policy** are liveworkspace's and cover every liveworkspace app, livedesign.app included, so they live at `https://liveworkspace.app/terms` and `https://liveworkspace.app/privacy`, not here. Their old help URLs (`/help/policies/terms/`, `/help/policies/privacy-policy/`, and the older `/help/privacy-and-security/privacy-policy/`) and the marketing `/terms` and `/privacy` stay alive as thin `noindex` client redirects to them.
 
 | slug                   | title                | kind    |
 | ---------------------- | -------------------- | ------- |
@@ -42,7 +44,6 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `tips-and-tricks`      | Tips and Tricks      | support |
 | `account-and-data`     | Account and Data     | support |
 | `privacy-and-security` | Privacy and Security | support |
-| `self-hosting`         | Self-Hosting         | support |
 | `developers`           | Developers           | support |
 | `troubleshooting`      | Troubleshooting      | support |
 | `supported-devices`    | Supported Devices    | support |
@@ -269,7 +270,7 @@ but only for surfaces that link ONE article contextually — see [Contextual hel
 
 ## Analytics
 
-The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@livedesign/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, which keeps it self-host-clean.
+The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@livedesign/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, so it needs no outside service.
 
 ## Deployment
 

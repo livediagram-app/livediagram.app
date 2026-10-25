@@ -215,11 +215,11 @@ describe('run', () => {
   });
 });
 
-describe('a self-hosted profile', () => {
+describe('a profile on another host', () => {
   it('never contacts livedocuments.app across a session of commands', async () => {
     const SELF = 'https://diagrams.example';
     const config = '/home/agent/.config/livedocuments/config.toml';
-    const selfHost: Route = (request, url) => {
+    const otherHost: Route = (request, url) => {
       if (url.origin !== SELF) return undefined;
       const path = url.pathname;
       if (path === '/api/capabilities')
@@ -232,7 +232,7 @@ describe('a self-hosted profile', () => {
     const files = {
       [config]: 'default_profile = "self"\n[profiles.self]\nhost = "https://diagrams.example"',
     };
-    const io = fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes: [selfHost], files });
+    const io = fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes: [otherHost], files });
     for (const argv of [
       ['document', 'ls'],
       ['tab', 'ls', 'Auth flow'],

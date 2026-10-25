@@ -35,7 +35,7 @@ The Share dialog is the shared one from `@liveworkspace/explorer` ([Editor app �
 - `track('Session', 'Opened', 'Embed')` once when the embed route hydrates.
 - `UI·Copied·EmbedCode` counted the snippet's copy button, which went with the old Share dialog.
 
-## Self-hosting
+## No external services
 
 Works with zero external services: the embed page is part of the editor app's static export, and the snippet builds its URL from the live origin, so every deployment (staging, local development) emits embed URLs on its own origin.
 

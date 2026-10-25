@@ -44,7 +44,7 @@ export { DocumentRoom };
 // when the caller is over the configured cap (wrangler.toml's
 // WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
 // with a 429. Falls through to "allowed" when the binding is
-// absent so self-host deployments without the feature still serve.
+// absent so deployments without the feature still serve.
 async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   if (!env.WRITE_RATE_LIMITER) return false;
   const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
@@ -256,7 +256,7 @@ async function routeApiRequest(
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
   // the write limiter, so an external integration's reads get their own
-  // per-token throttle. Optional binding → allow when absent (self-host).
+  // per-token throttle. Optional binding → allow when absent.
   if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
     const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
     if (!ok.success) return rateLimited();

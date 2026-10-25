@@ -151,8 +151,8 @@ name, or a recipient count.
 - Authenticated-only; the address is the verified token claim, never input.
 - No document content, names, or anything the user typed is ever in an email
   beyond the team name and the user's own email.
-- Off by default; self-hosters opt in by providing their own Resend key + domain
-  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
+- Off by default; a deployment opts in by providing a Resend key + domain
+  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) intact — no required SaaS call).
 
 ## 6. Out of scope (for now)
 

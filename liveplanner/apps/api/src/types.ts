@@ -75,7 +75,7 @@ export type Env = {
   // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real project writes. Keyed on CF-Connecting-IP. Optional: absent
-  // (self-host) falls through to "allow", same as the write limiter.
+  // (local dev) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
   // which carries the optional share password and is otherwise an

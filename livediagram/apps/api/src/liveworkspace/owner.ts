@@ -16,7 +16,7 @@ export function liveworkspaceOwnerOf(ownerId: string): string | null {
 }
 
 // This app's client at the accounts Worker, and the owner's id there: null when either is missing
-// (a guest-only self-host, or an id liveworkspace can't hold), and the caller keeps to its fallback.
+// (a guest-only deployment, or an id liveworkspace can't hold), and the caller keeps to its fallback.
 export function liveworkspaceTarget(
   env: Env,
   ownerId: string,

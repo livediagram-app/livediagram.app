@@ -86,7 +86,7 @@ Scope, by file:
 | `apps/editor/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                                                                     | Import the moved modules from `@livedocuments/document` and `@liveworkspace/icons`                                                                                                                                                                                                                                                                                        |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`                           | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                 |
 | `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                                                                              | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                                  |
-| `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md`                                                       | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                               |
+| `README.md`, `docs/development/{architecture,local-development}.md`                                                                                          | The app, the packages, the two api vars, the CLI on another host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                              |
 
 ## Domain and naming
 
@@ -833,7 +833,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   (`DEVICE_AUTH_RATE_PER_HOUR`). Only the built-in client may start one. The page names the client from the server
   and warns: "Only enter a code shown by a terminal you are using." The token travels from the page to the trusted
   `MCP_ORIGIN` only, as the consent page's does.
-- **Hosts.** A self-host profile reaches its own host only (I5); telemetry goes to that host's api; the update
+- **Hosts.** A profile on another host reaches that host only (I5); telemetry goes to that host's api; the update
   check goes to npm and carries nothing but the request. `api` refuses absolute URLs. `LIVEDOCUMENTS_TOKEN` goes to
   whichever host is active; `auth status` shows that host, and the README says to set `LIVEDOCUMENTS_HOST` beside it.
 - **Share links.** A link's code rides only on the command that was given its URL, and only to that host.
@@ -1007,7 +1007,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | A host without sign-in says so in one line                                                    | `apps/cli/src/main.test.ts`                                                                                                                                                     |
 | Profiles, flags, env, default host                                                            | `apps/cli/src/config/config.test.ts`                                                                                                                                            |
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                                                   |
-| A self-host profile never contacts livedocuments.app                                          | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                                         |
+| A profile on another host never contacts livedocuments.app                                    | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                                         |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                                |
 | Pull refuses a file with unpushed changes; `--force` overwrites (CLI27a)                      | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
@@ -1075,7 +1075,7 @@ Environment the CLI reads: `LIVEDOCUMENTS_TOKEN`, `LIVEDOCUMENTS_HOST`, `LIVEDOC
 `DO_NOT_TRACK`, `LIVEDOCUMENTS_NO_UPDATE_CHECK`, `LIVEDOCUMENTS_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
 Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livedocuments.app`) and `CLI_MIN_VERSION` (unset until a
 release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
-`pnpm staging:check` holds; both documented in `docs/operations/self-hosting.md`. No new secret, binding or migration.
+`pnpm staging:check` holds; both documented in `docs/development/local-development.md`. No new secret, binding or migration.
 
 ## Assets and external resources
 

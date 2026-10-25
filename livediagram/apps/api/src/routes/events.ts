@@ -33,7 +33,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       limiter from the document write limiter, so it never
   //       touches real users; the IP is a transient key, never
   //       stored or passed on. Both degrade to "allow" when unconfigured, so
-  //       self-host / OSS forks still work. Cloudflare's edge DDoS
+  //       forks still work. Cloudflare's edge DDoS
   //       + an optional WAF rate-limit rule on /api/events sit in
   //       front of all this (see docs/specs/017-telemetry/telemetry.md). Always 204 — telemetry
   //       must never surface an error.

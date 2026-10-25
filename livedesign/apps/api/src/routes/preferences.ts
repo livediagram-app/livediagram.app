@@ -8,7 +8,7 @@
 //         or two tabs, changing different keys both land.
 //
 // Hybrid identity like the rest of the api: the account when signed in, else the guest's guest token. A
-// deployment with no accounts Worker (a self-host with no sign-in) keeps no preferences: both answer
+// deployment with no accounts Worker (no sign-in) keeps no preferences: both answer
 // 404 `preferences_not_stored`, and the editor keeps them in the browser.
 
 import { badRequest, json, missingAuth, noContent, notFound } from '../responses';

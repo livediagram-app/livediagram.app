@@ -21,7 +21,7 @@ keeps tokens apart from guests entirely (a guest's own credential, the guest
 token, is [§4](#4-guest-identity-a-verified-guest-token)).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
-or self-hosting ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+or the optional-services rule ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## 2. Why the API wasn't safe to expose as-is (history)
 
@@ -325,7 +325,7 @@ out cleanly:
 
 Every other `/api/tokens` route answers `410 tokens_moved` (see the head of §3).
 
-### 3.7 Self-hosting
+### 3.7 Without optional services
 
 API tokens come with sign-in, as teams do ([Teams](../013-workspace/teams.md),
 [Auth + guest access](../014-identity/auth-and-guest-access.md)). Every build offers sign-in, so:
@@ -389,9 +389,9 @@ presence frame or a URL.
 through a verified account credential (its access token, an API token, or a
 workbench session). Nothing a guest or a stranger can send names an account.
 
-**Self-hosting.** Guest tokens come from the accounts site. A deployment
+**Without the accounts site.** Guest tokens come from the accounts site. A deployment
 without it (`ACCOUNTS_*` unset) has no guest identity at all: visitors cannot
-own documents on the server ([Self-hosting](../../operations/self-hosting.md)).
+own documents on the server ([Deployment](../016-platform/deployment.md)).
 
 ### 4.1 An owner id is never a credential
 
@@ -466,7 +466,7 @@ hardening landed first:
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page ([§3.7](#37-self-hosting)).
+   replaced the original Explorer "API tokens" page ([§3.7](#37-without-optional-services)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
@@ -480,7 +480,7 @@ hardening landed first:
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
      requirement in `docs/development/architecture.md`, and the signed-in-only nature in
-     `docs/operations/self-hosting.md` (tokens need sign-in, like teams).
+     `docs/specs/016-platform/deployment.md` (tokens need sign-in, like teams).
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**

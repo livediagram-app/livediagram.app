@@ -48,7 +48,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 Meta-description-adjacent fields, longer banner copy.
 
 - Articles that flow onto pages, decks you present, infographics you design. Together, in real time. [98]
-- Write and present with your team in real time. MIT-licensed, free and self-hostable. [84]
+- Write and present with your team in real time. MIT-licensed, free and open source. [84]
 
 ## Pick-list by use
 

@@ -234,9 +234,8 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         The apps&rsquo; source code (livediagram, liveplanner, livedocuments and livedesign) is
-        public and MIT-licensed: you are free to read it, fork it and run your own copy. These terms
-        cover only the hosted apps on their .app addresses and liveworkspace.app, not a copy you
-        host yourself, which is yours to run.
+        public and MIT-licensed, and that licence governs the code itself. These terms cover your
+        use of the hosted apps on their .app addresses and liveworkspace.app.
       </p>
     ),
   },

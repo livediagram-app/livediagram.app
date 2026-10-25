@@ -2,7 +2,6 @@ import {
   lucideArrowUpDown,
   lucideGift,
   lucideMessagesSquare,
-  lucidePackage,
   lucideShapes,
   lucideShare2,
   lucideShieldCheck,
@@ -45,13 +44,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             No. Open the editor and start straight away, with no sign-up. Your work saves in your
             browser as you go, and pressing Share puts it online for others to join. Signing in
-            (also free) keeps your designs with you across devices and unlocks teams, API tokens and
-            the AI connection. See{' '}
+            (also free, with a liveworkspace account and an emailed code) keeps your designs with
+            you across devices and unlocks teams, API tokens and the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your designs with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open the editor and start straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free, with a liveworkspace account and an emailed code) keeps your designs with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
         q: 'How do I start my first design?',
@@ -73,14 +72,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Are there keyboard shortcuts?',
         a: (
           <>
-            Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens the command palette
-            for any action, and single keys pick tools. The{' '}
-            <a href="/help/getting-started/keyboard-essentials/">keyboard essentials</a> article
-            lists them all.
+            Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens search and
+            commands, and single keys pick tools and add elements: V selects, H pans, K is the laser
+            pointer, T adds text. The{' '}
+            <a href="/help/getting-started/keyboard-essentials/">keyboard essentials</a> guide lists
+            the ones worth learning.
           </>
         ),
         aText:
-          'Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens the command palette for any action, and single keys pick tools. The keyboard essentials article lists them all.',
+          'Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens search and commands, and single keys pick tools and add elements: V selects, H pans, K is the laser pointer, T adds text. The keyboard essentials guide lists the ones worth learning.',
       },
       {
         q: 'Can I use it with a keyboard or a screen reader?',
@@ -125,15 +125,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               public on GitHub
             </a>
-            . You can read it, run your own copy, or contribute.
+            . You can read it, fork it, or contribute.
           </>
         ),
         aText:
-          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, run your own copy, or contribute.',
+          'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, fork it, or contribute.',
       },
       {
         q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. The free hosted version and a self-hosted copy run the same software.',
+        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is free for everyone.',
       },
     ],
   },
@@ -278,13 +278,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
-            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
+            Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone
             unlocks it, with a padlock beside its name. You can also lock single elements or whole
             layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
           </>
         ),
         aText:
-          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+          'Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
       },
       {
         q: 'How do I keep up with what changed?',
@@ -309,7 +309,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a design you own, create an editor link (full edit access) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a design you own, issue a pass with a role: Editor (designs with you), Participant (adds stickies, text and pictures but cannot reshape the pages) or Viewer (watches only). Anyone with the link can join in that role. Give a pass an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
         q: 'Can I password-protect a design?',
@@ -320,16 +320,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. When a design has more than one tab, the Share dialog lets a link open a single
-            tab, as an editor or view-only link, and the rest of the design stays private. See{' '}
+            tab, in any role, and the rest of the design stays private. See{' '}
             <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
           </>
         ),
         aText:
-          'Yes. When a design has more than one tab, the Share dialog lets a link open a single tab, as an editor or view-only link, and the rest of the design stays private. See sharing one tab.',
+          'Yes. When a design has more than one tab, the Share dialog lets a link open a single tab, in any role, and the rest of the design stays private. See sharing one tab.',
       },
       {
         q: 'Can I embed a design in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable design, and a view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the pages.',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an Editor pass embeds an editable design, and a Viewer or Participant pass a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the pages.',
       },
       {
         q: 'Can I show a page where iframes are blocked, like a README?',
@@ -458,34 +458,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Delete any design you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
-      },
-    ],
-  },
-  {
-    id: 'self-hosting',
-    title: 'Self-hosting',
-    blurb: 'Run your own copy.',
-    icon: lucideGlyph(lucidePackage, ICON),
-    items: [
-      {
-        q: 'Can I self-host livedesign?',
-        a: (
-          <>
-            Yes. It is MIT-licensed and the source is{' '}
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              on GitHub
-            </a>
-            . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
-            account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livedesign/">deploying livedesign</a>.
-          </>
-        ),
-        aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedesign.',
-      },
-      {
-        q: 'Do I need sign-in to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Email switches on once sign-in and its own key are set up.',
       },
     ],
   },

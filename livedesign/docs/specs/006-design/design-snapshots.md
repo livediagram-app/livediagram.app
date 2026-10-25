@@ -208,7 +208,7 @@ design, so a per-card badge is noise — the team list omits it as well).
 - The List/Card toggle covers the main browse views and the team library; the "Shared With Me" page keeps its
   fixed layout (it already shows the thumbnail).
 
-## Self-hosting
+## Without image storage
 
 Previews need liveworkspace's media service (`MEDIA_KEY`), exactly like the image gallery
 ([Image element + per-owner gallery](../009-elements/images.md)): without it the export door is closed, every

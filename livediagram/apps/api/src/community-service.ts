@@ -15,7 +15,7 @@ import type { Env } from './types';
 
 export const COMMUNITY_APP = 'livediagram.app';
 
-// Whether this deploy talks to the service at all: a self-host without the key has no Community.
+// Whether this deploy talks to the service at all: a deployment without the key has no Community.
 export function communityServiceConfigured(env: Pick<Env, 'COMMUNITY_KEY'>): boolean {
   return Boolean(env.COMMUNITY_KEY);
 }

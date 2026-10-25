@@ -21,7 +21,7 @@ describe('purgeDocumentPreviews (liveworkspace/docs/previews.md "Purging")', () 
     expect(deletePreviews).toHaveBeenCalledWith('d1');
   });
 
-  it('carries on when the service fails, and when there is none (self-host)', async () => {
+  it('carries on when the service fails, and when there is none', async () => {
     deletePreviews.mockRejectedValue(new Error('down'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     await expect(purgeDocumentPreviews({ MEDIA_KEY: 'k' } as Env, 'd1')).resolves.toBeUndefined();

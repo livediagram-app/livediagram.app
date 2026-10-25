@@ -41,7 +41,7 @@ export type Env = {
   // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.
   INDEX_ORIGIN?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
-  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
+  // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
@@ -68,29 +68,29 @@ export type Env = {
   IMAGES?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
-  // wrangler.toml. Optional so self-host deployments without the
+  // wrangler.toml. Optional so deployments without the
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real document writes. Keyed on CF-Connecting-IP. Optional: absent
-  // (self-host) falls through to "allow", same as the write limiter.
+  // falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
   // which carries the optional share password and is otherwise an
   // unauthenticated read exempt from WRITE_RATE_LIMITER. Bounds blind
   // password / share-code guessing. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent → "allow".
   SHARE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md) — an unauthenticated
   // outbound page fetch, so bound abuse. Keyed on CF-Connecting-IP. Optional:
-  // absent (self-host) → "allow".
+  // absent → "allow".
   UNFURL_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
   // "Tokens"): each call reaches Google's token endpoint, so it gets a far
   // tighter bound than the general write limiter. Keyed on the account id.
-  // Optional: absent (self-host) → "allow".
+  // Optional: absent → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
@@ -111,7 +111,7 @@ export type Env = {
   // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Gates every event this worker
   // sends to the liveworkspace telemetry service, its own and the relay's. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
-  // Absent/anything-else keeps telemetry fully off — the self-host
+  // Absent/anything-else keeps telemetry fully off — the deployment
   // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
@@ -136,7 +136,7 @@ export type Env = {
   // from which of these keys is set, because a key is provider-specific and its
   // name should say so — see ai-provider.ts. None = the photo reader is hidden
   // (capabilities reports aiEnabled:false and /api/ai/read-notes answers 503),
-  // which is the self-host default.
+  // which is the default when unset.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
@@ -149,12 +149,12 @@ export type Env = {
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai/read-notes. Caps AI requests at
   // 20/60s per IP so a single client can't exhaust the operator's model budget.
-  // Optional: absent (self-host) falls through to "allow".
+  // Optional: absent falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
-  // (self-host) falls through to "allow".
+  // falls through to "allow".
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
@@ -163,7 +163,7 @@ export type Env = {
   // When set, the worker rejects 403 unless the request's Origin
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
-  // behaviour so self-host upgrades don't break. Hosted
+  // behaviour so upgrades don't break. Hosted
   // livediagram.app sets this in apps/api/wrangler.toml [vars] (NOT the
   // dashboard, which a deploy wipes) to BOTH
   // "https://www.livediagram.app" and "https://livediagram.app" — `www`
@@ -176,7 +176,7 @@ export type Env = {
   // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
   // it open to guests. Hosted livediagram.app leaves it unset.
   AI_REQUIRE_SIGN_IN?: string;
-  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Self-hosting").
+  // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md, "Configuration").
   // GOOGLE_CLIENT_ID (plain var) switches the feature on at all; with
   // GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY (both secrets) the worker brokers
   // refresh tokens, otherwise the browser holds its own short-lived tokens.

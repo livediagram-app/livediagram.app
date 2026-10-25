@@ -166,13 +166,13 @@ The decision is centralized in `describeBoxedExport` (`packages/design/src/svg-r
 
 The same `renderElementsToSvg` powers the headless drawing behind liveworkspace's previews of a design, the Explorer **preview** thumbnail and the public **live image** (`GET /api/share/:code/image.svg`): both drawn by `drawDesign` at the export door ([Design SVG snapshots](../006-design/design-snapshots.md), [Live image share link](../013-workspace/live-image-share.md)). That path embeds images too: it runs in the api Worker (no DOM, no fetch-with-auth), so instead of the browser's `apiFetchImageDataUrl` it reads each referenced id that the design [may serve](#placement-grants) from the media service (`apps/api/src/media.ts`, the same store the byte read uses); an id it may not serve keeps the placeholder, base64-encodes the bytes with the object's stored content type, and passes the `resolveImageHref` resolver to the renderer. A per-snapshot **embed budget** (`IMAGE_EMBED_BUDGET_BYTES`, 3 MB raw) bounds how much bitmap is inlined so a photo-heavy design can't produce a multi-megabyte preview; images past the budget (or missing from the service, or every one when the api has no `MEDIA_KEY`) keep the placeholder. The media service keeps the preview and asks for it again once `saved_at` has moved, so swapping an element's image (an edit, which bumps `saved_at`) redraws with the new bytes.
 
-## Self-host degradation
+## Degradation without the media service
 
-Images need liveworkspace's media service. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s self-host promise intact:
+Images need liveworkspace's media service. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s no-required-SaaS rule:
 
 - `apps/api/src/types.ts`: `Env.MEDIA_KEY` is optional. When unset, every `/api/images*` endpoint returns 503 with `{ error: 'images_unavailable' }`, as it does when the service refuses this api's key or is down.
 - `apps/live/components/panels/ImagePicker.tsx`: a 503 response surfaces as a friendly "Image uploads aren't enabled on this deployment" notice instead of a generic error.
-- The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so self-hosters without the media service don't see a dead-end button.
+- The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so a deployment without the media service shows no dead-end button.
 - Every call to the service goes through `apps/api/src/media.ts`, so another store could be slotted in from there without changing the client.
 
 ## Reference index
@@ -233,7 +233,7 @@ The rules are `@liveworkspace/index-app`'s placement grants ([packages/index-app
 
 Uploaded images no design or other item places are swept by the media service, for every app at once ([media.md](../../../../liveworkspace/docs/media.md) "Retention"), once each app has told it which images its items place. livedesign tells it from the [reference index](#reference-index): each design sends its whole set when it changes, from its outbox, so every design that places an image has been sent at least once. The api's one cron, daily at 03:00 UTC (`announceMediaRefs`, `apps/api/src/index.ts` `scheduled()`), says livedesign's set is `complete`, so a quiet day never holds the sweep up. The api keeps no images of its own and so sweeps nothing itself.
 
-- **Self-host.** Without `MEDIA_KEY` there is no service to tell, and no images.
+- **No key.** Without `MEDIA_KEY` there is no service to tell, and no images.
 - **Tested against real SQLite.** The index and its writers run against a design's real schema in an in-memory SQLite (`src/test-sqlite-d1.ts`, over `nodeItemSql` from `@liveworkspace/index-app/testing`), and the SQL extraction is held to the JavaScript extractor over one shared corpus of tab bodies.
 
 ## Realtime

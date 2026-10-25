@@ -173,7 +173,7 @@ The root [`README.md`](README.md) and the [`docs/`](docs/) folder (indexed in [`
 Treat them as part of the change, not an afterthought:
 
 - After any change, check whether it makes the README or a `docs/` file **incorrect** (commands, ports, file paths, env vars, app/package names, architecture, deploy steps) or **lacking key information** (a new app, package, env var, command, route, or workflow that a reader would now expect to find). If so, update the affected doc in the **same change** as the code.
-- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, `docs/development/local-development.md`, and `docs/operations/self-hosting.md` may need a matching edit.
+- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, `docs/development/local-development.md` may need a matching edit.
 - Don't let docs drift: an out-of-date doc is worse than a missing one. If you can't fully update it now, note the gap explicitly rather than leaving a confidently wrong instruction.
 - Specs (`docs/specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
 
@@ -233,9 +233,9 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 
 See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
-- The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
+- The codebase is **MIT-licensed** and **publicly viewable**.
 - A free hosted version runs alongside at livedocuments.app. **No paid tier and no plan to introduce one.**
-- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). The accounts Worker is optional: with its settings unset the api worker degrades to pure-guest mode, and the editor (which always offers sign-in) keeps working.
+- Keep every outside service optional (no required SaaS calls, no license checks gating the core editor). The accounts Worker is optional: with its settings unset the api worker degrades to pure-guest mode, and the editor (which always offers sign-in) keeps working.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy

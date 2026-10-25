@@ -65,7 +65,7 @@ tree and their specs stay until it goes ([Build phase](../005-project-roadmap/pr
 ## Non-goals
 
 - No paid tier, billing or feature flags that gate a feature ([Business model + licence](business-model-and-licence.md)).
-- No public source, outside contributions or self-hosting.
+- No public source or outside contributions; liveplanner runs only as the hosted service at liveplanner.app.
 - No connectors to other trackers (GitHub Issues, Jira, Linear) in the first cut
   ([Build phase](../005-project-roadmap/prototype-scope.md#later)).
 - No native desktop or mobile app; the web is the product.

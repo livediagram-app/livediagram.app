@@ -34,9 +34,9 @@ const sections: HomeSection[] = [
   {
     id: 'build',
     eyebrow: 'Build and Run',
-    heading: 'Developers and self-hosting',
-    lede: 'Drive livedocuments from your own code, or run your own copy of it.',
-    categories: ['developers', 'self-hosting'],
+    heading: 'Developers',
+    lede: 'Drive livedocuments from your own code, scripts and AI tools.',
+    categories: ['developers'],
   },
 ];
 

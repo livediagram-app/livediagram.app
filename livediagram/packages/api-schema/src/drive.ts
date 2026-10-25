@@ -137,5 +137,5 @@ export function driveRootName(host: string): string {
   const name = hostName(host);
   if (PRODUCTION_HOSTS.has(name)) return 'livediagram';
   if (STAGING_HOSTS.has(name)) return 'livediagram (staging)';
-  return 'livediagram (self-hosted)';
+  return 'livediagram (other host)';
 }

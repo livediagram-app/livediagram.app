@@ -82,7 +82,7 @@ async function uploaded(bytes = PNG, opts: Opts = {}): Promise<string> {
 const VIEW = { item: 'd1', level: 'view', tab: null };
 
 describe('handleImages', () => {
-  it('503 without the media service (self-host without MEDIA_KEY)', async () => {
+  it('503 without the media service (a deployment without MEDIA_KEY)', async () => {
     const env = { ...db.env, MEDIA_KEY: undefined } as Env;
     expect((await call('GET', '/api/images', { env })).status).toBe(503);
   });

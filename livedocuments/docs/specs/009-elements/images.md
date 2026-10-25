@@ -166,13 +166,13 @@ The decision is centralized in `describeBoxedExport` (`packages/document/src/svg
 
 The same `renderElementsToSvg` draws the document for liveworkspace's previews (the Explorer **preview** thumbnail, the public **live image** and the share card) through the export door (`drawDocument`, `apps/api/src/thumbnail.ts`), in the document's Durable Object where the content is ([Document previews](../006-document/document-snapshots.md), [Live image share link](../013-workspace/live-image-share.md)). That path embeds images too: it runs server-side (no DOM, no fetch-with-auth), so instead of the browser's `apiFetchImageDataUrl` it reads each referenced id that the document [may serve](#placement-grants) from the media service, the same store the byte endpoint reads (an id it may not serve keeps the placeholder), base64-encodes the bytes with their stored content type, and passes the `resolveImageHref` resolver to the renderer. A per-drawing **embed budget** (`IMAGE_EMBED_BUDGET_BYTES`, 3 MB raw) bounds how much bitmap is inlined so a photo-heavy document can't produce a multi-megabyte preview; images past the budget (or unknown to the media service) keep the placeholder. The drawing is versioned by `saved_at`, so swapping an element's image (an edit, which bumps `saved_at`) redraws with the new bytes.
 
-## Self-host degradation
+## Degradation without the media service
 
-Images need liveworkspace's media service. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s self-host promise intact:
+Images need liveworkspace's media service. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s no-required-SaaS rule intact:
 
 - `apps/api/src/types.ts`: `Env.MEDIA_KEY` is optional. When unset, every `/api/images*` endpoint returns 503 with `{ error: 'images_unavailable' }`, as it does when the service refuses this api's key or is down.
 - `apps/editor/components/panels/ImagePicker.tsx`: a 503 response surfaces as a friendly "Image uploads aren't enabled on this deployment" notice instead of a generic error.
-- The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so self-hosters without the media service don't see a dead-end button.
+- The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so a deployment without the media service shows no dead-end button.
 - Every call to the service goes through `apps/api/src/media.ts`, so another store could be slotted in from there without changing the client.
 
 ## Reference index

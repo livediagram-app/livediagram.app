@@ -33,7 +33,7 @@ file). Built on [Board import](board-import.md); evidence in
   `POST /api/import/miro/refresh` (same statelessness); a second failure asks
   the user to reconnect.
 - Boards in another Miro team need another connection; tokens are per team.
-- Self-host: the card shows only when the api Worker has `MIRO_CLIENT_ID` and
+- Deployments: the card shows only when the api Worker has `MIRO_CLIENT_ID` and
   `MIRO_CLIENT_SECRET`; both routes answer `404` otherwise.
 
 ## Reading a board
