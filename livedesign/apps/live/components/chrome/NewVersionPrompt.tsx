@@ -12,7 +12,7 @@ import {
   serverDesignFormat,
   subscribeServerRelease,
 } from '@/lib/server-release';
-import { reloadWhenSaved } from '@/lib/reload-when-saved';
+import { reloadWhenSaved } from '@liveworkspace/workbench/lib/reload-when-saved';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { TOAST_SURFACE } from '@/components/toast/ToastCard';

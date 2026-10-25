@@ -1,11 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { configureWorkbench, resetWorkbenchForTests } from '../bindings';
 import { RELOAD_SAVE_POLL_MS, RELOAD_SAVE_WAIT_MS, reloadWhenSaved } from './reload-when-saved';
+import { testBindings } from './testing/bindings';
 
 // docs/specs/016-platform/new-version-prompt.md "The prompt": reload only once everything is saved.
-beforeEach(() => vi.useFakeTimers());
+beforeEach(() => {
+  vi.useFakeTimers();
+  configureWorkbench(testBindings({ formatLogScope: 'project-format' }));
+});
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  resetWorkbenchForTests();
 });
 
 describe('reloadWhenSaved', () => {
@@ -36,7 +42,7 @@ describe('reloadWhenSaved', () => {
     await vi.advanceTimersByTimeAsync(RELOAD_SAVE_WAIT_MS + RELOAD_SAVE_POLL_MS);
     await expect(done).resolves.toBe('unsaved');
     expect(reload).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith('[document-format] reload waiting for unsaved changes', {
+    expect(warn).toHaveBeenCalledWith('[project-format] reload waiting for unsaved changes', {
       waitedMs: RELOAD_SAVE_WAIT_MS,
     });
   });

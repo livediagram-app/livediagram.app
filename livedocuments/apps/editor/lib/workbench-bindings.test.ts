@@ -1,17 +1,21 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { resetWorkbenchForTests, workbench } from '@liveworkspace/workbench/bindings';
 import { bindWorkbench } from './workbench-bindings';
-import { DEBUG_STORAGE_KEY } from './workbench-keys';
+import { APP_RECOVERY_FLAG, DEBUG_STORAGE_KEY, RELOAD_GUARD_KEY } from './workbench-keys';
 
 afterEach(() => resetWorkbenchForTests());
 
 describe('workbench bindings', () => {
   it("keeps this editor's keys as they are: people's saved flags live under them", () => {
     expect(DEBUG_STORAGE_KEY).toBe('livedocuments:debug');
+    expect(RELOAD_GUARD_KEY).toBe('livedocuments:stale-chunk-reloads');
+    expect(APP_RECOVERY_FLAG).toBe('__livedocumentsChunkRecovery');
   });
 
   it('hands the workbench these facts', () => {
     bindWorkbench();
     expect(workbench.debugKey).toBe(DEBUG_STORAGE_KEY);
+    expect(workbench.reloadGuardKey).toBe(RELOAD_GUARD_KEY);
+    expect(workbench.formatLogScope).toBe('document-format');
   });
 });

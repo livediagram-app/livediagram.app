@@ -4,12 +4,10 @@
 // within RELOAD_GUARD_WINDOW_MS, remembered in sessionStorage. Whichever path fires first takes it, so
 // a failure that persists is reloaded once, then shown.
 
+import { workbench } from '../bindings';
+
 /** One reload per page within this window. */
 export const RELOAD_GUARD_WINDOW_MS = 60_000;
-/** The sessionStorage map of page to the time of its last guarded reload. */
-export const RELOAD_GUARD_KEY = 'livedesign:stale-chunk-reloads';
-/** Set on window once the running app's chunk recovery is installed: the page guard then stands down. */
-export const APP_RECOVERY_FLAG = '__livedesignChunkRecovery';
 
 /**
  * The claim itself. Self-contained on purpose (no reference outside its parameters, nothing but
@@ -58,7 +56,10 @@ export function claimReloadIn(
   return true;
 }
 
-/** The app's claim: one reload of `url` (its hash ignored) within the shared window. */
+/**
+ * The app's claim: one reload of `url` (its hash ignored) within the shared window, in the
+ * sessionStorage map under the product's key (the `reloadGuardKey` binding).
+ */
 export function claimReload(url: string, storage: Storage, now: number): boolean {
-  return claimReloadIn(storage, RELOAD_GUARD_KEY, url, now, RELOAD_GUARD_WINDOW_MS);
+  return claimReloadIn(storage, workbench.reloadGuardKey, url, now, RELOAD_GUARD_WINDOW_MS);
 }

@@ -5,10 +5,14 @@
 // (the signal not heard yet) is recovered by a full page load of its destination. Every full load
 // waits for unsaved editor work first, and falls back to the client transition when it cannot.
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
-import { APP_RECOVERY_FLAG } from './reload-guard';
-import { reloadWhenSaved } from './reload-when-saved';
+import { APP_RECOVERY_FLAG } from './workbench-keys';
+import { reloadWhenSaved } from '@liveworkspace/workbench/lib/reload-when-saved';
 import { runningStaleBuild } from './server-release';
-import { createNavigationIntents, recoverFromChunkError, type ChunkRecovery } from './stale-chunks';
+import {
+  createNavigationIntents,
+  recoverFromChunkError,
+  type ChunkRecovery,
+} from '@liveworkspace/workbench/lib/stale-chunks';
 import { track } from './telemetry';
 import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

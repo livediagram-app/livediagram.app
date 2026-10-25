@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { RELOAD_GUARD_KEY, RELOAD_GUARD_WINDOW_MS, claimReload } from './reload-guard';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { configureWorkbench, resetWorkbenchForTests } from '../bindings';
+import { RELOAD_GUARD_WINDOW_MS, claimReload } from './reload-guard';
+import { testBindings } from './testing/bindings';
+
+const RELOAD_GUARD_KEY = 'product:stale-chunk-reloads';
+beforeEach(() => configureWorkbench(testBindings({ reloadGuardKey: RELOAD_GUARD_KEY })));
+afterEach(() => resetWorkbenchForTests());
 
 // docs/specs/016-platform/stale-builds.md "One reload guard": every reload the app or its page
 // guard starts on its own claims the same allowance, one per page per window.
@@ -43,8 +49,10 @@ describe('claimReload', () => {
     expect(claimReload('/a', throwing, 1)).toBe(false);
   });
 
-  it('is one minute, under the key the chunk recovery has always used', () => {
+  it("is one minute, under the product's key", () => {
     expect(RELOAD_GUARD_WINDOW_MS).toBe(60_000);
-    expect(RELOAD_GUARD_KEY).toBe('liveplanner:stale-chunk-reloads');
+    const storage = memoryStorage();
+    claimReload('/a', storage, 0);
+    expect(storage.getItem(RELOAD_GUARD_KEY)).not.toBeNull();
   });
 });

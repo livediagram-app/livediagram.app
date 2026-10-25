@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DESIGN_FORMAT } from '@livedesign/api-schema';
 import { noteServerDesignFormat, resetServerReleaseForTests } from '@/lib/server-release';
-import { RELOAD_SAVE_WAIT_MS } from '@/lib/reload-when-saved';
+import { RELOAD_SAVE_WAIT_MS } from '@liveworkspace/workbench/lib/reload-when-saved';
 
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: Parameters<typeof track>) => track(...a) }));

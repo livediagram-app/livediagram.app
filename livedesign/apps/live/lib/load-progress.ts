@@ -6,7 +6,7 @@
 // screen reads `healing` with useSyncExternalStore.
 
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
-import { claimReloadIn } from './reload-guard';
+import { claimReloadIn } from '@liveworkspace/workbench/lib/reload-guard';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type LoadStep = 'identity' | 'participant' | 'design' | 'share' | 'first-tab' | 'done';

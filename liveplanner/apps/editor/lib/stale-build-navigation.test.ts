@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APP_RECOVERY_FLAG } from './reload-guard';
+import { APP_RECOVERY_FLAG } from './workbench-keys';
 import {
   inAppDestination,
   installStaleBuildNavigation,

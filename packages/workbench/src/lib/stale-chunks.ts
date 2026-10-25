@@ -7,7 +7,7 @@
 // over unsaved editor changes. Pure but for the dependencies passed in.
 import { claimReload } from './reload-guard';
 import { reloadWhenSaved } from './reload-when-saved';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { debugLog } from './debug-log';
 
 /** How long a navigation's destination stays the one a chunk failure is blamed on. */
 export const NAVIGATION_INTENT_MS = 10_000;

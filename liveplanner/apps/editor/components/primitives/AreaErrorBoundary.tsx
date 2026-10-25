@@ -5,7 +5,7 @@ import { errorNameToken, errorTypeToken } from '@liveplanner/api-schema';
 import { Button } from '@liveplanner/ui';
 import { track } from '@/lib/telemetry';
 import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
-import { isChunkLoadError } from '@/lib/stale-chunks';
+import { isChunkLoadError } from '@liveworkspace/workbench/lib/stale-chunks';
 
 // A render crash in one part of the editor or Explorer used to unmount the
 // whole page (the app has no route-level error boundary), and the telemetry

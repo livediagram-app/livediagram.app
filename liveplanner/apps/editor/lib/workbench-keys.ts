@@ -5,3 +5,9 @@
 
 /** The browser's debug flag that turns trace lines on in production (docs/specs/003-system-architecture/console-logging.md). */
 export const DEBUG_STORAGE_KEY = 'liveplanner:debug';
+
+/** The sessionStorage map of page to the time of its last guarded reload (docs/specs/016-platform/stale-builds.md "One reload guard"). */
+export const RELOAD_GUARD_KEY = 'liveplanner:stale-chunk-reloads';
+
+/** Set on window once the running app's chunk recovery is installed: the pre-boot guard then stands down. */
+export const APP_RECOVERY_FLAG = '__liveplannerChunkRecovery';

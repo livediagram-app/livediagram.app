@@ -7,11 +7,17 @@
 export type WorkbenchBindings = {
   /** The localStorage key of the debug flag that turns trace lines on in production (`<product>:debug`). */
   debugKey: string;
+  /** The sessionStorage key of the one reload guard's map (`<product>:stale-chunk-reloads`). */
+  reloadGuardKey: string;
+  /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
+  formatLogScope: string;
 };
 
 /** What workbench code reads until an editor configures it: safe no-ops and `workbench:` keys. */
 export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
   debugKey: 'workbench:debug',
+  reloadGuardKey: 'workbench:stale-chunk-reloads',
+  formatLogScope: 'document-format',
 });
 
 let bound: Readonly<WorkbenchBindings> = WORKBENCH_DEFAULTS;
@@ -38,6 +44,12 @@ function current(): Readonly<WorkbenchBindings> {
 export const workbench = {
   get debugKey(): string {
     return current().debugKey;
+  },
+  get reloadGuardKey(): string {
+    return current().reloadGuardKey;
+  },
+  get formatLogScope(): string {
+    return current().formatLogScope;
   },
 };
 

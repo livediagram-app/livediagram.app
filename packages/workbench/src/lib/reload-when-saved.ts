@@ -2,6 +2,8 @@
 // "The prompt"): wait until nothing edited is unsaved, checking locally (no request), then reload;
 // give up after a bound rather than reload over unsaved changes.
 
+import { workbench } from '../bindings';
+
 /** How long "Reload" waits for the save to settle: the 600 ms autosave plus a slow save. */
 export const RELOAD_SAVE_WAIT_MS = 10_000;
 /** How often it checks while waiting: a local predicate, never a request. */
@@ -28,7 +30,10 @@ export function reloadWhenSaved(opts: {
         return;
       }
       if (waited >= waitMs) {
-        console.warn('[project-format] reload waiting for unsaved changes', { waitedMs: waited });
+        // Fingerprinted with the product's stored format (the `formatLogScope` binding).
+        console.warn(`[${workbench.formatLogScope}] reload waiting for unsaved changes`, {
+          waitedMs: waited,
+        });
         resolve('unsaved');
         return;
       }

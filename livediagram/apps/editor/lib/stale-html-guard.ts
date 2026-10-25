@@ -14,12 +14,8 @@
 // is a recovery worth seeing (docs/specs/003-system-architecture/console-logging.md).
 import { BUILD_ID_HEADER } from '@livediagram/api-schema';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
-import {
-  APP_RECOVERY_FLAG,
-  RELOAD_GUARD_KEY,
-  RELOAD_GUARD_WINDOW_MS,
-  claimReloadIn,
-} from './reload-guard';
+import { RELOAD_GUARD_WINDOW_MS, claimReloadIn } from '@liveworkspace/workbench/lib/reload-guard';
+import { APP_RECOVERY_FLAG, RELOAD_GUARD_KEY } from './workbench-keys';
 /**
  * The guard's settings, as `data-*` attributes for its own <script> element (the layout spreads
  * them on). The script reads them back through `document.currentScript.dataset`: no value is ever

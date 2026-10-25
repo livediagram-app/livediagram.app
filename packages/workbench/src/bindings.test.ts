@@ -16,6 +16,8 @@ afterEach(() => {
 describe('workbench bindings', () => {
   it('reads safe defaults before any editor configures it', () => {
     expect(workbench.debugKey).toBe('workbench:debug');
+    expect(workbench.reloadGuardKey).toBe('workbench:stale-chunk-reloads');
+    expect(workbench.formatLogScope).toBe('document-format');
   });
 
   it('reads what the editor configured, when read', () => {
