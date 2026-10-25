@@ -2,7 +2,7 @@ import {
   BorderColourIcon,
   FillColourIcon,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   defaultArrowStrokeColor,
   defaultFillColor,
@@ -25,7 +25,7 @@ import {
   BorderGlyph,
   IconCategoryGlyph,
   PaletteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,

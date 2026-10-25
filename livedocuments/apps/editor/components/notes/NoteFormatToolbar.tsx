@@ -11,7 +11,7 @@
 import { lucideList, lucideListOrdered } from '@liveworkspace/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@livedocuments/document';
-import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
 import {
   runToggles,

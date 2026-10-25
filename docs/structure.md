@@ -392,6 +392,15 @@ Each step is its own PR, and both products build and pass their tests after ever
      the phone toolbar, the gesture reader, the modules whose names carry the product noun (share state, tombstones,
      visibility stores, which could move after a neutral rename), and the few variants with real behaviour of their
      own: livediagram's isometric grips, indicators and tour API, and liveplanner's select handlers and settings art.
+   - Fourth slice: the editor UI that waited only on the product's ui, 28 modules that two or more editors carried in
+     the same words once nouns are set aside (toasts, the table icons and controls, the palette dropdown, option rows,
+     menu tiles, the context-menu and template-picker icons, the page lock and empty-page invite, the import report,
+     the locked-element menu and more), each at its editor path as its own subpath, with their tests: about 3,570
+     lines in `packages/workbench` and about 9,550 fewer across the editors. They import `Glyph`, `Tooltip`,
+     `HoverCard`, `Button`, `Portal` and the rest from `@liveworkspace/ui` directly. `NotFound`, `SharePasswordGate` and
+     `TrashedCard` differ only by the product's noun, so they take `noun` and each editor keeps a thin door at the old
+     path that binds its word, leaving routes and copy unchanged. The menu icons' size steps sit in `menu-icon-base`,
+     so an editor with its own context-menu icons pulls in none of the workbench's.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

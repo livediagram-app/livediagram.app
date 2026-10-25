@@ -5,7 +5,7 @@ import { photoTitleBarRoom } from '@/components/photo/photo-title-bar-room';
 import { logoTitleBarRoom } from './LogoTitleBar';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
-import { pageLockRoom } from './PageLockButton';
+import { pageLockRoom } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.

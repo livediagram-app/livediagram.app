@@ -30,7 +30,7 @@ import {
   MenuTileGrid,
   MenuToolbar,
   MenuToolButton,
-} from '@/components/primitives/MenuTiles';
+} from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 

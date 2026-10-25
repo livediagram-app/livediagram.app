@@ -10,7 +10,10 @@ import type { ReactNode } from 'react';
 import { FINISHES, isFinish, type Finish } from '@livediagram/document';
 import { Glyph, LinkIcon } from '@livediagram/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { OptionRows, type OptionRow } from '@/components/primitives/OptionRows';
+import {
+  OptionRows,
+  type OptionRow,
+} from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {

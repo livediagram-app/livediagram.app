@@ -9,7 +9,7 @@
 // focus-preservation detail.
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
-import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import {
   runToggles,

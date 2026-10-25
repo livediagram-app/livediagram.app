@@ -10,7 +10,7 @@ import type { PickedImage } from '@/lib/upload-image';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
-import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
+import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/GalleryEmpty';
 
 // The page panel's own width, three pictures across.
 const POPOVER_WIDTH = 304;

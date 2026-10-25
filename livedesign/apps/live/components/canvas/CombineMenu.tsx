@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { HoverCard, Glyph } from '@livedesign/ui';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import {
   TOOLBAR_BTN,
   TOOLBAR_BTN_ON,

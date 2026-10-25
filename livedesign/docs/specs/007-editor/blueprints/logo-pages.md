@@ -196,7 +196,7 @@ buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's 
   tile's width and the page's aspect. Measured 0.04 ms a layout.
 - The in-page card is sized by `layoutCardSize` and holds `LayoutGallery` (pages-mode blueprint
   "In-page layout card"); too small on screen, `EmptyPageInvite` stands in for it.
-- Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`components/primitives/DashedAddButton.tsx`) labelled **Start From Scratch** on a logo page,
+- Start From Scratch: `EmptyPageLayouts` renders `DashedAddButton` (`../packages/workbench/src/components/primitives/DashedAddButton.tsx`) labelled **Start From Scratch** on a logo page,
   calling `onBlank`: `CanvasPages` tracks `UI · Closed · EmptyPageLayoutsBlank` and calls
   `edit.startBlank(pageId)`, which sets `Page.startedBlank: true` (refused on a locked
   page); `showsLayoutCard` skips a page with it. Hide stays the session-only `layoutsHidden`.

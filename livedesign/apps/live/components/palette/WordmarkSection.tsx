@@ -19,7 +19,7 @@ import {
   PreviewSliderRow,
   SliderRowAction,
 } from '@liveworkspace/workbench/components/primitives/PreviewSliderRow';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { WordmarkPatch } from '@/lib/style-presets';
 

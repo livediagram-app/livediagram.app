@@ -18,7 +18,7 @@ Scope, by file:
 | `../packages/ui/src/menu/index.ts`                                          | Public surface, re-exported from `../packages/ui/src/index.ts` and so from `packages/ui`                     |
 | `../packages/tailwind-config/theme.css`                                     | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
 | `../packages/workbench/src/components/primitives/PortalMenu.tsx`            | Anchored menu (command or control) and its list rows, each role-aware                                        |
-| `apps/editor/components/primitives/MenuTiles.tsx`                           | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
+| `../packages/workbench/src/components/primitives/MenuTiles.tsx`             | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
 | `../packages/workbench/src/components/primitives/menu-item-props.ts`        | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |
 | `../packages/workbench/src/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
 | `../packages/workbench/src/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
@@ -28,7 +28,7 @@ Scope, by file:
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu                                                                                  |
 | `apps/editor/components/panels/LayerRowMenu.tsx`                            | Layer control menu                                                                                           |
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
-| `apps/editor/components/canvas/LockedElementMenu.tsx`                       | Command menu, no trigger                                                                                     |
+| `../packages/workbench/src/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                                     |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                             |
 | `apps/editor/components/chrome/editor-mode/ModeMenuChip.tsx`                | One-of-a-set command menu; its own key handling deleted                                                      |
 | `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                         |
@@ -262,7 +262,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |
 | Element quick menu kinds                                                                   | `apps/editor/components/canvas/ElementEllipsisMenu.test.tsx`                                              |
-| Locked element menu focus and Escape                                                       | `apps/editor/components/canvas/LockedElementMenu.test.tsx`                                                |
+| Locked element menu focus and Escape                                                       | `../packages/workbench/src/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                                   |
 | Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`                     |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                                     |

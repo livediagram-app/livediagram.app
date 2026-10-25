@@ -15,8 +15,11 @@ import {
   MenuActionRow,
   MenuGroupSeparator,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
-import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
+import {
+  MenuToolbar,
+  MenuToolButton,
+} from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { PasteMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   AddTabToDesignDialog,
   AddTabToFolderDialog,

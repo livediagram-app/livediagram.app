@@ -1,6 +1,9 @@
 import { createPortal } from 'react-dom';
 import type { TableElement } from '@liveplanner/project';
-import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
+import {
+  TableHeaderMenu,
+  Trigger,
+} from '@liveworkspace/workbench/components/canvas/table-menu-controls';
 import {
   FLOATING_CONTROL_GAP,
   FLOATING_CONTROL_SIZE,

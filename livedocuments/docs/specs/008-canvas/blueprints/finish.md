@@ -362,7 +362,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
   included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
   `resolveOwnFinish(el)` picks the checked row.
-- `apps/editor/components/primitives/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
+- `../packages/workbench/src/components/primitives/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.

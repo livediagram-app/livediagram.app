@@ -22,7 +22,7 @@ import {
   SPOTLIGHT_SIZES,
   type SpotlightConfig,
 } from '@liveworkspace/workbench/lib/spotlight-config';
-import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import { ToolOptionRow } from '@liveworkspace/workbench/components/panels/ToolOptionRow';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'size' | 'dim' | 'edge' | 'shape';

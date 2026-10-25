@@ -13,7 +13,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuToolButton } from './MenuTiles';
+import { MenuTile, MenuToolButton } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { BESIDE_GAP } from '@liveworkspace/workbench/components/primitives/beside-placement';
 
 const MENU_W = 224;

@@ -2,7 +2,7 @@
 
 import { HoverCard } from '@livediagram/ui';
 import { CameraIcon, type EsBoardControls } from './EventStormingBoardRows';
-import { TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
+import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 
 // Add from Photo in the Toolbar layout's strip (docs/specs/021-event-storming/event-storming.md
 // Phase 8; docs/specs/007-editor/toolbar-layout.md): the same control as the Event Storming

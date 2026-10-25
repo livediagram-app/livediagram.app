@@ -13,7 +13,10 @@ import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
 import { presentedPages } from '@/lib/presented-pages';
-import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
+import {
+  LockedElementMenu,
+  type LockHolder,
+} from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';

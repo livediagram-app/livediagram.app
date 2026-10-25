@@ -22,7 +22,7 @@ import {
   type LaserConfig,
 } from '@/lib/laser-config';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
-import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import { ToolOptionRow } from '@liveworkspace/workbench/components/panels/ToolOptionRow';
 import { LaserColourRow } from '@/components/panels/LaserColourRow';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';

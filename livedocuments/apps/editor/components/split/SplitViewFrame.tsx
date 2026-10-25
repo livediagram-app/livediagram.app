@@ -22,7 +22,7 @@ import {
 import { EDITOR_VIEWPORT_ATTR } from '@liveworkspace/workbench/lib/editor-viewport';
 import { setLocalBesideTab } from '@liveworkspace/workbench/lib/split-presence';
 import { SplitDivider } from './SplitDivider';
-import { SplitSeamControls } from './SplitSeamControls';
+import { SplitSeamControls } from '@liveworkspace/workbench/components/split/SplitSeamControls';
 import { SplitDropZone } from './SplitDropZone';
 import { SplitViewContext } from './SplitViewContext';
 import type { TabSvgViewportHandle } from './TabSvgViewport';

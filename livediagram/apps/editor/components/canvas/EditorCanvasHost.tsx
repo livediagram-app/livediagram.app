@@ -21,7 +21,10 @@ import { isBoxed, isVoteHost } from '@livediagram/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
-import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
+import {
+  LockedElementMenu,
+  type LockHolder,
+} from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
 import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';

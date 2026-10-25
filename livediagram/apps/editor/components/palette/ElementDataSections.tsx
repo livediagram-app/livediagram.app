@@ -55,7 +55,7 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';

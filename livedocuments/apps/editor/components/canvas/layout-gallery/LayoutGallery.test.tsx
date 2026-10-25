@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, newSlidePage } from '@livedocuments/document';
 import { SLIDE_LAYOUTS } from '@livedocuments/templates';
-import { EmptyPageInvite } from '../EmptyPageInvite';
+import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
 import { LayoutGalleryDialog } from '../LayoutGalleryDialog';
 import { LayoutGallery } from './LayoutGallery';
 

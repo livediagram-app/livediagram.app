@@ -19,7 +19,7 @@ import {
   lucideListTree,
   lucideNetwork,
 } from '@liveworkspace/icons/lucide';
-import { OptionRows } from '@/components/primitives/OptionRows';
+import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { MENU_ICON_PX } from './context-menu-icons';

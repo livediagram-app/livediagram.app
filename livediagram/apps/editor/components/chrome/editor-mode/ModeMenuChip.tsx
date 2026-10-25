@@ -6,7 +6,7 @@ import {
   useMenuButton,
   EDITOR_MODE_ICONS,
 } from '@livediagram/ui';
-import { TOOLBAR_TRIGGER_TONE } from '@/components/palette/PaletteDropdown';
+import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { EDITOR_MODE_KEYSHORTCUT, type EditorModeSwitchProps } from './editor-mode-copy';
 import { ModeMenu } from './ModeMenu';
 

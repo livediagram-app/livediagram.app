@@ -4,7 +4,7 @@ import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCa
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
-import { ImportReport } from './ImportReport';
+import { ImportReport } from '@liveworkspace/workbench/components/dialogs/ImportReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { Glyph, DialogCloseButton, DialogHeader } from '@livedocuments/ui';
 

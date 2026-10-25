@@ -16,7 +16,7 @@ import {
   type PageLayoutId,
 } from '@livedocuments/templates';
 import { lucideGlyph, NoMatches, Tooltip } from '@livedocuments/ui';
-import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
+import { FilterSearchBox } from '@liveworkspace/workbench/components/primitives/FilterSearchBox';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { LayoutTile } from './LayoutTile';

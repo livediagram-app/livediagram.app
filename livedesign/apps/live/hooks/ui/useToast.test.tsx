@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useEffect } from 'react';
 import { ToastProvider, useToast, type ToastOffer } from './useToast';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
-import { TOAST_EXIT_HOLD_MS } from '@/components/toast/ToastStack';
+import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/workbench/components/toast/ToastStack';
 import {
   TOAST_ANSWER_TIMEOUT_MS,
   TOAST_TIMEOUT_MS,

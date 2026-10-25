@@ -26,7 +26,10 @@ here are product-neutral: they cite a product spec by the path the products shar
 Code that differs per product stays in the product. A module moves once it reads the same in every
 editor that has it (two or more), and the product's part of it is handed in:
 
-- **as props or arguments**, for a value or a callback (a label, a URL, what to do on click);
+- **as props or arguments**, for a value or a callback (a label, a URL, what to do on click). Copy that
+  differs only by the product's noun takes the noun (`noun="design"`), and the editor keeps a thin door
+  at the old path that binds it (`components/chrome/NotFound.tsx`), so its callers and its words stay
+  as they were;
 - **as a small injected module** for anything wider: the workbench exports a `createX(config)` or a
   context, and each editor binds it once in a file of its own (`lib/x.ts` calling `createX` with its
   facts), the way `@liveworkspace/telemetry-client` and `@liveworkspace/help-registry` are bound;

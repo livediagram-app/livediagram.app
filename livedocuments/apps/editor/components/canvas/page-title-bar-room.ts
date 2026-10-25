@@ -5,7 +5,7 @@ import { pageArticleRoom } from './PageArticleButtons';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
 import { pageDeckRoom } from './PageDeckButton';
-import { pageLockRoom } from './PageLockButton';
+import { pageLockRoom } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
 

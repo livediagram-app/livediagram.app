@@ -12,7 +12,7 @@ import {
   HeadingColourIcon,
   PointerColourIcon,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   defaultArrowStrokeColor,
   defaultFillColor,
@@ -30,7 +30,10 @@ import {
   type BoxedElement,
   type ElementShadow,
 } from '@livedocuments/document';
-import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
+import {
+  BorderGlyph,
+  PaletteMenuIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,

@@ -13,7 +13,7 @@ import {
   CommentMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';

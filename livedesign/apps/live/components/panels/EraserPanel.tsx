@@ -18,7 +18,7 @@ import {
   ERASER_TARGETS,
   type EraserConfig,
 } from '@/lib/eraser-config';
-import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import { ToolOptionRow } from '@liveworkspace/workbench/components/panels/ToolOptionRow';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'mode' | 'size' | 'target';
