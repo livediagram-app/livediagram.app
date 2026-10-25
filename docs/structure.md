@@ -281,7 +281,9 @@ Each step is its own PR, and both products build and pass their tests after ever
      binding is read before it is set, and each product's keys stay constants in its
      `lib/workbench-keys.ts`, unchanged. Where a module was the same but for a type or a constant,
      the type became the subset the module reads (`UiScalePreferences`) or moved to the workbench with
-     its module (`ApiError`, `QuickConnectDirection`, `Offset`).
+     its module (`ApiError`, `QuickConnectDirection`, `Offset`, the zoom bounds in `lib/zoom-range`),
+     which the product re-exports. That moved 44 more files (27 modules, 17 tests; about 3,200
+     lines), about 2,600 lines fewer in each editor.
    - Still in each editor: the settings catalogue and the modules on it (`settings-kit`,
      `settings-model`, `lib/search.ts` differ per product); `lib/canvas-gesture.ts` (liveplanner has no
      erase gesture) and the drag, long-task and selection code on `DragState`, which is typed on each
