@@ -18,6 +18,9 @@ export type TeamMember = {
   // An invitation nobody answered in 28 days.
   expired?: boolean;
   createdAt?: number;
+  // A joined member's published Google picture (liveworkspace/docs/accounts.md "Profile pictures"), read with the
+  // members list; null or absent for none.
+  picture?: string | null;
 };
 
 /** The team's join link, for its admins: anyone signed in who opens it joins as a member, until it ends. */

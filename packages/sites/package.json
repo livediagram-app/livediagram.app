@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./workspace-proxy": "./src/workspace-proxy.ts",
-    "./network": "./src/network.ts"
+    "./network": "./src/network.ts",
+    "./picture": "./src/picture.ts"
   },
   "scripts": {
     "lint": "oxlint",

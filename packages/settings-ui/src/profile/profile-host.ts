@@ -6,15 +6,19 @@ import type { SettingsApiResult, SettingsRequest } from '../request';
 import { announceProfileSaved } from './profile-events';
 
 /** The accounts API's profile: the display name (its own, or the account's) and the presence colour, null for each
- *  app's own pick. */
+ *  app's own pick. The person's own read adds their Google picture and Show My Google Picture
+ *  (liveworkspace/docs/accounts.md "Profile pictures"); an account with no picture has `googlePicture` null. */
 export interface Profile {
   id: string;
   name: string | null;
   color: string | null;
+  googlePicture?: string | null;
+  showPicture?: boolean;
 }
 
-/** A change: a string sets a field, null clears it (an empty name shows the sign-up name; no colour is Automatic). */
-export type ProfilePatch = { name?: string | null; color?: string | null };
+/** A change: a string sets a field, null clears it (an empty name shows the sign-up name; no colour is Automatic);
+ *  `showPicture` turns Show My Google Picture on or off. */
+export type ProfilePatch = { name?: string | null; color?: string | null; showPicture?: boolean };
 
 export type ProfileResult<T> =
   { ok: true; data: T } | { ok: false; status?: number; error: string };
@@ -52,6 +56,7 @@ export function requestProfileHost(
           patch,
           name: result.data?.name ?? null,
           color: result.data?.color ?? null,
+          showPicture: result.data?.showPicture ?? true,
         });
       }
       return result;

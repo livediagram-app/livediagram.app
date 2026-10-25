@@ -33,6 +33,7 @@ export function AppAccountMenu({ hint, ...arrival }: { hint: string } & Deferred
       name={account.name}
       fullName={account.fullName}
       colour={account.colour}
+      picture={account.picture}
       onSignOut={() => appSignOut()}
       {...arrival}
     />

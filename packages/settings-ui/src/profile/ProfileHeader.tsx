@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { avatarFill, initials } from '@liveworkspace/account-menu/initials';
 import { presenceColour } from '@liveworkspace/settings/presence';
-import { buttonClassName } from '@liveworkspace/ui';
+import { buttonClassName, PictureDisc } from '@liveworkspace/ui';
 
 // The Profile's header card (liveworkspace/docs/site.md "Settings", "Profile"): who is signed in, as the old
 // livediagram Profile page opened with, richer. A banner in the app's brand tint, drawn as a canvas where the person's
@@ -17,6 +17,9 @@ export type AccountIdentity = {
   email?: string | null;
   // The presence colour, null for Automatic (each app picks one).
   colour?: string | null;
+  // Their own Google picture, null with none (liveworkspace/docs/accounts.md "Profile pictures"): the avatar shows
+  // it over the initials. Their own screen always shows it, whatever Show My Google Picture says.
+  picture?: string | null;
   // When the account was made.
   joined?: string | number | Date | null;
 };
@@ -71,16 +74,17 @@ export function ProfileHeaderCard({
       <ProfileBanner name={name} colour={colour} />
       <div className="relative px-5 pb-5">
         <div className="-mt-9 flex flex-wrap items-end gap-x-4 gap-y-3">
-          <span
+          <PictureDisc
             aria-hidden
             data-profile-avatar=""
+            pictureUrl={identity?.picture}
+            name={name}
+            size={72}
             style={avatarStyle(name, colour)}
-            className="flex size-[4.5rem] shrink-0 items-center justify-center rounded-full text-2xl font-semibold text-white shadow-md ring-4 ring-white dark:ring-slate-800"
+            className="flex text-2xl font-semibold text-white shadow-md ring-4 ring-white dark:ring-slate-800"
           >
-            <span className="text-optical-centre">
-              {isGuest && !guest?.name ? 'G' : initials(name)}
-            </span>
-          </span>
+            {isGuest && !guest?.name ? 'G' : initials(name)}
+          </PictureDisc>
           <div className="min-w-0 flex-1 pb-0.5">
             <h3 className="truncate text-lg leading-tight font-semibold text-slate-900 dark:text-white">
               {name}

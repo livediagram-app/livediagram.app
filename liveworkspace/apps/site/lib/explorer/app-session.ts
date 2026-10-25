@@ -1,7 +1,7 @@
 // The app's own session, for the Explorer shown on that app's address (page-app.ts): its signed-in account from
 // the app's API, its sign-in and sign-out, and its guest token. On liveworkspace.app none of this is asked.
 
-import { accountColourOf } from '@liveworkspace/auth-client/account-name';
+import { accountColourOf, accountPictureOf } from '@liveworkspace/auth-client/account-name';
 import { createGuestTokens, type GuestTokens } from '@liveworkspace/index-client/browser';
 import { SIGNED_IN_HINT_COOKIE as DIAGRAM_HINT } from '@livediagram/api-schema';
 import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
@@ -33,6 +33,8 @@ export type AppAccount = {
   fullName: string | null;
   // The profile's presence colour from the token answer's user, for the avatar; null for Automatic.
   colour: string | null;
+  // The account's own Google picture from the token answer's user (the ID token's `picture`), null with none.
+  picture: string | null;
   // The account's address, for Settings' Profile header.
   email: string | null;
 };
@@ -80,6 +82,7 @@ async function askToken(): Promise<AppAccount | null> {
       name: nameOf(body.user ?? null),
       fullName: body.user ? fullNameOf(body.user) : null,
       colour: accountColourOf(body.user),
+      picture: accountPictureOf(body.user),
       email: text(body.user?.email),
     };
   } catch {

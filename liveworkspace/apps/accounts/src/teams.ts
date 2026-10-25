@@ -45,6 +45,7 @@ export type Result<T> = { ok: true; value: T } | { ok: false; status: number; er
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (status: number, error: string): Result<never> => ({ ok: false, status, error });
 
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { isSettingsApp, type SettingsApp } from './settings.ts';
 import {
   teamScopes,
@@ -134,7 +135,13 @@ export interface MemberPreview {
   name: string | null;
   email: string;
   role: TeamRole;
+  // Their published Google picture (liveworkspace/docs/accounts.md "Profile pictures"), read with the name.
+  picture: string | null;
 }
+
+// A joined member's published picture, as a column beside `u.name`: the account's Google picture unless its
+// switch is off. `u` is the member's "user" row and `p` their profile row; checked again in code (profilePictureOf).
+const MEMBER_PICTURE = 'CASE WHEN COALESCE(p.show_picture, 1) = 1 THEN u.image END';
 
 // Members shown on each team's card in the list; the counts cover the rest.
 export const LIST_PREVIEW_MEMBERS = 4;
@@ -161,6 +168,7 @@ interface MyTeamRow {
   memberName: string | null;
   memberEmail: string | null;
   memberRole: TeamRole | null;
+  memberPicture: string | null;
 }
 
 // The teams an account has joined, by name, each with its counts and first few members: one
@@ -182,18 +190,20 @@ export async function listMyTeams(db: D1Database, userId: string): Promise<MyTea
          WHERE c.status IN ('joined', 'invited') GROUP BY c.teamId
        ),
        ranked AS (
-         SELECT c.teamId, c.id, c.email, c.role, u.name,
+         SELECT c.teamId, c.id, c.email, c.role, u.name, ${MEMBER_PICTURE} AS picture,
                 ROW_NUMBER() OVER (
                   PARTITION BY c.teamId
                   ORDER BY CASE c.role WHEN 'admin' THEN 0 ELSE 1 END, c.createdAt, c.id
                 ) AS rank
          FROM team_member c JOIN mine ON mine.id = c.teamId LEFT JOIN "user" u ON u.id = c.userId
+         LEFT JOIN profile p ON p.owner_id = c.userId
          WHERE c.status = 'joined'
        )
        SELECT mine.id, mine.name, mine.organisation, mine.role,
               COALESCE(counts.memberCount, 0) AS memberCount,
               COALESCE(counts.invitedCount, 0) AS invitedCount,
-              r.id AS memberId, r.name AS memberName, r.email AS memberEmail, r.role AS memberRole
+              r.id AS memberId, r.name AS memberName, r.email AS memberEmail, r.role AS memberRole,
+              r.picture AS memberPicture
        FROM mine
        LEFT JOIN counts ON counts.teamId = mine.id
        LEFT JOIN ranked r ON r.teamId = mine.id AND r.rank <= ?
@@ -222,6 +232,7 @@ export async function listMyTeams(db: D1Database, userId: string): Promise<MyTea
         name: row.memberName,
         email: row.memberEmail,
         role: row.memberRole,
+        picture: profilePictureOf(row.memberPicture),
       });
     }
   }
@@ -352,7 +363,7 @@ export async function createTeam(
     role: 'admin',
     memberCount: 1,
     invitedCount: 0,
-    members: [{ id: memberId, name: null, email: memberEmail, role: 'admin' }],
+    members: [{ id: memberId, name: null, email: memberEmail, role: 'admin', picture: null }],
   });
 }
 
@@ -465,21 +476,29 @@ export interface Member {
   status: 'invited' | 'joined' | 'declined';
   expired: boolean;
   createdAt: number;
+  // A joined member's published Google picture; null for an invitation.
+  picture: string | null;
 }
 
 // Joined members, then open invitations, then the ones turned down; admins first in each.
 export async function listMembers(db: D1Database, teamId: string): Promise<Member[]> {
   const { results } = await db
     .prepare(
-      `SELECT m.id, m.userId, m.email, u.name, m.role, m.status, m.expiredAt, m.createdAt
+      `SELECT m.id, m.userId, m.email, u.name, m.role, m.status, m.expiredAt, m.createdAt,
+              CASE WHEN m.status = 'joined' THEN ${MEMBER_PICTURE} END AS picture
        FROM team_member m LEFT JOIN "user" u ON u.id = m.userId
+       LEFT JOIN profile p ON p.owner_id = m.userId
        WHERE m.teamId = ? AND m.status IN ('invited', 'joined', 'declined')
        ORDER BY CASE m.status WHEN 'joined' THEN 0 WHEN 'invited' THEN 1 ELSE 2 END,
                 CASE m.role WHEN 'admin' THEN 0 ELSE 1 END, m.email`,
     )
     .bind(teamId)
     .all<Omit<Member, 'expired'> & { expiredAt: number | null }>();
-  return results.map(({ expiredAt, ...member }) => ({ ...member, expired: expiredAt !== null }));
+  return results.map(({ expiredAt, ...member }) => ({
+    ...member,
+    expired: expiredAt !== null,
+    picture: profilePictureOf(member.picture),
+  }));
 }
 
 export async function inviteMember(
@@ -556,6 +575,7 @@ export async function inviteMember(
       status: 'invited',
       expired: false,
       createdAt: now,
+      picture: null,
     },
     teamName: me.teamName,
     declineToken: decline.token,

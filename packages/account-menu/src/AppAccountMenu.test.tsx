@@ -34,10 +34,11 @@ describe('appAccountOf', () => {
       name: 'Zoë',
       fullName: null,
       colour: null,
+      picture: null,
     });
     expect(
       appAccountOf('lp_signed_in=1; lp_account=Ada; lp_account_full=Ada%20Lovelace', HINT),
-    ).toEqual({ name: 'Ada', fullName: 'Ada Lovelace', colour: null });
+    ).toEqual({ name: 'Ada', fullName: 'Ada Lovelace', colour: null, picture: null });
     expect(appAccountOf('lp_signed_in=1', HINT)).toBe('pending');
     expect(appAccountOf('lp_signed_in=1', HINT, true)).toBe('out');
   });
@@ -45,12 +46,28 @@ describe('appAccountOf', () => {
   it('reads the colour beside the name, and only one that is safe to paint', () => {
     expect(
       appAccountOf('lp_signed_in=1; lp_account=Ada; lp_account_colour=%230ea5e9', HINT),
-    ).toEqual({ name: 'Ada', fullName: null, colour: '#0ea5e9' });
+    ).toEqual({ name: 'Ada', fullName: null, colour: '#0ea5e9', picture: null });
     for (const bad of ['url(x)', 'red%3Bcolor%3Ablue', '%22x%22', `%23${'0'.repeat(80)}`]) {
       expect(
         appAccountOf(`lp_signed_in=1; lp_account=Ada; lp_account_colour=${bad}`, HINT),
-      ).toEqual({ name: 'Ada', fullName: null, colour: null });
+      ).toEqual({ name: 'Ada', fullName: null, colour: null, picture: null });
     }
+  });
+
+  it('reads the Google picture beside the name, and only a Google picture URL', () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s96-c';
+    expect(
+      appAccountOf(
+        `lp_signed_in=1; lp_account=Ada; lp_account_picture=${encodeURIComponent(picture)}`,
+        HINT,
+      ),
+    ).toMatchObject({ name: 'Ada', picture });
+    expect(
+      appAccountOf(
+        `lp_signed_in=1; lp_account=Ada; lp_account_picture=${encodeURIComponent('https://evil.example/a.png')}`,
+        HINT,
+      ),
+    ).toMatchObject({ name: 'Ada', picture: null });
   });
 
   it("never reads another app's cookies", () => {
@@ -121,6 +138,27 @@ describe('AppAccountMenu', () => {
         again.container.querySelector('button > span[aria-hidden]') as HTMLElement
       ).style.getPropertyValue('--avatar'),
     ).toBe(avatarColour('Ada').deep);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('shows the Google picture over the initials, with no request, and the initials when it fails', () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s96-c';
+    setCookies(
+      'lp_signed_in=1',
+      'lp_account=Ada',
+      `lp_account_picture=${encodeURIComponent(picture)}`,
+    );
+    const { container } = render(<AppAccountMenu hint={HINT} />);
+    const avatar = container.querySelector('button > span[aria-hidden]') as HTMLElement;
+    const img = avatar.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://lh3.googleusercontent.com/a/ACg8ocAda=s28-c');
+    expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+    expect(avatar.textContent).toBe('AD');
+    act(() => {
+      fireEvent.error(img);
+    });
+    expect(avatar.querySelector('img')).toBeNull();
+    expect(avatar.textContent).toBe('AD');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

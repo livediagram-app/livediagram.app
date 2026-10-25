@@ -67,17 +67,18 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
 
 export function addUser(
   sql: DatabaseSync,
-  user: { id: string; email: string; name?: string; verified?: boolean },
+  user: { id: string; email: string; name?: string; verified?: boolean; image?: string | null },
 ) {
   sql
     .prepare(
-      `INSERT INTO "user" (id, name, email, emailVerified, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO "user" (id, name, email, emailVerified, image, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       user.id,
       user.name ?? user.id,
       user.email,
       user.verified === false ? 0 : 1,
+      user.image ?? null,
       '2026',
       '2026',
     );

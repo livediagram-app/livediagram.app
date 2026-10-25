@@ -13,7 +13,7 @@ export type GlyphDiscProps = {
   Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'disabled'>;
 
 // Text, or text and numbers side by side (`+{overflow}`), is one text glyph.
-const isText = (children: ReactNode): boolean =>
+export const isText = (children: ReactNode): boolean =>
   typeof children === 'string' ||
   typeof children === 'number' ||
   (Array.isArray(children) && children.length > 0 && children.every(isText));

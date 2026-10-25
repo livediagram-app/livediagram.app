@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetPictureFailures } from '@liveworkspace/ui';
 import { accountCategories } from '../account-model';
 import type { SettingsRow } from '../model';
 import { ProfileHeaderCard } from './ProfileHeader';
@@ -333,6 +334,7 @@ describe('a host over a request', () => {
       patch: { color: '#0ea5e9' },
       name: 'Ada',
       color: '#0ea5e9',
+      showPicture: true,
     });
     host.saveOnLeave?.({ name: 'Ada B' });
     expect(request).toHaveBeenLastCalledWith(
@@ -344,5 +346,56 @@ describe('a host over a request', () => {
       },
     );
     stop();
+  });
+});
+
+describe('the Google picture', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s96-c';
+  afterEach(() => resetPictureFailures());
+
+  it('shows it over the initials on the header card, and the initials again when it fails', () => {
+    render(<ProfileHeaderCard identity={{ ...ada, picture: PICTURE }} />);
+    const avatar = document.querySelector('[data-profile-avatar]') as HTMLElement;
+    const img = avatar.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://lh3.googleusercontent.com/a/ACg8ocAda=s72-c');
+    expect(img.getAttribute('referrerpolicy')).toBe('no-referrer');
+    expect(avatar.style.width).toBe('72px');
+    fireEvent.error(img);
+    expect(avatar.querySelector('img')).toBeNull();
+    expect(avatar.textContent).toBe('AL');
+  });
+
+  it('offers Show My Google Picture only to an account with a picture, and saves it at once', async () => {
+    const save = vi.fn(async () => ({ ok: true as const, data: null }));
+    const withPicture = fakeProfile({
+      load: vi.fn(async () => ({
+        ok: true as const,
+        data: {
+          id: 'user_ada',
+          name: 'Ada Lovelace',
+          color: '#8b5cf6',
+          googlePicture: PICTURE,
+          showPicture: true,
+        },
+      })),
+      save,
+    });
+    const rows = profileRows({ ...base, identity: ada, profile: withPicture });
+    drawn(rows.find((r) => r.key === 'profile'));
+    const toggle = await screen.findByRole('switch', { name: /Show My Google Picture/ });
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
+    // The preview shows others' view: the picture while it is on.
+    expect(document.querySelector('[data-profile-editor] figure img')).toBeTruthy();
+    fireEvent.click(toggle);
+    expect(save).toHaveBeenCalledWith({ showPicture: false });
+    await waitFor(() => expect(toggle.getAttribute('aria-checked')).toBe('false'));
+    expect(document.querySelector('[data-profile-editor] figure img')).toBeNull();
+  });
+
+  it('has no switch for an account without a picture', async () => {
+    const rows = profileRows({ ...base, identity: ada, profile: fakeProfile() });
+    drawn(rows.find((r) => r.key === 'profile'));
+    await screen.findByRole('textbox', { name: 'Display name' });
+    expect(screen.queryByRole('switch', { name: /Show My Google Picture/ })).toBeNull();
   });
 });

@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
 import { isAbort } from '../data/errors';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button, ConfirmDialog } from '@liveworkspace/ui';
+import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
 import { CloseIcon, LinkIcon, PencilIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, PortalMenu } from '../ui/Menu';
@@ -355,14 +355,17 @@ function TeamMemberRow({
   const answered = state === 'declined' || state === 'expired';
   return (
     <li className="flex items-center gap-3 px-4 py-2.5" data-team-member={m.id}>
-      <span
+      <PictureDisc
         aria-hidden
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white ${
+        pictureUrl={state === 'joined' ? m.picture : null}
+        name={name}
+        size={32}
+        className={`flex bg-brand-500 text-xs font-semibold text-white ${
           waiting || answered ? 'opacity-50' : ''
         }`}
       >
         {initialsOf(name)}
-      </span>
+      </PictureDisc>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">

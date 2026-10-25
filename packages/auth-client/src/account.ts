@@ -307,6 +307,10 @@ export interface Profile {
   id: string;
   name: string | null;
   color: string | null;
+  // The person's published Google picture (liveworkspace/docs/accounts.md "Profile pictures"): null with none or
+  // with their Show My Google Picture switch off. An app passes it on only to signed-in viewers. Absent from an
+  // accounts Worker older than pictures.
+  picture?: string | null;
   createdAt: number | null;
   updatedAt: number | null;
 }

@@ -54,7 +54,7 @@ shareable as it is, and the device's own setting applies through System.
   (`?return=/telemetry`, say), and **Create account** (`/sign-up`, with the same `?return=`). Once signed in, the
   page goes back there. Only a path on this site is followed, so the link can't send anyone elsewhere. A guest has
   no settings on liveworkspace.app (see the Explorer's bottom bar), so the menu here offers none.
-- **Signed in**: an avatar of the account's initials (accounts keep no pictures: always two letters: the first
+- **Signed in**: an avatar of the account's Google picture where it has one ([accounts.md](accounts.md#profile-pictures): `user.image` from `/get-session`, an app's `<prefix>account_picture` cookie), over its initials, which show whenever there is no picture or it fails to load (always two letters: the first
   letters of the first and last names (the full name, where the account has one), else a single name's first two, on a disc of the account's presence colour, set in Settings › Profile:
   a palette colour in its deep shade, a custom one as it is when white reads on it at AA and otherwise
   mixed with black until it does (`color-mix(in oklab, <colour> 55%, black)`, which always does). With
@@ -526,8 +526,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
 - **Profile** (the Account section's first category, `packages/settings-ui/src/profile/`), laid out as the old
   livediagram Profile page was, richer: grouped cards under headings, in the app's brand colour, light and dark.
   - **The header card**: a banner in the brand's tint with a drawing of a canvas where the person's cursor and
-    name tag sit in their presence colour, their avatar (initials on their colour, Automatic as the name's own
-    colour, as the account menu paints it), their display name, email, **liveworkspace account** and when they
+    name tag sit in their presence colour, their avatar (their Google picture where they have one, else initials on their colour,
+    Automatic as the name's own colour, as the account menu paints it), their display name, email, **liveworkspace account** and when they
     joined. Every host passes what it knows (`AccountHost.identity`): the site its session, the Explorer on an
     app's address the app's session, an editor its signed-in user.
   - **Name and Colour**: the display name and presence colour with the preview of their cursor and avatar, edited
@@ -550,8 +550,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
     guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create account**, and
     says what an account adds, rather than empty rows.
-  - Not here, on purpose: a profile picture (removed in `b964b391d`: accounts have none, people show as initials);
-    an email change, passwords and passkeys (accounts sign in with an emailed code or Google only, and the accounts
+  - **Show My Google Picture**, in Name and Colour, for an account with a Google picture: on by default; off, others
+    see the initials ([accounts.md](accounts.md#profile-pictures)). The header card's avatar is the picture
+    (`PictureDisc`), over the initials it falls back to.
+  - Not here, on purpose: uploading a picture (the picture is Google's or none); an email change, passwords and passkeys (accounts sign in with an emailed code or Google only, and the accounts
     Worker has no change-email flow); deleting the account from liveworkspace.app (closing an account goes through
     an app's server, `/api/auth/delete-account`, so its data goes with it; the site has no such door yet).
 - **Addresses.** `/explorer?settings=<section>` opens the panel there, on liveworkspace.app or an app's address:

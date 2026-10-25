@@ -41,6 +41,7 @@ import {
   checkProfilePatch,
   isProfileOwner,
   MAX_PROFILE_IDS,
+  readOwnProfile,
   readProfiles,
   writeProfile,
 } from './profiles.ts';
@@ -187,7 +188,7 @@ async function handleOpen(
     if (await sessionActor(request, auth)) return null;
     if (!(await guestOfRequest(request, env.BETTER_AUTH_SECRET))) return error(401, 'signed_out');
     if (await overLinkLimit(request, env, 'people')) return error(429, 'rate_limited');
-    return peopleNames(request, db);
+    return peopleNames(request, db, { pictures: false });
   }
 
   if (section === 'join' && id && !sub && method === 'GET') {
@@ -236,15 +237,24 @@ async function overLinkLimit(request: Request, env: Env, door = 'team-link'): Pr
   return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${rangeOf(request)}` })).success;
 }
 
-// Display names by id: what collaborators see on a cursor or a comment anyway. Names only, up to MAX_PROFILE_IDS
-// a read; ids not found are left out.
-async function peopleNames(request: Request, db: Env['AUTH_DB']): Promise<Response> {
+// Display names by id: what collaborators see on a cursor or a comment anyway, up to MAX_PROFILE_IDS a read; ids
+// not found are left out. With `pictures` (an account asking, never a guest: liveworkspace/docs/accounts.md "Profile
+// pictures"), each person's published Google picture too, read in the same query as the name.
+async function peopleNames(
+  request: Request,
+  db: Env['AUTH_DB'],
+  { pictures }: { pictures: boolean },
+): Promise<Response> {
   const ids = (new URL(request.url).searchParams.get('ids') ?? '')
     .split(',')
     .filter((v) => USER_ID.test(v) || GUEST_ID.test(v));
   if (ids.length > MAX_PROFILE_IDS) return error(400, 'too_many_ids');
   const profiles = await readProfiles(db, ids);
-  return json({ people: profiles.map((p) => ({ id: p.id, name: p.name })) });
+  return json({
+    people: profiles.map((p) =>
+      pictures ? { id: p.id, name: p.name, picture: p.picture } : { id: p.id, name: p.name },
+    ),
+  });
 }
 
 // Someone answered an invitation: the team's admins hear of it, unless they turned it off. A failed
@@ -316,8 +326,10 @@ async function handleSignedIn(
     }
   }
 
-  // Other people's display names, by id (the Explorer's Owner column).
-  if (section === 'people' && !id && method === 'GET') return peopleNames(request, db);
+  // Other people's display names and pictures, by id (the Explorer's Owner column, its Inbox and Timeline).
+  if (section === 'people' && !id && method === 'GET') {
+    return peopleNames(request, db, { pictures: true });
+  }
 
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
@@ -345,16 +357,16 @@ async function handleSignedIn(
 // --- The profile, on both doors: the session's on liveworkspace.app, the bearer's on an app's address and in the
 // editors (liveworkspace/docs/accounts.md "Profiles") ---
 
-// GET answers the person's own profile, PATCH `{ name?, color? }` sets either (null clears it). Null for a method
-// that isn't one of these.
+// GET answers the person's own profile, PATCH `{ name?, color?, showPicture? }` sets any of them (null clears a name
+// or colour). Both answer it with their own picture and its switch (OwnProfile). Null for a method that isn't one of
+// these.
 async function profileRoute(
   request: Request,
   db: Env['AUTH_DB'],
   owner: string,
 ): Promise<Response | null> {
   if (request.method === 'GET') {
-    const [profile] = await readProfiles(db, [owner]);
-    return json({ profile: profile ?? null });
+    return json({ profile: await readOwnProfile(db, owner) });
   }
   if (request.method === 'PATCH') {
     const checked = checkProfilePatch(await readBody(request));
@@ -560,7 +572,7 @@ async function handleBearer(
     if (person.kind === 'guest' && (await overLinkLimit(request, env, 'people'))) {
       return error(429, 'rate_limited');
     }
-    return peopleNames(request, db);
+    return peopleNames(request, db, { pictures: person.kind === 'account' });
   }
   if (person.kind !== 'account') return error(401, 'signed_out');
   const actor: Reader = {

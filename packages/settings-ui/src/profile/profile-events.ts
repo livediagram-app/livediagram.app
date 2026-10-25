@@ -5,10 +5,12 @@
 
 /** What was saved (the fields the patch named) and the profile as the accounts API now answers it. */
 export type SavedProfile = {
-  patch: { name?: string | null; color?: string | null };
+  patch: { name?: string | null; color?: string | null; showPicture?: boolean };
   // The display name collaborators see (its own, else the account's), and the colour, null for Automatic.
   name: string | null;
   color: string | null;
+  // Show My Google Picture as it now is: an editor's own presence stops or starts sending its picture.
+  showPicture?: boolean;
 };
 
 const listeners = new Set<(saved: SavedProfile) => void>();

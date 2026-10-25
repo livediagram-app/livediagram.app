@@ -8,7 +8,9 @@ import type { ExplorerAccounts } from './accounts';
 
 function fakeAccounts(names: Record<string, string>) {
   const people = vi.fn(async (ids: readonly string[]) => {
-    return new Map(ids.flatMap((id) => (names[id] ? [[id, names[id]] as const] : [])));
+    return new Map(
+      ids.flatMap((id) => (names[id] ? [[id, { name: names[id], picture: null }] as const] : [])),
+    );
   });
   const accounts: ExplorerAccounts = {
     people,
@@ -60,7 +62,8 @@ describe('names for who did what', () => {
     });
     const asked = people.mock.calls.flatMap((c) => c[0]);
     expect(asked).toEqual(expect.arrayContaining(['user_sam', 'user_ana']));
-    expect(asked).not.toContain('user_kim');
+    // Kim's name came with the event; their avatar's picture rides in the same one request as the others' names.
+    expect(people).toHaveBeenCalledTimes(1);
     expect(new Set(asked).size).toBe(asked.length);
   });
 });

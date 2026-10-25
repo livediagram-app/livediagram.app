@@ -31,6 +31,9 @@ import { AppMark } from './badges';
 import { useExplorer } from './context';
 import { isAbort } from '../data/errors';
 import { useNamedEvents } from '../data/names';
+import { usePersonPicture } from '../data/usePeople';
+import { useExtras } from './extras';
+import { PictureDisc } from '@liveworkspace/ui';
 
 const PANEL =
   'rounded-[20px] border border-slate-200 bg-white px-3 py-2 sm:px-5 dark:border-slate-700 dark:bg-slate-800';
@@ -173,17 +176,23 @@ function NewPill() {
   );
 }
 
-/** A person's initials on a quiet disc; the index keeps no names, so someone unnamed wears the person glyph. */
+/** A person's Google picture where they have one, over their initials on a quiet disc; the index keeps no names, so
+ *  someone unnamed wears the person glyph. The picture comes with their name from the one people store. */
 function Avatar({ person, size }: { person: WhatHappenedPerson | undefined; size: number }) {
+  const { people } = useExtras();
+  const picture = usePersonPicture(people, person?.id);
   const letters = person ? initials(person.name) : null;
   return (
-    <span
+    <PictureDisc
       aria-hidden
-      className="inline-flex shrink-0 items-center justify-center rounded-full bg-brand-100 font-semibold text-brand-800 ring-2 ring-white dark:bg-brand-500/20 dark:text-brand-200 dark:ring-slate-800 [&_svg]:h-[60%] [&_svg]:w-[60%]"
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.4) }}
+      pictureUrl={picture}
+      name={person?.name ?? ''}
+      size={size}
+      className="bg-brand-100 font-semibold text-brand-800 ring-2 ring-white dark:bg-brand-500/20 dark:text-brand-200 dark:ring-slate-800 [&_svg]:h-[60%] [&_svg]:w-[60%]"
+      style={{ fontSize: Math.round(size * 0.4) }}
     >
       {letters ?? <PersonalSpaceIcon />}
-    </span>
+    </PictureDisc>
   );
 }
 

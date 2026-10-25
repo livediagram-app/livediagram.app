@@ -9,7 +9,9 @@
 
 import { memo, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, TimelineEvent } from '@liveworkspace/index-client';
-import { EmptyState } from '@liveworkspace/ui';
+import { EmptyState, PictureDisc } from '@liveworkspace/ui';
+import { usePersonPicture } from '../data/usePeople';
+import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
 import { actorWords, renderTimelineEvent } from '../explorer/TimelinePane';
 import { AppMark } from '../explorer/badges';
@@ -419,23 +421,30 @@ function PersonAvatar({
 }) {
   const mine = Boolean(viewerId && event.actorId === viewerId);
   const letters = mine ? null : initials(personName(event));
-  // The reader wears the brand; someone unnamed or a closed account stays grey.
+  // The reader wears the brand; someone unnamed or a closed account stays grey. Anyone else with a Google picture
+  // shows it over their disc (the one people store, which names them too).
   const fill = !mine && letters && event.actorId ? avatarFill(personColour(event.actorId)) : null;
+  const { people } = useExtras();
+  const picture = usePersonPicture(
+    people,
+    !mine && event.actorId && event.actorId !== 'deleted' ? event.actorId : null,
+  );
   return (
-    <span
+    <PictureDisc
       aria-hidden
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white [&_svg]:h-[60%] [&_svg]:w-[60%] ${
+      pictureUrl={picture}
+      name={personName(event)}
+      size={size}
+      className={`font-semibold text-white [&_svg]:h-[60%] [&_svg]:w-[60%] ${
         fill ? '' : mine ? 'bg-brand-700 dark:bg-brand-600' : 'bg-slate-400 dark:bg-slate-600'
       } ${ring ? 'ring-2 ring-white dark:ring-slate-900' : ''}`}
       style={{
-        width: size,
-        height: size,
         fontSize: Math.round(size * 0.42),
         ...(fill ? { backgroundColor: fill } : null),
       }}
     >
       {letters ?? <PersonGlyph />}
-    </span>
+    </PictureDisc>
   );
 }
 

@@ -18,6 +18,7 @@ const CLIENTS: Record<string, string> = {
 };
 
 let env: Env;
+let sql: ReturnType<typeof testD1>['sql'];
 let sent: { to: string[]; subject: string }[];
 // Who the stub session belongs to, or null for signed out.
 let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
@@ -41,6 +42,7 @@ const auth = {
 
 beforeEach(() => {
   const d1 = testD1();
+  sql = d1.sql;
   addUser(d1.sql, { id: 'user_ada', email: 'ada@example.com', name: 'Ada' });
   addUser(d1.sql, { id: 'user_bea', email: 'bea@example.com', name: 'Bea' });
   addClient(d1.sql, 'liveplanner', 'liveplanner.app');
@@ -149,7 +151,16 @@ describe('the account API, signed in', () => {
 
   it('reads and sets their own display name and colour', async () => {
     expect(await (await call('/profile')).json()).toEqual({
-      profile: { id: 'user_ada', name: 'Ada', color: null, createdAt: null, updatedAt: null },
+      profile: {
+        id: 'user_ada',
+        name: 'Ada',
+        color: null,
+        picture: null,
+        googlePicture: null,
+        showPicture: true,
+        createdAt: null,
+        updatedAt: null,
+      },
     });
     const patched = await call('/profile', {
       method: 'PATCH',
@@ -159,16 +170,44 @@ describe('the account API, signed in', () => {
     expect((await call('/profile', { method: 'PATCH', body: {} })).status).toBe(400);
   });
 
-  it('reads other people’s display names by id, names only', async () => {
+  it('reads other people’s display names and pictures by id', async () => {
     const res = await call('/people?ids=user_bea,user_nobody,not-an-id');
-    expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea' }] });
+    expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea', picture: null }] });
     const many = Array.from({ length: 101 }, (_, i) => `user_${i}`).join(',');
     expect((await call(`/people?ids=${many}`)).status).toBe(400);
     signedIn = null;
     expect((await call('/people?ids=user_bea')).status).toBe(401);
   });
 
+  it("answers each person's Google picture with their name, unless they turned it off", async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ACg8ocBea=s96-c';
+    sql.prepare('UPDATE "user" SET image = ? WHERE id = ?').run(picture, 'user_bea');
+    const read = async () =>
+      ((await (await call('/people?ids=user_bea,user_ada')).json()) as { people: unknown[] })
+        .people;
+    expect(await read()).toEqual([
+      { id: 'user_bea', name: 'Bea', picture },
+      { id: 'user_ada', name: 'Ada', picture: null },
+    ]);
+    // Bea turns Show My Google Picture off: others see her initials, and she still sees her own.
+    signedIn = { id: 'user_bea', name: 'Bea', email: 'bea@example.com', emailVerified: true };
+    const off = await call('/profile', { method: 'PATCH', body: { showPicture: false } });
+    expect(await off.json()).toMatchObject({
+      profile: { picture: null, googlePicture: picture, showPicture: false },
+    });
+    expect(await (await call('/profile')).json()).toMatchObject({
+      profile: { googlePicture: picture, showPicture: false },
+    });
+    expect((await read())[0]).toEqual({ id: 'user_bea', name: 'Bea', picture: null });
+    expect((await call('/profile', { method: 'PATCH', body: { showPicture: 'no' } })).status).toBe(
+      400,
+    );
+  });
+
   it('names people for this browser’s guest too, and nobody else signed out', async () => {
+    sql
+      .prepare('UPDATE "user" SET image = ? WHERE id = ?')
+      .run('https://lh3.googleusercontent.com/a/ACg8ocBea', 'user_bea');
     signedIn = null;
     env.BETTER_AUTH_SECRET = 'guest-secret';
     const guest = await signGuestCookie(
@@ -177,6 +216,7 @@ describe('the account API, signed in', () => {
     );
     const res = await call('/people?ids=user_bea', { headers: { cookie: `lw_guest=${guest}` } });
     expect(res.status).toBe(200);
+    // Names only: a guest never receives anyone's picture.
     expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea' }] });
     const forged = await signGuestCookie('guest_00000000-0000-4000-8000-000000000001', 'other');
     expect(
@@ -613,7 +653,9 @@ describe("the account API, for the Explorer on an app's address (by the app's be
   });
 
   it('lets a guest read names alone', async () => {
-    expect((await call('/people?ids=user_ada', bearer('tok-guest'))).status).toBe(200);
+    const res = await call('/people?ids=user_ada', bearer('tok-guest'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ people: [{ id: 'user_ada', name: 'Ada' }] });
     expect((await call('/teams', bearer('tok-guest'))).status).toBe(401);
     expect((await call('/settings/liveplanner.app', bearer('tok-guest'))).status).toBe(401);
   });

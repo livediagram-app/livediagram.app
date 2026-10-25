@@ -9,12 +9,18 @@ import {
   type ComponentType,
 } from 'react';
 import { lucideChevronDown, lucideSettings } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, useClickOutside, useMenu, useMenuButton } from '@liveworkspace/ui';
+import {
+  lucideGlyph,
+  PictureDisc,
+  useClickOutside,
+  useMenu,
+  useMenuButton,
+} from '@liveworkspace/ui';
 import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
 import { avatarFill, initials } from './initials';
 
-// The account control (liveworkspace/docs/site.md "The header"). Signed in: the person's avatar (initials; accounts
-// keep no pictures) and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
+// The account control (liveworkspace/docs/site.md "The header"). Signed in: the person's avatar (their Google picture
+// over their initials, liveworkspace/docs/accounts.md "Profile pictures") and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
 // out. Signed out: the same trigger as **Guest**, on a neutral avatar, opening Sign in (the primary), Create account
 // and, where a guest has settings (the Explorer on an app's address), Settings. One component for liveworkspace.app's
 // header, the Explorer on any address and every app's marketing header.
@@ -59,6 +65,8 @@ type SignedIn = {
   fullName?: string | null;
   // The profile's presence colour, null for Automatic (the avatar's colour is then picked from the name).
   colour?: string | null;
+  // The account's own Google picture, null with none: the avatar shows it over the initials.
+  picture?: string | null;
   onSignOut: () => Promise<boolean>;
   // Opens the Settings panel in place, where the surface has one, and fetches its code ahead of the press.
   onOpenSettings?: () => void;
@@ -104,7 +112,12 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
   const label = account ? account.name : GUEST_LABEL;
   const avatar = (large: boolean) =>
     account ? (
-      <Avatar name={account.fullName || account.name} colour={account.colour} large={large} />
+      <Avatar
+        name={account.fullName || account.name}
+        colour={account.colour}
+        picture={account.picture}
+        large={large}
+      />
     ) : (
       <GuestAvatar large={large} />
     );
@@ -406,26 +419,32 @@ function SignOutIcon() {
   );
 }
 
-// The signed-in person's initials in a disc of their colour, as the apps draw people: their presence colour (or the
-// one picked from the name) in a shade white reads on at AA (initials.ts avatarFill).
+// The signed-in person's Google picture where they have one, over their initials in a disc of their colour, as the
+// apps draw people: their presence colour (or the one picked from the name) in a shade white reads on at AA
+// (initials.ts avatarFill). The initials show until the picture loads, and again should it fail (PictureDisc).
 function Avatar({
   name,
   colour,
+  picture,
   large = false,
 }: {
   name: string;
   colour?: string | null;
+  picture?: string | null;
   large?: boolean;
 }) {
   return (
-    <span
+    <PictureDisc
       aria-hidden
+      pictureUrl={picture}
+      name={name}
+      size={large ? 40 : 28}
       style={{ '--avatar': avatarFill(name, colour) } as CSSProperties}
-      className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--avatar)] font-semibold text-white ring-1 ring-black/5 ring-inset dark:ring-white/10 ${
-        large ? 'size-10 text-sm' : 'size-7 text-[11px]'
+      className={`flex bg-[var(--avatar)] font-semibold text-white ring-1 ring-black/5 ring-inset dark:ring-white/10 ${
+        large ? 'text-sm' : 'text-[11px]'
       }`}
     >
-      <span className="text-optical-centre">{initials(name)}</span>
-    </span>
+      {initials(name)}
+    </PictureDisc>
   );
 }

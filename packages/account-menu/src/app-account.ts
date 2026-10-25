@@ -11,14 +11,19 @@ import {
   accountColourCookieFor,
   accountFullNameCookieFor,
   accountNameCookieFor,
+  accountPictureCookieFor,
   readAccountColour,
   readAccountName,
+  readAccountPicture,
 } from '@liveworkspace/auth-client/account-name';
 
 /** Signed out (or not known to be signed in), the name still on its way, or the person (`colour`: their presence
- *  colour, null for Automatic or a session from before the colour cookie). */
+ *  colour, null for Automatic or a session from before the colour cookie; `picture`: their Google picture, null with
+ *  none or a session from before the picture cookie). */
 export type AppAccount =
-  'out' | 'pending' | { name: string; fullName: string | null; colour: string | null };
+  | 'out'
+  | 'pending'
+  | { name: string; fullName: string | null; colour: string | null; picture: string | null };
 
 function hintOf(cookies: string, hint: string): boolean {
   for (const part of cookies.split(';')) {
@@ -38,6 +43,7 @@ export function appAccountOf(cookies: string, hint: string, asked = false): AppA
       name,
       fullName: readAccountName(cookies, accountFullNameCookieFor(nameCookie)),
       colour: readAccountColour(cookies, accountColourCookieFor(nameCookie)),
+      picture: readAccountPicture(cookies, accountPictureCookieFor(nameCookie)),
     };
   return asked ? 'out' : 'pending';
 }

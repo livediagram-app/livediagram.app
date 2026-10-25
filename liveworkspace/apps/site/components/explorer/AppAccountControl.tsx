@@ -21,7 +21,9 @@ const noChange = () => () => {};
 
 export function AppAccountControl({ settings = null }: { settings?: SettingsControl | null }) {
   const [state, setState] = useState<
-    { name: string; fullName: string | null; colour: string | null } | 'out' | 'checking'
+    | { name: string; fullName: string | null; colour: string | null; picture: string | null }
+    | 'out'
+    | 'checking'
   >('checking');
   const here = useSyncExternalStore(
     noChange,
@@ -35,7 +37,14 @@ export function AppAccountControl({ settings = null }: { settings?: SettingsCont
         (found) =>
           live &&
           setState(
-            found ? { name: found.name, fullName: found.fullName, colour: found.colour } : 'out',
+            found
+              ? {
+                  name: found.name,
+                  fullName: found.fullName,
+                  colour: found.colour,
+                  picture: found.picture,
+                }
+              : 'out',
           ),
       );
     read();
@@ -53,6 +62,7 @@ export function AppAccountControl({ settings = null }: { settings?: SettingsCont
         name={state.name}
         fullName={state.fullName}
         colour={state.colour}
+        picture={state.picture}
         // Before the Explorer knows who is here, Settings is this address's Explorer with the panel open.
         {...(settings
           ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }

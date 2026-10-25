@@ -15,7 +15,7 @@ import {
 import { appOriginOfProxy } from './handoff.ts';
 import { queueWelcome, startLifecycle } from './lifecycle.ts';
 import { RESOURCES } from './resources.ts';
-import { readProfileColour } from './profiles.ts';
+import { readProfileLook, storeAccountPicture } from './profiles.ts';
 import { teamsClaim } from './teams.ts';
 
 function build(env: Env, googleRedirectURI?: string) {
@@ -57,7 +57,8 @@ function build(env: Env, googleRedirectURI?: string) {
           );
         },
         teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
-        colourFor: (userId) => readProfileColour(env.AUTH_DB, userId),
+        lookFor: (userId) => readProfileLook(env.AUTH_DB, userId),
+        storePicture: (userId, picture) => storeAccountPicture(env.AUTH_DB, userId, picture),
         guestMerge: guestMergeConfig(env),
         // The welcome goes once the sign-up's response has (index.ts takeWelcomes), speaking for the app
         // the sign-up came through: its OAuth client's, or liveworkspace.app's for the site's own.

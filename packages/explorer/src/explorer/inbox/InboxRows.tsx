@@ -15,6 +15,8 @@
 // time alone, so a tick re-renders the times and not the rows.
 
 import { memo, type ReactNode } from 'react';
+import { PictureDisc } from '@liveworkspace/ui';
+import { usePersonPicture } from '../../data/usePeople';
 import { initials } from '../../timeline/whatHappened';
 import { useNow } from '../../time';
 import { avatarFill } from '../../ui/avatar-fill';
@@ -30,6 +32,7 @@ import {
 import { AppMark } from '../badges';
 import { ThisBrowserPill } from '../ThisBrowser';
 import { useExplorer } from '../context';
+import { useExtras } from '../extras';
 import {
   actionReason,
   formReason,
@@ -41,7 +44,9 @@ import {
 /** The page's roomy row, or the editor panel's tighter one. */
 export type InboxDensity = 'comfortable' | 'compact';
 
-type Person = { name: string | null; color?: string };
+// `id`: the person, whose Google picture the Explorer's one people store brings with their name (one batched request
+// for every row on screen, never one per avatar); `picture`: one the host already has.
+type Person = { id?: string | null; name: string | null; color?: string; picture?: string | null };
 
 /** What a row and the pane say about an entry: who is behind it, what it is, why it is here and where. Worked out
  *  from the entry alone, so it is cheap and the same in both places. */
@@ -74,7 +79,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
       const otherName = e.forMe ? nameOf(r.assignerName) : nameOf(r.assigneeName);
       const self = Boolean(viewerId && other === viewerId);
       return {
-        person: { name: self ? null : otherName },
+        person: { id: self ? null : other, name: self ? null : otherName },
         who: self ? 'You' : (otherName ?? 'A teammate'),
         needsYou: e.forMe,
         cardKey: card?.key ?? null,
@@ -98,7 +103,11 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
       const author = nameOf(r.latestAuthorName);
       const reason = threadReason(r, viewerId);
       return {
-        person: { name: mine ? null : author, color: r.latestAuthorColor || undefined },
+        person: {
+          id: mine ? null : r.latestAuthorId,
+          name: mine ? null : author,
+          color: r.latestAuthorColor || undefined,
+        },
         who: mine ? 'You' : (author ?? 'A teammate'),
         needsYou: reason?.kind === 'mention' || reason?.kind === 'yours',
         cardKey: card?.key ?? null,
@@ -303,9 +312,11 @@ function InboxTime({ at }: { at: number }) {
   );
 }
 
-/** The person behind the row on a disc (their colour, darkened until white reads at AA; a quiet disc without one),
- *  or a form's glyph on a tile. Decorative: the row says who in words. */
+/** The person behind the row on a disc (their Google picture where they have one, over their colour darkened until
+ *  white reads at AA; a quiet disc without one), or a form's glyph on a tile. Decorative: the row says who in words. */
 export function Lead({ person, compact }: { person: Person | null; compact: boolean }) {
+  const { people } = useExtras();
+  const known = usePersonPicture(people, person && !person.picture ? person.id : null);
   const size = compact ? 'size-8 text-[11px]' : 'size-9 text-xs';
   if (!person) {
     return (
@@ -320,16 +331,19 @@ export function Lead({ person, compact }: { person: Person | null; compact: bool
   const fill = person.color ? avatarFill(person.color) : null;
   const letters = person.name ? initials(person.name) : null;
   return (
-    <span
+    <PictureDisc
       aria-hidden
       data-inbox-avatar=""
-      className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${size} ${
+      pictureUrl={person.picture ?? known}
+      name={person.name ?? ''}
+      size={compact ? 32 : 36}
+      className={`mt-0.5 font-semibold ${size} ${
         fill ? 'text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-100'
       }`}
       style={fill ? { backgroundColor: fill } : undefined}
     >
       {letters ?? <UserIcon size={compact ? 14 : 16} />}
-    </span>
+    </PictureDisc>
   );
 }
 

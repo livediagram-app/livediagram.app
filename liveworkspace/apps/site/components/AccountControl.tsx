@@ -51,6 +51,7 @@ export function AccountControl({ settings = null }: { settings?: SettingsControl
           name={session.name}
           fullName={session.fullName}
           colour={session.colour}
+          picture={session.picture}
           explorerHref="/explorer"
           onOpenSettings={panel.onOpen}
           onPrepareSettings={panel.onPrepare}

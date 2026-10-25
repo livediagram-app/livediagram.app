@@ -5,6 +5,7 @@ import { getOAuthProviderState, oauthProvider } from '@better-auth/oauth-provide
 import type { BetterAuthOptions } from 'better-auth';
 import { getOAuthState } from 'better-auth/api';
 import { captcha, emailOTP, jwt } from 'better-auth/plugins';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
@@ -36,9 +37,13 @@ export interface AuthConfig {
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
   teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
-  // The account's presence colour (profiles.ts), for the ID token's `presence_color` claim. Left out
-  // where there is no database to ask, as when generating the schema.
-  colourFor?: (userId: string) => Promise<string | null>;
+  // The account's presence colour and picture switch (profiles.ts readProfileLook), for the ID token's
+  // `presence_color` and `picture_hidden` claims. Left out where there is no database to ask, as when
+  // generating the schema.
+  lookFor?: (userId: string) => Promise<{ color: string | null; showPicture: boolean }>;
+  // A Google sign-in's `picture` claim onto the account (profiles.ts storeAccountPicture), at every Google
+  // sign-in so a new picture shows after the next one. Left out where there is no database.
+  storePicture?: (userId: string, picture: unknown) => Promise<void>;
   // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
   // generating the schema.
   guestMerge?: Omit<MergeConfig, 'secret'>;
@@ -83,12 +88,13 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
           // Someone signed in to several Google accounts picks one rather than getting whichever
           // the browser last used.
           prompt: 'select_account' as const,
-          // Google's first and last name fill the account's; its picture is left behind, since
-          // the apps show initials.
+          // Google's first and last name fill the account's, and its picture is the account's
+          // profile picture (liveworkspace/docs/accounts.md "Profile pictures") when it is one the
+          // apps draw. A later sign-in refreshes the picture (the account hook below), not the names.
           mapProfileToUser: (profile) => ({
             givenName: profile.given_name,
             familyName: profile.family_name,
-            image: undefined,
+            image: profilePictureOf(profile.picture) ?? undefined,
           }),
         },
       },
@@ -110,6 +116,12 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
           },
         },
         update: { before: async (user) => ({ data: withNames(user) }) },
+      },
+      // Every Google sign-in, and Google connected to an account made with a code, writes the account row
+      // with the ID token Google has just handed over: its `picture` claim becomes the account's picture.
+      account: {
+        create: { after: async (account) => storeGooglePicture(config, account) },
+        update: { after: async (account) => storeGooglePicture(config, account) },
       },
       session: {
         create: {
@@ -188,17 +200,46 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // The profile's presence colour rides beside the names (one primary-key read per token), so
         // each app's header paints the avatar in it (liveworkspace/docs/accounts.md "An app's
         // signed-in cookies"). A failed read leaves it out rather than failing the token.
+        // The picture rides the same way, as the standard `picture` claim (the person's own, for their own
+        // chrome), with `picture_hidden` when they turned Show My Google Picture off; the same one read.
         customIdTokenClaims: async ({ user, scopes }) =>
           idTokenClaims(
             user,
             scopes,
-            scopes.includes('profile') && config.colourFor
-              ? await config.colourFor(user.id).catch(() => null)
+            scopes.includes('profile') && config.lookFor
+              ? await config.lookFor(user.id).catch(() => null)
               : null,
           ),
       }),
     ],
   } satisfies BetterAuthOptions;
+}
+
+type AccountRow = { userId?: unknown; providerId?: unknown; idToken?: unknown };
+
+// A Google account row just written: its ID token's `picture` claim onto the account. Google's token came
+// straight from its token endpoint over TLS (Better Auth reads its claims the same way), so the claims are read
+// without checking the signature. A failure is logged and never fails the sign-in.
+async function storeGooglePicture(config: AuthConfig, account: AccountRow): Promise<void> {
+  if (!config.storePicture || account.providerId !== 'google') return;
+  if (typeof account.userId !== 'string' || typeof account.idToken !== 'string') return;
+  await config
+    .storePicture(account.userId, idTokenPicture(account.idToken))
+    .catch((error: unknown) => console.error('[profile-picture] store failed', error));
+}
+
+/** The `picture` claim of an ID token (a JWT), or null when it has none or isn't one. */
+export function idTokenPicture(idToken: string): string | null {
+  const payload = idToken.split('.')[1];
+  if (!payload) return null;
+  try {
+    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const bytes = Uint8Array.from(json, (c) => c.charCodeAt(0));
+    const claims = JSON.parse(new TextDecoder().decode(bytes)) as { picture?: unknown };
+    return profilePictureOf(claims.picture);
+  } catch {
+    return null;
+  }
 }
 
 // The OAuth client a sign-up came through: the `client_id` of the app's authorize request, which the
@@ -240,21 +281,25 @@ export function withNames<T extends NamedUser>(user: T): T {
   };
 }
 
-type ClaimUser = NamedUser & { email: string; emailVerified: boolean };
+type ClaimUser = NamedUser & { email: string; emailVerified: boolean; image?: string | null };
 
-// `colour`: the profile's presence colour (profiles.ts), a claim of the profile scope beside the names.
+// `look`: the profile's presence colour and picture switch (profiles.ts readProfileLook), claims of the profile
+// scope beside the names and the account's picture.
 export function idTokenClaims(
   user: ClaimUser,
   scopes: string[],
-  colour: string | null = null,
+  look: { color: string | null; showPicture: boolean } | null = null,
 ): Record<string, unknown> {
   const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
+  const picture = profilePictureOf(user.image);
   return {
     ...(scopes.includes('profile') && {
       name: text(user.name),
       given_name: text(user.givenName),
       family_name: text(user.familyName),
-      ...(colour && { presence_color: colour }),
+      ...(look?.color && { presence_color: look.color }),
+      ...(picture && { picture }),
+      ...(picture && look?.showPicture === false && { picture_hidden: true }),
     }),
     ...(scopes.includes('email') && { email: user.email, email_verified: user.emailVerified }),
   };

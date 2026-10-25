@@ -30,7 +30,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
-│  ├─ sites                    liveworkspace's sites, for every logo's site switcher
+│  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
 │  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps

@@ -23,10 +23,12 @@ const BEA: Actor = { id: 'user_bea', email: 'bea@example.com' };
 const CY: Actor = { id: 'user_cy', email: 'cy@example.com' };
 
 let db: D1Database;
+let sql: ReturnType<typeof testD1>['sql'];
 
 beforeEach(() => {
   const d1 = testD1();
   db = d1.db;
+  sql = d1.sql;
   for (const actor of [ADA, BEA, CY]) addUser(d1.sql, { id: actor.id, email: actor.email! });
 });
 
@@ -156,6 +158,31 @@ describe('teams', () => {
     for (let i = 0; i < MAX_TEAMS_PER_ACCOUNT; i++) await createTeam(db, ADA, `Team ${i}`);
     expect(await createTeam(db, ADA, 'One more')).toMatchObject({ error: 'team_limit_reached' });
     expect(await teamsClaim(db, ADA.id)).toHaveLength(MAX_TEAMS_PER_ACCOUNT);
+  });
+
+  it("shows each joined member's Google picture, unless they turned it off", async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ACg8ocBea=s96-c';
+    sql.prepare('UPDATE "user" SET image = ? WHERE id = ?').run(picture, BEA.id);
+    const teamId = await teamWith(BEA);
+    await inviteMember(db, ADA, teamId, CY.email, 'member');
+    const pictures = async () =>
+      Object.fromEntries((await listMembers(db, teamId)).map((m) => [m.email, m.picture]));
+    expect(await pictures()).toEqual({
+      [ADA.email!]: null,
+      [BEA.email!]: picture,
+      [CY.email!]: null,
+    });
+    expect((await listMyTeams(db, ADA.id))[0]!.members.map((m) => m.picture)).toEqual([
+      null,
+      picture,
+    ]);
+    sql
+      .prepare(
+        'INSERT INTO profile (owner_id, show_picture, created_at, updated_at) VALUES (?, 0, 1, 1)',
+      )
+      .run(BEA.id);
+    expect((await pictures())[BEA.email!]).toBeNull();
+    expect((await listMyTeams(db, ADA.id))[0]!.members.map((m) => m.picture)).toEqual([null, null]);
   });
 
   it('hands a team on when its only admin closes their account', async () => {

@@ -26,7 +26,9 @@ function fakeAccounts(
     asked,
     people: async (ids) => {
       asked.push([...ids]);
-      return new Map(ids.map((id) => [id, id === 'user_ann' ? 'Ann Lee' : null]));
+      return new Map(
+        ids.map((id) => [id, { name: id === 'user_ann' ? 'Ann Lee' : null, picture: null }]),
+      );
     },
     ...over,
   };

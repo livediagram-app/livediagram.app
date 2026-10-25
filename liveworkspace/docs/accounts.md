@@ -378,6 +378,9 @@ whole site, so its public pages can tell who is signed in without loading the se
   existed), the avatar falls back to the colour picked from the name. A colour changed in Settings ›
   Profile reaches an app's cookies at its next token refresh (the next page load of the app, or within
   the access token's lifetime on an open one), never with a request of its own.
+- `<prefix>account_picture`: the account's own [profile picture](#profile-pictures) URL, when it has one
+  (URI-encoded), so the avatar shows it. It comes from the ID token's `picture` claim, set and cleared with the name
+  cookie, and dropped when it fails `isProfilePictureUrl`; the page checks it again when it reads it.
 
 None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
 signed-in visitor sees their menu with no request, and a visitor makes none at all: they see the Guest button
@@ -618,7 +621,7 @@ for every app. An app keeps no participants table of its own.
 - The colours offered are one palette, `PRESENCE_COLOURS` in `@liveworkspace/settings`
   (`packages/settings`): ten named colours, each with the deeper shade dark mode paints it in under
   white text. Every app and liveworkspace.app's Settings offer the same swatches from it.
-- The account menu's avatar, in every header, is painted in the account's own colour
+- The account menu's avatar, in every header, shows the account's [picture](#profile-pictures) when it has one, and is otherwise painted in the account's own colour
   ([site.md](site.md#the-header)). It rides where the user already does, so it costs no request: the
   ID token's `presence_color` claim for the apps (kept in [`<prefix>account_colour`](#an-apps-signed-in-cookies)),
   and `user.color` in the answer to `GET /api/auth/get-session` for liveworkspace.app (one
@@ -634,6 +637,59 @@ account can't be written back.
 Closing an account deletes its profile. When a guest signs in, the account keeps its own colour and
 display name and takes the guest's colour when it has none (and the guest's name only when the account
 has no name at all); then the guest's profile goes. Both run beside the settings, in the same hook.
+
+### Profile pictures
+
+Someone who signs in with Google shows their Google profile picture on their avatar, in every app and on
+liveworkspace.app: the account menu, Settings › Profile, presence avatars, cursors, comments, the Explorer's Inbox,
+Timeline and history, team lists and the Share dialog. Everyone else, and anyone whose picture can't be shown,
+shows the initials on their colour, exactly as before. This brings back what livediagram, liveplanner,
+livedocuments and livedesign showed under Clerk (`315dcc55b`), which went when they moved onto liveworkspace
+accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the accounts Worker kept no picture then.
+
+- **Where it comes from.** Google's `picture` claim, the one Google hands over at sign-in, kept on the account
+  (`"user".image`, Better Auth's own column, in `0001`). It is set when an account is made with Google, when Google
+  is connected to an account made with an emailed code, and again at every Google sign-in, so a new Google picture
+  shows after the next one (Google sends no change notice, so nothing can learn of it sooner). A sign-in reads the
+  claim from the ID token Google has just handed over (the `account` row's hook, `auth-options.ts`), and writes the
+  account only when the picture changed: one conditional `UPDATE`. Only an `https:` URL on
+  `lh3.googleusercontent.com`, at most 512 characters, is kept; anything else is no picture
+  (`isProfilePictureUrl`, `@liveworkspace/sites/picture`, which every app and the shared avatar check again). An
+  account that only ever signed in with an emailed code has none. Nothing fetches, stores or proxies the image: only
+  the URL travels, and each browser loads it from Google.
+- **The switch.** **Show My Google Picture** in Settings › Profile, for an account with a picture, on unless turned
+  off (`profile.show_picture`, `migrations/0012_profile_picture.sql`; null is on). Off, everyone else sees the
+  initials everywhere; your own chrome still shows it to you, since it is your screen. It is not a choice between
+  pictures: the accounts Worker has no upload, so the picture is Google's or none, and the colour stays your own
+  either way (it rings the picture in presence, and paints the initials where there is no picture).
+- **Who sees it.** You, always. Others who are signed in, while your switch is on. A guest, an anonymous share-link
+  visitor or anyone signed out never receives anyone's picture URL: the doors below leave it out for them.
+- **How it travels**, always with the person data a surface already reads, never a request of its own:
+  - **Your own**: the ID token's standard `picture` claim beside the names and `presence_color` (the same one
+    primary-key read of the profile, which now also gives `picture_hidden: true` when the switch is off); the app's
+    readable `<prefix>account_picture` cookie beside `<prefix>account_colour`, for the marketing header; and
+    `user.image` in `/get-session`'s answer on liveworkspace.app (Better Auth's own field), beside `user.color`.
+  - **Anyone's, by id**: `picture` on each `Profile` (the published one: null when there is none or the switch is
+    off), from `POST /api/account/internal/profiles/read` (an app's server, which passes it on only to signed-in
+    viewers) and on each of `GET /api/account/people`'s answers, for an account's session or bearer only (a guest's
+    answer has names alone). Both read the account's row by primary key in the same query as the name.
+  - **Team members**: `picture` on each joined member of a team's members list, read in the same query.
+  - **Realtime rooms**: each app's room carries `picture` in a participant's presence, as it did before: the editor
+    sends its own (when not hidden) in `hello`, the room keeps it only from a session a signed-in account holds and
+    only when it passes `isProfilePictureUrl`, and sends it only to sessions that are themselves accounts.
+- **How it is drawn.** One avatar, `PictureDisc` in `@liveworkspace/ui` (`packages/ui/src/optical/PictureDisc.tsx`):
+  the initials on their disc always render, and the picture is an `<img>` over them with fixed `width` and
+  `height`, `loading="lazy"`, `decoding="async"`, `referrerpolicy="no-referrer"` (Google's image host refuses some
+  requests that carry a referrer, and it never learns which page is open) and the person's name as its `alt`. It
+  asks Google for the size it paints (`=s<px>-c`, a 1x and a 2x source), shows only once loaded, and on an error
+  falls back to the initials for the rest of that URL's life on the page. So a picture never moves anything.
+- **The Content-Security-Policy.** Every app's and liveworkspace.app's pages send Trusted Types only, with no
+  `img-src` or `default-src`, so Google's image host is allowed. A test keeps it that way: should an `img-src`
+  arrive, it must name `https://lh3.googleusercontent.com`
+  (`packages/sites/src/picture-csp.test.ts`).
+- **Existing accounts.** An account made with Google before this has no picture until its next Google sign-in; one
+  that signs in with an emailed code keeps none.
+- **Closing an account** deletes the row and the URL with it.
 
 ### Guests who never come back
 
@@ -841,30 +897,30 @@ script runs a team. An account's bearer also reads and sets its own profile (`GE
 the session door's own handler), which grants nothing new: the app's API already sets the same name and colour with
 the same token (`PUT /api/participants/:id`). Joining by link and tokens stay the session's.
 
-| Route                                                   | Does                                                                                    |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `GET /api/account/teams`                                | their teams (counts and first four members each, one query) and the invitations waiting |
-| `POST /api/account/teams` `{ name, organisation? }`     | makes a team, with them as admin                                                        |
-| `PATCH` / `DELETE /api/account/teams/:id`               | `{ name?, organisation? }` / deletes (admins)                                           |
-| `GET /api/account/teams/:id/members`                    | the team, their role, members and invitations, and `inviteLink` (admins)                |
-| `POST` / `DELETE /api/account/teams/:id/invite-link`    | makes the join link anew / turns it off (admins)                                        |
-| `GET /api/account/join/:token`                          | no session needed: the team a join link names                                           |
-| `POST /api/account/join/:token`                         | joins through the link, as a member                                                     |
-| `GET` / `POST /api/account/invitations/decline/:token`  | no session needed: reads / declines the invitation an email's Decline link names        |
-| `POST /api/account/teams/:id/members` `{ email, role }` | invites an address and emails it (admins)                                               |
-| `PATCH /api/account/teams/:id/members/:member`          | changes a role (admins)                                                                 |
-| `DELETE /api/account/teams/:id/members/:member`         | removes someone (admins), or leaves (oneself)                                           |
-| `POST /api/account/invitations/:member/accept`          | joins (the invited, verified address only)                                              |
-| `POST /api/account/invitations/:member/decline`         | declines                                                                                |
-| `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)                                                 |
-| `DELETE /api/account/tokens/:id`                        | revokes one                                                                             |
-| `GET /api/account/profile`                              | their profile: `{ profile }`                                                            |
-| `GET /api/account/people?ids=a,b`                       | names (up to 100): `{ people: [{ id, name }] }`, found ids only; a guest may ask too    |
-| `PATCH /api/account/profile` `{ name?, color? }`        | sets their display name or colour (null clears); answers `{ profile }`                  |
-| `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`                                              |
-| `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`                                             |
-| `GET /api/account/settings/:app`                        | `all` and that app's own scope: `{ all, app, updatedAt }`                               |
-| `PATCH /api/account/settings/:app` `{ app }`            | patches the app's own scope; answers `{ all, app, updatedAt }`                          |
+| Route                                                          | Does                                                                                                                 |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/account/teams`                                       | their teams (counts and first four members each, one query) and the invitations waiting                              |
+| `POST /api/account/teams` `{ name, organisation? }`            | makes a team, with them as admin                                                                                     |
+| `PATCH` / `DELETE /api/account/teams/:id`                      | `{ name?, organisation? }` / deletes (admins)                                                                        |
+| `GET /api/account/teams/:id/members`                           | the team, their role, members and invitations, and `inviteLink` (admins)                                             |
+| `POST` / `DELETE /api/account/teams/:id/invite-link`           | makes the join link anew / turns it off (admins)                                                                     |
+| `GET /api/account/join/:token`                                 | no session needed: the team a join link names                                                                        |
+| `POST /api/account/join/:token`                                | joins through the link, as a member                                                                                  |
+| `GET` / `POST /api/account/invitations/decline/:token`         | no session needed: reads / declines the invitation an email's Decline link names                                     |
+| `POST /api/account/teams/:id/members` `{ email, role }`        | invites an address and emails it (admins)                                                                            |
+| `PATCH /api/account/teams/:id/members/:member`                 | changes a role (admins)                                                                                              |
+| `DELETE /api/account/teams/:id/members/:member`                | removes someone (admins), or leaves (oneself)                                                                        |
+| `POST /api/account/invitations/:member/accept`                 | joins (the invited, verified address only)                                                                           |
+| `POST /api/account/invitations/:member/decline`                | declines                                                                                                             |
+| `GET` / `POST /api/account/tokens`                             | lists / makes a token (the secret once)                                                                              |
+| `DELETE /api/account/tokens/:id`                               | revokes one                                                                                                          |
+| `GET /api/account/profile`                                     | their profile: `{ profile }`                                                                                         |
+| `GET /api/account/people?ids=a,b`                              | names (up to 100): `{ people: [{ id, name, picture }] }`, found ids only; a guest may ask too, and gets no `picture` |
+| `PATCH /api/account/profile` `{ name?, color?, showPicture? }` | sets their display name or colour (null clears) or the picture switch; answers `{ profile }`                         |
+| `GET /api/account/settings`                                    | their `all` settings: `{ all, updatedAt }`                                                                           |
+| `PATCH /api/account/settings` `{ all }`                        | patches `all`; answers `{ all, updatedAt }`                                                                          |
+| `GET /api/account/settings/:app`                               | `all` and that app's own scope: `{ all, app, updatedAt }`                                                            |
+| `PATCH /api/account/settings/:app` `{ app }`                   | patches the app's own scope; answers `{ all, app, updatedAt }`                                                       |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
@@ -897,7 +953,9 @@ provider's own introspection and remembered per isolate for five minutes):
 The workbench routes (`/api/account/workbench/*`: tickets, sessions, pairing requests and pairings, for API tokens,
 workbench sessions and the signed-in person) are in [workbench.md](workbench.md).
 
-`Profile` is `{ id, name, color, createdAt, updatedAt }`: `name` and `color` may be null, and the two
-times are null for an account that has never set either.
+`Profile` is `{ id, name, color, picture, createdAt, updatedAt }`: `name`, `color` and `picture` may be null
+(`picture` is the published [profile picture](#profile-pictures): null with none or with the switch off), and the
+two times are null for an account that has never set either. The person's own `GET` and `PATCH
+/api/account/profile` add `googlePicture` (their own picture, whatever the switch says) and `showPicture`.
 
 The app side of these is in `@liveworkspace/auth-client` (`src/account.ts`).

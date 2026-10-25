@@ -17,6 +17,7 @@ import {
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
 } from '@liveworkspace/settings/presence';
+import { PictureDisc, SwitchRow } from '@liveworkspace/ui';
 import { settingsApiErrorMessage } from '../store';
 import { useSavedFlash } from '../useSavedFlash';
 import { colourLabel } from './ProfileHeader';
@@ -73,6 +74,11 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
   const [nameStatus, setNameStatus] = useState<NameStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [colourSaved, flashColourSaved] = useSavedFlash();
+  // Show My Google Picture, for an account with one: saved at once, put back if the write fails.
+  const googlePicture = initial?.googlePicture ?? null;
+  const [showPicture, setShowPicture] = useState(initial?.showPicture ?? true);
+  const [pictureSaved, flashPictureSaved] = useSavedFlash();
+  const pictureTurn = useRef(0);
   const nameId = useId();
   const hintId = useId();
 
@@ -153,6 +159,19 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
     }
   }
 
+  async function switchPicture(next: boolean) {
+    const mine = ++pictureTurn.current;
+    setShowPicture(next);
+    setError(null);
+    const result = await host.save({ showPicture: next });
+    if (mine !== pictureTurn.current) return;
+    if (result.ok) flashPictureSaved();
+    else {
+      setShowPicture(!next);
+      setError(result.error);
+    }
+  }
+
   const shown = cleanProfileName(name) ?? (accountName || 'You');
 
   return (
@@ -187,10 +206,17 @@ export function ProfileEditor({ initial, host }: { initial: Profile | null; host
         </div>
 
         <ColourPicker color={color} onPick={(next) => void pick(next)} saved={colourSaved} />
+        {googlePicture && (
+          <PictureSwitch
+            checked={showPicture}
+            onChange={(next) => void switchPicture(next)}
+            saved={pictureSaved}
+          />
+        )}
         {error && <ErrorNote>{message(error)}</ErrorNote>}
       </div>
 
-      <Preview name={shown} color={color} />
+      <Preview name={shown} color={color} picture={showPicture ? googlePicture : null} />
     </div>
   );
 }
@@ -377,8 +403,52 @@ function ColourPicker({
   );
 }
 
-// What collaborators see: a cursor with the name beside it, and the avatar in the presence list.
-function Preview({ name, color }: { name: string; color: string | null }) {
+// Show My Google Picture (liveworkspace/docs/accounts.md "Profile pictures"): whether others see the account's Google
+// picture or its initials. Their own screen shows it either way.
+function PictureSwitch({
+  checked,
+  onChange,
+  saved,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  saved: boolean;
+}) {
+  return (
+    <div data-profile-picture-switch="">
+      <SwitchRow checked={checked} onChange={onChange} className="py-1">
+        <span className="block text-sm font-medium text-slate-900 dark:text-white">
+          Show My Google Picture
+        </span>
+        <span className="mt-0.5 block text-sm text-slate-500 dark:text-slate-400">
+          {checked
+            ? 'People you work with see your Google picture.'
+            : 'People you work with see your initials.'}
+        </span>
+      </SwitchRow>
+      <span
+        aria-live="polite"
+        className={`mt-1 block text-xs font-medium text-emerald-700 transition-opacity duration-micro motion-reduce:transition-none dark:text-emerald-400 ${
+          saved ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {saved ? 'Saved' : ''}
+      </span>
+    </div>
+  );
+}
+
+// What collaborators see: a cursor with the name beside it, and the avatar in the presence list (their Google picture
+// while Show My Google Picture is on).
+function Preview({
+  name,
+  color,
+  picture,
+}: {
+  name: string;
+  color: string | null;
+  picture: string | null;
+}) {
   const fill = color ? IDENTITY_FILL : AUTOMATIC_FILL;
   const style = color ? presenceVars(color) : undefined;
   return (
@@ -412,13 +482,16 @@ function Preview({ name, color }: { name: string; color: string | null }) {
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2.5">
-        <span
+        <PictureDisc
           aria-hidden
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${fill} ${color ? '' : 'dark:text-slate-950'}`}
+          pictureUrl={picture}
+          name={name}
+          size={36}
+          className={`flex text-xs font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${fill} ${color ? '' : 'dark:text-slate-950'}`}
           style={style}
         >
-          <span className="text-optical-centre">{initials(name)}</span>
-        </span>
+          {initials(name)}
+        </PictureDisc>
         <span className="min-w-0">
           <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">
             {name}

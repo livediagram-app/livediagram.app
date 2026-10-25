@@ -93,6 +93,7 @@ export {
   AccountsError,
   PEOPLE_MAX,
   type ExplorerAccounts,
+  type ExplorerPerson,
 } from './data/accounts';
 export {
   createTeamsHost,

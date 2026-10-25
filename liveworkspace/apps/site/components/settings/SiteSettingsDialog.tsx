@@ -268,13 +268,21 @@ function useSettingsIdentity(): AccountIdentity | null {
   }, []);
   return useMemo(() => {
     if (pageApp()) {
-      return app ? { name: app.fullName ?? app.name, email: app.email, colour: app.colour } : null;
+      return app
+        ? {
+            name: app.fullName ?? app.name,
+            email: app.email,
+            colour: app.colour,
+            picture: app.picture,
+          }
+        : null;
     }
     return session.state === 'in'
       ? {
           name: session.fullName ?? session.name,
           email: session.email ?? null,
           colour: session.colour,
+          picture: session.picture,
           joined: session.joined ?? null,
         }
       : null;

@@ -130,6 +130,10 @@ export type InboxComment = {
   id: string;
   authorName: string | null;
   authorColor?: string;
+  /** The author's person id, for their Google picture (from the Explorer's people store). */
+  authorId?: string | null;
+  /** The author's Google picture, where the host already has it. */
+  authorPicture?: string | null;
   /** Written by the person reading. */
   mine?: boolean;
   text: string;

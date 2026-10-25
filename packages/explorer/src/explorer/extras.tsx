@@ -63,6 +63,7 @@ const QUIET: ExplorerExtras = {
   accounts: null,
   people: {
     name: () => undefined,
+    picture: () => undefined,
     want: () => {},
     subscribe: () => () => {},
     version: () => 0,

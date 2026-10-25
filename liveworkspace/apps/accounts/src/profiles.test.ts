@@ -4,8 +4,11 @@ import {
   checkProfilePatch,
   deleteProfile,
   mergeGuestProfile,
+  readOwnProfile,
   readProfileColour,
+  readProfileLook,
   readProfiles,
+  storeAccountPicture,
   withSessionColour,
   writeProfile,
 } from './profiles.ts';
@@ -29,7 +32,14 @@ const write = async (owner: string, body: Record<string, unknown>, now = 1000) =
 describe('profiles', () => {
   it("shows an account's own name until it sets a display name", async () => {
     expect(await readProfiles(db, ['user_ada'])).toEqual([
-      { id: 'user_ada', name: 'Ada Lovelace', color: null, createdAt: null, updatedAt: null },
+      {
+        id: 'user_ada',
+        name: 'Ada Lovelace',
+        color: null,
+        picture: null,
+        createdAt: null,
+        updatedAt: null,
+      },
     ]);
     await write('user_ada', { color: '#f97316' });
     expect((await readProfiles(db, ['user_ada']))[0]).toMatchObject({
@@ -57,6 +67,9 @@ describe('profiles', () => {
         id: GUEST,
         name: 'Bea',
         color: 'hsl(200 80% 50%)',
+        picture: null,
+        googlePicture: null,
+        showPicture: true,
         createdAt: 1000,
         updatedAt: 1000,
       },
@@ -92,6 +105,55 @@ describe('profiles', () => {
     await write('user_ada', { name: 'Ada' });
     await deleteProfile(db, 'user_ada');
     expect((await readProfiles(db, ['user_ada']))[0]).toMatchObject({ name: 'Ada Lovelace' });
+  });
+});
+
+describe('profile pictures', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s96-c';
+  const image = () =>
+    (sql.prepare('SELECT image FROM "user" WHERE id = ?').get('user_ada') as { image: unknown })
+      .image;
+
+  it("stores a Google sign-in's picture on the account, only when it changed", async () => {
+    await storeAccountPicture(db, 'user_ada', PICTURE);
+    expect(image()).toBe(PICTURE);
+    await storeAccountPicture(db, 'user_ada', PICTURE);
+    expect(sql.prepare('SELECT changes() AS n').get()).toEqual({ n: 0 });
+    // Anything that isn't a Google picture URL is no picture.
+    await storeAccountPicture(db, 'user_ada', 'https://evil.example/ada.png');
+    expect(image()).toBeNull();
+  });
+
+  it('publishes the picture with the name, and hides it from others with the switch off', async () => {
+    await storeAccountPicture(db, 'user_ada', PICTURE);
+    expect((await readProfiles(db, ['user_ada']))[0]!.picture).toBe(PICTURE);
+    await write('user_ada', { showPicture: false });
+    expect((await readProfiles(db, ['user_ada']))[0]!.picture).toBeNull();
+    expect(await readOwnProfile(db, 'user_ada')).toMatchObject({
+      picture: null,
+      googlePicture: PICTURE,
+      showPicture: false,
+    });
+    expect(await readProfileLook(db, 'user_ada')).toEqual({ color: null, showPicture: false });
+    // A name save leaves the switch as it was; turning it on publishes the picture again.
+    await write('user_ada', { name: 'Ada' });
+    expect((await readOwnProfile(db, 'user_ada'))!.showPicture).toBe(false);
+    await write('user_ada', { showPicture: true });
+    expect((await readProfiles(db, ['user_ada']))[0]!.picture).toBe(PICTURE);
+  });
+
+  it('keeps no picture for a guest, and checks the switch', async () => {
+    await write(GUEST, { name: 'Bea' });
+    expect((await readProfiles(db, [GUEST]))[0]!.picture).toBeNull();
+    expect(checkProfilePatch({ showPicture: 'yes' })).toEqual({
+      ok: false,
+      error: 'invalid_show_picture',
+    });
+    expect(checkProfilePatch({ showPicture: false })).toEqual({
+      ok: true,
+      patch: { showPicture: false },
+    });
+    expect(await readProfileLook(db, 'user_nobody')).toEqual({ color: null, showPicture: true });
   });
 });
 

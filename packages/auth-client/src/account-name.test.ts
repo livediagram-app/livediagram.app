@@ -11,7 +11,9 @@ import {
   accountNameCookie,
   accountNameCookieFor,
   accountNameOf,
+  accountPictureCookieFor,
   readAccountName,
+  readAccountPicture,
 } from './account-name';
 
 describe('accountNameCookieFor', () => {
@@ -95,6 +97,40 @@ describe('accountNameCookies', () => {
     expect(full).toMatch(/^ld_account_full=Wendy%20Tran;.*Max-Age=60/);
     const cleared = accountNameCookies('ld_account', null, 60);
     expect(cleared.every((c) => c.endsWith('Max-Age=0'))).toBe(true);
+  });
+});
+
+describe('the picture cookie', () => {
+  const PICTURE = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s96-c';
+
+  it("sits beside the name cookie, and is set from the account's Google picture with the name", () => {
+    expect(accountPictureCookieFor('ld_account')).toBe('ld_account_picture');
+    const [, , , picture] = accountNameCookies('ld_account', { name: 'Ada', picture: PICTURE }, 60);
+    expect(picture).toBe(
+      `ld_account_picture=${encodeURIComponent(PICTURE)}; Path=/; Secure; SameSite=Lax; Max-Age=60`,
+    );
+    const set = picture!.split(';')[0];
+    expect(readAccountPicture(`ld_signed_in=1; ${set}`, 'ld_account_picture')).toBe(PICTURE);
+  });
+
+  it('is cleared with no picture or one the avatar may not draw, and never read back from another host', () => {
+    for (const user of [
+      { name: 'Ada' },
+      { name: 'Ada', picture: null },
+      null,
+      { name: 'Ada', picture: 'https://evil.example/ada.png' },
+      { name: 'Ada', picture: 'javascript:alert(1)' },
+    ]) {
+      expect(accountNameCookies('ld_account', user, 60)[3]).toMatch(
+        /^ld_account_picture=; .*Max-Age=0$/,
+      );
+    }
+    expect(
+      readAccountPicture(
+        `ld_account_picture=${encodeURIComponent('https://evil.example/a.png')}`,
+        'ld_account_picture',
+      ),
+    ).toBeNull();
   });
 });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { accountColourOf } from '@liveworkspace/auth-client/account-name';
+import { accountColourOf, accountPictureOf } from '@liveworkspace/auth-client/account-name';
 import { call, displayName, fullNameOf } from './accounts';
 import { pageApp } from './explorer/page-app';
 
@@ -17,6 +17,9 @@ export type Session =
       name: string;
       fullName: string | null;
       colour: string | null;
+      // The account's own Google picture (Better Auth's `user.image`), null with none
+      // (liveworkspace/docs/accounts.md "Profile pictures").
+      picture: string | null;
       // For Settings' Profile header: the account's address and when it was made (ISO), where the answer had them.
       email?: string | null;
       joined?: string | null;
@@ -49,6 +52,9 @@ function ask() {
             name: displayName(user as Record<string, unknown>),
             fullName: fullNameOf(user as Record<string, unknown>),
             colour: accountColourOf(user),
+            picture: accountPictureOf({
+              picture: (user as Record<string, unknown>).image as string,
+            }),
             email: textOf((user as Record<string, unknown>).email),
             joined: textOf((user as Record<string, unknown>).createdAt),
           }

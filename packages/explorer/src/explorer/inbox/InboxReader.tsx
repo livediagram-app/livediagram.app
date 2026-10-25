@@ -516,6 +516,7 @@ function Body({
           id: 'latest',
           authorName: f.who === 'You' ? null : f.who,
           authorColor: r.latestAuthorColor || undefined,
+          authorId: f.who === 'You' ? null : (r.latestAuthorId ?? null),
           mine: f.who === 'You',
           text: r.latestText,
           at: r.latestAt,
@@ -575,7 +576,15 @@ function Comment({ c }: { c: InboxComment }) {
   const name = c.mine ? 'You' : (c.authorName ?? 'A teammate');
   return (
     <li className="flex gap-3">
-      <Lead person={{ name: c.mine ? null : c.authorName, color: c.authorColor }} compact />
+      <Lead
+        person={{
+          id: c.mine ? null : c.authorId,
+          name: c.mine ? null : c.authorName,
+          color: c.authorColor,
+          picture: c.mine ? null : c.authorPicture,
+        }}
+        compact
+      />
       <div className="min-w-0 flex-1">
         <p className="text-[13px]">
           <span className="font-semibold text-slate-900 dark:text-slate-50">{name}</span>

@@ -3,7 +3,9 @@
 // public page (the marketing header's account menu) can show the person without asking the API. It holds no secret
 // and authenticates nothing; every request still authenticates with the access token.
 //
-// Dependency-free and Worker-safe: the API writes it, the page reads it.
+// Worker-safe: the API writes it, the page reads it.
+
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 
 /** The longest name kept, in characters; a longer one is cut (the header truncates it anyway). */
 export const ACCOUNT_NAME_MAX_LENGTH = 64;
@@ -23,6 +25,8 @@ type NamedUser = {
   email?: string | null;
   // The profile's presence colour (the ID token's `presence_color`), null for Automatic.
   color?: string | null;
+  // The account's own Google picture (the ID token's `picture`), null with none.
+  picture?: string | null;
 };
 
 const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
@@ -81,7 +85,19 @@ export function accountColourOf(user: NamedUser | null | undefined): string | nu
   return isSafeColourValue(colour) ? colour : null;
 }
 
-/** The readable cookies' `Set-Cookie` values, the name, the full name and the colour, set or cleared together. */
+/** The picture cookie beside the name cookie (`ld_account` → `ld_account_picture`), for the avatar's picture
+ *  (liveworkspace/docs/accounts.md "Profile pictures"). */
+export function accountPictureCookieFor(nameCookie: string): string {
+  return `${nameCookie}_picture`;
+}
+
+/** The account's own picture, when it has one the avatar may draw (isProfilePictureUrl); null otherwise. */
+export function accountPictureOf(user: NamedUser | null | undefined): string | null {
+  return profilePictureOf(user?.picture);
+}
+
+/** The readable cookies' `Set-Cookie` values, the name, the full name, the colour and the picture, set or cleared
+ *  together. */
 export function accountNameCookies(
   cookie: string,
   user: NamedUser | null | undefined,
@@ -91,6 +107,7 @@ export function accountNameCookies(
     accountNameCookie(cookie, accountNameOf(user), maxAge),
     accountNameCookie(accountFullNameCookieFor(cookie), accountFullNameOf(user), maxAge),
     accountNameCookie(accountColourCookieFor(cookie), accountColourOf(user), maxAge),
+    accountNameCookie(accountPictureCookieFor(cookie), accountPictureOf(user), maxAge),
   ];
 }
 
@@ -115,6 +132,11 @@ export function readAccountName(cookies: string, cookie: string): string | null 
     }
   }
   return null;
+}
+
+/** The picture in a `document.cookie` string, or null when there is none or it isn't one the avatar may draw. */
+export function readAccountPicture(cookies: string, cookie: string): string | null {
+  return profilePictureOf(readAccountName(cookies, cookie));
 }
 
 /** The colour in a `document.cookie` string, or null when there is none or it isn't safe to paint. */
