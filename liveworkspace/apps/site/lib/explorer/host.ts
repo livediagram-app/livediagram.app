@@ -187,6 +187,8 @@ export function defaultFolderOptionsFor(app: App): readonly DefaultFolderOption[
 
 /** `?settings=<section>`: the Settings panel's own address (liveworkspace/docs/site.md "Settings", Addresses). */
 export const SETTINGS_PARAM = 'settings';
+/** A section of the category `?settings=` opens, to scroll to (`?settings=profile&section=cloud-sync`). */
+export const SECTION_PARAM = 'section';
 
 /** The account's notification settings: every notification email's unsubscribe link lands here. */
 export const NOTIFICATIONS_SETTINGS = `/explorer?${SETTINGS_PARAM}=notifications`;

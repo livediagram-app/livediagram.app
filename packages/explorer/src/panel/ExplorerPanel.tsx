@@ -128,6 +128,8 @@ import {
   type PanelSection,
   type PanelSectionGroup,
 } from './sections';
+import { withDriveMarks } from '../drive/DriveMarks';
+import { useDriveMarks, type ExplorerDriveHost } from '../drive/useDriveMarks';
 
 /**
  * How the panel lays out: `side`, the rail beside the pane (a desktop popover); `stacked`, a row of section chips
@@ -155,6 +157,8 @@ export type ExplorerPanelProps = {
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name (RenderItemMark). */
   renderItemMark?: RenderItemMark;
+  /** Google Drive's unseen-folder mark beside a name, as on the Explorer page (ExplorerDriveHost). */
+  drive?: ExplorerDriveHost | null;
   /** The filter's logos, as on the Explorer page. */
   renderAppLogo?: RenderAppLogo;
   Link?: LinkComponent;
@@ -237,7 +241,8 @@ function PanelInner({
   onRenameCurrent,
   onOpenExplorer,
   renderThumbnail,
-  renderItemMark,
+  renderItemMark: hostItemMark,
+  drive,
   renderAppLogo,
   Link,
   onOpenItem,
@@ -255,6 +260,11 @@ function PanelInner({
   divider = 'titles',
 }: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams' | 'thisBrowser'>) {
   const { teams } = useTeams();
+  const driveMarks = useDriveMarks(drive);
+  const renderItemMark = useMemo(
+    () => withDriveMarks(hostItemMark, driveMarks),
+    [hostItemMark, driveMarks],
+  );
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
   const { gallery, shapeLibraries } = useLibraryHost();

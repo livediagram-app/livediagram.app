@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:^",
     "@liveworkspace/sites": "workspace:*",

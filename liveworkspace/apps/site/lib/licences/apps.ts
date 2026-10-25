@@ -7,6 +7,7 @@ export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'site', label: 'Website', side: 'browser', bundler: 'next' },
   { id: 'accounts', label: 'Accounts', side: 'server', bundler: 'worker' },
   { id: 'community', label: 'Community', side: 'server', bundler: 'worker' },
+  { id: 'drive', label: 'Google Drive sync', side: 'server', bundler: 'worker' },
   { id: 'gateway', label: 'Gateway', side: 'server', bundler: 'worker' },
   { id: 'index', label: 'Index', side: 'server', bundler: 'worker' },
   { id: 'media', label: 'Media', side: 'server', bundler: 'worker' },

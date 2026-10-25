@@ -50,7 +50,7 @@ export const categories: Category[] = [
     title: 'Account and Data',
     description:
       'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 8,
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -513,6 +513,15 @@ export const articles: Article[] = [
     category: 'Account and Data',
     categorySlug: 'account-and-data/connect-ai-mcp',
     parentSlug: 'connect-ai-mcp',
+  },
+  {
+    slug: 'google-drive',
+    title: 'Google Drive',
+    description: 'Keep a copy of your documents in your own Google Drive, synced both ways.',
+    keywords:
+      'google drive mirror sync backup copy cloud storage open with livedocuments file folders liveworkspace',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
   },
   {
     slug: 'email-notifications',

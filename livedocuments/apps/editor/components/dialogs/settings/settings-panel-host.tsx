@@ -2,11 +2,12 @@
 
 import {
   bearerSettingsRequest,
+  createCloudSyncHost,
   settingsPanelApp,
   type SettingsAppId,
 } from '@liveworkspace/settings-ui';
 import { BrandMark } from '@livedocuments/ui';
-import { APP_SITES, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
+import { APP_SITES, PLATFORM_SITE, siteOfApp, workspaceOriginFor } from '@liveworkspace/sites';
 import { currentBearer } from '@/lib/api/core';
 
 // What this editor hands the shared Settings panel (@liveworkspace/settings-ui SettingsPanel;
@@ -18,6 +19,16 @@ export const SETTINGS_APP = settingsPanelApp({
   ...siteOfApp('livedocuments'),
   id: 'livedocuments.app',
 });
+
+// Settings' Cloud Sync (liveworkspace/docs/drive.md "Connecting"): the Drive service through this app's router
+// (`/api/drive`), with the person's token, and the way back to Account > Profile (`?settings=account:account`) once
+// Google has answered. Made for an account only; its section shows once the service says the deployment offers Drive.
+export const cloudSyncHost = () =>
+  createCloudSyncHost({
+    getToken: currentBearer,
+    workspaceOrigin: workspaceOriginFor(window.location.host),
+    settingsParam: 'account:account',
+  });
 
 export const settingsRequest = bearerSettingsRequest({
   baseUrl: '/api/workspace/account',

@@ -792,6 +792,11 @@ access token, `src/delete-account.ts`), and the account closes for every app at 
    purges every item the person owns, with its content in each app, and everything else it holds for
    them ([one-explorer-contracts.md](one-explorer-contracts.md#closing-an-account)). Once the index
    takes it, the row is cleared.
+6. After the answer, the Google Drive mirror is told (`DELETE /app/people/<id>` on the `DRIVE` service binding,
+   `Bearer ${DRIVE_KEY_ACCOUNTS}`; `src/drive-disconnect.ts`): it revokes the grant and forgets the token and every
+   mirror row, and leaves the files in Drive ([drive.md](drive.md#disconnecting-and-account-deletion)). Best
+   effort and never retried: a failure is logged, and without the binding or the key nothing is sent. The binding
+   is commented out in `wrangler.toml` until `liveworkspace-drive` is deployed.
 
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and

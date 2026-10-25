@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry', changeFrequency: 'daily', priority: 0.5 },
     // Status: every app's services, checked live (liveworkspace/docs/site.md "Status").
     { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/status', changeFrequency: 'daily', priority: 0.4 },
+    // Google Drive sync, the platform's help article (liveworkspace/docs/site.md "Help").
+    { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/help/google-drive', changeFrequency: 'monthly', priority: 0.4 },
     { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/terms', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/licences', changeFrequency: 'monthly', priority: 0.2 },

@@ -8,6 +8,7 @@ import {
   SETTINGS_DIALOG_SIZE,
   SettingsPanel,
   SettingsUiKitProvider,
+  useCloudSync,
   useSettingsScope,
   type AccountHost,
 } from '@liveworkspace/settings-ui';
@@ -23,6 +24,7 @@ import { visibleCategories } from '@/components/dialogs/settings/settings-catalo
 import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { settingsModel } from '@/components/dialogs/settings/settings-model';
 import {
+  cloudSyncHost,
   renderSettingsLogo,
   SETTINGS_APP,
   settingsRequest,
@@ -116,6 +118,9 @@ export function SettingsDialog({
       allowAll ? requestProfileHost(settingsRequest, { accountName: identityName }) : undefined,
     [allowAll, identityName],
   );
+  // Cloud Sync (liveworkspace/docs/drive.md "Connecting"), only where All is offered: an account's.
+  const cloudSyncFor = useMemo(() => (allowAll ? cloudSyncHost() : null), [allowAll]);
+  const cloudSync = useCloudSync(cloudSyncFor);
   const account = useMemo<AccountHost>(
     () => ({
       shared: {
@@ -135,8 +140,9 @@ export function SettingsDialog({
       // Sign-in methods and devices are liveworkspace.app's session's.
       securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
       emails: emailEnabled,
+      cloudSync,
     }),
-    [settings, model, onChange, emailEnabled, signedIn, user, profile],
+    [settings, model, onChange, emailEnabled, signedIn, user, profile, cloudSync],
   );
 
   // Which categories people actually open is the signal for whether this
