@@ -384,7 +384,7 @@ function OpenedLine({
   return (
     <span
       id={id}
-      className={`block truncate leading-[18px] ${large ? 'text-[12.5px]' : 'text-xs'} ${MUTED}`}
+      className={`block min-w-0 truncate leading-[18px] ${large ? 'text-[12.5px]' : 'text-xs'} ${MUTED}`}
     >
       {now ? jumpBackInLine(item, now) : ''}
     </span>
