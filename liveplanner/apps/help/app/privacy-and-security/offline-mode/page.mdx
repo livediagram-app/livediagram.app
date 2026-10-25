@@ -4,19 +4,21 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Offline Mode',
   description:
-    'Plans saved only in your browser, never to the server, and how to move them to your account.',
+    "Plans saved only in your browser, where a guest's new plans start, and how to move them to your account.",
   path: '/help/privacy-and-security/offline-mode/',
 });
 
-<ArticleLayout title="Offline Mode" description="Plans saved only in this browser, never on the server, and how to move them to your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="Offline Mode" description="Plans saved only in this browser, where a guest's new plans start, and how to move them to your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Plans are saved to liveplanner so you can reach them from any device and share them. **Offline Mode** is the other place a plan can live: **only in the browser it was made in**, never stored on the server.
+Plans are saved to liveplanner so you can reach them from any device and share them. **Offline Mode** is the other place a plan can live: **only in the browser it was made in**, never stored on the server. It suits private, local-first work, or simply trying liveplanner out.
 
 ## Where new plans go
 
-Every new plan starts on liveplanner, whether or not you are signed in. A guest's plans belong to their [guest identity](/help/account-and-data/guest-identity/), are listed in the [Explorer](/help/explorer/explorer-page/) like anyone's, and move to your account when you sign in.
+- **If you haven't signed in**, your new plans start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from [New Plan](/new), and from the links that create a plan straight away (a template from the home page, say), starts in This Browser. Use **Sync Plan** on one if you would rather it went to liveplanner now.
+- **Once you've signed in**, new plans go to your account.
+- **A plan made inside a folder or a team** goes to liveplanner, whoever makes it, because that is where the folder or team lives.
 
-A plan kept in This Browser is one you chose to keep there, for private, local-first work. It is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which plans live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the plan.
+A plan in This Browser is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which plans live only in this browser. Hover or focus the badge to read that clearing this browser's site data deletes the plan. The [Explorer](/help/explorer/explorer-page/) lists them under **This Browser**, in its sidebar, with how many there are, and their own page, [This Browser](/offline), lists them too.
 
 <Note>
   A plan in This Browser is **not synced and not backed up**. It lives only in this browser:
@@ -28,7 +30,6 @@ A plan kept in This Browser is one you chose to keep there, for private, local-f
 
 A plan in This Browser is a normal plan: every editor feature works, including boards and cards, sheets, dashboards, forms, tabs, themes, undo and redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **The Explorer** lists only plans on liveplanner, so a plan in This Browser does not appear there. Keep its address, or move it to liveplanner, to find it again.
 - **Sharing** needs a plan on the server. Opening **Share** on a plan in This Browser tells you so and offers **Sync Plan**: press it and the plan uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
 - **Live collaboration** and **teams** don't apply; a plan in This Browser is yours alone. Comments still work, but only you see them.
 - **Add a Tab to Another Plan** is unavailable for a plan in This Browser in either direction.
@@ -36,6 +37,6 @@ A plan in This Browser is a normal plan: every editor feature works, including b
 ## Moving to your account
 
 - **When you sign in** with plans in This Browser, we offer to move them to your account in a **Move Plans in This Browser to Your Account?** dialog. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
-- **Sync Plan**, from the Share dialog, uploads a plan in This Browser to liveplanner. It becomes a normal plan, shareable and listed in the Explorer, and the copy in this browser is removed.
+- **Sync Plan**, from the Share dialog, uploads a plan in This Browser to liveplanner, signed in or not. It becomes a normal plan, shareable and listed in your space in the Explorer, and the copy in this browser is removed. A guest's synced plans move to the account when they sign in, like the rest of their work.
 
 </ArticleLayout>

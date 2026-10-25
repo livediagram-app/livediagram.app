@@ -146,7 +146,8 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 
 // `/new` makes a document as it mounts and opens it on its start, Start Making Pages
 // (docs/specs/007-editor/new-document-route.md). Resolves to the new document's id once the editor is up; `url`
-// carries a `/new?folder=` / `?team=` / `?blank=1` context.
+// carries a `/new?folder=` / `?team=` / `?blank=1` context. A guest's plain `/new` makes it in This Browser;
+// `serverNewUrl` makes it on livedocuments.
 export async function createDocument(page: Page, url = '/new'): Promise<string> {
   await page.goto(url);
   await page.waitForURL(/\/document\//, { timeout: 30_000 });
@@ -170,16 +171,18 @@ export async function dismissQuickTour(page: Page): Promise<void> {
 
 // A blank document straight away: /new?blank=1, the document Start Blank links to
 // (docs/specs/007-editor/new-document-route.md). Its one page is still unchosen, asking What Is This Page For?
-// (docs/specs/007-editor/pages-mode.md "Page kinds"): right for a spec that seeds its own elements.
-export async function openStartBlank(page: Page): Promise<void> {
-  await page.goto('/new?blank=1');
+// (docs/specs/007-editor/pages-mode.md "Page kinds"): right for a spec that seeds its own elements. `url` is a
+// `serverNewUrl` one for a document on livedocuments.
+export async function openStartBlank(page: Page, url = '/new?blank=1'): Promise<void> {
+  await page.goto(url);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
 }
 
-// A blank document whose page is chosen as an Infographic, so the page's choice is put away and the page takes
-// elements: for a spec that places elements by hand (onPage).
+// A blank document on livedocuments whose page is chosen as an Infographic, so the page's choice is put away and the
+// page takes elements: for a spec that places elements by hand (onPage). On the server, because the choice's own
+// autosave is what it waits for, and a spec's seedTab writes after it.
 export async function openBlankPage(page: Page): Promise<void> {
-  await openStartBlank(page);
+  await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
   const choice = page.locator('[data-first-page-choice]');
   const infographic = choice.getByRole('button', { name: /^Infographic/ });
   await untilHydrated(infographic);
@@ -208,9 +211,35 @@ export async function onPage(
 }
 
 // A blank document with its start closed: the same /new?blank=1 (kept as its own name for the specs that read as
-// "start a blank document").
+// "start a blank document"), on livedocuments (serverNewUrl) so seedTab can write it through the api.
 export async function startBlankDocument(page: Page): Promise<void> {
-  await openStartBlank(page);
+  await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
+}
+
+// A /new address that makes the document on livedocuments. A guest's own /new makes it in This Browser
+// (docs/specs/006-document/save-locations.md "The default depends on who is creating"), but a `?folder=` context
+// names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
+// where the app keeps it, so /new never leaves for the guest handoff) and the folder is one of theirs, made at the
+// index. For a spec that writes the document through the api (seedTab), watches the api's saves, or shares it.
+// One guest per page, so a spec that makes a second document (or comes back to the first) stays its owner.
+const serverGuests = new WeakMap<Page, string>();
+
+export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
+  let owner = serverGuests.get(page);
+  if (!owner) {
+    owner = await mintGuest(page.request);
+    await adoptGuest(page, owner);
+    serverGuests.set(page, owner);
+  }
+  const res = await page.request.post('/api/index/folders', {
+    headers: ownerHeaders(owner),
+    data: { name: 'e2e' },
+  });
+  expect(res.ok(), `folder create: ${res.status()}`).toBe(true);
+  const { folder } = (await res.json()) as { folder: { id: string } };
+  const at = new URL(url, 'http://e2e.invalid');
+  at.searchParams.set('folder', folder.id);
+  return `${at.pathname}${at.search}`;
 }
 
 export type Seed = Record<string, unknown>[];

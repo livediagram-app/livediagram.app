@@ -1,8 +1,9 @@
 # Offline Mode
 
 **Offline Mode** lets you create a project that is saved **only in the current
-browser** — never to the API, never to the server. It is an opt-in choice for
-everyone, guests included: every new project starts on liveplanner ([Save Locations](save-locations.md#the-default)). It suits private/local-first work, air-gapped or
+browser** — never to the API, never to the server. It is the default for a guest's
+new project ([Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local))
+and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a project that physically never leaves
 their machine. It also keeps the editor's degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)): the editor is fully
 usable with the API _and_ auth switched off.
@@ -15,18 +16,20 @@ Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upser
 
 ## Turning it on
 
-Offline Mode is **off by default for everyone**, guests included
-([Save Locations → The default](save-locations.md#the-default)).
+Offline Mode is **on by default for a guest and off by default for a signed-in person**
+([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a project; the default decides:
 
 - The **New Project** wizard ([Dedicated route for new-project creation](../007-editor/new-project-route.md#one-step-wizard))
   asks only for a mode and creates the project in the default location for who is creating
-  ([Save Locations](save-locations.md)): **liveplanner**, whoever is creating.
+  ([Save Locations](save-locations.md)): **This Browser** for a guest, **liveplanner** for a signed-in person.
   Either moves later: **Take Offline** moves a cloud project into This Browser, **Sync Project** puts one in This Browser on
   liveplanner.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-project creation → Start Blank](../007-editor/new-project-route.md#start-blank-skip-the-wizard))
-  take the same default.
+  take the same default, so a guest following a template from the landing page
+  gets a project in This Browser.
+- A `/new?folder=` / `?team=` context names a server place, so it is liveplanner whoever is creating.
 - The location only changes _where the project is stored_; the mode, templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per project**, so a person can
@@ -109,9 +112,16 @@ auth has settled, the path names a project registered in the local index
   then the profile), followed by the Explorer lists and the guest naming
   nudge. The project is not reloaded: an offline project is the reader's own
   whoever they turn out to be.
-- **`/new` does not wait either.** For a project created in This Browser, the create writes to IndexedDB and hands off without
+- **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
+  creating This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewProject` in `app/new/page.tsx`).
+- **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
+  the create: the handoff ([Auth + guest access → Guests](../014-identity/auth-and-guest-access.md#guests)) leaves
+  the page and comes back to the same `/new` address, so a create begun first would run again on the way back and
+  make the project twice, or the handoff would leave the editor moments after it opened. `commitNewProject` awaits
+  `ensureGuestToken` first; a returning guest's token is already in `localStorage`, so it answers at once and
+  nothing waits. With no accounts site the handoff comes straight back failed, and the create goes ahead.
 - The editor reads back the record `/new` has just written rather than taking
   the tabs across in memory: the read is one IndexedDB get, small beside the
   waits removed, and keeps one load path.
@@ -393,7 +403,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: the New Project wizard calls `offlineCreateProject`
-  directly when the location is This Browser (picked on purpose), and
+  directly when the location is This Browser (a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the project/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline

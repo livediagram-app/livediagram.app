@@ -6,6 +6,7 @@ import {
   seedTab,
   test,
   openContextMenuFromKeyboard,
+  serverNewUrl,
 } from './fixtures';
 
 // Power user mode and Minimal chrome (docs/specs/007-editor/power-user-mode.md), and the role pill
@@ -20,8 +21,8 @@ const header = (page: Page) => page.locator('header');
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), on liveplanner, as seedTab needs.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
 }

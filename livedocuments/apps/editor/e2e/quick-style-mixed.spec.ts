@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import { penColourHex } from '@livedocuments/document';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  serverNewUrl,
+  test,
+} from './fixtures';
 
 // The quick style panel on a mixed selection (docs/specs/008-canvas/quick-style-panel.md
 // "Multi-selection"), as a pasted or imported board selects: named stock colours draw in the canvas's version
@@ -85,7 +92,8 @@ const BOARD = [
 
 async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?blank=1');
+  // On livedocuments, not This Browser: seedTab writes the board through the api.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

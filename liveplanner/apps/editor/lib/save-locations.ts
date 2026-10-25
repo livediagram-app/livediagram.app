@@ -4,12 +4,11 @@
 
 export type SaveLocationId = 'liveplanner' | 'browser';
 
-// Where a new plan goes when nobody picked (docs/specs/006-project/save-locations.md "The default"): liveplanner, for
-// everyone. A guest has a liveworkspace guest identity (liveworkspace/docs/accounts.md "Guests"), so their plans are
-// index items like anyone's, listed in the Explorer, and signing in moves them to the account. This Browser
-// (Offline Mode) is only ever chosen on purpose.
-export function defaultSaveLocationFor(): SaveLocationId {
-  return 'liveplanner';
+// Where a new project goes when nobody picked (docs/specs/006-project/save-locations.md "The default
+// depends on who is creating"): a guest starts This Browser, so a visitor trying things out never
+// leaves an orphan on the server; a signed-in person starts on liveplanner.
+export function defaultSaveLocationFor(who: { signedIn: boolean }): SaveLocationId {
+  return who.signedIn ? 'liveplanner' : 'browser';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,

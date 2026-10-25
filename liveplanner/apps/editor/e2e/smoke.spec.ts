@@ -1,6 +1,7 @@
 import {
   test,
   expect,
+  createInMode,
   expectNoPageErrors,
   openTeamRetro,
   seedTab,
@@ -13,12 +14,27 @@ import {
 // (the `pageErrors` fixture).
 
 // /new asks nothing: it makes a plan and opens it on Start Planning (docs/specs/007-editor/new-project-route.md).
-test('/new opens a new plan on Start Planning, with no apps menu in the header', async ({
+// A guest's lives in This Browser (docs/specs/006-project/save-locations.md "The default depends on who is creating"):
+// listed in this browser's list for the Explorer, and badged so in the header.
+test('/new opens a guest’s new plan in This Browser on Start Planning, with no apps menu', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankProject(page);
+  const id = await createInMode(page);
   await expect(page.getByRole('heading', { name: 'Start Planning' })).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) =>
+          (
+            (JSON.parse(localStorage.getItem(key) ?? '{}') as { items?: { id: string }[] }).items ??
+            []
+          ).map((i) => i.id),
+        'liveworkspace:this-browser:liveplanner',
+      ),
+    )
+    .toContain(id);
+  await expect(page.getByLabel('This Browser', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
