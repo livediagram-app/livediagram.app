@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { DialogCloseButton } from './dialog/DialogCloseButton';
+import { DialogCloseButton } from '@liveworkspace/ui';
 import { SiteSwitcher } from './SiteSwitcher';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
