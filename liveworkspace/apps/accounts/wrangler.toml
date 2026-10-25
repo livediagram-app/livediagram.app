@@ -4,7 +4,9 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
-compatibility_flags = ["nodejs_compat"]
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 # The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents. The other
 # /api/* paths are the other platform Workers', and everything else the static site's (apps/site). Each route is
 # more specific than the site's liveworkspace.app/*, so it wins.

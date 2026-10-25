@@ -3,6 +3,9 @@ name = "liveworkspace-telemetry"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/telemetry, on liveworkspace.app: every page, the dashboard at /telemetry
 # included, is the static site's (apps/site), and /api/auth/* the accounts Worker's.
 # Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:

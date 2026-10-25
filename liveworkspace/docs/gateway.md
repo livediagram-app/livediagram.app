@@ -50,3 +50,7 @@ account does not have.
    the gateway, so its checks of liveworkspace.app go out and come back in through the zone's routes
    ([status.md](status.md#where-the-checks-go)).
 6. Delete `apps/gateway`, its two Workers and this page.
+
+Every Worker behind the gateway (and livediagram's, on its own stand-ins) carries the `global_fetch_strictly_public`
+compatibility flag: without it a Worker's `fetch()` to another Worker's workers.dev address on this account fails with
+Cloudflare's error 1042. It can stay once the domains move; it is harmless on a custom domain.

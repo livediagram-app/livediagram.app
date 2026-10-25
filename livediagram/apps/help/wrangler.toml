@@ -2,6 +2,9 @@ name = "livediagram-help"
 # The liveworkspace Cloudflare account, which will also host livediagram.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["global_fetch_strictly_public"]
 
 # Static assets only — Cloudflare Workers serves files from `./out`
 # (Next.js static export output). No worker code needed; the router

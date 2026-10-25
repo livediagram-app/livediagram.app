@@ -3,6 +3,9 @@ name = "livediagram-api"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["global_fetch_strictly_public"]
 
 # Local dev port, off wrangler's 8787 default, which the liveworkspace accounts Worker holds, so
 # livediagram's stack runs beside it (the router's API_ORIGIN and the docs name the same port).

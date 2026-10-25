@@ -8,7 +8,9 @@ main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
 # bundled by wrangler directly.
-compatibility_flags = ["nodejs_compat"]
+# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
+# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 # Pin a fixed local dev port so `pnpm dev` doesn't race the api worker:
 # both `wrangler dev` invocations otherwise default to 8787. The api takes
