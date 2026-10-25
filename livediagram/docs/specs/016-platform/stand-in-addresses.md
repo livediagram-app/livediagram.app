@@ -37,6 +37,9 @@ Google client for that environment.
 3. Replace each stand-in with the host it stands in for, in the same files (search for
    `livediagram-router` and `livediagram-mcp` with `.workers.dev`), and drop the stand-in hosts from the two host
    lists above.
-4. Redeploy livediagram, liveworkspace and every app (their site lists carry the address), and point the Google
+4. Drop the liveworkspace status Worker's `LIVEDIAGRAM_ROUTER` and `LIVEDIAGRAM_MCP` service bindings, which reach the
+   stand-ins because a Worker can't fetch a workers.dev address on its own account
+   ([liveworkspace/docs/status.md](../../../../liveworkspace/docs/status.md), "Where the checks go").
+5. Redeploy livediagram, liveworkspace and every app (their site lists carry the address), and point the Google
    clients' redirect URIs back at livediagram.app.
-5. Delete this page.
+6. Delete this page.
