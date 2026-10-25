@@ -266,12 +266,27 @@ Each step is its own PR, and both products build and pass their tests after ever
      import. The editors' repo-scan guards read `packages/workbench/src` beside their own folders, the
      style guards (optical, touch targets, motion budget) run in the package, and each editor's
      stylesheet scans it with `@source '../../../../packages/workbench/src'`.
-   - Still in each editor, though most of it reads the same: what sits on a product binding. The
-     largest blockers are `lib/telemetry.ts` (the product's telemetry client), `lib/user-preferences.ts`,
-     `lib/debug-log.ts` (its storage key), `lib/api/core.ts`, `lib/canvas.ts` and the settings
-     catalogue, each imported at module level by the identical files above them. They move once
-     those bindings are injected rather than imported, which is a change to how the editor wires
-     itself, not a move.
+   - Second slice: bindings. What blocked most of the rest was a product module imported at module
+     level by files that otherwise read the same: `lib/telemetry.ts` (the product's telemetry
+     client), `lib/user-preferences.ts`, `lib/debug-log.ts` (its storage key), `lib/api/core.ts`,
+     `lib/canvas.ts`, the reload guard's keys and the stale-build signals. Those are now handed in
+     once at startup: `@liveworkspace/workbench/bindings` exports `configureWorkbench({ … })`, each
+     editor's `lib/workbench-bindings.ts` calls it with its facts (from its root providers and
+     `app/global-error.tsx`), and workbench code reads them through `workbench` (`workbench.track`,
+     `workbench.debugKey`, `workbench.api`, …). The bindings are `debugKey`, `track`,
+     `reloadGuardKey`, `appRecoveryFlag`, `formatLogScope`, `runningStaleBuild`, `readPreferences`,
+     `api` and `zoomMax` (packages/workbench/README.md lists what each is and who reads it). Types stay
+     precise: `track` takes the narrow subset of events workbench code sends, so each product's
+     wider `track` binds unchanged. Each default is a safe no-op, a development build warns once if a
+     binding is read before it is set, and each product's keys stay constants in its
+     `lib/workbench-keys.ts`, unchanged. Where a module was the same but for a type or a constant,
+     the type became the subset the module reads (`UiScalePreferences`) or moved to the workbench with
+     its module (`ApiError`, `QuickConnectDirection`, `Offset`).
+   - Still in each editor: the settings catalogue and the modules on it (`settings-kit`,
+     `settings-model`, `lib/search.ts` differ per product); `lib/canvas-gesture.ts` (liveplanner has no
+     erase gesture) and the drag, long-task and selection code on `DragState`, which is typed on each
+     product's element union; and the identical tests of modules that differ. Those are product
+     differences or a change to the element model, not a missing binding.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:
