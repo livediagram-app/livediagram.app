@@ -105,7 +105,8 @@ type ItemSummary = {
 | Call                           | Who                 | Does                                                                          |
 | ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
 | `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                 |
-|                                |                     | `shared`, `trash`, `unsorted`, `search`: every live item the person can       |
+|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the   |
+|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can      |
 |                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`        |
 |                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                          |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |

@@ -106,7 +106,7 @@ What a browser keeps offline belongs to its app's origin. On the app's address t
 
 #### A place that is empty here but not elsewhere
 
-Filtered to one app, a folder (or My Work, Unsorted, a team) holding only other apps' items would read as empty,
+Filtered to one app, a folder (or My Work, a team) holding only other apps' items would read as empty,
 and someone might delete it thinking so. It never does:
 
 - **The place itself.** Once the app's own list comes back empty, the Explorer asks the place's first page across

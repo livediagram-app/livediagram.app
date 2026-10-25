@@ -110,7 +110,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
 
 | Row          | Opens                                  | Children                                    | Badge                   |
 | ------------ | -------------------------------------- | ------------------------------------------- | ----------------------- |
-| Library      | Nothing: the row expands and collapses | Recent, Favourites, Unsorted, Image Gallery | None                    |
+| Library      | Nothing: the row expands and collapses | Recent, Favourites, Image Gallery | None                    |
 | This Browser | `/explorer/offline`                    | None                                        | Designs in this browser |
 | Trash        | `/explorer/trash` ([Trash](trash.md))  | None                                        | None                    |
 

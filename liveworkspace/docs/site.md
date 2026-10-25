@@ -247,7 +247,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   `?ended=revoked` says, once, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
   for an item just moved to the Trash. Each is dropped from the address once read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
-  `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
+  `/explorer/generated` to a search for items made by AI, `/explorer/unsorted` and `/explorer/dynamic` to My Work (`/explorer/all`; there is no Unsorted view, since My Work's root already lists what is in no folder), `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
   address, This Browser's own view).
 
 #### On an app's own address

@@ -118,7 +118,6 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | ------------------------------------- | ------------------------------- | ------------------------------------------------------------------------ |
 | `{ kind: 'home' }`                    | `/explorer` or `/explorer/home` | The hero, Jump Back In, Shared With You Recently and What Happened       |
 | `{ kind: 'all', q? }`                 | `/explorer/all`                 | My Work: your root folders and your items that are in no folder          |
-| `{ kind: 'unsorted', q? }`            | `/explorer/unsorted`            | Every item in no folder, yours and your teams'                           |
 | `{ kind: 'recent', q? }`              | `/explorer/recent`              | By last opened                                                           |
 | `{ kind: 'favourites', q? }`          | `/explorer/favourites`          | Starred                                                                  |
 | `{ kind: 'shared', q? }`              | `/explorer/shared`              | Shared With Me: items reached through a link                             |
@@ -131,6 +130,9 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)            |
 | `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                 |
 | `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card (members, run in place) over its library, or a folder      |
+
+There is no Unsorted view: My Work's root, and a team's, list the items in no folder (the index's `view=unsorted`).
+The old `/explorer/unsorted` reads as My Work, and the Explorer page replaces it with `/explorer/all`.
 
 ### `<MoveToFolderDialog>`
 
