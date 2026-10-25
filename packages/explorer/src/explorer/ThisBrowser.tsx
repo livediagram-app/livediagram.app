@@ -43,8 +43,9 @@ export type ThisBrowserHost = {
   syncHref?: (item: ThisBrowserItem) => string;
   // The editor's panel, which runs the app's own code: opens one in the editor (default: a page load of `itemHref`),
   // moves one into the account in place (Sync, signed in), and deletes one for good (nothing else holds it).
+  // Sync's promise settles once the item has moved, and the lists load again then.
   open?: (item: ThisBrowserItem) => void;
-  sync?: (item: ThisBrowserItem) => void;
+  sync?: (item: ThisBrowserItem) => Promise<unknown> | void;
   remove?: (item: ThisBrowserItem) => void;
   // The Explorer page: where the app runs a Take Offline or Sync handed over at `/explorer/offline?convert=…&item=…`
   // (an older `/offline` link, redirected): the item's own address in its editor, which asks first.
@@ -55,6 +56,12 @@ export const THIS_BROWSER_COPY = {
   label: 'This Browser',
   sentence: 'Lives only in this browser. Clearing this browser’s site data deletes it.',
 } as const;
+
+// A host's verb that moved an item (Sync, Take Offline) without a page load: the lists load again once it settles,
+// whether it moved or not, so they show where the item is now.
+export function thenReload(result: Promise<unknown> | void, reloadLists: () => void): void {
+  if (result) void result.then(reloadLists, reloadLists);
+}
 
 const live = (i: ThisBrowserItem) => i.trashedAt === null;
 
@@ -170,7 +177,7 @@ function LocalRow({
   sync?: boolean;
 }) {
   const { thisBrowser } = useHostExtras();
-  const { kind } = useExplorer();
+  const { kind, reloadLists } = useExplorer();
   const name = item.title || 'Untitled';
   const syncHref = sync ? thisBrowser?.syncHref?.(item) : undefined;
   return (
@@ -200,7 +207,7 @@ function LocalRow({
         <button
           type="button"
           aria-label={`Sync ${kind.one}: ${name}`}
-          onClick={() => thisBrowser.sync?.(item)}
+          onClick={() => thenReload(thisBrowser.sync?.(item), reloadLists)}
           className={`${SYNC_LINK} cursor-pointer`}
         >
           Sync {kind.one}

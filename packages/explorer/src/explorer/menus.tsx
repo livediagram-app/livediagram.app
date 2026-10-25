@@ -30,6 +30,7 @@ import { MY_WORK, rowsAbove } from './sidebar/expansion';
 import { SIDEBAR_LABELS } from '../views';
 import { VisibilityBadge } from './badges';
 import { useExtras } from './extras';
+import { thenReload } from './ThisBrowser';
 import { useLibraryHost } from '../library/context';
 import { HistoryIcon } from '../ui/library-icons';
 
@@ -49,7 +50,8 @@ export function ItemMenu({
   /** Rows a surface adds before the destructive ones (the Timeline's Remove from Timeline). */
   extra?: ReactNode;
 }) {
-  const { actions, openItem, setRenamingId, openDialog, navigate, kind } = useExplorer();
+  const { actions, openItem, setRenamingId, openDialog, navigate, kind, reloadLists } =
+    useExplorer();
   const { slideOut } = useExtras();
   const host = useLibraryHost();
   const run = (fn: () => void) => () => {
@@ -150,7 +152,7 @@ export function ItemMenu({
           key={verb.id}
           label={verb.label}
           icon={verb.icon ?? null}
-          onClick={run(verb.onSelect)}
+          onClick={run(() => thenReload(verb.onSelect(), reloadLists))}
         />
       ))}
       {extra}

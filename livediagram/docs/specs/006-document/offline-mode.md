@@ -269,8 +269,9 @@ reload:
 5. **The room opens** (`documentServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer's row menu and the move prompt after signing in still reload after a
-sync: the document there is not the one on screen, or several move at once.
+The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+document open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
+once the move settles. Only the move prompt after signing in still reloads, since several move at once.
 
 ### Taking offline in place
 
@@ -333,7 +334,7 @@ dialog's gate and in the move prompt after signing in.
   of truth; the document is now a cloud document (Share / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
   turns into the cloud document in place ([Syncing in place](#syncing-in-place));
-  from the Explorer it reloads.
+  from the Explorer panel it moves without a reload too.
 
 ### Take offline (Cloud → Offline)
 
@@ -476,8 +477,7 @@ Track adoption without content, reusing the closed vocabulary:
 - On conversion, a coarse event for each direction, so uptake and the
   destructive take-offline path are visible: `Document`/`Moved` with type
   `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from
-  the shared `useOfflineConversion` handlers before their reload (the telemetry
-  engine's pagehide beacon carries it through), from `useSyncInPlace` for the
+  the shared `useOfflineConversion` handlers, from `useSyncInPlace` for the
   Share dialog, and per document from the move prompt.
 - No document content or ids ever leave (the `type` bound in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) holds).
 

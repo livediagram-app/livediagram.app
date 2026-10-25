@@ -35,7 +35,7 @@ function offlineVerbs(item: Item, conversions: Conversions) {
         id: 'sync-canvas',
         label: 'Sync Canvas',
         icon: <SyncIcon />,
-        onSelect: () => void conversions.current.syncToCloud(doc),
+        onSelect: () => conversions.current.syncToCloud(doc),
       },
     ];
   }
@@ -44,7 +44,7 @@ function offlineVerbs(item: Item, conversions: Conversions) {
       id: 'take-offline',
       label: 'Take Offline',
       icon: <TakeOfflineIcon />,
-      onSelect: () => void conversions.current.takeOffline(doc),
+      onSelect: () => conversions.current.takeOffline(doc),
     },
   ];
 }

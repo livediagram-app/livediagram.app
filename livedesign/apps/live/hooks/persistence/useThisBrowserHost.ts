@@ -24,7 +24,7 @@ export function useThisBrowserHost(ownerId: string | null, signedIn: boolean): T
       ...(signedIn
         ? {
             sync: (item) =>
-              void conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
+              conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
           }
         : {}),
     }),

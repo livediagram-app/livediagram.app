@@ -25,7 +25,7 @@ export function useThisBrowserHost(ownerId: string | null, signedIn: boolean): T
       ...(signedIn
         ? {
             sync: (item) =>
-              void conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
+              conversions.current.syncToCloud({ id: item.id, name: item.title || 'Untitled' }),
           }
         : {}),
       // Nothing else holds one, so Delete removes it for good (the panel asks first), as This Browser's page did.

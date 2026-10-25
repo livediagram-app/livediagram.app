@@ -1,6 +1,7 @@
 'use client';
 
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
+import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { useToast } from '@/hooks/ui/useToast';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { track } from '@/lib/telemetry';
@@ -17,7 +18,8 @@ import { offlineListDesigns } from '@/lib/offline/offline-store';
 // Offline Mode conversions (docs/specs/006-design/offline-mode.md) for the menus that offer them: the editor's
 // Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync Design).
 // `syncToCloud` uploads an offline design to the account; `takeOffline` pulls a cloud design down and deletes
-// the server copy (gated by a confirm). Both reload afterwards so every list reflects the move. A second conversion
+// the server copy (gated by a confirm). Neither reloads the page: the one open in this editor moves in place (useSyncInPlace, useTakeOfflineInPlace), and
+// the Explorer loads its lists again once the returned promise settles. A second conversion
 // of the same design while one runs does nothing: the guard is the conversion's own (offline-convert), not this
 // hook's state, which goes with the menu the moment it closes. `close` runs first to dismiss the caller's menu.
 type ConvertedDesign = { id: string; name: string; shareCode?: string | null };
@@ -25,15 +27,18 @@ type ConvertedDesign = { id: string; name: string; shareCode?: string | null };
 export function useOfflineConversions(ownerId: string | null) {
   const confirm = useConfirm();
   const toast = useToast();
+  const editor = useOptionalEditorContext();
+  const isOpen = (id: string) => editor?.designId === id;
   const syncToCloud = async (liveDoc: ConvertedDesign, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
     try {
-      await saveOfflineToCloud(liveDoc.id, ownerId);
-      // Before the reload on purpose: the telemetry engine's pagehide
-      // beacon carries the buffered event through the navigation.
-      track('Document', 'Moved', 'SavedToCloud');
-      window.location.reload();
+      if (editor && isOpen(liveDoc.id)) {
+        await editor.syncToCloud();
+      } else {
+        await saveOfflineToCloud(liveDoc.id, ownerId);
+        track('Document', 'Moved', 'SavedToCloud');
+      }
     } catch (e) {
       // Stays offline. A conversion already running reports for itself.
       if (!(e instanceof ConversionInProgressError)) toast.error(syncFailureMessage(e));
@@ -57,6 +62,10 @@ export function useOfflineConversions(ownerId: string | null) {
     });
     if (!ok) return;
     try {
+      if (editor && isOpen(liveDoc.id)) {
+        await editor.takeOfflineInPlace();
+        return;
+      }
       await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
       // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
       await offlineListDesigns().then(
@@ -64,7 +73,6 @@ export function useOfflineConversions(ownerId: string | null) {
         () => {},
       );
       track('Document', 'Moved', 'TakenOffline');
-      window.location.reload();
     } catch (e) {
       // Stays on the server (aborts roll the local copy back). A conversion already running
       // reports for itself.

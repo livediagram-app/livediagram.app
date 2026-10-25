@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useExplorer } from '../explorer/context';
 import { BrowserIcon } from '../explorer/host';
-import { useThisBrowserItems } from '../explorer/ThisBrowser';
+import { thenReload, useThisBrowserItems } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { relativeSince, useNow } from '../time';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -21,7 +21,7 @@ const SYNC_BUTTON =
   'flex h-8 shrink-0 cursor-pointer items-center rounded-lg px-2.5 text-xs font-medium text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-brand-200 dark:ring-brand-400/40 dark:hover:bg-brand-500/15';
 
 export function PanelThisBrowser() {
-  const { words, kind } = useExplorer();
+  const { words, kind, reloadLists } = useExplorer();
   const { host, live } = useThisBrowserItems();
   const now = useNow();
   const [confirming, setConfirming] = useState<ThisBrowserItem | null>(null);
@@ -64,7 +64,7 @@ export function PanelThisBrowser() {
                       <button
                         type="button"
                         aria-label={`Sync ${kind.one}: ${name}`}
-                        onClick={() => host.sync?.(item)}
+                        onClick={() => thenReload(host.sync?.(item), reloadLists)}
                         className={SYNC_BUTTON}
                       >
                         Sync

@@ -77,8 +77,14 @@ export type ImportHost = {
 
 // ---------- The host's verbs on an item's menu -----------------------------------------------------------------
 
-/** A verb the host adds to an item's menu (Take Offline, say), after the Explorer's own. */
-export type ItemMenuVerb = { id: string; label: string; icon?: ReactNode; onSelect: () => void };
+/** A verb the host adds to an item's menu (Take Offline, say), after the Explorer's own. One that returns a promise
+ * moves the item somewhere the lists can't guess, so they load again once it settles. */
+export type ItemMenuVerb = {
+  id: string;
+  label: string;
+  icon?: ReactNode;
+  onSelect: () => void | Promise<unknown>;
+};
 
 export type ItemMenuHost = (item: Item) => readonly ItemMenuVerb[];
 
