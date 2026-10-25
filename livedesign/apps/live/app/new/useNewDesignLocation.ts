@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
 import { readSignedInHint } from '@/lib/signed-in-hint';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 
 const subscribeNever = () => () => {};

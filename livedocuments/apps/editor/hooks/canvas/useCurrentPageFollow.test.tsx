@@ -7,7 +7,7 @@ import { layOutPages, newSlidePage, type LaidOutPage } from '@livedocuments/docu
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import type { ReactNode } from 'react';
-import { ViewportStoreProvider } from './useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useCurrentPageFollow } from './useCurrentPageFollow';
 
 beforeEach(() => {

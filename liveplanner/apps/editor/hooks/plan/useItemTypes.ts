@@ -33,7 +33,7 @@ import {
 } from '@liveplanner/items';
 import { ItemTypesStaleError, saveItemTypes, type SavedItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@/lib/debug-log';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
 
 // How many times one change is sent: the first, and again after each change of someone else's that landed first.

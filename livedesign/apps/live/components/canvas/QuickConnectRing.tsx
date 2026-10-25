@@ -11,7 +11,7 @@ import { PlusIcon, HoverCard } from '@livedesign/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 import { ADD_COLUMN_OPTION, webRowOption, ADD_ROW_OPTION, OPTIONS } from './quick-connect-options';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
 import { isDragTravel } from '@/lib/press-gestures';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';

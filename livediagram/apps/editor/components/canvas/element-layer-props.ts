@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Participant } from '@/lib/identity';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import type { CollabApi } from './collab/CollabFaceRouter';
 
 // Identity-stable per-element props for the element layer (docs/specs/008-canvas/canvas-performance.md):

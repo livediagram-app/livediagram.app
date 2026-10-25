@@ -13,7 +13,7 @@ import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { penColourHardToSee, readablePenColour } from '@livedocuments/document';
 import { hexToHsv, hsvToHex, type Hsv } from '@/lib/hsv';
 import { normaliseHex } from '@/lib/swatch-overrides';
-import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
+import { useEyeDropper } from '@liveworkspace/workbench/hooks/ui/useEyeDropper';
 import { PipetteIcon } from '@/components/palette/context-menu-input-rows';
 
 const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);

@@ -23,7 +23,7 @@ import {
 } from '@liveplanner/project';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';

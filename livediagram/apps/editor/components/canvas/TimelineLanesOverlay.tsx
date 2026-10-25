@@ -1,6 +1,6 @@
 'use client';
 
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -10,7 +10,7 @@ import {
 } from '@livediagram/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import { useLanePreview } from '@/lib/lane-preview';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 
 // The lane a dragged note is landing on (docs/specs/021-event-storming/event-storming.md Phase 6), lit while the drag
 // is in hand and gone on release.

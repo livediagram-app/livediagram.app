@@ -38,7 +38,7 @@ import {
   type EraserConfig,
 } from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 type EraserDeps = {

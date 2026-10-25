@@ -10,7 +10,7 @@ import {
 } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isPressableControl } from '@livediagram/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isTypingTarget } from '@/lib/typing-target';

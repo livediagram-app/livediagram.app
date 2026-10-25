@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { newItemId } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import {
   markPlanTracksSeen,

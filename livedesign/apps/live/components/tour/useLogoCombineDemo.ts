@@ -10,7 +10,7 @@ import {
 } from '@livedesign/design';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { combineElements } from '@/lib/combine/combine';
 import { debugLog } from '@/lib/debug-log';
 import { deriveNewBoxedColours } from '@/lib/themes';

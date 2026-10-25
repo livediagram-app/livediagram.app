@@ -7,7 +7,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { Selection } from '@/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
-import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
+import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 import { useInsertionDragInHand } from '@/lib/insertion-preview';
 import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
 

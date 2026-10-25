@@ -3,7 +3,7 @@
 // The open tab's name, for the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"): published by
 // usePlanCoverWiring as the tab opens or is renamed, read by TabNameInBox. A module store, like plan-tab-list-store.ts.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let name = '';

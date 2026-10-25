@@ -1,6 +1,6 @@
 'use client';
 
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   ES_LANES,

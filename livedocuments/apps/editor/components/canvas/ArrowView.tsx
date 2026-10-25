@@ -17,7 +17,7 @@ import {
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view-frame';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
 import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';

@@ -18,7 +18,7 @@ import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { CONTENTS_SIDEBAR_WIDTH, type ContentsSide } from '@/lib/contents-placement';
 import { restingRect, sideInsetsOf } from '@/lib/side-chrome-insets';
 import { ContentsAddPage } from './ContentsAddPage';

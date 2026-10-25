@@ -17,8 +17,8 @@ import {
   type SplitPair,
 } from '@/lib/split-view';
 import { track } from '@/lib/telemetry';
-import { useViewportHeight } from './useViewportHeight';
-import { useViewportWidth } from './useViewportWidth';
+import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
+import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 
 export type SplitView = {
   // Whether this screen and this moment can show a split (a wide, tall enough window, not zen /

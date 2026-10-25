@@ -41,7 +41,7 @@ import {
 } from '@liveplanner/items';
 import { Button, CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { FIELD_GLYPHS } from './card-field-glyphs';

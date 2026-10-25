@@ -14,7 +14,7 @@ import {
   useSyncExternalStore,
   type RefObject,
 } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { swallowNextClick } from './gantt-drag';
 import { followWindowDrag } from '@/lib/window-drag';
 

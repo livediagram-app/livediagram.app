@@ -17,7 +17,7 @@ import { useTidyUpStrokes } from '@/hooks/canvas/useTidyUpStrokes';
 import { useCombineShapes } from '@/hooks/canvas/useCombineShapes';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { useLogoTools } from '@/hooks/editor/useLogoTools';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { useToast } from '@/hooks/ui/useToast';
 import {
   logoGuideSnapper,

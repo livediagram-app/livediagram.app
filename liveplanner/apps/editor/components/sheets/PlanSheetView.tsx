@@ -44,7 +44,7 @@ import { importCsvText } from './sheet-csv';
 import { SheetFace } from './SheetFace';
 import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
 

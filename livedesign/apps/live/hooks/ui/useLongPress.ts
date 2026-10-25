@@ -3,7 +3,7 @@
 import { haptic } from '@/lib/haptics';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Touch long-press detector. Touch devices never fire `contextmenu`, so a
 // press-and-hold is the conventional way to open an element's context menu

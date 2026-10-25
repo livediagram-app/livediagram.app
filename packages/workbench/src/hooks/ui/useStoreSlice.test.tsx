@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { createViewportStore } from '../../lib/viewport-store';
 import { useStoreSlice } from './useStoreSlice';
 
 // docs/specs/008-canvas/blueprints/viewport-store.md: a reader renders only when its slice changes.

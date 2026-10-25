@@ -4,7 +4,7 @@ import { useMemo, type RefObject } from 'react';
 import type { ItemMenuHost } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import { SyncIcon, TakeOfflineIcon } from '@/components/primitives/explorer-icons';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 

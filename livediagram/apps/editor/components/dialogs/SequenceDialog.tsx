@@ -23,7 +23,7 @@ import {
 } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

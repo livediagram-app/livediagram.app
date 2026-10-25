@@ -2,7 +2,7 @@
 import { render as rtlRender } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { describe, expect, it } from 'vitest';
 import { CanvasDrawPreview } from './CanvasDrawPreview';
 

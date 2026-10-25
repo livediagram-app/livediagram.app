@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { WORKSHOP_TOUR_RELAUNCH_EVENT } from '@/lib/workshop-tour';
 import { track } from '@/lib/telemetry';

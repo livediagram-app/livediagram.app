@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } 
 import { isCommittablePath, type Element, type PathAnchor } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PendingDraw } from '@/lib/draw-mode';
 import {
   PATH_NODE_HIT_PX,

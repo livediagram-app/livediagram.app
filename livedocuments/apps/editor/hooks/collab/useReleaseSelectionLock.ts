@@ -6,7 +6,7 @@
 
 import { useCallback } from 'react';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useReleaseSelectionLock(deps: {
   /** Send one frame to the room. No-op before the socket is up. */

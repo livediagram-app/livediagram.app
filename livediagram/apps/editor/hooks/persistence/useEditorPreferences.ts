@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
-import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
+import { usePanelOpacity } from '@liveworkspace/workbench/hooks/ui/usePanelOpacity';
 import {
   autoRebindArrowsEnabled,
   readUserPreferences,
@@ -18,7 +18,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { readLocalStorageSafe } from '@/lib/local-storage-safe';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The preferences cached on this device, as an external store: the server
 // and hydration snapshot is empty, so the static export never reads

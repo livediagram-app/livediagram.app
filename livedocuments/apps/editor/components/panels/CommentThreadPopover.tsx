@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@livedocuments/ui';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import type { CommentMention, CommentThread } from '@livedocuments/document';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';

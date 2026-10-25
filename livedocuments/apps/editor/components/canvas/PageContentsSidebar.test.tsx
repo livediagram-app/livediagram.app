@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 

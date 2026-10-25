@@ -10,7 +10,7 @@
 // skipped, so tabbing through cells leaves no empty undo steps.
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
 import {

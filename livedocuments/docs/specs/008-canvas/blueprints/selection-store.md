@@ -11,7 +11,7 @@ who re-renders when it changes.
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `apps/editor/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
 | `apps/editor/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
-| `apps/editor/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
+| `../packages/workbench/src/hooks/ui/useStableEventProps.ts`  | `useStableEventProps`: every `on*` function prop identity-stable                    |
 | `apps/editor/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
 | `apps/editor/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
 | `apps/editor/app/document/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                              |

@@ -7,7 +7,7 @@
 // the person's own board or Sheet and places nothing.
 import { useEffect, useRef, useState } from 'react';
 import type { Tab } from '@liveplanner/project';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { readLeftover, writeLeftover } from '@/lib/plan-tour';
 import type { PlanItems } from './usePlanItems';

@@ -5,7 +5,7 @@
 // thread surface composes them, `comfortable` (a feed: larger text, the composer beside your own avatar) or
 // `compact` (the canvas's comment popover).
 import { useRef, useState, type RefObject } from 'react';
-import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
+import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import {
   Button,
   CheckIcon,

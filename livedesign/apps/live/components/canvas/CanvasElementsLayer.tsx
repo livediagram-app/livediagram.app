@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';

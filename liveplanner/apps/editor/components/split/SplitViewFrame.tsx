@@ -14,7 +14,7 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
-import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
+import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {
   anchorFromEditorView,
   editorViewFromAnchor,

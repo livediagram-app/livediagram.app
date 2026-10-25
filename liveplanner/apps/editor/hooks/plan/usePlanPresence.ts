@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RoomOp } from '@liveplanner/api-schema';
 import type { PlanCardPresence } from '@/components/plan/PlanContext';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 type Peer = { id: string; name: string; color: string };
 type Hold = { tabId: string; itemId: string; state: 'drag' | 'view' };

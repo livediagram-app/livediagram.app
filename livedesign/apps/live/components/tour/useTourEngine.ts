@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { useAssignRef } from '@/hooks/ui/useLatest';
+import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { openModalCount, useOpenModalCount } from '@/lib/modal-guard';
 import { findTour, waitForSelector } from './tour-dom';
 import { revealInScrollers } from './tour-reveal';

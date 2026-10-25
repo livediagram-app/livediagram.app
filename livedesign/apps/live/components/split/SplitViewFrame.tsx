@@ -13,7 +13,7 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useSelectTab } from '@/app/design/[id]/useSelectTab';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
-import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
+import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {
   anchorFromEditorView,
   editorViewFromAnchor,

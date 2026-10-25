@@ -4,7 +4,7 @@ import { MAX_SIZE_PX, MIN_SIZE_PX } from '@/hooks/canvas/useShapeStyleSetters';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useRef } from 'react';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 
 // The element menu's Size category (docs/specs/008-canvas/element-size.md): the exact width and height in
 // canvas pixels, the aspect-ratio lock, and the reset-to-default-proportion

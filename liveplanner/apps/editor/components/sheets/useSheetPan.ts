@@ -7,7 +7,7 @@
 // A drag past DRAG_START_PX is a pan; one that never moves is the press it would otherwise be (a tap selects, a
 // right click opens the menu). A second finger ends the pan, so the canvas's pinch takes over.
 import { useEffect, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // How far a press moves before it is a pan rather than a click.
 export const PAN_START_PX = 4;

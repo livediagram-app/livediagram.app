@@ -4,7 +4,7 @@
 // changes or the rail first shows: a visitor's page is in focus behind their Join prompt, the canvas's
 // chrome held back, and was framed beside nothing.
 import { useEffect, useRef } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { useRailShown } from '@/lib/photo-editor/rail-shown';
 

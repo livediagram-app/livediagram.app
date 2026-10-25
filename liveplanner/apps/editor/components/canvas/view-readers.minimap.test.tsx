@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // docs/specs/026-plan/plan-board.md "Maximised board": the Map hides while a Plan board covers the canvas.
 let covered = false;
 vi.mock('@/hooks/plan/plan-cover-store', () => ({ useCanvasCovered: () => covered }));
-vi.mock('@/hooks/canvas/useViewportStore', () => ({
+vi.mock('@liveworkspace/workbench/hooks/canvas/useViewportStore', () => ({
   useViewportOf: () => ({ zoom: 1, offset: { x: 0, y: 0 } }),
 }));
 vi.mock('@/components/canvas/Minimap', () => ({ Minimap: () => <div>Map</div> }));

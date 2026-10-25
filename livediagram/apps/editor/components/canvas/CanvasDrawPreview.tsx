@@ -1,4 +1,4 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
@@ -8,7 +8,7 @@ import { drawnDragBox } from '@/lib/draw-commit';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 import { PenShapePreview } from '@/components/canvas/whiteboard/BoardShapePreview';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 
 type CanvasDrawPreviewProps = {

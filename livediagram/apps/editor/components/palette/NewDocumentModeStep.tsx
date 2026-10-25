@@ -12,7 +12,7 @@ import { EDITOR_MODE_ICONS } from '@livediagram/ui';
 import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
 import { PreviewFan } from '@livediagram/template-previews';
 import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
 import { Spinner } from './template-picker-icons';
 

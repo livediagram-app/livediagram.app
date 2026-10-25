@@ -21,7 +21,7 @@ import {
 } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { preloadCombineEngine } from '@/lib/combine/combine';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
   logoGuidePartToken,
   readLogoGuideParts,

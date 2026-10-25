@@ -58,7 +58,7 @@ import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
-import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
+import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 
 // Cursor position + which menu to show. `element` carries the clicked
 // element id; `canvas` is the empty-canvas right-click. Exported so

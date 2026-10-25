@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 import type { Element, Tab } from '@livedesign/design';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A tour's demonstration elements (docs/specs/007-editor/pages-tour.md): elements a tour places on the active tab to
 // show a step on, and may swap for others in place. Taken away when the tour ends, however it ends, so the design is

@@ -9,7 +9,7 @@
 
 import { useEffect } from 'react';
 import { anyModalOpen } from '@/lib/modal-guard';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };

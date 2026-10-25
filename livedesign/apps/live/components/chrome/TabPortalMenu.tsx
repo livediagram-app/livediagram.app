@@ -1,6 +1,6 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { clampToViewport } from '@/lib/clamp-to-viewport';

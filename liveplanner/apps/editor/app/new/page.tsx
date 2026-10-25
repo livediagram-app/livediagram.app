@@ -45,7 +45,7 @@ import {
 } from '@/lib/new-project-params';
 import { backOutTarget } from '@/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';

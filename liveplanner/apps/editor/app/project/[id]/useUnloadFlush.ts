@@ -12,7 +12,7 @@ import type { Tab } from '@liveplanner/project';
 import { flushProjectSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isProjectDeleted } from '@/lib/project-tombstones';
 import { commitOpenEdit } from '@/lib/open-edit';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
 import { isSaveFailing, isTabTooLarge } from '@/lib/save-health';

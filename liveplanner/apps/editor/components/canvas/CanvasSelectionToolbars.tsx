@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useCommentBadges } from './CommentBadgesContext';
-import { useViewportOf } from '@/hooks/canvas/useViewportStore';
+import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
   elementHasText,

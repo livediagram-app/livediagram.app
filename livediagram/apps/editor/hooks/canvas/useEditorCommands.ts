@@ -24,7 +24,7 @@ import {
 } from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
 // alone, never on the handlers, so the searchable list needs none.

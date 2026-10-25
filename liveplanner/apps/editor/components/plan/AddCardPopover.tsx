@@ -15,7 +15,7 @@ import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { AddCardTypeButton } from './AddCardTypeButton';
 import { OptionRows } from './OptionRows';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 

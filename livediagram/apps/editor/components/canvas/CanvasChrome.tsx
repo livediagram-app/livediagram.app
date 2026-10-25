@@ -1,4 +1,4 @@
-import { useViewportStore } from '@/hooks/canvas/useViewportStore';
+import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES, votesSpentBy } from '@livediagram/document';
 import { participantKey } from '@/lib/identity';

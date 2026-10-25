@@ -10,7 +10,7 @@ import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarqu
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 

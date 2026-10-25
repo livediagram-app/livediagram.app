@@ -7,7 +7,7 @@ import { layOutPages, newLogoPage, type LaidOutPage } from '@livedesign/design';
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import type { ReactNode } from 'react';
-import { ViewportStoreProvider } from './useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useLogoPaletteSwitch } from './useLogoPaletteSwitch';
 
 let asked: string[] = [];

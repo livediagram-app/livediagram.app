@@ -48,7 +48,7 @@ import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';

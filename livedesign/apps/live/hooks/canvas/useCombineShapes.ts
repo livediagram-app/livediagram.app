@@ -16,7 +16,7 @@ import {
 import { combineElements, type CombineOp } from '@/lib/combine/combine';
 import { isCombinable } from '@/lib/combine/outline';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { useToast } from '@/hooks/ui/useToast';
 
 const OP_EVENT: Record<CombineOp, string> = {

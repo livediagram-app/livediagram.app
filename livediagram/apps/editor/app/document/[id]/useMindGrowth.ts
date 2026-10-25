@@ -15,7 +15,7 @@ import {
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { fitMindLabel } from '@/lib/mind-label-fit';
 import { measureDrawnMindLabel } from '@/components/canvas/text-hug-measure';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { HandoffActions } from '@/lib/mind-handoff';
 import {
   labelled,

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AVATAR_TOUR_RELAUNCH_EVENT } from '@/lib/avatar-tour';
 import { debugLog } from '@/lib/debug-log';

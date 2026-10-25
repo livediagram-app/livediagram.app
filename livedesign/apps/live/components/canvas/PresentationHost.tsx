@@ -14,7 +14,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFocusReturn } from '@/hooks/ui/useFocusReturn';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { startTypedTransition } from '@/lib/view-transition';

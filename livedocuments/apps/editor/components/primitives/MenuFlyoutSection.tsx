@@ -12,7 +12,7 @@ import {
 import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@livedocuments/ui';
 import { useMenuItemProps } from './menu-item-props';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { coverHost } from './menu-flyout-cover';
 import {

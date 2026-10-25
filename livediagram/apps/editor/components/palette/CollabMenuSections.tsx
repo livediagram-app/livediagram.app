@@ -47,7 +47,7 @@ import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 
 // Each collaboration kind contributes exactly ONE section to the Tools group —

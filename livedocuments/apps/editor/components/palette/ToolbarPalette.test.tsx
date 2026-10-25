@@ -12,7 +12,9 @@ import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 const mobile = vi.hoisted(() => ({ value: false }));
 // The window's width.
 const viewport = vi.hoisted(() => ({ width: 1440 }));
-vi.mock('@/hooks/ui/useViewportWidth', () => ({ useViewportWidth: () => viewport.width }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useViewportWidth', () => ({
+  useViewportWidth: () => viewport.width,
+}));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));

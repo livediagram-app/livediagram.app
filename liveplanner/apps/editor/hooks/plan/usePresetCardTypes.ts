@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@liveplanner/items';
 import { debugLog } from '@/lib/debug-log';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 type Elements = Tab['elements'];
 

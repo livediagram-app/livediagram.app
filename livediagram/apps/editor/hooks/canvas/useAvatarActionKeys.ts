@@ -10,7 +10,7 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import type { AvatarReactionKind } from '@/lib/avatar-reactions';
 import { isTypingTarget } from '@/lib/typing-target';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useAvatarActionKeys({
   active,

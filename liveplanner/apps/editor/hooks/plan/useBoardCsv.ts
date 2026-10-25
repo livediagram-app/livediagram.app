@@ -14,7 +14,7 @@ import {
 import { parseCsv, toCsv } from '@liveplanner/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { usePublishBoardCsv } from '@/components/plan/board-csv-registry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 

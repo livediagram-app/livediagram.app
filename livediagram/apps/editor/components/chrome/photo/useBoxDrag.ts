@@ -3,7 +3,7 @@
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { moveBox, resizeBox, type Corner } from '@/lib/photo-boxes';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Moving a box by its body, or resizing it by a corner handle (docs/specs/021-event-storming/event-storming.md Phase
 // 9). The pointer is converted into WORKING-image pixels through the

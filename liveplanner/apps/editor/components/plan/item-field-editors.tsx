@@ -14,8 +14,8 @@ import {
   TextArea,
 } from '@liveplanner/ui';
 import { useEffect, useRef, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
-import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import {
   ESTIMATE_POINTS,
   PRIORITIES,

@@ -5,7 +5,7 @@
 // parent render that rebuilt the handlers but changed no data re-renders nothing below it.
 
 import { memo, type ComponentType } from 'react';
-import { useStableEventProps } from '@/hooks/ui/useStableEventProps';
+import { useStableEventProps } from '@liveworkspace/workbench/hooks/ui/useStableEventProps';
 
 export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P> {
   const Memoised = memo(Inner) as unknown as ComponentType<P>;

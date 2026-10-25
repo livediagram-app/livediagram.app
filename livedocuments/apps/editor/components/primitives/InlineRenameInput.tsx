@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { refocusAfterField } from './refocus-after-field';
 
 // Shared inline-rename input used by every "click rename, type a

@@ -22,7 +22,7 @@ import {
   MIND_SIBLING_OPTION,
   OPTIONS,
 } from './quick-connect-options';
-import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+import { useHoverCloseTimer } from '@liveworkspace/workbench/hooks/ui/useHoverCloseTimer';
 import { isDragTravel } from '@/lib/press-gestures';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { quickRingMenuRect } from '@/lib/quick-ring-menu-rect';

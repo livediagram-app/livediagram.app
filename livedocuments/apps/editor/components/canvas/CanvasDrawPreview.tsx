@@ -1,11 +1,11 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import { isSelfDrawingShape } from '@livedocuments/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;

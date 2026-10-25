@@ -21,7 +21,7 @@ import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
 import { FormBoardContext } from '@/components/forms/form-board-context';

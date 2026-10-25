@@ -7,7 +7,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { Selection } from '@/lib/selection-store';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { PaletteTray, usePaletteStripBox } from '@/components/chrome/PaletteTray';
-import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
+import { useShiftHeld } from '@liveworkspace/workbench/hooks/ui/useShiftHeld';
 
 // The modifier hint (docs/specs/008-canvas/canvas-and-palette.md): a passive top-centre pill naming what
 // a modifier does right now.

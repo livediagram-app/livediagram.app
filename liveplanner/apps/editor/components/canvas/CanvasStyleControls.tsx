@@ -11,7 +11,7 @@
 // the active tab. The "Show more" expansion is local UI state owned here.
 
 import { isAnimatedPattern, type BackgroundPattern } from '@liveplanner/project';
-import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
+import { useShowMoreList } from '@liveworkspace/workbench/hooks/ui/useShowMoreList';
 import { PatternCarousel } from './PatternCarousel';
 import {
   ColorSwatch,

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
+import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel, loadPhotoPanel } from '@/lib/editor-deferred-code';

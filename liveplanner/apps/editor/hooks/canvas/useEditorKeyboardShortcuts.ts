@@ -25,7 +25,7 @@ import {
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { altGraphHeld } from '@/lib/composed-key';
 

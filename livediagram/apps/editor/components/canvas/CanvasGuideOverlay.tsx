@@ -1,4 +1,4 @@
-import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
+import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
@@ -7,7 +7,7 @@ import {
 } from '@livediagram/document';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
+import { useCanvasClientOrigin } from '@liveworkspace/workbench/hooks/canvas/useCanvasClientOrigin';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 

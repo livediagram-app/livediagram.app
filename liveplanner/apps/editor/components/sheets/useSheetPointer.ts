@@ -20,7 +20,7 @@ import {
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
 } from '@liveplanner/sheets';
-import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { pointingTargetFor } from './sheet-pointing';
 import { useSheetController } from './sheet-controller';
 import { cellBox, hitTest, mergeAt, totalSize, type Hit } from './sheet-geometry';

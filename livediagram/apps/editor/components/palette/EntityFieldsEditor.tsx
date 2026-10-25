@@ -8,7 +8,7 @@ import {
   type EntityField,
   type FieldRemap,
 } from '@livediagram/document';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { EntityKeyGlyph } from '@/components/canvas/entity/EntityKeyGlyph';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 

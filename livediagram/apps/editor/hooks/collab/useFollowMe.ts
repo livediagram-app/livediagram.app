@@ -10,7 +10,7 @@
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A peer's last published `viewport` op. `size` is their canvas, missing from a client from before it was sent.
 export type RemoteViewport = {

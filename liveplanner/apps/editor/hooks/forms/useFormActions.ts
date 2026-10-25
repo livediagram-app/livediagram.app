@@ -20,7 +20,7 @@ import { placeNewSheet } from '@/lib/sheet-seeds';
 import { newCustomFieldId, newItemTypeId, type ItemTypeDef } from '@liveplanner/items';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
   boardsOf,
   planFormStart,

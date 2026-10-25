@@ -3,7 +3,7 @@
 import { isTypingTarget } from '@/lib/typing-target';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
+import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';

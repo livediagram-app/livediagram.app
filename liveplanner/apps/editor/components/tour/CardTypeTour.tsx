@@ -2,7 +2,7 @@
 
 // Show Me in the card type editor (docs/specs/026-plan/item-types.md "Editing a type"): the tour of making a card
 // type, drawn over the editor (docs/specs/007-editor/show-me.md). Never offered: only the button runs it.
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import type { TypeEditorTab } from '@/components/plan/ItemTypeEditorTabs';
 import { CARD_TYPE_TOUR_STEPS, type CardTypeTourApi } from './card-type-tour-steps';

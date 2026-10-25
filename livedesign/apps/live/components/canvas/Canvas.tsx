@@ -3,13 +3,16 @@ import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@/components/primitives/LongPressRing';
-import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
+import {
+  useViewportOf,
+  useViewportStore,
+} from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
 import { isAnimatedPattern } from '@livedesign/design';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';

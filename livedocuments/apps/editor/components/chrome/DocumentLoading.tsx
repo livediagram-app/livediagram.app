@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Button, LoadingSweep, PageBuildAnimation, RefreshIcon } from '@livedocuments/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
-import { useOnline } from '@/hooks/ui/useOnline';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the

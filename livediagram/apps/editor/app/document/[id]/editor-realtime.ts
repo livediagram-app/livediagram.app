@@ -4,7 +4,7 @@ import type { CommunityShareInfo } from '@livediagram/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Sharing, session-permission and realtime-room infrastructure for the
 // editor: the shareable / team / share-code flags that decide whether

@@ -59,7 +59,7 @@ import type { BoardScene } from '@/lib/board-scene/scene';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';

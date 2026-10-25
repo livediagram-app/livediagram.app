@@ -9,7 +9,7 @@ import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { SlotBoardCog } from './SlotBoardCog';
 import { isCardVotableInVote } from '@liveplanner/project';
 import { useCardVote } from './CardVoteContext';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@/hooks/canvas/pan-through';

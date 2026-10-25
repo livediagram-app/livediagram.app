@@ -22,7 +22,7 @@ import {
   computeViewportCanvasRect,
   computeViewportCenter,
 } from '@/lib/viewport';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import { onMapShown } from '@/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';

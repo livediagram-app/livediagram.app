@@ -18,7 +18,7 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { announce, getAnnouncementSnapshot } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeSelected } from '@/lib/element-names';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { Selection, SelectionStore } from '@/lib/selection-store';
 
 // The traversal step, pure so it's unit-testable: which element index a

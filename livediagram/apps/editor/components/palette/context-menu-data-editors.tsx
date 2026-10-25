@@ -11,7 +11,7 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 
 // A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening

@@ -6,7 +6,7 @@
 // comments, and a grid drawn outside the editor (an export, a test) simply draws no markers.
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { CellCommentThreads } from '@liveplanner/project';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { SheetsBridgeContext, type SheetsBridge } from './useSheetsBridge';
 
 // The anchor a cell's thread popover finds (CommentThreadPopover `anchorSelector`), drawn by the grid over the

@@ -6,7 +6,7 @@
 // (docs/specs/026-plan/plan-tour.md "The Dashboards tour").
 import { useEffect, useRef, useState } from 'react';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useAnyModalOpen } from '@/lib/modal-guard';
 import { markPlanTracksSeen, planTrackSeen } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';

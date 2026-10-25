@@ -4,7 +4,7 @@
 // docs/specs/007-editor/show-me.md): the tour of the dialog's home, drawn over the dialog. Never offered: only the
 // button runs it. The dialog is loaded on demand, so its steps are imported with it rather than at the press.
 import { useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import { tabStyleTourSteps, type TabStyleTourApi } from './tab-style-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';

@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapToAlignment } from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 

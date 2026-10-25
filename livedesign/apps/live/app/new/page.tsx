@@ -37,7 +37,7 @@ import {
 } from '@/lib/new-design-params';
 import { backOutTarget } from '@/lib/back-out';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef } from 'react';
-import { useOnline } from '@/hooks/ui/useOnline';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 import { ApiErrorPage } from './ApiErrorPage';
 
 // The recovery tools are a lazy chunk, fetched only when this card shows online. This card itself is

@@ -45,7 +45,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { positionAt, presentingIndex, type PresentingPosition } from '@/lib/presenting-position';
 import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 

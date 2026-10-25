@@ -6,7 +6,7 @@
 // rather than being copied into each.
 
 import { useEffect } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Wrap a preview callback so it only fires for a desktop MOUSE pointer:
 // hovering a tile previews live, but touch / pen taps must not — on those a tap

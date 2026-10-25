@@ -18,7 +18,7 @@ import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { portalName, portalSites } from '@/lib/portals';
 import { PlusIcon } from '@livediagram/ui';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 
 function PlusGlyph() {
   return <PlusIcon size={MENU_ICON_PX} />;

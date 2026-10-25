@@ -8,7 +8,7 @@ import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@/hooks/canvas/pan-through';
 

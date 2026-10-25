@@ -6,7 +6,7 @@ import {
 import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
 import { createEraseFrameReader } from '@/lib/erase-frame';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { peerPushTarget } from '@/lib/avatar-walk';
 import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -15,7 +15,7 @@ import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useLongPress } from '@/hooks/ui/useLongPress';
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { isHeldPenIntent } from '@/lib/draw-mode';
 import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';

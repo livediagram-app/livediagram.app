@@ -14,7 +14,7 @@ import {
 } from '@/hooks/sheets/sheet-comments-context';
 import { registerCellFocuser, registerCellNamer } from '@/hooks/sheets/sheet-cell-refs';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';
 import {

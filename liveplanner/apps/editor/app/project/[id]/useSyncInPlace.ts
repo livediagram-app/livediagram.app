@@ -1,7 +1,7 @@
 import { saveOfflineToCloud, SyncStillSavingError } from '@/lib/offline/offline-convert';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // How long Sync Project waits for this browser's last save to land before it reads the record it
 // uploads; past it, the sync is refused rather than racing a write into a record about to go.

@@ -9,7 +9,7 @@ import {
   type PointerEvent,
 } from 'react';
 import { FIT, clampView, panBy, pinchStep, zoomAt, type PhotoView } from '@/lib/photo-view';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Zoom and pan on the photograph under review, the way a photo viewer works:
 //

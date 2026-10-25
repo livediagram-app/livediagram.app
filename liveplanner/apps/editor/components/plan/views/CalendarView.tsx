@@ -35,7 +35,7 @@ import {
   ENTRY_H,
   type CalendarEntryActions,
 } from './calendar-day';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useCalendarDrag } from './useCalendarDrag';
 
 const NO_PHASES = new Map();

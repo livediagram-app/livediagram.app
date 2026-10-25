@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, type ChangeEvent } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Opening the photo picker exactly once per intent (docs/specs/021-event-storming/event-storming.md Phase 9).
 //

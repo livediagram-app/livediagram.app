@@ -1,6 +1,6 @@
 'use client';
 
-import { useOnline } from '@/hooks/ui/useOnline';
+import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 import { useSaveFailing } from '@/lib/save-health';
 import { TopCenterBanner, TopCenterRow } from './TopCenter';
 

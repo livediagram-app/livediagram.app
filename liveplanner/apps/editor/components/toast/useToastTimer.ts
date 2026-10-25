@@ -5,7 +5,7 @@
 // start. `ms` null is no timer at all (a toast already leaving). A new `ms` (an action toast replaced with no
 // buttons) starts over.
 import { useEffect, useRef } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useToastTimer(ms: number | null, paused: boolean, onElapsed: () => void): void {
   const remaining = useRef<number | null>(ms);

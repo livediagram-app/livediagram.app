@@ -7,7 +7,7 @@ import { tabFitView } from '@/lib/tab-fit-view';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 type DoubleTapZoom = {
   // A finger's double-tap on the empty canvas at `at` (canvas coords): zooms in on it, or right after a double-tap

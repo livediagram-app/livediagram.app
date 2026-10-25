@@ -22,7 +22,7 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { PickerIcon } from '@/components/palette/palette-icons';
-import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 
 const fieldClass =
   'mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';

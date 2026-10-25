@@ -27,7 +27,7 @@ import { actionsBoardTab } from '@liveplanner/templates';
 import { colorForKey } from '@/lib/identity';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import type { PlanItems } from './usePlanItems';
 import { PLAN_SWEEP_MAX_TABS } from './usePlanTabSweep';

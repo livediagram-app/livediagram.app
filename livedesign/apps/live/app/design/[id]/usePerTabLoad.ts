@@ -11,7 +11,7 @@ import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
 import { startEditorTiming } from '@/lib/timing';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // Lazy per-tab content load (docs/specs/006-design/per-tab-storage.md), lifted out of editor-page.tsx.
 // Hydration seeds the first tab; switching to a never-opened tab fires a
@@ -322,12 +322,7 @@ export function usePerTabLoad(opts: {
       const sweep = pending.map((targetId) => {
         const run = (async (): Promise<TabFetchEnd> => {
           try {
-            const loaded = await apiLoadTabRevisioned(
-              selfId,
-              designId,
-              targetId,
-              sessionShareCode,
-            );
+            const loaded = await apiLoadTabRevisioned(selfId, designId, targetId, sessionShareCode);
             if (!loaded) {
               // A 404 is anomalous here for the same reason as the visit-time
               // path above: the tab id came from the design summary, so a

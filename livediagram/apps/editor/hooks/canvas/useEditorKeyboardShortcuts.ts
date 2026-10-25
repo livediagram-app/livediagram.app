@@ -30,7 +30,7 @@ import {
   WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@/lib/typing-target';
 import { avatarActionForKey } from '@/lib/avatar-action-keys';
 import { altGraphHeld } from '@/lib/composed-key';

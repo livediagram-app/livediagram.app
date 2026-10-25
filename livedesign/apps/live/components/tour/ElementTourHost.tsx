@@ -6,7 +6,7 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { setElementTourOffer, type ElementTourOffer } from '@/lib/element-tour-offer';
 import {

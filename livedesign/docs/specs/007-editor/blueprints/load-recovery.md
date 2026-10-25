@@ -67,7 +67,7 @@ Invariant: on every path the bootstrap leaves `loadingDesign` false or the watch
 
 - `../packages/workbench/src/lib/online-status.ts`: `getOnline()` (`navigator.onLine !== false`, true without a navigator),
   `getOnlineServer()` (true), `subscribeOnline` (`online` + `offline`); `useOnline()`
-  (`hooks/ui/useOnline.ts`) reads it with `useSyncExternalStore`.
+  (`../packages/workbench/src/hooks/ui/useOnline.ts`) reads it with `useSyncExternalStore`.
 - The watchdog takes `deps.online` (default `getOnline`): offline at the deadline skips
   `claimAutoReload` and calls `onTimedOut`, leaving the tab's claim unspent.
 - `DesignLoading`: `!online` renders the offline line ahead of `healing` and `slow`.

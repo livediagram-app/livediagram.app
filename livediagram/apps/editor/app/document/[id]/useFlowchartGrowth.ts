@@ -12,7 +12,7 @@ import {
 } from '@livediagram/document';
 import { dressFlowchartConnector, dressFlowchartStep } from '@/lib/flowchart-dress';
 import { lockedElementIds } from '@/lib/tab-cleanup';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { HandoffActions } from '@/lib/mind-handoff';
 import {
   labelled,

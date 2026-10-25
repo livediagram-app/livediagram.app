@@ -11,7 +11,7 @@ import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
+import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
 // docs/specs/008-canvas/canvas-performance.md: the selection chrome is hidden while a selection is

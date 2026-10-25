@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { withTagColour, type Tab } from '@livedesign/design';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 
 // A tag's colour for the active tab (docs/specs/009-elements/tag-colours.md "Editing"): set or cleared in one history

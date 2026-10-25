@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { isDragTravel } from '@/lib/press-gestures';
-import { useLatest } from './useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A list's rows dragged to reorder them (the Slide Deck's slides, docs/specs/012-collaboration/presentation-mode.md;
 // Contents' pages, docs/specs/007-editor/pages-mode.md "Contents"). The order does NOT change while you drag:

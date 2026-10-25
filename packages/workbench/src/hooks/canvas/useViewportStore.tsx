@@ -5,8 +5,8 @@
 // the view it shows changed.
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { useStoreSlice } from '@/hooks/ui/useStoreSlice';
-import type { View, ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { useStoreSlice } from '../ui/useStoreSlice';
+import type { View, ViewportStore } from '../../lib/viewport-store';
 
 const ViewportStoreContext = createContext<ViewportStore | null>(null);
 

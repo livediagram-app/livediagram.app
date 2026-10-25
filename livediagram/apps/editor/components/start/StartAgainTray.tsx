@@ -14,7 +14,7 @@ import {
   useToolbarBox,
 } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
-import { useViewportHeight } from '@/hooks/ui/useViewportHeight';
+import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
 import { startClosedKey } from './start-closed-key';

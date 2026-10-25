@@ -4,7 +4,7 @@
 // long each holds, the size, the deck's transition, the estimate and a still preview, then the making, with its
 // progress and Cancel. Loaded only when the GIF card opens.
 import { useEffect } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { LaidOutPage, Tab } from '@livedocuments/document';
 import { ACTIVE_SEGMENT, Button, SEGMENT_TRACK } from '@livedocuments/ui';
 import { BackBar } from '@/components/primitives/BackBar';

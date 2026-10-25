@@ -1,4 +1,4 @@
-import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
+import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { opensInlineLabelEditor, voteKeyOf } from '@liveplanner/project';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';

@@ -1,6 +1,6 @@
 // The GIF panel's state (docs/specs/020-import-export/blueprints/animated-gif-export.md "The hook"): the options,
 // the estimate and preview worked out once they settle, and the making, with progress, Cancel and its errors.
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   exportFontIds,

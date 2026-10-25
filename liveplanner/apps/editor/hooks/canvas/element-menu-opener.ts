@@ -6,7 +6,7 @@
 import { useEffect } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 type Opener = (elementId: string, anchor: DOMRect) => void;
 let opener: Opener | null = null;

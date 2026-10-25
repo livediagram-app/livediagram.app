@@ -20,7 +20,7 @@ import {
   type Workbook,
 } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import type { SheetStore } from './sheet-store-client';
 import { geometryOf, mergeAt, type Geometry } from './sheet-geometry';

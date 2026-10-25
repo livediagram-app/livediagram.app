@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { ElementDelta, ShapeElement, Tab } from '@livediagram/document';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs, type PendingIdeaIds } from '@/app/document/[id]/room-op-apply';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 
 // This Browser's idea posts, from the press until the room answers them

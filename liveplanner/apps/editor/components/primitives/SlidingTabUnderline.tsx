@@ -6,7 +6,7 @@
 // `selected` and whenever the list resizes, writing its place straight onto itself (no re-render), and stays
 // hidden until it has measured.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { useObservedSize } from '@/hooks/canvas/useObservedSize';
+import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 
 export function SlidingTabUnderline({
   list,

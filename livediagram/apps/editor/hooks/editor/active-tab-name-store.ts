@@ -4,7 +4,7 @@
 // editor through usePublishTabName as the tab opens or is renamed, read by TabNameInBox. A module store, so only the
 // name re-renders when it changes.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let name = '';

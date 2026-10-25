@@ -21,7 +21,7 @@ import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 

@@ -12,7 +12,7 @@ import type { Tab } from '@livediagram/document';
 import { flushDocumentSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { commitOpenEdit } from '@/lib/open-edit';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
 import { isSaveFailing, isTabTooLarge } from '@/lib/save-health';

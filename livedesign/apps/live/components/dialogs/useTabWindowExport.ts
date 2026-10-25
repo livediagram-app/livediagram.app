@@ -4,7 +4,7 @@
 // arrives only when opened or fetched) with its photos, then drawn once and fitted inside the window, as on screen.
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
   tabWindowMayShow,
   tabWindowNames,

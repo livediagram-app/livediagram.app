@@ -1,7 +1,12 @@
 import { useCallback } from 'react';
-import { isPointerNote, snapPointerTip, withPointerTip, type Element } from '@livedocuments/document';
+import {
+  isPointerNote,
+  snapPointerTip,
+  withPointerTip,
+  type Element,
+} from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The pointer note's tip handle (docs/specs/009-elements/blueprints/pointer-note.md "Tip handle"): let go at `tipAbs`
 // (canvas coordinates), the tip snaps to the nearest host point in reach and attaches there, or stays free where it

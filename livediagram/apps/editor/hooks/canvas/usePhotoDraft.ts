@@ -28,7 +28,7 @@ import type { PhotoDetection } from '@/lib/photo-detect';
 import { photoTypeError } from '@/lib/photo-accept';
 import { detectorTelemetryType } from '@/lib/photo-model/telemetry';
 import { track } from '@/lib/telemetry';
-import { useLatest } from '@/hooks/ui/useLatest';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // A photo import, as ONE long gesture (docs/specs/021-event-storming/event-storming.md Phase 8, Phase 9).
 //

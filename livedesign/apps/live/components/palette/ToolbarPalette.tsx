@@ -30,7 +30,7 @@ import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
-import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
+import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { participantKey } from '@/lib/identity';
-import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';

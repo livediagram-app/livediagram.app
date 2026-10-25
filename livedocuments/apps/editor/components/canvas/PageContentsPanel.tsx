@@ -17,7 +17,7 @@ import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
 import { pageInView } from '@/lib/page-contents';
-import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
+import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ContentsAddPage } from './ContentsAddPage';
 import { ContentsFind, ContentsList } from './PageContentsList';
 

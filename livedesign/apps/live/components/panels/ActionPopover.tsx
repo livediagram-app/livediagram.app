@@ -16,7 +16,7 @@ import {
 } from '@livedesign/ui';
 import { useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@livedesign/design';
-import { useReposition } from '@/hooks/canvas/useReposition';
+import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
