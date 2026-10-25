@@ -43,8 +43,13 @@ const sections: HomeSection[] = [
 /** The Start here section: the walkthrough's category and the cards beside it. */
 const startHere = {
   walkthrough: 'getting-started',
-  /** How many of the walkthrough's first guides show as numbered steps. */
-  steps: 4,
+  /** The numbered steps: livedocuments' own first reads, in the order a new person takes them. */
+  steps: [
+    'getting-started/your-first-document',
+    'pages/working-with-pages',
+    'pages/articles',
+    'getting-started/sharing-your-document',
+  ],
   beside: ['about', 'tips-and-tricks'],
 } as const;
 
