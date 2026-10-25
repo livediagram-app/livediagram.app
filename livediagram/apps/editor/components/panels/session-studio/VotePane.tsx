@@ -9,10 +9,9 @@
 
 import { useState, type ReactNode } from 'react';
 import { VOTE_DOTS_RANGE } from '@livediagram/document';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph, Switch } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -229,7 +228,7 @@ function PrivacyCard({
         </span>
         <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">{hint}</span>
       </span>
-      <ToggleSwitch checked={checked} label={title} presentational />
+      <Switch presentational size="sm" checked={checked} />
     </button>
   );
 }

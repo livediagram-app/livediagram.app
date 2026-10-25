@@ -12,9 +12,15 @@ import {
   type CommunityOwnPost,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
-import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
+import {
+  Button,
+  TextInput,
+  DialogHeader,
+  DialogCloseButton,
+  TextArea,
+  SwitchRow,
+} from '@livediagram/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiCommunityPopularTags } from '@/lib/api-client';
