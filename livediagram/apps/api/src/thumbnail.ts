@@ -13,12 +13,7 @@
 // invalidates the snapshot uniformly because they all bump saved_at.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import {
-  drawnCount,
-  migrateStoredTab,
-  renderElementsToSvg,
-  type Tab,
-} from '@livediagram/document';
+import { drawnCount, migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -69,7 +64,7 @@ export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
 
 // Resolve a document's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
-// when there's nothing to show: no R2 binding (self-host without
+// when there's nothing to show: no R2 binding (a deployment without
 // storage), no tab, or an empty / unparseable first tab.
 export async function getDocumentThumbnailSvg(
   env: Env,

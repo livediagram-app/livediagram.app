@@ -124,7 +124,7 @@ export function useExplorerState() {
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
-  // the sidebar section instead of rows; Clerk-disabled self-host
+  // the sidebar section instead of rows; a Clerk-disabled deployment
   // deployments hide the section entirely.
   const teamsEnabled = Boolean(isSignedIn && clerkUserId);
   const {

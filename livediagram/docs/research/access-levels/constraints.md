@@ -89,7 +89,7 @@ or opens a hole; "should" is a strong preference.
 - **C1. Bearer, not person.** Share links grant to whoever holds the code; holders are usually guests
   with no account ([Auth and guest access](../../specs/014-identity/auth-and-guest-access.md)). A level
   must live on the **link**, not on a person, and must work for guests. Per-person grants (Google
-  style) are impossible without accounts, and self-hosting without Clerk has none (C17).
+  style) are impossible without accounts, and a deployment without Clerk has none (C17).
 - **C2. Revocation is per link.** Removing one person from a level means revoking or rescoping the
   link. A level change on an existing link must end its live sessions, as revoke and rescope already
   do (`closeSessionsOfChangedLink`, `share-revoked`, `share-rescoped`), because a room session's role
@@ -187,11 +187,11 @@ or opens a hole; "should" is a strong preference.
   silently lose commenting; the default must be chosen deliberately, and MCP clients cache tool
   schemas, so an old schema may send `view` meaning the old thing.
 
-### Offline, self-hosting, telemetry
+### Offline, optional services, telemetry
 
 - **C19. Offline documents have no server, no links, no room** ([Offline Mode](../../specs/006-document/offline-mode.md));
   their holder is always the owner. Level-derived editor flags must default to owner there.
-- **C20. Self-hosting without Clerk is guests only**: no teams, no tokens (a token's owner is always an
+- **C20. A deployment without Clerk is guests only**: no teams, no tokens (a token's owner is always an
   account). Every level must work through share links alone, and nothing may require an account.
 - **C21. Telemetry types are closed enum values.** `Document·Shared` (client, before the request) and
   `Document·Joined` (server, `link.role === 'edit' ? 'Edit' : 'View'` in

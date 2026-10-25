@@ -86,7 +86,7 @@ describe('filterFaq', () => {
   });
 
   it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'self-host').map((c) => c.id)).toContain('self-hosting');
+    expect(filterFaq(FAQ_CATEGORIES, 'mermaid').map((c) => c.id)).toContain('import-export');
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });

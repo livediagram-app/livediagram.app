@@ -62,7 +62,7 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // 'off' hides the Drive entry.
     driveMode: driveMode(env),
     // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app. A
-    // deploy without the liveworkspace Community service's key has none to show (a self-host, by default).
+    // deploy without the liveworkspace Community service's key has none to show (by default).
     communityEnabled: communityEnabled(env) && communityServiceConfigured(env),
     ...cliCapabilities(ctx),
   });

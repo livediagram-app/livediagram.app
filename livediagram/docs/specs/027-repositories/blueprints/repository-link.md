@@ -117,7 +117,7 @@ or a changeset's), "cache" for the local sync state in output (it is state, not 
 - **Host.** After the profile is resolved (CLI blueprint step 3), a link whose `host` is not the profile's host
   (compared as origins, a leading `www.` ignored, as `parseDocumentUrl` compares) exits 2 (`host_mismatch`) naming
   the first profile in `config.toml` whose host is the link's, else `--host <link host>` (RL5). A link with no
-  `host` uses the profile's. No request is sent before this check, so a self-host link never reaches
+  `host` uses the profile's. No request is sent before this check, so a deployment link never reaches
   livediagram.app (CLI blueprint I5).
 
 ### One sync pass (`runSyncPass`)
@@ -793,7 +793,7 @@ for tab "<name>"`, exit 7 (as `pull`).
 - **Remote names stay on their line.** An author's, a tab's or an element's name in a `watch`, `wait` or `sync`
   line has its control characters (line breaks, terminal escapes) printed as spaces, so it cannot forge another
   line or drive the terminal.
-- **Host.** A link's requests go to the profile's host only after the host check; a self-host link never contacts
+- **Host.** A link's requests go to the profile's host only after the host check; a deployment link never contacts
   livediagram.app (CLI blueprint I5).
 - **Access.** Each sync reads with the syncing person's credential: `unreadable` documents are never written,
   overwritten or removed, so one teammate's sync never erases what another may read.
@@ -929,7 +929,7 @@ absent.
 | Exit codes per action; highest wins                                                                                        | `sync.test.ts`                                                                         |
 | Telemetry `Cli·Used·LinkInit`, `LinkStatus`, `LinkLs`, `Sync`, `SyncWatch`                                                 | `apps/cli/src/telemetry.test.ts`; `apps/telemetry` `metric-series.test.ts`             |
 | Debug fingerprints carry ids only                                                                                          | `sync.test.ts` (debug output scanned for names and paths)                              |
-| A self-host link never contacts livediagram.app                                                                            | `sync.test.ts` (every request's origin)                                                |
+| A deployment link never contacts livediagram.app                                                                           | `sync.test.ts` (every request's origin)                                                |
 
 ## Constants and configuration
 

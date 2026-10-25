@@ -934,7 +934,7 @@ low-threshold capture surface can least afford.
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
 - **Gated on the model key exactly as [AI Assistance](../007-editor/ai-assistance.md) is.** No model key = no photo
-  UI anywhere, and a self-host without one loses nothing else. It is NOT gated
+  UI anywhere, and a deployment without one loses nothing else. It is NOT gated
   on the AI-panel preference: this is not the assistant. The reader resolves
   its own provider, preferring `GOOGLE_AI_STUDIO_API_KEY` and falling back to
   whichever key is set ([AI Assistance](../007-editor/ai-assistance.md), "Each feature has its own
@@ -1440,7 +1440,7 @@ Decisions from the operator:
   words the server did read stay; only the unread crops are read here, and the
   progress bar carries on from where the server stopped. If the in-browser
   reader cannot start either, that is told the way it always is ("The reading
-  model couldn't start in this browser"). A keyless self-host never sees the
+  model couldn't start in this browser"). A keyless deployment never sees the
   budget note: it has no budget, and its reader is the in-browser one from the
   start. Any other server failure is not a failover: it is told as before.
 

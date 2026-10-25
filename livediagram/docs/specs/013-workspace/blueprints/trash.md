@@ -9,23 +9,23 @@ in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                             | Role                                                                                        |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`     |
-| `apps/api/migrations/0051_diagram_trash.sql`                                     | `documents.trashed_at` + the partial index                                                  |
-| `apps/api/src/db/trash.ts`                                                       | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
-| `apps/api/src/db/document-removal.ts`                                            | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                      |
-| `apps/api/src/db/documents.ts`                                                   | `getDocument`, `getDocumentMeta`, both lists: live rows only                                |
-| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed documents out; `documentsTimelineSweepStatement`               |
-| `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed document's links                                            |
-| `apps/api/src/routes/context.ts`                                                 | `missingDocument`: 410 or 404 on a miss; the guards use it                                  |
-| `apps/api/src/routes/document-delete-route.ts`                                   | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                         |
-| `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                                |
-| `apps/api/src/routes/{documents,share,document-room-routes,...}.ts`              | The doors: 410 through `missingDocument`; the ws upgrade refuses                            |
-| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`               | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
-| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the document doors; `TrashedDocument` schema               |
-| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |
+| File                                                                               | Role                                                                                        |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/trash.ts`                                                 | The clock and the wire: retention, days left, error code, close code, `TrashedDocument`     |
+| `apps/api/migrations/0051_diagram_trash.sql`                                       | `documents.trashed_at` + the partial index                                                  |
+| `apps/api/src/db/trash.ts`                                                         | `trashDocument`, `restoreDocument`, `purgeDocuments`, `purgeExpiredTrash`, `listTrash`, ... |
+| `apps/api/src/db/document-removal.ts`                                              | `documentRemovalStatements` takes `{ ids }` besides one id / one owner                      |
+| `apps/api/src/db/documents.ts`                                                     | `getDocument`, `getDocumentMeta`, both lists: live rows only                                |
+| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`                | The reads that leave trashed documents out; `documentsTimelineSweepStatement`               |
+| `apps/api/src/timeline/expiry-sweep.ts`                                            | No expiry warning for a trashed document's links                                            |
+| `apps/api/src/routes/context.ts`                                                   | `missingDocument`: 410 or 404 on a miss; the guards use it                                  |
+| `apps/api/src/routes/document-delete-route.ts`                                     | `DELETE /api/documents/:id`: trash, `?permanent=true`, Take Offline                         |
+| `apps/api/src/routes/trash.ts`                                                     | `/api/trash` list, restore, purge one, empty                                                |
+| `apps/api/src/routes/{documents,share,document-room-routes,...}.ts`                | The doors: 410 through `missingDocument`; the ws upgrade refuses                            |
+| `apps/api/src/room-client.ts`, `document-room.ts`, `room-scope.ts`                 | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                      | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
+| `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`       | The Trash tag and routes; 410 on the document doors; `TrashedDocument` schema               |
+| `apps/mcp/src/{tools,schema}.ts`                                                   | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |
 | `apps/editor/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                   |
 | `apps/editor/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                     |
 | `apps/editor/lib/document-trashed.ts`, `document-tombstones.ts`                    | `DocumentTrashedError`, `isDocumentTrashedError`; `unmarkDocumentDeleted`                   |
@@ -35,8 +35,8 @@ Scope, by file:
 | `apps/editor/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                                  |
 | `apps/editor/app/document/[id]/{useDocumentTrashed,useIdentityBootstrap,...}.ts`   | The deleted state: load, room, autosave                                                     |
 | `apps/editor/components/chrome/DocumentTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                      |
-| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                            |
-| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                    |
+| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon       | The help article                                                                            |
+| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab       | The Trash stack; the two MCP tool charts                                                    |
 
 ## Domain and naming
 
@@ -244,12 +244,12 @@ room`; open sessions still stop at their next save (I5).
 | Permanent removal keeps shared tabs                     | `apps/api/src/db/document-delete.test.ts`                  |
 | OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                           |
 | MCP tools                                               | `apps/mcp/src/tools.test.ts`                               |
-| Local Trash                                             | `apps/editor/lib/offline/offline-trash.test.ts`              |
-| Client calls, dispatch, 410                             | `apps/editor/lib/api/trash.test.ts`                          |
-| Room client stops on 4004                               | `apps/editor/lib/api/room.test.ts`                           |
-| Grouping and copy                                       | `apps/editor/lib/trash-groups.test.ts`                       |
-| End to end                                              | `apps/editor/e2e/trash.spec.ts`                              |
-| Telemetry coverage and charts                           | `apps/editor` telemetry tests, `apps/telemetry` suites       |
+| Local Trash                                             | `apps/editor/lib/offline/offline-trash.test.ts`            |
+| Client calls, dispatch, 410                             | `apps/editor/lib/api/trash.test.ts`                        |
+| Room client stops on 4004                               | `apps/editor/lib/api/room.test.ts`                         |
+| Grouping and copy                                       | `apps/editor/lib/trash-groups.test.ts`                     |
+| End to end                                              | `apps/editor/e2e/trash.spec.ts`                            |
+| Telemetry coverage and charts                           | `apps/editor` telemetry tests, `apps/telemetry` suites     |
 
 ## Constants and configuration
 
@@ -260,7 +260,7 @@ room`; open sessions still stop at their next save (I5).
 | `TRASH_PURGE_MAX_BATCHES` | 20    | Well inside one invocation's query budget | 1 to 200     |
 | `DOCUMENT_TRASHED_CLOSE`  | 4004  | Next free code beside 4003                | 4000 to 4999 |
 
-No new environment variable or binding; self-hosting needs only the migration.
+No new environment variable or binding; deploying needs only the migration.
 
 ## Defaults ledger
 

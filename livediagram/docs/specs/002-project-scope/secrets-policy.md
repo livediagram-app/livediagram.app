@@ -29,7 +29,7 @@ The deploy workflow also **syncs** three of the worker secrets below from GitHub
 
 ## Worker secrets in use today
 
-Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps self-hosting viable (see [03](open-source-and-business-model.md)).
+Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps other deployments viable (see [03](open-source-and-business-model.md)).
 
 | Secret                                                       | Worker          | Absent means                                                                                              |
 | ------------------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------------- |

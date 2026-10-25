@@ -41,7 +41,7 @@ app.all('/mcp', async (c) => {
     // Point MCP clients at the OAuth resource metadata so they can start the
     // connect flow (the metadata endpoint lands with the OAuth step). The
     // origin comes from the request, like every endpoint in oauth.ts, so a
-    // self-hosted worker sends clients to ITS metadata, not livediagram.app's.
+    // staging worker sends clients to ITS metadata, not livediagram.app's.
     const origin = new URL(c.req.url).origin;
     return c.json({ error: 'unauthorized' }, 401, {
       'WWW-Authenticate': `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource"`,

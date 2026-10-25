@@ -278,7 +278,7 @@ document, so a per-card badge is noise — the team list omits it as well).
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
-## Self-hosting
+## Without optional services
 
 The whole feature is gated on the optional `IMAGES` R2 binding, exactly
 like the image gallery ([Image element + per-owner gallery](../009-elements/images.md)): with no bucket, both endpoints 404 and

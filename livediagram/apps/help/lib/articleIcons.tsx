@@ -12,7 +12,7 @@ import { Glyph } from './featureIcons';
 
 /**
  * Article slug → icon (full <svg>) for the **support** categories (About,
- * Getting Started, Tips, Account, Privacy, Self-Hosting, Troubleshooting),
+ * Getting Started, Tips, Account, Privacy, Troubleshooting),
  * whose cards render through {@link ../components/ArticleCard}. Feature
  * landings get their icons from {@link ./featureIcons} (FEATURE_ICONS); this
  * map covers the standalone support articles so every card carries a glyph.
@@ -288,31 +288,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
 
-  // ---- Self-Hosting ----
-  'self-hosting-overview': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="7" rx="1.5" />
-      <rect x="3" y="13" width="18" height="7" rx="1.5" />
-      <path d="M7 7.5h.01M7 16.5h.01" />
-    </Glyph>
-  ),
-  'deploying-livediagram': (
-    <Glyph>
-      <path d="M5 17a4 4 0 0 1 .8-7.9 6 6 0 0 1 11.3-1.6A3.6 3.6 0 0 1 18.5 17" />
-      <path d="M12 13v6M9.5 15.5L12 13l2.5 2.5" />
-    </Glyph>
-  ),
-  configuration: (
-    <Glyph>
-      <path d="M4 7h9M17 7h3" />
-      <path d="M4 12h3M11 12h9" />
-      <path d="M4 17h7M15 17h5" />
-      <circle cx="15" cy="7" r="2" />
-      <circle cx="9" cy="12" r="2" />
-      <circle cx="13" cy="17" r="2" />
-    </Glyph>
-  ),
-
   // ---- Troubleshooting ----
   'document-not-loading': (
     <Glyph>
@@ -403,15 +378,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 4v16h16" />
       <path d="M7.5 15l3.5-4 3 2.5 5-6" />
       <circle cx="19" cy="7.5" r="1.2" />
-    </Glyph>
-  ),
-  'drive-and-mcp': (
-    <Glyph>
-      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H8l2 2h5.5A1.5 1.5 0 0 1 17 8.5V11" />
-      <path d="M3 6.5V17a1.5 1.5 0 0 0 1.5 1.5H11" />
-      <path d="M15.5 13v2.5M19.5 13v2.5" />
-      <path d="M14 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
-      <path d="M17.5 20.5v1.5" />
     </Glyph>
   ),
 };

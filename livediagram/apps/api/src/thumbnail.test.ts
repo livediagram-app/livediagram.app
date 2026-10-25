@@ -90,7 +90,7 @@ beforeEach(() => {
 });
 
 describe('getDocumentThumbnailSvg', () => {
-  it('returns null without an R2 binding (self-host without storage)', async () => {
+  it('returns null without an R2 binding (a deployment without storage)', async () => {
     const out = await getDocumentThumbnailSvg({} as Env, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
@@ -204,7 +204,15 @@ describe('getDocumentThumbnailSvg', () => {
   it('draws nothing for a former Board or Form tab', async () => {
     const env = { IMAGES: r2() } as unknown as Env;
     db.getThumbRenderedAt.mockResolvedValue(null);
-    const board = { id: 'b1', type: 'shape', shape: 'plan-board', x: 0, y: 0, width: 1400, height: 720 };
+    const board = {
+      id: 'b1',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 0,
+      y: 0,
+      width: 1400,
+      height: 720,
+    };
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ kind: 'board', elements: [board] })));
     expect(await getDocumentThumbnailSvg(env, liveDoc())).not.toContain('plan-board');
     const form = { v: 1, heading: 'Contact Us', sections: [] };

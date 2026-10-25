@@ -21,7 +21,7 @@ import {
 // real wall, a hosted model reads 99% of the words against ~80% for the
 // largest model worth downloading (docs/research/vision/handwriting-readers.md). The
 // browser reader is what makes the import work with NO key at all, which is
-// the case every self-host starts in.
+// the case every new deployment starts in.
 //
 // When the server's budget is spent (`ai_quota`), the notes it did not read
 // are read in the browser instead, and the review is told so. Whose budget it

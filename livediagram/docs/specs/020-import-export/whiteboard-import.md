@@ -21,7 +21,7 @@ landing does the rest. Built on [Board import](board-import.md); background in
   as it stands, every stroke as data. How a user obtains such a folder is
   outside this repository (the help article describes the layout only).
 - **Nothing leaves the browser.** No Microsoft account, no network call, no
-  Worker route; works offline and on self-host. Images go through the
+  Worker route; works offline. Images go through the
   [Import image pipeline](import-image-pipeline.md) like any import's.
 - **Each board becomes a new document** (a single board too) with one
   tab that opens in Draw mode, **named after the board** and **dated as the board**: its

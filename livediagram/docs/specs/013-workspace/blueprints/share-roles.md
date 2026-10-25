@@ -431,7 +431,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
 | `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
 
-No new environment variable or binding; self-hosting needs migration 0080.
+No new environment variable or binding; deploying needs migration 0080.
 
 ## Assets and external resources
 

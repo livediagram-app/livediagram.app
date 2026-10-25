@@ -2,7 +2,7 @@ import { clerkPublishableKeyOrNull } from '@livediagram/ui/clerk-key';
 
 // Single source of truth for "is Clerk enabled on this deployment".
 //
-// Self-hosters (per docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md) can ship livediagram without
+// A deployment (per docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md) can ship livediagram without
 // provisioning a Clerk app at all — the canvas runs in pure guest
 // mode using the X-Owner-Id header (which is also how a deployed-
 // with-Clerk install handles signed-out visitors). This flag flips

@@ -23,8 +23,8 @@ this spec does not restate it.
   hold a team's copy is unresolved). Documents shared with the user, and Offline
   Mode documents, are not mirrored either.
 - **Everyone, free.** Hosted livediagram.app offers it to every signed-in user.
-  Self-hosters enable it with their own Google project (see
-  [Self-hosting](#self-hosting)); without one, the feature is absent, not broken.
+  Without a Google project configured (see [Configuration](#configuration)), the feature
+  is absent, not broken.
 
 ## Principles
 
@@ -149,11 +149,11 @@ this spec does not restate it.
   tester's Drive (each environment makes its own root: its own Google project,
   database and `ldRoot`):
 
-  | Host                                                                                                           | Root folder name            |
-  | -------------------------------------------------------------------------------------------------------------- | --------------------------- |
-  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`               |
-  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)`     |
-  | any other host (a self-hosted deployment)                                                                      | `livediagram (self-hosted)` |
+  | Host                                                                                                           | Root folder name        |
+  | -------------------------------------------------------------------------------------------------------------- | ----------------------- |
+  | `livediagram.app`, `www.livediagram.app`                                                                       | `livediagram`           |
+  | `staging.livediagram.app`; loopback (`localhost`, `127.0.0.1`, `::1`, any port), which uses the staging client | `livediagram (staging)` |
+  | any other host                                                                                                 | `livediagram`           |
 
   Hosts compare case-insensitively. The name is given only when the root is
   **created**; a root the user renamed keeps its name, and livediagram never
@@ -590,7 +590,7 @@ D1, owned by the api worker:
   development, and in production only with the debug flag set
   (`localStorage['livediagram:debug'] = 'drive-mirror'`); its warnings always.
 
-## Self-hosting
+## Configuration
 
 - Env on the api worker: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
   `DRIVE_TOKEN_KEY`; the editor app reads the client id as

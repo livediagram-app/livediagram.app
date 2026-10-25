@@ -32,7 +32,7 @@ describe('the presets', () => {
     });
   });
 
-  it('resolves OpenAI from its own key, a self-hoster on OpenAI changes nothing', () => {
+  it('resolves OpenAI from its own key, a deployment on OpenAI changes nothing', () => {
     expect(resolveAiProvider(env({ OPENAI_API_KEY: 'sk-x' }), 'assistant')).toEqual({
       provider: 'openai',
       baseUrl: OPENAI_BASE_URL,

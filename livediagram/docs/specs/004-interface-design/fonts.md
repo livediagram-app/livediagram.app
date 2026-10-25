@@ -27,7 +27,7 @@ hand-drawn, or bold. Defined once in `packages/document/src/fonts.ts` (id + labe
 Each CSS stack ends in a system fallback, and the stylesheet loads with
 `display=swap`, so text stays visible (in the fallback face) while a font
 loads — or permanently, if Google Fonts is blocked (offline / a
-self-host that opts out). The editor never depends on the fonts loading.
+deployment that opts out). The editor never depends on the fonts loading.
 
 ## Two levels
 

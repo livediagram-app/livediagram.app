@@ -10,7 +10,7 @@ import { stickerArt, type StickerDef } from '@livediagram/icons';
 import { seededRandom } from '@livediagram/document';
 import { at } from '@/components/art-tokens';
 
-// Draw mode's hand face, the self-hosted Caveat subset (app/hero-scenes/draw.css).
+// Draw mode's hand face, the Caveat subset served from our own origin (app/hero-scenes/draw.css).
 export const HAND = "'Caveat Hero', Caveat, 'Segoe Print', 'Bradley Hand', cursive";
 
 // The inks, each as stroke and fill classes for both appearances: Marker 1 is the page's ink,

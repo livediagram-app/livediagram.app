@@ -15,7 +15,7 @@
 
 type SigEnv = { GUEST_ID_HMAC_SECRET?: string; GUEST_SIG_ENFORCE_AFTER?: string };
 
-// Whether the signature is required yet. OFF when there's no secret (self-host
+// Whether the signature is required yet. OFF when there's no secret (a deployment
 // opt-out, like the rest of the guest-signing model) OR no cutoff is set, OR
 // the cutoff is still in the future (the grace window). The operator sets
 // GUEST_SIG_ENFORCE_AFTER (epoch ms) to a past time to turn it on.

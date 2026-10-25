@@ -22,7 +22,7 @@ export async function apiGetPreferences(ownerId: string): Promise<Record<string,
     return body.prefs as Record<string, unknown>;
   } catch {
     // Network failure (offline, api worker unreachable in a pure-
-    // guest self-host without /api configured) returns null. The
+    // guest-only deployment without /api configured) returns null. The
     // caller falls back to the localStorage cache, matching the
     // pre-D1 behaviour exactly.
     return null;

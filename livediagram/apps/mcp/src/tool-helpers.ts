@@ -23,7 +23,7 @@ export type ToolResult = {
   isError?: boolean;
 };
 
-// The editor app this MCP server belongs to: its own host on staging and on a self-host
+// The editor app this MCP server belongs to: its own host on staging and on a deployment
 // (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
   env.CONSENT_BASE_URL ?? 'https://livediagram.app';

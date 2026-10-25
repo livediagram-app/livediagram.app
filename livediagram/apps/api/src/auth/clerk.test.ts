@@ -43,10 +43,10 @@ function makeRequest(authHeader: string | null): Request {
 
 describe('getClerkIdentity (guest fall-through gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
   it('returns null when CLERK_JWKS_URL is unset (Clerk not configured for this env)', async () => {
-    // Self-host path: a deployment without Clerk leaves the var
+    // A deployment without Clerk leaves the var
     // unset, every request is treated as guest, X-Owner-Id is the
     // only identity signal the api worker honours. docs/specs/002-project-scope/open-source-and-business-model.md's
-    // "don't break self-hosting" rule depends on this branch.
+    // "outside services stay optional" rule depends on this branch.
     const result = await getClerkIdentity(makeEnv(undefined), makeRequest('Bearer anything'));
     expect(result).toBeNull();
   });
@@ -158,7 +158,7 @@ describe('getClerkIdentity (verified session, docs/specs/014-identity/auth-and-g
   });
 
   it('asserts iss and aud only when the deployment configures them', async () => {
-    // Unset is the self-host default and must stay permissive; set, they stop
+    // Unset is the default and must stay permissive; set, they stop
     // a validly-signed token from another Clerk tenant being replayed here.
     await getClerkIdentity(makeEnv(JWKS_URL), verifiedWith({ sub: 'u' }));
     expect(jwtVerifyMock.mock.calls[0]?.[2]).toEqual({ clockTolerance: 5 });

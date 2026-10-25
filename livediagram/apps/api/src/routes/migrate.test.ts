@@ -108,7 +108,7 @@ describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {
 });
 
 describe('POST /api/migrate flow 1 (sign-up claim)', () => {
-  // A self-host with Clerk on but no GUEST_ID_HMAC_SECRET skips the signature
+  // A deployment with Clerk on but no GUEST_ID_HMAC_SECRET skips the signature
   // check, so the account-id shape is the only thing standing between a
   // signed-in user and another account's workspace.
   it('refuses an account id as the guest source even with no secret configured', async () => {

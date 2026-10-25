@@ -137,7 +137,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
             while a face loads — so the editor still works if these are
-            blocked (self-host / offline). preconnect trims the round-trip.
+            blocked (offline). preconnect trims the round-trip.
             Linked as print media and switched to all once loaded, so a
             cross-origin stylesheet never holds up first paint on any route;
             suppressHydrationWarning because that switch happens before

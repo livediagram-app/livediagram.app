@@ -15,7 +15,7 @@ import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../
 import { recordImageUploaded } from '../timeline';
 import { COMMUNITY_CONTENT, gateGrant, requireOwner, type RouteContext } from './context';
 
-// Without the service (a self-host without MEDIA_KEY) every endpoint answers 503, so the editor hides
+// Without the service (a deployment without MEDIA_KEY) every endpoint answers 503, so the editor hides
 // images rather than falling through to a generic 500.
 export async function handleImages(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;
@@ -47,7 +47,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const declaredType = (request.headers.get('Content-Type') ?? '').toLowerCase();
     if (!(ACCEPTED_IMAGE_TYPES as readonly string[]).includes(declaredType)) {
-      return json({ error: 'unsupported_type', acceptedTypes: ACCEPTED_IMAGE_TYPES }, { status: 415 });
+      return json(
+        { error: 'unsupported_type', acceptedTypes: ACCEPTED_IMAGE_TYPES },
+        { status: 415 },
+      );
     }
     const declaredLen = Number(request.headers.get('Content-Length') ?? '0');
     if (!Number.isFinite(declaredLen) || declaredLen <= 0) {
@@ -61,7 +64,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // them, and could probe the gallery for any file it can hash. They upload the body, and the service
     // still dedupes on its real hash.
     const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
-    const sha256 = !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
+    const sha256 =
+      !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
     // Read whole (at most MAX_IMAGE_BYTES, checked above) so the service gets an exact length.
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength > MAX_IMAGE_BYTES) {

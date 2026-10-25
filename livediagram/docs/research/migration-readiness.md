@@ -120,7 +120,7 @@ Double-click behaviour must be tested before the spec promises it.
 | A page setting `Cross-Origin-Opener-Policy: same-origin` can break the popup handshake. livediagram sets no COOP header today (repo search).                                        | Verified (GIS note + repo grep)                                                      | [G22]        |
 
 **Implication:** the Worker broker is necessary for "sync while a tab is open"
-without a click every hour. Self-hosters without a client secret fall back to
+without a click every hour. Other deployments without a client secret fall back to
 the token model and must accept a click-to-resume banner when the token lapses.
 Recommend the broker's one-time consent uses the **code model in redirect mode**
 (works on iOS, no popup blocker).
@@ -202,8 +202,8 @@ resumable upload (verify E-A4 first).
 - **Quota budget:** polling `changes.list` every 5 minutes plus a write per
   autosave does not fit 10M users under the free daily threshold. The
   [proposed sync cadence](#proposed-sync-cadence) does.
-- **Self-hosters:** files created by livediagram.app's Google project are not
-  visible to a self-hoster's project (`drive.file` is per app). Unverified but
+- **Other deployments:** files created by livediagram.app's Google project are not
+  visible to another deployment's project (`drive.file` is per app). Unverified but
   follows from the scope's per-app grant; E-A6.
 
 ### Cost model
@@ -502,7 +502,7 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 | E-A3 | Does `getStartPageToken` advance on changes to files the app cannot see? (cheap 5-unit poll gate)                                             | same                                  |
 | E-A4 | Resumable upload from the browser: is `Location` exposed on the `200` session response?                                                       | same                                  |
 | E-A5 | Custom MIME type and `.livediagram` extension in Drive UI integration; single-click, double-click, "Open with" behaviour                      | same, public HTTPS Open URL (staging) |
-| E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                      | two projects                          |
+| E-A6 | A second Cloud project cannot see files created by the first                                                                                  | two projects                          |
 | E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                              | Miro developer team app               |
 | E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                         | same                                  |
 | E-C1 | Full export Zip on a read-only personal board: offered, complete (off-screen items, images), and the HTML's structure for the mapping         | the operator's exports                |

@@ -54,22 +54,22 @@ Scope, by file:
 | `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                            |
 | `apps/mcp/src/changeset-client.ts`                                                 | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                                  |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                 | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header                          |
-| `apps/editor/lib/api/tabs.ts`                                                        | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                                                 |
-| `apps/editor/lib/api/changesets.ts`                                                  | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                                         |
-| `apps/editor/app/document/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`        | `documentServerStored`, the room gate                                                                                              |
-| `apps/editor/app/document/[id]/useRoomConnection.ts`                                 | Room for every server-stored document; the `changeset` branch                                                                      |
-| `apps/editor/app/document/[id]/usePresenceBroadcast.ts`                              | `select` (with `elementIds`) and `tab-focus` for every open room                                                                   |
-| `apps/editor/app/document/[id]/room-op-apply.ts`                                     | `applyRoomOpToTabs` case `changeset`                                                                                               |
-| `apps/editor/app/document/[id]/changeset-seen.ts`                                    | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                         |
-| `apps/editor/app/document/[id]/changeset-toast.ts`                                   | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                                               |
-| `apps/editor/app/document/[id]/useChangesetSeen.ts`                                  | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                          |
-| `apps/editor/app/document/[id]/useChangesetFeed.ts`                                  | Gap refetch, the join check, reveal state, toast, Show, Undo                                                                       |
-| `apps/editor/lib/changeset-reveals.ts`                                               | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                                                |
-| `apps/editor/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                                               |
-| `apps/editor/app/document/[id]/useAutosave.ts`                                       | Passes the seen revision per tab                                                                                                   |
-| `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`    | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
-| `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts`                                | The end-to-end spec, signed in (only an account mints a token)                                                                     |
-| `apps/editor/hooks/ui/useToast.tsx`                                                  | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
+| `apps/editor/lib/api/tabs.ts`                                                      | `apiLoadTabRevisioned`; `apiSaveTab` and the unload beacon send `X-Changeset-Seen`                                                 |
+| `apps/editor/lib/api/changesets.ts`                                                | `apiRevertChangeset`, `apiListChangesets` (the join check)                                                                         |
+| `apps/editor/app/document/[id]/editor-realtime.ts`, `useIdentityBootstrap.ts`      | `documentServerStored`, the room gate                                                                                              |
+| `apps/editor/app/document/[id]/useRoomConnection.ts`                               | Room for every server-stored document; the `changeset` branch                                                                      |
+| `apps/editor/app/document/[id]/usePresenceBroadcast.ts`                            | `select` (with `elementIds`) and `tab-focus` for every open room                                                                   |
+| `apps/editor/app/document/[id]/room-op-apply.ts`                                   | `applyRoomOpToTabs` case `changeset`                                                                                               |
+| `apps/editor/app/document/[id]/changeset-seen.ts`                                  | `ChangesetSeen`, `noteLoadedRev`, `admitChangesetOp`, pure                                                                         |
+| `apps/editor/app/document/[id]/changeset-toast.ts`                                 | `coalesceChangesetToast`, `changesetToastCopy`, pure                                                                               |
+| `apps/editor/app/document/[id]/useChangesetSeen.ts`                                | `seenRef` for admission, `seen` state committed with the content it describes, `noteSeen`                                          |
+| `apps/editor/app/document/[id]/useChangesetFeed.ts`                                | Gap refetch, the join check, reveal state, toast, Show, Undo                                                                       |
+| `apps/editor/lib/changeset-reveals.ts`                                             | `createRevealStore`: the outlines as an external store; `boundsOfElements` for Show                                                |
+| `apps/editor/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`     | Record each loaded tab's `rev`; resync of named tabs                                                                               |
+| `apps/editor/app/document/[id]/useAutosave.ts`                                     | Passes the seen revision per tab                                                                                                   |
+| `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`  | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
+| `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts`                              | The end-to-end spec, signed in (only an account mints a token)                                                                     |
+| `apps/editor/hooks/ui/useToast.tsx`                                                | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts       | The `Agent` stack                                                                                                                  |
 
 ## Domain and naming
@@ -697,7 +697,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Rooms for every server-stored document, none offline                                                          | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                           |
 | Revert: inverse as a new changeset, kept list, twice, created tab                                             | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                              |
 | One changeset read                                                                                            | `changesets.test.ts` "GET one answers results and text"                                                       |
-| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts` "Ctrl+Z leaves it"           |
+| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts` "Ctrl+Z leaves it"         |
 | Revertable while the record exists                                                                            | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                        |
 | Anyone with edit may revert                                                                                   | `changesets.test.ts` "team member reverts", "viewer refused"                                                  |
 | Applies as a peer's and folds into the baseline                                                               | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                             |
@@ -744,7 +744,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`     | Spec                                                 | fixed             |
 | `CLIENT_HEADER`                  | `X-Livediagram-Client` | CS25                                                 | fixed             |
 
-No new binding or environment variable; self-hosting needs only the migration. Staging needs no `[env.staging]`
+No new binding or environment variable; deploying needs only the migration. Staging needs no `[env.staging]`
 change.
 
 ## Defaults ledger

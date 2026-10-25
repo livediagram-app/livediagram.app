@@ -237,7 +237,7 @@ detector's reach under today's merged definition.
 The synthetic walls carry it. Trained on the real walls alone the network is
 worse than the classical pipeline (82.5%), and fine-tuning the synthetic model
 on the other real walls adds nothing measurable. That is good news for
-privacy and for anyone self-hosting: the model that wins can be retrained from
+privacy: the model that wins can be retrained from
 the generator's seeds, with no photograph in its training.
 
 ## What to try next

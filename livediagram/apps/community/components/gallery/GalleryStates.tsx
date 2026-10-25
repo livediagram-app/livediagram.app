@@ -36,7 +36,7 @@ export function GalleryNoMatches({ onClear }: { onClear: () => void }) {
   );
 }
 
-// My Shares, signed out: it needs to know who you are. On a build without sign-in (self-hosted, guest only)
+// My Shares, signed out: it needs to know who you are. On a build without sign-in (guest only)
 // there is nobody to be, so it says so instead of offering a sign-in that does not exist.
 export function GallerySignedOut({ available }: { available: boolean }) {
   if (!available) {

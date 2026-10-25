@@ -27,8 +27,8 @@ import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 //   select, or marquee over.
 // - youtube-nocookie.com sets nothing until playback starts, so opening a
 //   document that contains a video is not a tracked visit. The repo is public
-//   and self-hostable (docs/specs/002-project-scope/open-source-and-business-model.md); a self-hoster should not be silently
-//   shipping their users to Google on page load.
+//   (docs/specs/002-project-scope/open-source-and-business-model.md); the app should not be silently
+//   shipping its users to Google on page load.
 
 export function VideoView({ element }: { element: VideoElement }) {
   const url = element.link?.kind === 'url' ? element.link.url : undefined;

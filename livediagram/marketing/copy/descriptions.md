@@ -15,12 +15,12 @@ email, or CRDT editing: not shipped yet.
 For HTML `<meta name="description">` and search snippets.
 
 > A collaborative diagram and mindmap editor that works without signing in.
-> Real-time cursors, comments, and sharing. Free, open source, self-hostable. [148]
+> Real-time cursors, comments, and sharing. Free and open source. [137]
 
 Alternate:
 
 > Build diagrams and mindmaps with your team in real time. No sign-in wall, no
-> paid tier. Open source and self-hostable on Cloudflare. [131]
+> paid tier. Open source. [100]
 
 ---
 
@@ -30,8 +30,7 @@ For social posts and short "about" fields.
 
 > livediagram is a multiplayer diagram canvas in the browser. Open a link and
 > start drawing with your team: live cursors, comments, shapes, arrows,
-> mindmaps, and undo and redo. No sign-in wall. MIT-licensed, free, and
-> self-hostable. [230]
+> mindmaps, and undo and redo. No sign-in wall. MIT-licensed and free. [214]
 
 ---
 
@@ -42,7 +41,7 @@ For directory cards and "short pitch" fields.
 > livediagram is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
 > cursors, comments, 17 templates, and undo that never touches anyone else's
-> work. MIT-licensed, free forever, and self-hostable on Cloudflare. [49 words]
+> work. MIT-licensed and free forever. [46 words]
 
 ---
 
@@ -60,8 +59,7 @@ For Product Hunt, app store short descriptions, README intros.
 > templates, recolor everything with 18 themes, and step back any slip with
 > undo. Share view or edit links any time.
 >
-> It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [113 words]
+> It is MIT-licensed and free for everyone, with no paid tier. [106 words]
 
 ---
 
@@ -93,8 +91,8 @@ For longer listing bodies and "about this project" sections.
 > links and revoke them whenever you like. Export any tab to Markdown, PDF, PNG,
 > or JSON.
 >
-> livediagram is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [254 words]
+> livediagram is MIT-licensed and free for everyone, with no paid tier and no
+> plan for one. [247 words]
 
 ---
 
@@ -152,8 +150,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > livediagram is MIT-licensed and publicly viewable. The hosted version at
 > livediagram.app is free for everyone, with no paid tier and no plan to
-> introduce one. If you ship it, every user gets it. You can self-host the
-> entire stack on your own Cloudflare account; the open-source core never calls
-> home and never gates features behind a license check.
+> introduce one. If you ship it, every user gets it. The open-source core never
+> calls home and never gates features behind a license check.
 >
-> Open a link, draw, share. That is the whole pitch. [495 words]
+> Open a link, draw, share. That is the whole pitch. [484 words]

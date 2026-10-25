@@ -56,13 +56,14 @@ export async function deleteAccount(
   let mediaDeleted = 0;
   if (media) {
     const forgotten = await media.forgetOwner(await mediaOwner(ownerId));
-    if (!forgotten.ok) throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
+    if (!forgotten.ok)
+      throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
     mediaDeleted = forgotten.value.deleted;
   }
   await env.DB.prepare('DELETE FROM media_images WHERE owner_id = ?').bind(ownerId).run();
   // R2 cleanup first. Enumerate the owner's image ids while the
   // index row still exists, then delete each from R2. If R2 is
-  // unbound (self-host without R2), skip silently: the index rows
+  // unbound (a deployment without R2), skip silently: the index rows
   // come out via the DELETE FROM images below regardless. R2's
   // batch delete takes up to 1000 keys per call which is well
   // above any realistic per-owner gallery cap.
@@ -244,7 +245,10 @@ export async function migrateOwnerId(
   const media = mediaClient(env);
   let mediaMoved = 0;
   if (media) {
-    const merged = await media.mergeOwner(await mediaOwner(fromOwnerId), await mediaOwner(toOwnerId));
+    const merged = await media.mergeOwner(
+      await mediaOwner(fromOwnerId),
+      await mediaOwner(toOwnerId),
+    );
     if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
     mediaMoved = merged.value.moved.length;
   }

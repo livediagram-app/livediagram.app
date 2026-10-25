@@ -29,10 +29,10 @@ const RETRY_AFTER_MS = 1200;
 
 // The longest one provider call may wait for its answer to START (the response headers) before it is
 // abandoned. A hosted model starts answering a text or a photo prompt in seconds; a provider that hangs
-// (an overloaded endpoint, a self-hosted server gone quiet) used to hold the request open until the
+// (an overloaded endpoint, a model server gone quiet) used to hold the request open until the
 // platform cut it, with the author watching a spinner. Only the wait for the headers is bounded: a
 // streamed answer that has started may run as long as it runs. Generous on purpose: a large vision
-// prompt on a slow self-hosted model is still a real answer. A timeout is not retried (a second wait
+// prompt on a slow model is still a real answer. A timeout is not retried (a second wait
 // as long helps nobody). Safe range: 30 s to 5 min.
 export const AI_PROVIDER_TIMEOUT_MS = 120_000;
 
