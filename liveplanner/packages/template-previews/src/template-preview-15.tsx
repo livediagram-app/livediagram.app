@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import type { TemplateKind } from '@liveplanner/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 15: the Plan templates (docs/specs/026-plan/plan-templates.md), drawn as the Plan board the
 // editor draws: a pale board, columns with their header bars, and white cards with a type stripe. A

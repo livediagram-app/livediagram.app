@@ -9,24 +9,24 @@ The Charcoal migration has its own blueprint ([Retired schemes](../../011-theme/
 
 Scope, by file:
 
-| File                                                    | Role                                                                                     |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `../packages/tailwind-config/theme.css`                 | `.dark` surfaces (the shared theme)                                                      |
-| `packages/tailwind-config/theme.css`                    | `.dark` Steel brand tokens, in violet (this product's palette)                           |
-| `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
-| `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-violet-400`                                                   |
-| `../packages/model-core/src/canvas-colors.ts`           | Dark canvas + pattern constants                                                          |
-| `packages/project/src/colors.ts`                        | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/project/src/svg-render-arrows.ts`             | Export caption colour through `defaultArrowLabelColor`                                   |
-| `packages/template-previews/src/preview-art-tile.css`   | Editor `.dark` tile rule landing on the canvas colour                                    |
-| `apps/editor/components/canvas/ArrowView.tsx`           | Canvas caption colour through `defaultArrowLabelColor`                                   |
-| `apps/editor/components/canvas/element-variant.ts`      | `DARK_SELECTION_RING` on every single selection                                          |
-| `apps/editor/components/canvas/element-parts.tsx`       | `RESIZE_HANDLE_CLASS`                                                                    |
-| `apps/editor/hooks/ui/editor-accent.ts`                 | `editorAccentCss`: tint selectors that outrank the Steel base                            |
-| `packages/ui/src/identity-fill.ts`                      | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
-| `apps/editor/components/chrome/TabPill.tsx`             | Active pill's dark surface as `var(--color-slate-800)`                                   |
-| `apps/editor/app/dark-palette.test.ts`                  | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
-| `apps/editor/e2e/contrast.ts`, `contrast-audit.spec.ts` | Runtime contrast guard, dark mode                                                        |
+| File                                                     | Role                                                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `../packages/tailwind-config/theme.css`                  | `.dark` surfaces (the shared theme)                                                      |
+| `packages/tailwind-config/theme.css`                     | `.dark` Steel brand tokens, in violet (this product's palette)                           |
+| `../packages/ui/src/brand-classes.ts`                    | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
+| `packages/ui/src/Brand.tsx`                              | Wordmark accent `dark:text-violet-400`                                                   |
+| `../packages/model-core/src/canvas-colors.ts`            | Dark canvas + pattern constants                                                          |
+| `packages/project/src/colors.ts`                         | `DARK_INK`, `defaultArrowLabelColor`                                                     |
+| `packages/project/src/svg-render-arrows.ts`              | Export caption colour through `defaultArrowLabelColor`                                   |
+| `../packages/template-previews/src/preview-art-tile.css` | Editor `.dark` tile rule landing on the canvas colour                                    |
+| `apps/editor/components/canvas/ArrowView.tsx`            | Canvas caption colour through `defaultArrowLabelColor`                                   |
+| `apps/editor/components/canvas/element-variant.ts`       | `DARK_SELECTION_RING` on every single selection                                          |
+| `apps/editor/components/canvas/element-parts.tsx`        | `RESIZE_HANDLE_CLASS`                                                                    |
+| `apps/editor/hooks/ui/editor-accent.ts`                  | `editorAccentCss`: tint selectors that outrank the Steel base                            |
+| `../packages/ui/src/identity-fill.ts`                    | `identityDeep`, `identityVars`, `IDENTITY_FILL`                                          |
+| `apps/editor/components/chrome/TabPill.tsx`              | Active pill's dark surface as `var(--color-slate-800)`                                   |
+| `apps/editor/app/dark-palette.test.ts`                   | Source guards: tokens, light ramp, wordmark, solid fills, brand text, numerals, identity |
+| `apps/editor/e2e/contrast.ts`, `contrast-audit.spec.ts`  | Runtime contrast guard, dark mode                                                        |
 
 ## Domain and naming
 
@@ -91,7 +91,7 @@ export function defaultArrowLabelColor(
 // apps/editor/hooks/ui/editor-accent.ts
 export function editorAccentCss(accent: string): string; // `html:root{--color-brand-*}html.dark{--color-slate-600..950}`
 
-// packages/ui/src/identity-fill.ts
+// ../packages/ui/src/identity-fill.ts
 export function identityDeep(color: string): string;
 export function identityVars(color: string): CSSProperties; // { '--identity', '--identity-deep' }
 export const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';

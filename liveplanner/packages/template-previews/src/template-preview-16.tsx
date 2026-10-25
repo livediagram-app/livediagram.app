@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@liveplanner/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 16: the spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates"), drawn as the
 // Sheet the editor draws: column letters over a header row on its tint, row numbers down the left, and cells of grey

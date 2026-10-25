@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { PopDot } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 7 (the incident postmortem and the risk matrix). Static SVG preview
 // tiles, one branch per TemplateKind; TemplatePreview chains the groups

@@ -22,7 +22,7 @@ export { SiteHeader } from './SiteHeader';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { SiteFooter } from './SiteFooter';
 export { StableLabel } from './StableLabel';
-export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { DiagramBuildAnimation } from '@liveworkspace/ui/diagram-build-animation';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
@@ -106,10 +106,10 @@ export {
   signedInFromCookie,
   type BrowserIdentity,
 } from './browser-repair';
-// The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
+// The palette's category glyphs (@liveworkspace/ui's palette-icons/): drawn to the palette's own sizes, so outside the chrome
 // icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
-export * from './palette-icons/palette-tab-icons';
-export * from './palette-icons/palette-group-icons';
+export * from '@liveworkspace/ui/palette-tab-icons';
+export * from '@liveworkspace/ui/palette-group-icons';
 // Everything above is this product's own. The design system every liveworkspace app shares (buttons,
 // fields, dialogs, menus, hints, the optical primitives and the hooks they use) is @liveworkspace/ui.
 export * from '@liveworkspace/ui';

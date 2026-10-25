@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node ../../scripts/next-dev.mjs --port 3301",
-    "build": "node ../../packages/licences/scripts/generate.ts --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
-    "licences": "node ../../packages/licences/scripts/generate.ts --out .",
+    "build": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
+    "licences": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out .",
     "lint": "oxlint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

@@ -1,0 +1,41 @@
+{
+  "name": "@liveworkspace/template-previews",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./motion": "./src/motion.ts",
+    "./story-parts": "./src/story-parts.tsx",
+    "./preview-fan": "./src/PreviewFan.tsx",
+    "./testing": "./src/testing.tsx",
+    "./preview-art-tile.css": "./src/preview-art-tile.css",
+    "./preview-motion.css": "./src/preview-motion.css"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "oxlint": "^1.88.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

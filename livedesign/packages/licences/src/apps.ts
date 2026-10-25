@@ -1,6 +1,6 @@
 import type { LicenceApp } from '@liveworkspace/licences/tables';
 
-// Every deployed app, in the order the page lists them. apps.test.ts fails when
+// Every deployed app, in the order the page lists them. product.test.ts fails when
 // a directory in apps/ is missing here.
 export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'live', label: 'Editor', side: 'browser', bundler: 'next' },

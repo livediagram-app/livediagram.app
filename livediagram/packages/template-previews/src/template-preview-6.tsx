@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { Pop, PopDot } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { Pop, PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 6: the retro formats (Start / Stop / Continue, Mad / Sad / Glad, 4Ls
 // and the Sailboat). Each is a miniature of its template: the shared opening

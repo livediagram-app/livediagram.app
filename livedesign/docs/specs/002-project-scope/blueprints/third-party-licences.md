@@ -5,44 +5,46 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 The engine, the pool of committed texts and the page's contract are the monorepo's
 `@liveworkspace/licences` (`../packages/licences`), one copy for every product. This product's
-`@livedesign/licences` keeps only its own tables (its apps, its overrides, its embedded works) and the
-script that hands them to the shared generator.
+`@livedesign/licences` keeps only its own tables (its apps, its overrides, its embedded works), gathered in
+`src/product.ts` for the shared generator and the shared checks.
 
-| File                                                                       | Role                                                                          |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/licences/src/apps.ts`                                            | `LICENCE_APPS`: every app, its label, side and bundler                        |
-| `../packages/licences/src/errors.ts`                                       | `LicencesError` and its named codes                                           |
-| `../packages/licences/src/analyze-data.ts`                                 | Decodes one Next `analyze.data` file into client sources and assets           |
-| `../packages/licences/src/metafile.ts`                                     | Decodes a wrangler (esbuild) metafile into sources                            |
-| `../packages/licences/src/package-path.ts`                                 | Package root, store-path version, vendored boundaries                         |
-| `../packages/licences/src/licence-files.ts`                                | Licence file pattern, text normalisation, text hash                           |
-| `../packages/licences/src/homepage.ts`                                     | A package's https-only "Source" link                                          |
-| `../packages/licences/src/licence-id.ts`                                   | `license` field normalisation, text recognition, SPDX allowlist check         |
-| `../packages/licences/src/texts.ts`                                        | `TEXT_SOURCES`: every committed text, its source URL and sha256               |
-| `../packages/licences/src/tables.ts`                                       | `LicenceApp`, `Override`, `EmbeddedWork`: the shapes of this product's tables |
-| `packages/licences/src/overrides.ts`                                       | `OVERRIDES`: texts for exact package versions that ship none                  |
-| `packages/licences/src/embedded-works.ts`                                  | `EMBEDDED_WORKS`: what is inside binaries and vendored source                 |
-| `../packages/licences/src/collect.ts`                                      | One app's bundle to its works                                                 |
-| `../packages/licences/src/manifest.ts`                                     | All apps' works to the page manifest and its deduplicated texts               |
-| `../packages/licences/src/contract.ts` (`@liveworkspace/licences`'s entry) | The manifest contract the page reads                                          |
-| `../packages/licences/texts/*.txt`                                         | The committed override and embedded-work texts                                |
-| `packages/licences/scripts/generate.ts`                                    | Hands this product's folder and tables to the shared generator                |
-| `../packages/licences/scripts/generate.ts`                                 | `generateLicences`, IO: runs the bundlers, writes the manifest and the texts  |
-| `../packages/licences/src/verify-export.ts`                                | What is wrong with an exported page, and the HTML budget                      |
-| `../packages/licences/scripts/verify.ts`                                   | Post-build check of the exported page                                         |
-| `../packages/licences/scripts/log.ts`                                      | The fingerprinted log lines                                                   |
-| `../packages/marketing-site/src/lib/licences-manifest.ts`                  | Loads and checks `generated/licences.json` at build time                      |
-| `apps/marketing/app/licences/page.tsx`                                     | The `/licences` route                                                         |
-| `../packages/marketing-site/src/components/licences/LicencesView.tsx`      | Server-rendered sections and entries                                          |
-| `../packages/marketing-site/src/components/licences/LicenceTexts.tsx`      | Client: lazy texts in fixed-height boxes                                      |
-| `../packages/marketing-site/src/css/licences.css`                          | The entries' short `lic-*` classes, imported by `globals.css`                 |
-| `apps/marketing/app/sitemap.ts`                                            | Lists `/licences`                                                             |
-| `packages/ui/src/SiteFooter.tsx`                                           | "Licences" footer link; legal strip at AA contrast                            |
-| `packages/ui/src/ShareRail.tsx`                                            | Its "Share" label at AA contrast (found by the page's axe run)                |
-| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                       | "Licences" row beside GitHub                                                  |
-| `apps/live/components/chrome/tab-bar-icons.tsx`                            | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)                      |
-| `../packages/icons/lucide-manifest.json`                                   | Gains `scale`                                                                 |
-| `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore`  | Build wiring                                                                  |
+| File                                                                       | Role                                                                            |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `packages/licences/src/apps.ts`                                            | `LICENCE_APPS`: every app, its label, side and bundler                          |
+| `../packages/licences/src/errors.ts`                                       | `LicencesError` and its named codes                                             |
+| `../packages/licences/src/analyze-data.ts`                                 | Decodes one Next `analyze.data` file into client sources and assets             |
+| `../packages/licences/src/metafile.ts`                                     | Decodes a wrangler (esbuild) metafile into sources                              |
+| `../packages/licences/src/package-path.ts`                                 | Package root, store-path version, vendored boundaries                           |
+| `../packages/licences/src/licence-files.ts`                                | Licence file pattern, text normalisation, text hash                             |
+| `../packages/licences/src/homepage.ts`                                     | A package's https-only "Source" link                                            |
+| `../packages/licences/src/licence-id.ts`                                   | `license` field normalisation, text recognition, SPDX allowlist check           |
+| `../packages/licences/src/texts.ts`                                        | `TEXT_SOURCES`: every committed text, its source URL and sha256                 |
+| `../packages/licences/src/tables.ts`                                       | `LicenceApp`, `Override`, `EmbeddedWork`: the shapes of this product's tables   |
+| `packages/licences/src/overrides.ts`                                       | `OVERRIDES`: texts for exact package versions that ship none                    |
+| `packages/licences/src/embedded-works.ts`                                  | `EMBEDDED_WORKS`: what is inside binaries and vendored source                   |
+| `../packages/licences/src/collect.ts`                                      | One app's bundle to its works                                                   |
+| `../packages/licences/src/manifest.ts`                                     | All apps' works to the page manifest and its deduplicated texts                 |
+| `../packages/licences/src/contract.ts` (`@liveworkspace/licences`'s entry) | The manifest contract the page reads                                            |
+| `../packages/licences/texts/*.txt`                                         | The committed override and embedded-work texts                                  |
+| `packages/licences/src/product.ts`                                         | `LICENCES`: this product's folder and tables, for the generator and the checks  |
+| `../packages/licences/scripts/generate-product.ts`                         | Hands a product's `LICENCES` to `generateLicences` (the marketing build's step) |
+| `../packages/licences/scripts/generate.ts`                                 | `generateLicences`, IO: runs the bundlers, writes the manifest and the texts    |
+| `../packages/licences/src/product-checks.ts`                               | `describeLicenceTables`: every product's table and dependency checks            |
+| `../packages/licences/src/verify-export.ts`                                | What is wrong with an exported page, and the HTML budget                        |
+| `../packages/licences/scripts/verify.ts`                                   | Post-build check of the exported page                                           |
+| `../packages/licences/scripts/log.ts`                                      | The fingerprinted log lines                                                     |
+| `../packages/marketing-site/src/lib/licences-manifest.ts`                  | Loads and checks `generated/licences.json` at build time                        |
+| `apps/marketing/app/licences/page.tsx`                                     | The `/licences` route                                                           |
+| `../packages/marketing-site/src/components/licences/LicencesView.tsx`      | Server-rendered sections and entries                                            |
+| `../packages/marketing-site/src/components/licences/LicenceTexts.tsx`      | Client: lazy texts in fixed-height boxes                                        |
+| `../packages/marketing-site/src/css/licences.css`                          | The entries' short `lic-*` classes, imported by `globals.css`                   |
+| `apps/marketing/app/sitemap.ts`                                            | Lists `/licences`                                                               |
+| `packages/ui/src/SiteFooter.tsx`                                           | "Licences" footer link; legal strip at AA contrast                              |
+| `packages/ui/src/ShareRail.tsx`                                            | Its "Share" label at AA contrast (found by the page's axe run)                  |
+| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                       | "Licences" row beside GitHub                                                    |
+| `apps/live/components/chrome/tab-bar-icons.tsx`                            | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)                        |
+| `../packages/icons/lucide-manifest.json`                                   | Gains `scale`                                                                   |
+| `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore`  | Build wiring                                                                    |
 
 ## Domain and naming
 
@@ -305,7 +307,7 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 
 | Spec rule                                                      | Test                                                            |
 | -------------------------------------------------------------- | --------------------------------------------------------------- |
-| Every app is registered, sides right                           | `apps.test.ts` (reads `apps/*`)                                 |
+| Every app is registered, sides right                           | `product.test.ts` (`describeLicenceTables`, reads `apps/*`)     |
 | Client output only; strict analyze format                      | `analyze-data.test.ts`                                          |
 | Worker bundles from the metafile; strict format                | `metafile.test.ts`                                              |
 | Package root, store-path version, vendored boundaries          | `package-path.test.ts`                                          |
@@ -313,7 +315,7 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 | Licence id rules and allowlist                                 | `licence-id.test.ts`                                            |
 | Missing text fails; override applies to exact version only     | `collect.test.ts`                                               |
 | Unreviewed binary fails; embedded works by asset and source    | `collect.test.ts`                                               |
-| Committed texts listed and intact; tables reference real files | `texts.test.ts`                                                 |
+| Committed texts listed and intact; tables reference real files | `../packages/licences/src/texts.test.ts`; `product.test.ts`     |
 | Sections, merged apps, dedup, order, unused report             | `manifest.test.ts`                                              |
 | Runs for real on the real apps                                 | CI build job (`pnpm build`)                                     |
 | Exported page, texts and HTML budget                           | `verify-export.test.ts`; `verify.ts` in the build               |

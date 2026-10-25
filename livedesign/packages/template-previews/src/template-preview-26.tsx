@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 26: the wireframes on wireframe pages (docs/specs/007-editor/wireframe-pages.md "Templates"):
 // the five blank wireframes, each its device with an empty screen and the "+" that starts it, and the five flows,

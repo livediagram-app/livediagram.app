@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { FILL_BOX } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 
 // Group 23: the Virtual Office and its sibling spaces (docs/specs/012-collaboration/virtual-office-template.md): floor plans of rooms
 // either side of a corridor, a meeting table, desks, plants and a coffee machine. Its hover story: a character

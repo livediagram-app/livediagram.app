@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
 // Logo and Photo Edit. Each draws its one empty page in its own proportions (the square artboard, a landscape

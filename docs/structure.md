@@ -294,6 +294,18 @@ Each step is its own PR, and both products build and pass their tests after ever
      no caller changed. Still per product: what is typed on its element model (`drag-preview`, `embed-images`), its
      vocabularies (telemetry, lint, room ops, changesets, views, CTA surfaces, page views), the workbench messages
      (their types carry the product's prefix) and its envelopes, which name its noun.
+   - `ui`, third slice, with `template-previews` and the licences bindings: the palette icons and the diagram build
+     animation moved to `@liveworkspace/ui` as they were. The social card, page metadata, site header (its CTA,
+     start-blank link and signed-in hint), page-view tracker, web-vitals report and reporter, and identity fill
+     became `createX(config)` factories that take each product's brand, data and telemetry. The account slot is
+     `createSiteAccount` in `@liveworkspace/account-menu`, so ui needn't depend on it. The previews' motion kit, story
+     parts, both stylesheets, a generic `PreviewFan` and one shared check suite are `@liveworkspace/template-previews`;
+     each product keeps only its drawings, and every app's `@source` names the shared fan. Licences have one
+     `generate-product.ts` that reads a product's `src/product.ts`, and one `describeLicenceTables` suite in place of
+     four copies each of the generate script and the apps, dependencies and texts tests. Each product package keeps
+     its name and re-exports, so callers didn't change, and every product renders exactly as before (each moved piece
+     rendered byte-identical). livedocuments now ships the whole shared `preview-motion.css`, about 0.5 KB gzipped of
+     rules it never matches. help-registry had nothing left to share beyond product data.
 4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    every editor.

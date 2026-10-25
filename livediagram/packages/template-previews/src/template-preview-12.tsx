@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { pv } from './motion';
-import { Pop } from './story-parts';
+import { pv } from '@liveworkspace/template-previews/motion';
+import { Pop } from '@liveworkspace/template-previews/story-parts';
 
 // Group 12: Blank Diagram (docs/specs/007-editor/templates-by-mode.md "The blanks"). Static SVG preview tiles (one
 // branch per TemplateKind; see template-preview.tsx for who renders them); TemplatePreview chains the groups with ??.

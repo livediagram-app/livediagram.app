@@ -71,10 +71,10 @@ describe('full-screen surfaces in dark chrome', () => {
 
 describe('tiles of light-canvas illustration art', () => {
   const GLOBALS = readFileSync(`${ROOT}app/globals.css`, 'utf8');
-  // The rule ships with the art, in @livediagram/template-previews, so the
+  // The rule ships with the art, in @liveworkspace/template-previews (which this product's previews import), so the
   // marketing site's gallery re-lights its tiles with the same one.
   const RELIGHT_CSS = readFileSync(
-    `${ROOT}../../packages/template-previews/src/preview-art-tile.css`,
+    `${ROOT}../../../packages/template-previews/src/preview-art-tile.css`,
     'utf8',
   );
 

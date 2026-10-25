@@ -102,7 +102,7 @@ reach a deployed artefact, and nothing else.
   is off, or if the browser section lists no works (every site ships React at least, so an empty
   side means the analysis found nothing).
 - Each app's declared dependencies run through the generator's collector on the real install
-  (`packages/licences/src/dependencies.test.ts`): every one must be listed, with a licence and its
+  (`packages/licences/src/product.test.ts`): every one must be listed, with a licence and its
   text. A monorepo move that loses the package store, or a package with no licence file, fails a
   unit test rather than emptying the page.
 - A new app directory that the generator does not know about fails its tests.

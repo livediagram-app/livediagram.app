@@ -13,7 +13,8 @@
     "./texts": "./src/texts.ts",
     "./licence-id": "./src/licence-id.ts",
     "./generate": "./scripts/generate.ts",
-    "./declared": "./src/declared.ts"
+    "./declared": "./src/declared.ts",
+    "./product-checks": "./src/product-checks.ts"
   },
   "scripts": {
     "verify": "node scripts/verify.ts",

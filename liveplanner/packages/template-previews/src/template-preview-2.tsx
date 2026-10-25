@@ -1,6 +1,6 @@
 import type { ReactElement, SVGProps } from 'react';
 import type { TemplateKind } from '@liveplanner/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 2: the Kanban Board. Static SVG preview tiles (one branch per TemplateKind; see template-preview.tsx for who
 // renders them); TemplatePreview chains the groups with ??.

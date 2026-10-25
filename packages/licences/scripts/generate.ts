@@ -1,8 +1,7 @@
 // Generates a product's /licences page data from what each of its apps actually bundles
-// (docs/specs/002-project-scope/third-party-licences.md in each product). Each product's
-// @<product>/licences/scripts/generate.ts calls generateLicences with its own tables; the marketing
-// build runs that, locally and in CI alike:
-//   node packages/licences/scripts/generate.ts --out apps/marketing
+// (docs/specs/002-project-scope/third-party-licences.md in each product). generate-product.ts hands
+// generateLicences a product's own tables (its @<product>/licences `src/product.ts`); each product's
+// marketing build runs that, locally and in CI alike.
 // Writes <out>/generated/licences.json and <out>/public/licences/texts/*.txt.
 import { spawnSync } from 'node:child_process';
 import {
@@ -27,7 +26,7 @@ import { buildManifest, serialiseManifest } from '../src/manifest.ts';
 import { decodeMetafile } from '../src/metafile.ts';
 import { nodeReader } from '../src/node-reader.ts';
 import { workspaceToProductPath } from '../src/package-path.ts';
-import type { EmbeddedWork, LicenceApp, Override } from '../src/tables.ts';
+import type { LicenceApp, LicencesProduct } from '../src/tables.ts';
 import { TEXT_SOURCES, TEXTS_DIR } from '../src/texts.ts';
 import { log, logFailure } from './log.ts';
 
@@ -41,13 +40,7 @@ function findWorkspaceRoot(from: string): string {
 }
 
 // What a product hands the generator: its folder and its own tables.
-export type LicencesConfig = {
-  // The product's folder (the one holding apps/), as a file: URL or a path.
-  productRoot: URL | string;
-  apps: readonly LicenceApp[];
-  overrides: readonly Override[];
-  embedded: readonly EmbeddedWork[];
-};
+export type LicencesConfig = LicencesProduct;
 
 type Product = { root: string; dir: string; toProductPath: (path: string) => string };
 

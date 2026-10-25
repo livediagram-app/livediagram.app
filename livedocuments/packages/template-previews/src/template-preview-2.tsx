@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedocuments/templates';
-import { pv } from './motion';
+import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 2: the Slide Deck. Static SVG preview tiles (one branch per
 // TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
