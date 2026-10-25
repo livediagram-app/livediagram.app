@@ -64,4 +64,7 @@ footers' liveworkspace links and the Explorer's cross-app items all read it.
 
 Every app shows **the same switcher**: one copy, `SiteSwitcher` in `@liveworkspace/ui`
 (`packages/ui/src/SiteSwitcher.tsx`), which each app's UI package binds to its app's prism (its own
-`SiteSwitcher.tsx`), so a change to it is a change to all. All four apps have it.
+`SiteSwitcher.tsx`), so a change to it is a change to all. All four apps have it. On a phone (below `sm`) the card hangs from
+the logo, which every header sets on the 16px left gutter, and spans the screen to the right gutter
+(`100vw` less both). It is never `position: fixed`: the headers' backdrop blur makes the header the
+box a fixed child is placed in, which once put the card above the top of the screen.

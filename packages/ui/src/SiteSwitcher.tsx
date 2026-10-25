@@ -65,9 +65,12 @@ export function SiteSwitcher({
       </button>
 
       {/* pt-2 is a transparent bridge, so the pointer can travel from the logo to the card without
-          crossing a gap that would close it. Below `sm` the card pins to the 16px page gutters. */}
+          crossing a gap that would close it. Below `sm` the card spans the screen between the 16px page gutters:
+          it hangs from the logo, which sits on the left gutter, and is the screen less both gutters wide. Never
+          `fixed`: a header with a backdrop blur is the box a fixed child is placed in, which put the card above
+          the screen. */}
       <div
-        className={`absolute left-0 top-full z-50 pt-2 max-sm:fixed max-sm:inset-x-4 max-sm:top-auto transition-all duration-micro group-hover/sites:visible group-hover/sites:opacity-100 ${
+        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-micro group-hover/sites:visible group-hover/sites:opacity-100 ${
           open ? 'visible opacity-100' : 'invisible opacity-0'
         }`}
       >
@@ -75,7 +78,7 @@ export function SiteSwitcher({
           ref={attach}
           {...surfaceProps}
           aria-label="liveworkspace sites"
-          className="w-72 max-sm:w-auto outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          className="w-72 max-sm:w-[calc(100vw-2rem)] outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           <SiteRow
             app={app}

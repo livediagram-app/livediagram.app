@@ -103,14 +103,16 @@ export function createSiteHeader<Surface extends string, Site extends string>(
 
   // A marketing page's three links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header").
   // Build with AI and Choose Template are quiet links, Explorer the one filled button, last (into the app), so the
-  // bar ends on its strongest control rather than breaking in the middle. Every one stays on a phone, only
-  // shorter: below `lg` the two links are their glyphs alone, and below 360px every link and gap tightens a
-  // little, so with the account menu the bar fits a 320px phone.
+  // bar ends on its strongest control rather than breaking in the middle. Below `lg` the two quiet links are their
+  // glyphs alone, and below `sm` (a phone) they leave the bar, which keeps the logo, Explorer and the account menu;
+  // the page's hero and footer still lead to both. `contents` keeps them flex items of the bar where they show.
   function MarketingActions({ ctaSurface, current }: { ctaSurface?: Surface; current: boolean }) {
     return (
       <>
-        <BuildWithAiLink current={current} />
-        <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
+        <span className="contents max-sm:hidden">
+          <BuildWithAiLink current={current} />
+          <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
+        </span>
         <ExplorerLink always solid />
       </>
     );
