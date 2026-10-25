@@ -15,7 +15,10 @@ describe('visitorAddress', () => {
   });
 
   it("is the address a router names, only beside the router's mark", () => {
-    const named = { 'CF-Connecting-IP': '198.51.100.1', [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.7' };
+    const named = {
+      'CF-Connecting-IP': '198.51.100.1',
+      [WORKSPACE_CLIENT_IP_HEADER]: '203.0.113.7',
+    };
     expect(visitorAddress(request({ ...named, [WORKSPACE_PROXY_HEADER]: 'livediagram' }))).toEqual({
       address: '203.0.113.7',
       via: true,

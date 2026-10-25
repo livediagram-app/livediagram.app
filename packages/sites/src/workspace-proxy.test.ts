@@ -374,7 +374,12 @@ describe('forwardToIndex', () => {
   it('refuses to forward to its own site, rather than loop', async () => {
     const doFetch = upstream(new Response('ok'));
     const request = new Request('https://livediagram.app/api/index/items');
-    const res = await forwardToIndex(request, new URL(request.url), 'https://livediagram.app', doFetch);
+    const res = await forwardToIndex(
+      request,
+      new URL(request.url),
+      'https://livediagram.app',
+      doFetch,
+    );
     expect(res.status).toBe(508);
     expect(doFetch).not.toHaveBeenCalled();
   });

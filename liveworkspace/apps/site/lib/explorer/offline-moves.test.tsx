@@ -18,7 +18,7 @@ describe('Take Offline', () => {
     expect(verbs.map((v) => v.label)).toEqual(['Take Offline']);
     const assign = vi.fn();
     vi.stubGlobal('window', { location: { assign } });
-    verbs[0]!.onSelect();
+    void verbs[0]!.onSelect();
     expect(assign).toHaveBeenCalledWith('/document/d1?convert=take-offline&item=d1');
   });
 

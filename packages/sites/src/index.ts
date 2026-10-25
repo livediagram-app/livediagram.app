@@ -291,6 +291,45 @@ export function explorerUrl(
   }`;
 }
 
+// ---------- The site switcher on an Explorer page ---------------------------------------------------------------
+// On the Explorer, the logo's switcher keeps the person on the Explorer: each site's row opens that site's Explorer at
+// the same view (liveworkspace/docs/site-switcher.md "On an Explorer page").
+
+// Query that speaks only on arrival, or hands over to one app's editor: never carried to another site.
+const EXPLORER_ARRIVAL_PARAMS = [
+  EXPLORER_FROM_PARAM,
+  'ended',
+  'trashed',
+  'title',
+  'convert',
+  'item',
+];
+
+/** Whether `site`'s Explorer has the view at `section` (the path under /explorer). This Browser reads one app's
+ *  offline list on its own origin, and the Library is each app's own, so liveworkspace.app has neither. */
+function explorerHasView(site: Site, section: string): boolean {
+  const app = appOfSite(site.id);
+  const items = app ? APP_ITEMS[app] : null;
+  if (section === 'offline') return items?.offlinePath != null;
+  if (section === 'images') return items?.imagesPath != null;
+  if (section === 'shape-libraries') return items?.shapeLibrariesPath != null;
+  return true;
+}
+
+/** On an Explorer page (`pathname` `/explorer` or under it, `search` its query), each site's link to its own Explorer
+ *  at the same view: the path and the query kept, arrival-only query dropped, Home where the site lacks the view.
+ *  Null off the Explorer, where the switcher links each site's home. */
+export function explorerSwitchHref(pathname: string, search = ''): ((site: Site) => string) | null {
+  const path = pathname.replace(/\/+$/, '');
+  if (path !== EXPLORER_PATH && !path.startsWith(`${EXPLORER_PATH}/`)) return null;
+  const section = path.slice(EXPLORER_PATH.length + 1);
+  const params = new URLSearchParams(search.replace(/^\?/, ''));
+  for (const key of EXPLORER_ARRIVAL_PARAMS) params.delete(key);
+  const query = params.toString();
+  const kept = `${path}${query ? `?${query}` : ''}`;
+  return (site) => `${site.url}${explorerHasView(site, section) ? kept : EXPLORER_PATH}`;
+}
+
 export {
   appOfAnyOrigin,
   appOfOrigin,

@@ -177,6 +177,8 @@ built once here. It is shown here and, through each switched-on app's router, at
   side, then the app's logo, which leads back to the app. On a phone, where there is less room, only the app's
   logo shows (the liveworkspace logo shows when no app is). The search field sits in the middle (on Home the hero holds it), the account control on
   the right. Someone who came straight here sees no app logo.
+  On the Explorer, the switcher keeps you on the Explorer: another app's row opens that app's Explorer at the same
+  view, liveworkspace's row liveworkspace.app's ([site-switcher.md](site-switcher.md#on-an-explorer-page)).
 - **The bottom bar.** As the apps' own Explorers had it: a bar stuck to the foot of the page
   (`components/explorer/ExplorerBottomBar.tsx`), its controls on the right: **Search**, **Settings** and
   **Appearance** (Light, Dark or the system's, the site's one switch, `SiteAppearanceToggle`), each named beside its
