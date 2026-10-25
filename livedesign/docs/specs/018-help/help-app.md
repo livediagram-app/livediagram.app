@@ -21,7 +21,7 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Its support categories cover the account, privacy, developer tooling and the hosted service's policies.
 
-**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away.
+**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. Isometric Mode (`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
 
 ## Information architecture
 

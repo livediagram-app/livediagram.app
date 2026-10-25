@@ -64,7 +64,9 @@ A category or article that is removed keeps its old URL landing: `apps/help/publ
 (301) to the live page nearest to it, with paths as the help worker sees them (no `/help` prefix, which the router
 strips). The Self-Hosting category (its overview, deploying, configuration and MCP server articles) is retired, and
 every `/self-hosting` URL goes to the help centre home. `lib/retired-articles.test.ts` checks every rule targets a
-live page and never redirects a live article or category away.
+live page and never redirects a live article or category away. Isometric Mode
+(`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view
+([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 
