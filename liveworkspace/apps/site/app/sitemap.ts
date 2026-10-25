@@ -11,5 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://liveworkspace.app/telemetry', changeFrequency: 'daily', priority: 0.5 },
     { url: 'https://liveworkspace.app/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://liveworkspace.app/terms', changeFrequency: 'yearly', priority: 0.3 },
+    { url: 'https://liveworkspace.app/licences', changeFrequency: 'monthly', priority: 0.2 },
   ];
 }

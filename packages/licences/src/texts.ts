@@ -128,6 +128,15 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sources: ['https://raw.githubusercontent.com/jgraph/drawio/v31.7.0/LICENSE'],
     sha256: 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
   },
+  // @better-auth/utils declares MIT but published 0.5.0 before its repository had a LICENSE; this is
+  // the text it then added, pinned to that commit (liveworkspace.app's accounts worker ships it).
+  {
+    file: 'better-auth-utils-ef52288-LICENSE.txt',
+    sources: [
+      'https://raw.githubusercontent.com/better-auth/utils/ef522888b7b2ff77ca13f0afb476dfae8f297862/LICENSE',
+    ],
+    sha256: 'b5052b5db9a8720634e5243aaf019269ddd93c2e43f46a09f72b99e0004c8680',
+  },
   {
     file: 'feather-4.29.2-LICENSE.txt',
     sources: ['https://raw.githubusercontent.com/feathericons/feather/v4.29.2/LICENSE'],

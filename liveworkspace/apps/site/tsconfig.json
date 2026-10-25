@@ -4,6 +4,8 @@
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "jsx": "preserve",
     "noEmit": true,
+    // lib/licences runs under Node type stripping, which needs explicit .ts imports.
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "allowJs": true,
     "plugins": [{ "name": "next" }],

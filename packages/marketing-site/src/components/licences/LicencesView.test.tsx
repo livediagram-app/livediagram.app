@@ -64,6 +64,21 @@ describe('LicencesView', () => {
     expect(html).toContain('0 works');
   });
 
+  it('says what runs the server side, the product’s services unless the site names its own', () => {
+    expect(html).toContain('Bundled into the API, MCP server and router');
+    const own = renderToStaticMarkup(
+      <LicencesView
+        manifest={manifest}
+        title="Third-party licences"
+        lede="liveworkspace.app"
+        browserIntro="Sent to your browser by this website."
+        serverIntro="Bundled into the accounts service."
+      />,
+    );
+    expect(own).toContain('Bundled into the accounts service.');
+    expect(own).not.toContain('MCP server');
+  });
+
   it('renders each work as a collapsed disclosure anchored for deep links', () => {
     expect(html).toContain('<details id="browser-next-16-3-6"');
     expect(html).not.toMatch(/<details[^>]* open/);

@@ -1,6 +1,6 @@
 import { Brand, type BrandApp } from '@liveworkspace/brand';
 import { lucideBookOpen, lucideSparkles } from '@liveworkspace/icons/lucide';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { PLATFORM_SITE, TERMS_LABEL } from '@liveworkspace/sites';
 import { Fragment, type ComponentType, type ReactNode } from 'react';
 
 import { CONTRIBUTORS } from './contributors';
@@ -68,7 +68,7 @@ const columns = ({
   {
     title: 'Legal',
     links: [
-      { href: `${PLATFORM_SITE.url}/terms`, label: 'Terms' },
+      { href: `${PLATFORM_SITE.url}/terms`, label: TERMS_LABEL },
       { href: `${PLATFORM_SITE.url}/privacy`, label: 'Privacy Policy' },
       { href: '/help/privacy-and-security/', label: 'Data & Security' },
       // Vulnerability disclosure (docs/specs/002-project-scope/vulnerability-disclosure.md).

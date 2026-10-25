@@ -1,3 +1,4 @@
+import { TERMS_LABEL } from '@liveworkspace/sites';
 import { listedApps } from '@/lib/apps';
 import { AppLogo } from './landing/AppLogo';
 import { Wordmark } from './Wordmark';
@@ -7,7 +8,7 @@ const linkClass =
 
 // The footer (liveworkspace/docs/site.md "The front door"): every app again, the platform's own
 // pages and services (Comparison, which points at each app's comparisons), and the privacy
-// policy and terms that cover all of them.
+// policy and terms that cover all of them, and the site's third-party licences.
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -43,7 +44,11 @@ export function Footer() {
             Privacy Policy
           </a>
           <a href="/terms" className={linkClass}>
-            Terms of Use
+            {TERMS_LABEL}
+          </a>
+          {/* Third-party licences (liveworkspace/docs/site.md "Licences"). */}
+          <a href="/licences" className={linkClass}>
+            Licences
           </a>
         </FooterColumn>
       </div>

@@ -122,7 +122,8 @@ moves between them, and the one account that joins them.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, and the telemetry dashboard) and Legal (the
-   privacy policy and terms).
+   privacy policy, Terms of Use and Licences). Every footer, here and in each app, labels the
+   terms "Terms of Use" from one constant, `TERMS_LABEL` in `@liveworkspace/sites`.
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
 ambient motion (the current along the lines, drifting cursors, the cards settling) is in
@@ -135,6 +136,17 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only some apps have (livediagram's Google Drive mirror, liveplanner's live sessions) says which;
 Offline Mode is every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
+
+### Licences (`/licences`)
+
+The third-party licences of this website and the platform's services (accounts, Community, index,
+media, telemetry), linked from the footer and listed in the sitemap. It is each product's page
+([Third-party licences](../../livediagram/docs/specs/002-project-scope/third-party-licences.md)) on
+liveworkspace's own tables: the same generator (`@liveworkspace/licences`) and page body
+(`@liveworkspace/marketing-site`), with the site's apps, overrides and embedded works in
+`apps/site/lib/licences/`. The site's build regenerates it before `next build` and checks the export
+after; its intro links each app's own page. Each app's declared dependencies are tested to appear
+(`apps/site/lib/licences/licences.test.ts`).
 
 ### Comparison (`/compare`)
 
