@@ -148,17 +148,44 @@ Where each is set, so a setting lives with what it changes, never in one central
   column), for Action cards only, Compact cards showing who has each action and when it is due (a to-do list is a
   dense list of short items, so Compact; its checklist is in the card), and the Completion and Due Soon widgets.
 - **Setup Board**: a board with no columns (the Blank board starts so, and starts taller than a set-up board: 880 px
-  against 640, blueprint DEFAULTS D5) shows, in place of its columns, a **Setup
-  Board** card in the board's colours (a board glyph, the title, a line: "Pick its cards, columns and layout. Change
-  them any time from its cog.", Help), with three steps shown as a wizard stepper across the card: a numbered
-  circle per step joined by a connecting line, the step's name beside its circle (under it on a narrow card), no
-  further description. The current step's circle is filled in the brand colour and its name bold
-  (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is filled in the brand
-  colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted and not a button. It
-  fits a phone's width without cutting a name.
+  against 640, blueprint DEFAULTS D5) is **not set up yet**.
+  - **On the canvas** it shows, in place of its columns, a calm **placeholder**, centred: a board glyph, the board's
+    title, "Not set up yet", and for someone who may edit a **Set up board** button that opens the Setup Board
+    dialog. Whoever else has the board selected the canvas's own selection badge names, as on any element. Someone
+    who may only view reads "Someone who can edit it will set it up." instead of the button. The placeholder zooms
+    with the board like any of its content.
+  - **The dialog** is a modal over the editor (the editor's shared dialog: a dimmed backdrop, focus held inside,
+    Escape, the close button or a press on the backdrop closes it), never drawn inside the board and never zoomed
+    with the canvas. It is in the app's colours (light or dark, as the editor), 40 rem wide and a fixed height (up to
+    40 rem, never past the window), so moving between steps never jumps it; on a phone it fills the screen. Its
+    header holds a board glyph, the title **Set up your board**, the line "Pick its cards, columns and layout. Change
+    them any time from its cog.", Help and Close. Under it, the steps as a **step indicator**: a numbered circle per
+    step joined by a connecting line, the step's name beside its circle (under it on a narrow dialog), and "Step 2 of
+    3" read out (a polite live region) as the step changes. The current step's circle is filled in the brand colour
+    and its name bold (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is
+    filled in the brand colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted
+    and not a button. Only the step scrolls; its **footer** stays put under it: **Back** at the left (from step 2),
+    and at the right **Not now** (**Cancel** when run again) and the step's primary action.
+  - **When it opens**: for the person who placed the board (Start Planning, a Dashboard slot's new board), at once;
+    from the placeholder's **Set up board**; and from Board Setup's **Setup Board** (below). Only for that person:
+    nobody else's screen changes. A board someone else placed, or one brought back by undo or a template, shows the
+    placeholder until someone presses Set up board.
+  - **Closing without finishing** leaves the board as it was (the placeholder) and keeps what was picked: opening it
+    again on that board returns to the same step with the same choices, for the rest of the session.
+  - **Keyboard**: Enter presses the step's primary action (Next or Create Board) from anywhere in the dialog but a
+    text field, a button or a link (where Enter already means something: the column name field's Enter adds the
+    column); a chosen option row counts, an unchosen one is picked by Enter instead. In each option list ArrowUp,
+    ArrowDown, Home and End move between rows ([Option lists](#option-lists)).
+  - **With others**: if the board is set up by someone else while the dialog is open (it gains columns this person
+    did not write), the dialog closes and a toast says "This board was just set up by someone else."; whoever
+    finishes first wins, and nothing this person picked is written. A board deleted while its dialog is open takes the
+    dialog with it.
+
+  The steps:
+
   1. **Card Types**: an [option list](#option-lists), a row per card type of the project (its glyph on a tint of its colour, its name, a tick when
      on), none on to start (run again on a set-up board, the types it shows); **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
-     **Next: Columns** needs at least one. A hairline sits under the step tiles.
+     **Next: Columns** needs at least one.
   2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
      with a grip, its name, "Existing state" or "New", and a remove cross; "No columns yet. Add one below." while
      there are none. A row is reordered by dragging its grip (mouse, pen or finger): a lifted copy follows the
@@ -181,12 +208,14 @@ Where each is set, so a setting lives with what it changes, never in one central
      **Create Board** (**Save Board** on a board run again; the Layout step's only, needs a column) writes the columns (an existing state keeps its
      status, so its cards show; a new one has a status of its own), the card types (every type is no `addTypes`; a
      chosen few are) and the layout (grouping and card size) as
-     one change, one undo step. Telemetry: `Plan` · `Changed` · `BoardSetUp`. Someone who may only view reads that the board is not
-     set up yet.
+     one change, one undo step, and closes the dialog, focus going to the board. Telemetry: `Plan` · `Changed` ·
+     `BoardSetUp`.
+
 - **Setup Board again**: on a board that has columns (not All Cards or Archive), the Board Setup section (the cog's,
-  and the element menu's Board) holds a full-width **Setup Board** under its title. It closes the menu and shows the same screen in
-  place of the board's columns, for this person only, filled in with the board as it is (its card types ticked, its
-  columns in order, its layout), with **Cancel** and, last, **Save Board**. Saving writes both as one change: a column kept keeps
+  and the element menu's Board) holds a full-width **Setup Board** under its title. It closes the menu and opens the same dialog over the
+  board, for this person only (the board stays as it is underneath, for everyone), filled in with the board as it is
+  (its card types ticked, its columns in order, its layout), starting at step 1 every time, with **Cancel** and, last,
+  **Save Board**. Closing it changes nothing. Saving writes both as one change: a column kept keeps
   its id and settings (name, WIP limit, colour, width), a new one is made as in setup, and one left out leaves this
   board only (its cards keep their state; the done column goes with its column).
 - **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**, or
@@ -484,7 +513,7 @@ it in the brand colour (light and dark); an on-or-off list (checkboxes) shows a 
 when on; a list of actions (Add a Card, an existing state to add) has no marker. Hover and keyboard focus tint a row;
 outside a menu one row is in the Tab order and ArrowUp / ArrowDown / Home / End move between rows, Enter or Space
 picks; inside a command menu the rows are its items (`menuitemradio`, `menuitemcheckbox`, `menuitem`) and the menu's
-own keys move between them. In Setup Board it wears the board's colours. It is used by:
+own keys move between them. In the Setup Board and Setup Sheet dialogs it wears the app's colours (light or dark). It is used by:
 
 - the board menu and cog: **Swimlanes** (Group Rows By), **Supported Cards** (Card Types), **Card Layout** (Card
   Size), a Gantt chart's Card Types and Swimlanes;

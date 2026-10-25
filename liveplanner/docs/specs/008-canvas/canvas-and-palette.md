@@ -325,10 +325,12 @@ All follow the **active tab theme**. Two looks, both legible by construction: so
 
 ### Screens inside an element
 
-A screen an element shows in place of its body (Setup Board, Setup Sheet, a Sheet loading) zooms with the canvas,
+A screen an element shows in place of its body (a Sheet loading) zooms with the canvas,
 so zoomed out it shrinks with its element and never blocks the view. Zoomed in it grows only to **its own size** (100%,
 `SCREEN_SCALE_MAX`, `ScaleCapped`), then holds there, centred in the element, so it never reads as
 comically large. The scale is measured as drawn, so a maximised element (drawn at screen size) is unaffected.
+Setup Board and Setup Sheet are not such screens: they are dialogs over the editor, and a board or Sheet not set up
+yet shows only a small placeholder ([plan-board.md](../026-plan/plan-board.md) "Setup Board").
 
 ### Placement on add
 
