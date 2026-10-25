@@ -12,21 +12,31 @@ import {
   APP_ITEMS,
   APP_NAMES,
   LOCAL_PORTS,
+  STAND_INS,
   workspaceOriginFor,
   siteOfApp,
   type AppName,
+  type AppSiteId,
 } from '@liveworkspace/sites';
 
 // ---------- Which address the page is on ------------------------------------------------------------------------
 
 const bareHost = (host: string) => host.toLowerCase().replace(/^(?:www|staging)\./, '');
 
-/** Every address an app serves the Explorer on: its live host and its local router's port. */
+/** Every address an app serves the Explorer on: its live host, its local router's port, and its workers.dev
+ *  stand-ins while its domain is elsewhere (STAND_INS). Without them the page on a stand-in read as liveworkspace.app,
+ *  asked for liveworkspace's session there, and found no one. */
 export function appHosts(): Record<string, AppName> {
   const hosts: Record<string, AppName> = {};
   for (const app of APP_NAMES) {
-    hosts[APP_ITEMS[app].site] = app;
-    hosts[`localhost:${LOCAL_PORTS[APP_ITEMS[app].site]}`] = app;
+    const site = APP_ITEMS[app].site;
+    hosts[site] = app;
+    hosts[`localhost:${LOCAL_PORTS[site]}`] = app;
+    const standIn = STAND_INS[site as AppSiteId];
+    if (standIn) {
+      hosts[new URL(standIn.production).host] = app;
+      hosts[new URL(standIn.staging).host] = app;
+    }
   }
   return hosts;
 }

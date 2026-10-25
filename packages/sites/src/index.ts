@@ -58,7 +58,8 @@ export const PLATFORM_SITE: Site = {
 /** liveworkspace.app's origin as seen from a page on `host`: staging's from a staging app (`staging.<app>`), else
  *  PLATFORM_SITE's (the local site on a dev server). For links from an app's pages to the account pages. */
 export function workspaceOriginFor(host: string): string {
-  return /^staging\./i.test(host)
+  // `staging.<app>`, or a staging stand-in on workers.dev (`livediagram-router-staging.….workers.dev`).
+  return /^staging\.|^[^.]+-staging\.[^.]+\.workers\.dev$/i.test(host)
     ? 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev'
     : PLATFORM_SITE.url;
 }

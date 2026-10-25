@@ -40,6 +40,11 @@ describe('where the page is', () => {
     expect(appOfHost('www.livedesign.app')).toBe('livedesign');
     expect(appOfHost('staging.livedocuments.app')).toBe('livedocuments');
     expect(appOfHost('localhost:3200')).toBe('liveplanner');
+    // livediagram's workers.dev stand-ins until livediagram.app moves: the page there is livediagram's.
+    expect(appOfHost('livediagram-router.liveworkspace-easing509.workers.dev')).toBe('livediagram');
+    expect(appOfHost('livediagram-router-staging.liveworkspace-easing509.workers.dev')).toBe(
+      'livediagram',
+    );
     expect(appOfHost('livediagram.app')).toBe('livediagram');
     expect(appOfHost('localhost:3100')).toBe('livediagram');
     expect(appOfHost('liveworkspace.app')).toBeNull();

@@ -6,6 +6,12 @@ describe('workspaceOriginFor', () => {
     expect(workspaceOriginFor('staging.liveplanner.app')).toBe(
       'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
     );
+    expect(
+      workspaceOriginFor('livediagram-router-staging.liveworkspace-easing509.workers.dev'),
+    ).toBe('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev');
+    expect(workspaceOriginFor('livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
+      PLATFORM_SITE.url,
+    );
     expect(workspaceOriginFor('www.livediagram.app')).toBe(PLATFORM_SITE.url);
     expect(workspaceOriginFor('')).toBe(PLATFORM_SITE.url);
   });
