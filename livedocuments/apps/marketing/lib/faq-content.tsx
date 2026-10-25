@@ -259,7 +259,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I set up a team with shared documents?',
-        a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of documents. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+        a: (
+          <>
+            Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams
+            in the Explorer to make one and invite people by email, and every team gets a shared
+            library of livedocuments documents in its own space. Admins manage the team, Members
+            just get to work. See <a href="/help/collaboration/teams/">teams</a>.
+          </>
+        ),
+        aText:
+          'Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams in the Explorer to make one and invite people by email, and every team gets a shared library of livedocuments documents in its own space. Admins manage the team, Members just get to work. See teams.',
       },
       {
         q: 'Can I follow what someone else is looking at?',
@@ -277,13 +286,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I stop a finished tab being changed?',
         a: (
           <>
-            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
+            Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone
             unlocks it, with a padlock beside its name. You can also lock single elements or whole
             layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
           </>
         ),
         aText:
-          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+          'Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
       },
       {
         q: 'How do I keep up with what changed?',
@@ -369,13 +378,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there an API?',
         a: (
           <>
-            Yes. Once you sign in, create an API token and call the REST API to read and manage your
-            documents from scripts, CI or anything that can send a header. See the{' '}
-            <a href="/help/developers/api-overview/">API overview</a>.
+            Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens
+            belong to your liveworkspace account) and call the livedocuments REST API to read and
+            change your documents, tabs and pages from scripts, CI or anything that can send a
+            header. See the <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:
-          'Yes. Once you sign in, create an API token and call the REST API to read and manage your documents from scripts, CI or anything that can send a header. See the API overview.',
+          'Yes. Once you sign in, make an API token from Settings › Account › API Tokens (tokens belong to your liveworkspace account) and call the livedocuments REST API to read and change your documents, tabs and pages from scripts, CI or anything that can send a header. See the API overview.',
       },
       {
         q: 'Is there a command-line tool?',
