@@ -43,23 +43,25 @@ which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirr
 
 ## Google
 
-One Google Cloud project per environment, each with an OAuth client, a client secret, a Picker key and a Drive UI
-integration. They are livediagram's two projects, carried over and renamed liveworkspace, so the client ids stay
-`1067879369165-6o7bsl1nlrv14mqq4q0sc41immecd4u2.apps.googleusercontent.com` (production) and
-`1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com` (staging). What the operator sets in each:
+One Google Cloud project, `liveworkspace`, published (In production) as an External app, with one web OAuth client
+for every environment: `75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com`. Its secret is
+GOOGLE_CLIENT_SECRET on the drive and accounts Workers (both environments) and in their `.dev.vars`; the client id
+is a var on drive (wrangler.toml) and a secret on accounts. What the operator sets:
 
-| Setting             | Value                                                                               |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| Consent screen name | liveworkspace                                                                       |
-| Scopes              | `drive.file`, `drive.install`                                                       |
-| JavaScript origins  | liveworkspace's origin and every app's origins in that environment (for the Picker) |
-| Redirect URI        | `<liveworkspace origin>/drive/connected`                                            |
-| Drive UI Open URL   | `<liveworkspace origin>/drive/open`                                                 |
-| Drive UI MIME types | the four in [The file](#the-file), each with its extension                          |
+| Setting             | Value                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| Branding            | name liveworkspace; home, privacy and terms on liveworkspace's origin; contact support@…      |
+| Scopes              | `openid`, `email`, `profile` (sign-in); `drive.file`, `drive.install` (the mirror)            |
+| JavaScript origins  | liveworkspace's origin in each environment, `liveworkspace.app` and `www.`, and localhost:3000 |
+| Redirect URIs       | `<liveworkspace origin>/drive/connected` and `<origin>/api/auth/callback/google` for each     |
+|                     | origin, plus each app's `/api/workspace/auth/callback/google` (sign-in on the app's address)   |
+| Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                            |
+| Drive UI MIME types | the four in [The file](#the-file), each with its extension                                    |
 
 The origins are the gateway's while liveworkspace.app is on another account (gateway.md):
-`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev` and `…-gateway-staging…`. Staging's client also
-allows `http://localhost:3000` and each app's local port block.
+`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev` and `…-gateway-staging…`. liveworkspace.app's and
+each app's own domain are listed already, so the domain move needs no Google change; the Branding links move to
+liveworkspace.app then. The Picker's origins (every app's) and its API key come with Show folder.
 
 ## The file
 
