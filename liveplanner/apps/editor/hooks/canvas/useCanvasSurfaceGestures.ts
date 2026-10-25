@@ -77,7 +77,7 @@ export function useCanvasSurfaceGestures({
 
   // The shared tail of both pointerdown handlers: tool decides the
   // gesture.
-  //  - Pan tool / Space / Isometric view → drag scrolls.
+  //  - Pan tool / Space → drag scrolls.
   //  - Select tool → drag draws a marquee for multi-select.
   const startPan = (e: ReactPointerEvent, onTap?: () => void) =>
     setPan({

@@ -198,7 +198,7 @@ export function shapePathData(kind: ShapeKind): string | null {
 /** A single-polygon silhouette's vertices in its 0..100 box (which equals
  *  CSS percentages), or null for a kind not drawn as one polygon. For the
  *  consumers that need the outline itself rather than a drawing: anchor
- *  projection (geometry.ts) and the isometric clip (apps/editor isometric.ts). */
+ *  projection (geometry.ts). */
 export function shapePolygonVertices(kind: ShapeKind): [number, number][] | null {
   const parts = FIXED_GEOMETRY[kind]?.parts;
   const only = parts?.length === 1 ? parts[0] : undefined;
