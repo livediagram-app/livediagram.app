@@ -15,22 +15,16 @@ export {
   renderSocialCard,
   type SocialCardOptions,
 } from './social-card';
-export { ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
-export { BuildWithAiLink } from './BuildWithAiLink';
 export { SiteFooter } from './SiteFooter';
-export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
-export { SnapCarousel } from './SnapCarousel';
 export { DesignBuildAnimation } from './DesignBuildAnimation';
-export { PageNotFound } from './PageNotFound';
-export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
-export * from './icons';
+export { EDITOR_MODE_ICONS } from './icons';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
@@ -53,10 +47,42 @@ export {
   DARK_READER_LOCK,
 } from './site';
 export { pageMetadata, BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE, type PageMetadataInput } from './seo';
-export * from './appearance';
+// This product's Appearance key, boot script, store, hook and toggle; the cycle, icon and types are
+// @liveworkspace/ui's.
+export {
+  APPEARANCE_BOOT_SCRIPT,
+  APPEARANCE_STORAGE_KEY,
+  APPEARANCE_STORE,
+  getAppearanceSetting,
+  getResolvedAppearance,
+  readAppearanceSetting,
+  resetAppearanceForTests,
+  resolveAppearance,
+  setAppearance,
+  setAppearanceOverride,
+  subscribeAppearance,
+  useAppearance,
+  SiteAppearanceToggle,
+} from './appearance';
 export { indefiniteArticle, withArticle } from '@livedesign/design';
-export { DialogCloseButton } from './dialog/DialogCloseButton';
-export * from './browser-repair';
+// This product's browser repair (its keys, repair, panel, probe and identity report); the checks' shapes and
+// formatting are @liveworkspace/ui's.
+export {
+  GUEST_IDENTITY_KEYS,
+  REPAIR_KEPT_KEYS,
+  REPAIR_SCOPE_PREFIXES,
+  isRepairClearable,
+  repairBrowserStorage,
+  BROWSER_CHECK_PROBE,
+  runBrowserChecks,
+  BrowserRepairPanel,
+  type BrowserRepairPanelProps,
+  GUEST_ID_PREFIX_LENGTH,
+  formatBrowserIdentity,
+  readBrowserIdentity,
+  signedInFromCookie,
+  type BrowserIdentity,
+} from './browser-repair';
 // The palette's category glyphs (palette-icons/): drawn to the palette's own sizes, so outside the chrome
 // icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
 export * from './palette-icons/palette-tab-icons';

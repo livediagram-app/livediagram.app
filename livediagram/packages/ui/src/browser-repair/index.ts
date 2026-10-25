@@ -1,3 +1,5 @@
+// This product's browser repair: its kept keys, its repair and panel, its checks' probe and its identity
+// report. The checks' shapes and formatting are @liveworkspace/ui's.
 export {
   GUEST_IDENTITY_KEYS,
   REPAIR_KEPT_KEYS,
@@ -5,15 +7,8 @@ export {
   REPAIR_SCOPE_PREFIXES,
   isRepairClearable,
 } from './kept-keys';
-export { repairBrowserStorage, type RepairResult } from './repair';
-export {
-  INDEXED_DB_PROBE_TIMEOUT_MS,
-  formatBrowserChecks,
-  probeIndexedDb,
-  runBrowserChecks,
-  type BrowserChecks,
-  type IndexedDbCheck,
-} from './checks';
+export { repairBrowserStorage } from './repair';
+export { BROWSER_CHECK_PROBE, runBrowserChecks } from './checks';
 export { BrowserRepairPanel, type BrowserRepairPanelProps } from './BrowserRepairPanel';
 export {
   GUEST_ID_PREFIX_LENGTH,

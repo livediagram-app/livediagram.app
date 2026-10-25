@@ -39,6 +39,6 @@ livedocuments 3300, livedesign 3400, as in the root AGENTS.md) whenever a dev se
 (`NODE_ENV=development`), and its live address in a build. The switcher, the landing page, the app
 footers' liveworkspace links and the Explorer's cross-app items all read it.
 
-Every app shows **the same switcher**. Each app's UI package holds its own copy of `SiteSwitcher.tsx`
-(the packages are forks), and `packages/sites/src/switcher-copies.test.ts` fails if the copies differ,
-so a change to one is a change to all. All four apps have it.
+Every app shows **the same switcher**: one copy, `SiteSwitcher` in `@liveworkspace/ui`
+(`packages/ui/src/SiteSwitcher.tsx`), which each app's UI package binds to its app's prism (its own
+`SiteSwitcher.tsx`), so a change to it is a change to all. All four apps have it.

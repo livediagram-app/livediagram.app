@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/editor/components/canvas/tidy-up-actions.ts`                                                                     | `TidyUpActions` and the pure gate `tidyUpOffered`                                          |
 | `apps/editor/components/canvas/TidyUpPopover.tsx`                                                                      | The popover: the Auto Layout tiles, the Auto-align row, the empty and locked notes, Escape |
 | `apps/editor/components/canvas/tidy-up-drawings.tsx`                                                                   | The five tile drawings                                                                     |
-| `packages/ui/src/icons/editor-chrome.tsx`                                                                              | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                               |
+| `../packages/ui/src/icons/editor-chrome.tsx`                                                                           | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                               |
 | `apps/editor/components/canvas/LayersThemeStrip.tsx`                                                                   | The Tidy Up segment, first in the strip                                                    |
 | `apps/editor/hooks/canvas/useDockPopovers.ts`                                                                          | `'tidy-up'` in `DockPanel`, its width, its `UI·Opened·TidyUp`                              |
 | `apps/editor/components/canvas/useCanvasChromePanels.tsx`                                                              | `tidyUpPopoverEl`, and closing it when the button goes                                     |

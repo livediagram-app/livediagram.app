@@ -15,7 +15,7 @@ Scope, by file:
 | `apps/live/lib/power-user-offer.ts`                                                                                                                                                                                                   | Pure: offer counters, thresholds, eligibility; device-local storage              |
 | `apps/live/hooks/ui/usePowerUserOffer.ts`                                                                                                                                                                                             | Records sessions and shortcuts, shows the offer, applies the answer              |
 | `apps/live/components/providers/minimal-chrome.tsx`                                                                                                                                                                                   | `MinimalChromeProvider`, `useMinimalChrome()`: the one flag                      |
-| `packages/ui/src/appearance/appearance-cycle.ts`                                                                                                                                                                                      | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
+| `../packages/ui/src/appearance/appearance-cycle.ts`                                                                                                                                                                                   | Pure: `oppositeAppearanceSetting`, `quickAppearanceToggleName`                   |
 | `apps/live/components/chrome/AppearanceToggle.tsx`                                                                                                                                                                                    | Quick appearance switch: click flips, right-click sets System                    |
 | `apps/live/hooks/ui/useAppearance.ts`                                                                                                                                                                                                 | Logs and tracks every explicit pick                                              |
 | `../liveworkspace/apps/site/components/explorer/ExplorerShell.tsx`                                                                                                                                                                    | Passes `powerUser` to its bottom bar                                             |
@@ -247,7 +247,7 @@ toast.offer(offer: ToastOffer): void;
 boolean`, computed by `SettingsDialog` from `isPowerUserMode(settings)` (so the row appears without reopening).
 
 ```ts
-// packages/ui/src/appearance/appearance-cycle.ts
+// ../packages/ui/src/appearance/appearance-cycle.ts
 export function oppositeAppearanceSetting(appearance: Appearance): AppearanceSetting; // 'light' <-> 'dark'
 export function quickAppearanceToggleName(
   setting: AppearanceSetting,
@@ -381,7 +381,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 | Minimal chrome hides + tooltips, role icon toggles        | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 | Role pill toggles view preview for the owner              | same                                                           |
 | Mode on / off with a changed and an untouched setting     | same                                                           |
-| Opposite setting and quick name                           | `packages/ui/src/appearance/appearance-cycle.test.ts`          |
+| Opposite setting and quick name                           | `../packages/ui/src/appearance/appearance-cycle.test.ts`       |
 | Quick switch table (mode off / on, click / context menu)  | `components/chrome/AppearanceToggle.test.tsx` (jsdom)          |
 | Quick switch in the real status bar                       | `e2e/power-user-mode.spec.ts` (dark mode)                      |
 

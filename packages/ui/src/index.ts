@@ -1,6 +1,8 @@
 // @liveworkspace/ui: the design system every liveworkspace app shares (docs/structure.md, step 3). Each
 // product's own `@<product>/ui` re-exports all of it beside what is that product's alone (its brand, site
-// facts, header and footer, chrome icons), so an app imports either. Nothing here knows a product: colour
+// facts, header, the pieces bound to its api-schema), so an app imports either. A piece that needs a product's
+// facts takes them as props or a store (SiteFooter, ShareRail, SiteSwitcher, ExplorerLink, ProductNavLinks,
+// the Appearance store and toggle, the browser repair), and each product binds it under the same name. Nothing here knows a product: colour
 // comes from the host's Tailwind theme (the `brand-*` ramp), and a spec path in a comment
 // (`docs/specs/...`) is each product's own, which share their layout. Tailwind skips node_modules, so an
 // app that renders these scans `packages/ui/src` with an `@source` line.
@@ -79,3 +81,20 @@ export { Prims } from './icons/Prims';
 // describes it.
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { breadcrumbJsonLd, type BreadcrumbCrumb } from './breadcrumb-json-ld';
+// The chrome icons (icons/chrome.ts): edit actions, navigation, status, badges, the drawing kinds' and modes'
+// marks, the editor's bottom chrome and the Community heart.
+export * from './icons/chrome';
+export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
+export { DialogCloseButton } from './dialog/DialogCloseButton';
+export { CompactEmptyState, NoMatches, noMatchHint, noMatchTitle } from './CompactEmptyState';
+export { PageNotFound } from './PageNotFound';
+export { SnapCarousel } from './SnapCarousel';
+export { BuildWithAiLink } from './BuildWithAiLink';
+export * from './appearance';
+export * from './browser-repair';
+// The public sites' chrome, drawn from the facts a product hands in.
+export { SiteSwitcher } from './SiteSwitcher';
+export { ShareRail } from './ShareRail';
+export { SITE_FOOTER_LINK, SiteFooter, type SiteFooterProps } from './SiteFooter';
+export { ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { ExplorerLink } from './ExplorerLink';
