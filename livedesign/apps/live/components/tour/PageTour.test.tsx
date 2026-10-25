@@ -153,7 +153,7 @@ describe('a wireframe page’s Show Me', () => {
     render(<Page of={page('wireframe')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'WireframeTour');
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Your Page/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/^Show Me step 1 of 5: Your Page/)).toBeTruthy());
     await next(); // Layout
     await next(); // Background
     await next();
