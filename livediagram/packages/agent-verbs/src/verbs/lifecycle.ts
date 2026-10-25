@@ -13,7 +13,7 @@ import type {
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { resolveTab } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags, type WriteFlags } from '../write';
 import { documentOf } from './shared';

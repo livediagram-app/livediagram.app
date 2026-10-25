@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { revOfEtag, TAB_VIEW_NAMES } from '@liveplanner/api-schema';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
-import { shortestUniquePrefixes } from '../refs';
+import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, projectOf, tabOf, tabPath } from './shared';
 
 const tabFlag = z

@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import type { ChangesetResponse } from '@livedesign/api-schema';
 import { diffView } from '@livedesign/design-views';
-import { argvToOperationLine } from '../argv-line';
+import { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 import { readPlainTab } from '../copies';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { classifySource } from '../source-kind';
