@@ -105,6 +105,28 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   return accountPending;
 }
 
+// Who hears the account change in place (a colour just picked in Settings › Profile): the header's avatar and the
+// Profile's own header card, so both repaint at once rather than at the next token.
+const accountListeners = new Set<() => void>();
+
+/** Listens for the app account changing in place; answers the way to stop. */
+export function onAppAccountChange(listener: () => void): () => void {
+  accountListeners.add(listener);
+  return () => {
+    accountListeners.delete(listener);
+  };
+}
+
+/** A presence colour just picked in Settings › Profile (null for Automatic), so everything showing the account here
+ *  repaints at once. Nothing changes while no one is known to be signed in. */
+export function setAppAccountColour(colour: string | null) {
+  if (!account) return;
+  const next = accountColourOf({ color: colour });
+  if (next === account.colour) return;
+  account = { ...account, colour: next };
+  for (const listener of [...accountListeners]) listener();
+}
+
 /** Asks the app for a fresh token next time (a team made since the last one, which the new token names). */
 export function forgetAppAccount() {
   account = null;

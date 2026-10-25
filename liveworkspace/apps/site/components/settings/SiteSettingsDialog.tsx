@@ -7,6 +7,7 @@ import { lucideExternalLink } from '@liveworkspace/icons/lucide';
 import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import {
   createDeviceSettingsStore,
+  requestProfileHost,
   SETTINGS_DIALOG_CLASS,
   SETTINGS_DIALOG_SIZE,
   SettingsPanel,
@@ -15,21 +16,26 @@ import {
   useSettingsScope,
   type AccountHost,
   type AccountIdentity,
+  type ProfileHost,
   type SettingsAppId,
   type SettingsScope,
 } from '@liveworkspace/settings-ui';
 import { APP_SITES, PLATFORM_SITE } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
 import { accountSecurity } from '@/lib/account-security';
-import { appAccount, type AppAccount } from '@/lib/explorer/app-session';
-import { signOut, useSession } from '@/lib/session';
+import {
+  appAccount,
+  onAppAccountChange,
+  setAppAccountColour,
+  type AppAccount,
+} from '@/lib/explorer/app-session';
+import { setSessionColour, signOut, useSession } from '@/lib/session';
 import { appSettingsLinks } from '@/lib/account-settings';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
 import { setExplorerConsent } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
-import { ProfileCard, type Profile } from './ProfileCard';
 import { settingsErrorMessage } from './settings-ui';
 
 const OutIcon = lucideGlyph(lucideExternalLink, 14);
@@ -84,12 +90,22 @@ export default function SiteSettingsDialog({
   const [scope, setScope] = useSettingsScope(SCOPE_KEY, initialScope);
   const site = app ? APP_SITES.find((s) => s.id === app) : undefined;
   const link = app ? appSettingsLinks().find((l) => l.id === app) : undefined;
-  // On an app's own address the page has the app's token, not this site's session: the profile and the API tokens
-  // are set on liveworkspace.app, so they link to the panel there, on the same category.
-  // The Profile's header is whoever is signed in here; its sessions and sign-in methods, like the profile and the
-  // tokens, are liveworkspace.app's session's, so on an app's address they link there.
+  // The Profile's header is whoever is signed in here. Its Name and Colour is edited in place on either address: over
+  // this site's session on liveworkspace.app, over the app's token on an app's own (accountApi goes through the app's
+  // router there). Sessions, sign-in methods and the API tokens are liveworkspace.app's session's, so on an app's
+  // address they link to the panel there, on the same category.
   const identity = useSettingsIdentity();
   const guestSignIn = guest?.signInHref ?? null;
+  const accountName = identity?.name ?? '';
+  const profile = useMemo<ProfileHost>(
+    () =>
+      requestProfileHost(accountApi, {
+        accountName,
+        onColour: pageApp() ? setAppAccountColour : setSessionColour,
+        errorMessage: settingsErrorMessage,
+      }),
+    [accountName],
+  );
   const account = useMemo<AccountHost>(
     () =>
       guestSignIn
@@ -97,13 +113,13 @@ export default function SiteSettingsDialog({
         : pageApp()
           ? {
               identity,
-              profileHref: workspaceHref('/explorer?settings=profile'),
+              profile,
               securityHref: workspaceHref('/explorer?settings=profile'),
               tokensHref: workspaceHref('/explorer?settings=tokens'),
             }
           : {
               identity,
-              renderProfile: () => <ProfileRow />,
+              profile,
               security: accountSecurity,
               onSignOut: async () => {
                 const left = await signOut();
@@ -112,7 +128,7 @@ export default function SiteSettingsDialog({
               },
               renderTokens: () => <TokensRow />,
             },
-    [identity, guestSignIn],
+    [identity, guestSignIn, profile],
   );
   // A guest's: the browser copy the app's editor keeps, made once per opening.
   const isGuest = guest !== null;
@@ -232,45 +248,6 @@ function TokensRow() {
   );
 }
 
-// The profile collaborators see, read once when its category is first shown (GET /api/account/profile).
-function ProfileRow() {
-  const [profile, setProfile] = useState<
-    | { state: 'loading' }
-    | { state: 'error'; error: string }
-    | { state: 'ready'; profile: Profile | null }
-  >({ state: 'loading' });
-  useEffect(() => {
-    let live = true;
-    void accountApi<{ profile: Profile | null }>('/profile').then((result) => {
-      if (!live) return;
-      setProfile(
-        result.ok
-          ? { state: 'ready', profile: result.data.profile }
-          : { state: 'error', error: result.error },
-      );
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
-  return (
-    <div data-settings-cell="profile" className="px-4 py-4">
-      {profile.state === 'loading' ? (
-        <div
-          aria-busy
-          className="h-40 animate-pulse rounded-xl bg-slate-100 motion-reduce:animate-none dark:bg-slate-800/70"
-        />
-      ) : profile.state === 'error' ? (
-        <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
-          {settingsErrorMessage(profile.error)}
-        </p>
-      ) : (
-        <ProfileCard initial={profile.profile} />
-      )}
-    </div>
-  );
-}
-
 // Who the Profile's header shows: liveworkspace.app's session here, the app's own on an app's address.
 function useSettingsIdentity(): AccountIdentity | null {
   const session = useSession();
@@ -278,11 +255,16 @@ function useSettingsIdentity(): AccountIdentity | null {
   useEffect(() => {
     if (!pageApp()) return;
     let live = true;
-    void appAccount().then((found) => {
-      if (live) setApp(found);
-    });
+    const read = () =>
+      void appAccount().then((found) => {
+        if (live) setApp(found);
+      });
+    read();
+    // A colour just picked in the Profile repaints its header card at once.
+    const stop = onAppAccountChange(read);
     return () => {
       live = false;
+      stop();
     };
   }, []);
   return useMemo(() => {

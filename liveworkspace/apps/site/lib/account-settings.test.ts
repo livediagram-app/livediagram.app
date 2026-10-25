@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_SETTING_KEYS, PRESENCE_COLOURS as SHARED_PALETTE } from '@liveworkspace/settings';
+import { ALL_SETTING_KEYS } from '@liveworkspace/settings';
 import { APP_SITES } from '@liveworkspace/sites';
 import { SETTINGS_PARAM } from './explorer/host';
 import {
   ACCESSIBILITY_ROWS,
   appSettingsLinks,
-  cleanName,
-  colourName,
   EDITOR_ONLY_KEYS,
   IN_APP_ROWS,
   NOTIFICATION_ROWS,
-  PRESENCE_COLOURS,
   PRIVACY_ROWS,
   readToggle,
   uncatalogued,
@@ -52,24 +49,6 @@ describe('the settings catalogue', () => {
       expect(row.label.length, row.key).toBeGreaterThan(3);
       expect(row.description, row.key).toMatch(/\.$/);
     }
-  });
-});
-
-describe('the profile', () => {
-  it('offers the apps’ shared palette, ten colours', () => {
-    expect(PRESENCE_COLOURS).toBe(SHARED_PALETTE);
-    expect(PRESENCE_COLOURS).toHaveLength(10);
-  });
-
-  it('names a colour, or says it is the app’s pick or set elsewhere', () => {
-    expect(colourName(null)).toBe('Automatic');
-    expect(colourName('#0EA5E9')).toBe('Sky');
-    expect(colourName('rebeccapurple')).toBe('Custom');
-  });
-
-  it('stores a name trimmed, and an empty one as none', () => {
-    expect(cleanName('  Ada Lovelace ')).toBe('Ada Lovelace');
-    expect(cleanName('   ')).toBeNull();
   });
 });
 

@@ -63,6 +63,8 @@ export async function accountApi<T>(
   path: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   body?: unknown,
+  // `keepalive`: sent as the page goes (Settings › Profile's name still waiting), so it outlives the page.
+  options?: { keepalive?: boolean },
 ): Promise<ApiResult<T>> {
   try {
     // On an app's own address (the Explorer, served there) through the app's router, with the page's token.
@@ -71,6 +73,7 @@ export async function accountApi<T>(
       method,
       headers: { accept: 'application/json', 'content-type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
+      ...(options?.keepalive ? { keepalive: true } : {}),
     });
     const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
     if (response.ok) return { ok: true, data: data as T };

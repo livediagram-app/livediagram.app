@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SETTINGS_INPUT } from '@liveworkspace/settings-ui';
 
 // The site's buttons, field, card and error note, as the account's own parts use them: the Settings panel's Profile
 // and API Tokens, and the join, decline and workbench pairing pages.
@@ -13,8 +14,8 @@ export const BUTTON = {
     'inline-flex cursor-pointer items-center justify-center rounded-full px-3 py-1.5 text-sm font-semibold text-rose-700 transition-colors duration-micro hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300 dark:hover:bg-rose-500/10',
 };
 
-export const INPUT =
-  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-white dark:focus:ring-white/10';
+// The Settings panel's own field (Settings › Profile's name), so the two read as one.
+export const INPUT = SETTINGS_INPUT;
 
 export function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (

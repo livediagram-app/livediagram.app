@@ -9,7 +9,13 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
 import type { SettingsControl } from '@/components/AccountControl';
-import { appAccount, appSignInHref, appSignOut, appSignUpHref } from '@/lib/explorer/app-session';
+import {
+  appAccount,
+  appSignInHref,
+  appSignOut,
+  appSignUpHref,
+  onAppAccountChange,
+} from '@/lib/explorer/app-session';
 
 const noChange = () => () => {};
 
@@ -24,15 +30,20 @@ export function AppAccountControl({ settings = null }: { settings?: SettingsCont
   );
   useEffect(() => {
     let live = true;
-    void appAccount().then(
-      (found) =>
-        live &&
-        setState(
-          found ? { name: found.name, fullName: found.fullName, colour: found.colour } : 'out',
-        ),
-    );
+    const read = () =>
+      void appAccount().then(
+        (found) =>
+          live &&
+          setState(
+            found ? { name: found.name, fullName: found.fullName, colour: found.colour } : 'out',
+          ),
+      );
+    read();
+    // A colour just picked in Settings › Profile repaints the avatar at once.
+    const stop = onAppAccountChange(read);
     return () => {
       live = false;
+      stop();
     };
   }, []);
 
