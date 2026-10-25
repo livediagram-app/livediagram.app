@@ -189,22 +189,22 @@ describe('run', () => {
 
 describe('a profile on another host', () => {
   it('never contacts liveplanner.app across a session of commands', async () => {
-    const SELF = 'https://diagrams.example';
+    const OTHER = 'https://planner.example';
     const config = '/home/agent/.config/liveplanner/config.toml';
-    const selfHost: Route = (request, url) => {
-      if (url.origin !== SELF) return undefined;
+    const otherHost: Route = (request, url) => {
+      if (url.origin !== OTHER) return undefined;
       const path = url.pathname;
       if (path === '/api/capabilities')
-        return Response.json({ aiEnabled: false, apiBase: `${SELF}/api`, authEnabled: true });
+        return Response.json({ aiEnabled: false, apiBase: `${OTHER}/api`, authEnabled: true });
       return (
         library(request, new URL(`https://liveplanner.app${path}${url.search}`)) ??
         tokens(request, url)
       );
     };
     const files = {
-      [config]: 'default_profile = "self"\n[profiles.self]\nhost = "https://diagrams.example"',
+      [config]: 'default_profile = "other"\n[profiles.other]\nhost = "https://planner.example"',
     };
-    const io = fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [selfHost], files });
+    const io = fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [otherHost], files });
     for (const argv of [
       ['project', 'ls'],
       ['tab', 'ls', 'Auth flow'],
@@ -213,7 +213,7 @@ describe('a profile on another host', () => {
     ])
       await run(argv, io);
     expect(io.requests.length).toBeGreaterThan(5);
-    expect(new Set(io.requests.map((r) => new URL(r.url).origin))).toEqual(new Set([SELF]));
+    expect(new Set(io.requests.map((r) => new URL(r.url).origin))).toEqual(new Set([OTHER]));
   });
 });
 

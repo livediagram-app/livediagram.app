@@ -1,5 +1,5 @@
-# Retired help articles (docs/specs/018-help/help-app.md). liveplanner has no self-hosting and its source is
-# not public, so the Self-Hosting category and the open-source articles are gone; each old URL moves
+# Retired help articles (docs/specs/018-help/help-app.md). liveplanner's source is not public, so the
+# retired categories and the open-source articles are gone; each old URL moves
 # permanently to the live page nearest to it, so search results and old links keep landing.
 # The router strips /help before forwarding and puts it back on a relative Location, so paths here
 # carry no /help prefix. Workers Static Assets reads this file from out/ (Next copies public/).

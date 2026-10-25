@@ -85,7 +85,7 @@ SOFTWARE.
 ## Caveat
 
 - Source: <https://github.com/googlefonts/caveat>, via Google Fonts
-- Used for: the hand lettering in the marketing site's Draw window, self-hosted as a subset of the
+- Used for: the hand lettering in the marketing site's Draw window, served from the site as a subset of the
   glyphs it writes at `apps/marketing/public/fonts/caveat-hero.woff2`
   (see `apps/marketing/components/hero-draw-copy.ts`).
 - Licence: SIL Open Font License 1.1, full text at <https://openfontlicense.org/open-font-license-official-text/>.
