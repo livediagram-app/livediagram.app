@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamMembers, TeamSharedTree } from '@/components/illustrations/collaboration';
+import { TeamMembers, TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Teams',
@@ -39,7 +39,7 @@ Every team has its own folder tree of canvases, shown as a **Team canvases** car
 Inside a team canvas, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
 <Figure caption="The Team canvases card holds the team's shared folders and canvases, which every member can manage.">
-  <TeamSharedTree />
+  <TeamSharedTree noun="canvas" />
 </Figure>
 
 ## Leaving or deleting a team

@@ -8,7 +8,7 @@
 // for the pointer, window, node, arrow and key cap the scenes are drawn from.
 
 import { UndoCluster, Node, Pointer, to, VIEW } from './features-parts';
-import { Frame, PINK, SKY } from './shared';
+import { Frame, PINK, SKY } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** Undo that is yours alone: your move steps back, a teammate's edit beside it stays. */
 export function UndoRedoArt() {

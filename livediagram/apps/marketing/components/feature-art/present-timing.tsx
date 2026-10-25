@@ -2,9 +2,17 @@
 // presenting a slide deck.
 
 import { YOU } from '@/components/art-tokens';
-import { HAIRLINE, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
+import {
+  HAIRLINE,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Pill } from './mode-parts';
-import { AMBER, Frame, SKY } from './shared';
+import { AMBER, Frame, SKY } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Keeping time: the presenter's corner while a slide is up, the elapsed time counting and this
 // slide's budget gone amber as it runs over, beside the slide itself.

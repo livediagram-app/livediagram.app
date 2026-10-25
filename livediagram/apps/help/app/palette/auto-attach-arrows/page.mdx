@@ -2,7 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { AutoAttachArrows } from '@/components/illustrations/palette-modes';
-import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
+import { SettingsEditorPane } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 export const metadata = helpMetadata({
   title: 'Auto-Attach Arrows',
@@ -22,7 +22,7 @@ export const metadata = helpMetadata({
 Auto-Attach Arrows is a switch, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**. It is your own preference: it applies to every canvas you open and changes nothing for anyone else.
 
 <Figure caption="Settings open on Editor, with Auto-Attach Arrows highlighted and switched on.">
-  <SettingsEditorPane highlight="auto-attach" />
+  <SettingsEditorPane noun="canvas" highlight="auto-attach" />
 </Figure>
 
 ## Where an arrow can attach

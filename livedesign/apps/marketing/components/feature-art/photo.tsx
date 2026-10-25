@@ -4,8 +4,19 @@
 // real surface, built on ./page-kit so it reads in light and in dark.
 
 import type { CSSProperties } from 'react';
-import { Frame } from './shared';
-import { AMBER, at, EMERALD, INK, INK_SOFT, Page, Panel, ROSE, SKY, VIOLET } from './page-kit';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import {
+  AMBER,
+  at,
+  EMERALD,
+  INK,
+  INK_SOFT,
+  Page,
+  Panel,
+  ROSE,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // A landscape picture in miniature: a sky, a sun and two hills, clipped to its page. `warm` lays a
 // warming adjustment over it.

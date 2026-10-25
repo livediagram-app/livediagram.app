@@ -13,9 +13,9 @@ import {
   TEXT_BODY,
   TEXT_MUTED,
   TEXT_STRONG,
-} from './canvas-marks';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Glyph, ICON_PATHS } from './content-parts';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // A status pill in a table cell, its hue tinted behind its word.
 const STATUS: Record<string, { tint: string; text: string }> = {

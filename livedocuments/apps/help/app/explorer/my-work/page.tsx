@@ -1,20 +1,11 @@
-import type { Metadata } from 'next';
 import { Redirect } from '@liveworkspace/help-site/components/Redirect';
+import { myWorkMoved } from '@liveworkspace/help-site/lib/moved';
 
-// The space was "My Work", became "My Documents", and is "My Work" again (docs/specs/013-workspace/team-shared-documents.md); its article moved
-// to personal-space along the way.
-// This stub keeps the old help URL alive (it redirects there) but is noindex
-// so search engines consolidate on the canonical article rather than this
-// thin redirect.
-const NEW_URL = '/help/explorer/personal-space/';
+// The My Work guide moved to personal-space: this stub keeps the old URL alive, noindex (@liveworkspace/help-site/lib/moved).
+const moved = myWorkMoved;
 
-export const metadata: Metadata = {
-  title: 'My Work and Folders',
-  description: 'The My Work guide has moved.',
-  robots: { index: false, follow: true },
-  alternates: { canonical: NEW_URL },
-};
+export const metadata = moved.metadata;
 
 export default function MyWorkRedirectPage() {
-  return <Redirect href={NEW_URL} label="My Work guide" />;
+  return <Redirect href={moved.href} label={moved.label} />;
 }

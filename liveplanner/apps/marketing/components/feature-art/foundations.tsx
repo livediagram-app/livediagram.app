@@ -5,7 +5,12 @@
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
 import { MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
-import { EMERALD, Frame, MONO, VIOLET } from './shared';
+import {
+  EMERALD,
+  Frame,
+  MONO,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 const VIEW = '0 0 300 96';
 

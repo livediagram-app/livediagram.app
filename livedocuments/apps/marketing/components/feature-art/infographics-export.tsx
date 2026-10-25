@@ -1,8 +1,19 @@
 // Feature art for Pages mode's last steps (docs/specs/007-editor/pages-mode.md): a diagram split
 // onto pages, and every page exported print-ready. Split from ./infographics; built on ./page-kit like it.
 
-import { Frame } from './shared';
-import { at, EMERALD, INK, INK_SOFT, Lines, Page, Panel, ROSE, SKY, VIOLET } from './page-kit';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import {
+  at,
+  EMERALD,
+  INK,
+  INK_SOFT,
+  Lines,
+  Page,
+  Panel,
+  ROSE,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 /** Every page, print-ready: the pages, the export panel set to PDF, and the file it makes. */
 export function PagesExportArt() {

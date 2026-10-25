@@ -7,7 +7,7 @@
 // loops plus the fa-c-* ones (app/feature-art/versatility.css), which settle to the finished frame
 // under reduced motion.
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   ArrowHead,
   Chip,
@@ -26,7 +26,7 @@ import {
   TONE_TEXT,
   WandIcon,
   delay,
-} from './versatility-parts';
+} from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
 
 export { ShapesArt } from './versatility-shapes';
 export { FontsArt, RotateArt, ZenModeArt } from './versatility-more';

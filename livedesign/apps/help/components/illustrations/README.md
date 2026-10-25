@@ -14,8 +14,8 @@ static export.
   components (PascalCase) composed from the primitives. `canvas.tsx` is the
   worked exemplar; mirror its structure and density.
 - **`<surface>.tsx`**: an editor surface several areas show, drawn once and
-  imported wherever it recurs. `settings-dialog.tsx` holds the Settings frame,
-  its Editor and Panels panes, and the `Switch` every settings-style row uses.
+  imported wherever it recurs. The Settings frame, its Editor and Panels panes, and the `Switch` every
+  settings-style row uses are every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`.
   Name every file after its subject (an area or a surface), never after the
   batch of work that produced it.
 - **`../Figure.tsx`** — frames a scene in an "editor viewport" card with a

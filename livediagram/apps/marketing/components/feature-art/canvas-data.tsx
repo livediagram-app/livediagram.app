@@ -3,8 +3,23 @@
 // elements) and code blocks. Diagram ink is the Default theme's, read through the canvas-marks
 // utilities; a code block paints from its own scheme (Midnight, ../packages/model-core/src/code-themes.ts).
 
-import { ARROW, Caret, INK, INK_TEXT, SHADOW, Scene, TEXT_BODY } from './canvas-marks';
-import { AMBER, EMERALD, Frame, MONO, SKY, VIOLET } from './shared';
+import {
+  ARROW,
+  Caret,
+  INK,
+  INK_TEXT,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import {
+  AMBER,
+  EMERALD,
+  Frame,
+  MONO,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Sequence diagram: three participants over dashed lifelines, the messages top to bottom (a call,
 // a call on to the database, its dashed reply, a reply back), an activation bar on the API while it

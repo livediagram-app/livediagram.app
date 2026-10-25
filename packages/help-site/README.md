@@ -17,7 +17,9 @@ What every help centre draws alike lives once in `src/art/`:
 - `art/scenes/<slug>`: the category scenes whose story is the same in every product. Each takes the product's
   content as props (its name, share host, export formats, commands and keys, its work drawn on a screen), and the
   app's `components/category-art/<slug>.tsx` binds it. Policies takes nothing.
-- `art/illustrations/<area>`: in-article figures that are the same in every product that shows them.
+- `art/illustrations/<area>`: in-article figures that are the same in every product that shows them. Where a figure
+  names the product or its work, it takes them as props (`product`, `noun`: `design`, `plan`, …; `art/noun` spells
+  the plural and capitals), and the article passes them: `<CliConsent product="livedesign" noun="design" />`.
 - `art/work`: every product's work in miniature (`MiniBoard`, `MiniSheet`, `MiniArticle`, `MiniSlide`, `MiniLogo`,
   `MiniWireframe` and the rest), each scaled to the box it is handed, for the scenes that draw a product's work on a
   screen or a thumbnail. They live once in `@liveworkspace/ui/work-art`, because the Explorer's Home draws the same
@@ -42,6 +44,11 @@ pageMetadata, cardSubtitle })` returns the `site` every server component and rou
   a lazy `loadSearch` (`import('./articles')`, so the registry stays out of every page's JavaScript) and the
   serialisable `facts`. It also installs client error tracking. The root layout mounts it once.
 
+A retired help URL keeps a stub `page.tsx` in the app (the app router needs one), bound to `lib/moved`: the
+policies' moves to liveworkspace.app (`privacyPolicyMoved(product)`, `termsMoved(product)`), My Work and Unsorted
+(`myWorkMoved`, `unsortedMoved(work)`) and the palette's Favourites and Popular. The stub renders `Redirect` with the
+move's `href` and `label` and exports its `metadata`.
+
 Kept in the app because every article imports them:
 
 - `components/ArticleLayout.tsx` binds `ArticleLayout` to the site.
@@ -57,7 +64,7 @@ There is no barrel, so a page pulls in only what it imports.
 | `./site`           | `createHelpSite`, the `HelpSite` type, the config types                           |
 | `./client`         | `HelpClientProvider`, `useHelpClient`, `HelpTrack` (client only)                  |
 | `./components/*`   | `HelpHome`, `CategoryPages`, `ContactPage`, `FeatureCategoryIndex`, `Redirect`, … |
-| `./lib/*`          | `home` (the home-page layout type), `heading-id`, `feature-tile`, …               |
+| `./lib/*`          | `home` (the home-page layout type), `heading-id`, `feature-tile`, `moved`, …      |
 | `./mdx-components` | `createUseMdxComponents` and the article components                               |
 | `./next-config`    | `withHelpSite(config)`: basePath `/help`, trailing slashes, MDX with GFM          |
 | `./help.css`       | the help centre's styles and the dark retargeting for its SVG art                 |

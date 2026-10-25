@@ -2,7 +2,7 @@
 // tool and palm rejection. Split from ./whiteboard, whose palette it shares.
 
 import { at, INK, Keycap, MUTED, Pill, Stage, SURFACE, ToolStrip } from './mode-parts';
-import { PINK } from './shared';
+import { PINK } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** The Path tool (P): a clean curve of anchor points, the chosen one mirrored with its handles. */
 export function PathToolArt() {

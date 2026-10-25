@@ -3,7 +3,7 @@
 // facilitator's baton and Bring Focus. Split out of ./present (the deck cards) by subject; built
 // on ./page-kit so each reads in light and in dark.
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   AMBER,
   at,
@@ -17,7 +17,7 @@ import {
   SKY,
   SKY_DEEP,
   VIOLET,
-} from './page-kit';
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // One plane of the tilted canvas: a rhombus centred on (110, y).
 function Plane({

@@ -5,7 +5,7 @@
 // light and in dark. The room tools (3D, the facilitator, Bring Focus) live in ./room.
 
 import type { CSSProperties } from 'react';
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   AMBER,
   at,
@@ -18,7 +18,7 @@ import {
   Screen,
   SKY,
   VIOLET,
-} from './page-kit';
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // A shape on the canvas in the Default scheme's colours, with its label.
 function Shape({ x, y, w = 26, label }: { x: number; y: number; w?: number; label: string }) {

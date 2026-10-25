@@ -7,7 +7,14 @@
 
 import type { ReactNode } from 'react';
 import { Arrow, MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
-import { EMERALD, Frame, MONO, PINK, SKY, VIOLET } from './shared';
+import {
+  EMERALD,
+  Frame,
+  MONO,
+  PINK,
+  SKY,
+  VIOLET,
+} from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 const VIEW = '0 0 300 96';
 

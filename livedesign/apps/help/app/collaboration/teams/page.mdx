@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamMembers, TeamSharedTree } from '@/components/illustrations/collaboration';
+import { TeamMembers, TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Teams',
@@ -39,7 +39,7 @@ Every team has its own folder tree of designs, shown as a **Team designs** card 
 Inside a team design, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
 <Figure caption="The Team designs card holds the team's shared folders and designs, which every member can manage.">
-  <TeamSharedTree />
+  <TeamSharedTree noun="design" />
 </Figure>
 
 ## Leaving or deleting a team

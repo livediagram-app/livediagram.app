@@ -9,7 +9,12 @@ packages/marketing-site/src
 ├─ components/
 │  ├─ PageHero.tsx, Section.tsx, CtaLink.tsx, LegalRedirect.tsx
 │  │                            the page hero, a feature section and its grid, the CTA link, the
-│  │                            noindex redirect behind /terms and /privacy
+│  │                            noindex redirect behind /terms, /privacy and /security
+│  ├─ StartDrawingArt.tsx       the Try It card's line illustration
+│  ├─ privacy/                  the landing page's Privacy band (PrivacySection, handed the product's
+│  │                            promises) and its art (PrivacyArt; DataIsYoursArt takes the work's noun)
+│  ├─ feature-art/              what every product's card art draws from: shared (Frame, colours, the
+│  │                            teammate Cursor), canvas-marks, page-kit, versatility-parts
 │  ├─ ai/                       the Build with AI page (BuildWithAi) and its client picker, code
 │  │                            blocks, copy buttons, address card, prompts, control and help
 │  ├─ faq/                      the FAQ browser (search, category index) and the question card
@@ -18,6 +23,7 @@ packages/marketing-site/src
 │  ├─ ai-clients.ts             the AI clients as data, bound to a product by aiClients()
 │  ├─ faq.ts                    the FAQ's shape, its plain-text answers and its search
 │  ├─ licences-manifest.ts      reads generated/licences.json at build time
+│  ├─ legal-moved.ts            the /terms, /privacy and /security stubs' metadata and words, by product
 │  ├─ view-transition-guard.ts  the inline script that skips a transition into another app
 │  ├─ hero-fan-boot.ts          the inline script that deals the hero fan's shuffled hand
 │  └─ eyebrow, band-classes, feature-anchor, shelf-scroll

@@ -2,7 +2,7 @@
 // ./versatility, which re-exports it. Drawn from ./versatility-parts on the 300 by 96 card stage,
 // moving with the fa-c-* loops (app/feature-art/versatility.css).
 
-import { Frame } from './shared';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
   HAIRLINE,
   PANEL,
@@ -11,7 +11,7 @@ import {
   TONE_SHAPE,
   TONE_TEXT,
   delay,
-} from './versatility-parts';
+} from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
 
 // The shape library: the Shapes panel on the left with its tiles, the brand highlight walking the
 // tiles, and on the canvas the shapes they make landing one after another: a cloud, a phone frame,

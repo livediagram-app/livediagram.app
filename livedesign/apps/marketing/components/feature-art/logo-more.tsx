@@ -3,8 +3,19 @@
 // app/feature-art/pages.css); under reduced motion each shows its finished frame.
 
 import type { CSSProperties } from 'react';
-import { Frame } from './shared';
-import { at, INK, INK_SOFT, LINE, Lines, Page, SKY, VIOLET, AMBER, EMERALD } from './page-kit';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import {
+  at,
+  INK,
+  INK_SOFT,
+  LINE,
+  Lines,
+  Page,
+  SKY,
+  VIOLET,
+  AMBER,
+  EMERALD,
+} from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
 // Four small artboards, each a different kind of logo layout: an emblem, a monogram, a lockup and a
 // wordmark, landing in turn as the layout picker deals them.

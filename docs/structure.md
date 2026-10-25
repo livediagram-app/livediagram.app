@@ -196,6 +196,20 @@ Each step is its own PR, and both products build and pass their tests after ever
      the views, the lint context and checks, typed on its `Element` and `Tab`, and the wire types in its `api-schema`,
      whose lint codes and view names really differ (livediagram's group, aspect and colour checks, livedocuments'
      `pages` view).
+   - `help-site` and `marketing-site`, second slice: what the help and marketing apps still had in two or more
+     copies. Thirteen in-article illustration modules (troubleshooting, the settings dialog, account settings, the
+     CLI, account, canvas links and notes, collaboration, explorer imports, palette rows, the drawing tools, privacy,
+     tips, the title bar) are one copy in `@liveworkspace/help-site/art/illustrations`, the union of the copies; where
+     a figure named the product or its work, the article now passes it (`product`, `noun`, with `art/noun` for
+     plurals and capitals), and liveplanner's two real differences became props (its Session strip has no Poll, its
+     R2 holds Snapshots). The retired help URLs' stubs bind `lib/moved`. `@liveworkspace/marketing-site` gains the
+     Privacy band and its art (each app keeps its promises), the Try It flourish, the feature-art kit (`shared`,
+     `canvas-marks`, `page-kit`, `versatility-parts`) and `lib/legal-moved` behind `/privacy`, `/terms` and
+     `/security`: 24 files, about 4,900 lines, and about 13,400 fewer in the products. Every moved piece rendered
+     byte-identical to main. Still in each app: the tool configs, the category-art bindings, liveplanner's help terms
+     stub (its wording differs), livediagram's and liveplanner's title bar (an older header layout), livedocuments'
+     palette rows and each `privacy-art.css` palette. Each help app's CSS grows by at most 90 B gzipped; liveplanner's
+     marketing stylesheet leaves out the card art it never draws (`@source not`).
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
    - `ui`, first slice: `@liveworkspace/ui` (`packages/ui`) holds everything the four products' `ui`

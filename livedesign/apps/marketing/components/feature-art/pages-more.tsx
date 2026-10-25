@@ -11,8 +11,8 @@ import {
   TEXT_BODY,
   TEXT_MUTED,
   TEXT_STRONG,
-} from './canvas-marks';
-import { Frame, VIOLET } from './shared';
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame, VIOLET } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** A page as the canvas shows it: a white sheet with a soft shadow. */
 function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {

@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
+import { CliDeviceSignIn, CliConsent } from '@liveworkspace/help-site/art/illustrations/cli';
 
 export const metadata = helpMetadata({
   title: 'The liveplanner CLI',
@@ -53,7 +53,7 @@ The CLI opens a sign-in page in your browser (and prints its address, in case th
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
   width="narrow"
 >
-  <CliConsent />
+  <CliConsent product="liveplanner" noun="plan" />
 </Figure>
 
 The terminal waits up to ten minutes for you. If the browser cannot reach it (on a remote machine, say), use a device code instead.
@@ -67,7 +67,7 @@ liveplanner auth login --device
 The terminal prints a page address, `https://liveplanner.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect liveplanner CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
 
 <Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
-  <CliDeviceSignIn />
+  <CliDeviceSignIn product="liveplanner" />
 </Figure>
 
 A code lasts **ten minutes**. If the page says it couldn't find the code, check it and try again; if it has expired, run the command again for a new one. Choosing **Cancel** on the page stops the terminal waiting. Only enter a code that a terminal you are using is showing you.

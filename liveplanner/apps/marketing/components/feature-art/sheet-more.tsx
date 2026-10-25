@@ -5,9 +5,17 @@
 import type { ReactNode } from 'react';
 
 import { TEAMMATE, YOU } from '@/components/art-tokens';
-import { Caret, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED, TEXT_STRONG } from './canvas-marks';
+import {
+  Caret,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+  TEXT_STRONG,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Avatar, Pill } from './mode-parts';
-import { Frame, MONO } from './shared';
+import { Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 const HEAD_W = 12;
 const HEAD_H = 10;

@@ -4,8 +4,17 @@
 // app/feature-art/content.css), so it survives the static export and settles to a still frame
 // under prefers-reduced-motion, as the editor's own animations do. Shared marks: ./canvas-marks.
 import type { CSSProperties, ReactNode } from 'react';
-import { ARROW, INK, INK_TEXT, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED } from './canvas-marks';
-import { Frame } from './shared';
+import {
+  ARROW,
+  INK,
+  INK_TEXT,
+  PANEL,
+  SHADOW,
+  Scene,
+  TEXT_BODY,
+  TEXT_MUTED,
+} from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // A chip naming the animation a shape wears, under the shape.
 function Tag({ x, y, children }: { x: number; y: number; children: ReactNode }) {
