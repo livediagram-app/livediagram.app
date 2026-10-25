@@ -162,7 +162,8 @@ The page reads where it is from its own address and there is that app's page:
   The app's silent sign-in runs on the page, as in the app's editor.
 - **The header.** The liveworkspace logo leads to liveworkspace.app, the app's logo to the app's home, and the
   account menu is the app's: Sign In and Sign Out are the app's, and its Settings opens the Settings panel here,
-  in place.
+  in place. The logo's site switcher marks the app and keeps the person on the Explorer: each row opens that
+  site's Explorer at the same view ([site-switcher.md](site-switcher.md#on-an-explorer-page)).
 - **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Only what needs
   liveworkspace.app's session (the profile, API tokens) links there, to the panel on that section.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in

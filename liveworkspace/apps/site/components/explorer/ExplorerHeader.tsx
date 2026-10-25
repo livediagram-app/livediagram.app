@@ -10,10 +10,15 @@
 // On an app's own address (lib/explorer/page-app.ts) the page is the app's: the liveworkspace logo leads to
 // liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session.
 // Either way the account menu's Settings opens the Explorer's own Settings panel in place (`settings`).
+//
+// The logo's site switcher keeps the person on the Explorer: each site's row opens that site's Explorer at the same
+// view (liveworkspace/docs/site-switcher.md "On an Explorer page"), worked out from this page's address. It marks the
+// app whose address this is, else liveworkspace.
 
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { SiteSwitcher } from '@livediagram/ui';
-import { siteOfApp, type AppName } from '@liveworkspace/sites';
+import { explorerSwitchHref, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl, type SettingsControl } from '@/components/AccountControl';
 import { AppAccountControl } from '@/components/explorer/AppAccountControl';
 import { pageApp, workspaceOrigin } from '@/lib/explorer/page-app';
@@ -36,6 +41,10 @@ export function ExplorerHeader({
   // Null while prerendered and on liveworkspace.app.
   const host = useSyncExternalStore(noChange, pageApp, () => null);
   const listed = app ? listedApps().find((a) => a.id === siteOfApp(app).id) : undefined;
+  // Each site's row: its Explorer at this view, recomputed only when the view moves.
+  const pathname = usePathname();
+  const query = useSearchParams().toString();
+  const hrefFor = useMemo(() => explorerSwitchHref(pathname, query), [pathname, query]);
   return (
     <header
       data-explorer-header=""
@@ -44,7 +53,11 @@ export function ExplorerHeader({
       <div className="mx-auto flex h-full max-w-7xl items-center gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 shrink-0 items-center">
           {/* On a phone, with an app's logo beside it, only the app's shows: there is little room. */}
-          <SiteSwitcher current="liveworkspace.app" className={listed ? 'max-sm:hidden' : ''}>
+          <SiteSwitcher
+            current={host ? siteOfApp(host).id : 'liveworkspace.app'}
+            hrefFor={hrefFor}
+            className={listed ? 'max-sm:hidden' : ''}
+          >
             <a
               href={host ? `${workspaceOrigin()}/` : '/'}
               aria-label="liveworkspace home"

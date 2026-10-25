@@ -7,7 +7,8 @@
 // Opens three ways: hover on a pointer (CSS group-hover, the chevron fading in to say so), a tap on
 // the chevron on touch (always shown there, since nothing hovers), and the chevron as a menu button
 // from the keyboard (docs/specs/004-interface-design/menus.md). Links are plain <a> to each site's
-// own origin: every site is a different one. Each product binds it to its app (its SiteSwitcher), whose
+// own origin: every site is a different one, at its home unless the header says where (`hrefFor`: the Explorer's
+// header keeps the person on the Explorer, @liveworkspace/sites explorerSwitchHref). Each product binds it to its app (its SiteSwitcher), whose
 // prism every row's mark is drawn in, tinted with that row's accent.
 
 import { BrandMark, type BrandApp } from '@liveworkspace/brand';
@@ -20,6 +21,7 @@ import { useClickOutside } from './useClickOutside';
 export function SiteSwitcher({
   app,
   current,
+  hrefFor,
   children,
   className = '',
 }: {
@@ -27,6 +29,8 @@ export function SiteSwitcher({
   app: BrandApp;
   // The site this header belongs to, marked in the list.
   current: SiteId;
+  // Where each site's row leads (its home when absent).
+  hrefFor?: ((site: Site) => string) | null;
   // The logo.
   children: ReactNode;
   className?: string;
@@ -73,13 +77,26 @@ export function SiteSwitcher({
           aria-label="liveworkspace sites"
           className="w-72 max-sm:w-auto outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
-          <SiteRow app={app} site={PLATFORM_SITE} current={current} onPick={close} />
+          <SiteRow
+            app={app}
+            site={PLATFORM_SITE}
+            href={hrefFor ? hrefFor(PLATFORM_SITE) : PLATFORM_SITE.url}
+            current={current}
+            onPick={close}
+          />
           <div
             role="separator"
             className="mx-2 my-1 border-t border-slate-200 dark:border-slate-700"
           />
           {APP_SITES.map((site) => (
-            <SiteRow key={site.id} app={app} site={site} current={current} onPick={close} />
+            <SiteRow
+              key={site.id}
+              app={app}
+              site={site}
+              href={hrefFor ? hrefFor(site) : site.url}
+              current={current}
+              onPick={close}
+            />
           ))}
         </div>
       </div>
@@ -90,18 +107,20 @@ export function SiteSwitcher({
 function SiteRow({
   app,
   site,
+  href,
   current,
   onPick,
 }: {
   app: BrandApp;
   site: Site;
+  href: string;
   current: SiteId;
   onPick: () => void;
 }) {
   const isCurrent = site.id === current;
   return (
     <a
-      href={site.url}
+      href={href}
       role="menuitem"
       tabIndex={-1}
       aria-current={isCurrent ? 'page' : undefined}
