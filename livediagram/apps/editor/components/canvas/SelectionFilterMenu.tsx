@@ -5,7 +5,10 @@ import { elementKindLabel, type Element } from '@livediagram/document';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { HoverCard, Glyph } from '@livediagram/ui';
-import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
+import {
+  TOOLBAR_BTN,
+  TOOLBAR_BTN_ON,
+} from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the
 // ids of every selected element that belongs to it.

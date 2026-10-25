@@ -10,7 +10,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal, useClickOutside } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import { usePopoverLayer } from './popover-stack';
+import { usePopoverLayer } from '@liveworkspace/workbench/components/primitives/popover-stack';
 
 const GAP = 6; // space between the anchor and the panel
 // The least room a panel takes on its side, however little the window leaves it (an on-screen keyboard that shrinks

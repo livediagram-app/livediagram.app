@@ -19,7 +19,7 @@ import {
 import { ChartValues } from '@/components/primitives/ChartValues';
 import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@liveworkspace/workbench/hooks/canvas/useChartHover';
-import { ChartReadout } from '@/components/primitives/ChartReadout';
+import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function PieChartView({

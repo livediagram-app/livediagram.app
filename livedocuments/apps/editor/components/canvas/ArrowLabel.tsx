@@ -11,7 +11,7 @@ import {
   LABEL_PAD_Y_PX,
   type ArrowLabelLayout,
 } from '@livedocuments/document';
-import { BRAND_600 } from './arrow-handle-style';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 
 // Browsers and the canvas measure text a hair apart; the editor gets this

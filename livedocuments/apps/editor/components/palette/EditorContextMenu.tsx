@@ -13,7 +13,10 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import {
+  onMouseHover,
+  useRevertOnUnmount,
+} from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   isFixedSizeElement,
   arrowheadShapeOf,

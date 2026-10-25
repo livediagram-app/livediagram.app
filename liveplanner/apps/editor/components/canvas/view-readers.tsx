@@ -14,7 +14,7 @@ import {
   useSheetZoom,
 } from '@/hooks/sheets/sheet-zoom';
 import { useEffect, type ComponentProps } from 'react';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { Minimap } from '@/components/canvas/Minimap';
 import { ZoomControls } from '@/components/chrome/ZoomControls';

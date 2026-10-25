@@ -22,7 +22,7 @@ import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 type Phase = 'idle' | 'submitting' | 'error';
 

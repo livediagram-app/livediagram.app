@@ -280,7 +280,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   and replaces the pictures only when its markup changed; the hider is `visibility: hidden` while pictures show.
   Art with a running animation (`getAnimations({ subtree: true })`) or a drawing with no size yet gets no copy: the
   live art shows, unwobbled.
-- `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
+- `../packages/workbench/src/components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
   `SketchArtPicture` share (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
   `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is

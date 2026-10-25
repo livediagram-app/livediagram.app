@@ -8,7 +8,7 @@ import {
   type LayoutRect,
   type WebRows,
 } from '@livedocuments/document';
-import { FLOATING_CONTROL_CLASS } from '@/components/chrome/floating-controls';
+import { FLOATING_CONTROL_CLASS } from '@liveworkspace/workbench/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@/hooks/ui/useGraceHover';

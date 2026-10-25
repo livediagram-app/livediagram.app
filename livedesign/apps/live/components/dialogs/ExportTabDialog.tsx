@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { FormatCard } from './FormatCard';
+import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
@@ -230,9 +230,7 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(
-    `${designName || 'design'} - ${tab.name || 'tab'}${suffix}`,
-  );
+  const baseName = sanitizeFilename(`${designName || 'design'} - ${tab.name || 'tab'}${suffix}`);
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.

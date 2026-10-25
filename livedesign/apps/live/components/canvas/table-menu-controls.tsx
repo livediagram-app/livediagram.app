@@ -5,7 +5,7 @@ import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
   FLOATING_CONTROL_SIZE,
-} from '@/components/chrome/floating-controls';
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
 import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@livedesign/ui';
 
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that

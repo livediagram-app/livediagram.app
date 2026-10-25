@@ -7,7 +7,7 @@ import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {

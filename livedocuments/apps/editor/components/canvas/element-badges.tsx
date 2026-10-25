@@ -11,7 +11,7 @@
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
 import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livedocuments/ui';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { RemoteSelector } from '@/lib/presence-rows';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock

@@ -13,7 +13,10 @@ import { standardGroup } from '@/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 
 // A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening
 // the one colour picker (docs/specs/004-interface-design/colour-picker.md): the strong standard

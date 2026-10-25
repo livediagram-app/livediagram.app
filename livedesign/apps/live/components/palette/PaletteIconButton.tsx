@@ -5,7 +5,7 @@ import { tileCaption } from './tile-caption';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livedesign/ui';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
 import type { PaletteTileDef } from './palette-tile-defs';

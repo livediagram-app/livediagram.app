@@ -3,7 +3,7 @@
 // (docs/specs/008-canvas/canvas-and-palette.md "Screens inside an element").
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { CanvasZoomProvider } from './CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { SCREEN_SCALE_MAX, ScaleCapped } from './ScaleCapped';
 
 // Draws as the canvas would: its own size times the zoom (`drawnAt`), times the scale it sets itself.

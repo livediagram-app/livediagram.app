@@ -1,6 +1,6 @@
 import { type TextAlignX, type TextAlignY } from '@livedocuments/document';
 import { AlignIcon } from '@/components/palette/palette-icons';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useState } from 'react';
 import { HoverCard, Tooltip } from '@livedocuments/ui';
 import type { StandardTone } from '@livedocuments/document';

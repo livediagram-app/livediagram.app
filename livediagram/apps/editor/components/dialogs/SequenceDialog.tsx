@@ -22,7 +22,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogTabs } from '@/components/dialogs/DialogTabs';
+import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSequenceDialog } from '@/lib/sequence-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';

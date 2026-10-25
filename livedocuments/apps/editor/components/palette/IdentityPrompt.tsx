@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, useEscape } from '@livedocuments/ui';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
 import { CanvasModalCard } from './CanvasModalCard';

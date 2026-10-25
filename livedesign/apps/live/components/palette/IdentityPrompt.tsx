@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, useEscape } from '@livedesign/ui';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';
 import { CanvasModalCard } from './CanvasModalCard';
@@ -39,9 +39,7 @@ export function IdentityPrompt({
   }, [participant.name, nameLocked]);
   useEscape(onCancel);
   const effectiveName = name.trim() || participant.name;
-  const title = designName?.trim()
-    ? `Welcome to '${designName.trim()}'`
-    : 'Welcome to this design';
+  const title = designName?.trim() ? `Welcome to '${designName.trim()}'` : 'Welcome to this design';
   return (
     <CanvasModalCard label="Confirm your name" width="sm:w-[26rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">

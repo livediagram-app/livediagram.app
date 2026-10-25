@@ -13,7 +13,7 @@ import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { isTechIconId } from '@/lib/tech-icons';
 
 // The boundary (docs/specs/009-elements/boundary.md): a tint under everything it holds (nested ones stack, so they

@@ -20,7 +20,7 @@ import {
   useSpeedRowGate,
   withNone,
 } from '@/components/palette/context-menu-tiles';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 // The animations of the elements whose set is their own and written through the element-style ops: a concept

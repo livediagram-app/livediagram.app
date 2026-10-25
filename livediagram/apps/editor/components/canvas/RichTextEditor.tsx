@@ -33,7 +33,7 @@ import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 export function RichTextEditor({
   element,

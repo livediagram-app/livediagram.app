@@ -2,7 +2,7 @@
 
 import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { renderUnits, unitCount } from '@/components/canvas/animated-words';
 import { useTextAnimation } from '@/components/canvas/useTextAnimation';
 

@@ -20,7 +20,7 @@ import {
 } from '@/components/dialogs/AssignActionAssigneePicker';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { track } from '@/lib/telemetry';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 // Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can

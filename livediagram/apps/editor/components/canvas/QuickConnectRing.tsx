@@ -9,7 +9,10 @@ import {
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { PlusIcon, HoverCard } from '@livediagram/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
-import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
+import {
+  FLOATING_CONTROL_GAP,
+  FLOATING_CONTROL_SIZE,
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
 import {
   ADD_COLUMN_OPTION,
   webRowOption,

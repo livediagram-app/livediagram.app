@@ -14,7 +14,7 @@ import {
   type ArticleStyle,
 } from '@livedocuments/document';
 import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Tooltip } from '@livedocuments/ui';
-import { SegmentSlider } from '@/components/primitives/SegmentSlider';
+import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';

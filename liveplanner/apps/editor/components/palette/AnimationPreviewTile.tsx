@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { SizeButton } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useFrozenAnimations } from '@/components/palette/useFrozenAnimations';
 
 // One animation option in a menu (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): a

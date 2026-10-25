@@ -7,7 +7,7 @@ import {
 } from '@livediagram/document';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
   AspectLockMenuIcon,

@@ -17,7 +17,7 @@ import { useMovablePanelMeasure } from './useMovablePanelMeasure';
 import { useDockPopoverKeys } from './useDockPopoverKeys';
 import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';

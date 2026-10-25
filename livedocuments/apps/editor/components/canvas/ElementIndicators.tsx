@@ -19,7 +19,7 @@ import {
 } from '@livedocuments/ui';
 import type { BoxedElement } from '@livedocuments/document';
 import { badgeCornerInset } from '@liveworkspace/workbench/lib/badge-anchor';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import type { IndicatorLayout } from '@/components/canvas/useIndicatorLayout';
 import {

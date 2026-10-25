@@ -114,7 +114,7 @@ the marketing site's "No Catch" night section:
   pages say what connecting means ("Connect": live, your call, revoke any time). The pitch holds no controls.
 - **Decorative lines keep drawing** behind the content on wide screens, in any direction: four slots each take a
   random route that enters through one edge and leaves through another, bending across the stage on the way
-  (`randomTrace`, `components/chrome/auth-lines.ts`). A route draws in, holds, then trails off the far edge over 14
+  (`randomTrace`, `../packages/workbench/src/components/chrome/auth-lines.ts`). A route draws in, holds, then trails off the far edge over 14
   seconds, and its slot takes a fresh route the moment it ends; the first round starts the slots a quarter cycle apart,
   so a new line is always on its way. Routes are chosen in the browser after mount. They are hidden from assistive
   technology and absent below the `lg` breakpoint. Under reduced motion (the OS setting or the person's own preference)

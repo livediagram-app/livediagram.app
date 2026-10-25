@@ -1,8 +1,11 @@
 import { useRef, type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
-import { FloatingTitle } from '@/components/chrome/FloatingTitle';
+import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
-import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
+import {
+  useMinimalChrome,
+  usePowerUser,
+} from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livedocuments/ui';
 import {
   BringToFrontIcon,

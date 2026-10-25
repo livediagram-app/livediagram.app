@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncDesignPrompt } from './SyncDesignPrompt';
 
 // The Share dialog's offline gate (docs/specs/006-design/offline-mode.md "Sharing a design in

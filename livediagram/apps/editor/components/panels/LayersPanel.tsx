@@ -8,7 +8,7 @@ import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
-import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
+import { useRevertOnUnmount } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
   FooterDeleteIcon,
   MergeDownIcon,

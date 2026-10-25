@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Button, clampIntoRange, lucideGlyph, Portal } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import { usePopoverLayer } from './popover-stack';
+import { usePopoverLayer } from '@liveworkspace/workbench/components/primitives/popover-stack';
 
 // A small confirmation popover anchored beside a trigger element, with an
 // arrow pointing back at it. The lightweight alternative to the full-

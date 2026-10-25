@@ -7,7 +7,7 @@
 // the bottom (`placement="row"`, PhotoChrome places it), a tap on the tool in hand opening its options sheet.
 import { Fragment, useEffect } from 'react';
 import { Tooltip } from '@livedesign/ui';
-import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
+import { CLUSTER_STRIP } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import {
   GROUP_KEYS,
   photoTools,

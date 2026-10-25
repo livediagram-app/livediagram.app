@@ -6,7 +6,7 @@
 // wrap stay pure renderers.
 
 import type { ComponentProps } from 'react';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { Minimap } from '@/components/canvas/Minimap';

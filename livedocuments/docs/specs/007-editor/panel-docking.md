@@ -174,7 +174,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   callbacks report start / move (with the live bounding rect, converted to dock-layer
   coords) / end up to the dock hook, which drives the snap guides and the dock-vs-free
   decision. The popover and `collapsible` paths are untouched. The persisted corner/free placement only changes on pointer-up.
-- **`apps/editor/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
+- **`../packages/workbench/src/components/canvas/PanelSnapSlot.tsx`** — the drop-target slot rendered
   by `CanvasChrome` as the last flex child of the candidate corner's stack container
   while a panel drag is active, so flexbox previews exactly where the released panel will
   land (its height mirrors the dragged panel); the candidate corner comes from the dock hook.

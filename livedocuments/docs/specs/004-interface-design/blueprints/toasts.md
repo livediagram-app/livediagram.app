@@ -4,15 +4,15 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 
 ## Files
 
-| File                                            | Holds                                                                                                                   |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/hooks/ui/useToast.tsx`             | `ToastProvider`, `useToast`, the `ToastApi` (`info`, `success`, `warning`, `error`, `offer`, `action`, `dismissAction`) |
-| `apps/editor/components/toast/toast-queue.ts`   | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
-| `apps/editor/components/toast/ToastStack.tsx`   | The always-mounted `Notifications` region, its placement and the floor                                                  |
-| `apps/editor/components/toast/ToastCard.tsx`    | One toast: icon, message, actions, close; `TOAST_SURFACE` for the look shared by other notices                          |
-| `apps/editor/components/toast/useToastTimer.ts` | The pausable timeout                                                                                                    |
-| `apps/editor/components/toast/toast-floor.ts`   | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                          |
-| `apps/editor/components/toast/useToastFloor.ts` | Measures the floor while the stack is up                                                                                |
+| File                                                          | Holds                                                                                                                   |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `apps/editor/hooks/ui/useToast.tsx`                           | `ToastProvider`, `useToast`, the `ToastApi` (`info`, `success`, `warning`, `error`, `offer`, `action`, `dismissAction`) |
+| `apps/editor/components/toast/toast-queue.ts`                 | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
+| `apps/editor/components/toast/ToastStack.tsx`                 | The always-mounted `Notifications` region, its placement and the floor                                                  |
+| `apps/editor/components/toast/ToastCard.tsx`                  | One toast: icon, message, actions, close; `TOAST_SURFACE` for the look shared by other notices                          |
+| `../packages/workbench/src/components/toast/useToastTimer.ts` | The pausable timeout                                                                                                    |
+| `apps/editor/components/toast/toast-floor.ts`                 | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                          |
+| `apps/editor/components/toast/useToastFloor.ts`               | Measures the floor while the stack is up                                                                                |
 
 ## Domain and naming
 
@@ -175,15 +175,15 @@ on `window` (`announceToastFloorChange()`): the sign-in banner on mount and unmo
 
 ## Testing
 
-| Rule                                                      | Test                                                  |
-| --------------------------------------------------------- | ----------------------------------------------------- |
-| Dedupe, limit, upsert in place, retire oldest timed out   | `apps/editor/components/toast/toast-queue.test.ts`    |
-| Floor: column, overlap, off-column chrome, phone          | `apps/editor/components/toast/toast-floor.test.ts`    |
-| Timeouts per tone, pause and resume with the remainder    | `apps/editor/components/toast/useToastTimer.test.tsx` |
-| Gate (warning and error ignore it), roles, Escape, exit   | `apps/editor/hooks/ui/useToast.test.tsx`              |
-| One row: icon, message, actions, close in order           | `apps/editor/components/toast/ToastCard.test.tsx`     |
-| Offer and action toasts time out after the answer time    | `apps/editor/hooks/ui/useToast.test.tsx`              |
-| Names quoted, cut, fallen back; copy stays under 90 chars | `apps/editor/lib/toast-name.test.ts`                  |
+| Rule                                                      | Test                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------- |
+| Dedupe, limit, upsert in place, retire oldest timed out   | `apps/editor/components/toast/toast-queue.test.ts`                  |
+| Floor: column, overlap, off-column chrome, phone          | `apps/editor/components/toast/toast-floor.test.ts`                  |
+| Timeouts per tone, pause and resume with the remainder    | `../packages/workbench/src/components/toast/useToastTimer.test.tsx` |
+| Gate (warning and error ignore it), roles, Escape, exit   | `apps/editor/hooks/ui/useToast.test.tsx`                            |
+| One row: icon, message, actions, close in order           | `apps/editor/components/toast/ToastCard.test.tsx`                   |
+| Offer and action toasts time out after the answer time    | `apps/editor/hooks/ui/useToast.test.tsx`                            |
+| Names quoted, cut, fallen back; copy stays under 90 chars | `apps/editor/lib/toast-name.test.ts`                                |
 
 ## Observability
 

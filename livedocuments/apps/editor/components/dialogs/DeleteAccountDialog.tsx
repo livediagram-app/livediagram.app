@@ -22,7 +22,7 @@ import { apiDeleteAccount } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 type Phase = 'idle' | 'submitting' | 'error';
 
@@ -144,8 +144,9 @@ export function DeleteAccountDialog({
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This permanently removes your documents (including any in the Trash), folders, and
-              participant record from the livedocuments server, and closes your liveworkspace account,
-              which also signs you in to the other liveworkspace apps. This cannot be undone.
+              participant record from the livedocuments server, and closes your liveworkspace
+              account, which also signs you in to the other liveworkspace apps. This cannot be
+              undone.
             </p>
           </div>
 

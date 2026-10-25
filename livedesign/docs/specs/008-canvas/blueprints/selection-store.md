@@ -7,23 +7,23 @@ who re-renders when it changes.
 
 ## Files
 
-| File                                                        | Role                                                                                |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `apps/live/lib/selection-store.ts`                          | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`              | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
-| `../packages/workbench/src/hooks/ui/useStableEventProps.ts` | `useStableEventProps`: every `on*` function prop identity-stable                    |
-| `apps/live/hooks/ui/useStableObject.ts`                     | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
-| `apps/live/components/primitives/withStableEventProps.tsx`  | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
-| `apps/live/app/design/[id]/editor-ui-state.ts`              | Creates the store; `selectedId` / setters come from it                              |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`          | Provides the store; passes the canvas stable event props                            |
-| `apps/live/components/canvas/Canvas.tsx`                    | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`       | No selection props; each view reads its own flags                                   |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`   | Subscribes; runs `deriveCanvasSelection` itself                                     |
-| `apps/live/components/canvas/selection-aware-views.tsx`     | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
-| `apps/live/components/canvas/LayerSelectionChrome.tsx`      | Quick-connect pluses, union resize box                                              |
-| `apps/live/hooks/canvas/useCanvasSelectionView.ts`          | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/live/components/panels/SlideDeckPanel.tsx`            | Reads the selection it slides from the store                                        |
-| `apps/live/lib/canvas-selection.ts`                         | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
+| File                                                                       | Role                                                                                |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `apps/live/lib/selection-store.ts`                                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION`            |
+| `apps/live/hooks/canvas/useSelectionStore.tsx`                             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`                     |
+| `../packages/workbench/src/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
+| `apps/live/hooks/ui/useStableObject.ts`                                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
+| `../packages/workbench/src/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
+| `apps/live/app/design/[id]/editor-ui-state.ts`                             | Creates the store; `selectedId` / setters come from it                              |
+| `apps/live/components/canvas/EditorCanvasHost.tsx`                         | Provides the store; passes the canvas stable event props                            |
+| `apps/live/components/canvas/Canvas.tsx`                                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
+| `apps/live/components/canvas/CanvasElementsLayer.tsx`                      | No selection props; each view reads its own flags                                   |
+| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`                  | Subscribes; runs `deriveCanvasSelection` itself                                     |
+| `apps/live/components/canvas/selection-aware-views.tsx`                    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
+| `apps/live/components/canvas/LayerSelectionChrome.tsx`                     | Quick-connect pluses, union resize box                                              |
+| `apps/live/hooks/canvas/useCanvasSelectionView.ts`                         | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
+| `apps/live/components/panels/SlideDeckPanel.tsx`                           | Reads the selection it slides from the store                                        |
+| `apps/live/lib/canvas-selection.ts`                                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
 

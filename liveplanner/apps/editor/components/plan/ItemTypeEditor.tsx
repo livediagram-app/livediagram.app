@@ -28,7 +28,7 @@ import {
 import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import {
   CardTypeShowMeButton,
   CardTypeTourStage,

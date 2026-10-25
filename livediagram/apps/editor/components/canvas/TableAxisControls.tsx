@@ -1,7 +1,10 @@
 import { createPortal } from 'react-dom';
 import type { TableElement } from '@livediagram/document';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
-import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
+import {
+  FLOATING_CONTROL_GAP,
+  FLOATING_CONTROL_SIZE,
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
 
 // The table's outside-the-edge column / row controls (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // ⋯ trigger strips laid out on grids mirroring the live track templates

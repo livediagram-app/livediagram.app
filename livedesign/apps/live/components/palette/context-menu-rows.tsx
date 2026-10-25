@@ -9,7 +9,7 @@ import { type ReactNode } from 'react';
 import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livedesign/design';
 
 import { SizeButton } from '@/components/palette/palette-controls';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 
 import { MARKER_LABELS, ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';

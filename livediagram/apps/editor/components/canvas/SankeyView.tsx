@@ -23,7 +23,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { animClass, animSpeedVars } from '@/lib/icons';
-import { ChartReadout } from '@/components/primitives/ChartReadout';
+import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { useSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 
 type Hover = { kind: 'band'; index: number } | { kind: 'node'; index: number };

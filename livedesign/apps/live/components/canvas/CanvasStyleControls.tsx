@@ -19,7 +19,7 @@ import {
   PatternButton,
   type PatternEntry,
 } from '@/components/palette/palette-controls';
-import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
+import { ShowMoreButton } from '@liveworkspace/workbench/components/primitives/ShowMoreButton';
 import { HoverCard } from '@livedesign/ui';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 

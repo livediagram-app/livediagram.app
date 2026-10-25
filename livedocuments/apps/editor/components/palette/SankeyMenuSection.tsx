@@ -49,7 +49,7 @@ import {
   lucidePalette,
   lucideRoute,
 } from '@liveworkspace/icons/lucide';
-import { MENU_CELL_INPUT } from '@/components/palette/menu-editor-classes';
+import { MENU_CELL_INPUT } from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 import type { SankeySetters } from '@/hooks/canvas/useSankeySetters';
 import {
   AlignGlyph,

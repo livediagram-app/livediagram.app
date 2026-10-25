@@ -15,7 +15,7 @@ import {
 import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { apiCommunityPopularTags } from '@/lib/api-client';
 import { ApiError } from '@/lib/api/core';

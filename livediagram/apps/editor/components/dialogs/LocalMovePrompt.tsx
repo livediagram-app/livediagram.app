@@ -2,7 +2,7 @@
 
 import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { ImportChecklist } from '@/components/dialogs/ImportChecklist';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Spinner } from '@/components/palette/template-picker-icons';

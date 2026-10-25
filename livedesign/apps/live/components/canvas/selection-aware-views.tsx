@@ -11,7 +11,7 @@ import { ArrowView, arrowViewPropsEqual } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { FreeArrowSelection } from '@/components/canvas/FreeArrowSelection';
 import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { elementGrips } from '@/lib/canvas-selection';
 import { elementSelectionFlags, sameFlags, type Selection } from '@/lib/selection-store';

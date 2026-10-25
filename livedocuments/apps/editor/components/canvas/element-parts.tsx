@@ -11,8 +11,8 @@ import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
-} from '@/components/chrome/floating-controls';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+} from '@liveworkspace/workbench/components/chrome/floating-controls';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // --- Lock badge ------------------------------------------------------------
 

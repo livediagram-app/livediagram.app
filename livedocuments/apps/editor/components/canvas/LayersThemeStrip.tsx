@@ -2,7 +2,7 @@
 
 import { HoverCard } from '@livedocuments/ui';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
-import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
+import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 import { ThemeLookIcon } from '@/components/palette/palette-icons';
 import { useDockNames } from '@/hooks/ui/useDockNames';

@@ -29,7 +29,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
 import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';
 import { SankeyNodeStrip } from '@/components/dialogs/SankeyNodeStrip';
-import { DialogTabs } from '@/components/dialogs/DialogTabs';
+import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import {
   SankeyFlowsShowMeButton,
   SankeyFlowsTourStage,

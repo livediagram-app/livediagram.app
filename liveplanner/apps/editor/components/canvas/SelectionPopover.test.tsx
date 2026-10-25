@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 // The selection toolbars (docs/specs/008-canvas/canvas-and-palette.md#selection-popover): More only on
 // touch, and under Minimal chrome (docs/specs/007-editor/power-user-mode.md) no caption and no

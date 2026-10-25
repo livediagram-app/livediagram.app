@@ -5,7 +5,7 @@ import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@/hooks/ui/useNow';
-import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
+import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 
 // The Session strip in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md "The Session

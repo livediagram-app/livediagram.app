@@ -2,7 +2,7 @@
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { pointerLeader, pointerTipOf, type ShapeElement } from '@livedesign/design';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A pointer note's leader, tip and (while selected) the tip handle (docs/specs/009-elements/pointer-note.md). Drawn
 // over the note's ordinary box and label, overflowing it: the leader runs out to the tip. The handle drags the tip in

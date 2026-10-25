@@ -17,7 +17,7 @@ import {
   type TextSize,
   type TextSizePreset,
 } from '@livedesign/design';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { Tooltip } from '@livedesign/ui';
 import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';
 import { ScaleIcon } from './palette-icons';

@@ -23,7 +23,7 @@ import {
   type Raster,
 } from '@livedesign/photo-engine';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { photoWorkers } from '@/lib/photo-editor/photo-worker-client';
 import { previewRaster } from '@/lib/photo-editor/preview';

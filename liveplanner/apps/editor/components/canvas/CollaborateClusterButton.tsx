@@ -3,7 +3,10 @@
 import { HoverCard } from '@liveplanner/ui';
 import { CountBadge } from '@liveplanner/ui';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
-import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
+import {
+  CLUSTER_STRIP,
+  CLUSTER_CONTROL_REST,
+} from '@liveworkspace/workbench/components/canvas/cluster-strip';
 
 // The Collaborate button in the bottom-right cluster, just before the Layers and Theme strip
 // (docs/specs/012-collaboration/assigned-actions.md §5). Built like the Layers button, but it opens the

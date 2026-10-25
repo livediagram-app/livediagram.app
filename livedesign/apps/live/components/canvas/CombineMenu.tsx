@@ -7,7 +7,10 @@ import { useState } from 'react';
 import { HoverCard, Glyph } from '@livedesign/ui';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
+import {
+  TOOLBAR_BTN,
+  TOOLBAR_BTN_ON,
+} from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
 import type { CombineOp } from '@/lib/combine/combine';
 
 const COMBINE_CHOICES: readonly { op: CombineOp; label: string }[] = [

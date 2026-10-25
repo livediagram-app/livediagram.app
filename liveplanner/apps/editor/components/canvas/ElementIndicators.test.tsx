@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement, type ShapeKind } from '@liveplanner/project';
-import { CanvasZoomProvider } from '@/components/canvas/CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndicatorStyleContext';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { buildIndicatorItems, type IndicatorItem } from '@/components/canvas/indicator-items';

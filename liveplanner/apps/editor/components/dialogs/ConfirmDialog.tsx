@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '@liveplanner/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 // Branded confirmation modal. Visual sibling of DeleteAccountDialog
 // (same fly-up animation, same border/shadow stack, same button

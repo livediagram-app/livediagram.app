@@ -3,7 +3,7 @@ import { Glyph } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
 import { type IconPosition, type StandardTone } from '@livediagram/document';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';

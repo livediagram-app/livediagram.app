@@ -13,7 +13,7 @@ import {
   type CanvasSelectionInput,
 } from '@/hooks/canvas/useCanvasSelectionView';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { Selection } from '@/lib/selection-store';
 
 const singleId = (s: Selection) => s.selectedId;

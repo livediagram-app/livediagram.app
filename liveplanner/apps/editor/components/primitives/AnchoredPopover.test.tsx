@@ -7,7 +7,7 @@ import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { AnchoredPopover, placeAnchored } from './AnchoredPopover';
 import { ConfirmPopover } from './ConfirmPopover';
-import { openPopoverCount } from './popover-stack';
+import { openPopoverCount } from '@liveworkspace/workbench/components/primitives/popover-stack';
 
 // docs/specs/026-plan/item-types.md "Editing a type": Add Field's and Glyph's popovers.
 afterEach(cleanup);

@@ -22,7 +22,10 @@ import {
 } from '@livedesign/design';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the

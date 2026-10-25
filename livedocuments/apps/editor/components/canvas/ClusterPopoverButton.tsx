@@ -2,7 +2,10 @@
 
 import type { ReactNode } from 'react';
 import { HoverCard } from '@livedocuments/ui';
-import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
+import {
+  CLUSTER_STRIP,
+  CLUSTER_CONTROL_REST,
+} from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { useDockNames } from '@/hooks/ui/useDockNames';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers

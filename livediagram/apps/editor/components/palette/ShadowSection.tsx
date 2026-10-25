@@ -16,7 +16,7 @@ import {
   shadowBoxCss,
   type ElementShadow,
 } from '@livediagram/document';
-import { onMouseHover } from '@/components/primitives/hover-preview';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';

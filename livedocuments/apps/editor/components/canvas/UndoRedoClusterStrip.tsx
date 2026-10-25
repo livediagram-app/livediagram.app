@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverCard, RedoIcon, UndoIcon } from '@livedocuments/ui';
-import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
+import { CLUSTER_STRIP } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 
 // The Undo / Redo strip in the bottom-right cluster: the leftmost item,
 // before Layers + Theme & Canvas. Edit sessions only: undo / redo aren't

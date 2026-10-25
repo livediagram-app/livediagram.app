@@ -8,7 +8,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { ShapeHitOutline, outlineHit } from './ShapeHitOutline';
-import { CanvasZoomProvider } from './CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 's',

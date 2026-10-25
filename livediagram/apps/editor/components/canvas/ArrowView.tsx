@@ -25,7 +25,7 @@ import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { useArrowFinish } from './arrow-finish';
-import { BRAND_600 } from './arrow-handle-style';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { pressLedger } from '@/lib/double-press';

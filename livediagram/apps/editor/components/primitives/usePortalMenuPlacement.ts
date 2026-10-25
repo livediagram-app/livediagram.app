@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { clampToViewport, VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
-import { besideSpot } from './beside-placement';
+import { besideSpot } from '@liveworkspace/workbench/components/primitives/beside-placement';
 
 export type PortalMenuPlacement = 'above' | 'below' | 'above-start' | 'below-start';
 

@@ -6,7 +6,10 @@
 // as a press on its label does. For everyone who can see the pages.
 import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livedocuments/ui';
-import { CLUSTER_CONTROL_REST, CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
+import {
+  CLUSTER_CONTROL_REST,
+  CLUSTER_STRIP,
+} from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { useCurrentPageId } from '@/lib/current-page-kind';
 
 const Prev = lucideGlyph(lucideChevronLeft, 18);

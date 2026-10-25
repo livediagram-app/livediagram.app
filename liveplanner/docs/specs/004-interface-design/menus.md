@@ -200,7 +200,7 @@ A panel opened from inside another (a cog's Style section opening a colour picke
 `ConfirmPopover`) sits on top of it: **Escape closes only the top one**, focus going back to the control that opened
 it, and the next Escape closes the one beneath; a press inside the top one never closes the one beneath, while a
 press elsewhere in the one beneath closes the top one. The open anchored panels (`AnchoredPopover`, `ConfirmPopover`)
-keep one stack for this (`components/primitives/popover-stack.ts`).
+keep one stack for this (`../packages/workbench/src/components/primitives/popover-stack.ts`).
 
 ### Not menus
 

@@ -15,7 +15,7 @@ import { REPO_URL, Glyph } from '@livedesign/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the design-level verbs that

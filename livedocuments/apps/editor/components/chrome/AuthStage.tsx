@@ -8,7 +8,7 @@
 import { Brand } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
 import { useMidnightPalette } from '@/hooks/ui/useMidnightPalette';
-import { AuthLines } from './AuthLines';
+import { AuthLines } from '@liveworkspace/workbench/components/chrome/AuthLines';
 
 // The card's title (the page's h1), shared by the account and connect pages.
 export const AUTH_TITLE =

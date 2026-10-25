@@ -14,7 +14,7 @@ import {
   PortalMenu,
 } from './PortalMenu';
 import { MenuTile, MenuToolButton } from './MenuTiles';
-import { BESIDE_GAP } from './beside-placement';
+import { BESIDE_GAP } from '@liveworkspace/workbench/components/primitives/beside-placement';
 
 const MENU_W = 224;
 const MENU_H = 300;

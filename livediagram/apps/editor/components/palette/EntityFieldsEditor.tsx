@@ -10,7 +10,10 @@ import {
 } from '@livediagram/document';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { EntityKeyGlyph } from '@/components/canvas/entity/EntityKeyGlyph';
-import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+import {
+  MENU_ADD_ROW_BUTTON,
+  MENU_CELL_INPUT,
+} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 
 // The Fields section (docs/specs/009-elements/entity.md "The Fields menu"): per field a key button that
 // cycles the key, the name, the type and a remove button, then Add Field. Mirrors the checklist's row

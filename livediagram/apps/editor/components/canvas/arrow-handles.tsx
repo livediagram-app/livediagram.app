@@ -1,7 +1,7 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { useMediaQuery } from '@livediagram/ui';
 
-import { BRAND_600 } from './arrow-handle-style';
+import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 
 // The on-canvas arrow grips (endpoints, curve / elbow bend points) are fixed
 // SVG shapes a few px across — fine for a mouse, fiddly for a fingertip. On

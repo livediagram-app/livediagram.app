@@ -54,7 +54,7 @@ import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
 import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
+import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
 import { UiScaleProvider, useUiScalePreview } from '@/components/providers/ui-scale';
 import { DockNamesProvider } from '@/hooks/ui/useDockNames';

@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { createShape, type BoxedElement, type TabVote } from '@liveplanner/project';
-import { CanvasZoomProvider } from './CanvasZoomContext';
+import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementVoteOverlay } from './ElementVoteOverlay';
 
 // docs/specs/012-collaboration/session-tools.md: a votable element carries a stepper while casting is

@@ -14,7 +14,7 @@ import { useMenuItemProps } from './menu-item-props';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
-import { coverHost } from './menu-flyout-cover';
+import { coverHost } from '@liveworkspace/workbench/components/primitives/menu-flyout-cover';
 import {
   FlyoutPanel,
   plainTriggerClass,
