@@ -20,10 +20,9 @@ address: nothing new sits in front of it. liveworkspace is on its own stand-in a
 
 Everywhere livediagram's origin is written in code and configuration (Worker vars, the hosted profile, the shared
 packages' site list and allowlists, liveworkspace's `APP_ORIGIN_LIVEDIAGRAM`, the apps' links and canonical URLs),
-it is the stand-in for that host. Docs and specs keep naming livediagram.app. Two places match a host rather than
-a URL and list the stand-ins beside the real hosts: the Community service's browser origins
-(`packages/community/src/apps.ts`, whose staging origin is not `staging.` + the site's host here) and the Drive
-mirror's choice of Google client (`packages/api-schema/src/drive.ts`).
+it is the stand-in for that host. Docs and specs keep naming livediagram.app. One place matches a host rather than
+a URL and lists the stand-ins beside the real hosts: the Community service's browser origins
+(`packages/community/src/apps.ts`, whose staging origin is not `staging.` + the site's host here).
 
 A Worker's `fetch()` to another Worker's workers.dev address on the same account fails (Cloudflare's error 1042)
 unless it has the `global_fetch_strictly_public` compatibility flag, so every livediagram Worker, and liveworkspace's,

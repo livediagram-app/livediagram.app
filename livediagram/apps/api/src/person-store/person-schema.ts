@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS shape_libraries (
   updated_at INTEGER NOT NULL
 );
 
--- The Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md "Data"): the person's one connection (sealed
+-- The retired browser-only Google Drive mirror (removed in 721646113; the platform's mirror replaced it): the person's one connection (sealed
 -- refresh token, root folder, change cursor, cross-device lease, Google account and a pending switch)...
 CREATE TABLE IF NOT EXISTS drive_connections (
   id                        INTEGER PRIMARY KEY CHECK (id = 1),
