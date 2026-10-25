@@ -25,7 +25,7 @@ import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@/lib/index-client';
 import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { explorerShareHost } from '@/lib/explorer-share-host';

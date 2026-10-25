@@ -6,7 +6,10 @@
 // app's own look instead of the framework's.
 import { useEffect } from 'react';
 import { Button } from '@livedesign/ui';
-import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
+import {
+  browserNavigationDeps,
+  recoverInBrowser,
+} from '@liveworkspace/workbench/lib/stale-build-navigation';
 import './globals.css';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 

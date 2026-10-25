@@ -22,7 +22,7 @@ import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';

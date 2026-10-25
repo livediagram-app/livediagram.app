@@ -4,7 +4,7 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
-import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
+import { StaleBuildBoot } from '@liveworkspace/workbench/components/providers/StaleBuildBoot';
 import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';

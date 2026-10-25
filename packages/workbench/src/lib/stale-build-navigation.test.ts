@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APP_RECOVERY_FLAG } from './workbench-keys';
+import { configureWorkbench, resetWorkbenchForTests } from '../bindings';
+import { testBindings } from './testing/bindings';
 import {
   inAppDestination,
   installStaleBuildNavigation,
@@ -11,6 +12,8 @@ import {
 
 // docs/specs/016-platform/stale-builds.md "Navigating while stale", "The safety net".
 
+const APP_RECOVERY_FLAG = '__productChunkRecovery';
+
 let cleanup: () => void = () => {};
 afterEach(() => {
   cleanup();
@@ -20,7 +23,9 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
+afterEach(() => resetWorkbenchForTests());
 beforeEach(() => {
+  configureWorkbench(testBindings({ appRecoveryFlag: APP_RECOVERY_FLAG }));
   vi.spyOn(console, 'info').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
 });

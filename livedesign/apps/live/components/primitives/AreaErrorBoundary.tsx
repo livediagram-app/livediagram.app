@@ -4,7 +4,10 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { errorNameToken, errorTypeToken } from '@livedesign/api-schema';
 import { Button } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
-import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
+import {
+  browserNavigationDeps,
+  recoverInBrowser,
+} from '@liveworkspace/workbench/lib/stale-build-navigation';
 import { isChunkLoadError } from '@liveworkspace/workbench/lib/stale-chunks';
 
 // A render crash in one part of the editor or Explorer used to unmount the

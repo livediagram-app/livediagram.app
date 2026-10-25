@@ -16,6 +16,7 @@ describe('workbench bindings', () => {
     bindWorkbench();
     expect(workbench.debugKey).toBe(DEBUG_STORAGE_KEY);
     expect(workbench.reloadGuardKey).toBe(RELOAD_GUARD_KEY);
+    expect(workbench.appRecoveryFlag).toBe(APP_RECOVERY_FLAG);
     expect(workbench.formatLogScope).toBe('project-format');
   });
 });

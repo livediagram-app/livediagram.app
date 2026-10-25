@@ -16,7 +16,7 @@ import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { explorerTeamsHost } from '@/lib/explorer-teams-host';

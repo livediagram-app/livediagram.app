@@ -4,19 +4,40 @@
 // `workbench`, and only when it runs, never at module scope. Until then every binding has a safe
 // default, and a development build warns once that one was read early.
 
+/**
+ * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
+ * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
+ */
+export type WorkbenchTelemetryCategory = 'Error';
+export type WorkbenchTelemetryAction = 'Client';
+export type WorkbenchTrack = (
+  category: WorkbenchTelemetryCategory,
+  action: WorkbenchTelemetryAction,
+  type?: string,
+) => void;
+
 export type WorkbenchBindings = {
+  /** The product's telemetry `track` (docs/specs/017-telemetry/telemetry.md), for the events above. */
+  track: WorkbenchTrack;
   /** The localStorage key of the debug flag that turns trace lines on in production (`<product>:debug`). */
   debugKey: string;
   /** The sessionStorage key of the one reload guard's map (`<product>:stale-chunk-reloads`). */
   reloadGuardKey: string;
+  /** The window flag set while the app's chunk recovery is installed (`__<product>ChunkRecovery`). */
+  appRecoveryFlag: string;
+  /** Whether this page runs an older build than the one now live (the product's server release). */
+  runningStaleBuild: () => boolean;
   /** The fingerprint scope of the product's stored format (`document-format`, `project-format`, …). */
   formatLogScope: string;
 };
 
 /** What workbench code reads until an editor configures it: safe no-ops and `workbench:` keys. */
 export const WORKBENCH_DEFAULTS: Readonly<WorkbenchBindings> = Object.freeze({
+  track: () => {},
   debugKey: 'workbench:debug',
   reloadGuardKey: 'workbench:stale-chunk-reloads',
+  appRecoveryFlag: '__workbenchChunkRecovery',
+  runningStaleBuild: () => false,
   formatLogScope: 'document-format',
 });
 
@@ -42,11 +63,17 @@ function current(): Readonly<WorkbenchBindings> {
 
 /** The bound facts, each read when used. */
 export const workbench = {
+  track: ((category, action, type) =>
+    current().track(category, action, type)) satisfies WorkbenchTrack,
+  runningStaleBuild: (): boolean => current().runningStaleBuild(),
   get debugKey(): string {
     return current().debugKey;
   },
   get reloadGuardKey(): string {
     return current().reloadGuardKey;
+  },
+  get appRecoveryFlag(): string {
+    return current().appRecoveryFlag;
   },
   get formatLogScope(): string {
     return current().formatLogScope;

@@ -18,6 +18,17 @@ describe('workbench bindings', () => {
     expect(workbench.debugKey).toBe('workbench:debug');
     expect(workbench.reloadGuardKey).toBe('workbench:stale-chunk-reloads');
     expect(workbench.formatLogScope).toBe('document-format');
+    expect(workbench.appRecoveryFlag).toBe('__workbenchChunkRecovery');
+    expect(workbench.runningStaleBuild()).toBe(false);
+    expect(() => workbench.track('Error', 'Client', 'Anything')).not.toThrow();
+  });
+
+  it("forwards track to the product's, at the time of the call", () => {
+    const track = vi.fn();
+    const send = workbench.track;
+    configureWorkbench(testBindings({ track }));
+    send('Error', 'Client', 'StaleChunkReload');
+    expect(track).toHaveBeenCalledWith('Error', 'Client', 'StaleChunkReload');
   });
 
   it('reads what the editor configured, when read', () => {

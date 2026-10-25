@@ -6,7 +6,7 @@ import {
   browserNavigationDeps,
   installStaleBuildNavigation,
   setClientNavigator,
-} from '@/lib/stale-build-navigation';
+} from '../../lib/stale-build-navigation';
 
 // Stale builds (docs/specs/016-platform/stale-builds.md): mounts once from the root layout. Its
 // effect runs before the client router's own (a child's effects run first), so its popstate

@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { interceptAppNavigation } from '@liveworkspace/workbench/lib/app-location';
-import { browserNavigationDeps, navigateTo } from '@/lib/stale-build-navigation';
+import { interceptAppNavigation } from '../../lib/app-location';
+import { browserNavigationDeps, navigateTo } from '../../lib/stale-build-navigation';
 
 // The app's own programmatic navigation (docs/specs/016-platform/stale-builds.md): the router's
 // transition, or a full page load once a newer build is live. Same shape as the router's push and

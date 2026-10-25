@@ -17,7 +17,7 @@ import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { explorerLibrary } from '@/lib/explorer-library';

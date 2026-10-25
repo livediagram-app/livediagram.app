@@ -4,18 +4,16 @@
 // says a newer build is live, so no old chunk name is ever requested; a chunk that fails anyway
 // (the signal not heard yet) is recovered by a full page load of its destination. Every full load
 // waits for unsaved editor work first, and falls back to the client transition when it cannot.
-import { getOnline } from '@liveworkspace/workbench/lib/online-status';
-import { APP_RECOVERY_FLAG } from './workbench-keys';
-import { reloadWhenSaved } from '@liveworkspace/workbench/lib/reload-when-saved';
-import { runningStaleBuild } from './server-release';
+import { workbench } from '../bindings';
+import { getOnline } from './online-status';
+import { reloadWhenSaved } from './reload-when-saved';
 import {
   createNavigationIntents,
   recoverFromChunkError,
   type ChunkRecovery,
-} from '@liveworkspace/workbench/lib/stale-chunks';
-import { track } from './telemetry';
-import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+} from './stale-chunks';
+import { hasUnsavedWork } from './unsaved-work';
+import { debugLog } from './debug-log';
 
 export type NavigationDeps = {
   win: Window;
@@ -39,10 +37,12 @@ export function setClientNavigator(navigate: ((url: string, replace: boolean) =>
   clientNavigator = navigate;
 }
 
+// The product's stale-build signal and telemetry come through its bindings (`runningStaleBuild`,
+// `track`).
 export function browserNavigationDeps(): NavigationDeps {
   return {
     win: window,
-    isStale: runningStaleBuild,
+    isStale: () => workbench.runningStaleBuild(),
     hasUnsavedChanges: hasUnsavedWork,
     load: (url, replace) => (replace ? window.location.replace(url) : window.location.assign(url)),
     navigateClient: (url, replace) => {
@@ -52,7 +52,7 @@ export function browserNavigationDeps(): NavigationDeps {
     },
     now: () => Date.now(),
     storage: () => window.sessionStorage,
-    track,
+    track: workbench.track,
   };
 }
 
@@ -173,9 +173,10 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
   const onRejection = (event: PromiseRejectionEvent) => void recoverInBrowser(event.reason, deps);
 
   // From here the app recovers chunk failures itself (waiting for unsaved work first); the pre-boot
-  // guard in the page's head stands down for them.
+  // guard in the page's head stands down for them. The flag is the product's (`appRecoveryFlag`).
   const flags = win as unknown as Record<string, unknown>;
-  flags[APP_RECOVERY_FLAG] = true;
+  const recoveryFlag = workbench.appRecoveryFlag;
+  flags[recoveryFlag] = true;
   win.addEventListener('click', onClick, true);
   win.addEventListener('popstate', onPopState);
   win.addEventListener('error', onError);
@@ -185,6 +186,6 @@ export function installStaleBuildNavigation(deps: NavigationDeps): () => void {
     win.removeEventListener('popstate', onPopState);
     win.removeEventListener('error', onError);
     win.removeEventListener('unhandledrejection', onRejection);
-    delete flags[APP_RECOVERY_FLAG];
+    delete flags[recoveryFlag];
   };
 }
