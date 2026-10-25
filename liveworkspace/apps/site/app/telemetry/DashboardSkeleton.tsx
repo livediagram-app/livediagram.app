@@ -50,6 +50,12 @@ function WindowPanelSkeleton() {
           <Bone text="text-xs" width="w-28" />
         </div>
         <div className={`mt-4 h-40 rounded-xl ${PULSE}`} />
+        {/* TrendChart's axis: first day, peak and average, last day. */}
+        <div className="mt-2 flex justify-between">
+          <Bone text="text-[10px]" width="w-10" />
+          <Bone text="text-[10px]" width="w-24" />
+          <Bone text="text-[10px]" width="w-10" />
+        </div>
       </div>
     </div>
   );
@@ -133,6 +139,10 @@ function MetricCardSkeleton() {
   );
 }
 
+const TAB_BAR =
+  'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
+const TAB = 'h-8 shrink-0 rounded-lg pointer-coarse:h-10';
+
 // The card groups the Dashboard tab opens on: a first row of key numbers, then a chart group.
 const GROUP_SIZES = [6, 3];
 
@@ -143,14 +153,16 @@ function AppSkeleton() {
       <div className="mt-10">
         <WindowPanelSkeleton />
       </div>
-      {/* ViewTabs' bar, its tabs as placeholders the height of a tab. */}
+      {/* ViewTabs' two bars (Dashboard and Search, then the Detail tabs), their tabs as placeholders
+          the height of a tab. */}
       <div className="mt-8 flex items-center gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          {['w-10', 'w-24', 'w-28', 'w-24', 'w-20'].map((width, i) => (
-            <span
-              key={i}
-              className={`h-8 shrink-0 rounded-lg pointer-coarse:h-10 ${width} ${PULSE}`}
-            />
+        <div className={`${TAB_BAR} shrink-0`}>
+          <span className={`${TAB} w-8 sm:w-28 ${PULSE}`} />
+          <span className={`${TAB} w-8 sm:w-20 ${PULSE}`} />
+        </div>
+        <div className={`${TAB_BAR} min-w-0 flex-1 overflow-hidden`}>
+          {['w-24', 'w-28', 'w-28', 'w-20'].map((width, i) => (
+            <span key={i} className={`${TAB} ${width} ${PULSE}`} />
           ))}
         </div>
       </div>

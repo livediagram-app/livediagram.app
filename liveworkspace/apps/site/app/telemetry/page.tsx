@@ -29,14 +29,24 @@ import { ActivityGlyph } from './_shared/glyphs';
 // Each app's own dashboard loads only when it is picked, so "All apps" ships none of the apps'
 // catalogues of event names and explanations. While its code downloads, the app's skeleton holds its
 // place (without one, `dynamic` draws nothing and the page empties under the chips).
-const appBody = { ssr: false, loading: () => <DashboardSkeleton variant="app" /> } as const;
-const LivediagramBody = dynamic(() => import('./livediagram/Body').then((m) => m.Body), appBody);
-const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m.Body), appBody);
-const LivedocumentsBody = dynamic(
-  () => import('./livedocuments/Body').then((m) => m.Body),
-  appBody,
-);
-const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.Body), appBody);
+// Next needs each call's options written out in place.
+const appSkeleton = () => <DashboardSkeleton variant="app" />;
+const LivediagramBody = dynamic(() => import('./livediagram/Body').then((m) => m.Body), {
+  ssr: false,
+  loading: appSkeleton,
+});
+const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m.Body), {
+  ssr: false,
+  loading: appSkeleton,
+});
+const LivedocumentsBody = dynamic(() => import('./livedocuments/Body').then((m) => m.Body), {
+  ssr: false,
+  loading: appSkeleton,
+});
+const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.Body), {
+  ssr: false,
+  loading: appSkeleton,
+});
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
 
