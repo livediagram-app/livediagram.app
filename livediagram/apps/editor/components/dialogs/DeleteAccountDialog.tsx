@@ -143,7 +143,7 @@ export function DeleteAccountDialog({
               Delete Account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your documents (including any in the Trash), folders, and
+              This permanently removes your canvases (including any in the Trash), folders, and
               participant record from the livediagram server, and closes your liveworkspace account,
               which also signs you in to the other liveworkspace apps. This cannot be undone.
             </p>

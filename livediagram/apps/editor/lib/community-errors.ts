@@ -15,14 +15,14 @@ import { ApiError } from './api/core';
 // (`validateCommunityPostInput`'s codes) and the worker's answers, so the two never word the same rule
 // differently.
 const MESSAGES: Record<string, string> = {
-  sign_in_required: 'Sign in to share your document with the Community.',
-  team_document: "Team library documents can't be shared to the Community.",
+  sign_in_required: 'Sign in to share your canvas with the Community.',
+  team_document: "Team library canvases can't be shared to the Community.",
   share_password_set:
-    'This document has a share password. Remove the password to share it to the Community.',
+    'This canvas has a share password. Remove the password to share it to the Community.',
   empty_document:
     'Add something to your first tab before sharing: it is the picture on your Community card.',
-  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} documents in the Community already, counting any hidden after reports. Remove a listed one to share another.`,
-  already_published: 'This document is already in the Community. Reopen Share to see it.',
+  post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} canvases in the Community already, counting any hidden after reports. Remove a listed one to share another.`,
+  already_published: 'This canvas is already in the Community. Reopen Share to see it.',
   post_hidden: 'This post was hidden after reports, so it can no longer be changed or removed.',
   invalid_title: `The title needs ${COMMUNITY_TITLE_MIN} to ${COMMUNITY_TITLE_MAX} characters.`,
   invalid_description: `The description needs ${COMMUNITY_DESCRIPTION_MIN} to ${COMMUNITY_DESCRIPTION_MAX} characters.`,

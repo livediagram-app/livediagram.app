@@ -55,10 +55,10 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
-  test('the New Document wizard', async ({ page, pageErrors }) => {
+  test('the New Canvas wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Document', { exact: false }).first().waitFor();
+    await page.getByText('New Canvas', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));
     await expectCentred(page, 'wizard');
     expectNoPageErrors(pageErrors);
@@ -124,7 +124,7 @@ test.describe('Optical alignment audit', () => {
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
   await page.goto('/new');
-  await page.getByText('New Document', { exact: false }).first().waitFor();
+  await page.getByText('New Canvas', { exact: false }).first().waitFor();
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

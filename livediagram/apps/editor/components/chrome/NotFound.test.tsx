@@ -8,14 +8,14 @@ afterEach(() => cleanup());
 // docs/specs/007-editor/new-document-route.md "Unknown addresses": the 404 card stands alone and offers its own
 // ways on, the Explorer and a new document.
 describe('NotFound', () => {
-  it('offers Open Explorer beside New Document', () => {
+  it('offers Open Explorer beside New Canvas', () => {
     const onCreateNew = vi.fn();
     const onOpenExplorer = vi.fn();
     render(<NotFound onCreateNew={onCreateNew} onOpenExplorer={onOpenExplorer} />);
-    expect(screen.getByRole('heading', { name: 'Document not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Canvas not found' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Explorer' }));
     expect(onOpenExplorer).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'New Document' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New Canvas' }));
     expect(onCreateNew).toHaveBeenCalledOnce();
   });
 
@@ -27,6 +27,6 @@ describe('NotFound', () => {
   it('leaves Open Explorer out where there is nowhere to open it (an embed)', () => {
     render(<NotFound onCreateNew={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Open Explorer' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'New Document' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Canvas' })).toBeTruthy();
   });
 });

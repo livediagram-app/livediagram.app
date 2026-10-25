@@ -33,13 +33,13 @@ function describeCard(
     case 'url':
       return { title: meta?.title ?? hostOf(link.url), destination: link.url };
     case 'document':
-      return { title: 'Document', destination: link.name };
+      return { title: 'Canvas', destination: link.name };
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
       return {
         title: link.kind === 'element' ? 'Element' : 'Tab',
-        destination: name ? name : 'this document',
+        destination: name ? name : 'this canvas',
       };
     }
   }

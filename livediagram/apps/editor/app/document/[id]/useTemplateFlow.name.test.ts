@@ -44,7 +44,7 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
 
 describe('chooseTemplate names the document', () => {
   it('after the template, while its name is still a default one', async () => {
-    expect(await pick('flowchart', 'Untitled document')).toHaveBeenCalledWith('Untitled Flowchart');
+    expect(await pick('flowchart', 'Untitled canvas')).toHaveBeenCalledWith('Untitled Flowchart');
     // Another template's default name is a default name too.
     expect(await pick('sailboat', 'Untitled Flowchart')).toHaveBeenCalledWith(
       'Untitled Sailboat Retrospective',
@@ -56,7 +56,7 @@ describe('chooseTemplate names the document', () => {
   });
 
   it("leaves the document's name to its first tab", async () => {
-    expect(await pick('flowchart', 'Untitled document', 't2')).not.toHaveBeenCalled();
+    expect(await pick('flowchart', 'Untitled canvas', 't2')).not.toHaveBeenCalled();
   });
 
   it('does nothing when the name would not change', async () => {

@@ -36,7 +36,7 @@ describe('the write failures that name a document or folder', () => {
   const longest = 'W'.repeat(200);
 
   it('fall back to a generic word when the name is unknown', () => {
-    expect(DOCUMENT_FAILURE.move()).toBe('Could not move the document. Try again.');
+    expect(DOCUMENT_FAILURE.move()).toBe('Could not move the canvas. Try again.');
     expect(FOLDER_FAILURE.delete(null)).toBe('Could not delete the folder. Try again.');
   });
 

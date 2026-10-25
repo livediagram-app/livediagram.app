@@ -70,7 +70,7 @@ describe('SettingsTokenPairings', () => {
     );
     const { first, second } = rows(screen.getByRole('list', { name: 'Paired workbenches' }));
 
-    expect(within(first).getByText('One document at a time')).toBeTruthy();
+    expect(within(first).getByText('One canvas at a time')).toBeTruthy();
     expect(within(second).getByText('Whole workspace')).toBeTruthy();
   });
 

@@ -408,7 +408,7 @@ export function PresentationOverlay({
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-sm font-semibold text-white/90">End of the deck</span>
             <span className="text-[11px] text-white/70">
-              Click, press Space, or hit Esc to go back to the document.
+              Click, press Space, or hit Esc to go back to the canvas.
             </span>
           </div>
         </div>

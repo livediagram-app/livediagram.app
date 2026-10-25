@@ -21,8 +21,8 @@ export function trashedCardHeading(row: Pick<TrashedDocument, 'reason'> | null):
   title: string;
 } {
   return row?.reason === 'empty'
-    ? { label: 'In the Trash', title: 'This document is in the Trash' }
-    : { label: 'Deleted', title: 'This document was deleted' };
+    ? { label: 'In the Trash', title: 'This canvas is in the Trash' }
+    : { label: 'Deleted', title: 'This canvas was deleted' };
 }
 
 export function daysLeftLabel(trashedAt: number, now: number): string {

@@ -69,7 +69,7 @@ function PickStep({ error, onPicked }: { error?: string; onPicked: (files: File[
     <>
       <p className="mb-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
         Pick boards saved in Excalidraw (.excalidraw files), or PNG and SVG images exported with the
-        scene embedded. Each file becomes its own document with one whiteboard tab, named and dated
+        scene embedded. Each file becomes its own canvas with one whiteboard tab, named and dated
         after the file.
       </p>
       <input

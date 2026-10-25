@@ -12,7 +12,7 @@ const UNNAMED = 'Unnamed workbench';
 
 // What each pairing may reach, in the row's words.
 const SCOPE_LABELS: Record<WorkbenchScope, string> = {
-  document: 'One document at a time',
+  document: 'One canvas at a time',
   workspace: 'Whole workspace',
 };
 

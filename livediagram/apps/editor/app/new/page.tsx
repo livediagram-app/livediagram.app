@@ -196,7 +196,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New Document | livediagram';
+    document.title = 'New Canvas | livediagram';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -439,7 +439,7 @@ export default function NewDocumentPage() {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
-          documentName="New document"
+          documentName="New canvas"
           hideTitle
           showShare={false}
           shareable={false}
@@ -495,7 +495,7 @@ export default function NewDocumentPage() {
       <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
       <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
-        documentName="New document"
+        documentName="New canvas"
         hideTitle
         showShare={false}
         shareable={false}

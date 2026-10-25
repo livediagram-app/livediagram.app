@@ -115,7 +115,7 @@ export function CommunitySection({
 
       {state === 'guest' ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className={NOTE}>Sign in to share your document with the Community.</p>
+          <p className={NOTE}>Sign in to share your canvas with the Community.</p>
           <a href={signInHref} className={buttonClassName({ variant: 'secondary', size: 'xs' })}>
             Sign In to Share
           </a>
@@ -123,7 +123,7 @@ export function CommunitySection({
       ) : null}
 
       {state === 'team' ? (
-        <p className={NOTE}>Team library documents can&rsquo;t be shared to the Community.</p>
+        <p className={NOTE}>Team library canvases can&rsquo;t be shared to the Community.</p>
       ) : null}
 
       {state === 'loading' ? (
@@ -141,7 +141,7 @@ export function CommunitySection({
         <div className="flex flex-col gap-2">
           <p className={NOTE}>
             The Community is <strong className="font-semibold">public</strong>: anyone, with or
-            without an account, can find this document there, view it and make their own copy.
+            without an account, can find this canvas there, view it and make their own copy.
           </p>
           <details className="group rounded-xl border border-slate-200 dark:border-slate-700">
             <summary className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium text-slate-700 select-none hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/60">

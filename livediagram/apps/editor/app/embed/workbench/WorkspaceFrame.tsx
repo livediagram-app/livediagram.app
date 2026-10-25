@@ -36,8 +36,8 @@ const EditorPage = dynamic(() => import('../../document/[id]/editor-page'), {
   loading: () => <WorkbenchStatus phase={{ phase: 'reading' }} scope="workspace" />,
 });
 
-const CREATE_FAILED = 'Couldn’t create the document. Try again.';
-const DOCUMENT_TRASHED = 'That document is in the Trash.';
+const CREATE_FAILED = 'Couldn’t create the canvas. Try again.';
+const DOCUMENT_TRASHED = 'That canvas is in the Trash.';
 
 // The place `livediagram:open` asks for.
 function placeOfOpen(to: WorkbenchOpenTarget): WorkspacePlace {

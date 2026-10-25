@@ -100,8 +100,8 @@ function PickStep({ error, onPicked }: { error?: string; onPicked: (files: File[
     <>
       <p className="mb-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
         Pick draw.io files or a whole folder: .drawio files, files saved to Google Drive, PNG and
-        SVG exports with the diagram inside, and JSON exports. Each diagram becomes its own
-        document, its pages as tabs, named and dated after the file.
+        SVG exports with the diagram inside, and JSON exports. Each diagram becomes its own canvas,
+        its pages as tabs, named and dated after the file.
       </p>
       {/* No accept filter: a Google Drive save has no extension, so every file is read by its content. */}
       <input

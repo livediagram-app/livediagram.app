@@ -7,11 +7,11 @@ import { createSharePage } from '@liveworkspace/media';
 
 // What a named preview says under the document's name.
 export const SHARE_PITCH =
-  'Open it in livediagram: diagrams, whiteboards and documents, made together.';
+  'Open it in livediagram: diagrams, whiteboards and workshops, made together.';
 
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'livediagram',
   pagePath: /^\/(?:document|diagram)\/shared\/?$/,
-  untitled: 'Untitled document',
+  untitled: 'Untitled canvas',
   pitch: SHARE_PITCH,
 });

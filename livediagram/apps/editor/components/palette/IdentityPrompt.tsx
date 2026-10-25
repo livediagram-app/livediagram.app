@@ -41,7 +41,7 @@ export function IdentityPrompt({
   const effectiveName = name.trim() || participant.name;
   const title = documentName?.trim()
     ? `Welcome to '${documentName.trim()}'`
-    : 'Welcome to this document';
+    : 'Welcome to this canvas';
   return (
     <CanvasModalCard label="Confirm your name" width="sm:w-[26rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">
@@ -51,8 +51,8 @@ export function IdentityPrompt({
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {nameLocked
-              ? 'This is the name from your account; others will see it on this document.'
-              : 'Pick the name people will see while you collaborate on this document.'}
+              ? 'This is the name from your account; others will see it on this canvas.'
+              : 'Pick the name people will see while you collaborate on this canvas.'}
           </p>
         </div>
         <button

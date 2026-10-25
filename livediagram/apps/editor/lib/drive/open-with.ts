@@ -78,7 +78,7 @@ export async function resolveOpenWith(
     file.name.toLowerCase().endsWith(DRIVE_FILE_EXTENSION) ||
     !!documentId;
   if (!ours) return { kind: 'error', reason: 'not-livediagram' };
-  const name = file.name.replace(/\.livediagram$/i, '') || 'Document';
+  const name = file.name.replace(/\.livediagram$/i, '') || 'Canvas';
   if (!documentId) return { kind: 'import', reason: 'no-id', name };
   if (file.appProperties[DRIVE_PROP_ORIGIN] !== deps.host)
     return { kind: 'import', reason: 'foreign', name };

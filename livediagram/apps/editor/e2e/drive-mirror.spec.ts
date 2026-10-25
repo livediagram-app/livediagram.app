@@ -305,7 +305,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   panel = await openCloudSync(page);
   // Connected: the description under the card says where, and no problem line.
   await expect(
-    page.getByText(`Your documents are synced to “${ROOT_NAME}” in Google Drive.`),
+    page.getByText(`Your canvases are synced to “${ROOT_NAME}” in Google Drive.`),
   ).toBeVisible();
   await expect(problemOf(panel)).toHaveCount(0);
   await expect(pillOf(panel)).toHaveText(/^Last synced (just now|\d+ \w+ ago)$/);
@@ -450,7 +450,7 @@ test('Open with on a copy made in Drive imports it as a new document', async ({
   );
   await expect(page.getByRole('heading', { name: 'Copy of Quarterly plan' })).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/05b-import-copy.png` });
-  await page.getByRole('button', { name: 'Import as new document' }).click();
+  await page.getByRole('button', { name: 'Import as new canvas' }).click();
   await page.waitForURL('**/document/**');
   const newId = decodeURIComponent(new URL(page.url()).pathname.split('/').filter(Boolean).pop()!);
   expect(newId).not.toBe(PLAN);

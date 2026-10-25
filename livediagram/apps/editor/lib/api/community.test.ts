@@ -70,7 +70,7 @@ describe('community api client', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).code).toBe('share_password_set');
     expect(communityErrorMessage(err)).toBe(
-      'This document has a share password. Remove the password to share it to the Community.',
+      'This canvas has a share password. Remove the password to share it to the Community.',
     );
   });
 

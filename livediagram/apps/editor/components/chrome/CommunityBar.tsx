@@ -52,7 +52,7 @@ export function CommunityBar({
             className={buttonClassName({ size: 'xs' })}
           >
             <EditIcon />
-            Edit Your Document
+            Edit Your Canvas
           </a>
         ) : (
           <Button size="xs" onClick={onMakeCopy} disabled={copying}>

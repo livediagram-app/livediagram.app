@@ -17,10 +17,7 @@ const OLD_COPY = [
   /\bDocuments? (?:Created|Updated|Renamed|Duplicated|Filed|Deleted|Restored|Moved)\b/,
 ];
 // Where the old words are code or a stored value, not copy: the untitled name a stored canvas may still carry.
-const ALLOWED = [
-  /isUntitledDocumentName\('Untitled document'\)/,
-  /Document (?:Created|Updated|Duplicated|Opened|Renamed)\)\$/,
-];
+const ALLOWED = [/isUntitledDocumentName\('Untitled document'\)/];
 
 function* sources(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {

@@ -44,7 +44,7 @@ export function ImportImageReport({
       ) : null}
       {documents && documents.length > 0 ? (
         <LinkList
-          label={documents.length === 1 ? 'New document:' : `${documents.length} new documents:`}
+          label={documents.length === 1 ? 'New canvas:' : `${documents.length} new canvases:`}
           testId="import-documents"
           links={documents.map((d) => ({
             key: d.id,

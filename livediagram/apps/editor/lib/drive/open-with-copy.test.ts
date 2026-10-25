@@ -44,7 +44,7 @@ const documentFiles = (w: Awaited<ReturnType<typeof mirrored>>) =>
   w.google.appFiles(OWNER).filter((f) => f.appProperties.ldDocumentId);
 
 describe('Open with on a copy of a mirrored file', () => {
-  it('offers Import as new document, never the original', async () => {
+  it('offers Import as new canvas, never the original', async () => {
     const w = await mirrored();
     const outcome = await resolveOpenWith(w.deps, w.openWith(w.copy()));
     expect(outcome).toEqual({ kind: 'import', reason: 'copy', name: 'Copy of Plan' });

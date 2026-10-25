@@ -90,7 +90,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
     const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled document'} | livediagram`;
+    document.title = `${name || 'Untitled canvas'} | livediagram`;
   }, [state.documentName]);
   const {
     documentNotFound,
@@ -119,7 +119,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Document deleted">{card}</StatusShell>
+      <StatusShell title="Canvas deleted">{card}</StatusShell>
     );
   }
 
@@ -133,7 +133,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load document">{card}</StatusShell>
+      <StatusShell title="Couldn’t load canvas">{card}</StatusShell>
     );
   }
 
@@ -161,7 +161,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
             ? 'Page not found'
             : accessEnded !== null
               ? 'No Longer Shared With You'
-              : 'Document not found'
+              : 'Canvas not found'
         }
       >
         <NotFound

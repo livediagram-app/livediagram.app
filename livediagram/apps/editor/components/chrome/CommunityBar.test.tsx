@@ -30,13 +30,13 @@ describe('CommunityBar', () => {
     expect(onMakeCopy).toHaveBeenCalledTimes(1);
   });
 
-  it('says Copying while it copies, and gives the author Edit Your Document instead', () => {
+  it('says Copying while it copies, and gives the author Edit Your Canvas instead', () => {
     render(<CommunityBar community={session(null)} onMakeCopy={vi.fn()} copying />);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: /Copying/ }).disabled).toBe(true);
     cleanup();
     render(<CommunityBar community={session('doc-9')} onMakeCopy={vi.fn()} copying={false} />);
     expect(screen.queryByRole('button', { name: /Make a Copy/ })).toBeNull();
-    expect(screen.getByRole('link', { name: /Edit Your Document/ }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: /Edit Your Canvas/ }).getAttribute('href')).toBe(
       '/document/doc-9',
     );
   });

@@ -807,9 +807,9 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind Map');
     expect(untitledNameForTemplate('mindmap-tree')).toBe('Untitled Tree Mind Map');
   });
-  it('keeps "Untitled document" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
-    expect(untitledNameForTemplate(null)).toBe('Untitled document');
+  it('keeps "Untitled canvas" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
+    expect(untitledNameForTemplate(null)).toBe('Untitled canvas');
   });
 });
 

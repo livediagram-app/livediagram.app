@@ -20,7 +20,7 @@ describe('ShareOfflineGate', () => {
     const sync = vi.fn(async () => {});
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
     await act(async () => {});
-    expect(screen.getByText('This Document Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Canvas Is in This Browser')).toBeTruthy();
     expect(sync).not.toHaveBeenCalled();
   });
 

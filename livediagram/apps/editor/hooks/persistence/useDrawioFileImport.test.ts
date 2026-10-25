@@ -180,14 +180,14 @@ describe('useDrawioFileImport', () => {
     const h = setup(async (files) => ({
       status: 'done',
       documents: [{ id: 'd0', name: files[0]!.name }],
-      failures: [{ title: files[1]!.name, message: 'This board is too big for one document' }],
+      failures: [{ title: files[1]!.name, message: 'This board is too big for one canvas' }],
     }));
     await act(() => h.result.current.open([diagram('A'), diagram('B')]));
     await act(() => h.result.current.importChecked());
     expect(track).toHaveBeenCalledTimes(1);
     expect(h.onDone).toHaveBeenCalledWith(
       expect.objectContaining({
-        failures: [{ title: 'B', message: 'This board is too big for one document' }],
+        failures: [{ title: 'B', message: 'This board is too big for one canvas' }],
       }),
     );
   });

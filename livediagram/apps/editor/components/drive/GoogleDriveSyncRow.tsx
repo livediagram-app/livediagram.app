@@ -159,7 +159,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
   const folderLink =
     phase === 'connected' && status.rootName && status.rootFolderId ? (
       <>
-        Your documents are synced to “
+        Your canvases are synced to “
         <a
           href={driveFolderUrl(status.rootFolderId)}
           target="_blank"

@@ -170,7 +170,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   community: {
     title: 'Learn about the Community',
-    description: 'Sharing a document publicly, and how people find and copy it.',
+    description: 'Sharing a canvas publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
@@ -202,7 +202,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
+    description: 'Tips for pointing things out to the room without touching the canvas.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -218,11 +218,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
+    description: 'Tips for building and presenting slides from your canvas.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your canvases from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -234,7 +234,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted canvases wait, and how to restore one.',
   },
   googleDrive: {
     title: 'Learn about Google Drive sync',
@@ -246,7 +246,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   microsoftWhiteboardImport: {
     title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a document.',
+    description: 'What a board export is and how each board becomes a canvas.',
   },
   shapeLibraries: {
     title: 'Learn about shape libraries',
@@ -254,7 +254,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   drawioImport: {
     title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a document.',
+    description: 'Which files it reads and how each diagram becomes a canvas.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -282,11 +282,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
+    description: 'Linking elements to tabs, canvases, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing your work right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -339,7 +339,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
+    description: 'How uploaded images are stored and reused across canvases.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
@@ -351,11 +351,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Canvases other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising canvases into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -444,7 +444,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Canvases saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
     title: 'Learn about your first diagram',
@@ -460,7 +460,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the canvas, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -472,7 +472,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   documentNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a canvas will not open.',
   },
 };
 

@@ -157,7 +157,7 @@ function DocumentPickCard({
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled document'}
+        {liveDoc.name || 'Untitled canvas'}
       </span>
     </button>
   );
@@ -180,20 +180,20 @@ export function AddTabToDocumentDialog({
 }) {
   const [query, setQuery] = useState('');
   const visible = otherDocuments.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled document'),
+    (d) => !query.trim() || matches(query, d.name || 'Untitled canvas'),
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Document"
-      sub="Link this tab into another document. It stays one live tab: edits show in both places."
+      title="Add to Another Canvas"
+      sub="Link this tab into another canvas. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter documents…"
-        aria-label="Filter documents"
+        placeholder="Filter canvases…"
+        aria-label="Filter canvases"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
@@ -201,7 +201,7 @@ export function AddTabToDocumentDialog({
           <NoMatches
             size="regular"
             className="py-8"
-            things="documents"
+            things="canvases"
             query={query}
             onClear={() => setQuery('')}
           />
@@ -209,8 +209,8 @@ export function AddTabToDocumentDialog({
           <CompactEmptyState
             className="py-8"
             icon={<DocumentIcon />}
-            title="No other documents yet"
-            description="Make another document to add this tab to it."
+            title="No other canvases yet"
+            description="Make another canvas to add this tab to it."
           />
         )
       ) : (

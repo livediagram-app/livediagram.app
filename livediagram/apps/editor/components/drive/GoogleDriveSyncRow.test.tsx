@@ -116,7 +116,7 @@ describe('GoogleDriveSyncRow', () => {
     expect(problemLine()).toBeNull();
     expect(screen.queryByRole('button', { name: /Sync now|Connect/ })).toBeNull();
     expect(description()).toContain(
-      'Your documents are synced to “livediagram (staging)” in Google Drive.',
+      'Your canvases are synced to “livediagram (staging)” in Google Drive.',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
     expect(v.disconnect).toHaveBeenCalledOnce();
@@ -130,7 +130,7 @@ describe('GoogleDriveSyncRow', () => {
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     expect(description()).toBe(
-      'Your documents are synced to “livediagram (staging)” in Google Drive. Learn more',
+      'Your canvases are synced to “livediagram (staging)” in Google Drive. Learn more',
     );
     // One row, one button: the link is in the description, not beside Disconnect.
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Disconnect']);

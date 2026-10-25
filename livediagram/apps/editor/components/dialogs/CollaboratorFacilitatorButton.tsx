@@ -76,7 +76,7 @@ export function FacilitatorButton({
     <HoverCard
       title={label}
       description={
-        blocked ? 'Only Editors can run a session: the tools write to the document.' : description
+        blocked ? 'Only Editors can run a session: the tools write to the canvas.' : description
       }
     >
       <span>

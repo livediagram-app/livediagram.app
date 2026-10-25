@@ -158,7 +158,7 @@ async function downloadAndRemoveCloudCopy(
 // SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
 export class SyncStillSavingError extends Error {
   constructor() {
-    super('Still saving this document. Try again in a moment.');
+    super('Still saving this canvas. Try again in a moment.');
     this.name = 'SyncStillSavingError';
   }
 }
@@ -168,10 +168,10 @@ export class SyncStillSavingError extends Error {
 export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
-    return 'This document kept changing while syncing. Your copy is safe: try again soon.';
+    return 'This canvas kept changing while syncing. Your copy is safe: try again soon.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this document. Check your connection and try again.';
+    : 'Could not sync this canvas. Check your connection and try again.';
 }
 
 // Re-exported for callers that only need to create an offline document from

@@ -92,7 +92,7 @@ export function RecentDocumentsCard({
             Jump Back In
           </span>
           <span className="text-[10px] text-slate-500 dark:text-slate-400">
-            Your recent documents
+            Your recent canvases
           </span>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function RecentDocumentsCard({
                       <span className="sr-only">{`${d.teamName} team: `}</span>
                     </span>
                   ) : null}
-                  <span className="truncate">{d.name || 'Untitled document'}</span>
+                  <span className="truncate">{d.name || 'Untitled canvas'}</span>
                 </span>
                 {d.savedAt != null ? (
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">

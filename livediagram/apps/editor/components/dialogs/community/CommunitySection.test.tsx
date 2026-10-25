@@ -80,7 +80,7 @@ describe('CommunitySection, every face', () => {
     cleanup();
     render(<CommunitySection {...base({ teamDocument: true })} />);
     expect(
-      screen.getByText(/Team library documents can.t be shared to the Community\./),
+      screen.getByText(/Team library canvases can.t be shared to the Community\./),
     ).toBeTruthy();
   });
 

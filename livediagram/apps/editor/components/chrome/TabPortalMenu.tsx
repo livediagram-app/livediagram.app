@@ -270,7 +270,7 @@ export function PortalMenu({
             <MenuToolButton
               icon={<DuplicateIcon />}
               label="Duplicate"
-              description="Create a copy of this tab in this document."
+              description="Create a copy of this tab in this canvas."
               onClick={onDuplicate}
             />
             {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -368,7 +368,7 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<MoveIcon />}
-            label="Add to Document"
+            label="Add to Another Canvas"
             onClick={() => setView('copyTo')}
             disabled={otherDocuments.length === 0}
           />

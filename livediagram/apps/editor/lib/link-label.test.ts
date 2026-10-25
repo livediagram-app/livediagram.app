@@ -13,7 +13,7 @@ describe('describeLink', () => {
 
   it('names a document link', () => {
     expect(describeLink({ kind: 'document', documentId: 'd1', name: 'Roadmap' })).toBe(
-      'Document: Roadmap',
+      'Canvas: Roadmap',
     );
   });
 
@@ -22,10 +22,8 @@ describe('describeLink', () => {
   });
 
   it('falls back to a generic phrase when the tab is not found', () => {
-    expect(describeLink({ kind: 'tab', tabId: 'gone' }, tabs)).toBe(
-      'Goes to a tab in this document',
-    );
-    expect(describeLink({ kind: 'tab', tabId: 't1' })).toBe('Goes to a tab in this document');
+    expect(describeLink({ kind: 'tab', tabId: 'gone' }, tabs)).toBe('Goes to a tab in this canvas');
+    expect(describeLink({ kind: 'tab', tabId: 't1' })).toBe('Goes to a tab in this canvas');
   });
 
   it('describes an element link with the resolved tab name', () => {
@@ -36,13 +34,13 @@ describe('describeLink', () => {
 
   it('falls back generically for an element link with no matching tab', () => {
     expect(describeLink({ kind: 'element', tabId: 'gone', elementId: 'e1' }, tabs)).toBe(
-      'An element on a tab in this document',
+      'An element on a tab in this canvas',
     );
   });
 
   it('treats a whitespace-only tab name as no name', () => {
     const blank: { id: string; name: string }[] = [{ id: 't1', name: '   ' }];
-    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this document');
+    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this canvas');
   });
 
   it('covers every ElementLink kind', () => {

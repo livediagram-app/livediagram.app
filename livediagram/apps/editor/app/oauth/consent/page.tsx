@@ -86,7 +86,7 @@ function Consent() {
       <OauthShell>
         <h1 className={AUTH_TITLE}>Sign in to connect {client}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          You need to be signed in to connect an app to your documents.
+          You need to be signed in to connect an app to your canvases.
         </p>
         <div className="mt-5 flex items-center gap-2">
           <a

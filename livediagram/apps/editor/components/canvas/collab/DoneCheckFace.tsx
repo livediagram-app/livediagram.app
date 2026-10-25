@@ -133,7 +133,7 @@ export function DoneCheckFace({
         {keys.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
             {canArrange
-              ? 'Share the document and the card fills itself in.'
+              ? 'Share the canvas and the card fills itself in.'
               : 'It fills in as people join the board.'}
           </EmptyRows>
         ) : (

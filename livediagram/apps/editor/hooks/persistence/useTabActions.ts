@@ -190,7 +190,7 @@ export function useTabActions(deps: TabActionsDeps) {
     const source = tabs.find((t) => t.id === activeId);
     if (!source || !documentId) return;
     const target =
-      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
+      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that canvas';
     try {
       await apiLinkTab(ownerId, targetDocumentId, source.id, documentId);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);

@@ -14,7 +14,7 @@ describe('MsWhiteboardImportDialog', () => {
     render(<MsWhiteboardImportDialog importScenes={vi.fn()} onClose={onClose} />);
     expect(screen.getByRole('dialog', { name: MS_WHITEBOARD_IMPORT_TITLE })).toBeTruthy();
     expect(
-      screen.getByText('Each board becomes its own document, named and dated as the board.'),
+      screen.getByText('Each board becomes its own canvas, named and dated as the board.'),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Choose a .zip' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();

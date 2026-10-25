@@ -40,7 +40,7 @@ import {
 import { debugLog } from '@/lib/debug-log';
 
 // A board whose document the server refuses as too large (413): its own failure, never "try again".
-export const BOARD_TOO_BIG = 'This board is too big for one document';
+export const BOARD_TOO_BIG = 'This board is too big for one canvas';
 
 /** Image progress, and which board of how many it belongs to when several import at once. */
 export type BoardImportProgress = ImportImageProgress & { board?: number; boards?: number };
@@ -256,7 +256,7 @@ export async function importDocuments(
         continue;
       }
       console.warn('[board-scene] import board failed', { board: i + 1, error: String(error) });
-      failures.push({ title: name, message: "The document couldn't be created. Try again." });
+      failures.push({ title: name, message: "The canvas couldn't be created. Try again." });
       continue;
     }
     documents.push({ id, name });

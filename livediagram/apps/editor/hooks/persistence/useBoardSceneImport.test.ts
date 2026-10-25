@@ -136,7 +136,7 @@ describe('importScenesAsNewDocuments', () => {
       status: 'done',
       failures: [
         { title: 'Huge', message: expect.stringContaining('10,000') },
-        { title: 'Two', message: "The document couldn't be created. Try again." },
+        { title: 'Two', message: "The canvas couldn't be created. Try again." },
       ],
     });
     const none = await setup().api.importScenesAsNewDocuments([huge]);

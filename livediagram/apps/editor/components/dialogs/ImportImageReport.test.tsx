@@ -28,7 +28,7 @@ describe('ImportImageReport', () => {
     const status = screen.getByRole('status');
     expect(status.textContent).toContain('3 pen strokes, 1 sticky note');
     expect(status.textContent).toContain('2 · Multicolour ink drawn in one colour');
-    expect(status.textContent).toContain('2 new documents:');
+    expect(status.textContent).toContain('2 new canvases:');
     const links = within(screen.getByTestId('import-documents')).getAllByRole('link');
     expect(links.map((l) => [l.textContent, l.getAttribute('href')])).toEqual([
       ['Retro', '/document/d1'],

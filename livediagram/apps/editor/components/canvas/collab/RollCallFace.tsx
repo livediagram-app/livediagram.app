@@ -92,7 +92,7 @@ export function RollCallFace({
         {entries.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody recorded yet" rows={0}>
             {onTakeRoll
-              ? 'Take the roll to freeze who is here into the document.'
+              ? 'Take the roll to freeze who is here into the canvas.'
               : 'Whoever runs the session takes the roll.'}
           </EmptyRows>
         ) : (
