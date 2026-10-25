@@ -35,12 +35,12 @@ import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import type { ThisBrowserItem } from '../this-browser';
 import {
+  LocalPreview,
   mergeOpened,
   ThisBrowserItemMenu,
   ThisBrowserPill,
   useThisBrowserItems,
 } from './ThisBrowser';
-import { BrowserIcon } from './host';
 import {
   useWhatHappened,
   useWhatHappenedGroups,
@@ -553,11 +553,7 @@ const LocalCard = memo(function LocalCard({
       attrs={{ 'data-this-browser-card': '' }}
       large={large}
       app={showApp ? app : null}
-      thumb={
-        <span className="flex h-full w-full items-center justify-center bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-          <BrowserIcon size={large ? 28 : 18} />
-        </span>
-      }
+      thumb={<LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />}
       name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
       line={
         <span className="flex min-w-0 items-center gap-1.5">
@@ -582,7 +578,7 @@ const LocalCard = memo(function LocalCard({
 
 /** A phone's Jump Back In: one strip of small tiles, then See More. */
 function Strip({ items, local }: { items: ShownItem[]; local: readonly ThisBrowserItem[] }) {
-  const { Link, itemHref, viewHref, navigate } = useExplorer();
+  const { app, Link, itemHref, viewHref, navigate } = useExplorer();
   const { host } = useThisBrowserItems();
   return (
     <div className="relative -mx-4 sm:mx-0">
@@ -609,9 +605,7 @@ function Strip({ items, local }: { items: ShownItem[]; local: readonly ThisBrows
                 aria-label={item.title || 'Untitled'}
                 className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
               >
-                <span className="flex h-20 w-32 items-center justify-center rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-                  <BrowserIcon size={20} />
-                </span>
+                <LocalPreview app={app} iconSize={20} className="h-20 w-32 rounded-md" />
                 <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
                   {item.title || 'Untitled'}
                 </span>

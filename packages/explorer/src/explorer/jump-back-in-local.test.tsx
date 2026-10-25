@@ -102,6 +102,10 @@ describe('a This Browser card in Jump Back In', () => {
     expect(mine.querySelector('[data-this-browser]')).toBeTruthy();
     expect(mine.textContent).toContain('Opened');
     expect(mine.getAttribute('draggable')).toBe('true');
+    // Its picture is the browser it lives in, in its own app's accent, not the badge's tone.
+    const preview = mine.querySelector<HTMLElement>('[data-local-preview]')!;
+    expect(preview.getAttribute('data-local-preview')).toBe('liveplanner');
+    expect(preview.style.getPropertyValue('--local-accent')).toBe('#8b5cf6');
   });
 
   it('opens This Browser’s menu from ⋯ and a right-click: Open and Sync, no Delete where the page can’t', async () => {

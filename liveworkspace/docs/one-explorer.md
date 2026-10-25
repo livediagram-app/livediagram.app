@@ -216,7 +216,9 @@ The page reads where it is from its own address and there is that app's page:
   to the editor the same way. A link alone never moves anything.
 - **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
   shape as the rest of its group (a thumbnail area, the title, and a line with the **This Browser** badge and when it
-  was opened). It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
+  was opened). It has no snapshot (none leaves the browser), so its thumbnail is a picture of the browser it lives in,
+  tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
+  and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
   (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
   where the host deletes in place (`remove`), **Delete**, asked first. It drags as the others do, and each target
   means what it can for an item the account doesn't hold. On the **Trash** it is deleted for good after a

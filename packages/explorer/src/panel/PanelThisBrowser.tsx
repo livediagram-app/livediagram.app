@@ -9,18 +9,23 @@
 
 import { useExplorer } from '../explorer/context';
 import { BrowserIcon } from '../explorer/host';
-import { openThisBrowserItem, thenReload, useThisBrowserItems } from '../explorer/ThisBrowser';
+import {
+  LocalPreview,
+  openThisBrowserItem,
+  thenReload,
+  useThisBrowserItems,
+} from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { relativeSince, useNow } from '../time';
 import { TrashIcon } from '../ui/icons';
-import { PaneEmpty, PaneIconButton, PaneList, PaneRow, PaneTile } from './pane-parts';
+import { PaneEmpty, PaneIconButton, PaneList, PaneRow } from './pane-parts';
 
 // Sync, in words: the one verb a row spells out, since it moves the item somewhere.
 const SYNC_BUTTON =
   'flex h-8 shrink-0 cursor-pointer items-center rounded-lg px-2.5 text-xs font-medium text-brand-700 ring-1 ring-brand-200 transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:h-11 dark:text-brand-200 dark:ring-brand-400/40 dark:hover:bg-brand-500/15';
 
 export function PanelThisBrowser() {
-  const { words, kind, reloadLists, openDialog } = useExplorer();
+  const { app, words, kind, reloadLists, openDialog } = useExplorer();
   const { host, live } = useThisBrowserItems();
   const now = useNow();
   if (!host || live.length === 0)
@@ -45,9 +50,7 @@ export function PanelThisBrowser() {
             <PaneRow
               key={item.id}
               leading={
-                <PaneTile size="mark" tone="amber">
-                  <BrowserIcon />
-                </PaneTile>
+                <LocalPreview app={app} iconSize={16} className="size-8 shrink-0 rounded-lg" />
               }
               title={name}
               label={name}
