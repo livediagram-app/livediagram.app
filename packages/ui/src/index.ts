@@ -79,3 +79,6 @@ export { Prims } from './icons/Prims';
 // describes it.
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { breadcrumbJsonLd, type BreadcrumbCrumb } from './breadcrumb-json-ld';
+// The iOS-style switch, and the start screen's "Sync <Kind> to Server" row built on it (save-switch/).
+export { Switch } from './Switch';
+export * from './save-switch';
