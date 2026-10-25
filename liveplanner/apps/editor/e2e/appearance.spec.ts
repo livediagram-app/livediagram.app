@@ -1,5 +1,12 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
-import { expect, test, dismissQuickTour, expectNoPageErrors, seedTab } from './fixtures';
+import {
+  expect,
+  test,
+  dismissQuickTour,
+  expectNoPageErrors,
+  seedTab,
+  serverNewUrl,
+} from './fixtures';
 
 // Appearance (docs/specs/007-editor/editor-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -14,8 +21,9 @@ const CANVAS = '[data-canvas-a11y-root]';
 // The wizard's Skip path (docs/specs/007-editor/new-project-route.md): a blank project on the Default colour
 // scheme, in one click. What this suite needs is a default tab, not the wizard.
 async function startBlank(page: import('@playwright/test').Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
+  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), on liveplanner, so seedTab can write it and
+  // the api's writes show whether an appearance change touched the plan.
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 }

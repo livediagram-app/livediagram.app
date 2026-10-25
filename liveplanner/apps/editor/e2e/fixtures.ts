@@ -135,8 +135,8 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 
 // A new plan through /new (docs/specs/007-editor/new-project-route.md): it asks nothing, makes the plan as it
 // mounts and opens it in place, an empty tab on Start Planning. `_mode` is kept so callers that named a mode need
-// not change; Plan is the only one. `url` may carry a `/new?folder=` / `?team=` / `?template=` context.
-// Resolves to the new plan's id.
+// not change; Plan is the only one. `url` may carry a `/new?folder=` / `?team=` / `?template=` context. A guest's
+// plain `/new` makes it in This Browser; `serverNewUrl` makes it on liveplanner. Resolves to the new plan's id.
 export async function createInMode(page: Page, _mode = 'plan', url = '/new'): Promise<string> {
   await page.goto(url);
   await page.waitForURL(/\/project\/[^/?#]+/, { timeout: 30_000 });
@@ -148,24 +148,44 @@ export async function createInMode(page: Page, _mode = 'plan', url = '/new'): Pr
 // owed: kept so the specs that call it need not change.
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
-// A blank canvas straight away: /new?blank=1 (docs/specs/007-editor/new-project-route.md).
-export async function openStartBlank(page: Page): Promise<void> {
-  await page.goto('/new?blank=1');
+// A blank canvas straight away: /new?blank=1 (docs/specs/007-editor/new-project-route.md), or `url` (a
+// `serverNewUrl` one, for a plan on liveplanner).
+export async function openStartBlank(page: Page, url = '/new?blank=1'): Promise<void> {
+  await page.goto(url);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
 }
 
-// A Team Retro straight away: its retro board's cards take votes, so the tab offers the Session strip
-// (docs/specs/012-collaboration/session-tools.md "The Session strip").
+// A Team Retro straight away, on liveplanner (serverNewUrl): its retro board's cards take votes, so the tab offers
+// the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip").
 export async function openTeamRetro(page: Page): Promise<void> {
-  await page.goto('/new?template=team-retro');
+  await page.goto(await serverNewUrl(page, '/new?template=team-retro'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
 }
 
-// A blank plan through /new. Its start screen (Start Planning) cannot close: it stays over the empty tab until
-// something is drawn, so seedTab (or a board picked from it) is what clears it (docs/specs/026-plan/plan-mode.md
-// "Starting a board").
+// A blank plan on liveplanner, through /new (serverNewUrl), so seedTab can write it through the api. Its start
+// screen (Start Planning) cannot close: it stays over the empty tab until something is drawn, so seedTab (or a board
+// picked from it) is what clears it (docs/specs/026-plan/plan-mode.md "Starting a board").
 export async function startBlankProject(page: Page): Promise<void> {
-  await createInMode(page);
+  await createInMode(page, 'plan', await serverNewUrl(page));
+}
+
+// A /new address that makes the plan on liveplanner. A guest's own /new makes it in This Browser
+// (docs/specs/006-project/save-locations.md "The default depends on who is creating"), but a `?folder=` context
+// names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
+// where the app keeps it, so /new never leaves for the guest handoff) and the folder is one of theirs, made at the
+// index. For a spec that writes the plan through the api (seedTab), watches the api's saves, or shares it.
+export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
+  const owner = await mintGuest(page.request);
+  await adoptGuest(page, owner);
+  const res = await page.request.post('/api/index/folders', {
+    headers: ownerHeaders(owner),
+    data: { name: 'e2e' },
+  });
+  expect(res.ok(), `folder create: ${res.status()}`).toBe(true);
+  const { folder } = (await res.json()) as { folder: { id: string } };
+  const at = new URL(url, 'http://e2e.invalid');
+  at.searchParams.set('folder', folder.id);
+  return `${at.pathname}${at.search}`;
 }
 
 export type Seed = Record<string, unknown>[];
