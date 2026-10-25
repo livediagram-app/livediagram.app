@@ -1,7 +1,7 @@
 import type { CtaSurface } from '@livedocuments/api-schema';
 import type { ReactNode } from 'react';
 import { Brand } from './Brand';
-import { BuildWithAiLink } from './BuildWithAiLink';
+import { BuildWithAiLink } from '@liveworkspace/ui';
 import { ExplorerLink } from './ExplorerLink';
 import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ShareRail } from './ShareRail';
