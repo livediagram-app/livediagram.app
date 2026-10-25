@@ -89,7 +89,7 @@ type IncidentRow = {
   started_at: number;
   last_at: number;
   ended_at: number | null;
-  worst: 'slow' | 'down';
+  worst: 'down';
   checks: number;
   error: CheckError | null;
 };

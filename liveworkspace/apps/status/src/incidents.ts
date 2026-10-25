@@ -1,18 +1,20 @@
-// Incidents (liveworkspace/docs/status.md "The hourly run"): a run of consecutive checks of one service that weren't
-// up, from its first check to the first up check after it. Each run opens, extends or closes them. Pure.
+// Incidents (liveworkspace/docs/status.md "The hourly run"): outages only. A run of consecutive down checks of one
+// service, from its first down check to the first check after it that answered (up or slow). Each run opens, extends or
+// closes them. A slow hour is no incident: the day's bar shows it. Pure.
 
-import { type CheckError, type CheckResult, worse } from '@liveworkspace/status';
+import type { CheckError, CheckResult } from '@liveworkspace/status';
 
 export type Incident = {
   // The row's id, or null for one this run opens.
   id: number | null;
   service: string;
   startedAt: number;
-  // The last check that wasn't up.
+  // The last down check.
   lastAt: number;
-  // The first up check after it; null while open.
+  // The first check after it that answered; null while open.
   endedAt: number | null;
-  worst: 'slow' | 'down';
+  // Always 'down': stored and sent as a state, so the table and the API keep their shape.
+  worst: 'down';
   checks: number;
   // The first error of the spell, if it had one.
   error: CheckError | null;
@@ -40,7 +42,7 @@ export function stepIncidents(
   for (const [service, r] of results) {
     const current = byService.get(service);
     byService.delete(service);
-    if (r.state === 'up') {
+    if (r.state !== 'down') {
       if (current) {
         const closed = { ...current, endedAt: at };
         changed.push(closed);
@@ -52,7 +54,6 @@ export function stepIncidents(
       const extended: Incident = {
         ...current,
         lastAt: at,
-        worst: worse(current.worst, r.state) as Incident['worst'],
         checks: current.checks + 1,
         error: current.error ?? r.error,
       };
@@ -66,7 +67,7 @@ export function stepIncidents(
       startedAt: at,
       lastAt: at,
       endedAt: null,
-      worst: r.state,
+      worst: 'down',
       checks: 1,
       error: r.error,
     };

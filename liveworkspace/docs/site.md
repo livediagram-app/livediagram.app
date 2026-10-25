@@ -234,8 +234,9 @@ Under that, each service shows its stored history, from one `GET /api/status/his
   incidents. To assistive tech the strip is one image with a summary in words ("99.98% up over 90 days; 2 days with
   incidents, the last on 12 October").
 
-Below the groups, **Recent incidents** lists the last 90 days' (at most 50), newest first: the service under its
-group's logo, the worst state as an icon and a word, when it began, how long it lasted (or **Ongoing**), and the
+Below the groups, **Recent incidents** lists the last 90 days' outages (at most 50), newest first; a slow hour is no
+incident, and shows only in its day's bar. Each: the service under its group's logo, **Down** as an icon and a word,
+when it began, how long it lasted (or **Ongoing**), and the
 first error. The latest 10 show, and **Show all** the rest. The realtime rooms take the API's check, so their
 incidents would repeat the API's and are left out of the list (their bars still show them). With none, it says so.
 

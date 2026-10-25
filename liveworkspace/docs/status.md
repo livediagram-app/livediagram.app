@@ -34,9 +34,10 @@ A Cron Trigger runs at minute 7 of every hour (`"7 * * * *"`), in production and
    - today's row per service in `daily` (UTC days), worked out again from today's checks: how many, how many up,
      slow and down, the uptime (up and slow both count as answered), the median and 95th percentile answer time
      and the worst state;
-   - incidents: a run of consecutive checks that weren't up is one incident, from its first check to the first up
-     check after it, with its worst state, how many checks it spanned and its first error. A service that isn't up
-     either opens one or extends its open one; one that is up again closes it;
+   - incidents: outages only. A run of consecutive down checks is one incident, from its first down check to the
+     first check after it that answered (up, or slow: a slow answer is still an answer), with how many checks it
+     spanned and its first error. A down service opens one or extends its open one; one that answers again closes
+     it. A slow hour is no incident: it shows in the day's bar, not in the list;
    - pruning: checks, days and closed incidents older than 90 days go.
 5. **Snapshot.** The two answers of the read API are built once here and stored as two rows of `snapshots`, so
    reading them is one row, however many people have the page open.
@@ -119,7 +120,7 @@ visitor's browser does.
 | ----------- | --------------------------------------- | --------------------- |
 | `checks`    | one per service per hour (35 an hour)   | 90 days, about 75,600 |
 | `daily`     | one per service per UTC day             | 90 days, about 3,150  |
-| `incidents` | one per spell of checks that weren't up | 90 days after closing |
+| `incidents` | one per outage (a spell of down checks) | 90 days after closing |
 | `snapshots` | two: `latest` and `history`             | replaced every run    |
 
 ## Running it locally

@@ -49,12 +49,13 @@ describe('stepIncidents', () => {
   const down = { state: 'down' as const, code: null, ms: 10_000, error: 'timeout' as const };
   const slow = { state: 'slow' as const, code: 200, ms: 2000, error: null };
 
-  it('opens one on the first check that isn’t up', () => {
+  it('opens one on the first down check, and none for a slow one', () => {
     const step = stepIncidents(
       [],
       new Map<string, CheckResult>([
-        ['a', slow],
-        ['b', up],
+        ['a', down],
+        ['b', slow],
+        ['c', up],
       ]),
       100,
     );
@@ -65,36 +66,47 @@ describe('stepIncidents', () => {
         startedAt: 100,
         lastAt: 100,
         endedAt: null,
-        worst: 'slow',
+        worst: 'down',
         checks: 1,
-        error: null,
+        error: 'timeout',
       },
     ]);
     expect(step.changed).toEqual([]);
   });
 
-  it('extends an open one, keeping the worst state and the first error', () => {
+  it('extends an open one while it is down, keeping the first error', () => {
     const open: Incident = {
       id: 7,
       service: 'a',
       startedAt: 100,
       lastAt: 100,
       endedAt: null,
-      worst: 'slow',
-      checks: 1,
-      error: null,
-    };
-    const step = stepIncidents([open], new Map([['a', down]]), 200);
-    expect(step.changed).toEqual([
-      { ...open, lastAt: 200, worst: 'down', checks: 2, error: 'timeout' },
-    ]);
-    const again = stepIncidents(step.changed, new Map([['a', slow]]), 300);
-    expect(again.changed[0]).toMatchObject({
       worst: 'down',
-      checks: 3,
+      checks: 1,
       error: 'timeout',
-      lastAt: 300,
-    });
+    };
+    const step = stepIncidents(
+      [open],
+      new Map([['a', { ...down, error: 'network' as const }]]),
+      200,
+    );
+    expect(step.changed).toEqual([{ ...open, lastAt: 200, checks: 2 }]);
+  });
+
+  it('closes one at the first check that answers, slow or up', () => {
+    const open: Incident = {
+      id: 7,
+      service: 'a',
+      startedAt: 100,
+      lastAt: 200,
+      endedAt: null,
+      worst: 'down',
+      checks: 2,
+      error: 'timeout',
+    };
+    expect(stepIncidents([open], new Map([['a', slow]]), 300).changed).toEqual([
+      { ...open, endedAt: 300 },
+    ]);
   });
 
   it('closes it at the first up check, and leaves one for a service not checked this run', () => {
