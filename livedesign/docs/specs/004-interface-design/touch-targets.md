@@ -54,6 +54,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
 - **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the
   landing page's template search).
+- **A switch is 44px to the finger at every size.** `@liveworkspace/ui`'s `Switch` at `md` is a 44px box round its track; at `sm` and `xs` the box is the track itself and carries `touch-target` (so `relative`), and with `coversRow` the whole row is the target instead.
 - **The public sites follow the same rules** (marketing, help, telemetry): the shared header's
   brand, site switcher chevron and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
   and its arrows padded; the template carousel arrows and the telemetry window pills are padded.
