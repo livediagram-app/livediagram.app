@@ -94,7 +94,10 @@ const copying = (p: { done: number; total: number }) => plain(`Copying ${p.done}
 
 /** Every status a phase can show, times and counts at their widest: the status is always as wide as the widest of
  *  its phase. */
-export function driveStatusOptions(row: DriveRowConnection, phase: DriveSyncPhase): DriveStatusText[] {
+export function driveStatusOptions(
+  row: DriveRowConnection,
+  phase: DriveSyncPhase,
+): DriveStatusText[] {
   switch (phase) {
     case 'not-connected':
       return [STATUS.checking, STATUS.notConnected, STATUS.connecting, STATUS.offline];
@@ -160,7 +163,10 @@ export function driveSyncCopy(
         : { text: DRIVE_NEEDS_RECONNECT, action: 'reconnect' },
     };
   }
-  const { connection, unreachable = false } = row as Extract<DriveRowConnection, { kind: 'connected' }>;
+  const { connection, unreachable = false } = row as Extract<
+    DriveRowConnection,
+    { kind: 'connected' }
+  >;
   // The service unreachable from here, or its last pass failed and the next will try again.
   const offline = unreachable || connection.status === 'error';
   const notice = connection.notices[0] ?? null;
@@ -179,7 +185,10 @@ export function driveSyncCopy(
   const problem: DriveProblem | null = offline
     ? { text: DRIVE_OFFLINE, action: null }
     : notice
-      ? { text: `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`, action: null }
+      ? {
+          text: `${notice.name}${more > 0 ? ` and ${more} more` : ''}: ${DRIVE_NOTICE_TEXT}`,
+          action: null,
+        }
       : null;
   return { phase, status, problem };
 }

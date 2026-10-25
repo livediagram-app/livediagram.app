@@ -48,15 +48,15 @@ for every environment: `75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.google
 GOOGLE_CLIENT_SECRET on the drive and accounts Workers (both environments) and in their `.dev.vars`; the client id
 is a var on drive (wrangler.toml) and a secret on accounts. What the operator sets:
 
-| Setting             | Value                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| Branding            | name liveworkspace; home, privacy and terms on liveworkspace's origin; contact support@…      |
-| Scopes              | `openid`, `email`, `profile` (sign-in); `drive.file`, `drive.install` (the mirror)            |
+| Setting             | Value                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Branding            | name liveworkspace; home, privacy and terms on liveworkspace's origin; contact support@…       |
+| Scopes              | `openid`, `email`, `profile` (sign-in); `drive.file`, `drive.install` (the mirror)             |
 | JavaScript origins  | liveworkspace's origin in each environment, `liveworkspace.app` and `www.`, and localhost:3000 |
-| Redirect URIs       | `<liveworkspace origin>/drive/connected` and `<origin>/api/auth/callback/google` for each     |
+| Redirect URIs       | `<liveworkspace origin>/drive/connected` and `<origin>/api/auth/callback/google` for each      |
 |                     | origin, plus each app's `/api/workspace/auth/callback/google` (sign-in on the app's address)   |
-| Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                            |
-| Drive UI MIME types | the four in [The file](#the-file), each with its extension                                    |
+| Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                             |
+| Drive UI MIME types | the four in [The file](#the-file), each with its extension                                     |
 
 The origins are the gateway's while liveworkspace.app is on another account (gateway.md):
 `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev` and `…-gateway-staging…`. liveworkspace.app's and

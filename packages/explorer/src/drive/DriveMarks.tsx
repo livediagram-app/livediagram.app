@@ -32,7 +32,12 @@ const CLOUD: Record<DriveMarkState, string> = {
 const SYMBOL: Record<DriveMarkState, readonly string[]> = {
   synced: ['m17 15-5.5 5.5L9 18'],
   waiting: ['M12 13v8', 'm8 17 4-4 4 4'],
-  syncing: ['m17 18-1.535 1.605a5 5 0 0 1-8-1.5', 'M17 22v-4h-4', 'M7 10v4h4', 'm7 14 1.535-1.605a5 5 0 0 1 8 1.5'],
+  syncing: [
+    'm17 18-1.535 1.605a5 5 0 0 1-8-1.5',
+    'M17 22v-4h-4',
+    'M7 10v4h4',
+    'm7 14 1.535-1.605a5 5 0 0 1 8 1.5',
+  ],
   failed: ['M12 12v4', 'M12 20h.01'],
 };
 const ACCENT: Record<DriveMarkState, string> = {
@@ -95,7 +100,10 @@ export function DriveNoticeMark() {
 }
 
 /** The host's own marks with Drive's after them: the notice beside the name, else the cloud beside the time. */
-export function withDriveMarks(host: RenderItemMark | undefined, marks: DriveMarks): RenderItemMark | undefined {
+export function withDriveMarks(
+  host: RenderItemMark | undefined,
+  marks: DriveMarks,
+): RenderItemMark | undefined {
   if (marks.byId.size === 0) return host;
   return (item, at) => {
     const own = host?.(item, at) ?? null;

@@ -87,7 +87,7 @@ jobs:
           name: checks-${{ matrix.group }}
 
       - name: Lint and type check
-        run: pnpm turbo run lint typecheck --concurrency=2 ${{ matrix.filters }}
+        run: pnpm turbo run lint typecheck --continue --concurrency=2 ${{ matrix.filters }}
 
       # The files the change touched, each product's with its own ignore file (format-check.sh).
       - name: Format check
@@ -129,11 +129,11 @@ jobs:
       # product's editor runs in the sharded job below. Two at a time: each vitest fills the cores.
       - name: Test
         if: matrix.plain != ''
-        run: pnpm turbo run test --concurrency=2 ${{ matrix.plain }}
+        run: pnpm turbo run test --continue --concurrency=2 ${{ matrix.plain }}
 
       - name: Coverage thresholds
         if: matrix.coverage != ''
-        run: pnpm turbo run test:coverage --concurrency=2 ${{ matrix.coverage }}
+        run: pnpm turbo run test:coverage --continue --concurrency=2 ${{ matrix.coverage }}
 
       # A Codecov outage must not hold back a merge: the upload logs its error and the job passes.
       - name: Upload coverage
@@ -197,9 +197,10 @@ jobs:
       - name: Set up
         uses: ./.github/actions/setup
 
-      # The affected workspaces with a build, and whatever they build on.
+      # The affected workspaces with a build, and whatever they build on. Every turbo run here takes
+      # --continue, so one failing workspace never hides another's failure.
       - name: Build
-        run: pnpm turbo run build ${{ matrix.filters }}
+        run: pnpm turbo run build --continue ${{ matrix.filters }}
 
       # The CLI as npm would publish it: its file list and size, without publishing.
       - name: CLI package dry run
@@ -211,7 +212,7 @@ jobs:
       # `[env.staging]` block, or a `service =` that lost its `-staging` suffix, shows up here
       # rather than at a deploy.
       - name: Staging config check
-        run: pnpm turbo run staging:check ${{ matrix.filters }}
+        run: pnpm turbo run staging:check --continue ${{ matrix.filters }}
 
   # One check to require on main, whatever ran: it fails when any job above failed or was cancelled,
   # and passes when the change reached nothing.

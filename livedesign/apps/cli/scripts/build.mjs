@@ -77,7 +77,8 @@ const notices = (await Promise.all(dirs.map(noticeOf))).sort((a, b) =>
 const inputs = new Set(
   Object.keys(result.metafile.inputs).map((input) => relative(repo, resolve(app, input))),
 );
-const licences = join(repo, 'packages/licences');
+// The texts are the monorepo's one pool (@liveworkspace/licences); this product keeps only its tables.
+const licences = join(repo, '../packages/licences');
 const embedded = await Promise.all(
   EMBEDDED_WORKS.filter((w) =>
     'sources' in w.trigger

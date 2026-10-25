@@ -45,19 +45,19 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 ## Domain and naming
 
-| Term             | Identifier                        | Meaning                                                                                       |
-| ---------------- | --------------------------------- | --------------------------------------------------------------------------------------------- |
-| Gesture          | `CanvasGesture`                   | `'pan' \| 'zoom' \| 'move' \| 'resize' \| 'reshape' \| 'marquee' \| 'stroke' \| 'erase'`      |
-| At rest          | `'idle'`                          | No gesture open                                                                               |
-| Element gesture  | `ELEMENT_GESTURES`                | `move`, `resize`, `reshape`, `stroke`, `erase`: the gestures that change elements every frame |
-| Selection moving | `selectionMoving(g)`              | `g` is `move`, `resize` or `reshape`                                                          |
-| Element view     | `BoxedElementView`, `ArrowView`   | The memoised per-element components                                                           |
-| Element grid     | `ElementGrid`                     | The spatial index of boxed element bounds                                                     |
-| Arrow frame      | `ArrowViewFrame`                  | An arrow's resolved `from`, `to`, `pathD`, `curveAnchors`, `curveControl`, `elbowPoint`       |
-| Holes            | `holes: Rect[]`                   | The route-behind rects punched from an arrow                                                  |
-| Settled elements | `useSettledElements`              | The elements the Map draws                                                                    |
-| Reference board  | `buildReferenceBoard`             | The seeded synthetic board                                                                    |
-| Budget row       | `BudgetRow`                       | One line of the spec's budget table, with its measured value and verdict                      |
+| Term             | Identifier                                     | Meaning                                                                                       |
+| ---------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Gesture          | `CanvasGesture`                                | `'pan' \| 'zoom' \| 'move' \| 'resize' \| 'reshape' \| 'marquee' \| 'stroke' \| 'erase'`      |
+| At rest          | `'idle'`                                       | No gesture open                                                                               |
+| Element gesture  | `ELEMENT_GESTURES`                             | `move`, `resize`, `reshape`, `stroke`, `erase`: the gestures that change elements every frame |
+| Selection moving | `selectionMoving(g)`                           | `g` is `move`, `resize` or `reshape`                                                          |
+| Element view     | `BoxedElementView`, `ArrowView`                | The memoised per-element components                                                           |
+| Element grid     | `ElementGrid`                                  | The spatial index of boxed element bounds                                                     |
+| Arrow frame      | `ArrowViewFrame`                               | An arrow's resolved `from`, `to`, `pathD`, `curveAnchors`, `curveControl`, `elbowPoint`       |
+| Holes            | `holes: Rect[]`                                | The route-behind rects punched from an arrow                                                  |
+| Settled elements | `useSettledElements`                           | The elements the Map draws                                                                    |
+| Reference board  | `buildReferenceBoard`                          | The seeded synthetic board                                                                    |
+| Budget row       | `BudgetRow`                                    | One line of the spec's budget table, with its measured value and verdict                      |
 | Budget issue     | title `Canvas performance budget: liveplanner` | The one GitHub issue the nightly run opens, comments on and closes                            |
 
 "Drag" in the spec maps to the gestures `move` and `resize`; arrow handle drags are `reshape`.
