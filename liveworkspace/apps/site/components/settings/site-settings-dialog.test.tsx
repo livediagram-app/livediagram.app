@@ -49,7 +49,6 @@ afterEach(() => {
   localStorage.clear();
 });
 
-const sent = (n: number): unknown => JSON.parse(fetchMock.mock.calls[n]![1]?.body as string);
 
 async function settle() {
   for (let i = 0; i < 8; i++) await act(async () => await new Promise((r) => setTimeout(r, 0)));
@@ -96,61 +95,97 @@ async function open(
 }
 
 describe('the Settings panel, filtered to an app', () => {
-  it("is a modal dialog with the app's switch, reading only that app", async () => {
-    fetchMock.mockReturnValue(json(200, { all: {}, app: {}, updatedAt: null }));
+  // Every read answered by its path; `apps` sets an app's own scope, `patch` answers a write.
+  function answers(
+    apps: Partial<Record<AppId, Record<string, unknown>>> = {},
+    patch: (url: string, init?: RequestInit) => Promise<Response> | null = () => null,
+  ) {
+    return (url: string, init?: RequestInit) => {
+      if (init?.method === 'PATCH') return patch(url, init) ?? json(200, { all: {}, app: {} });
+      if (url.endsWith('/profile')) return json(200, { profile: null });
+      const app = url.split('/settings/')[1] as AppId | undefined;
+      return json(200, { all: {}, app: (app && apps[app]) ?? {}, updatedAt: null });
+    };
+  }
+  const headings = () =>
+    [...document.querySelectorAll('nav[aria-label="Settings categories"] [role="group"] > p')].map(
+      (p) => p.textContent,
+    );
+  const reads = () => fetchMock.mock.calls.filter(([, init]) => init?.method !== 'PATCH').length;
+
+  it("is a modal dialog with the app's switch: the Account section, Common and that app, no other app", async () => {
+    fetchMock.mockImplementation(answers());
     await open('liveplanner.app');
+    await until(() => headings().includes('liveplanner'));
     const dialog = document.querySelector('[role="dialog"]')!;
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-label')).toBe('Settings');
     expect(scopeButton('liveplanner').getAttribute('aria-pressed')).toBe('true');
     expect(dialog.textContent).toContain('More in liveplanner Settings');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]![0]).toBe('/api/account/settings/liveplanner.app');
+    // Account and Common shape this app too; the other apps' own groups stay under All.
+    expect(headings()).toEqual(['Account', 'Common', 'liveplanner']);
+    const paths = fetchMock.mock.calls.map(([url]) => url);
+    expect(paths).toContain('/api/account/settings/liveplanner.app');
   });
 
   it('saves a change as a patch of just that key, in that app’s scope, and puts it back if refused', async () => {
-    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: {} }));
-    await open('livediagram.app');
-    act(() => railButton('Notifications')!.click());
-    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('true');
-    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: { notifyDocumentJoin: false } }));
-    act(() => switchFor('notifyDocumentJoin').click());
+    let refuse = false;
+    fetchMock.mockImplementation(
+      answers({}, () =>
+        refuse
+          ? json(500, { error: 'failed' })
+          : json(200, { all: {}, app: { notifyDocumentJoin: false } }),
+      ),
+    );
+    await open('livediagram.app', { initialCategoryId: 'account:notifications' });
+    // The app's own email switch, filed under the Account section's Notifications with the app's name.
+    const key = 'livediagram.app:notifyDocumentJoin';
+    await until(() => switchFor(key));
+    expect(switchFor(key).getAttribute('aria-checked')).toBe('true');
+    act(() => switchFor(key).click());
     await settle();
-    const [url, init] = fetchMock.mock.calls[1]!;
+    const [url, init] = fetchMock.mock.calls.at(-1)!;
     expect(url).toBe('/api/account/settings/livediagram.app');
     expect(init?.method).toBe('PATCH');
-    expect(sent(1)).toEqual({ app: { notifyDocumentJoin: false } });
+    expect(JSON.parse(init?.body as string)).toEqual({ app: { notifyDocumentJoin: false } });
 
-    fetchMock.mockReturnValueOnce(json(500, { error: 'failed' }));
-    act(() => switchFor('notifyDocumentJoin').click());
-    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('true');
+    refuse = true;
+    act(() => switchFor(key).click());
+    expect(switchFor(key).getAttribute('aria-checked')).toBe('true');
     await settle();
-    expect(switchFor('notifyDocumentJoin').getAttribute('aria-checked')).toBe('false');
+    expect(switchFor(key).getAttribute('aria-checked')).toBe('false');
     expect(document.querySelector('[role="alert"]')?.textContent).toMatch(/went wrong/);
   });
 
   it('saves a common setting to the `all` scope, as the app held it until then', async () => {
     // Off in livediagram's own scope, from before the setting was shared.
-    fetchMock.mockReturnValueOnce(json(200, { all: {}, app: { alignmentGuides: false } }));
-    await open('livediagram.app');
-    act(() => railButton('Editor')!.click());
-    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('false');
-    expect(document.querySelector('#alignmentGuides-description')?.textContent).toContain(
-      'All apps',
+    fetchMock.mockImplementation(
+      answers({ 'livediagram.app': { alignmentGuides: false } }, () =>
+        json(200, { all: { alignmentGuides: true } }),
+      ),
     );
-    fetchMock.mockReturnValueOnce(json(200, { all: { alignmentGuides: true } }));
-    act(() => switchFor('alignmentGuides').click());
+    await open('livediagram.app');
+    await until(() => headings().includes('Common'));
+    await until(() => {
+      const button = railButton('Editor');
+      if (button) act(() => button.click());
+      return switchFor('common:alignmentGuides');
+    });
+    expect(switchFor('common:alignmentGuides').getAttribute('aria-checked')).toBe('false');
+    act(() => switchFor('common:alignmentGuides').click());
     await settle();
-    const [url, init] = fetchMock.mock.calls[1]!;
+    const [url, init] = fetchMock.mock.calls.at(-1)!;
     expect(url).toBe('/api/account/settings');
     expect(init?.method).toBe('PATCH');
-    expect(sent(1)).toEqual({ all: { alignmentGuides: true } });
-    expect(switchFor('alignmentGuides').getAttribute('aria-checked')).toBe('true');
+    expect(JSON.parse(init?.body as string)).toEqual({ all: { alignmentGuides: true } });
+    expect(switchFor('common:alignmentGuides').getAttribute('aria-checked')).toBe('true');
   });
 
   it('closes on Escape, and reopens from the page’s copy', async () => {
-    fetchMock.mockReturnValue(json(200, { all: {}, app: {} }));
+    fetchMock.mockImplementation(answers());
     const onClose = await open('liveplanner.app');
+    await until(() => headings().includes('liveplanner'));
+    const first = reads();
     const dialog = document.querySelector('[role="dialog"]')!;
     act(() => {
       dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
@@ -158,7 +193,12 @@ describe('the Settings panel, filtered to an app', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     act(() => root.render(<div />));
     await open('liveplanner.app');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await until(() => headings().includes('liveplanner'));
+    // The settings come from the page's copy; the Profile (who, how they sign in, where) is drawn fresh.
+    const again = fetchMock.mock.calls
+      .slice(first)
+      .filter(([u, init]) => init?.method !== 'PATCH' && u.startsWith('/api/account/settings'));
+    expect(again).toHaveLength(0);
   });
 });
 
