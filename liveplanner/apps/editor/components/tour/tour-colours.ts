@@ -2,6 +2,7 @@
 // (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (Diagram, Plan,
 // Draw, Pages, the card type tour) reads as part of the tab it runs on. Pure.
 import type { CSSProperties } from 'react';
+import { BRAND_RAMP } from '@liveplanner/ui';
 import {
   contrastRatio,
   isLightColor,
@@ -30,8 +31,8 @@ export const BANNER_INK = LIGHT_INK;
 export const BANNER_FROM_CONTRAST = 5.9;
 export const BANNER_TO_CONTRAST = 7.6;
 // Sign-in's own gradient (brand-700, brand-800), for an accent that cannot be read as hex.
-const SIGN_IN_BANNER_FROM = '#6d28d9';
-const SIGN_IN_BANNER_TO = '#5b21b6';
+const SIGN_IN_BANNER_FROM = BRAND_RAMP[700];
+const SIGN_IN_BANNER_TO = BRAND_RAMP[800];
 
 export function bannerColours(accent: string): { from: string; to: string } {
   const from = toneToContrast(accent, BANNER_INK, 'light', BANNER_FROM_CONTRAST);

@@ -9,6 +9,7 @@ import {
   type Element,
 } from '@livediagram/document';
 import { setAnimationClass } from '@/lib/animation-classes';
+import { BRAND_RAMP } from '@livediagram/ui';
 import { planTextAnimation, type TextAnimPlan } from './animated-words';
 
 // The Text animation of a label (docs/specs/028-animation/element-animations.md "Text"): the class
@@ -23,8 +24,9 @@ export type TextAnimView = {
   plan: TextAnimPlan;
 };
 
-// The accents a label without a stroke colour animates with: brand sky, and a marker's yellow.
-const TEXT_ACCENT = '#0ea5e9';
+// The accents a label without a stroke colour animates with: the app's brand (its brand-500, as hex: it is
+// mixed on the paper, not the chrome), and a marker's yellow.
+const TEXT_ACCENT = BRAND_RAMP[500];
 const MARKER_YELLOW = '#facc15';
 
 type Words = {

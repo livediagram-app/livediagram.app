@@ -122,8 +122,8 @@ export function CanvasGuideOverlay({
                       cx={x}
                       cy={y}
                       r={t.active ? 5 : 3.5}
-                      fill={t.active ? 'rgb(14, 165, 233)' : 'white'}
-                      stroke="rgb(14, 165, 233)"
+                      fill={t.active ? 'var(--color-brand-500)' : 'white'}
+                      stroke="var(--color-brand-500)"
                       strokeWidth={t.active ? 2 : 1.5}
                     />
                   );

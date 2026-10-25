@@ -20,8 +20,10 @@ import { ProgressView } from '@/components/canvas/ProgressView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
 import { SankeyView } from '@/components/canvas/SankeyView';
+import { BRAND_RAMP } from '@livedocuments/ui';
 
-const ACCENT = '#0ea5e9';
+// The tiles' own art wears the app's brand (brand-500), as the palette around them does.
+const ACCENT = BRAND_RAMP[500];
 const ARROW_D = 'M3 15 C 13 3, 25 19, 37 7';
 
 /** A short curved arrow running the flow's real path class, dash and travelling dots. */
@@ -86,7 +88,7 @@ const ICON_MOVES = new Set<IconAnimation>([
 /** A line-art star wearing the icon animation. */
 export function IconAnimationPreview({ animation }: { animation: IconAnimation | null }) {
   return (
-    <span className="relative block h-[24px] w-[24px] text-sky-500">
+    <span className="relative block h-[24px] w-[24px]" style={{ color: ACCENT }}>
       {animation && ICON_MOVES.has(animation) ? (
         <span className="absolute inset-0 opacity-25">
           <IconGlyph iconId="star" stroke="currentColor" />
@@ -120,7 +122,7 @@ export function ProgressAnimPreview({ anim }: { anim: ProgressAnim | null }) {
           progressAnimSpeed: 'normal',
         })}
         accent={ACCENT}
-        track="#e0f2fe"
+        track={BRAND_RAMP[100]}
         textColor="transparent"
       />
     </span>

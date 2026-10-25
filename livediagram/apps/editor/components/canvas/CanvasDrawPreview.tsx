@@ -95,7 +95,7 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'rgb(14, 165, 233)'}
+                  stroke={marker ? (marker.colour ?? HIGHLIGHTER_COLOR) : 'var(--color-brand-500)'}
                   strokeWidth={marker ? (marker.width ?? HIGHLIGHTER_WIDTH) : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
@@ -139,12 +139,12 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke="rgb(14, 165, 233)"
+                  stroke="var(--color-brand-500)"
                   strokeWidth={1.5}
                   strokeLinejoin="round"
                 />
                 {pts.map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r={3} fill="rgb(14, 165, 233)" />
+                  <circle key={i} cx={p.x} cy={p.y} r={3} fill="var(--color-brand-500)" />
                 ))}
                 {nearStart ? (
                   <circle
@@ -152,7 +152,7 @@ export function CanvasDrawPreview({
                     cy={pts[0]!.y}
                     r={8}
                     fill="none"
-                    stroke="rgb(14, 165, 233)"
+                    stroke="var(--color-brand-500)"
                     strokeWidth={2}
                   />
                 ) : null}
@@ -229,8 +229,8 @@ export function CanvasDrawPreview({
                 ) : usesSvg && pendingDraw.type === 'shape' ? (
                   <ShapeSvgOverlay
                     shape={pendingDraw.kind}
-                    fill="rgba(14, 165, 233, 0.10)"
-                    stroke="rgb(14, 165, 233)"
+                    fill="color-mix(in srgb, var(--color-brand-500) 10%, transparent)"
+                    stroke="var(--color-brand-500)"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     aspect={heightPx > 0 ? widthPx / heightPx : 1}

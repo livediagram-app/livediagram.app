@@ -7,6 +7,7 @@ import {
   type CanvasSurface,
   type ThemeDefinition,
 } from '@livedocuments/document';
+import { BRAND_RAMP } from '@livedocuments/ui';
 
 // How an image element without a bitmap looks (docs/specs/009-elements/images.md "Placeholder
 // rendering"): the empty placeholder, the broken-image state and the loading skeleton.
@@ -22,7 +23,8 @@ import {
 // Every body is OPAQUE, so the ink's contrast is measured against the body alone and holds over
 // any page fill, gradient or pattern underneath; a theme colour that falls short is pushed toward
 // contrast (legibleOn). Hex values rather than Tailwind tokens: the brand and slate tokens are
-// themselves redefined by the chrome's `.dark` class.
+// themselves redefined by the chrome's `.dark` class. The accent is the app's own brand, from its
+// light ramp (BRAND_RAMP).
 
 export type PlaceholderTone = {
   /** The box's body, opaque. */
@@ -47,8 +49,8 @@ export const IMAGE_PLACEHOLDER_TONE: Record<CanvasSurface, PlaceholderTone> = {
     border: '#64748b', // slate-500: 4.5:1 on the body
     ink: '#1e293b', // slate-800: 13.9:1 on the body
     muted: '#475569', // slate-600: 7.2:1 on the body
-    hoverBorder: '#0284c7', // brand-600
-    accent: '#0369a1', // brand-700
+    hoverBorder: BRAND_RAMP[600],
+    accent: BRAND_RAMP[700],
     onAccent: '#ffffff', // 5.9:1 on the accent
   },
   dark: {
@@ -56,9 +58,9 @@ export const IMAGE_PLACEHOLDER_TONE: Record<CanvasSurface, PlaceholderTone> = {
     border: '#64748b', // slate-500: 3.1:1 on the body
     ink: '#f1f5f9', // slate-100: 13.4:1 on the body
     muted: '#cbd5e1', // slate-300: 9.9:1 on the body
-    hoverBorder: '#38bdf8', // brand-400
-    accent: '#38bdf8', // brand-400
-    onAccent: '#0f172a', // slate-900: 8.9:1 on the accent
+    hoverBorder: BRAND_RAMP[400],
+    accent: BRAND_RAMP[400],
+    onAccent: '#0f172a', // slate-900: 10.7:1 on the accent
   },
 };
 

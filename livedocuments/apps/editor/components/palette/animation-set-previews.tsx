@@ -9,8 +9,10 @@ import { createFreehand, type AnimationSetId } from '@livedocuments/document';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { planTextAnimation, renderUnits } from '@/components/canvas/animated-words';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
+import { BRAND_RAMP } from '@livedocuments/ui';
 
-const ACCENT = '#0ea5e9';
+// The tiles' own art wears the app's brand (brand-500), as the palette around them does.
+const ACCENT = BRAND_RAMP[500];
 const vars = (v: Record<string, string | number>) => v as CSSProperties;
 
 // The variables every body miniature reads, scaled as if it were a modest canvas element so a
@@ -146,11 +148,11 @@ function ShapePreview({ value }: { value: string | null }) {
   return (
     <>
       {value && MOVES.has(value) ? (
-        <Ghost className="h-[20px] w-[32px] rounded-[5px] border-[1.5px] border-sky-500" />
+        <Ghost className="h-[20px] w-[32px] rounded-[5px] border-[1.5px] border-brand-500" />
       ) : null}
       <span
-        className={`relative block h-[20px] w-[32px] rounded-[5px] border-[1.5px] border-sky-500 bg-sky-50 dark:bg-sky-500/15 ${shapeClass(value)}`}
-        style={vars({ ...BODY_VARS, '--lvd-anim-bg': '#f0f9ff' })}
+        className={`relative block h-[20px] w-[32px] rounded-[5px] border-[1.5px] border-brand-500 bg-brand-50 dark:bg-brand-500/15 ${shapeClass(value)}`}
+        style={vars({ ...BODY_VARS, '--lvd-anim-bg': BRAND_RAMP[50] })}
       >
         <Layer value={value} />
       </span>

@@ -203,7 +203,7 @@ changes what a screen reader reads or what copying picks up. Rich text keeps its
 each styled run. Auto-fit labels animate like any other: their animated words are drawn at the size the fit
 measured.
 
-Words take an accent of their own: the element's stroke colour when it has one, else brand sky (Underline,
+Words take an accent of their own: the element's stroke colour when it has one, else the app's brand colour (Underline,
 Shine, Glow), and marker yellow for Highlighter. A label's own ink would make a muddy halo or marker.
 
 In a table, each cell's words animate, staggered from the top-left cell to the bottom-right. On a page, the title

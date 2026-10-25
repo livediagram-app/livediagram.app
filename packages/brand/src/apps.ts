@@ -17,7 +17,13 @@ export type BrandIdentity = {
   liveClass: string;
   // The wordmark gleam's colour on dark (its 300); white over light-mode ink.
   shineClass: string;
+  // The app's light brand ramp as hex: `--color-brand-*` in its tailwind-config's `@theme` block (apps.test.ts keeps
+  // them equal). For a colour drawn on the paper or mixed in code, which a class or `var()` cannot give, as the
+  // chrome's `.dark` class redefines the tokens.
+  ramp: Record<BrandStep, string>;
 };
+
+export type BrandStep = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
 const INK = { light: '#0f172a', dark: '#f1f5f9' } as const;
 
@@ -49,6 +55,19 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
     },
     liveClass: 'text-brand-700 dark:text-sky-400',
     shineClass: 'dark:[--ldm-shine:#7dd3fc]',
+    ramp: {
+      50: '#f0f9ff',
+      100: '#e0f2fe',
+      200: '#bae6fd',
+      300: '#7dd3fc',
+      400: '#38bdf8',
+      500: '#0ea5e9',
+      600: '#0284c7',
+      700: '#0369a1',
+      800: '#075985',
+      900: '#0c4a6e',
+      950: '#082f49',
+    },
   },
   liveplanner: {
     word: 'planner',
@@ -77,6 +96,19 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
     },
     liveClass: 'text-brand-700 dark:text-violet-400',
     shineClass: 'dark:[--ldm-shine:#c4b5fd]',
+    ramp: {
+      50: '#f5f3ff',
+      100: '#ede9fe',
+      200: '#ddd6fe',
+      300: '#c4b5fd',
+      400: '#a78bfa',
+      500: '#8b5cf6',
+      600: '#7c3aed',
+      700: '#6d28d9',
+      800: '#5b21b6',
+      900: '#4c1d95',
+      950: '#2e1065',
+    },
   },
   livedocuments: {
     word: 'documents',
@@ -105,6 +137,19 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
     },
     liveClass: 'text-brand-700 dark:text-amber-400',
     shineClass: 'dark:[--ldm-shine:#fcd34d]',
+    ramp: {
+      50: '#fffbeb',
+      100: '#fef3c7',
+      200: '#fde68a',
+      300: '#fcd34d',
+      400: '#fbbf24',
+      500: '#f59e0b',
+      600: '#c76508',
+      700: '#a34a0c',
+      800: '#92400e',
+      900: '#78350f',
+      950: '#451a03',
+    },
   },
   livedesign: {
     word: 'design',
@@ -133,5 +178,18 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
     },
     liveClass: 'text-brand-700 dark:text-rose-400',
     shineClass: 'dark:[--ldm-shine:#fda4af]',
+    ramp: {
+      50: '#fff1f2',
+      100: '#ffe4e6',
+      200: '#fecdd3',
+      300: '#fda4af',
+      400: '#fb7185',
+      500: '#f43f5e',
+      600: '#e11d48',
+      700: '#be123c',
+      800: '#9f1239',
+      900: '#881337',
+      950: '#4c0519',
+    },
   },
 };
