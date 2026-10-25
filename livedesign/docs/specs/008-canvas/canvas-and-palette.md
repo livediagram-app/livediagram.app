@@ -1412,12 +1412,13 @@ which lives in `Canvas` rather than in the clipboard hook.
 - **The Isometric background pattern** (removed 25 October 2026; livediagram keeps it). It followed the isometric
   view out: its tile behind "Show More Patterns" in the pattern picker (`apps/live/components/palette/palette-patterns.ts`),
   its canvas and export tiles (`isometricBg` and the `backgroundPatternTile` case in `apps/live/lib/canvas-backgrounds.ts`)
-  and its name in the Changing the background help article. The **Studio** look wears Crosshatch instead. This
-  product's `BackgroundPattern` (`packages/design/src/retired-patterns.ts`) is the shared one less its retired patterns,
-  bound with `bindRetiredPatterns` from `@liveworkspace/model-core/retired-patterns`, so the api's OpenAPI
-  `BackgroundPattern` enum no longer lists `isometric` and the product's `isBackgroundPattern` refuses it. The shared
-  pattern value, `BackgroundIsometricIcon` in workbench and the `isometric` glyph in packages/icons stay, for
-  livediagram. Telemetry: `Canvas·Changed·Isometric` is no longer sent
+  and its name in the Changing the background help article. The **Studio** look wears Crosshatch instead. Isometric then left the
+  shared code too, so it is livediagram's alone: the shared `BackgroundPattern` (`@liveworkspace/model-core/basics`)
+  no longer lists it, and its picker icon, mode glyph and help art live in livediagram. This product's
+  `BackgroundPattern` is the shared one, so the api's OpenAPI `BackgroundPattern` enum does not list `isometric`.
+  `packages/design/src/retired-patterns.ts` names the retired value (`RETIRED_PATTERNS`, `isometric` to `crosshatch`)
+  and binds it with the generic `bindRetiredPatterns` (`@liveworkspace/model-core/retired-patterns`), which knows no
+  pattern by name, so the product's `isBackgroundPattern` refuses it and a stored tab moves off it. Telemetry: `Canvas·Changed·Isometric` is no longer sent
   ([Telemetry](../017-telemetry/telemetry.md#retired-features)).
   - **Old designs open, drawn in Crosshatch.** A tab saved wearing Isometric moves onto Crosshatch on read
     (`migrateRetiredPattern`, run by `migrateStoredTab` and so by every stored and incoming tab), its pattern colour,

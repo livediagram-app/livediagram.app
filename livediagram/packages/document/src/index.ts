@@ -95,19 +95,18 @@ export type {
 export type DocumentId = string;
 // The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
 // background patterns) is shared by every product: @liveworkspace/model-core/basics.
-import type {
-  TabId,
-  ElementId,
-  TextSize,
-  BackgroundPattern,
-} from '@liveworkspace/model-core/basics';
+import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
+// livediagram's patterns: the shared ones plus its own (./background-pattern), Isometric among them.
+import type { BackgroundPattern } from './background-pattern';
+// The selection-mode glyphs: the shared ones plus livediagram's own (./mode-glyphs), Isometric among them.
+export { MODE_GLYPHS, type ModeGlyph } from './mode-glyphs';
+export { isBackgroundPattern, type BackgroundPattern } from './background-pattern';
 export {
   PADDING_PX,
   ARROW_FLOWS,
   ANIMATED_BACKGROUND_PATTERNS,
   SEASONAL_BACKGROUND_PATTERNS,
   isSeasonalPattern,
-  isBackgroundPattern,
   isAnimatedPattern,
   type TabId,
   type ElementId,
@@ -118,7 +117,6 @@ export {
   type TextAlignY,
   type IconPosition,
   type ArrowFlow,
-  type BackgroundPattern,
   type AnimatedBackgroundPattern,
   type SeasonalBackgroundPattern,
 } from '@liveworkspace/model-core/basics';

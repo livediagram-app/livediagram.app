@@ -100,6 +100,14 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 'spotlight' | 'eraser' | 'isometric'`). It's a mutually-exclusive cursor
   mode, so it belongs **inside** the tool group, unlike Zen mode which is an
   orthogonal visibility flag.
+- **Isometric is livediagram's alone**, so none of it lives in the monorepo's shared `packages/`: the other
+  products retired the view and the pattern. Its mode glyph (the cube) is in `MODE_GLYPHS`
+  (`packages/document/src/mode-glyphs.ts`, which spreads the shared `@liveworkspace/icons/mode-glyphs` table and
+  adds it); its background pattern is livediagram's own `BackgroundPattern`
+  ([Canvas and palette](./canvas-and-palette.md), `packages/document/src/background-pattern.ts`); and its help art
+  (`IsometricGlyph`, the `iso` projection and `IsoCard`, and the Isometric scene) is in the help app
+  (`apps/help/components/illustrations/palette-modes-parts.tsx` and `palette-modes.tsx`), beside a re-export of the
+  shared mode glyphs from `@liveworkspace/help-site`.
 - The projection math lives in its own helper (`apps/editor/lib/isometric.ts`):
   the camera transform builder, elevation clamp, and per-element extrusion
   metrics, kept out of `Canvas.tsx` so the geometry is unit-testable and the

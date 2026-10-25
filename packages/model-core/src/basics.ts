@@ -91,37 +91,41 @@ export const ARROW_FLOWS: readonly ArrowFlow[] = [
   'wind',
 ];
 
-export type BackgroundPattern =
-  | 'grid'
-  | 'blank'
-  | 'lines'
-  | 'crosshatch'
-  | 'graph'
-  | 'confetti'
-  | 'stripes'
-  | 'diagonal'
-  | 'waves'
-  | 'bricks'
-  | 'isometric'
-  | 'hexagonal'
-  | 'engineering'
-  | 'checkerboard'
+// Every shared background pattern, in catalogue order. A product with patterns of its own (livediagram's) extends
+// the type from this list in its own model, so its pattern type never names the shared alias twice.
+export const BACKGROUND_PATTERNS = [
+  'grid',
+  'blank',
+  'lines',
+  'crosshatch',
+  'graph',
+  'confetti',
+  'stripes',
+  'diagonal',
+  'waves',
+  'bricks',
+  'hexagonal',
+  'engineering',
+  'checkerboard',
   // Seasonal patterns (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks"): static motif tiles worn
   // by the seasonal looks only, never listed in a pattern picker.
-  | 'sparkles'
-  | 'eggs'
-  | 'cobwebs'
-  | 'snowflakes'
-  | 'candy-stripes'
+  'sparkles',
+  'eggs',
+  'cobwebs',
+  'snowflakes',
+  'candy-stripes',
   // Animated patterns (docs/specs/008-canvas/canvas-and-palette.md): soft ambient motion rendered as an
   // overlay layer rather than a CSS background image. They theme off the
   // pattern colour like the static ones. Kept last so the static catalogue
   // ordering is undisturbed.
-  | 'flow'
-  | 'drift'
-  | 'aurora'
-  | 'ripple'
-  | 'ribbons';
+  'flow',
+  'drift',
+  'aurora',
+  'ripple',
+  'ribbons',
+] as const;
+
+export type BackgroundPattern = (typeof BACKGROUND_PATTERNS)[number];
 
 // The animated members of BackgroundPattern. These render via the
 // AnimatedCanvasBackground overlay (CSS / SVG motion) instead of a static
@@ -148,44 +152,18 @@ export const SEASONAL_BACKGROUND_PATTERNS = [
 
 export type SeasonalBackgroundPattern = (typeof SEASONAL_BACKGROUND_PATTERNS)[number];
 
-export function isSeasonalPattern(pattern: BackgroundPattern): boolean {
+// Takes any string, so a product that extends BackgroundPattern with patterns of its own can ask too.
+export function isSeasonalPattern(pattern: string): boolean {
   return (SEASONAL_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
 }
 
-// Every BackgroundPattern, so a pattern read from stored or sent data can be checked (the Record keeps it whole).
-const BACKGROUND_PATTERN_SET: Readonly<Record<BackgroundPattern, true>> = {
-  grid: true,
-  blank: true,
-  lines: true,
-  crosshatch: true,
-  graph: true,
-  confetti: true,
-  stripes: true,
-  diagonal: true,
-  waves: true,
-  bricks: true,
-  isometric: true,
-  hexagonal: true,
-  engineering: true,
-  checkerboard: true,
-  sparkles: true,
-  eggs: true,
-  cobwebs: true,
-  snowflakes: true,
-  'candy-stripes': true,
-  flow: true,
-  drift: true,
-  aurora: true,
-  ripple: true,
-  ribbons: true,
-};
+// Every BackgroundPattern, so a pattern read from stored or sent data can be checked.
+const BACKGROUND_PATTERN_SET: ReadonlySet<string> = new Set(BACKGROUND_PATTERNS);
 
 export function isBackgroundPattern(value: unknown): value is BackgroundPattern {
-  return typeof value === 'string' && Object.hasOwn(BACKGROUND_PATTERN_SET, value);
+  return typeof value === 'string' && BACKGROUND_PATTERN_SET.has(value);
 }
 
-export function isAnimatedPattern(
-  pattern: BackgroundPattern,
-): pattern is AnimatedBackgroundPattern {
+export function isAnimatedPattern(pattern: string): pattern is AnimatedBackgroundPattern {
   return (ANIMATED_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
 }

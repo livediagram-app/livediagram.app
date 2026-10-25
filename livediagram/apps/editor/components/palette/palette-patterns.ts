@@ -14,13 +14,13 @@ import {
   BackgroundGraphIcon,
   BackgroundGridIcon,
   BackgroundHexagonalIcon,
-  BackgroundIsometricIcon,
   BackgroundLinesIcon,
   BackgroundRibbonsIcon,
   BackgroundRippleIcon,
   BackgroundStripesIcon,
   BackgroundWavesIcon,
 } from '@liveworkspace/workbench/components/primitives/background-pattern-icons';
+import { BackgroundIsometricIcon } from './background-isometric-icon';
 
 // The canvas background-pattern catalogue: one PatternEntry per pattern,
 // consumed by the pattern picker (CanvasStyleControls)
