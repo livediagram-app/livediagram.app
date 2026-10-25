@@ -132,6 +132,8 @@ Under it, beside the sidebar, Home holds three sections in place of Jump Back In
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
   heading row opens the wizard (`/new`).
+- Every start card shows its **whole title and description**, wrapped onto as many lines as they need and never
+  cut short with an ellipsis, at every width; the cards in a row stand as tall as the tallest of them.
 - **Already Have Work?**, for a guest on a deployment with sign-in only: **Nothing here yet? Sign in**: "If you have
   used livedesign before, sign in and your designs come back with you." with a **Sign In** button. A signed-out
   person who expected their work finds the way back first.

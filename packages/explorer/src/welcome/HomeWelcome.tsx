@@ -92,15 +92,21 @@ function StartCard({ start, size }: { start: WelcomeStart; size: 'blank' | 'temp
         <StartPicture start={start} />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5 px-1">
+        {/* The whole name and description, wrapped rather than cut short: a template is chosen by what it says
+            it is. The grid's rows stretch every card in a row to the tallest one's height. */}
         <span
-          className={`truncate font-semibold text-[#17153a] dark:text-slate-100 ${
+          data-welcome-start-name=""
+          className={`break-words font-semibold text-[#17153a] dark:text-slate-100 ${
             blank ? 'text-sm' : 'text-[15px]'
           }`}
         >
           {start.name}
         </span>
         {start.description ? (
-          <span className={`line-clamp-2 text-xs leading-[18px] ${MUTED}`}>
+          <span
+            data-welcome-start-description=""
+            className={`break-words text-xs leading-[18px] ${MUTED}`}
+          >
             {start.description}
           </span>
         ) : null}
