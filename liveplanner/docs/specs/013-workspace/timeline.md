@@ -79,6 +79,9 @@ is one per pane, drawn only while open.
 
 ## 6. Not carried over
 
-A plan's own History panel and a team's Team Activity: the index can answer both (by item, by `t:<team>`), and they
-belong with the editor and the Teams pages. livediagram's token-expiry warnings, the scheduled events its Upcoming
+An item's own history is **History** on its menu in the Explorer, the shared dialog livediagram's
+[Timeline spec](../../../../livediagram/docs/specs/013-workspace/timeline.md) "Beyond the feed" describes (the
+plan's own Timeline, `GET /timeline?item=`, paged, on a day-by-day rail with filters and runs). A team's Team
+Activity: the index can answer it (by `t:<team>`), and it
+belongs with the editor and the Teams pages. livediagram's token-expiry warnings, the scheduled events its Upcoming
 band showed, are accounts' (by email) rather than the Timeline's.

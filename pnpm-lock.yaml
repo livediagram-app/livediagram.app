@@ -5233,6 +5233,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../index-client
+      '@liveworkspace/settings':
+        specifier: workspace:^
+        version: link:../settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
