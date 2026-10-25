@@ -19,14 +19,20 @@ The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md
 pushes". The Explorer that shows it is the shared package,
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
 
-## How a row reads
+## How it reads, and what it can do
 
-Every Inbox row, on the Explorer page and in the editor's Explorer panel, is one link drawn by one shared component (`packages/explorer/src/explorer/inbox/InboxRows.tsx`) at one of two densities: **comfortable** on the page, **compact** in the panel (tighter padding, a smaller avatar, shorter times, and the item's title alone on the breadcrumb line, so it reads rather than sharing the width with a place cut to a letter; the full path stays the line's tooltip and part of the row's name). Top to bottom it reads:
+The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Inbox"):
 
-- **Where**, as a quiet breadcrumb: the item's app mark (in the All filter), the team glyph for a team's item, the item's title, then the tab and the element or board. On the right, when it last changed, in a `<time>` element with the full date on hover.
-- **What needs you**, in bold: the action's name, the card's number and title, the element a thread is on, or the form's heading. One line, the full text on hover.
-- **The detail**, up to two lines: the latest comment quoted under its author's name, or the action's note.
-- **Why it is here**, a chip that pairs an icon with its words, never colour alone: **Assigned to you** (followed by who assigned it), **Waiting on Bo** (work you assigned), **Mentioned you**, **On your {kind}** (the item is yours and you haven't replied), **You replied**, or **3 new responses**. Beside it the card's type glyph and label, the thread's comment count, and **This Browser** for an item only this browser holds.
-- **Who**, as an avatar at the start: who assigned it to you, who you assigned it to, or who wrote the latest comment, in their presence colour when the app sends one (darkened until the initials read at AA, a quiet disc otherwise), with a small badge for the row's kind. A form's row shows the form glyph instead.
+- **The list**: every row newest first under Today, Earlier This Week and Older, three lines each: who (semibold when it asks something of you) and its age; what it is; why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your canvas**, **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism and the item, and the teal **This Browser** pill for a canvas only this browser holds.
+- **The filter bar** over it: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device, beside the header's app filter.
+- **The reading pane**: where it is, the title, who and why, the verbs with their keys, the canvas's thumbnail, then the thread, the action's note or the form's responses, and a reply field where Reply is offered.
+- **On a phone and in the editor's panel** the pane takes the list's place, with Back to Inbox; the browser's Back and Esc return to the list.
 
-The row's accessible name is its title, why it is here and its item; the detail and the time describe it. Hover and keyboard focus tint the row at `duration-micro` (no motion under reduced motion), and on the page an Open arrow shows. A row only opens its place: the Inbox offers no Mark Done, and the index sends no read state for actions and threads, so rows carry no unread mark (a form's row counts the responses you haven't seen). Loading shows skeleton rows of the same shape. With nothing open, the Inbox says **You're all caught up**.
+What the pane can do for livediagram's rows, through this app's own code (`apps/editor/lib/explorer-inbox-host`, over `@liveworkspace/explorer/inbox-actions`):
+
+- **Open in livediagram** (↵), always: the row's deep link.
+- **Reply** (r) and **Resolve** (e) on an element's thread, through the comment routes (`POST /api/<items>/:id/tabs/:tabId/comments`, `…/comments/:firstCommentId/resolve`), which relay to an open editor. Offered on liveworkspace.app (the workspace token reaches every app's api), on livediagram's own `/explorer` and in its editor's panel (their token is livediagram's). The pane reads the whole thread from `GET /api/<items>/:id/comments?status=all` once the choice settles.
+- **Mark Done** (e) on an action, only in the editor's panel, and only for an action on the tab the canvas has open: the canvas's own Mark Done (`useCanvasChromePanels` hands the panel the active tab and `onToggleActionDone`). An action's status has no route of its own, so nowhere else offers it.
+- Nothing on a This Browser row: no page but the editor reaches the offline store, and the editor has no verbs for it yet.
+
+The Inbox keeps no read state: no Seen, Later or Done of its own, and rows carry no unread mark (a form's row counts the responses you haven't seen). A row whose work was done from the pane leaves the list at once. Loading shows skeleton rows of the same shape; with nothing open, the Inbox says **You're all caught up**. Telemetry: `Activity·Opened` (once a visit), `Activity·Selected` (a row opened in its app, by kind), `Activity·Loaded·Retry`, `Activity·Changed` (the filter bar), `Activity·Added·Reply` and `Activity·Resolved` (`Thread`, `Action`) ([Telemetry](../017-telemetry/telemetry.md)).

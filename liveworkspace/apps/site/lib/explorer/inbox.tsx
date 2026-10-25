@@ -7,9 +7,12 @@
 
 import { Glyph } from '@livediagram/ui';
 import { ITEM_TYPES, planGlyphPath } from '@liveplanner/items';
-import type { InboxHost } from '@liveworkspace/explorer';
+import type { InboxActions, InboxHost } from '@liveworkspace/explorer';
+import { createInboxActions } from '@liveworkspace/explorer/inbox-actions';
 import { inboxSnapshotRows, subscribeInboxSnapshot } from '@liveworkspace/explorer/this-browser';
-import { siteOfApp, type AppName } from '@liveworkspace/sites';
+import { isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
+import { appOrigin } from './page-app';
+import { workspaceToken } from './token';
 
 /** A Plan card type's glyph, by its type id: the type's own, or the plain card glyph for one not built in. */
 export function CardGlyph({ type }: { type: string }) {
@@ -39,4 +42,29 @@ export function localInboxHost(
     localRows: () => Promise.resolve(inboxSnapshotRows(app, viewerId)),
     subscribeLocal: (onChange) => subscribeInboxSnapshot(app, onChange),
   };
+}
+
+/** The reading pane's verbs on this page (@liveworkspace/explorer/inbox-actions): Reply and Resolve on a thread,
+ *  through the app's own comment routes. On liveworkspace.app every app's threads, as the workspace token's audience
+ *  is every app's api; on an app's address that app's alone, as its token is only its own api's. Nothing here can
+ *  mark an action done (only the editor that has it open can) or reach This Browser's items. */
+export function inboxActionsFor(host: AppName | null, doFetch: typeof fetch = fetch): InboxActions {
+  return createInboxActions({
+    api: (app) => {
+      if (!isAppName(app) || (host !== null && host !== app)) return null;
+      return async (path, init) => {
+        const token = await workspaceToken();
+        const headers = new Headers();
+        if (token) headers.set('Authorization', `Bearer ${token}`);
+        if (init.body !== undefined) headers.set('Content-Type', 'application/json');
+        return doFetch(`${appOrigin(app)}/api${path}`, {
+          method: init.method,
+          headers,
+          body: init.body === undefined ? undefined : JSON.stringify(init.body),
+          credentials: 'omit',
+          signal: init.signal,
+        });
+      };
+    },
+  });
 }

@@ -22,7 +22,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
-import { explorerInboxHost } from '@/lib/explorer-inbox-host';
+import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { explorerImports, explorerLibraryHosts } from '@/lib/explorer-library-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { driveItemMarks } from '@/lib/explorer-item-marks';
@@ -46,6 +46,7 @@ const NO_MOVE = () => {};
 // handlers.
 function ExplorerImpl({
   currentDocumentId,
+  inboxOpenAction = null,
   currentShareCode = null,
   onRenameCurrent,
   onNewDocument,
@@ -66,7 +67,22 @@ function ExplorerImpl({
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
-  const inboxHost = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
+  const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
+  // The pane's verbs: this app's threads, and an action on the open canvas's active tab.
+  const inboxActions = useMemo(
+    () =>
+      explorerInboxActions(
+        inboxOwner,
+        currentDocumentId && inboxOpenAction
+          ? { itemId: currentDocumentId, ...inboxOpenAction }
+          : null,
+      ),
+    [inboxOwner, currentDocumentId, inboxOpenAction],
+  );
+  const inboxHost = useMemo(
+    () => ({ ...inboxBase, actions: inboxActions }),
+    [inboxBase, inboxActions],
+  );
   const library = useMemo(() => explorerLibraryHosts(), []);
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);

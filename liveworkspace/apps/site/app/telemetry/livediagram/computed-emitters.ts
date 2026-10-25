@@ -619,6 +619,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
   },
   'apps/editor/lib/explorer-inbox-host.tsx Activity·Loaded': { values: ['Retry'] },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Changed': {
+    values: ['All', 'MyActions', 'AssignedByMe', 'Comments', 'FormResponses'],
+  },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Added': { values: ['Reply'] },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Resolved': {
+    values: ['Thread', 'Action', 'Card'],
+  },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/editor/lib/element-telemetry.ts Element·Added': {
     values: ELEMENT_KINDS,

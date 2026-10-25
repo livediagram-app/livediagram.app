@@ -6,7 +6,15 @@
 
 import type { ActivityAction, ActivityPlace, ActivityThread } from '@livedocuments/api-schema';
 import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
-import type { InboxHost, InboxLocalRows, InboxTelemetry } from '@liveworkspace/explorer';
+import type {
+  InboxActions,
+  InboxHost,
+  InboxLocalRows,
+  InboxTelemetry,
+} from '@liveworkspace/explorer';
+import { createInboxActions, type InboxApi } from '@liveworkspace/explorer/inbox-actions';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { apiFetch, apiHeaders } from './api/core';
 import { helpArticleHref } from './help-articles';
 import { getGuestSelfId } from './local-identity';
 import { inboxSnapshot } from './offline/inbox-snapshot';
@@ -22,6 +30,12 @@ export const trackInbox: InboxTelemetry = (action, type) => {
       return track('Activity', 'Selected', type);
     case 'Loaded':
       return track('Activity', 'Loaded', type);
+    case 'Changed':
+      return track('Activity', 'Changed', type);
+    case 'Added':
+      return track('Activity', 'Added', type);
+    case 'Resolved':
+      return track('Activity', 'Resolved', type);
   }
 };
 
@@ -96,4 +110,35 @@ export function explorerInboxHost(ownerId: string | null): InboxHost {
     actionsHelpHref: helpArticleHref('assignedActions'),
     onTelemetry: trackInbox,
   };
+}
+
+// This app's api as the person, for the Inbox's reading pane: `path` is under /api.
+function inboxApi(ownerId: string): InboxApi {
+  return async (path, init) =>
+    apiFetch(`${API_BASE}${path}`, {
+      method: init.method,
+      headers: await apiHeaders(ownerId, { body: init.body !== undefined }),
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      signal: init.signal,
+    });
+}
+
+/** The document the editor has open, its active tab, and the canvas's own Mark Done for an action there. */
+export type InboxOpenAction = {
+  itemId: string;
+  tabId: string;
+  markDone: (elementId: string, actionId: string) => void;
+};
+
+/** The reading pane's verbs in the editor's panel (@liveworkspace/explorer/inbox-actions): Reply and Resolve on this
+ *  app's threads through its comment routes, and Mark Done on an action on the open document's active tab, as the
+ *  canvas marks it. Another app's rows, and This Browser's, are opened in their place instead. */
+export function explorerInboxActions(
+  ownerId: string | null,
+  open: InboxOpenAction | null,
+): InboxActions {
+  return createInboxActions({
+    api: (app) => (app === 'livedocuments' && ownerId ? inboxApi(ownerId) : null),
+    openAction: open,
+  });
 }

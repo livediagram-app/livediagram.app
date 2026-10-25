@@ -101,8 +101,54 @@ export type Located<T> = T & { local?: true };
 export type InboxLocalRows = { actions: InboxAction[]; threads: InboxThread[] };
 
 /** What the Inbox reports, for the host's telemetry: the Inbox opened (`Opened`, once a visit), a row followed
- *  (`Selected`: Action, Card, Thread, CardThread or FormResponses), a failed read retried (`Loaded`, `Retry`). */
-export type InboxTelemetry = (action: 'Opened' | 'Selected' | 'Loaded', type?: string) => void;
+ *  into its app (`Selected`: Action, Card, Thread, CardThread or FormResponses), a failed read retried (`Loaded`,
+ *  `Retry`), the filter bar changed (`Changed`: All, MyActions, AssignedByMe, Comments, FormResponses), and a verb
+ *  carried out from the reading pane (`Added`: Reply; `Resolved`: Thread, Action or Card). */
+export type InboxTelemetry = (
+  action: 'Opened' | 'Selected' | 'Loaded' | 'Changed' | 'Added' | 'Resolved',
+  type?: string,
+) => void;
+
+/** A row the reading pane acts on, as the host finds it in its app: an action, a card, an element's thread or a
+ *  card's thread (`elementId` is the card's id for a card or a card's thread). `local` for an item only this
+ *  browser holds. */
+export type InboxTarget = {
+  kind: 'Action' | 'Card' | 'Thread' | 'CardThread';
+  app: App;
+  itemId: string;
+  tabId: string;
+  elementId: string;
+  actionId: string | null;
+  local: boolean;
+};
+
+/** A verb the reading pane can offer: reply to a thread, resolve a thread, mark an action or a card done. */
+export type InboxVerb = 'reply' | 'resolve' | 'done';
+
+/** One comment of a thread, for the reading pane. */
+export type InboxComment = {
+  id: string;
+  authorName: string | null;
+  authorColor?: string;
+  /** Written by the person reading. */
+  mine?: boolean;
+  text: string;
+  at: number;
+};
+
+/** What the reading pane can do on this page, through the app's own code. Each verb is offered only where `offers`
+ *  names it for the row, so a page never shows a button it can't carry out; Open in the app is always there. The
+ *  calls resolve once the change is made (the row then leaves the list) and reject when it wasn't. */
+export type InboxActions = {
+  /** The verbs this page can carry out on the row, worked out without a request (it runs on every selection). */
+  offers: (row: InboxTarget) => readonly InboxVerb[];
+  reply?: (row: InboxTarget, text: string) => Promise<void>;
+  resolve?: (row: InboxTarget) => Promise<void>;
+  done?: (row: InboxTarget) => Promise<void>;
+  /** The thread's comments, oldest first, when this page can read them; the pane asks once per thread, after the
+   *  selection settles, and keeps the answer. Null (or no function) shows the latest comment the index holds. */
+  loadThread?: (row: InboxTarget, signal: AbortSignal) => Promise<InboxComment[] | null>;
+};
 
 /** What the Inbox needs from the host beyond the index: its own items' rows, a card type's glyph, the help article
  *  on actions its empty state offers, and telemetry. Every member is optional. */
@@ -118,6 +164,9 @@ export type InboxHost = {
   cardGlyph?: (type: string) => ReactNode;
   actionsHelpHref?: string;
   onTelemetry?: InboxTelemetry;
+  /** The reading pane's verbs this page can carry out (Reply, Resolve, Mark Done). Without it the pane offers Open
+   *  in the app alone. */
+  actions?: InboxActions;
 };
 
 /** What the Share dialog needs from the host beyond a link's address, per item, since the Explorer may list every

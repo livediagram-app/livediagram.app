@@ -324,6 +324,19 @@ export const UserIcon = lucide(
   </>,
   12,
 );
+// A thread on an item of yours (lucide file-text), the reading pane's Back (arrow-left) and Send (send-horizontal).
+export const FileTextIcon = lucide(
+  <>
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8" />
+  </>,
+  12,
+);
+export const ArrowLeftIcon = lucide(<path d="m12 19-7-7 7-7M19 12H5" />, 16);
+export const SendIcon = lucide(
+  <path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904zM6 12h16" />,
+  14,
+);
 
 // The two badge marks of liveplanner's VisibilityBadge, on their 9-unit grid.
 export function TeamBadgeGlyph() {

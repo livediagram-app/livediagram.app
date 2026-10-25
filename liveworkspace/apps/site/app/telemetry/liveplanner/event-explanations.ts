@@ -60,6 +60,23 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Resolved|WontDo':
     "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
+  'Activity|Changed|All':
+    "Someone showed every row of the Explorer's Inbox again, from the filter bar over its list.",
+  'Activity|Changed|MyActions':
+    "Someone filtered the Explorer's Inbox to My Actions: the actions and cards assigned to them.",
+  'Activity|Changed|AssignedByMe':
+    "Someone filtered the Explorer's Inbox to Assigned by Me: the work they handed to others.",
+  'Activity|Changed|Comments':
+    "Someone filtered the Explorer's Inbox to Comments: mentions, threads on their items and replies.",
+  'Activity|Changed|FormResponses':
+    "Someone filtered the Explorer's Inbox to Form Responses: forms with responses they haven't seen.",
+  'Activity|Added|Reply':
+    "Someone replied to a comment thread from the Explorer's Inbox reading pane, without opening the item.",
+  'Activity|Resolved|Thread':
+    "Someone resolved a comment thread from the Explorer's Inbox reading pane.",
+  'Activity|Resolved|Action':
+    "Someone marked an assigned action done from the Explorer's Inbox, in the editor's panel beside it.",
+  'Activity|Resolved|Card': "Someone marked a Plan card done from the Explorer's Inbox.",
   'Activity|Loaded|Retry':
     'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
   'Activity|Opened|':
@@ -2214,6 +2231,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
+  'Activity|Changed': "Someone changed the filter over the Explorer's Inbox.",
+  'Activity|Added': "Someone replied from the Explorer's Inbox reading pane.",
+  'Activity|Resolved':
+    "Someone closed something from the Explorer's Inbox: a thread resolved, or an action marked done.",
   'Activity|Loaded':
     "Something happened while loading the Explorer's Inbox (the list of what is waiting on someone).",
   'Activity|Opened': "Someone opened the Explorer's Inbox.",

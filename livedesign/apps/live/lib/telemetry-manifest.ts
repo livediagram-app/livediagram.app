@@ -39,8 +39,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Cta·Opened',
   // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
   // kind), 'Loaded' a failed read retried.
+  'Activity·Added',
+  'Activity·Changed',
   'Activity·Loaded',
   'Activity·Opened',
+  'Activity·Resolved',
   'Activity·Selected',
   'Document·Created',
   'Document·Deleted',

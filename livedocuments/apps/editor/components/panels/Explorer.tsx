@@ -22,7 +22,7 @@ import { explorerLibrary } from '@/lib/explorer-library';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
-import { explorerInboxHost } from '@/lib/explorer-inbox-host';
+import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { trackOrganise } from '@/lib/explorer-organise';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
@@ -41,6 +41,7 @@ const NO_MOVE = () => {};
 // once from the index when the panel opens; every list is one request a page, loaded only once its section is chosen.
 function ExplorerImpl({
   currentDocumentId,
+  inboxOpenAction = null,
   currentShareCode = null,
   onRenameCurrent,
   onNewDocument,
@@ -62,7 +63,22 @@ function ExplorerImpl({
   const itemMenu = useOfflineItemMenu(viewerId);
   const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId);
   const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
-  const inboxHost = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
+  const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
+  // The pane's verbs: this app's threads, and an action on the open document's active tab.
+  const inboxActions = useMemo(
+    () =>
+      explorerInboxActions(
+        viewerId,
+        currentDocumentId && inboxOpenAction
+          ? { itemId: currentDocumentId, ...inboxOpenAction }
+          : null,
+      ),
+    [viewerId, currentDocumentId, inboxOpenAction],
+  );
+  const inboxHost = useMemo(
+    () => ({ ...inboxBase, actions: inboxActions }),
+    [inboxBase, inboxActions],
+  );
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
 

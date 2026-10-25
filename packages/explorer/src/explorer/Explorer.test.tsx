@@ -223,7 +223,9 @@ describe('<Explorer>', () => {
       updatedAt: 2,
     });
     renderExplorer(index, { kind: 'inbox' }, { viewerId: 'user_me', filter: 'all' });
-    const link = await screen.findByRole('link', { name: /Review the intro/ });
+    // The first row is read in the pane beside the list; its Open goes to the place.
+    await screen.findByRole('option', { name: /Review the intro/ });
+    const link = screen.getByRole('link', { name: 'Open in livedocuments' });
     expect(link.getAttribute('href')).toBe(
       'https://livedocuments.app/open/doc-1?tab=tab-2&el=el-3',
     );

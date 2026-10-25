@@ -14,6 +14,12 @@ export type ExplorerProps = {
   onNewProject?: () => void;
   // The header ⋯ menu's verbs beyond new / open. Each optional: an absent handler drops its row.
   menuActions?: ExplorerMenuActions;
+  // The open plan's active tab and the canvas's Mark Done, so the Inbox's pane can mark an action there done in
+  // place (lib/explorer-inbox-host). Null where the plan is read-only.
+  inboxOpenAction?: {
+    tabId: string;
+    markDone: (elementId: string, actionId: string) => void;
+  } | null;
   // The popover under the canvas's menu button, its only form (docs/specs/007-editor/toolbar-layout.md): never
   // docked, placed or open on its own, and dismissed by a press outside.
 } & Omit<MovablePanelPopoverProps, 'asPopover' | 'dismissOnOutside'>;
