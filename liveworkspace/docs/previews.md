@@ -9,7 +9,7 @@ renderer). It is one platform capability now, built once, in liveworkspace's med
 liveworkspace/apps/media/src/previews/   the routes, the store, the access check, the share card
 packages/media/src/previews.ts           the addresses and cache rules, for the Explorer, routers and apps
 packages/media/src/share-page.ts         the share page's head, the same in every app (createSharePage)
-packages/index-app/src/internal.ts       the export door each app answers (handlers.export)
+packages/index-app/src/internal.ts       the export door each app answers (handlers.export), and the Drive mirror's import door
 ```
 
 ## Who does what
@@ -138,21 +138,29 @@ Each app answers one door in the shared kit (`@liveworkspace/index-app`, `handle
 
 ```
 GET <app>/api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<public link code>]
-Authorization: Bearer <INDEX_KEY or MEDIA_KEY>
+GET <app>/api/internal/items/:id/export?format=file
+Authorization: Bearer <INDEX_KEY, MEDIA_KEY or DRIVE_KEY>
 If-None-Match: "<version>"            optional
 ```
+
+| Format | What                                                                                      | Content-Type                     |
+| ------ | ----------------------------------------------------------------------------------------- | -------------------------------- |
+| `svg`  | the first tab (or `tab`) drawn: the platform's previews                                   | `image/svg+xml`                  |
+| `file` | the whole-item envelope as JSON text, `exportedAt` its last save: the Drive mirror's file | the app's MIME type (`drive.md`) |
 
 | Answer | Means                                                                                     |
 | ------ | ----------------------------------------------------------------------------------------- |
 | `200`  | the file, its `Content-Type`, and `ETag: "<version>"` (the content's last save, epoch ms) |
-| `204`  | nothing to draw (`ETag` as above)                                                         |
+| `204`  | nothing to draw (`ETag` as above; `svg` only)                                             |
 | `304`  | `If-None-Match` is the current version: unchanged, not drawn                              |
 | `404`  | no such item or tab, or a link the app shows nothing through                              |
 
 The app supplies `handlers.export(itemId, { format, tabId, code, ifVersion })`. It is answered in the item's Durable
-Object, where the content is: no cache, no bucket, no card. It takes the app's `INDEX_KEY` (the index, and the Drive
-mirror after it) or `MEDIA_KEY` (this service); a door with no handler is a `404`. `format` is `svg` today. The Drive
-mirror, the next platform feature, adds the formats it exports (the item's own file), on the same door.
+Object, where the content is: no cache, no bucket, no card. It takes the app's `INDEX_KEY` (the index), `MEDIA_KEY`
+(this service) or `DRIVE_KEY` (the Drive mirror, which also opens the import door and nothing else,
+[drive.md](drive.md#the-apps)); a door with no handler is a `404`. `format` is `svg` (the default) or `file`, the
+item's whole-item envelope (`{ kind, schemaVersion, exportedAt, <item> }`, built from the same read a copy makes, with
+`exportedAt` the content's last save, so unchanged content is byte-identical and the mirror can skip it by ETag).
 
 Each app's door draws as its old snapshot did: the first tab (or the asked one) with its own DOM-free renderer, its
 images inlined from the media service under a 3 MB budget, icons as their glyphs. livediagram's draws a Community
@@ -167,14 +175,14 @@ misses is unreachable anyway: every read asks the index first, and a purged item
 
 ## Configuration
 
-| Where          | Setting                                                                                       |
-| -------------- | --------------------------------------------------------------------------------------------- |
-| media Worker   | route `liveworkspace.app/api/previews*`; `INDEX` service binding and `INDEX_URL`;             |
-|                | `APP_ORIGIN_<APP>` (where each app's `/api/internal` is); `MEDIA_KEY_<APP>` (already set)     |
-| app api Worker | `MEDIA_KEY` (already set) opens the export door; nothing else                                 |
-| app router     | `PREVIEWS_ORIGIN` (unset is production's)                                                     |
-| app web Worker | `PREVIEWS_ORIGIN` for the share page's head (unset is production's; staging sets its own)     |
-| site (dev)     | `next dev` rewrites `/api/previews/*` to `MEDIA_DEV_ORIGIN` (default `http://localhost:8792`) |
+| Where          | Setting                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| media Worker   | route `liveworkspace.app/api/previews*`; `INDEX` service binding and `INDEX_URL`;                 |
+|                | `APP_ORIGIN_<APP>` (where each app's `/api/internal` is); `MEDIA_KEY_<APP>` (already set)         |
+| app api Worker | `MEDIA_KEY` (already set) opens the export door; nothing else (`DRIVE_KEY` is the Drive mirror's) |
+| app router     | `PREVIEWS_ORIGIN` (unset is production's)                                                         |
+| app web Worker | `PREVIEWS_ORIGIN` for the share page's head (unset is production's; staging sets its own)         |
+| site (dev)     | `next dev` rewrites `/api/previews/*` to `MEDIA_DEV_ORIGIN` (default `http://localhost:8792`)     |
 
 Locally it runs with media (`corepack pnpm dev:media`, port 8792, in `dev:workspace`).
 

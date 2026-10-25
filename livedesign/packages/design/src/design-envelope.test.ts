@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  copyDesignEnvelope,
   DESIGN_ENVELOPE_KIND,
   designToEnvelopeText,
   parseDesignEnvelope,
@@ -62,5 +63,43 @@ describe('parseDesignEnvelope', () => {
       '{"kind":"livedesign.design","schemaVersion":1,"exportedAt":1,"design":{"id":"d","name":"n","tabs":[]}}',
     );
     expect(parsed.ok && parsed.envelope.design.presentation).toBeNull();
+  });
+});
+
+describe('copyDesignEnvelope', () => {
+  it('mints fresh tab ids and re-points tab links and the deck at them', () => {
+    const text = designToEnvelopeText(
+      {
+        id: 'D',
+        name: 'Logo',
+        presentation: JSON.stringify({ decks: [{ slides: [{ id: 's', tabId: 't2', elementIds: [] }] }] }),
+      },
+      [
+        {
+          id: 't1',
+          name: 'One',
+          elements: [
+            { id: 'b', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1, link: { kind: 'tab', tabId: 't2' } },
+          ] as EnvelopeTab['elements'],
+        },
+        { id: 't2', name: 'Two', elements: [] },
+      ],
+      1,
+    );
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    const { tabs, presentation } = copyDesignEnvelope(parsed.envelope);
+    expect(tabs.map((t) => t.id)).not.toContain('t1');
+    const second = tabs[1]!.id;
+    expect((tabs[0]!.elements[0] as { link?: { tabId: string } }).link?.tabId).toBe(second);
+    expect(presentation).toContain(`"tabId":"${second}"`);
+  });
+
+  it('drops an unreadable deck', () => {
+    const parsed = parseDesignEnvelope(
+      designToEnvelopeText({ id: 'D', name: 'L', presentation: '{nope' }, [tab], 1),
+    );
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(copyDesignEnvelope(parsed.envelope).presentation).toBeNull();
   });
 });

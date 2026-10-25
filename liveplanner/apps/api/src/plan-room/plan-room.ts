@@ -82,6 +82,7 @@ import {
 import { notifyProjectJoin } from '../email/notifications';
 import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
+import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
 import { answerPlanRequest, type RouteIdentity } from './plan-route';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -542,6 +543,23 @@ export class PlanRoom extends DurableObject<Env> {
     return svg === null
       ? { status: 'empty', version: savedAt }
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
+  }
+
+  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", project-file.ts): the
+  // plan's whole envelope, its last save as the version, unread when the caller holds that save. A plan never
+  // started is not found, and asking does not start it.
+  async exportFile(planId: string, query: ExportQuery): Promise<ExportResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return { status: 'not_found' };
+    this.bindPlan(planId);
+    return exportProjectFile(this.requireEnv(), planId, query.ifVersion);
+  }
+
+  // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it
+  // starts as its owner's.
+  async importFile(planId: string, file: ProjectFileImport): Promise<void> {
+    this.bindPlan(planId);
+    await importProjectFile(this.requireEnv(), planId, file);
   }
 
   async hasTab(planId: string, tabId: string): Promise<boolean> {

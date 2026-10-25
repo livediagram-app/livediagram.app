@@ -119,6 +119,22 @@ export async function readPlanMeta(env: PlanEnv, planId: string): Promise<PlanMe
   return metaOf(head ?? null);
 }
 
+// What the plan knows of itself, its last save and its type catalogue, in one read: the Drive file's head
+// (project-file.ts), without the tab outline.
+export async function readPlanHead(
+  env: PlanEnv,
+  planId: string,
+): Promise<{ meta: PlanMeta | null; savedAt: number; itemTypes: ItemTypeCatalogue | null }> {
+  const head = await env.PLAN_DB.prepare(`SELECT ${PLAN_HEAD_COLS} FROM plan WHERE id = ?`)
+    .bind(planId)
+    .first<PlanHeadRow>();
+  return {
+    meta: metaOf(head ?? null),
+    savedAt: head?.saved_at ?? 0,
+    itemTypes: readItemTypeCatalogue(head?.item_types ?? null),
+  };
+}
+
 // What a create or a first open writes about the plan (startPlan, upsertPlanMeta). A started plan keeps its
 // owner, team, provenance and intent; only its name and last save move after.
 export type PlanStart = {
@@ -262,6 +278,34 @@ export type PlanCopy = {
   cells: Record<string, unknown>[];
 };
 
+// Every tab of the plan (or one) with its body, in order: the read a copy makes, and the Drive file's
+// (project-file.ts).
+export type ContentTabRow = {
+  id: string;
+  name: string;
+  order_index: number;
+  folder: string | null;
+  data: string;
+  element_count: number | null;
+};
+
+export async function readContentTabRows(
+  env: PlanEnv,
+  planId: string,
+  onlyTabId: string | null,
+): Promise<ContentTabRow[]> {
+  const tabRows = await env.PLAN_DB.prepare(
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
+       FROM plan_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.plan_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(...(onlyTabId === null ? [planId] : [planId, onlyTabId]))
+    .all<ContentTabRow>();
+  return tabRows.results ?? [];
+}
+
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and the items it shows).
 // `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
 export async function exportPlanCopy(
@@ -275,23 +319,7 @@ export async function exportPlanCopy(
   )
     .bind(planId)
     .first<{ item_types: string | null; items_rev: number; items_next_key: number }>();
-  const tabRows = await env.PLAN_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
-       FROM plan_tabs dt
-       JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.plan_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
-      ORDER BY dt.order_index ASC`,
-  )
-    .bind(...(onlyTabId === null ? [planId] : [planId, onlyTabId]))
-    .all<{
-      id: string;
-      name: string;
-      order_index: number;
-      folder: string | null;
-      data: string;
-      element_count: number | null;
-    }>();
-  const rows = tabRows.results ?? [];
+  const rows = await readContentTabRows(env, planId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
   const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
   const tabs = rows.map((row) => {

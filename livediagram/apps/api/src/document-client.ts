@@ -9,6 +9,7 @@ import type { CommunityAuthor } from '@livediagram/api-schema';
 import type { Copier, ExportQuery, ExportResult } from '@liveworkspace/index-app';
 import type { notifyActionAssigned, notifyMentioned } from './email/notifications';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
+import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
 import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { Env } from './types';
@@ -29,6 +30,10 @@ export type DocumentRoomClient = {
   // The canvas drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
   // content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
+  // The canvas as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new canvas
+  // made from one (the import door).
+  exportFile(query: ExportQuery): Promise<ExportResult>;
+  importFile(file: DocumentFileImport): Promise<void>;
   // Whether the document holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
@@ -77,6 +82,8 @@ export function documentRoom(
     outline: () => room.outline(documentId),
     route: (request, identity) => room.route(documentId, request, identity),
     exportImage: (query) => room.exportImage(documentId, query),
+    exportFile: (query) => room.exportFile(documentId, query),
+    importFile: (file) => room.importFile(documentId, file),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
@@ -101,6 +108,8 @@ export type DocumentRoomRpc = {
   outline(documentId: string): Promise<DocumentOutline>;
   route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response>;
   exportImage(documentId: string, query: ExportQuery): Promise<ExportResult>;
+  exportFile(documentId: string, query: ExportQuery): Promise<ExportResult>;
+  importFile(documentId: string, file: DocumentFileImport): Promise<void>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(

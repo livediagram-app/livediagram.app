@@ -6,7 +6,9 @@
 // Images stay references to livediagram's image store; no bytes are embedded. A file written while livediagram had
 // Plan may also carry its item, type and sheet stores: they are read past and left behind.
 
+import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
+import type { StoredPresentation } from './slide-deck';
 
 export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
@@ -100,4 +102,32 @@ export function parseDocumentEnvelope(
       },
     },
   };
+}
+
+// A copy of an envelope's document (Import as a copy, the Drive mirror's import door): fresh tab ids, with the tab
+// links and the deck's slides following them, so the copy navigates and presents like the original. An unreadable
+// deck is dropped rather than carried broken.
+export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
+  tabs: EnvelopeTab[];
+  presentation: string | null;
+} {
+  const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
+  const tabs = envelope.document.tabs.map((t) => ({
+    ...t,
+    id: idMap.get(t.id)!,
+    elements: remapTabLinks(t.elements, idMap),
+  }));
+  let presentation = envelope.document.presentation;
+  if (presentation) {
+    try {
+      const deck = JSON.parse(presentation) as StoredPresentation;
+      for (const d of deck.decks ?? []) {
+        for (const slide of d.slides ?? []) slide.tabId = idMap.get(slide.tabId) ?? slide.tabId;
+      }
+      presentation = JSON.stringify(deck);
+    } catch {
+      presentation = null;
+    }
+  }
+  return { tabs, presentation };
 }

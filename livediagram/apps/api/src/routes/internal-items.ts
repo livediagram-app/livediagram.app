@@ -10,7 +10,8 @@
 // now and drops its previews there (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's
 // path: a share link made (the first-share milestone), or someone's first time in through a link (the owner's
 // "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
-// MEDIA_KEY.
+// MEDIA_KEY, and answers its whole file for liveworkspace's Drive mirror, which calls it and the import door with
+// DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps", routes/internal-file.ts).
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
@@ -20,6 +21,7 @@ import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
+import { importDocumentFileFor } from './internal-file';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -30,6 +32,7 @@ export function handleInternalItems(
   return handle(request, {
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
+    driveKey: env.DRIVE_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
@@ -72,8 +75,14 @@ export function handleInternalItems(
       personMerged: (guestId, userId) => mergeGuest(env, guestId, userId),
       // Their name off each canvas of someone else's that names them.
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
-      // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`).
-      export: (id, query) => documentRoom(env, id).exportImage(query),
+      // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
+      // Drive mirror (`exportFile`).
+      export: (id, query) =>
+        query.format === 'file'
+          ? documentRoom(env, id).exportFile(query)
+          : documentRoom(env, id).exportImage(query),
+      // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
+      import: (input) => importDocumentFileFor(env, input),
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },

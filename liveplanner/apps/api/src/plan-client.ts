@@ -8,6 +8,7 @@
 import type { Item } from '@liveplanner/items';
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { RouteIdentity } from './plan-room/plan-route';
+import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportQuery,
   ExportResult,
@@ -25,6 +26,10 @@ export type PlanRoomClient = {
   route(request: Request, identity: RouteIdentity): Promise<Response>;
   // The plan drawn for liveworkspace's previews (the export door, plan-room.ts `exportImage`), where the content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
+  // The plan as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new plan made
+  // from one (the import door).
+  exportFile(query: ExportQuery): Promise<ExportResult>;
+  importFile(file: ProjectFileImport): Promise<void>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // One card, by id (a mention email reads the comment from the card itself).
@@ -57,6 +62,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     outline: () => room.outline(planId),
     route: (request, identity) => room.route(planId, request, identity),
     exportImage: (query) => room.exportImage(planId, query),
+    exportFile: (query) => room.exportFile(planId, query),
+    importFile: (file) => room.importFile(planId, file),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     item: (itemId) => room.item(planId, itemId),
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
@@ -76,6 +83,8 @@ export type PlanRoomRpc = {
   outline(planId: string): Promise<PlanOutline>;
   route(planId: string, request: Request, identity: RouteIdentity): Promise<Response>;
   exportImage(planId: string, query: ExportQuery): Promise<ExportResult>;
+  exportFile(planId: string, query: ExportQuery): Promise<ExportResult>;
+  importFile(planId: string, file: ProjectFileImport): Promise<void>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   item(planId: string, itemId: string): Promise<Item | null>;
   exportCopy(

@@ -263,6 +263,19 @@ function testDocumentRooms(
           identity as never,
           () => {},
         ),
+      // The Drive file's two halves (document-room.ts exportFile and importFile).
+      exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
+        (await import('./document-room/document-file')).exportDocumentFile(
+          env,
+          documentId,
+          query.ifVersion,
+        ),
+      importFile: async (documentId: string, file: unknown) =>
+        (await import('./document-room/document-file')).importDocumentFile(
+          env,
+          documentId,
+          file as never,
+        ),
       exportImage: async (
         documentId: string,
         query: { tabId: string | null; ifVersion: number | null },
