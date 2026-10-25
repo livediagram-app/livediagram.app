@@ -57,6 +57,21 @@ export {
   type AccountIdentity,
 } from './profile/ProfileHeader';
 export {
+  NAME_SAVE_DELAY_MS,
+  ProfileEditor,
+  ProfileSection,
+  SETTINGS_INPUT,
+} from './profile/ProfileEditor';
+export {
+  requestProfileHost,
+  type Profile,
+  type ProfileHost,
+  type ProfilePatch,
+  type ProfileResult,
+} from './profile/profile-host';
+export { announceProfileSaved, onProfileSaved, type SavedProfile } from './profile/profile-events';
+export { useSavedFlash } from './useSavedFlash';
+export {
   deviceName,
   type AccountSecurity,
   type AccountSession,

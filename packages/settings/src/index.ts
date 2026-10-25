@@ -123,8 +123,10 @@ export function joinSettings(all: SettingsBlob, app: SettingsBlob): SettingsBlob
 }
 
 export {
+  cleanProfileName,
   PRESENCE_COLOUR_VALUES,
   PRESENCE_COLOURS,
+  PROFILE_NAME_MAX,
   presenceColour,
   type PresenceColour,
 } from './presence';

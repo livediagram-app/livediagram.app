@@ -4,7 +4,8 @@
 // every app rather than to one, built once here and shown in the All view wherever the panel opens. Its switches
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
-// editor (which sync them). The profile and the API tokens are the host's to draw or link to.
+// editor (which sync them). The profile is edited in place by every host (ProfileHost); the API tokens are the host's
+// to draw or link to.
 import type { ReactNode } from 'react';
 import type { SettingsBlob } from '@liveworkspace/settings';
 import {
@@ -18,6 +19,7 @@ import {
 import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
 import { linkOut, profileRows } from './profile/profile-rows';
 import type { AccountIdentity } from './profile/ProfileHeader';
+import type { ProfileHost } from './profile/profile-host';
 import type { AccountSecurity } from './profile/SecurityRows';
 import type { SettingsCategory, SettingsRow } from './model';
 
@@ -27,10 +29,10 @@ export interface AccountSection {
   set: (key: string, value: boolean) => void;
   // Who is signed in, for the Profile's header card (liveworkspace/docs/site.md "Settings", "Profile").
   identity?: AccountIdentity | null;
-  // The profile collaborators see: drawn here where the host can set it (liveworkspace.app, with its session),
-  // else a link to where it is set.
-  renderProfile?: () => ReactNode;
-  profileHref?: string;
+  // The profile collaborators see (the display name and presence colour), edited in place over the host's door: the
+  // session on liveworkspace.app, the app's token on an app's address and in an editor. There is no address to link
+  // to for it, on purpose: Name and Colour never leaves the panel.
+  profile?: ProfileHost;
   // How they sign in and where they are signed in: drawn here where the host can reach the session
   // (liveworkspace.app), else a link to where they are.
   security?: AccountSecurity;

@@ -36,3 +36,13 @@ const BY_VALUE = new Map(PRESENCE_COLOURS.map((c) => [c.value, c]));
 export function presenceColour(color: string | null | undefined): PresenceColour | undefined {
   return color ? BY_VALUE.get(color.toLowerCase()) : undefined;
 }
+
+// The display name's limit, as the accounts Worker keeps it (liveworkspace/apps/accounts src/profiles.ts
+// PROFILE_NAME_MAX), for the Settings panel's Profile field.
+export const PROFILE_NAME_MAX = 120;
+
+/** A display name as it would be stored: trimmed, and empty meaning "no name of my own" (the account's shows). */
+export function cleanProfileName(name: string): string | null {
+  const trimmed = name.trim();
+  return trimmed ? trimmed : null;
+}

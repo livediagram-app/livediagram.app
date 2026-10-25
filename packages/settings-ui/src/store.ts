@@ -96,6 +96,9 @@ export function storeFor(source: SettingsStore | SettingsRequest): SettingsStore
 }
 
 const MESSAGES: Record<string, string> = {
+  invalid_name: 'That name can’t be used. Use up to 120 letters, numbers and punctuation.',
+  invalid_color: 'That colour can’t be used. Pick one of the swatches.',
+  unknown_owner: 'Your account couldn’t be found. Sign in again to carry on.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach your account. Check your connection and try again.',
   settings_too_large: 'Your settings are full. Reset some, then try again.',

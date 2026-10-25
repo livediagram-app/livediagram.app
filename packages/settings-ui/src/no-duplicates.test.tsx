@@ -25,7 +25,11 @@ const value = { all: {}, apps: {} };
 const renderLogo = () => null;
 const signedIn: AccountHost = {
   identity: { name: 'Ada Lovelace', email: 'ada@example.com', colour: null },
-  profileHref: '/explorer?settings=profile',
+  profile: {
+    accountName: 'Ada Lovelace',
+    load: async () => ({ ok: true, data: null }),
+    save: async () => ({ ok: true, data: null }),
+  },
   securityHref: '/explorer?settings=profile',
   tokensHref: '/explorer?settings=tokens',
 };

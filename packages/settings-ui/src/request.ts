@@ -4,11 +4,13 @@
 export type SettingsApiResult<T> =
   { ok: true; data: T } | { ok: false; status: number; error: string };
 
-/** One call to the accounts API's account routes: `path` is under `/api/account` (`/settings/livediagram.app`). */
+/** One call to the accounts API's account routes: `path` is under `/api/account` (`/settings/livediagram.app`).
+ *  `keepalive`: sent as the page goes (a name still waiting to be saved), so it outlives the page. */
 export type SettingsRequest = <T>(
   path: string,
   method?: 'GET' | 'PATCH',
   body?: unknown,
+  options?: { keepalive?: boolean },
 ) => Promise<SettingsApiResult<T>>;
 
 /** A request over the accounts API's bearer door through an app's router (`/api/workspace/account`), as each
@@ -20,7 +22,12 @@ export function bearerSettingsRequest({
   baseUrl: string;
   token: () => Promise<string | null>;
 }): SettingsRequest {
-  return async <T>(path: string, method: 'GET' | 'PATCH' = 'GET', body?: unknown) => {
+  return async <T>(
+    path: string,
+    method: 'GET' | 'PATCH' = 'GET',
+    body?: unknown,
+    options?: { keepalive?: boolean },
+  ) => {
     try {
       const bearer = await token();
       if (!bearer) return { ok: false, status: 401, error: 'signed_out' } as const;
@@ -32,6 +39,7 @@ export function bearerSettingsRequest({
           authorization: `Bearer ${bearer}`,
         },
         credentials: 'omit',
+        ...(options?.keepalive ? { keepalive: true } : {}),
       };
       if (body !== undefined) init.body = JSON.stringify(body);
       const response = await fetch(baseUrl + path, init);

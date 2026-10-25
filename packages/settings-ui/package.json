@@ -5,7 +5,8 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./profile-events": "./src/profile/profile-events.ts"
   },
   "scripts": {
     "lint": "oxlint",

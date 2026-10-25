@@ -4,12 +4,14 @@ import { useState, type ReactNode } from 'react';
 import type { AccountSection } from '../account-model';
 import type { SettingsRow } from '../model';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
-import { colourLabel, ProfileHeaderCard, type AccountGuest } from './ProfileHeader';
+import { ProfileHeaderCard, type AccountGuest } from './ProfileHeader';
+import { ProfileSection } from './ProfileEditor';
 import { SessionsRows, SignInMethodsRows } from './SecurityRows';
 
 // The Profile category's rows (liveworkspace/docs/site.md "Settings", "Profile"), grouped as the old livediagram
-// Profile page was: the header card, Name and Colour, Sign-in and Security, then Your Account. Each host draws what
-// it can reach and links to liveworkspace.app for the rest.
+// Profile page was: the header card, Name and Colour, Sign-in and Security, then Your Account. Name and Colour is
+// edited in place wherever the panel opens (the host's ProfileHost); only sign-in and devices, which are
+// liveworkspace.app's session's, link there from elsewhere.
 
 export const PROFILE_SECTIONS = {
   name: 'Name and Colour',
@@ -22,7 +24,7 @@ const PROFILE_KEYWORDS = 'name display colour color cursor avatar presence profi
 const SECURITY_KEYWORDS =
   'sign in sign-in login method google email code session device browser sign out security connected';
 
-/** A row that leaves for another page (the profile, the API tokens on liveworkspace.app). */
+/** A row that leaves for another page (sign-in and devices, the API tokens on liveworkspace.app). */
 export function linkOut(
   key: string,
   label: string,
@@ -56,23 +58,6 @@ function Cells({ children }: { children: ReactNode }) {
     <div className="flex flex-col divide-y divide-slate-100 rounded-[inherit] dark:divide-slate-700/70">
       {children}
     </div>
-  );
-}
-
-function Swatch({ colour }: { colour: string | null | undefined }) {
-  return (
-    <span
-      aria-hidden
-      className="size-10 shrink-0 rounded-xl ring-1 ring-black/5 dark:ring-white/10"
-      style={
-        colour
-          ? { backgroundColor: colour }
-          : {
-              background:
-                'conic-gradient(#0ea5e9, #10b981, #f59e0b, #ef4444, #8b5cf6, #ec4899, #0ea5e9)',
-            }
-      }
-    />
   );
 }
 
@@ -114,7 +99,7 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
 
 /** The signed-in Profile's rows; none when the host has nothing to show. */
 export function profileRows(section: AccountSection): SettingsRow[] {
-  const { identity, renderProfile, profileHref, security, securityHref, onSignOut } = section;
+  const { identity, profile, security, securityHref, onSignOut } = section;
   const rows: SettingsRow[] = [];
   if (identity) {
     rows.push({
@@ -130,28 +115,16 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       ),
     });
   }
-  if (renderProfile) {
+  if (profile) {
     rows.push({
       kind: 'custom',
       key: 'profile',
-      label: 'Profile',
-      description: 'How collaborators see you in every app.',
-      keywords: PROFILE_KEYWORDS,
-      section: PROFILE_SECTIONS.name,
-      render: renderProfile,
-    });
-  } else if (profileHref) {
-    rows.push({
-      ...linkOut(
-        'profile',
-        identity ? `${identity.name} · ${colourLabel(identity.colour)}` : 'Name and Colour',
+      label: 'Name and Colour',
+      description:
         'Your display name and presence colour, as collaborators see them on your cursor, comments and avatar in every app.',
-        profileHref,
-        'Edit',
-        identity ? <Swatch colour={identity.colour} /> : undefined,
-      ),
       keywords: PROFILE_KEYWORDS,
       section: PROFILE_SECTIONS.name,
+      render: () => <ProfileSection host={profile} />,
     });
   }
   if (security) {

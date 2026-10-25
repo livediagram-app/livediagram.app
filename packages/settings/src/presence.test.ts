@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PRESENCE_COLOUR_VALUES, PRESENCE_COLOURS, presenceColour } from './index';
+import {
+  cleanProfileName,
+  PRESENCE_COLOUR_VALUES,
+  PRESENCE_COLOURS,
+  PROFILE_NAME_MAX,
+  presenceColour,
+} from './index';
 
 // WCAG 2 contrast between two #rrggbb colours.
 function luminance(hex: string): number {
@@ -38,5 +44,13 @@ describe('presence colours', () => {
     expect(presenceColour('#123456')).toBeUndefined();
     expect(presenceColour(null)).toBeUndefined();
     expect(presenceColour('')).toBeUndefined();
+  });
+});
+
+describe('a display name', () => {
+  it('is stored trimmed, an empty one as none, up to the accounts Worker’s limit', () => {
+    expect(cleanProfileName('  Ada Lovelace ')).toBe('Ada Lovelace');
+    expect(cleanProfileName('   ')).toBeNull();
+    expect(PROFILE_NAME_MAX).toBe(120);
   });
 });
