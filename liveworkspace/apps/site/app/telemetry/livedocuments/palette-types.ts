@@ -31,12 +31,7 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
 // Canvas·Used events are not modes a person selects: FollowMe is pinning your view to a peer's (it has its own
 // card on the Collaboration tab), so the ranking names the modes it counts.
-export const SELECTION_MODES: readonly string[] = [
-  'Laser',
-  'Spotlight',
-  'FormatPainter',
-  'Isometric',
-];
+export const SELECTION_MODES: readonly string[] = ['Laser', 'Spotlight', 'FormatPainter'];
 
 // The Theme·Changed types that are not a theme pick, for its Themes chart and ranking
 // (../_shared/look-feel-types.ts says why `Unknown` differs between the apps).
