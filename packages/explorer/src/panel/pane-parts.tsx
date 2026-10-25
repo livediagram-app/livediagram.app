@@ -167,11 +167,26 @@ const TONES: Record<PaneTone, string> = {
   rose: 'from-rose-50 to-rose-100/70 text-rose-600 ring-rose-200/70 dark:from-rose-500/20 dark:to-rose-500/10 dark:text-rose-200 dark:ring-rose-400/25',
 };
 
-export function PaneTile({ children, tone = 'slate' }: { children: ReactNode; tone?: PaneTone }) {
+// `mark` is the compact one, for rows that stand for an event or a place rather than a project (the Timeline, This
+// Browser): a small square beside the name, so the row stays one line high and never reads as a thumbnail.
+export function PaneTile({
+  children,
+  tone = 'slate',
+  size = 'tile',
+}: {
+  children: ReactNode;
+  tone?: PaneTone;
+  size?: 'tile' | 'mark';
+}) {
+  const box =
+    size === 'mark'
+      ? 'size-8 rounded-lg [&_svg]:size-4'
+      : 'h-11 w-[60px] rounded-lg [&_svg]:h-[18px] [&_svg]:w-[18px]';
   return (
     <span
       aria-hidden
-      className={`flex h-11 w-[60px] shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ring-1 [&_svg]:h-[18px] [&_svg]:w-[18px] ${TONES[tone]}`}
+      data-pane-tile={size}
+      className={`flex shrink-0 items-center justify-center bg-gradient-to-br ring-1 ${box} ${TONES[tone]}`}
     >
       {children}
     </span>

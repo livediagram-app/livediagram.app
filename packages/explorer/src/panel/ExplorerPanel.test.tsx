@@ -1,8 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { ExplorerPanel, type ExplorerPanelProps } from './ExplorerPanel';
 import { panelSectionStorageKey } from './sections';
+import type { ThisBrowserHost } from '../explorer/ThisBrowser';
+import type { ThisBrowserItem } from '../this-browser';
 
 const itemHref: ExplorerPanelProps['itemHref'] = (item) => `/project/${item.id}`;
 
@@ -104,11 +106,43 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('deleteItem')).toBe(0);
   });
 
-  it('sends Open Page to the Explorer at the section shown', () => {
-    const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }));
+  it('has no Open Page: every section stays in the panel', () => {
+    renderPanel(createFakeIndex({ items: [] }), { teams: [{ id: 't1', name: 'Design' }] });
+    for (const name of ['Home', 'Timeline', 'My Work', 'Design', 'Trash']) {
+      fireEvent.click(within(rail()).getByRole('button', { name }));
+      expect(screen.queryByRole('link', { name: /Open Page/ })).toBeNull();
+      expect(screen.queryByText('Open Page')).toBeNull();
+    }
+  });
+
+  it('offers New Folder as a named glyph, beside the name of the view in full', async () => {
+    const index = createFakeIndex({ items: [] });
+    renderPanel(index);
     fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));
-    fireEvent.click(screen.getByRole('link', { name: /Open Page/ }));
-    expect(onOpenExplorer).toHaveBeenCalledWith({ kind: 'all' });
+    const heading = screen.getByRole('heading', { level: 3, name: 'My Work' });
+    // Wraps rather than truncates: the name is never cut to "M…".
+    expect(heading.className).not.toMatch(/\btruncate\b/);
+    const button = screen.getByRole('button', { name: 'New Folder' });
+    // A glyph alone: the name is its label (and its tooltip), never words beside it.
+    expect(button.textContent).toBe('');
+    expect(button.querySelector('svg')).toBeTruthy();
+    fireEvent.click(button);
+    await waitFor(() => expect(index.count('createFolder')).toBe(1));
+  });
+
+  it("names New Folder New Subfolder inside a folder, and the team's Members is a glyph too", () => {
+    renderPanel(createFakeIndex({ items: [] }), {
+      teams: [{ id: 't1', name: 'A team with a long name of its own' }],
+      teamsHost: {} as never,
+    });
+    fireEvent.click(
+      within(rail()).getByRole('button', { name: 'A team with a long name of its own' }),
+    );
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'A team with a long name of its own' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Folder' }).textContent).toBe('');
+    expect(screen.getByRole('button', { name: 'Members' }).textContent).toBe('');
   });
 
   it("offers My Work's own menu, the sidebar's, with Use as Default for…", async () => {
@@ -131,5 +165,85 @@ describe('<ExplorerPanel>', () => {
     expect(await screen.findByRole('menu', { name: 'Actions for My Work' })).toBeTruthy();
     fireEvent.contextMenu(within(rail()).getByRole('button', { name: 'Trash' }));
     expect(screen.getAllByRole('menu')).toHaveLength(1);
+  });
+});
+
+describe("the panel's This Browser", () => {
+  beforeEach(() => localStorage.clear());
+
+  const local = (
+    id: string,
+    title: string,
+    extra: Partial<ThisBrowserItem> = {},
+  ): ThisBrowserItem => ({
+    id,
+    title,
+    createdAt: 1,
+    updatedAt: 2,
+    lastOpenedAt: null,
+    trashedAt: null,
+    favourite: false,
+    ...extra,
+  });
+
+  const host = (over: Partial<ThisBrowserHost> = {}): ThisBrowserHost => ({
+    items: [
+      local('l1', 'Kept here'),
+      local('l2', 'Also here'),
+      local('l3', 'Gone', { trashedAt: 5 }),
+    ],
+    itemHref: (item) => `/project/${item.id}`,
+    ...over,
+  });
+
+  it('is on the rail with its count while this browser keeps any, and not otherwise', () => {
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
+    const entry = within(rail()).getByRole('button', { name: 'This Browser (2)' });
+    expect(entry.textContent).toContain('2');
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ items: [] }) });
+    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+    cleanup();
+    renderPanel(createFakeIndex({ items: [] }));
+    expect(within(rail()).queryByRole('button', { name: /This Browser/ })).toBeNull();
+  });
+
+  it('opens its pane in place, listing the live ones, each opening in the editor', () => {
+    const open = vi.fn();
+    const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }), {
+      thisBrowser: host({ open }),
+    });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'This Browser' })).toBeTruthy();
+    const list = screen.getByRole('list', { name: 'This Browser' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).queryByText('Gone')).toBeNull();
+    fireEvent.click(within(list).getByRole('button', { name: 'Kept here' }));
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    // Never a link out of the editor: the Explorer page is not asked for.
+    expect(onOpenExplorer).not.toHaveBeenCalled();
+    // This Browser holds only this app's items: no app filter.
+    expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
+  });
+
+  it('syncs one in place for a person signed in, and deletes one after asking', async () => {
+    const sync = vi.fn();
+    const remove = vi.fn();
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ sync, remove }) });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Plan: Kept here' }));
+    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Also here' }));
+    expect(remove).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', { name: /Delete this plan/ });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'l2' }));
+  });
+
+  it('offers neither Sync nor Delete where the host gives none (a guest)', () => {
+    renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'This Browser (2)' }));
+    expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
   });
 });

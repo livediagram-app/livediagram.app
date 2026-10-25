@@ -3,12 +3,28 @@
 // This Browser in the Explorer: the host app's items kept only in this browser (this-browser.ts), where the host can
 // read them (the Explorer served on the app's own address). They show as liveplanner's own Explorer showed them: a
 // sidebar row with their count, a view of their own (`/explorer/offline`), a This Browser group in the Trash, and
-// among Recent in Home's Jump Back In. Each opens in its app's editor, which does the rest (rename, restore): the index
-// never sees them, so the Explorer only lists them. Where the app moves them into the account, each live row also has
-// Sync, which hands over to the app's This Browser page (this-browser.ts `thisBrowserConvertHref`).
+// among Recent in Home's Jump Back In. The editor's Explorer panel has the same view (panel/PanelThisBrowser.tsx). Each
+// opens in its app's editor, which does the rest (rename, restore): the index never sees them, so the Explorer only
+// lists them. Where the app moves them into the account, each live row also has Sync: in place in the editor's panel
+// (`sync`), or, on the Explorer page, a hand-over to the app's editor (this-browser.ts `thisBrowserConvertHref`).
 
-import { useMemo, useState, type ReactNode } from 'react';
-import type { ThisBrowserItem } from '../this-browser';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
+import type { App } from '@liveworkspace/index-client';
+import {
+  readThisBrowser,
+  readThisBrowserConversion,
+  subscribeThisBrowser,
+  thisBrowserKey,
+  type ThisBrowserConversion,
+  type ThisBrowserItem,
+} from '../this-browser';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
@@ -25,6 +41,14 @@ export type ThisBrowserHost = {
   helpHref?: string;
   // Where the app moves one into the person's account (Sync), when it can for this person (signed in). None: no Sync.
   syncHref?: (item: ThisBrowserItem) => string;
+  // The editor's panel, which runs the app's own code: opens one in the editor (default: a page load of `itemHref`),
+  // moves one into the account in place (Sync, signed in), and deletes one for good (nothing else holds it).
+  open?: (item: ThisBrowserItem) => void;
+  sync?: (item: ThisBrowserItem) => void;
+  remove?: (item: ThisBrowserItem) => void;
+  // The Explorer page: where the app runs a Take Offline or Sync handed over at `/explorer/offline?convert=…&item=…`
+  // (an older `/offline` link, redirected): the item's own address in its editor, which asks first.
+  handOverHref?: (conversion: ThisBrowserConversion, id: string) => string;
 };
 
 export const THIS_BROWSER_COPY = {
@@ -33,6 +57,38 @@ export const THIS_BROWSER_COPY = {
 } as const;
 
 const live = (i: ThisBrowserItem) => i.trashedAt === null;
+
+// The list as the app last wrote it, per app, parsed again only when its stored text changes: one stable array per
+// change, so a reader re-renders only when the list does.
+const NO_ITEMS: readonly ThisBrowserItem[] = [];
+const reads = new Map<App, { raw: string | null; items: readonly ThisBrowserItem[] }>();
+function snapshot(app: App): readonly ThisBrowserItem[] {
+  let raw: string | null;
+  try {
+    raw = window.localStorage.getItem(thisBrowserKey(app));
+  } catch {
+    return NO_ITEMS;
+  }
+  const kept = reads.get(app);
+  if (kept?.raw === raw) return kept.items;
+  const items = raw ? readThisBrowser(app) : NO_ITEMS;
+  reads.set(app, { raw, items });
+  return items;
+}
+
+/** The app's This Browser list on its own origin (every item, live and trashed, newest change first), heard as it
+ *  changes in this tab or another. Empty for no app, and while prerendered. */
+export function useThisBrowserList(app: App | null): readonly ThisBrowserItem[] {
+  const subscribe = useCallback(
+    (onChange: () => void) => (app ? subscribeThisBrowser(app, onChange) : () => {}),
+    [app],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => (app ? snapshot(app) : NO_ITEMS),
+    () => NO_ITEMS,
+  );
+}
 
 /** The live items, newest change first. */
 export function useThisBrowserItems(): { host: ThisBrowserHost | null; live: ThisBrowserItem[] } {
@@ -98,6 +154,9 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
   );
 }
 
+const SYNC_LINK =
+  'mr-3 shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:bg-slate-800';
+
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
 function LocalRow({
@@ -134,13 +193,18 @@ function LocalRow({
         </span>
       </a>
       {syncHref ? (
-        <a
-          href={syncHref}
-          aria-label={`Sync ${kind.one}: ${name}`}
-          className="mr-3 shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:bg-slate-800"
-        >
+        <a href={syncHref} aria-label={`Sync ${kind.one}: ${name}`} className={SYNC_LINK}>
           Sync {kind.one}
         </a>
+      ) : sync && thisBrowser?.sync ? (
+        <button
+          type="button"
+          aria-label={`Sync ${kind.one}: ${name}`}
+          onClick={() => thisBrowser.sync?.(item)}
+          className={`${SYNC_LINK} cursor-pointer`}
+        >
+          Sync {kind.one}
+        </button>
       ) : null}
     </li>
   );
@@ -150,6 +214,7 @@ function LocalRow({
 export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
   const { words } = useExplorer();
   const { host, live: items } = useThisBrowserItems();
+  useHandOver(host);
   return (
     <div data-explorer-view="offline">
       <PaneHeader title={THIS_BROWSER_COPY.label} onOpenNav={onOpenNav} showFilter={false} />
@@ -173,6 +238,17 @@ export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
       )}
     </div>
   );
+}
+
+/** A Take Offline or Sync asked of this view by its address (`?convert=…&item=…`, an older `/offline` link redirected
+ *  here) goes on to the app's editor, which runs it and asks first. Once, and never back here on Back. */
+function useHandOver(host: ThisBrowserHost | null) {
+  const to = host?.handOverHref;
+  useEffect(() => {
+    if (!to) return;
+    const asked = readThisBrowserConversion(window.location.search);
+    if (asked) window.location.replace(to(asked.conversion, asked.id));
+  }, [to]);
 }
 
 /** How many of the host's local items wait in its Trash. */

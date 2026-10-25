@@ -163,11 +163,11 @@ describe('This Browser in the Explorer', () => {
       { kind: 'offline' },
       {
         ...host([local(2), local(1, { trashedAt: 5 })]),
-        syncHref: (item) => thisBrowserConvertHref('/offline', 'sync', item.id),
+        syncHref: (item) => thisBrowserConvertHref(`/project/${item.id}`, 'sync', item.id),
       },
     );
     const sync = await screen.findByRole('link', { name: 'Sync Plan: Local 2' });
-    expect(sync.getAttribute('href')).toBe('/offline?convert=sync&item=local-2');
+    expect(sync.getAttribute('href')).toBe('/project/local-2?convert=sync&item=local-2');
     expect(screen.queryByRole('link', { name: /Sync Plan: Local 1/ })).toBeNull();
   });
 
@@ -175,6 +175,33 @@ describe('This Browser in the Explorer', () => {
     page({ kind: 'offline' }, host([local(1)]));
     await screen.findAllByRole('link', { name: /Local 1/ });
     expect(screen.queryByRole('link', { name: /^Sync/ })).toBeNull();
+  });
+
+  it('sends a Take Offline or Sync asked of it by its address on to the app, once', async () => {
+    const replace = vi.fn();
+    const real = window.location;
+    window.history.replaceState(null, '', '/explorer/offline?convert=take-offline&item=d%201');
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...real, search: real.search, replace },
+    });
+    try {
+      page(
+        { kind: 'offline' },
+        {
+          ...host([local(1)]),
+          handOverHref: (conversion, id) =>
+            thisBrowserConvertHref(`/project/${encodeURIComponent(id)}`, conversion, id),
+        },
+      );
+      await waitFor(() =>
+        expect(replace).toHaveBeenCalledWith('/project/d%201?convert=take-offline&item=d+1'),
+      );
+      expect(replace).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: real });
+      window.history.replaceState(null, '', '/');
+    }
   });
 
   it('says so when nothing is kept', async () => {
@@ -234,9 +261,12 @@ describe('This Browser in the Explorer', () => {
 });
 
 describe('moving an item in or out of this browser', () => {
-  it("names the conversion and the item in the app page's address, and reads them back", () => {
-    const href = thisBrowserConvertHref('/offline', 'take-offline', 'doc 1');
-    expect(href).toBe('/offline?convert=take-offline&item=doc+1');
+  it("names the conversion and the item in the app's address, and reads them back", () => {
+    const href = thisBrowserConvertHref('/document/doc%201', 'take-offline', 'doc 1');
+    expect(href).toBe('/document/doc%201?convert=take-offline&item=doc+1');
+    expect(thisBrowserConvertHref('/document/d?s=c', 'sync', 'd')).toBe(
+      '/document/d?s=c&convert=sync&item=d',
+    );
     expect(readThisBrowserConversion(href.slice(href.indexOf('?')))).toEqual({
       conversion: 'take-offline',
       id: 'doc 1',
