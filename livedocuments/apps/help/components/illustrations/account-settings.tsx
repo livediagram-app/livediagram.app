@@ -3,7 +3,7 @@
 // Notifications category. Labels are the real ones from apps/editor. Composed only from the shared
 // primitives so the house style holds.
 
-import { Scene, Panel, Dialog, Button, Label } from './primitives';
+import { Scene, Panel, Dialog, Button, Label } from '@liveworkspace/help-site/art/primitives';
 import { Switch } from './settings-dialog';
 
 /** The API Tokens category of Settings: the slot meter, then a token card with

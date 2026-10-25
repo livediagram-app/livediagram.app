@@ -1,5 +1,5 @@
-import { Label } from '@/components/illustrations/primitives';
-import { Chip, Stage, Window } from './parts';
+import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
 // About livedocuments: what it is in one picture. Three windows fanned out, one per kind of page (a slide, an article,
 // an infographic), under the two promises: free, and open source.

@@ -6,7 +6,7 @@
 // bar does, named beside its icon while the page has room, tinted while its popover is open.
 
 import type { ReactElement } from 'react';
-import { Label } from './primitives';
+import { Label } from '@liveworkspace/help-site/art/primitives';
 
 type GlyphProps = { cx: number; cy: number; on?: boolean };
 

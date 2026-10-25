@@ -2,7 +2,7 @@
 // Labels are lifted from the live editor's own copy (GalleryPane)
 // so the figures match what a reader sees. Composed from the shared primitives.
 
-import { Scene, Label } from './primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 
 // --- Local parts -------------------------------------------------------------
 

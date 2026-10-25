@@ -3,7 +3,7 @@
 // Composed only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
-import { Scene, Shape, Arrow, Label } from './primitives';
+import { Scene, Shape, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
 import { STRIP_W, Strip } from './toolbar-layout';
 
 // --- Zen mode ---------------------------------------------------------------

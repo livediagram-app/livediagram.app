@@ -2,7 +2,7 @@
 // vertices. Split out from palette-tools.tsx (already at size) per the no-god-files rule; composed only from the
 // shared primitives.
 
-import { Scene, Cursor, Panel, Label } from './primitives';
+import { Scene, Cursor, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 
 /** The Polygon tool mid-draw: placed vertices joined by straight segments, a
  *  dashed rubber-band segment to the cursor, and a snap ring on the start

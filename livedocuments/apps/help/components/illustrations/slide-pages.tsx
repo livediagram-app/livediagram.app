@@ -7,7 +7,7 @@
 // icon, Add to Slides). Composed from the shared primitives.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, TextBar } from './primitives';
+import { Scene, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
 import { BackgroundGlyph, LayoutGlyph, PadlockGlyph, TitleIcon } from './page-title-bar';
 
 /** The page cog: a small round button with a gear. */

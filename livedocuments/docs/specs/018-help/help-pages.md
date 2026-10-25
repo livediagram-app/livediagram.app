@@ -58,19 +58,19 @@ livedocuments's scenes:
 | Getting Started      | own                  | a first document: an article, slide or infographic page, writing on it, the share link                      |
 | About                | own                  | three windows: a slide, an article and an infographic                                                       |
 | Pages                | own                  | an article page, a slide and an infographic, labelled the way the editor labels them                        |
-| Canvas               | own                  | an article page and a slide on the canvas, a heading selected, the alignment guide, undo and zoom           |
+| Canvas               | own                  | a slide on the canvas, its title selected with the Quick Style panel, the alignment guide, undo and zoom    |
 | Palette              | own                  | the strip on a slide (Write first), the Components category open, a Callout dropped on the slide            |
 | Selection Modes      | own                  | the tool picker's three bands with Select chosen, and the spotlight and laser on a slide                    |
 | Collaboration        | own                  | two people writing one article: cursors, a highlighted line, a comment thread, Share                        |
 | Explorer             | own                  | My Work and a grid of articles, slides and posters                                                          |
-| Tabs                 | own                  | one document's tabs stacked behind the tab bar                                                              |
+| Tabs                 | own                  | one document's tabs stacked behind the tab bar, a pitch deck's slides in front                              |
 | User Interface       | own                  | the editor with numbered callouts: the menu, the palette strip, the bottom-right buttons, the tab bar       |
 | Tools                | shared, with its own | Markdown Import turning `#` and `-` lines into an article, beside the shared appearance switch and Zen mode |
 | Tips and Tricks      | shared, with its own | the command palette (Slide Deck, Fit to Screen, Zen mode) and T, N and 9                                    |
 | Search Panel         | shared, with its own | "roadmap" finding a document, a tab, a sticky note and a guide                                              |
 | Supported Devices    | shared, with its own | an article page on a laptop, a tablet and a phone                                                           |
 | Developers           | shared, with its own | `POST /api/documents` with the `slide-deck` template, and the slide it makes                                |
-| Account and Data     | shared, with its own | a profile, synced documents, and PNG, SVG, PDF and JSON                                                     |
+| Account and Data     | shared, with its own | a profile, synced documents (an article and a deck), and PDF, PNG, SVG and JSON                             |
 | Troubleshooting      | shared, with its own | a document that didn't load and the checklist fixing it                                                     |
 | Privacy and Security | shared, with its own | a livedocuments.app share link with its safeguards                                                          |
 | Self-Hosting         | shared, with its own | `~/livedocuments` deploying api, editor and router to your own domain                                       |
