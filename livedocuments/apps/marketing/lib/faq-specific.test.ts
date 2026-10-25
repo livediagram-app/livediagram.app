@@ -6,11 +6,13 @@ import { FAQ_CATEGORIES } from './faq-content';
 
 // The FAQ is about livedocuments only (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"). It began
 // as a copy of livediagram's, so this guard keeps the other apps' names and kinds of work from coming back. Another
-// product may be named only in an answer about a real integration, listed here by its question: the account,
-// teams and API tokens livedocuments shares with every liveworkspace app.
-const INTEGRATION_ANSWERS = new Set([
-  'Can I set up a team with shared documents?',
-  'Is there an API?',
+// product may be named only in an answer about a real integration, listed here by its question with what it
+// shares: the account, teams and API tokens livedocuments shares with every liveworkspace app, and the one status
+// page that checks every app.
+const INTEGRATION_ANSWERS = new Map<string, RegExp>([
+  ['Can I set up a team with shared documents?', /liveworkspace account/],
+  ['Is there an API?', /liveworkspace account/],
+  ['Is livedocuments up right now?', /liveworkspace status page/],
 ]);
 
 const OTHER_PRODUCTS = /\b(?:livediagram|liveplanner|livedesign|liveworkspace)\b/i;
@@ -49,10 +51,10 @@ describe('FAQ is about livedocuments only', () => {
     for (const { app, pattern } of OTHER_KINDS_OF_WORK) expect(text, app).not.toMatch(pattern);
   });
 
-  it('lists only integration answers that exist and name the shared account', () => {
+  it('lists only integration answers that exist and name what they share', () => {
     const byQuestion = new Map(entries.map((e) => [e.q, e.text]));
-    for (const q of INTEGRATION_ANSWERS) {
-      expect(byQuestion.get(q), q).toMatch(/liveworkspace account/);
+    for (const [q, shared] of INTEGRATION_ANSWERS) {
+      expect(byQuestion.get(q), q).toMatch(shared);
     }
   });
 

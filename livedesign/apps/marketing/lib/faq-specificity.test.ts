@@ -39,6 +39,8 @@ const OTHER_PRODUCTS: { name: string; pattern: RegExp }[] = [
 const INTEGRATIONS: Record<string, string[]> = {
   // Signing in is a liveworkspace account, shared with the other liveworkspace apps.
   'Do I need an account to use livedesign?': ['liveworkspace'],
+  // The one status page on liveworkspace.app checks every app's services, livedesign's among them.
+  'Is livedesign up right now?': ['liveworkspace'],
 };
 
 const entries = FAQ_CATEGORIES.flatMap((c) => [
