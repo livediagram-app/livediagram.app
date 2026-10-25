@@ -14,7 +14,8 @@ import { noteThisBrowser } from './this-browser';
 // describe, so they are unknown here.
 export type RetiredPartsRecord = Omit<OfflineDocumentRecord, 'tabs'> & { tabs: unknown[] };
 
-// What `POST /api/migration/local-parts` is sent for one set-aside record: everything on it but its id, raw. The
+// What `POST /api/migration/local-parts` is sent for one set-aside record: everything on it, raw (its id lets the api
+// make the same part ids on a retry, so a lost answer never makes duplicates). The
 // old owner id comes from the record when it has one, else from the old site's guest key while this browser still
 // holds it (the splitter uses it to recompute card people).
 export function localPartsBody(
@@ -22,7 +23,11 @@ export function localPartsBody(
   oldOwnerId: string | null,
 ): LocalPartsBody {
   const raw = record as RetiredPartsRecord & Record<string, unknown>;
-  const body: Record<string, unknown> = { name: record.name ?? '', tabs: record.tabs };
+  const body: Record<string, unknown> = {
+    id: record.id,
+    name: record.name ?? '',
+    tabs: record.tabs,
+  };
   for (const key of [
     'createdAt',
     'savedAt',

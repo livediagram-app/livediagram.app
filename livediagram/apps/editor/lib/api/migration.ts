@@ -6,15 +6,14 @@
 import type {
   LegacyGuestClaim,
   LegacyGuestClaimAnswer,
-  LocalDocumentInput,
   LocalPartsAnswer,
   LocalPartsRequest,
 } from '@liveworkspace/migration';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
-// The whole raw record but its id: its name and tabs, and the rest of what the old editor kept on it (its Plan
-// cards and sheets, dates, deck), under the splitter's own names (LocalDocumentInput).
-export type LocalPartsBody = LocalPartsRequest & Omit<LocalDocumentInput, 'id' | 'name' | 'tabs'>;
+// The whole raw record: its id, name and tabs, and the rest of what the old editor kept on it (its Plan cards and
+// sheets, dates, deck), under the splitter's own names (LocalDocumentInput).
+export type LocalPartsBody = LocalPartsRequest;
 
 export async function apiClaimLegacyGuest(
   ownerId: string,

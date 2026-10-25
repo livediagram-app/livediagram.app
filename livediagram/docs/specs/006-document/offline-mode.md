@@ -438,7 +438,8 @@ workbench, and never both at once: this offer goes first).
   you made in this browser now live in livedocuments, liveplanner and livedesign. They're kept safe here until you
   move them." It lists the documents by name, with **Move Them** and **Not Now**.
 - **Move Them.** For each set-aside document in turn ("Moving 1 of 3…"), the editor posts the whole raw
-  set-aside record but its id to `POST /api/migration/local-parts` as the person: `name` and `tabs`, and, where the
+  set-aside record to `POST /api/migration/local-parts` as the person: `id` (from which the api makes the same part
+  ids on a retry, so a lost answer never makes duplicates), `name` and `tabs`, and, where the
   record has them, `createdAt`, `savedAt`, `presentation`, `items`, `itemsRev`, `itemsNextKey`, `itemTypes`,
   `sheets` and `ownerId` (the record's, else the old site's guest id while this browser still holds it), under the
   splitter's names (`LocalDocumentInput`). On a success it

@@ -183,12 +183,9 @@ export type CrossReference = {
 // (./split splitLocalDocument), keeps nothing, and hands each other app's part to the index
 // (`POST /api/index/app/migration/handoff`), which makes the item for the caller and calls that app's migration door.
 
-export type LocalPartsRequest = {
-  /** The local document's name, for the parts' titles. */
-  name: string;
-  /** Its tabs as stored in IndexedDB, untouched by any read migration. */
-  tabs: unknown[];
-};
+/** The whole raw Local only record, as `LocalDocumentInput` reads it. `id` is the local document's id: the api
+ *  derives each part's id from the caller, it and the app, so a retry after a lost answer makes no duplicates. */
+export type LocalPartsRequest = LocalDocumentInput;
 
 export type LocalPartsAnswer = {
   parts: { app: MigrationApp; id: string; url: string; tabIds: string[] }[];
