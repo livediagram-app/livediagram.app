@@ -94,8 +94,9 @@ function RowShell(p: ShellProps) {
   const item = p.itemTitle || 'Untitled';
   const fullTitle = p.cardKey == null ? p.title : `#${p.cardKey} ${p.title}`;
   const path = [item, ...p.where].join(' › ');
-  // The panel has room for the item and the innermost place (the element, or the board); the page shows the tab too.
-  const crumbs = compact ? p.where.slice(-1) : p.where;
+  // The panel has room for the item alone, readable rather than two names cut to a letter each; the page shows the
+  // tab and the place too. The whole path is the line's tooltip and part of the row's name either way.
+  const crumbs = compact ? [] : p.where;
   // One sensible sentence for a screen reader: what, why, where. The detail and the time describe it.
   const label = [
     fullTitle,

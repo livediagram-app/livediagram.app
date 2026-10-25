@@ -108,7 +108,7 @@ describe('an Inbox row', () => {
     vi.restoreAllMocks();
   });
 
-  it('is compact in the panel: the innermost place, a short time and no arrow', async () => {
+  it('is compact in the panel: the item alone, a short time and no arrow', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(NOW);
     const index = createFakeIndex();
     index.inbox.actions.push(action);
@@ -116,8 +116,9 @@ describe('an Inbox row', () => {
     await settle();
     const row = screen.getByRole('link', { name: /Split the ledger out/ });
     expect(row.closest('li')!.getAttribute('data-density')).toBe('compact');
-    expect(row.textContent).toContain('Billing service');
+    expect(row.textContent).toContain('Payments architecture');
     expect(row.textContent).not.toContain('Overview');
+    expect(row.textContent).not.toContain('Billing service');
     // The whole path is still there, on hover and in the name.
     expect(row.querySelector('[title*="›"]')!.getAttribute('title')).toBe(
       'Payments architecture › Overview › Billing service',

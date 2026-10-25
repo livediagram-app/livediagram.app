@@ -11,7 +11,7 @@ What livedesign does is feed it and open its rows:
 
 ## How a row reads
 
-Every Inbox row, on the Explorer page and in the editor's Explorer panel, is one link drawn by one shared component (`packages/explorer/src/explorer/inbox/InboxRows.tsx`) at one of two densities: **comfortable** on the page, **compact** in the panel (tighter padding, a smaller avatar, shorter times). Top to bottom it reads:
+Every Inbox row, on the Explorer page and in the editor's Explorer panel, is one link drawn by one shared component (`packages/explorer/src/explorer/inbox/InboxRows.tsx`) at one of two densities: **comfortable** on the page, **compact** in the panel (tighter padding, a smaller avatar, shorter times, and the item's title alone on the breadcrumb line, so it reads rather than sharing the width with a place cut to a letter; the full path stays the line's tooltip and part of the row's name). Top to bottom it reads:
 
 - **Where**, as a quiet breadcrumb: the item's app mark (in the All filter), the team glyph for a team's item, the item's title, then the tab and the element or board. On the right, when it last changed, in a `<time>` element with the full date on hover.
 - **What needs you**, in bold: the action's name, the card's number and title, the element a thread is on, or the form's heading. One line, the full text on hover.
