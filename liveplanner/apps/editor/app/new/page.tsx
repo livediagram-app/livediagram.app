@@ -27,6 +27,7 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestToken } from '@/lib/guest-token';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { handTemplatePick } from '@liveworkspace/explorer';
 import {
@@ -117,7 +118,7 @@ export default function NewProjectPage() {
 
   // Where a new project is stored: This Browser for a guest (docs/specs/006-project/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewProjectLocation();
+  const { resolveSaveLocation } = useNewProjectLocation({ authLoaded, accountUserId });
 
   useEffect(() => {
     document.title = 'New Plan | liveplanner';
@@ -229,6 +230,10 @@ export default function NewProjectPage() {
       // failure must reach the error card, never leave /new on "Creating" for good.
       const cloudOwner = offline ? null : await settleIdentity();
       if (offline) {
+        // Except a first visit's guest token (offline-mode.md "Instant open"): fetching one leaves the page for the
+        // accounts site and comes back to this /new address, so a create begun first would run again on the way back.
+        // Taken first, the plan is made once; a returning guest's token is already here and this answers at once.
+        await ensureGuestToken();
         void settleIdentity().catch((err: unknown) =>
           debugLog(`[new] background identity failed: ${String(err)}`),
         );
@@ -312,13 +317,14 @@ export default function NewProjectPage() {
     setOpenedId(projectId);
   };
 
-  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): liveplanner,
-  // whoever is creating, and the /new?folder= / ?team= context when there is one; without one the index files it at
+  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): This
+  // Browser for a guest, liveplanner for a signed-in person or anyone with a /new?folder= / ?team= context
+  // (docs/specs/006-project/save-locations.md), and that context when there is one; without one the index files it at
   // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
-    const saveLocation = await resolveSaveLocation();
+    const saveLocation = await resolveSaveLocation(placed, resolveSelf);
     await commitNewProject(kind, { saveLocation, ...placement, placementChosen: placed });
   };
 
