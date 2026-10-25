@@ -1349,6 +1349,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../../../packages/ui

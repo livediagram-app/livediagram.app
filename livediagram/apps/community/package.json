@@ -16,6 +16,7 @@
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:*",
     "next": "^16.4.1",
     "react": "^19.3.1",

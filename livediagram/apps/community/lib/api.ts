@@ -13,7 +13,7 @@ import {
   readErrorCode,
 } from '@livediagram/api-schema';
 import { getCommunityKey } from './community-key';
-import { API_BASE, COMMUNITY_API } from './config';
+import { API_BASE, communityApi } from './config';
 
 // The Community app's api client (blueprint §4 routes, §5 "Community app"), typed with the shared
 // api-schema DTOs. The gallery, posts, likes and reports are the liveworkspace Community service's
@@ -54,7 +54,7 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 
 // A path on the Community service, for this app's posts. `search` is the rest of the query.
 const service = (path: string, search?: string) =>
-  communityServiceUrl('livediagram.app', path, { base: COMMUNITY_API, search });
+  communityServiceUrl('livediagram.app', path, { base: communityApi(), search });
 
 const postPath = (id: string) => `/posts/${encodeURIComponent(id)}`;
 
