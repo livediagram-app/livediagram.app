@@ -4,11 +4,7 @@ import { useId, useState, type CSSProperties } from 'react';
 import { lucideAppWindow, lucideCloud } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '../icons/lucide-glyph';
 import { Switch } from '../Switch';
-import {
-  saveSwitchAnnouncement,
-  saveSwitchCopy,
-  type SaveSwitchMove,
-} from './save-switch';
+import { saveSwitchAnnouncement, saveSwitchCopy, type SaveSwitchMove } from './save-switch';
 
 const CloudGlyph = lucideGlyph(lucideCloud, 16);
 const BrowserGlyph = lucideGlyph(lucideAppWindow, 16);

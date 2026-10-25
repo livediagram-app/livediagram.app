@@ -163,12 +163,7 @@ describe('SaveSwitch', () => {
     const run = deferred();
     const onFailure = vi.fn();
     render(
-      <Host
-        start={false}
-        toServer={() => run.promise}
-        toBrowser={vi.fn()}
-        onFailure={onFailure}
-      />,
+      <Host start={false} toServer={() => run.promise} toBrowser={vi.fn()} onFailure={onFailure} />,
     );
     const sw = screen.getByRole('switch');
     fireEvent.click(sw);

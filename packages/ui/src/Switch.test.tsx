@@ -55,14 +55,18 @@ describe('Switch', () => {
   });
 
   it('is a 44px hit area, slides its knob, and respects reduced motion', () => {
-    const { container, rerender } = render(<Switch checked={false} label="On" onChange={() => {}} />);
+    const { container, rerender } = render(
+      <Switch checked={false} label="On" onChange={() => {}} />,
+    );
     const sw = screen.getByRole('switch');
     expect(sw.className).toContain('h-11');
     const knob = container.querySelector('[data-switch-knob]')!;
     expect(knob.className).toContain('translate-x-[2px]');
     expect(knob.className).toContain('motion-reduce:transition-none');
     rerender(<Switch checked label="On" onChange={() => {}} />);
-    expect(container.querySelector('[data-switch-knob]')!.className).toContain('translate-x-[20px]');
+    expect(container.querySelector('[data-switch-knob]')!.className).toContain(
+      'translate-x-[20px]',
+    );
   });
 
   it('paints the brand track on and slate off, or the colours a panel hands in', () => {
