@@ -98,7 +98,7 @@ through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimT
 
 New optional fields on `ShapeElement`, `TextElement`, `StickyElement`, `TableElement`: `textAnimation?:
 TextAnimation`, `textAnimationSpeed?: AnimationSpeed`, `textAnimationRepeat?: boolean` (Text plays once by default: stored only when true; `setRepeats(set, stored)` reads either default). They
-are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`lib/format-config.ts`),
+are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`../packages/workbench/src/lib/format-config.ts`),
 projected by `paintableBoxedFields` for a word-carrying source, and in the OpenAPI document (regenerated with
 `node scripts/gen-openapi-schemas.mjs` in `apps/api`). Validation stays lenient.
 

@@ -22,7 +22,7 @@ Scope, by file:
 | `../packages/workbench/src/lib/quick-style-placement.ts`                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
 | `apps/live/hooks/canvas/useStyleMemory.ts`                                  | Per-design memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                              |
 | `apps/live/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
-| `apps/live/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
+| `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/live/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/live/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
 | `apps/live/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |

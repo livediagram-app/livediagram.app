@@ -213,4 +213,4 @@ results also fires `UI · Used · StartOtherMode`, so how often a search crosses
   scroll to top.
 - `components/start/StartModeSwitch.test.tsx`, `hooks/editor/useEditorMode.test.tsx`.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `components/canvas/empty-card-dismissed.test.ts` (bringing a start back).
+- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

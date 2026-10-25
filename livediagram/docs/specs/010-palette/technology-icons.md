@@ -40,7 +40,7 @@ gives icons the two properties this feature needs:
 render path **dispatches on the id**: `isTechIconId(iconId)` picks the coloured
 brand renderer, otherwise the stroke-tinted line renderer.
 
-## The catalogue — `apps/editor/lib/tech-icons.ts`
+## The catalogue — `../packages/workbench/src/lib/tech-icons.ts`
 
 ```ts
 type TechIconDef = {
@@ -237,7 +237,7 @@ out to the element edge — a connector leaving toward a bottom caption starts
 at the element's bottom line, under the text, instead of crossing it (and
 mirrored for top / left / right captions). Line-art icons keep box anchors
 (their glyph scales with the box). The document package reads `isTechIconId` from `@liveworkspace/icons`
-(tech-icon-ids.ts, re-exported by `apps/editor/lib/tech-icons.ts`).
+(tech-icon-ids.ts, re-exported by `../packages/workbench/src/lib/tech-icons.ts`).
 
 **The format painter carries the icon fields.** Painting from one icon to
 another copies `iconSize` (the Technology mark's fixed-size preset),
