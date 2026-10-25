@@ -49,7 +49,6 @@ afterEach(() => {
   localStorage.clear();
 });
 
-
 async function settle() {
   for (let i = 0; i < 8; i++) await act(async () => await new Promise((r) => setTimeout(r, 0)));
 }
