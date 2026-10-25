@@ -56,6 +56,7 @@ describe("the header's session", () => {
       colour: '#ef4444',
       email: 'ada@example.com',
       joined: '2026-10-23T15:13:54.270Z',
+      picture: null,
     });
     expect(call).toHaveBeenCalledTimes(1);
   });
@@ -64,6 +65,22 @@ describe("the header's session", () => {
     call.mockResolvedValue({ ok: true, data: { user: { name: 'Ada', color: 'url(x)' } } });
     const { shown } = await mount();
     expect(shown()).toMatchObject({ state: 'in', colour: null });
+  });
+
+  it('carries the Google picture from /get-session, and only a Google one', async () => {
+    const picture = 'https://lh3.googleusercontent.com/a/ada=s96-c';
+    call.mockResolvedValue({ ok: true, data: { user: { name: 'Ada', image: picture } } });
+    const { shown } = await mount();
+    expect(shown()).toMatchObject({ state: 'in', picture });
+  });
+
+  it('draws no picture for one that is not Google’s', async () => {
+    call.mockResolvedValue({
+      ok: true,
+      data: { user: { name: 'Ada', image: 'https://evil.example/ada.png' } },
+    });
+    const { shown } = await mount();
+    expect(shown()).toMatchObject({ state: 'in', picture: null });
   });
 
   it('repaints at once when Settings › Profile picks a colour, with no request', async () => {

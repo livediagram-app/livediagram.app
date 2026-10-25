@@ -89,7 +89,7 @@ describe("the pages' Content-Security-Policy", () => {
   it('lets every Worker that serves pages load them too', () => {
     const sources = files.filter(
       (f) =>
-        /\/src\/.*\.ts$/.test(f) && !/\.test\.ts$/.test(f) && !IMAGE_ONLY.includes(relative(f)),
+        /\/src\/.*\.ts$/.test(f) && !f.endsWith('.test.ts') && !IMAGE_ONLY.includes(relative(f)),
     );
     expect(sources.length).toBeGreaterThan(50);
     const blocked = sources.flatMap((f) =>
