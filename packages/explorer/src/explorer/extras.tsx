@@ -78,6 +78,21 @@ export function useExtras(): ExplorerExtras {
   return useContext(Ctx) ?? QUIET;
 }
 
+/** The people store alone (names and Google pictures, one batched request per beat), for a surface that has none of
+ *  the page's other extras: the editor's Explorer panel, whose Inbox, history and owner lines then show people as
+ *  the page does. Everything else stays at the quiet defaults. */
+export function PeopleProvider({
+  accounts,
+  children,
+}: {
+  accounts: ExplorerAccounts | null;
+  children: ReactNode;
+}) {
+  const people = usePeopleStore(accounts);
+  const value = useMemo<ExplorerExtras>(() => ({ ...QUIET, accounts, people }), [accounts, people]);
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
+
 function reducedMotion(): boolean {
   try {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;

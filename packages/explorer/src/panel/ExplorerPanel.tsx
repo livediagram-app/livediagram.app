@@ -39,6 +39,8 @@ import { elsewhereLabel } from '../explorer/FolderMosaic';
 import { useOtherApps } from '../data/useOtherApps';
 import { InboxPane } from '../explorer/InboxPane';
 import { BrowserIcon, HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
+import { PeopleProvider } from '../explorer/extras';
+import type { ExplorerAccounts } from '../data/accounts';
 import { useThisBrowserItems, type ThisBrowserHost } from '../explorer/ThisBrowser';
 import { PanelThisBrowser } from './PanelThisBrowser';
 import { ConfirmDialog, Tooltip } from '@liveworkspace/ui';
@@ -190,6 +192,9 @@ export type ExplorerPanelProps = {
   footer?: ReactNode;
   // Group titles over the rail's groups, or a hairline between them (Minimal chrome).
   divider?: 'titles' | 'lines';
+  /** Other people's names and Google pictures, as on the Explorer page (`createExplorerAccounts` over the app's
+   *  router with the person's token): the Inbox's and history's avatars then show pictures. Without it, initials. */
+  accounts?: ExplorerAccounts | null;
 } & LibraryHostProps;
 
 export function ExplorerPanel({
@@ -200,6 +205,7 @@ export function ExplorerPanel({
   history,
   teamsHost,
   thisBrowser = null,
+  accounts = null,
   ...props
 }: ExplorerPanelProps) {
   const extras = useMemo<ExplorerHostExtras>(
@@ -222,7 +228,9 @@ export function ExplorerPanel({
             tokenTeams={props.teams}
             eager={false}
           >
-            <PanelInner {...props} />
+            <PeopleProvider accounts={accounts}>
+              <PanelInner {...props} />
+            </PeopleProvider>
           </TeamsProvider>
         </LibraryHostProvider>
       </HostExtrasProvider>

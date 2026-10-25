@@ -42,6 +42,7 @@ import {
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
 import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
+import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
@@ -73,6 +74,12 @@ export type AuthUser = {
   name: string | null;
   // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
   color: string | null;
+  // The account's Google picture (the ID token's `picture`, liveworkspace/docs/accounts.md "Profile pictures"), for
+  // the person's own avatar; null without one.
+  picture: string | null;
+  // Show My Google Picture is off (`picture_hidden`): the person's own chrome still shows it, but presence and
+  // anything others see leave it out.
+  pictureHidden: boolean;
 };
 
 type Configured = {
@@ -186,6 +193,8 @@ function userOf(tokens: TokenSet): AuthUser | null {
     familyName: text(payload.family_name),
     name: text(payload.name),
     color: text(payload.presence_color),
+    picture: profilePictureOf(payload.picture),
+    pictureHidden: payload.picture_hidden === true,
   };
 }
 
