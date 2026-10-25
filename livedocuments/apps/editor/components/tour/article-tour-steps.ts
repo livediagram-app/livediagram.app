@@ -10,13 +10,6 @@ import {
   pageSheet,
 } from './page-tour-dom';
 
-export const ARTICLE_WELCOME: PageTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Articles?',
-  body: 'A quick look at writing an article: where to type, the toolbar, and giving it a look of its own.',
-};
-
 const ARTICLE_TOOLBAR = '[role="toolbar"][aria-label="Article Formatting"]';
 
 const TOOLBAR_BODY =

@@ -38,9 +38,10 @@ of Engineering". Tab from it adds the first report.
 
 ## Element tour
 
-The first time an Editor selects a person node, a small **Show Me** toolbar beside its selection toolbar offers the
-[Org Chart tour](../007-editor/element-tours.md#the-org-chart-tour): the name, role and initials, a report (Tab) and a
-peer (Enter), a team moved as one, and the menu it shares with mind maps.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Org Chart tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.
 
 ## Share roles
 

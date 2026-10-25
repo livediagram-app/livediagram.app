@@ -643,9 +643,10 @@ centred one would land underneath the very "+" the actions live in.
 
 ## Element tour
 
-The first time an Editor selects a mind node, a small **Show Me** toolbar beside its selection toolbar offers the
-[Mind Map tour](../007-editor/element-tours.md#the-mind-map-tour): Add Child and Add Sibling (with their keys), a
-branch moved as one, and the Mind Map menu. A person node is the org chart's, with its own tour.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Mind Map tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.
 
 ## What it is not
 

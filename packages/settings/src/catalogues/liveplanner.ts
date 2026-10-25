@@ -158,14 +158,14 @@ export const CATALOGUE: AppCatalogue = {
       tile: 'tours',
       sectionNotes: {
         'Offer Again':
-          'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
+          'Start a tour from the Start Tour button in the bottom bar, left of Settings: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
       rows: [
         {
           kind: 'toggle',
           id: 'formTourSeen',
           label: 'Forms Tour',
-          description: 'The first time you open a Form tab.',
+          description: 'On a Form tab.',
           keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
           section: 'Offer Again',
           key: 'formTourSeen',

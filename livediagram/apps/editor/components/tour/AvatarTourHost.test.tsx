@@ -1,14 +1,21 @@
 // @vitest-environment jsdom
 
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md "Where it appears"): on entering Avatar mode,
-// once, whatever the role, never with another tour, and rerun from Settings.
+// The Avatar tour's way in (docs/specs/008-canvas/avatar-tour.md "Where it appears"): the footer's Start Tour button
+// offers it in Avatar mode whatever the role, ahead of the mode's own tour, taken or not; a press there (or the
+// Settings row) starts it, never beside another tour, and it never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import type { TourEngine } from './useTourEngine';
+import {
+  publishTourOffer,
+  resetTourOffersForTests,
+  TOUR_OFFER_RANK,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
+import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { AvatarTourApi } from './avatar-tour-steps';
 import { AvatarTourHost } from './AvatarTourHost';
 
@@ -31,7 +38,7 @@ vi.mock('./TourStage', () => ({
     return null;
   },
 }));
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   findTour: () => null,
   clickTour: () => false,
   waitForSelector: async () => null,
@@ -63,11 +70,10 @@ const editor = (over: Record<string, unknown> = {}) => {
     ...over,
   };
 };
-const offered = () => track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'AvatarTourOffer');
+const startedTour = () => track.mock.calls.some((c) => c[1] === 'Started' && c[2] === 'AvatarTour');
 
 beforeEach(() => {
   vi.useFakeTimers();
-  sessionStorage.clear();
   track.mockReset();
   stage.engine = null;
 });
@@ -80,123 +86,104 @@ afterEach(() => {
   setActiveTour('draw', false);
   setActiveTour('avatar', false);
   setStartPanelOpen(false);
+  resetTourOffersForTests();
 });
 
 describe('AvatarTourHost offer', () => {
-  it('offers itself after the settle delay in Avatar mode, linking to its article', () => {
+  it('offers "Avatar" on the footer button in Avatar mode, and never starts on its own', () => {
     editor();
     render(<AvatarTourHost />);
+    expect(tourOffer()?.name).toBe('Avatar');
     act(() => {
-      vi.advanceTimersByTime(799);
+      vi.advanceTimersByTime(5000);
     });
-    expect(offered()).toBe(false);
-    act(() => {
-      vi.advanceTimersByTime(1);
+    expect(startedTour()).toBe(false);
+  });
+
+  it("wins the button over the mode's own tour", () => {
+    publishTourOffer('draw', {
+      id: 'draw',
+      name: 'Draw',
+      rank: TOUR_OFFER_RANK.mode,
+      start: () => {},
     });
-    expect(offered()).toBe(true);
+    editor();
+    render(<AvatarTourHost />);
+    expect(tourOffer()?.name).toBe('Avatar');
+  });
+
+  it('starts from the button, linking to its article', () => {
+    editor();
+    render(<AvatarTourHost />);
+    act(() => tourOffer()!.start());
+    expect(startedTour()).toBe(true);
     expect(stage.helpHref).toBe('/help/selection-modes/avatar-mode/');
   });
 
-  it('waits for the person to walk as an avatar', () => {
+  it('offers nothing until the person walks as an avatar', () => {
     editor({ canvasTool: 'select' });
     const { rerender } = render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
     editor();
     rerender(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(tourOffer()?.name).toBe('Avatar');
   });
 
   // docs/specs/008-canvas/avatar-tour.md "Share roles": the mode is a Viewer's too.
   it('offers itself to a Viewer, without the Say Something step', () => {
     editor({ isReadOnly: true, can: { takePart: false } });
     render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    act(() => tourOffer()!.start());
     expect(stage.engine!.countableSteps).toBe(4);
   });
 
   it('counts five steps for someone who may speak', () => {
     editor();
     render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
     expect(stage.engine!.countableSteps).toBe(5);
   });
 
-  it.each([
-    ['seen', { userPreferences: { tourSeen: true, avatarTourSeen: true } }],
-    ['not hydrated', { hydrated: false }],
-    ['embedded', { embedMode: true }],
-    ['before the synced preferences are in', { prefsSettled: false }],
-  ])('makes no offer when %s', (_why, over) => {
-    editor(over);
+  it('stays on offer once seen, so it can be taken again', () => {
+    editor({ userPreferences: { tourSeen: true, avatarTourSeen: true } });
     render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    expect(tourOffer()?.name).toBe('Avatar');
   });
 
-  it('never runs beside another tour, then follows it', () => {
+  it.each([
+    ['not hydrated', { hydrated: false }],
+    ['embedded', { embedMode: true }],
+  ])('offers nothing when %s', (_why, over) => {
+    editor(over);
+    render(<AvatarTourHost />);
+    expect(tourOffer()).toBeNull();
+  });
+
+  it('never starts beside another tour', () => {
     setActiveTour('draw', true);
     editor();
     render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('draw', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    act(() => tourOffer()!.start());
+    expect(startedTour()).toBe(false);
   });
 
   it('reruns from Settings in Avatar mode, and not outside it', () => {
-    editor({ canvasTool: 'select', userPreferences: { tourSeen: true } });
+    editor({ canvasTool: 'select' });
     const { rerender } = render(<AvatarTourHost />);
     act(() => requestAvatarTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor({ userPreferences: { tourSeen: true, avatarTourSeen: true } });
-    rerender(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    expect(startedTour()).toBe(false);
     editor();
     rerender(<AvatarTourHost />);
     act(() => requestAvatarTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(startedTour()).toBe(true);
   });
 
-  it('waits while a start panel is on screen', () => {
+  it('offers nothing while a start panel is on screen', () => {
     act(() => setStartPanelOpen(true));
     editor();
     render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
     act(() => setStartPanelOpen(false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(tourOffer()?.name).toBe('Avatar');
   });
 });
 
@@ -204,26 +191,22 @@ describe('AvatarTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<AvatarTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
+    act(() => tourOffer()!.start());
     return r;
   };
 
-  it('declining marks it seen and sends the decline', () => {
+  it('skipping marks it seen and sends the skip', () => {
     start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
       { tourSeen: true, avatarTourSeen: true },
       'me',
     );
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'AvatarTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'AvatarTourSkipped');
   });
 
-  it('starting runs the steps and completing sends the completion', async () => {
+  it('runs the steps and completing sends the completion', async () => {
     start();
-    act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'AvatarTour');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30000);
     });
@@ -234,7 +217,6 @@ describe('AvatarTourHost end', () => {
 
   it('ends as skipped when the person leaves Avatar mode', () => {
     const r = start();
-    act(() => stage.engine!.next());
     editor({ canvasTool: 'select' });
     r.rerender(<AvatarTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'AvatarTourSkipped');

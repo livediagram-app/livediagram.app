@@ -252,11 +252,12 @@ type UserPreferences = {
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
-  // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
-  // itself once ever. Settings' Boards Tour and Sheets Tour rows each add or remove their own track.
+  // The Plan tour tracks (Boards, Sheets, Dashboards) taken (a run completed or skipped). It picks which track the footer's
+  // Start Tour button names and feeds Settings' rows; it never hides the button. Settings' Boards Tour, Sheets Tour and
+  // Dashboards Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
-  // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me Around
-  // in the form's cog panel reruns it. Missing / undefined === not seen.
+  // The Forms tour's record (docs/specs/030-forms/forms.md "The Forms tour"), written when a run ends; it feeds the
+  // Settings row only. Show Me Around in the form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the project's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -453,7 +454,8 @@ and the dialog stays as the one complete, browsable index of them.
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
-  dark-mode toggle. The "Keyboard Shortcuts" command in search
+  dark-mode toggle (with the Start Tour button immediately left of it while a tour is on offer,
+  [Editor tours](editor-tour.md) "Where it appears"). The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone
   Shortcuts dialog and the footer's keyboard button. Settings can also open on a **section**
   of a category: the section
@@ -666,13 +668,16 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**,
-  **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it offers itself and a
-  **Learn more** to its article, under one **Offer Again** section note: each tour offers itself once; switch one
-  back on and close Settings to take it again, straight away if you are where it offers itself, otherwise the next
-  time you are. (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody
-  looked for them: a tour is not an accessibility setting.) Every switch is inverted: on means "offer me this tour",
-  the preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
-  `...SeenOff`), so each dashboard series keeps its meaning.
+  **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
+  **Learn more** to its article, under one **Offer Again** section note. Every tour is started from the footer's
+  Start Tour button, which stays on offer whether a tour is taken or not ([Editor tours](editor-tour.md) "Where it
+  appears"); the switches are the record of which have been taken. Switch one back on and close Settings to take it
+  again straight away when it is on offer where you are; otherwise nothing starts, and the button is there once it
+  is. Until 25 October 2026 each tour offered itself once and its switch was what let it offer itself again. (The
+  tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked for them: a
+  tour is not an accessibility setting.) Every switch is inverted: on means "not taken yet", the preference records
+  "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is `...SeenOff`), so each
+  dashboard series keeps its meaning.
 
   The Plan tour is a tour of several tracks (`apps/editor/lib/tour-tracks.ts`): **Plan Tours** is one switch over all
   of them (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets
@@ -680,12 +685,12 @@ and the dialog stays as the one complete, browsable index of them.
   **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
   `planTourSeen-sheets`, `planTourSeen-dashboards`). A track's row is on while its track is owed; off adds its track
   to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, folding it into the list first
-  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour offers itself once a board
-  or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track became
-  owed while it was open ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
+  so one track back on leaves the others answered. It needs no handoff flag (the Plan tour is on the button once a
+  board or Sheet is open, the Dashboards tour on a dashboard), so closing the dialog only reruns it, when a track
+  became owed while it was open and the tour is on offer ([Plan tour](../026-plan/plan-tour.md)). **Forms Tour** works the same way against
   `formTourSeen` ([Forms](../030-forms/forms.md) "The Forms tour"). Power user mode's readout lists the Plan tour's
   switch over all its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track
-  only while Power user mode is on, so an answer given before the tour split offers each track once more.
+  only while Power user mode is on.
 
   The Diagram tour's **Diagram Tour** row, the Avatar tour's row and the **Show Me** section of element tours went
   with Diagram mode, Workshop mode's avatars and the diagram elements ([Editor tours](editor-tour.md),
@@ -694,7 +699,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
+  Start Tour, Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

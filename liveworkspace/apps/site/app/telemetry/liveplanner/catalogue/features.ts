@@ -516,14 +516,14 @@ export const MIND_OUTLINE_OPENED = opened(
 // The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
 export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
-  'The Plan tour offered, the first time someone works in Plan mode.',
+  'The Plan tour offered, the first time someone works in Plan mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'PlanTourOffer',
 );
 
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
 export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
-  'The Forms tour offered, the first time an Editor opens a Form tab.',
+  'The Forms tour offered, the first time an Editor opens a Form tab. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'FormTourOffer',
 );
 

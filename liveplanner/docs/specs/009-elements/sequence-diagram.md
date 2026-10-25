@@ -114,9 +114,10 @@ and the reply to the browser.
 
 ## Element tour
 
-The first time an Editor selects a sequence diagram, a small **Show Me** toolbar beside its selection toolbar offers the
-[Sequence tour](../007-editor/element-tours.md#the-sequence-tour): the diagram on the canvas, then the Sequence dialog,
-opened by the tour, step by step; Done closes it with the tour. While the tour runs, Escape is the tour's.
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Sequence tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.
 
 ## Share roles
 

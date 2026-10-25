@@ -155,19 +155,9 @@ export async function createDocument(page: Page, url = '/new'): Promise<string> 
   return new URL(page.url()).pathname.split('/').pop()!;
 }
 
-// Skip the Pages tour when it offers itself. It lands a BEAT AFTER the canvas does, and its card swallows pointer
-// events, so wait a short settle for it rather than checking once; a page whose tour is seen (pagesTourSeen) never
-// shows one, and this returns after the settle.
-export async function dismissQuickTour(page: Page): Promise<void> {
-  const skip = page.getByRole('button', { name: /^skip tour$/i }).first();
-  const shown = await skip
-    .waitFor({ state: 'visible', timeout: 2_000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!shown) return;
-  await skip.click();
-  await skip.waitFor({ state: 'detached' });
-}
+// Tours never start or offer themselves (docs/specs/007-editor/pages-tour.md "Where it appears": the footer's
+// Start Tour button is the one way in), so there is nothing to dismiss: kept so the specs that call it need not change.
+export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank document straight away: /new?blank=1, the document Start Blank links to
 // (docs/specs/007-editor/new-document-route.md). Its one page is still unchosen, asking What Is This Page For?

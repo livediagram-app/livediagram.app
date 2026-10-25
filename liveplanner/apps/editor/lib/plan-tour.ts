@@ -27,8 +27,8 @@ export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
 // The tracks PlanTourHost runs, on a board or a sheet (the dashboard's tour is its own).
 export type BoardSheetTrack = Exclude<PlanTourTrack, 'dashboards'>;
 
-// Each track offers itself once (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists the
-// tracks answered; `planTourSeen` counts both only for a power user (tourTrackSeen).
+// The tracks taken (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists them, for Settings and
+// for which track the Start Tour button names first; `planTourSeen` counts both only for a power user (tourTrackSeen).
 export function planTrackSeen(
   prefs: UserPreferences | null | undefined,
   track: PlanTourTrack,

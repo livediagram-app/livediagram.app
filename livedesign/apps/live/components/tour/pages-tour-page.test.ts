@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { pickTourPage } from './pages-tour-page';
 
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   isOnScreen: (selector: string) => document.querySelector(selector) !== null,
 }));
 

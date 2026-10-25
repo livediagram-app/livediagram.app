@@ -6,13 +6,42 @@ interface at a time, opening the real panels and menus as they go. The tours on 
 type editor's Show Me ([Show me](show-me.md)) and the [element tours](element-tours.md). Each tour's switch is in
 Settings' **Tours** category.
 
+## Where it appears
+
+The same way in as livediagram's ([Editor tour](../../../../livediagram/docs/specs/007-editor/editor-tour.md) "Where
+it appears"), with liveplanner's tours on it:
+
+- **The footer's Start Tour button is the one way in.** Every tour on offer is started from one button in the
+  editor's bottom bar, immediately left of Settings: a contained chip with a play glyph in a small accent disc,
+  reading **Start Boards Tour**, **Start Sheets Tour**, **Start Forms Tour** or **Start Dashboards Tour**
+  (`TourOfferButton`, `@liveworkspace/workbench/components/tour`). On a phone, and wherever its neighbours drop
+  their words, it shows the glyph alone and keeps its full name as its accessible name. With no tour on offer it is
+  not drawn. A tour never starts, prompts or offers itself on its own: no banner, no card. This replaced the offer
+  banners ("Getting started with Plan?") on 25 October 2026.
+- **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
+  `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): a surface on the tab first
+  (the Dashboards tour, while a dashboard is open), then the tab's own (the Plan tour on a board or Sheet, the
+  Forms tour on a Form tab). Between two of the same rank, the one published last wins.
+- **On offer whenever it could run**: to an Editor, once the editor is ready (hydrated, no welcome overlay), not
+  read-only, not an embed. Each tour's spec says what else it needs.
+- **It stays on offer once taken.** Finishing or skipping a tour does not take the button away: pressing it again
+  is how the tour is taken again. What a run records (`planTourTracks`, `formTourSeen`,
+  [User preferences](user-preferences.md)) only feeds Settings' **Tours** rows.
+- **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
+  while another tour is on screen does nothing (one tour at a time). A run ends completed or skipped; there is no
+  declining any more.
+- **The last card is a step card**, drawn in the same popover as the steps (`TourPopover`), with the help link and
+  the finish button. It takes no focus, so the person carries on where they were.
+- **Settings reruns** (the **Tours** rows) and the form cog's **Show Me Around** start the tour if it is on offer
+  right now; otherwise the button is there once it is.
+
 ## Retired: the Diagram tour
 
 Until 2026-10-22 the **Diagram tour** ("Getting started with Diagrams?", the welcome tour until October 2026) was
 offered on a brand-new user's first project, in Diagram mode only, and from Settings' **Diagram Tour** row. It went
 with Diagram mode ([Editor mode](editor-modes.md#retired-modes)): its host, the `/new` handoff flag that owed it
 (`liveplanner:v2:tour-pending`), its Settings row and its help article. A stored `tourSeen` preference is left in place
-and never read. A new user meets the Plan tour, which offers itself once a board or Sheet is on the tab.
+and never read. A new user meets the Plan tour, on the footer's Start Tour button once a board or Sheet is on the tab.
 
 ## Steps open what they explain
 
@@ -57,14 +86,16 @@ of their steps ask the person to try things.
   [Plan tour](../026-plan/plan-tour.md), the Forms tour, the card type editor's Show Me and the
   [element tours](element-tours.md); each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (the Plan tour's board and cards), and an anchorless card's `prepare` runs
-  too. The bookend cards' words (`TourCardCopy`) and the welcome art are props.
+  too. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the card, the spotlight, the
+  shield, the tour colours and the Start Tour button live once in `@liveworkspace/workbench/components/tour`; the
+  editor keeps only its steps and hosts.
 - The engine drives the **real UI**, not screenshots: steps have a `prepare` phase that opens the actual panel
   / dropdown / menu (clicking the same triggers a user would, or calling editor-context handlers like
   `setContextMenu`), then anchors the popover to the resulting DOM node found via `data-tour-id` attributes
   (plus the existing `data-palette-dropdown-menu` / `data-element-id` hooks).
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target
   never appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the
-  step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
+  step before; otherwise forward. If an open menu is dismissed mid-step (outside
   click), the step re-prepares itself; a target that still does not come back lets go of its spotlight, and the card
   waits centred.
 - **A target is brought into view before the step lands.** A target below the fold of a scrolling panel (a long
@@ -92,26 +123,20 @@ of their steps ask the person to try things.
 
 ## Look
 
-- **Every tour wears the active tab's colours**, as the start panels do: the card (welcome, step and outro) takes
+- **Every tour wears the active tab's colours**, as the start panels do: the card (step and last) takes
   the tab's palette (`useStartPalette`, the start panels' hook; `tour-colours.ts` reads it into CSS variables).
   Card background, border, title, copy (muted) and the eyebrow, help link, progress dots and primary buttons
   (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
 - **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
   accent.
-- **The banners (the offer and the last card) are the sign-in banner's look in the tab's hue**: a deep gradient, in
-  white, in light and dark alike. The accent keeps its hue and saturation and is deepened until white reads on it at
-  5.9:1, the gradient's far end at 7.6:1 (sign-in's own `brand-700` and `brand-800`), so the eyebrow and words, at 90%
-  white, still clear AA. A dark tab's pale accent is never painted as it is: it drew a washed-out banner with its words
-  in navy. The white **Yes** (and the last card's **Start**) takes its label in the banner's own deep colour. On a phone the
-  banner stacks, as the sign-in banner does: the words, then the buttons at the right.
 - **The spotlight** is the dim alone, with no outline in the accent; the step card wears the tab's colours.
 - This holds for every tour and the card type editor's Show Me, which all draw through `TourStage` and
   `TourPopover`.
 
 ## Share roles
 
-Only someone who may edit the tab is offered a tour (an **Editor**). A **Participant** or a **Viewer** is never
-offered one (the editor is read-only for the tours' purposes: `isReadOnly`).
+Only someone who may edit the tab sees the Start Tour button (an **Editor**). A **Participant** or a **Viewer**
+never sees it (the editor is read-only for the tours' purposes: `isReadOnly`).
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 

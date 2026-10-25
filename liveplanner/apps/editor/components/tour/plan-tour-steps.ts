@@ -1,5 +1,4 @@
-// The steps of the Plan tour (docs/specs/026-plan/plan-tour.md "The steps"): a welcome card (naming the board
-// or sheet it will show, or asking which when the tab has both), then Boards (board → a column → a card → the
+// The steps of the Plan tour (docs/specs/026-plan/plan-tour.md "The steps"): Boards (board → a column → a card → the
 // card panel → the header → card types) or Spreadsheets (sheet → cells → formulas → the toolbar → Sheet
 // Settings), then that track's outro. The tour runs on the person's own board or Sheet (the tour subject), the one
 // they see: its steps point at its body wherever it is drawn (on the canvas, maximised, filling a Board or Sheet tab),
@@ -7,8 +6,11 @@
 // steps only point, and the one thing they open is a card's panel, closed again on leaving the step.
 
 import type { BoardSheetTrack } from '@/lib/plan-tour';
-import { stepTelemetryType, type TourStepOf } from './tour-step';
-import { opensFrom } from './tour-open';
+import {
+  stepTelemetryType,
+  type TourStepOf,
+} from '@liveworkspace/workbench/components/tour/tour-step';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 export type PlanTourApi = {
   // The element ids of the tour subject: the board the Boards track shows, the Sheet the Sheets track shows.
@@ -29,9 +31,6 @@ export type PlanTourApi = {
 };
 
 export type PlanTourStep = TourStepOf<PlanTourApi>;
-
-// What the welcome card offers: the one track the tab has plan work for, or a choice when it has both.
-export type PlanTourOffer = BoardSheetTrack | 'choice';
 
 // A board's or a Sheet's body, wherever it is drawn: its canvas slot, or the canvas cover while it is maximised or
 // fills its tab. Its canvas node (`data-element-id`) is not: under a maximised or tab-filling body it is hidden.
@@ -87,30 +86,6 @@ export function needsReveal(selector: string | null): boolean {
   const r = el.getBoundingClientRect();
   return r.left < 0 || r.top < 0 || r.right > window.innerWidth || r.bottom > window.innerHeight;
 }
-
-const NEVER_CHANGES = 'We will only point things out, never change anything.';
-
-// Each welcome card names the track it offers, never the mode: a board's, a sheet's, or both on a choice card.
-const WELCOMES: Record<PlanTourOffer, PlanTourStep> = {
-  boards: {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Getting started with Boards?',
-    body: `A quick look around your board: columns, cards and the card panel? We add an example card to show you, and take it away after.`,
-  },
-  sheets: {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Getting started with Sheets?',
-    body: `A quick look around your sheet: cells, formulas and the toolbar? ${NEVER_CHANGES}`,
-  },
-  choice: {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Getting started with Boards and Sheets?',
-    body: `This tab has a board and a sheet. Which would you like a quick look at? Anything we add to show you goes when we finish.`,
-  },
-};
 
 const BOARD_STEPS: PlanTourStep[] = [
   {
@@ -221,14 +196,10 @@ const SHEET_STEPS: PlanTourStep[] = [
   },
 ];
 
-// The tour's steps: the welcome card for what is on offer, then the track's steps and outro. Before a pick on
-// a choice card the Boards track stands in, so the welcome card always has a step after it. Every board has the card
-// steps: the tour adds its own card to show them on.
-export function planTourSteps(
-  track: BoardSheetTrack,
-  { offer = track }: { offer?: PlanTourOffer } = {},
-): PlanTourStep[] {
-  return [WELCOMES[offer], ...(track === 'sheets' ? SHEET_STEPS : BOARD_STEPS)];
+// The tour's steps: the track's steps and its outro. Every board has the card steps: the tour adds its own card to
+// show them on.
+export function planTourSteps(track: BoardSheetTrack): PlanTourStep[] {
+  return track === 'sheets' ? SHEET_STEPS : BOARD_STEPS;
 }
 
 // Telemetry `type` token for a step-viewed event: 'add-cards' → 'PlanTourStepAddCards'.

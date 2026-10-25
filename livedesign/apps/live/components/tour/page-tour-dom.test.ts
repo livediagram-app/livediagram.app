@@ -4,7 +4,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addPageAnchor, closeTitlePopover, openTitlePopover, resetPageTour } from './page-tour-dom';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 afterEach(() => {
   document.body.innerHTML = '';

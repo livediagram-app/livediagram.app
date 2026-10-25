@@ -45,8 +45,8 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   list strays before it has a board. A room join or resync refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
-  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and offered only once a board or Sheet is on
-  the tab.
+  [Plan tour](plan-tour.md) is its own chunk, mounted with the editor and on the footer's Start Tour button only
+  once a board or Sheet is on the tab.
 - **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
   Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn
   in a preview (the catalogue a menu names them from carries names and lines alone), and the tab menu's CSV writer
@@ -268,8 +268,8 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 
 ## The Plan tour
 
-- The first time a person has a board or Sheet open, a guided tour offers itself on that board or Sheet, changing
-  nothing on it: [Plan tour](plan-tour.md).
+- While a person has a board or Sheet open, the footer's **Start Boards Tour** or **Start Sheets Tour** button, left
+  of Settings, runs a guided tour on that board or Sheet: [Plan tour](plan-tour.md). It never offers itself.
 
 ## Help
 

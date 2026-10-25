@@ -132,5 +132,5 @@ putting a logo onto a wireframe puts a window onto the logo's tab rather than co
 
 ## Element tour
 
-The **Tab Window tour** is offered beside the first tab window a person selects, as an Editor on an unlocked element, and walks through it on the element
+The **Tab Window tour** is on the footer's Start Tour button (**Start Tab Window Tour**) while an Editor has a tab window selected, on an unlocked element, and walks through it on the element
 itself ([Element tours](../007-editor/element-tours.md) "The Tab Window tour").

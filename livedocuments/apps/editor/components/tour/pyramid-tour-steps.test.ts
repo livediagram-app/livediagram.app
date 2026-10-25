@@ -7,7 +7,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { pyramidTourSteps } from './pyramid-tour-steps';
 
-vi.mock('./tour-dom', () => ({ waitForSelector: async () => null }));
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
+  waitForSelector: async () => null,
+}));
 
 const rows = [{ label: 'Vision' }, { label: 'Strategy' }, { label: 'Daily work' }];
 const ctxOf = (over: Partial<Parameters<typeof pyramidTourSteps>[0]> = {}) => ({

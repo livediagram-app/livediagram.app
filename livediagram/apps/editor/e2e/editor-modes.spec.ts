@@ -47,8 +47,8 @@ const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /
 async function openInMode(page: Page, name: 'diagram' | 'draw') {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // The Workshop tour offers itself 800 ms into their modes (OFFER_DELAY_MS), and their overlay
-  // takes the presses these specs make there on a slow runner; it has its own unit tests.
+  // Marks the Workshop tour seen, as these specs once had to (it offered itself until 25 October 2026); harmless now
+  // that tours only start from the footer's Start Tour button.
   await page.addInitScript(() => {
     const key = 'livediagram:user-preferences:v1';
     try {

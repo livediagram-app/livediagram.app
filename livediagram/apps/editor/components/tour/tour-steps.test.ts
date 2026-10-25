@@ -7,10 +7,10 @@ import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 // ids stay unique and the bookends stay at the ends.
 
 describe('tour steps', () => {
-  it('has unique ids with welcome first and outro last', () => {
+  it('has unique ids, a step first and the outro last', () => {
     const ids = TOUR_STEPS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(TOUR_STEPS[0]!.card).toBe('welcome');
+    expect(TOUR_STEPS[0]!.card).toBeUndefined();
     expect(TOUR_STEPS[TOUR_STEPS.length - 1]!.card).toBe('outro');
   });
 
@@ -67,7 +67,7 @@ describe('tourStepsFor', () => {
     expect(board).not.toContain('categories');
     // The rest of the tour still applies: the board has a palette, elements,
     // tabs, and a paintbrush.
-    expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
+    expect(board).toEqual(['palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
   it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
@@ -78,7 +78,7 @@ describe('tourStepsFor', () => {
     expect(count({ mobile: true, esBoard: true })).toBe(3);
   });
 
-  it('keeps the bookend cards on every surface', () => {
+  it('opens on a step and keeps the last card on every surface', () => {
     for (const opts of [
       { mobile: false, esBoard: false },
       { mobile: true, esBoard: false },
@@ -86,7 +86,7 @@ describe('tourStepsFor', () => {
       { mobile: true, esBoard: true },
     ]) {
       const steps = tourStepsFor(opts);
-      expect(steps[0]!.card).toBe('welcome');
+      expect(steps[0]!.card).toBeUndefined();
       expect(steps[steps.length - 1]!.card).toBe('outro');
     }
   });
@@ -95,11 +95,10 @@ describe('tourStepsFor', () => {
 // docs/specs/007-editor/editor-tour.md: the tour is about diagramming, named for Diagram mode, and leaves the
 // app-wide Explorer to its own help article.
 describe('the Diagram tour copy', () => {
-  it('offers a tour of diagramming and sends them off to diagram', () => {
-    const welcome = TOUR_STEPS[0]!;
+  it('starts on the palette and sends them off to diagram', () => {
+    const first = TOUR_STEPS[0]!;
     const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
-    expect(welcome.title).toBe('Getting started with Diagrams?');
-    expect(welcome.body).toMatch(/quick look at the editor/);
+    expect(first.id).toBe('palette');
     expect(outro.title).toBe("You're ready to diagram");
   });
 

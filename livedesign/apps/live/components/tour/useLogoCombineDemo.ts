@@ -15,7 +15,7 @@ import { combineElements } from '@/lib/combine/combine';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { registerCombineDemo } from './logo-combine-demo';
-import { waitForSelector } from './tour-dom';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 
 // The two shapes' size, against the page's shorter side, and how far down the page they sit: in its lower third, clear
 // of a template's own mark, which sits in the middle.

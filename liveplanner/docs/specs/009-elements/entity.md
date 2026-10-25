@@ -186,5 +186,7 @@ A Participant's element writes (`applyParticipantOp`) do not take `entityFields`
 
 ## Element tour
 
-The **Entity tour** is offered beside the first entity a person selects, as an Editor on an unlocked element, and
-walks through it on the element itself ([Element tours](../007-editor/element-tours.md) "The Entity tour").
+Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
+places this element. The Entity tour was offered from a small **Show Me** toolbar beside the first one a person
+selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
+is selected, never from a toolbar beside it.

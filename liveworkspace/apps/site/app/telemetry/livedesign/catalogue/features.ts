@@ -872,7 +872,7 @@ export const SHORTCUTS_OPENED = opened(
 // The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
 export const PAGES_TOUR_OFFERED = opened(
   'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode.',
+  'The Pages tour offered, the first time someone works in Pages mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => t === 'PagesTourOffer',
 );
 
@@ -880,7 +880,7 @@ export const PAGES_TOUR_OFFERED = opened(
 // the Visitors tab, which names the kinds.
 export const ELEMENT_TOURS_OFFERED = opened(
   'Element Tours Offered',
-  'An element tour offered beside a selected element, once per kind per visit.',
+  'An element tour offered beside a selected element, once per kind per visit. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 

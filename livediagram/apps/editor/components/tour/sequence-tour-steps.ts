@@ -1,8 +1,8 @@
 import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
-import { waitForSelector } from './tour-dom';
-import type { TourStepOf } from './tour-step';
-import { TARGET_WAIT_MS } from './useTourEngine';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import { TARGET_WAIT_MS } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Sequence tour (docs/specs/007-editor/element-tours.md "The Sequence tour"), on a selected sequence diagram: how it

@@ -351,10 +351,13 @@ number).
 ### The Forms tour
 
 A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
-`form-tour-steps.ts`): offered once, 800 ms after an Editor first has a Form tab open, never beside another tour or a
-start panel, never on a read-only, locked or embedded tab, and never before the synced preferences are in. Its welcome
-card asks "Getting started with Forms?" over a starter's picture. It does rather than points, on the person's own form,
-with an example question it takes away again:
+`form-tour-steps.ts`), started from the footer's **Start Forms Tour** button, left of Settings
+([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It is on offer while an Editor has a Form tab open
+and the editor is ready (hydrated, no start panel, not read-only, not locked, not embedded); it stays on offer once
+taken, and a press while another tour is on screen does nothing. It never starts or offers itself: until 25 October
+2026 it offered itself once, on a banner asking "Getting started with Forms?", 800 ms after a Form tab first opened.
+A press starts its first step. It does rather than points, on the person's own form, with an example question it takes
+away again:
 
 1. **Add a Question**: adds a Short Answer question, "What should we call you?", after the form's last question, and
    highlights it;
@@ -367,13 +370,15 @@ with an example question it takes away again:
    to and comes back to the form after, only when the form has one;
 7. **Share It**: opens the Share Form dialog and closes it after (skipped on a phone);
 
-then its closing card, **That Is Your Form**. The example question is added and deleted with no undo step
+then its last card, **That Is Your Form**, a step card in the tour popover. The example question is added and deleted with no undo step
 (`changeFormQuietly`), so Undo never brings it back, and the tour leaves Preview and deletes it however it ends. A step's target below the fold of a long form (the add bar) is scrolled into
 view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tour.md#mechanics)). Opening any tab but the form or where its responses go ends it as skipped.
-Seen is `formTourSeen` (synced preferences); **Show Me Around** at the foot of the cog's panel reruns it at once, seen
-or not, as Settings' Tours › **Forms Tour** does. Its events are `UI` `Opened`/`Closed` `FormTourOffer`, `Started`
-`FormTour`, `View` `FormTourStep<Step>` and `Ended` `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms
-Tour** stack.
+A run ending (completed or skipped) writes `formTourSeen` (synced preferences), which only feeds Settings' Tours ›
+**Forms Tour** row; it never hides the button. **Show Me Around** at the foot of the cog's panel starts it at once,
+taken or not, as Settings' row does, when it is on offer. Its events are `UI` `Opened` `FormTourOffer` (the first
+time the button shows it in a page load), `Started` `FormTour` (a press), `View` `FormTourStep<Step>` and `Ended`
+`FormTourCompleted`/`FormTourSkipped`, charted as the **Forms Tour** stack. `Closed` `FormTourOffer` (No on the old
+banner) is no longer sent.
 
 ## Publishing and the form link
 

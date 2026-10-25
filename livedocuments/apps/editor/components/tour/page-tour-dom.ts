@@ -2,7 +2,7 @@
 // title-bar controls, held by that page rather than the first page, and its title-bar popovers (Layout, Background),
 // opened once by pressing their real button and closed again on leaving the step.
 import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
-import { waitForSelector } from './tour-dom';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 
 /** The tour page's sheet. */
 export const pageSheet = (pageId: string) => `[data-page-id="${CSS.escape(pageId)}"]`;

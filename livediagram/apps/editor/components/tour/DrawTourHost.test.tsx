@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
 
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md "Where it appears"): on
-// entering Draw, once, on its own (the Diagram tour never runs in Draw), never with another tour,
-// and rerun from Settings.
+// The Draw tour's way in (docs/specs/023-draw-mode/draw-tour.md "Where it appears"): the footer's Start Tour button
+// offers it in Draw, taken or not; a press there (or the Settings row) starts it, never beside another tour, and it
+// never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { anyModalOpen, modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-guard';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import { clearTourPending, markTourPending } from '@/lib/tour-pending';
-import type { TourEngine } from './useTourEngine';
+import {
+  resetTourOffersForTests,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
+import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { DrawTourApi } from './draw-tour-steps';
 import { DrawTourHost } from './DrawTourHost';
 
@@ -34,7 +36,7 @@ vi.mock('./TourStage', () => ({
     return null;
   },
 }));
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   findTour: () => null,
   clickTour: () => false,
   waitForSelector: async () => null,
@@ -65,11 +67,10 @@ const editor = (over: Record<string, unknown> = {}) => {
     ...over,
   };
 };
-const offered = () => track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'DrawTourOffer');
+const startedTour = () => track.mock.calls.some((c) => c[1] === 'Started' && c[2] === 'DrawTour');
 
 beforeEach(() => {
   vi.useFakeTimers();
-  sessionStorage.clear();
   track.mockReset();
   stage.engine = null;
 });
@@ -81,126 +82,72 @@ afterEach(() => {
   setActiveTour('workshop', false);
   setActiveTour('draw', false);
   setStartPanelOpen(false);
-  clearTourPending();
-  while (anyModalOpen()) modalClosed();
+  resetTourOffersForTests();
 });
 
 describe('DrawTourHost offer', () => {
-  it('offers itself after the settle delay when the person is in Draw', () => {
+  it('offers "Draw" on the footer button in Draw, and never starts on its own', () => {
     editor();
     render(<DrawTourHost />);
+    expect(tourOffer()?.name).toBe('Draw');
     act(() => {
-      vi.advanceTimersByTime(799);
+      vi.advanceTimersByTime(5000);
     });
-    expect(offered()).toBe(false);
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(offered()).toBe(true);
+    expect(startedTour()).toBe(false);
+    expect(stage.engine?.active).toBe(false);
+  });
+
+  it('starts from the button, linking to its article', () => {
+    editor();
+    render(<DrawTourHost />);
+    act(() => tourOffer()!.start());
+    expect(startedTour()).toBe(true);
     expect(stage.engine?.active).toBe(true);
     expect(stage.helpHref).toBe('/help/canvas/draw-mode/');
   });
 
-  // docs/specs/007-editor/editor-tour.md "Dialogs come first".
-  it('waits while a dialog is open, then offers once it closes', () => {
-    editor();
-    act(() => modalOpened());
+  it('stays on offer once seen, so it can be taken again', () => {
+    editor({ userPreferences: { tourSeen: true, drawTourSeen: true } });
     render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    expect(setUserPreferences).not.toHaveBeenCalled();
-    act(() => modalClosed());
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  it('waits for the person to enter Draw', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    const { rerender } = render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(tourOffer()?.name).toBe('Draw');
   });
 
   it.each([
-    ['seen', { userPreferences: { tourSeen: true, drawTourSeen: true } }],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
+    ['in Diagram', { editorMode: { mode: 'diagram' } }],
     ['in Workshop', { editorMode: { mode: 'workshop' } }],
-    ['before the synced preferences are in', { prefsSettled: false }],
-  ])('makes no offer when %s', (_why, over) => {
+  ])('offers nothing when %s', (_why, over) => {
     editor(over);
     render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
   });
 
-  // docs/specs/023-draw-mode/draw-tour.md "Where it appears": on its own, whatever other tours.
-  it('offers itself to someone who has not done the Diagram tour, even with its handoff owed', () => {
-    markTourPending();
-    editor({ userPreferences: {} });
-    render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-    expect(stage.engine?.hasWelcome).toBe(true);
-  });
-
-  it('waits while the Diagram tour is on screen, then follows it', () => {
-    setActiveTour('welcome', true);
+  // docs/specs/007-editor/start-diagramming.md "The tours wait".
+  it('offers nothing while a start panel is on screen', () => {
+    act(() => setStartPanelOpen(true));
     editor();
     render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('welcome', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(tourOffer()).toBeNull();
+    act(() => setStartPanelOpen(false));
+    expect(tourOffer()?.name).toBe('Draw');
   });
 
-  it('never runs beside the Workshop tour', () => {
+  it('never starts beside another tour', () => {
     setActiveTour('workshop', true);
     editor();
     render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
+    act(() => tourOffer()!.start());
+    expect(startedTour()).toBe(false);
   });
 
   it('reruns from Settings in Draw', () => {
     editor({ userPreferences: { tourSeen: true, drawTourSeen: true } });
-    const { rerender } = render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<DrawTourHost />);
+    render(<DrawTourHost />);
     act(() => requestDrawTourRelaunch());
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
+    expect(startedTour()).toBe(true);
   });
 
   it('ignores a rerun outside Draw', () => {
@@ -210,7 +157,7 @@ describe('DrawTourHost offer', () => {
     act(() => {
       vi.advanceTimersByTime(2000);
     });
-    expect(offered()).toBe(false);
+    expect(startedTour()).toBe(false);
   });
 });
 
@@ -218,24 +165,20 @@ describe('DrawTourHost end', () => {
   const start = () => {
     editor();
     const r = render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
+    act(() => tourOffer()!.start());
     return r;
   };
 
-  it('declining marks it seen and sends the decline', () => {
+  it('skipping marks it seen and sends the skip', () => {
     start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, drawTourSeen: true }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'DrawTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawTourSkipped');
   });
 
-  it('starting runs the steps and completing sends the completion', async () => {
+  it('runs the steps and completing sends the completion', async () => {
     start();
-    act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'DrawTour');
-    // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
+    // Every anchored step finds no target in this harness and is skipped, so it runs to the end.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(30000);
     });
@@ -250,25 +193,8 @@ describe('DrawTourHost end', () => {
     expect(stage.engine!.countableSteps).toBe(4);
   });
 
-  // docs/specs/007-editor/start-diagramming.md "The tours wait".
-  it('waits while a start panel is on screen', () => {
-    act(() => setStartPanelOpen(true));
-    editor();
-    render(<DrawTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(offered()).toBe(false);
-    act(() => setStartPanelOpen(false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
   it('ends as skipped when the person leaves Draw or the tab', () => {
     const r = start();
-    act(() => stage.engine!.next());
     editor({ editorMode: { mode: 'diagram' } });
     r.rerender(<DrawTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DrawTourSkipped');

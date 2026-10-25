@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 // The Pages tour's tracks (docs/specs/007-editor/pages-tour.md "The steps"): one per page kind, as Show Me
-// runs them and behind a welcome card as the tour offers them, left without a control that is not on screen.
+// runs them, left without a control that is not on screen.
 import { describe, expect, it } from 'vitest';
 import type { PageTourApi } from './page-tour-api';
-import { pagesTourSteps, pageTourSteps, shownPageTourSteps, stepShown } from './page-tour-steps';
+import { pageTourSteps, shownPageTourSteps, stepShown } from './page-tour-steps';
 import { pagesTourStepTelemetryType } from './PagesTourHost';
 
 const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
@@ -53,10 +53,10 @@ describe('the tracks', () => {
 });
 
 describe('what the tour starts with', () => {
-  it('opens the offer on the track’s own welcome card', () => {
-    const steps = pagesTourSteps('logo', api, everything);
-    expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
-    expect(steps[0]!.title).toBe('Getting started with Logos?');
+  it('opens on the track’s first step, its last card closing it', () => {
+    const steps = shownPageTourSteps('logo', api, everything);
+    expect(steps[0]!.card).toBeUndefined();
+    expect(steps.at(-1)!.card).toBe('outro');
   });
 
   it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {

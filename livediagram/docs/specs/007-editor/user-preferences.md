@@ -269,26 +269,25 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
-  // was until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as Tours › "Diagram Tour" (inverted); turning it on and closing
-  // Settings replays the tour. Missing / undefined === not seen.
+  // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
+  // was until October 2026). True once a run has ended (completed or skipped; until 25 October 2026
+  // also declined, when it hid the offer). It no longer hides the footer's Start Tour button: it only
+  // feeds Settings' Tours › "Diagram Tour" row (inverted); turning it on and closing
+  // Settings reruns the tour when it is on offer. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
+  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
   // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
   workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
+  // The Draw tour's taken record (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
+  // (until 25 October 2026: whose offer was answered, Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on; written by its preset.
+  // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
   // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
@@ -752,34 +751,36 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**, each with a line saying where it offers itself and a **Learn more**
-  to its article, under one **Offer Again** section note: each tour offers
-  itself once; switch one back on and close Settings to take it again, straight
-  away if you are in its mode, otherwise the next time you are. (The tours used
+  Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
+  to its article, under one **Offer Again** section note: switch one back on
+  and close Settings to take it again, straight away if it is on offer where you
+  are, otherwise from the footer's Start Tour button when you get there. (Until
+  25 October 2026 each tour offered itself once, and the switch decided whether
+  it would offer itself again; now every tour is on the Start Tour button whenever
+  it could run, taken or not, and the switch is a record of whether it was taken,
+  [Diagram tour](editor-tour.md) "Where it appears".) (The tours used
   to be an Onboarding Tutorials grid of five switches inside
   Accessibility, where nobody looked for them: a tour is not an accessibility
-  setting.) Every switch is inverted: on means "offer me this tour", the
+  setting.) Every switch is inverted: on means "not taken yet", the
   preference records "already seen", and its telemetry tokens still describe the
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
   **Diagram Tour** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
-  against the stored `tourSeen`. Because `tourSeen !== true` is necessary but NOT sufficient for the offer
-  (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
-  on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
-  on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
-  for a Diagram tab. **Workshop Tour** is inverted against
+  against the stored `tourSeen`. Turning it on from off and closing the dialog relaunches the tour in place
+  on a Diagram tab where it is on offer (`livediagram:tour-relaunch`); on a tab in another mode it does
+  nothing, and the button offers it on a Diagram tab. (Until 25 October 2026 closing with the switch on also
+  marked the per-tab pending flag the offer needed; the flag is gone.) **Workshop Tour** is inverted against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)) and **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)); none needs a handoff flag, so closing the dialog with one turned on
-  only reruns it when you are in its mode.
+  ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
 
   Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
-  as a tour of several tracks (`tourTracksSwitch`, `apps/editor/lib/tour-tracks.ts`: on while any track is owed, off
-  answers every track, on forgets every answer) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
+  as a tour of several tracks (`tourTracksSwitch`, `apps/editor/lib/tour-tracks.ts`: on while any track is not yet taken, off
+  marks every track taken, on forgets every run) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
   kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: the offer shows the next time such an element is selected. A category may mark any section
+  need no relaunch: the Start Tour button offers one whenever such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 
   **Toggle groups.** Several related switches that share one description are

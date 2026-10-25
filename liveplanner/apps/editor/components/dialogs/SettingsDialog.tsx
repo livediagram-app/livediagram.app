@@ -147,8 +147,8 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Boards Tour" and "Sheets Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the
-  // Plan tour offers itself on entering Plan; turning a track's row on from off reruns it in place.
+  // Tours › "Boards Tour" and "Sheets Tour" (docs/specs/026-plan/plan-tour.md): turning a track's row on from off
+  // reruns the Plan tour in place when it is on the footer's Start Tour button.
   const planOwed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(settings, t));
   const planOwedAtOpen = useRef(planOwed);
   // Tours › "Forms Tour" (docs/specs/030-forms/forms.md "The Forms tour"): as the Plan tour's.

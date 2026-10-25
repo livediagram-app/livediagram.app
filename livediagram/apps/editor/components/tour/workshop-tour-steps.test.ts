@@ -7,9 +7,8 @@ import {
 
 // The Workshop tour's steps (docs/specs/012-collaboration/workshop-tour.md "The steps").
 describe('Workshop tour steps', () => {
-  it('runs welcome, six steps, then the outro, in the spec order', () => {
+  it('runs six steps, then the outro, in the spec order', () => {
     expect(WORKSHOP_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'welcome',
       'collaborate',
       'timer',
       'vote',
@@ -18,7 +17,7 @@ describe('Workshop tour steps', () => {
       'share',
       'outro',
     ]);
-    expect(WORKSHOP_TOUR_STEPS[0]!.card).toBe('welcome');
+    expect(WORKSHOP_TOUR_STEPS[0]!.card).toBeUndefined();
     expect(WORKSHOP_TOUR_STEPS.at(-1)!.card).toBe('outro');
   });
 
@@ -50,9 +49,9 @@ describe('Workshop tour steps', () => {
     expect(workshopTourSteps({ canShare: true })).toHaveLength(WORKSHOP_TOUR_STEPS.length);
   });
 
-  it('always opens on its own welcome card', () => {
-    expect(workshopTourSteps({ canShare: true })[0]!.card).toBe('welcome');
-    expect(workshopTourSteps({ canShare: false })[0]!.card).toBe('welcome');
+  it('opens on its first step, with no welcome card, shared or not', () => {
+    expect(workshopTourSteps({ canShare: true })[0]!.id).toBe('collaborate');
+    expect(workshopTourSteps({ canShare: false })[0]!.id).toBe('collaborate');
   });
 
   it('names its telemetry by step', () => {

@@ -113,7 +113,7 @@ and the reply to the browser.
 
 ## Element tour
 
-The first time an Editor selects a sequence diagram, a small **Show Me** toolbar beside its selection toolbar offers the
+While an Editor has a sequence diagram selected, the footer's **Start Sequence Tour** button offers the
 [Sequence tour](../007-editor/element-tours.md#the-sequence-tour): the diagram on the canvas, then the Sequence dialog,
 opened by the tour, step by step; Done closes it with the tour. While the tour runs, Escape is the tour's.
 

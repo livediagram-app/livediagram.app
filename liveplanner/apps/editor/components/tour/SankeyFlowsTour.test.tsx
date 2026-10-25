@@ -9,8 +9,8 @@ import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the project" here, and there is nothing to scroll.
-vi.mock('./tour-dom', async (actual) => ({
-  ...(await actual<typeof import('./tour-dom')>()),
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/components/tour/tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
 }));
 afterEach(() => {

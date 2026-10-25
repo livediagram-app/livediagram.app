@@ -31,10 +31,8 @@ import {
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
-import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 import { NewSaveSwitch } from './NewSaveSwitch';
-import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
@@ -135,10 +133,6 @@ export default function NewDocumentPage() {
   // bfcache listener, which must stand down once this document IS the editor.
   const [openedId, setOpenedId] = useState<string | null>(null);
   const handedOff = useRef(false);
-  // How many documents the user owns, before this visit's create. Reported by RecentDocumentsCard's
-  // fetch and awaited by the create; gates the interactive tour's welcome offer
-  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
-  const documentCount = useDocumentCount();
   // Set when the create fails: the card's copy and action (create-failure.ts). Shows instead of
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
@@ -334,11 +328,6 @@ export default function NewDocumentPage() {
         debugLog(`[new] background identity failed: ${String(err)}`),
       );
     }
-    // Read before the create, so the new document is not in it. A cloud create has just settled identity, so the
-    // count's fetch is in flight: wait for it rather than miss the tour on a quick pick. This Browser opens at once
-    // and takes the count only if it is already in.
-    const priorDocuments = await documentCount.settled(offline ? 0 : undefined);
-
     // The template's tab, or one blank tab (lib/new-document-content.ts).
     const tab = newDocumentTab({ templateKind, themeId, tabId });
     try {
@@ -391,13 +380,6 @@ export default function NewDocumentPage() {
     // team sends (docs/specs/017-telemetry/telemetry.md), only reached once the create, and so
     // its placement, succeeded.
     if (!offline && settings.teamId) track('Team', 'Added', 'Document');
-    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
-    // first document gets the tour's welcome offer once the editor opens —
-    // handed across the hard navigation via a sessionStorage flag. The
-    // editor gates the offer on the synced `tourSeen` preference.
-    if (priorDocuments === 0) {
-      markTourPending();
-    }
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
@@ -433,9 +415,7 @@ export default function NewDocumentPage() {
   // Start Blank fast path (docs/specs/007-editor/new-document-route.md): fire the Skip-defaults create on mount.
   // commitNewDocument waits out the identity bootstrap itself (resolveSelf),
   // so firing immediately is safe. The ref makes it once-only under Strict
-  // Mode's double-invoked effects. Note the tour offer (docs/specs/007-editor/editor-tour.md) can't queue
-  // here: the create fires before RecentDocumentsCard reports a count — which
-  // is the behaviour we want for someone who asked to just draw.
+  // Mode's double-invoked effects.
   const bypassFired = useRef(false);
   const fireBypass = useEffectEvent((kind: TemplateKind) => {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
@@ -554,18 +534,12 @@ export default function NewDocumentPage() {
         </div>
         {/* The right rail beside the centred wizard (desktop-only, xl+):
             returning users get "Jump Back In" (docs/specs/007-editor/new-document-route.md, hidden with no
-            documents yet). Its fetch also reports the document count that
-            gates the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md). The
-            guided-tour sample card that used to sit under it was removed
-            when the interactive tour superseded it. */}
+            documents yet). */}
         <div
           data-wizard-only
           className="pointer-events-none absolute inset-y-0 right-4 z-10 hidden items-center xl:flex 2xl:right-10"
         >
-          <RecentDocumentsCard
-            ownerId={self.id === 'pending' ? null : self.id}
-            onCount={documentCount.report}
-          />
+          <RecentDocumentsCard ownerId={self.id === 'pending' ? null : self.id} />
         </div>
       </main>
     </div>

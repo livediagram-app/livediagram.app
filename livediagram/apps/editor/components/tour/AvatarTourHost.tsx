@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -8,7 +8,6 @@ import { AVATAR_TOUR_RELAUNCH_EVENT } from '@/lib/avatar-tour';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import {
@@ -17,24 +16,23 @@ import {
   tidyAvatarTour,
   type AvatarTourApi,
 } from './avatar-tour-steps';
-import { AvatarTourArt } from './AvatarTourArt';
 import { TourStage } from './TourStage';
-import { useTourEngine, type TourOutcome } from './useTourEngine';
-
-// The settle delay before the offer, as the other tours'.
-export const OFFER_DELAY_MS = 800;
+import {
+  useTourEngine,
+  type TourOutcome,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 const AVATAR_TOUR_COPY = {
-  welcomeEyebrow: 'Avatar tour',
   helpHref: '/help/selection-modes/avatar-mode/',
 };
 
 const NO_API: AvatarTourApi = {};
 
 // Orchestrates the Avatar tour (docs/specs/008-canvas/avatar-tour.md). Mounted in EditorView once Avatar mode has
-// been entered; renders nothing until a person who has not seen it is in the mode with an editor they can use, no
-// other tour is on screen and the settle delay has passed, or the Settings row asks for a rerun. Mirrors
-// DrawTourHost, with two differences: it is offered whatever the role (the mode is a Viewer's too, and a read-only
+// been entered. While the person is in the mode, it offers the tour on the footer's Start Tour button ("Start Avatar
+// Tour", ahead of the mode's own tour); a press there, or the Settings row, starts it. Mirrors DrawTourHost, with two
+// differences: it is offered whatever the role (the mode is a Viewer's too, and a read-only
 // canvas is its normal state), and a Viewer's tour has no Say Something step.
 export function AvatarTourHost() {
   const ctx = useEditorContext();
@@ -55,34 +53,16 @@ export function AvatarTourHost() {
   });
   const { active } = engine;
 
-  // One tour at a time: publish this one while it is on screen, and wait while another is.
+  // One tour at a time: publish this one while it is on screen, and start nothing while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'avatar';
-  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
-  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('avatar', active);
   }, [active]);
 
   const inAvatar = ctx.canvasTool === 'avatar';
-  const seen = ctx.userPreferences?.avatarTourSeen === true;
   const startPanelOpen = useStartPanelOpen();
-  const canWork =
-    ctx.hydrated &&
-    !startPanelOpen &&
-    // The synced preferences are in, so an answer given on another device holds here too.
-    ctx.prefsSettled &&
-    !ctx.anyWelcomeOpen &&
-    !ctx.embedMode;
-
-  // Armed on entering Avatar mode (or mounting in it), and by a relaunch; disarmed on leaving it or once offered.
-  const [armed, setArmed] = useState(false);
-  const [wasIn, setWasIn] = useState(false);
-  if (inAvatar !== wasIn) {
-    setWasIn(inAvatar);
-    setArmed(inAvatar);
-  }
-  if (armed && seen) setArmed(false);
+  const canWork = ctx.hydrated && !startPanelOpen && !ctx.anyWelcomeOpen && !ctx.embedMode;
 
   const endTour = (outcome: TourOutcome) => {
     tidyAvatarTour();
@@ -94,35 +74,41 @@ export function AvatarTourHost() {
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     debugLog('[avatar-tour] end', { outcome });
-    if (outcome === 'declined') track('UI', 'Closed', 'AvatarTourOffer');
-    else
-      track('UI', 'Ended', outcome === 'completed' ? 'AvatarTourCompleted' : 'AvatarTourSkipped');
+    track('UI', 'Ended', outcome === 'completed' ? 'AvatarTourCompleted' : 'AvatarTourSkipped');
   };
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  useEffect(() => {
-    if (!armed || active || seen) return;
-    if (!inAvatar || !canWork || otherTour || modalOpen) return;
-    const t = setTimeout(() => {
-      setArmed(false);
-      debugLog('[avatar-tour] offer');
-      engineRef.current.start();
-      track('UI', 'Opened', 'AvatarTourOffer');
-    }, OFFER_DELAY_MS);
-    return () => clearTimeout(t);
-  }, [armed, active, seen, inAvatar, canWork, otherTour, modalOpen, engineRef]);
+  const start = () => {
+    if (active || otherTour) return;
+    debugLog('[avatar-tour] start');
+    engineRef.current.start();
+  };
+  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
+  // again). The tour never starts on its own.
+  useOfferTour(
+    'avatar',
+    inAvatar && canWork
+      ? {
+          name: 'Avatar',
+          rank: TOUR_OFFER_RANK.tool,
+          start,
+          onShown: () => track('UI', 'Opened', 'AvatarTourOffer'),
+        }
+      : null,
+  );
 
-  // Settings rerun (Tours › "Avatar Tour", turned on from off + closed): offers again in Avatar mode, and otherwise
-  // the next time the person enters it (the row has cleared the preference).
-  const inAvatarRef = useLatest(inAvatar);
+  // Settings rerun (Tours › "Avatar Tour", turned on from off + closed): runs the tour in Avatar mode; elsewhere the
+  // footer button is there when the person is.
+  const startRef = useLatest(start);
+  const canStartRef = useLatest(inAvatar && canWork);
   useEffect(() => {
     const onRelaunch = () => {
-      if (inAvatarRef.current) setArmed(true);
+      if (canStartRef.current) startRef.current();
     };
     window.addEventListener(AVATAR_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(AVATAR_TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, [inAvatarRef]);
+  }, [canStartRef, startRef]);
 
   // Ends as skipped when the tour can no longer run where it started: Avatar mode left, or another tab opened.
   const activeId = ctx.activeTab.id;
@@ -141,12 +127,5 @@ export function AvatarTourHost() {
 
   useEffect(() => () => setActiveTour('avatar', false), []);
 
-  return (
-    <TourStage
-      engine={engine}
-      ariaPrefix="Avatar tour"
-      copy={AVATAR_TOUR_COPY}
-      welcomeArt={<AvatarTourArt />}
-    />
-  );
+  return <TourStage engine={engine} ariaPrefix="Avatar tour" copy={AVATAR_TOUR_COPY} />;
 }

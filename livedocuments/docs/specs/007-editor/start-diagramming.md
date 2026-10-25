@@ -110,8 +110,9 @@ folders](../013-workspace/default-folders.md) "A template picked after creation"
 
 ## The tour waits
 
-The Pages tour's welcome never lands over a start: while one is on screen the tour holds its offer, and makes it
-once a template is picked or the start closed (`start-panel-open.ts`, `useStartPanelOpen`).
+The Pages tour never runs over a start: while one is on screen the tour is not on the footer's Start Tour button, and
+it comes onto the button once a template is picked or the start closed (`start-panel-open.ts`, `useStartPanelOpen`).
+The element tours wait the same way.
 
 ## Search handed over
 

@@ -1,10 +1,13 @@
-// The steps of the Draw tour (docs/specs/023-draw-mode/draw-tour.md "The steps"): a welcome card, the dock's Drawing
+// The steps of the Draw tour (docs/specs/023-draw-mode/draw-tour.md "The steps"): the dock's Drawing
 // tools, the Quick Style panel, the dock's Shapes and Settings, then the outro. It places nothing; the one thing it
 // changes, a marker picked up to show Quick Style, it puts back down.
 
-import { findTour, waitForTour } from './tour-dom';
-import { stepTelemetryType, type TourStepOf } from './tour-step';
-import { opensFrom } from './tour-open';
+import { findTour, waitForTour } from '@liveworkspace/workbench/components/tour/tour-dom';
+import {
+  stepTelemetryType,
+  type TourStepOf,
+} from '@liveworkspace/workbench/components/tour/tour-step';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 const dockItem = (key: string) =>
   document.querySelector<HTMLElement>(`[data-whiteboard-dock] [data-dock-item="${key}"]`);
@@ -18,12 +21,6 @@ export type DrawTourApi = Record<string, never>;
 export type DrawTourStep = TourStepOf<DrawTourApi>;
 
 export const DRAW_TOUR_STEPS: DrawTourStep[] = [
-  {
-    id: 'welcome',
-    card: 'welcome',
-    title: 'Getting started with Draw?',
-    body: 'A quick look at the pens, shapes and tools?',
-  },
   {
     id: 'drawing-tools',
     title: 'Pens and Tools',

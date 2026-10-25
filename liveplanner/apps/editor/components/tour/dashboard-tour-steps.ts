@@ -1,8 +1,8 @@
 // The steps of Show Me in Dashboard Settings (docs/specs/026-plan/plan-tabs.md "Show Me"): a tour of arranging and
 // filling a dashboard, run on the page itself. Each step rings a real part of the page, which stays usable, so the
 // Editor can fill a slot or drag a divider while the step is up.
-import type { TourStepOf } from './tour-step';
-import { opensFrom } from './tour-open';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 // Nothing to drive: the steps only point, and the slot step shows the slot's hover-only controls itself.
 export type DashboardTourApi = null;
@@ -75,26 +75,13 @@ const OUTRO: DashboardTourStep = {
   body: 'Run this again from Dashboard Settings › Show Me.',
 };
 
-// The offer, the first time an Editor has a dashboard open (DashboardTour.tsx, docs/specs/026-plan/plan-tour.md).
-const WELCOME: DashboardTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with Dashboards?',
-  body: 'A quick look at rows of slots, filling them, and the dashboard’s settings? Nothing on it changes.',
-};
-
-// The steps for this dashboard: Fill only with an empty slot to fill, the slot step only with a filled one; led by
-// the offer when the tour offers itself (not when Show Me runs it).
-export function dashboardTourSteps(
-  { hasEmpty, hasFilled }: { hasEmpty: boolean; hasFilled: boolean },
-  offered = false,
-): DashboardTourStep[] {
-  return [
-    ...(offered ? [WELCOME] : []),
-    ROWS,
-    ...(hasEmpty ? [FILL] : []),
-    ...(hasFilled ? [SLOT] : []),
-    SETTINGS,
-    OUTRO,
-  ];
+// The steps for this dashboard: Fill only with an empty slot to fill, the slot step only with a filled one.
+export function dashboardTourSteps({
+  hasEmpty,
+  hasFilled,
+}: {
+  hasEmpty: boolean;
+  hasFilled: boolean;
+}): DashboardTourStep[] {
+  return [ROWS, ...(hasEmpty ? [FILL] : []), ...(hasFilled ? [SLOT] : []), SETTINGS, OUTRO];
 }

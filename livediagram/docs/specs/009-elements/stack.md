@@ -72,5 +72,5 @@ changes.
 
 ## Element tour
 
-The **Stack tour** is offered beside the first stack a person selects, as an Editor on an unlocked element, and walks through it on the element
-itself ([Element tours](../007-editor/element-tours.md) "The Stack tour").
+The **Stack tour** is on the footer's **Start Stack Tour** button while a stack is selected, for an Editor on an unlocked element, and walks through
+it on the element itself ([Element tours](../007-editor/element-tours.md) "The Stack tour").

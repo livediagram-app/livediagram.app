@@ -2,7 +2,7 @@
 // drawn pages as the tour is offered.
 import type { PageKind } from '@livedocuments/document';
 import { pageCog } from './page-tour-dom';
-import { isOnScreen } from './tour-dom';
+import { isOnScreen } from '@liveworkspace/workbench/components/tour/tour-dom';
 
 export type TourPage = { pageId: string; kind: PageKind };
 

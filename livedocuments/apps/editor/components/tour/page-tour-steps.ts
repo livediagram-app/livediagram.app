@@ -1,12 +1,12 @@
-// A page kind's track (docs/specs/007-editor/pages-tour.md "The steps"): its steps as Show Me runs them, or behind
-// its welcome card as the Pages tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
+// A page kind's track (docs/specs/007-editor/pages-tour.md "The steps"): its steps whose controls are on screen, as Show Me
+// and the Pages tour run them. Loaded at the offer or the press (`import('./page-tour-steps')`),
 // so the copy stays out of the editor's first load.
 import type { PageKind } from '@livedocuments/document';
-import { ARTICLE_WELCOME, articleTourSteps } from './article-tour-steps';
-import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
+import { articleTourSteps } from './article-tour-steps';
+import { infographicTourSteps } from './infographic-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
-import { SLIDE_WELCOME, slideTourSteps } from './slide-tour-steps';
-import { stepTelemetryType } from './tour-step';
+import { slideTourSteps } from './slide-tour-steps';
+import { stepTelemetryType } from '@liveworkspace/workbench/components/tour/tour-step';
 
 // The DOM tidy-up a page's tour needs, loaded with its steps so neither sits in the editor's first load.
 export { resetPageTour, tidyPageTour } from './page-tour-dom';
@@ -22,12 +22,6 @@ export function pageTourSteps(kind: PageKind): PageTourStep[] {
       return infographicTourSteps();
   }
 }
-
-const WELCOMES: Record<PageKind, PageTourStep> = {
-  slide: SLIDE_WELCOME,
-  infographic: INFOGRAPHIC_WELCOME,
-  article: ARTICLE_WELCOME,
-};
 
 /** Whether a step's control is on screen as the tour starts (spec "Filtering"): what it needs to open, else its own
  *  anchor. An anchorless card always is. `exists` says whether a selector is on screen. */
@@ -51,15 +45,6 @@ export function shownPageTourSteps(
   exists: (selector: string) => boolean,
 ): PageTourStep[] {
   return pageTourSteps(kind).filter((step) => stepShown(step, api, exists));
-}
-
-/** The offered track: its welcome card, then its steps whose controls are on screen. */
-export function pagesTourSteps(
-  kind: PageKind,
-  api: PageTourApi,
-  exists: (selector: string) => boolean,
-): PageTourStep[] {
-  return [WELCOMES[kind], ...shownPageTourSteps(kind, api, exists)];
 }
 
 /** The telemetry `type` of a step view: ('slide', 'add-page') → 'PagesTourStepSlideAddPage'. */

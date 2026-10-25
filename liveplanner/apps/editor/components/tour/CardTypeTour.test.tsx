@@ -11,8 +11,8 @@ vi.mock('@/components/start/useStartPalette', async () => {
   return { useStartPalette: () => planPalette('light') };
 });
 // jsdom lays nothing out, so "on screen" is just "in the project" here.
-vi.mock('./tour-dom', async (actual) => ({
-  ...(await actual<typeof import('./tour-dom')>()),
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/components/tour/tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
 }));
 afterEach(cleanup);
@@ -74,6 +74,6 @@ describe('Show Me', () => {
       undefined,
     ]);
     expect(CARD_TYPE_TOUR_STEPS.at(-1)?.card).toBe('outro');
-    expect(CARD_TYPE_TOUR_STEPS.some((s) => s.card === 'welcome')).toBe(false);
+    expect(CARD_TYPE_TOUR_STEPS.filter((s) => s.card)).toHaveLength(1);
   });
 });

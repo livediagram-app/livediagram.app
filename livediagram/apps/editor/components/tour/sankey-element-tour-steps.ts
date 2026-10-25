@@ -7,9 +7,9 @@ import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-f
 import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from './sankey-flows-tour-steps';
 import { inTheMenu } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
-import { waitForSelector } from './tour-dom';
-import type { TourStepOf } from './tour-step';
-import { TARGET_WAIT_MS } from './useTourEngine';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
+import { TARGET_WAIT_MS } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Sankey tour runs on the shared element tour facade.

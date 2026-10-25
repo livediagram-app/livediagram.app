@@ -139,7 +139,7 @@ export const TOUR_OFFER_DISMISSED = chart(
   'UI',
   'Closed',
   'Tours Declined',
-  'The Diagram tour (the welcome tour until October 2026) turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
+  'The Diagram tour (the welcome tour until October 2026) turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves). (The editor records this decline as closing the offer.)',
   { types: ['TourOffer'], rising: 'neutral' },
 );
 
@@ -200,7 +200,7 @@ export const WORKSHOP_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Workshop Tours Declined',
-  'The Workshop tour turned down on its welcome card, before it started.',
+  'The Workshop tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
   { types: ['WorkshopTourOffer'], rising: 'neutral' },
 );
 
@@ -266,7 +266,7 @@ export const DRAW_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Draw Tours Declined',
-  'The Draw tour turned down on its welcome card, before it started.',
+  'The Draw tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
   { types: ['DrawTourOffer'], rising: 'neutral' },
 );
 
@@ -323,7 +323,7 @@ export const AVATAR_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Avatar Tours Declined',
-  'The Avatar tour turned down on its welcome card, before it started.',
+  'The Avatar tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
   { types: ['AvatarTourOffer'], rising: 'neutral' },
 );
 
@@ -487,7 +487,7 @@ export const DASHBOARD_TOUR_DECLINED = chart(
   'UI',
   'Closed',
   'Dashboards Tours Declined',
-  'The Dashboards tour turned down on its welcome card, before it started.',
+  'The Dashboards tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
   { types: ['DashboardTourOffer'], rising: 'neutral' },
 );
 

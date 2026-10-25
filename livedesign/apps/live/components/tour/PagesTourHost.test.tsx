@@ -1,17 +1,22 @@
 // @vitest-environment jsdom
 
-// The Pages tour's offer (docs/specs/007-editor/pages-tour.md "Where it appears"): on entering Pages,
-// once per page kind, never with another tour, and rerun from Settings. The tour page's kind picks the track.
+// The Pages tour's way in (docs/specs/007-editor/pages-tour.md "Where it appears"): the footer's Start Tour button
+// offers it in Pages, taken or not; a press there (or the Settings row) starts it on the page on screen, never beside
+// another tour, and it never starts on its own. The tour page's kind picks the track.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@/components/start/start-panel-open';
-import type { TourEngine } from './useTourEngine';
+import {
+  resetTourOffersForTests,
+  tourOffer,
+} from '@liveworkspace/workbench/components/tour/tour-offer';
+import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
 import type { PageTourApi } from './page-tour-api';
 import type { TourPage } from './pages-tour-page';
-// Loaded at the offer: imported here so the fake timers never wait on the module loader.
+// Loaded at the press: imported here so the fake timers never wait on the module loader.
 import './page-tour-steps';
 import { PagesTourHost } from './PagesTourHost';
 
@@ -20,25 +25,27 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 const stage = vi.hoisted(() => ({
   engine: null as TourEngine<PageTourApi> | null,
   helpHref: '' as string | undefined,
-  eyebrow: '' as string | undefined,
+  ariaPrefix: '' as string | undefined,
 }));
 vi.mock('./TourStage', () => ({
   TourStage: ({
     engine,
     copy,
+    ariaPrefix,
   }: {
     engine: TourEngine<PageTourApi>;
-    copy: { helpHref?: string; welcomeEyebrow?: string };
+    copy: { helpHref?: string };
+    ariaPrefix?: string;
   }) => {
     stage.engine = engine;
     stage.helpHref = copy.helpHref;
-    stage.eyebrow = copy.welcomeEyebrow;
+    stage.ariaPrefix = ariaPrefix;
     return null;
   },
 }));
 // What is on screen, by a part of each selector: everything, less what a test hides.
 const dom = vi.hoisted(() => ({ hidden: [] as string[], page: null as TourPage | null }));
-vi.mock('./tour-dom', () => ({
+vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
   findTour: () => null,
   clickTour: () => false,
   isOnScreen: (selector: string) => !dom.hidden.some((part) => selector.includes(part)),
@@ -81,17 +88,19 @@ const editor = (over: Record<string, unknown> = {}) => {
     ...over,
   };
 };
-// Past the settle delay, and the steps' load behind it.
-const wait = (ms: number) => act(async () => vi.advanceTimersByTimeAsync(ms));
-const offered = () => track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'PagesTourOffer');
+const startedTour = () => track.mock.calls.some((c) => c[1] === 'Started' && c[2] === 'PagesTour');
+// A press on the footer button, and the track's steps loading behind it.
+const press = async () => {
+  act(() => tourOffer()!.start());
+  await act(async () => vi.advanceTimersByTimeAsync(0));
+};
 
 beforeEach(() => {
   vi.useFakeTimers();
-  sessionStorage.clear();
   track.mockReset();
   dom.hidden = [];
   dom.page = { pageId: 'p1', kind: 'wireframe' };
-  // The + after the last page, read from the design for where the Add step points.
+  // The + after the last page, read from the document for where the Add step points.
   const plus = document.createElement('button');
   plus.dataset.tourId = 'add-page';
   document.body.append(plus);
@@ -105,98 +114,104 @@ afterEach(() => {
   setActiveTour('element', false);
   setActiveTour('pages', false);
   setStartPanelOpen(false);
+  resetTourOffersForTests();
 });
 
 describe('PagesTourHost offer', () => {
-  it('offers itself after the settle delay when the person is in Pages', async () => {
+  it('offers "Pages" on the footer button in Pages, and never starts on its own', async () => {
     editor();
     render(<PagesTourHost />);
-    act(() => {
-      vi.advanceTimersByTime(799);
-    });
-    expect(offered()).toBe(false);
-    await wait(1);
-    expect(offered()).toBe(true);
+    expect(tourOffer()?.name).toBe('Pages');
+    await act(async () => vi.advanceTimersByTimeAsync(5000));
+    expect(startedTour()).toBe(false);
+    expect(stage.engine?.active).toBe(false);
+  });
+
+  it('starts from the button on the page on screen, linking to its track’s article', async () => {
+    editor();
+    render(<PagesTourHost />);
+    await press();
+    expect(startedTour()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with wireframes?');
     expect(stage.helpHref).toBe('/help/pages/wireframe-pages/');
   });
 
-  it('waits for the person to enter Pages', async () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    const { rerender } = render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<PagesTourHost />);
-    await wait(800);
-    expect(offered()).toBe(true);
+  it('stays on offer once every kind is taken, so it can be taken again', async () => {
+    editor({ userPreferences: { pagesTourKinds: ['wireframe', 'logo'] } });
+    render(<PagesTourHost />);
+    expect(tourOffer()?.name).toBe('Pages');
+    await press();
+    expect(startedTour()).toBe(true);
   });
 
   it.each([
-    [
-      'seen',
-      {
-        userPreferences: {
-          pagesTourKinds: ['wireframe', 'logo'],
-        },
-      },
-    ],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['in Draw', { editorMode: { mode: 'draw' } }],
-    ['before the synced preferences are in', { prefsSettled: false }],
-  ])('makes no offer when %s', async (_why, over) => {
+    [
+      'the first page’s kind is still unchosen',
+      { activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p1', orientation: 'landscape' }] } },
+    ],
+  ])('offers nothing when %s', (_why, over) => {
     editor(over);
     render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
+    expect(tourOffer()).toBeNull();
   });
 
-  // docs/specs/007-editor/pages-tour.md "Where it appears": a first-time person is offered it, welcome card first.
-  it('offers itself to someone with no tours done yet', async () => {
-    editor({ userPreferences: {} });
+  // docs/specs/007-editor/start-diagramming.md "The tours wait".
+  it('offers nothing while a start panel is on screen', () => {
+    act(() => setStartPanelOpen(true));
+    editor();
     render(<PagesTourHost />);
-    await wait(800);
-    expect(offered()).toBe(true);
-    expect(stage.engine?.hasWelcome).toBe(true);
+    expect(tourOffer()).toBeNull();
+    act(() => setStartPanelOpen(false));
+    expect(tourOffer()?.name).toBe('Pages');
   });
 
-  it('waits while an element tour is on screen, then follows it', async () => {
+  it('starts nothing while an element tour is on screen', async () => {
     setActiveTour('element', true);
     editor();
     render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-    act(() => setActiveTour('element', false));
-    await wait(800);
-    expect(offered()).toBe(true);
+    await press();
+    expect(startedTour()).toBe(false);
+  });
+
+  it('starts nothing with no page on screen', async () => {
+    dom.page = null;
+    editor();
+    render(<PagesTourHost />);
+    await press();
+    expect(startedTour()).toBe(false);
   });
 
   it('reruns from Settings in Pages', async () => {
-    editor({
-      userPreferences: {
-        pagesTourKinds: ['wireframe', 'logo'],
-      },
-    });
-    const { rerender } = render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-    editor();
-    rerender(<PagesTourHost />);
+    editor({ userPreferences: { pagesTourKinds: ['wireframe', 'logo'] } });
+    render(<PagesTourHost />);
     act(() => requestPagesTourRelaunch());
-    await wait(800);
-    expect(offered()).toBe(true);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(startedTour()).toBe(true);
   });
 
   it('ignores a rerun outside Pages', async () => {
     editor({ editorMode: { mode: 'diagram' } });
     render(<PagesTourHost />);
     act(() => requestPagesTourRelaunch());
-    await wait(2000);
-    expect(offered()).toBe(false);
+    await act(async () => vi.advanceTimersByTimeAsync(2000));
+    expect(startedTour()).toBe(false);
+  });
+
+  it('reads the stored pages as the canvas does, skipping a malformed entry rather than throwing', () => {
+    editor({
+      activeTab: {
+        id: 'tab1',
+        locked: false,
+        pages: [null, 5, { id: 'p1', orientation: 'landscape', kind: 'wireframe' }],
+      },
+    });
+    expect(() => render(<PagesTourHost />)).not.toThrow();
+    expect(tourOffer()?.name).toBe('Pages');
   });
 });
 
@@ -204,23 +219,21 @@ describe('PagesTourHost end', () => {
   const start = async (over: Record<string, unknown> = {}) => {
     editor(over);
     const r = render(<PagesTourHost />);
-    await wait(800);
+    await press();
     return r;
   };
 
-  it('declining marks its kind seen and sends the decline', async () => {
+  it('skipping marks its kind seen and sends the skip', async () => {
     await start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith({ pagesTourKinds: ['wireframe'] }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Closed', 'PagesTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PagesTourSkipped');
   });
 
-  it('starting runs the steps, naming the track in each view, and completing sends the completion', async () => {
+  it('runs the steps, naming the track in each view, and completing sends the completion', async () => {
     await start();
-    act(() => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'PagesTour');
-    // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
-    await wait(30000);
+    // Every anchored step finds no target in this harness and is skipped, so it runs to the end.
+    await act(async () => vi.advanceTimersByTimeAsync(30000));
     expect(track).toHaveBeenCalledWith('UI', 'View', 'PagesTourStepWireframePageName');
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
@@ -228,25 +241,9 @@ describe('PagesTourHost end', () => {
     expect(writeUserPreferences).toHaveBeenCalledWith({ pagesTourKinds: ['wireframe'] }, 'me');
   });
 
-  it('adds the last kind answered to the list', async () => {
-    await start({
-      userPreferences: { pagesTourKinds: ['logo'] },
-    });
-    act(() => stage.engine!.skip());
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { pagesTourKinds: ['logo', 'wireframe'] },
-      'me',
-    );
-  });
-
-  it('offers again to someone who answered the single tour before it split', async () => {
-    await start({ userPreferences: { pagesTourSeen: true } });
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PagesTourOffer');
-  });
-
-  it('names the page kind on its welcome card, never the mode', async () => {
+  it('names the page kind on its cards, never the mode', async () => {
     await start();
-    expect(stage.eyebrow).toBe('Wireframe tour');
+    expect(stage.ariaPrefix).toBe('Wireframe tour');
   });
 
   it('runs the track of the tour page’s kind', async () => {
@@ -258,11 +255,10 @@ describe('PagesTourHost end', () => {
         pages: [{ id: 'p2', orientation: 'portrait', kind: 'logo', size: 'logo' }],
       },
     });
-    expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
     expect(stage.helpHref).toBe('/help/pages/logo-pages/');
   });
 
-  it('counts the infographic’s steps on screen', async () => {
+  it('counts the page’s steps on screen', async () => {
     await start();
     expect(stage.engine!.countableSteps).toBe(6);
   });
@@ -273,21 +269,8 @@ describe('PagesTourHost end', () => {
     expect(stage.engine!.countableSteps).toBe(5);
   });
 
-  // docs/specs/007-editor/start-diagramming.md "The tours wait".
-  it('waits while a start panel is on screen', async () => {
-    act(() => setStartPanelOpen(true));
-    editor();
-    render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-    act(() => setStartPanelOpen(false));
-    await wait(800);
-    expect(offered()).toBe(true);
-  });
-
   it('ends as skipped when the person leaves Pages or the tab', async () => {
     const r = await start();
-    act(() => stage.engine!.next());
     editor({ editorMode: { mode: 'diagram' } });
     r.rerender(<PagesTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PagesTourSkipped');
@@ -296,70 +279,8 @@ describe('PagesTourHost end', () => {
 
   it('ends as skipped when its page goes', async () => {
     const r = await start();
-    act(() => stage.engine!.next());
     editor({ activeTab: { id: 'tab1', locked: false, pages: [] } });
     r.rerender(<PagesTourHost />);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PagesTourSkipped');
-  });
-});
-
-describe('PagesTourHost per kind', () => {
-  it('offers nothing while every kind on the tab is seen', async () => {
-    editor({ userPreferences: { pagesTourKinds: ['wireframe'] } });
-    render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-  });
-
-  it('offers a new kind’s track when a page of it arrives', async () => {
-    editor({ userPreferences: { pagesTourKinds: ['wireframe'] } });
-    const { rerender } = render(<PagesTourHost />);
-    await wait(2000);
-    expect(offered()).toBe(false);
-    dom.page = { pageId: 'p2', kind: 'logo' };
-    editor({
-      userPreferences: { pagesTourKinds: ['wireframe'] },
-      activeTab: {
-        id: 'tab1',
-        locked: false,
-        pages: [
-          { id: 'p1', orientation: 'landscape', kind: 'wireframe' },
-          { id: 'p2', orientation: 'landscape', kind: 'logo' },
-        ],
-      },
-    });
-    rerender(<PagesTourHost />);
-    await wait(800);
-    expect(offered()).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with Logos?');
-  });
-
-  it('reads the stored pages as the canvas does, skipping a malformed entry rather than throwing', async () => {
-    editor({
-      activeTab: {
-        id: 'tab1',
-        locked: false,
-        pages: [null, 5, { id: 'p1', orientation: 'landscape', kind: 'wireframe' }],
-      },
-    });
-    expect(() => render(<PagesTourHost />)).not.toThrow();
-    await wait(800);
-    expect(offered()).toBe(true);
-  });
-
-  it('waits out the first page’s kind choice', async () => {
-    const choice = document.createElement('div');
-    choice.setAttribute('data-first-page-choice', '');
-    document.body.append(choice);
-    try {
-      editor({
-        activeTab: { id: 'tab1', locked: false, pages: [{ id: 'p1', orientation: 'landscape' }] },
-      });
-      render(<PagesTourHost />);
-      await wait(2000);
-      expect(offered()).toBe(false);
-    } finally {
-      choice.remove();
-    }
   });
 });

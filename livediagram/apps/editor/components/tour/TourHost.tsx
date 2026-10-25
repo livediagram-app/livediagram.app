@@ -5,32 +5,30 @@ import { createShape, isBoxed, type Element } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import {
-  clearTourPending,
-  hasTourPending,
-  markTourPending,
-  TOUR_RELAUNCH_EVENT,
-} from '@/lib/tour-pending';
+import { TOUR_RELAUNCH_EVENT } from '@/lib/diagram-tour';
 import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { waitForSelector } from './tour-dom';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
-import { useTourEngine, type TourOutcome } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourOutcome,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-// Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
-// handoff flag is set (a brand-new user's first document → the welcome offer card, waiting for a Diagram tab
-// when the document opened in another mode) or the Settings dialog requests a relaunch. The steps run on the
-// shared engine (useTourEngine) and draw through the shared stage (TourStage); this host owns the offer, the
-// step list and what ending means.
+// Mounted once in EditorView. While the open tab is in Diagram mode and the person can work on it, it offers the
+// tour on the footer's Start Tour button ("Start Diagram Tour", tour-offer.ts); a press there, or the Settings row
+// turned back on, starts it. It never starts or prompts on its own. The steps run on the shared engine
+// (useTourEngine) and draw through the shared stage (TourStage); this host owns the offer, the step list and what
+// ending means.
 
 export function TourHost() {
   const ctx = useEditorContext();
@@ -44,10 +42,6 @@ export function TourHost() {
     () => tourStepsFor({ mobile: isMobile, esBoard, touch }),
     [isMobile, esBoard, touch],
   );
-  // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
-  // check, and resolved once offered or found already seen. Only the offer effect reads it and it
-  // never turns back on, so it is a ref rather than state.
-  const offerPendingRef = useRef<boolean | null>(null);
   // The element the element-menu step selected to open its menu on, deselected again as the step closes the menu:
   // left selected, its toolbar and Quick Style panel came up behind the next step.
   const selectedByTourRef = useRef<string | null>(null);
@@ -101,9 +95,8 @@ export function TourHost() {
     steps,
     apiRef,
     // Stage-view funnel (docs/specs/017-telemetry/telemetry.md): one event per step entry (Back re-entry
-    // included: it is a real view). The welcome card's view is already
-    // covered by Opened/TourOffer; the last View before an
-    // Ended/TourSkipped marks the drop-off stage on the dashboard.
+    // included: it is a real view); the last View before an Ended/TourSkipped marks the drop-off stage on the
+    // dashboard.
     onStepView: (step) => track('UI', 'View', tourStepTelemetryType(step.id)),
     onStart: () => track('UI', 'Started', 'Tour'),
     onFinish: (outcome) => endTour(outcome),
@@ -119,82 +112,53 @@ export function TourHost() {
   }, [active]);
   useEffect(() => () => setActiveTour('welcome', false), []);
 
-  const offer = () => {
-    engine.start();
-    track('UI', 'Opened', 'TourOffer');
-  };
-
-  // Peek at the /new handoff flag (NOT consume: it stays set until the
-  // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
-  // of silently swallowing the tour), then wait for the editor to be
-  // usable before offering (the small delay lets the fit-to-screen pass
-  // and the chrome settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
-  // makes the offer once-ever for the user, however it was dismissed;
-  // checked again at fire time below in case the preferences fetch lands
-  // after mount.
-  const seen = ctx.userPreferences?.tourSeen === true;
-  // Diagram mode only (docs/specs/007-editor/editor-tour.md "Where it appears"): a document that opened in
-  // another mode keeps the offer owed until the person is on a Diagram tab.
+  // Diagram mode only (docs/specs/007-editor/editor-tour.md "Where it appears"): the steps point at diagramming chrome.
   const inDiagram = ctx.editorMode.mode === 'diagram';
-  // Start Diagramming on screen holds the offer until a template is picked or the panel closed
+  // Start Diagramming on screen holds the button back until a template is picked or the panel closed
   // (docs/specs/007-editor/start-diagramming.md "The tours wait").
   const startPanelOpen = useStartPanelOpen();
-  // Dialogs come first: an offer (or a Settings relaunch) waits for the last open dialog to close.
-  const modalOpen = useAnyModalOpen();
   const ready =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
     !startPanelOpen &&
-    !modalOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
-    inDiagram &&
-    !otherTour;
-  const offerRef = useLatest(offer);
-  useEffect(() => {
-    offerPendingRef.current ??= hasTourPending();
-    if (!offerPendingRef.current || active || !ready) return;
-    if (seen) {
-      // Resolved elsewhere (another tab / device): tidy the stale flag.
-      clearTourPending();
-      offerPendingRef.current = false;
-      return;
-    }
-    const t = setTimeout(() => {
-      offerPendingRef.current = false;
-      offerRef.current();
-    }, 800);
-    return () => clearTimeout(t);
-  }, [active, ready, seen, offerRef]);
+    inDiagram;
+  const start = () => {
+    if (active || otherTour) return;
+    engine.start();
+  };
+  // The footer's Start Tour button: offered whenever the tour could run, taken or not (it is how it is taken again).
+  useOfferTour(
+    'diagram',
+    ready
+      ? {
+          name: 'Diagram',
+          rank: TOUR_OFFER_RANK.mode,
+          start,
+          onShown: () => track('UI', 'Opened', 'TourOffer'),
+        }
+      : null,
+  );
 
-  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed):
-  // rerun from the top: the welcome card is always step 1. Also re-marks
-  // the pending flag so a reload mid-rerun re-offers, exactly like the
-  // first-run path. Off a Diagram tab, or while another tour runs, it waits,
-  // offering once the person is on a Diagram tab with nothing else on screen.
+  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed): runs the tour from the top when the open
+  // tab is in Diagram with nothing else on screen; elsewhere the footer button is there when the person is.
+  const startRef = useLatest(start);
+  const readyRef = useLatest(ready);
   useEffect(() => {
     const onRelaunch = () => {
-      markTourPending();
-      if (!ready) {
-        offerPendingRef.current = true;
-        return;
-      }
-      offerRef.current();
+      if (readyRef.current) startRef.current();
     };
     window.addEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, [ready, offerRef]);
+  }, [readyRef, startRef]);
 
   const endTour = (outcome: TourOutcome) => {
-    // Safety net beyond the current step's cleanup: never strand an open
-    // menu; and never offer again, however the tour ended, via the synced
-    // tourSeen preference (docs/specs/007-editor/user-preferences.md), so it holds across the user's devices.
-    // The offer is now RESOLVED, so the reload-surviving pending flag can
-    // finally go.
+    // Safety net beyond the current step's cleanup: never strand an open menu. The synced tourSeen preference
+    // (docs/specs/007-editor/user-preferences.md) records that it was taken, for the Settings row.
     apiRef.current.closeContextMenu();
     // The square it placed on an empty tab goes, so the document is left as the person had it.
     if (ctx.tourSquare.remove().length > 0) ctx.setSelectedId(null);
-    clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
@@ -202,8 +166,7 @@ export function TourHost() {
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
-    if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
-    else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
+    track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);

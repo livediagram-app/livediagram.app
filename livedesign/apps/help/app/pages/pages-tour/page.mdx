@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="The Pages Tour"
-  description="A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me."
+  description="A short, optional walkthrough for each kind of page, started from Start Pages Tour at the bottom of the editor, or from Show Me on any page."
   categoryTitle="Pages"
   categorySlug="pages"
   subArticles={getSubArticles('pages-tour')}
@@ -19,13 +19,22 @@ export const metadata = helpMetadata({
 
 The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind: **wireframes**, **logos** and **photos**. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers, the page's settings, the Slide Deck. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
 
-## When It's Offered
+## Starting the Tour
 
-The first time you work on a page of a kind ([Working with Pages](/help/pages/working-with-pages/)) on a tab you can edit, a banner at the bottom of the screen asks whether you'd like a look (**Getting started with Wireframes?**, for a wireframe page): **Yes** starts it, **No** dismisses it. If several kinds are on screen, it runs on the page you can see most of. Open a tab of another kind later and that kind's tour is offered then.
+<Step n={1}>
+  Open a tab in Pages that you can edit, with at least one page whose kind you've chosen.
+</Step>
 
-It waits while **Start Making Pages** is open and while a new tab's first page asks **What Is This Page For?**. It isn't offered on a locked tab or page, in an embed, or to someone who can only view or take part.
+<Step n={2}>
+  Press Start Pages Tour in the bar at the bottom of the editor, just left of **Settings**. On a
+  phone it shows as a play button on its own.
+</Step>
 
-Each kind's tour is offered **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own for that kind, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks them all as seen. If you answered the single Pages tour before it had one tour per kind, each kind's tour is offered to you once more.
+The tour starts straight away, on the page you can see most of. If several kinds of page are on screen, a kind you haven't taken the tour of yet goes first.
+
+The button waits while **Start Making Pages** is open and while a new tab's first page asks **What Is This Page For?**. It isn't there on a locked tab, in an embed, or for someone who can only view or take part. While you have an element selected that has its own tour (a chart, a Sankey, a stack), the button offers that tour instead; select nothing to get the Pages tour back.
+
+The tour never pops up on its own, and the button stays after you've taken the tour, so you can run it again whenever you like.
 
 ## What Each Tour Covers
 
@@ -39,20 +48,12 @@ A step whose control isn't on screen when the tour starts (the Slide Deck on a p
 
 ## Show Me on Any Page
 
-Every page's settings (its cog) carry **Show Me** at the top, which runs that page's tour there and then, whenever you like, without the welcome banner.
+Every page's settings (its cog) carry **Show Me** at the top, which runs that page's tour there and then, whenever you like.
 
-## Replaying the Tour
+## Taken Tours in Settings
 
-<Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
+**Settings**, under **Tours**, has a switch for each kind of page (**Wireframe Tour**, **Logo Tour** and **Photo Tour**) under **Pages Tours**, which switches them all. Each switch turns itself off once you finish or skip that kind's tour, and if you're signed in that follows you to every device. Turning on **Power User Mode** marks them all as taken. The switches don't hide the Start Pages Tour button.
 
-<Step n={2}>
-  Switch the tour for the kind of page back on: **Wireframe Tour**, **Logo Tour** or **Photo Tour**,
-  or **Pages Tours** for all of them.
-</Step>
-
-<Step n={3}>
-  Close Settings. If that kind of page is on screen, its tour shows straight away; otherwise it's
-  offered the next time you work on one.
-</Step>
+Switch one back on and close Settings while you're in Pages, and the tour starts straight away.
 
 </ArticleLayout>

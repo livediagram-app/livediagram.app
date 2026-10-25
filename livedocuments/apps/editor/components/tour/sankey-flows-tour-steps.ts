@@ -1,7 +1,7 @@
 // The steps of Show Me in a Sankey's Flows dialog (docs/specs/009-elements/sankey.md "Show Me"): a tour of writing a
 // Sankey's flows, run on the dialog itself. Each step brings forward the tab its control sits on and scrolls the
 // control into view; the control stays usable, so the person can type a flow or rename a node while the step is up.
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 export type SankeyFlowsTourApi = {
   // Brings the Table tab forward (the Text tab may be showing).

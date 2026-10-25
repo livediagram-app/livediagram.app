@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LIST_LIMIT_MAX, type Item } from '@liveworkspace/index-client';
 import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { currentBearer } from '@/lib/api/core';
@@ -19,21 +19,9 @@ type RecentItem = { id: string; name: string; savedAt: number | null; teamName: 
 // for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each
 // row opens that document directly.
-export function RecentDocumentsCard({
-  ownerId,
-  onCount,
-}: {
-  ownerId: string | null;
-  // Reports how many documents the owner has, once known. The page uses it
-  // to gate the interactive tour's welcome offer (docs/specs/007-editor/editor-tour.md, zero-document
-  // users only); this card already holds the only document-list fetch on
-  // /new, so it shares the answer rather than the page fetching twice.
-  onCount?: (n: number) => void;
-}) {
+export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);
   const now = useRelativeNow();
-  // Reported to the newest callback; a fresh one never refetches.
-  const reportCount = useEffectEvent((n: number) => onCount?.(n));
 
   // Bumped when a change made in Google Drive lands, to re-read the list
   // (docs/specs/022-drive-mirror/drive-mirror.md, "Other views follow").
@@ -52,8 +40,6 @@ export function RecentDocumentsCard({
         const teamNames = new Map(teamsOfToken(token).map((t) => [t.id, t.name]));
         // Their own and their teams' live canvases; one reached only through a link is not theirs to jump back to.
         const live = page.items.filter((i) => i.trashedAt === null && i.sharedVia === null);
-        // A team member with nothing of their own is not new: their team's canvases count.
-        reportCount(live.length);
         const item = (i: Item): RecentItem => ({
           id: i.id,
           name: i.title,
@@ -68,9 +54,7 @@ export function RecentDocumentsCard({
         setRecent(top);
       })
       .catch(() => {
-        // Best-effort: a returning user just doesn't get the shortcut. Report
-        // zero so a fresh visitor on a flaky network still gets the tour card.
-        if (!cancelled) reportCount(0);
+        // Best-effort: a returning user just doesn't get the shortcut.
       });
     return () => {
       cancelled = true;

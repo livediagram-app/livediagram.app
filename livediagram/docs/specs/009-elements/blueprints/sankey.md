@@ -201,22 +201,22 @@ generic `invalid tab` path.
 
 ## Testing
 
-| Rule                                                              | Test                                                                                                               |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Graph, set-aside reasons, caps, loops                             | `packages/document/src/sankey.test.ts`                                                                             |
-| Columns, scale, stacking, no crossing, worst-case budget          | `sankey.test.ts`                                                                                                   |
-| Text formats, round trip                                          | `sankey.test.ts`                                                                                                   |
-| Labels, collisions, colours, readouts, summary                    | `packages/document/src/sankey-render.test.ts`                                                                      |
-| Export, validation, agent input, node edits                       | `sankey-render.test.ts`                                                                                            |
-| Every kind renders / validates / sizes                            | `svg-render-coverage`, `shape-factory`, `export-consistency` tests                                                 |
-| Draft rows, reasons, balance, paste                               | `apps/editor/lib/sankey-flow-rows.test.ts`                                                                         |
-| Steps, groups, `rowFrom`, colours, budget                         | `apps/editor/lib/sankey-flow-levels.test.ts`                                                                       |
-| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch  | `apps/editor/components/dialogs/SankeyFlowsTable.test.tsx`                                                         |
-| Leftovers: drawn flows, paint, readout, merge, export, validation | `packages/document/src/sankey-render.test.ts`                                                                      |
-| Staggered animations by column                                    | `apps/editor/components/canvas/SankeyView.test.tsx`                                                                |
-| Editor gate                                                       | `apps/editor/lib/sankey-edit.test.ts`                                                                              |
-| Show Me steps, frozen count, Escape, telemetry                    | `apps/editor/components/tour/SankeyFlowsTour.test.tsx`                                                             |
-| Element tour: offer, steps, lift, dialog hand-off                 | `apps/editor/components/tour/ElementTourHost.test.tsx`, `sankey-element-tour-steps.test.ts`, `SankeyView.test.tsx` |
+| Rule                                                                 | Test                                                                                                               |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Graph, set-aside reasons, caps, loops                                | `packages/document/src/sankey.test.ts`                                                                             |
+| Columns, scale, stacking, no crossing, worst-case budget             | `sankey.test.ts`                                                                                                   |
+| Text formats, round trip                                             | `sankey.test.ts`                                                                                                   |
+| Labels, collisions, colours, readouts, summary                       | `packages/document/src/sankey-render.test.ts`                                                                      |
+| Export, validation, agent input, node edits                          | `sankey-render.test.ts`                                                                                            |
+| Every kind renders / validates / sizes                               | `svg-render-coverage`, `shape-factory`, `export-consistency` tests                                                 |
+| Draft rows, reasons, balance, paste                                  | `apps/editor/lib/sankey-flow-rows.test.ts`                                                                         |
+| Steps, groups, `rowFrom`, colours, budget                            | `apps/editor/lib/sankey-flow-levels.test.ts`                                                                       |
+| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch     | `apps/editor/components/dialogs/SankeyFlowsTable.test.tsx`                                                         |
+| Leftovers: drawn flows, paint, readout, merge, export, validation    | `packages/document/src/sankey-render.test.ts`                                                                      |
+| Staggered animations by column                                       | `apps/editor/components/canvas/SankeyView.test.tsx`                                                                |
+| Editor gate                                                          | `apps/editor/lib/sankey-edit.test.ts`                                                                              |
+| Show Me steps, frozen count, Escape, telemetry                       | `apps/editor/components/tour/SankeyFlowsTour.test.tsx`                                                             |
+| Element tour: on the Start Tour button, steps, lift, dialog hand-off | `apps/editor/components/tour/ElementTourHost.test.tsx`, `sankey-element-tour-steps.test.ts`, `SankeyView.test.tsx` |
 
 ## Constants and configuration
 

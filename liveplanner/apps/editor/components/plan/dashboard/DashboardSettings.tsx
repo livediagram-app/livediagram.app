@@ -84,7 +84,8 @@ export function DashboardSettings({
   const covered = useMaximisedPlanId() !== null;
   // Show Me: the tour of arranging and filling this dashboard, run on the page (plan-tabs.md "Show Me").
   const { tour, freeze } = useDashboardTour(!canEdit || covered);
-  // The Dashboards tour offers itself here, once (plan-tour.md "The Dashboards tour").
+  // The Dashboards tour, on the footer's Start Tour button while the dashboard is open (plan-tour.md "The Dashboards
+  // tour").
   useDashboardTourOffer({
     tour,
     freeze,

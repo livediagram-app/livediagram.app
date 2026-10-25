@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { newItemId } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -8,14 +8,12 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   markPlanTracksSeen,
   PLAN_TOUR_RELAUNCH_EVENT,
-  PLAN_TOUR_TRACKS,
   planTrackSeen,
   type BoardSheetTrack,
   writeLeftover,
 } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import {
   boardRoot,
@@ -24,59 +22,45 @@ import {
   planTourSteps,
   planTourStepTelemetryType,
   type PlanTourApi,
-  type PlanTourOffer,
   sheetRoot,
   visiblePlanWork,
 } from './plan-tour-steps';
-import { BoardsTourArt, PlanChoiceTourArt, SheetsTourArt } from './art/plan-tour-art';
 import { TourStage } from './TourStage';
-import { useTourEngine, type TourOutcome } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourOutcome,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
-// The settle delay before the offer, as the Diagram tour's.
-export const OFFER_DELAY_MS = 800;
-// How many times the offer looks for its board or Sheet on screen before letting the offer go until the next arming.
-const OFFER_LOOKS = 12;
 // The Boards track's example card's title.
 const TOUR_CARD_TITLE = 'Your First Card';
 
-// Each welcome card names what it shows: a track, or both on a choice card (docs/specs/026-plan/plan-tour.md
-// "The steps"); the copy after a pick follows the track picked.
-const BOARDS_TOUR_COPY = {
-  welcomeEyebrow: 'Boards tour',
-  helpHref: '/help/plan/planning-basics/',
-};
-const SHEETS_TOUR_COPY = {
-  ...BOARDS_TOUR_COPY,
-  welcomeEyebrow: 'Sheets tour',
-  helpHref: '/help/plan/sheets/',
-};
+// Each track's cards name it, never the mode (docs/specs/026-plan/plan-tour.md "The steps").
+const BOARDS_TOUR_COPY = { helpHref: '/help/plan/planning-basics/' };
+const SHEETS_TOUR_COPY = { helpHref: '/help/plan/sheets/' };
 const TRACK_NAME: Record<BoardSheetTrack, string> = {
   boards: 'Boards tour',
   sheets: 'Sheets tour',
 };
-const CHOICE_TOUR_COPY = { ...BOARDS_TOUR_COPY, welcomeEyebrow: 'Boards and Sheets tour' };
-const WELCOME_ART = {
-  boards: <BoardsTourArt />,
-  sheets: <SheetsTourArt />,
-  choice: <PlanChoiceTourArt />,
-} satisfies Record<PlanTourOffer, ReactNode>;
+// The track as the footer button names it: "Start Boards Tour".
+const BUTTON_NAME: Record<BoardSheetTrack, string> = { boards: 'Boards', sheets: 'Sheets' };
 
 // The tour subject's element: a board or a Sheet (docs/specs/026-plan/plan-tour.md "Domain language").
 type PlanWork = { type: string; shape?: string; id: string };
 const isBoard = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-board';
 const isSheet = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-sheet';
 
-// What the tour runs on, fixed when it is offered: the board and the Sheet on the open tab the person sees
+// What the tour runs on, fixed when it starts: the board and the Sheet on the open tab the person sees
 // (visiblePlanWork: a maximised or tab-filling one, else one on screen, else the first).
 type Subject = { boardId: string | null; sheetId: string | null };
 const NO_SUBJECT: Subject = { boardId: null, sheetId: null };
 
 // Orchestrates the Plan tour (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md). Mounted once in
-// EditorView beside TourHost; renders nothing until a person who has not seen it is in Plan mode with an
-// editor they can use and a board or Sheet on the open tab, no other tour is on screen, and the settle delay
-// has passed, or the Settings row asks for a rerun (which waits for a board or Sheet the same way). It runs on
-// that board or Sheet, the tour subject, and changes nothing on it: the steps only point, and the one thing
-// they open is a card's panel. Its welcome card names the track, or asks which when the tab has both.
+// EditorView beside TourHost. While the person can work on a tab with a board or Sheet on it, it offers the tour on
+// the footer's Start Tour button ("Start Boards Tour", "Start Sheets Tour": a track not yet taken first, Boards
+// between equals); a press there, or the Settings row, starts it on the board or Sheet the person sees, the tour
+// subject. It changes nothing on it: the steps only point, and the one thing they open is a card's panel. It never
+// starts or prompts on its own.
 export function PlanTourHost() {
   const ctx = useEditorContext();
   const [subject, setSubject] = useState<Subject>(NO_SUBJECT);
@@ -174,14 +158,9 @@ export function PlanTourHost() {
     },
   });
 
-  // The track (picked on a choice card, else the one on offer), what the welcome card offers, and whether the
-  // board has a card for the card steps.
+  // The track the tour runs, fixed when it starts.
   const [tourTrack, setTourTrack] = useState<BoardSheetTrack>('boards');
-  const [offerKind, setOfferKind] = useState<PlanTourOffer>('boards');
-  const steps = useMemo(
-    () => planTourSteps(tourTrack, { offer: offerKind }),
-    [tourTrack, offerKind],
-  );
+  const steps = useMemo(() => planTourSteps(tourTrack), [tourTrack]);
   const engine = useTourEngine<PlanTourApi>({
     steps,
     apiRef,
@@ -191,18 +170,13 @@ export function PlanTourHost() {
   });
   const { active } = engine;
 
-  // One tour at a time: publish this one while it is on screen.
+  // One tour at a time: publish this one while it is on screen, and start nothing while another is.
   const shown = useActiveTour();
   const otherTour = shown !== null && shown !== 'plan';
-  // Dialogs come first (docs/specs/007-editor/editor-tour.md): the offer waits for the last one to close.
-  const modalOpen = useAnyModalOpen();
   useEffect(() => {
     setActiveTour('plan', active);
   }, [active]);
 
-  // Each track offers itself once (lib/plan-tour.ts): a track already answered is not offered again.
-  const prefs = ctx.userPreferences;
-  const owed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(prefs, t));
   const canWork =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
@@ -212,37 +186,23 @@ export function PlanTourHost() {
 
   // The plan work on the open tab: the tour is offered only once there is a board or Sheet to show, so an empty
   // tab is started first (Start Planning), never talked over, and a Dashboard waits for a Board or Sheet tab.
-  // Only the work of a track still owed counts: a board once Boards is answered offers nothing.
   const elements = ctx.activeTab.elements as readonly PlanWork[];
-  const boardIds = owed.includes('boards') ? elements.filter(isBoard).map((el) => el.id) : [];
-  const sheetIds = owed.includes('sheets') ? elements.filter(isSheet).map((el) => el.id) : [];
-  const hasPlanWork = boardIds.length > 0 || sheetIds.length > 0;
-  // A stable key for the effect below: the ids themselves, not a fresh array each render.
-  const workKey = `${boardIds.join(',')}|${sheetIds.join(',')}`;
-  // Which owed tracks have work on the tab: one arriving (a Sheet added beside a toured board) arms the offer again.
-  const offerKey = `${boardIds.length > 0}|${sheetIds.length > 0}`;
-  // Armed on entering Plan (or mounting in it), on an owed track's work arriving, and by a relaunch; disarmed on
-  // leaving it or once offered. Adjusted during render when the mode or the work changes. A relaunch waits for a
-  // board or Sheet like a first offer.
-  const [armed, setArmed] = useState(true);
-  const [lastOffer, setLastOffer] = useState(offerKey);
-  if (offerKey !== lastOffer) {
-    setLastOffer(offerKey);
-    if (hasPlanWork) setArmed(true);
-  }
-  // Every track answered already (here, or on another device): nothing is owed on this entry, so a later Settings
-  // change while in Plan does not offer it behind the dialog (only the rerun does).
-  const seen = owed.length === 0;
-  if (armed && seen) setArmed(false);
+  const boardIds = elements.filter(isBoard).map((el) => el.id);
+  const sheetIds = elements.filter(isSheet).map((el) => el.id);
+  // The track the button offers: of the ones with work on the tab, one not yet taken first, Boards between equals.
+  const tracks: BoardSheetTrack[] = [
+    ...(boardIds.length > 0 ? (['boards'] as const) : []),
+    ...(sheetIds.length > 0 ? (['sheets'] as const) : []),
+  ];
+  const offerTrack =
+    tracks.find((t) => !planTrackSeen(ctx.userPreferences, t)) ?? tracks[0] ?? null;
 
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.closeCard();
     // The example card goes however the tour ended: the board is left as the person had it.
     removeTourCard();
-    // Onto the freshest preferences, not this render's: the whole blob is written.
-    // The track shown is answered; declining a choice card answers both, as both were offered.
-    const answered: BoardSheetTrack[] =
-      outcome === 'declined' && offerKind === 'choice' ? ['boards', 'sheets'] : [tourTrack];
+    // Onto the freshest preferences, not this render's: the whole blob is written. The track shown is taken.
+    const answered: BoardSheetTrack[] = [tourTrack];
     const next = rebaseUserPreferences(
       ctx.userPreferences,
       markPlanTracksSeen(ctx.userPreferences, answered),
@@ -250,54 +210,48 @@ export function PlanTourHost() {
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     debugLog('[plan-tour] end', { outcome, answered });
-    if (outcome === 'declined') track('UI', 'Closed', 'PlanTourOffer');
-    else track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
+    track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
   };
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  // The offer: armed, in Plan, usable, not seen, a board or Sheet on the tab, and no other tour on screen.
-  // Another tour ending re-renders this through useActiveTour, so the Plan tour follows it.
-  useEffect(() => {
-    if (!armed || active || seen) return;
-    if (!canWork || otherTour || modalOpen || !hasPlanWork) return;
-    let tries = 0;
-    let t: ReturnType<typeof setTimeout>;
-    const look = () => {
-      // Read as it is offered, from what is drawn: the board and Sheet the person sees.
-      const boardId = visiblePlanWork(boardIds, boardRoot);
-      const sheetId = visiblePlanWork(sheetIds, sheetRoot);
-      // Nothing drawn yet (a board still loading on a first visit): look again, a bounded number of times, rather
-      // than spend the offer on nothing, which left it unoffered until a reload.
-      if (!boardId && !sheetId) {
-        tries += 1;
-        if (tries < OFFER_LOOKS) t = setTimeout(look, OFFER_DELAY_MS);
-        else setArmed(false);
-        return;
-      }
-      setArmed(false);
-      const offer: PlanTourOffer = boardId && sheetId ? 'choice' : boardId ? 'boards' : 'sheets';
-      debugLog('[plan-tour] offer', { offer });
-      setSubject({ boardId, sheetId });
-      setOfferKind(offer);
-      setTourTrack(offer === 'sheets' ? 'sheets' : 'boards');
-      engineRef.current.start();
-      track('UI', 'Opened', 'PlanTourOffer');
-    };
-    t = setTimeout(look, OFFER_DELAY_MS);
-    return () => clearTimeout(t);
-    // workKey stands for boardIds and sheetIds.
-    // oxlint-disable-next-line react/exhaustive-deps
-  }, [armed, active, seen, canWork, otherTour, modalOpen, hasPlanWork, workKey, engineRef]);
+  // A press: the board and Sheet the person sees, read from what is drawn, then the track on offer.
+  const start = () => {
+    if (active || otherTour || !offerTrack) return;
+    const boardId = visiblePlanWork(boardIds, boardRoot);
+    const sheetId = visiblePlanWork(sheetIds, sheetRoot);
+    debugLog('[plan-tour] start', { track: offerTrack });
+    setSubject({ boardId, sheetId });
+    setTourTrack(offerTrack);
+    engineRef.current.start();
+  };
+  const canStart = canWork && offerTrack !== null;
+  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
+  // again).
+  useOfferTour(
+    'plan',
+    canStart && offerTrack
+      ? {
+          name: BUTTON_NAME[offerTrack],
+          rank: TOUR_OFFER_RANK.mode,
+          start,
+          onShown: () => track('UI', 'Opened', 'PlanTourOffer'),
+        }
+      : null,
+  );
 
-  // Settings rerun (the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off + closed): offers again in Plan once a
-  // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
-  // the answered tracks). It places nothing to show: an empty tab offers Start Planning, which makes one.
+  // Settings rerun (the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off + closed): runs the tour once a
+  // board or Sheet is open; elsewhere the footer button is there when one is. It places nothing to show: an empty tab
+  // offers Start Planning, which makes one.
+  const startRef = useLatest(start);
+  const canStartRef = useLatest(canStart);
   useEffect(() => {
-    const onRelaunch = () => setArmed(true);
+    const onRelaunch = () => {
+      if (canStartRef.current) startRef.current();
+    };
     window.addEventListener(PLAN_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(PLAN_TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, []);
+  }, [canStartRef, startRef]);
 
   // Ends as skipped when the tour can no longer run where it started: edit rights gone, Plan left, another
   // tab opened, or the tour subject deleted.
@@ -319,34 +273,11 @@ export function PlanTourHost() {
 
   useEffect(() => () => setActiveTour('plan', false), []);
 
-  // On a choice card, each choice starts its track: the steps switch as the engine leaves the welcome card.
-  const pick = (picked: BoardSheetTrack) => {
-    debugLog('[plan-tour] track', { track: picked });
-    track('UI', 'Selected', picked === 'sheets' ? 'PlanTourSheets' : 'PlanTourBoards');
-    setTourTrack(picked);
-    engine.next();
-  };
-
   return (
     <TourStage
       engine={engine}
-      ariaPrefix={offerKind === 'choice' ? 'Boards and Sheets tour' : TRACK_NAME[tourTrack]}
-      copy={
-        offerKind === 'choice' && engine.stepIndex === 0
-          ? CHOICE_TOUR_COPY
-          : tourTrack === 'sheets'
-            ? SHEETS_TOUR_COPY
-            : BOARDS_TOUR_COPY
-      }
-      welcomeArt={WELCOME_ART[offerKind]}
-      {...(offerKind === 'choice'
-        ? {
-            welcomeChoices: [
-              { id: 'boards', label: 'Boards', onPick: () => pick('boards') },
-              { id: 'sheets', label: 'Spreadsheets', onPick: () => pick('sheets') },
-            ],
-          }
-        : {})}
+      ariaPrefix={TRACK_NAME[tourTrack]}
+      copy={tourTrack === 'sheets' ? SHEETS_TOUR_COPY : BOARDS_TOUR_COPY}
     />
   );
 }

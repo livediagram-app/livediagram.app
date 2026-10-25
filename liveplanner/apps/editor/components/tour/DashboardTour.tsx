@@ -2,22 +2,23 @@
 
 // The tour of arranging and filling a dashboard, drawn over the page: Show Me in Dashboard Settings
 // (docs/specs/026-plan/plan-tabs.md "Show Me"; docs/specs/007-editor/show-me.md), and the Dashboards tour, the same
-// steps behind a welcome card, offered once the first time an Editor has a dashboard open
+// steps, offered on the footer's Start Tour button while an Editor has a dashboard open
 // (docs/specs/026-plan/plan-tour.md "The Dashboards tour").
 import { useEffect, useRef, useState } from 'react';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { useAnyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { markPlanTracksSeen, planTrackSeen } from '@/lib/plan-tour';
+import { markPlanTracksSeen } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { dashboardTourSteps, hideSlot, type DashboardTourApi } from './dashboard-tour-steps';
 import { helpArticleHref } from '@/lib/help-articles';
-import { DashboardsTourArt } from './art/plan-tour-art';
 import { ShowMeButton } from './ShowMe';
 import { TourStage } from './TourStage';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 type SlotsNow = { hasEmpty: boolean; hasFilled: boolean };
 
@@ -32,14 +33,14 @@ export function useDashboardTour(hidden: boolean): {
   const ctx = useOptionalEditorContext();
   const apiRef = useRef<DashboardTourApi>(null);
   const [steps, setSteps] = useState(() => dashboardTourSteps({ hasEmpty: true, hasFilled: true }));
-  // Whether this run is the offer: however it ends, the Dashboards track is answered (Show Me answers nothing).
+  // Whether this run is the Dashboards tour, from the footer button: however it ends, its track is taken (Show Me
+  // records nothing).
   const offeredRef = useRef(false);
   const tour = useTourEngine<DashboardTourApi>({
     steps,
     apiRef,
     onStepView: () => {},
-    // The offer accepted (Show Me sends its own from the button: it has no welcome card).
-    onStart: () => track('UI', 'Started', 'DashboardTour'),
+    // Started is sent by whichever button started it (the footer's, Show Me's).
     onFinish: (outcome) => {
       if (offeredRef.current && ctx) {
         offeredRef.current = false;
@@ -50,7 +51,6 @@ export function useDashboardTour(hidden: boolean): {
         );
         ctx.setUserPreferences(next);
         ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
-        if (outcome === 'declined') return track('UI', 'Closed', 'DashboardTourOffer');
       }
       track(
         'UI',
@@ -74,17 +74,13 @@ export function useDashboardTour(hidden: boolean): {
     tour,
     freeze: (slots, offered = false) => {
       offeredRef.current = offered;
-      setSteps(dashboardTourSteps(slots, offered));
+      setSteps(dashboardTourSteps(slots));
     },
   };
 }
 
-// How long a dashboard is on screen before the Dashboards tour offers itself, so the page has drawn.
-const OFFER_DELAY_MS = 800;
-
-// The Dashboards tour's offer (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): once, the first time an Editor
-// has a dashboard open in Plan, while its track is owed, the synced preferences are in, and nothing else (another
-// tour, a dialog, a start panel) is on screen. Answered however it ends (useDashboardTour).
+// The Dashboards tour's way in (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): the footer's Start Tour button,
+// offered while an Editor has a dashboard open in Plan, taken or not; a press starts it. It never starts on its own.
 export function useDashboardTourOffer({
   tour,
   freeze,
@@ -100,31 +96,23 @@ export function useDashboardTourOffer({
   // No editor (a dashboard drawn outside one): no offer, and nothing to record.
   const ctx = useOptionalEditorContext();
   const shown = useActiveTour();
-  const modalOpen = useAnyModalOpen();
-  const owed = !!ctx && !planTrackSeen(ctx.userPreferences, 'dashboards');
-  const ready =
-    !!ctx &&
-    canWork &&
-    owed &&
-    ctx.prefsSettled &&
-    !ctx.isReadOnly &&
-    !ctx.embedMode &&
-    shown === null &&
-    !modalOpen &&
-    !tour.active;
-  const offeredRef = useRef(false);
-  const latest = useLatest({ tour, freeze, slots });
-  useEffect(() => {
-    if (!ready || offeredRef.current) return;
-    const t = setTimeout(() => {
-      offeredRef.current = true;
-      const { tour: engine, freeze: fix, slots: now } = latest.current;
-      fix(now(), true);
-      engine.start();
-      track('UI', 'Opened', 'DashboardTourOffer');
-    }, OFFER_DELAY_MS);
-    return () => clearTimeout(t);
-  }, [ready, latest]);
+  const can = !!ctx && canWork && !ctx.isReadOnly && !ctx.embedMode;
+  useOfferTour(
+    'dashboard',
+    can
+      ? {
+          name: 'Dashboards',
+          rank: TOUR_OFFER_RANK.tool,
+          start: () => {
+            if (shown !== null || tour.active) return;
+            freeze(slots(), true);
+            tour.start();
+            track('UI', 'Started', 'DashboardTour');
+          },
+          onShown: () => track('UI', 'Opened', 'DashboardTourOffer'),
+        }
+      : null,
+  );
 }
 
 // Pressed inside the settings popover: `onStart` closes it first, so the tour has the page to point at.
@@ -147,19 +135,16 @@ export function DashboardShowMeButton({
 }
 
 export function DashboardTourStage({ tour }: { tour: TourEngine<DashboardTourApi> }) {
-  // Show Me's card words, with the offer's eyebrow and picture for the Dashboards tour's welcome card.
+  // Show Me's card words, whichever button started it: the steps are the same.
   return (
     <TourStage
       engine={tour}
-      // Offered, it is the Dashboards tour; run from the settings, it is Show Me.
-      ariaPrefix={tour.hasWelcome ? 'Dashboards tour' : 'Show Me'}
+      ariaPrefix="Show Me"
       copy={{
-        welcomeEyebrow: 'Dashboards tour',
         outroEyebrow: 'Show Me',
         helpHref: helpArticleHref('planDashboards'),
         finish: 'Done',
       }}
-      welcomeArt={<DashboardsTourArt />}
       layer="overlay"
       pad={8}
     />

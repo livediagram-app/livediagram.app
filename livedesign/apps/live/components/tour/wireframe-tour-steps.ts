@@ -16,13 +16,6 @@ import {
   SLIDES_BUTTON,
 } from './page-tour-dom';
 
-export const WIREFRAME_WELCOME: PageTourStep = {
-  id: 'welcome',
-  card: 'welcome',
-  title: 'Getting started with wireframes?',
-  body: 'A quick look at screen layouts, backgrounds and presenting?',
-};
-
 export function wireframeTourSteps(): PageTourStep[] {
   return [
     {

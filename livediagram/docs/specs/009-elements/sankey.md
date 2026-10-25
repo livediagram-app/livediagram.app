@@ -192,11 +192,10 @@ sees Show Me. Telemetry: `UI` · `Started` · `SankeyFlowsTour`, and `UI` · `En
 
 ## Element tour
 
-The first time an Editor selects a Sankey, a small **Show Me** toolbar beside its selection toolbar offers the
+While an Editor has a Sankey selected, the footer's **Start Sankey Tour** button offers the
 [Sankey tour](../007-editor/element-tours.md#the-sankey-tour): it lifts the diagram's widest band and a leftover with
 their readouts, points at the menu's styling and at double-clicking, then opens the Flows dialog, runs its
-[Show Me](#show-me) steps there and closes it on Done. Played or cancelled, it is not offered again until Settings' Tours ›
-Show Me offers it.
+[Show Me](#show-me) steps there and closes it on Done. It stays on the button once taken, so pressing again reruns it.
 
 ## Who may do what
 

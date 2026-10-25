@@ -21,8 +21,9 @@ Switching the mode **on** writes these values, once:
 | Forms tour     | `formTourSeen`  | seen  |
 | Minimal chrome | `minimalChrome` | on    |
 
-The Plan tour offers each of its tracks once (`planTourTracks`); its seen flag counts every track only while the
-mode is on, so switching it off gives back every track not yet answered. The Diagram, Pages and element tours'
+The Plan tour records each track taken (`planTourTracks`); its seen flag counts every track only while the
+mode is on, so switching it off gives back every track not yet taken. Marking a tour seen only changes its Settings
+row and which Plan track the footer's Start Tour button names: the button stays on offer. The Diagram, Pages and element tours'
 rows went with what they toured ([Editor tours](editor-tour.md), [Element tours](element-tours.md)).
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
@@ -72,7 +73,7 @@ the interface, and leaves the controls:
 - **Selection kind chip.** The caption above the selection toolbar ("Selected Arrow", "Selected Square", "Selected
   Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
-- **Status bar text.** The bottom bar's Search, Settings and appearance controls show their icons only.
+- **Status bar text.** The bottom bar's Search, Start Tour, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
 - **Panel titles and help buttons.** Panels (Explorer, Collaborate, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same

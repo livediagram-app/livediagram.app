@@ -14,7 +14,7 @@ import { laneTourSteps } from './lane-tour-steps';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import { portalTourSteps } from './portal-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
-import type { TourStepOf } from './tour-step';
+import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 const env: MenuTourEnv = { elementId: 'el', hasMore: true, touch: false };
 type Step = TourStepOf<ElementTourApi>;

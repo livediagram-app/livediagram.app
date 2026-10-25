@@ -8,7 +8,10 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
 import { tabStyleTourSteps, type TabStyleTourApi } from './tab-style-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
-import { useTourEngine, type TourEngine } from './useTourEngine';
+import {
+  useTourEngine,
+  type TourEngine,
+} from '@liveworkspace/workbench/components/tour/useTourEngine';
 
 export function useTabStyleTour(api: TabStyleTourApi): TourEngine<TabStyleTourApi> {
   const apiRef = useLatest<TabStyleTourApi>(api);

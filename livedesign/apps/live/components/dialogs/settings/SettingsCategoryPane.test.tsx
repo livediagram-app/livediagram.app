@@ -144,7 +144,7 @@ describe('SettingsCategoryPane tours', () => {
     expect(wireframe.getAttribute('aria-checked')).toBe('false');
     // The shared explanation sits once, under the section heading.
     expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
-    expect(screen.getAllByText(/Each tour offers itself once/)).toHaveLength(1);
+    expect(screen.getAllByText(/Start a tour from the Start Tour button/)).toHaveLength(1);
     fireEvent.click(wireframe);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'WireframeTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({

@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./colour": "./src/colour.ts",
     "./svg": "./src/svg.ts"
   },
   "scripts": {
