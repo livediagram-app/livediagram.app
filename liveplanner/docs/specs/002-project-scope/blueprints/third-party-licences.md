@@ -6,7 +6,7 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 The engine, the pool of committed texts and the page's contract are the monorepo's
 `@liveworkspace/licences` (`../packages/licences`), one copy for every product. This product's
 `@liveplanner/licences` keeps only its own tables (its apps, its overrides, its embedded works), gathered in
-`src/product.ts` for the shared generator and the shared checks.
+`packages/licences/src/product.ts` for the shared generator and the shared checks.
 
 | File                                                                       | Role                                                                            |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |

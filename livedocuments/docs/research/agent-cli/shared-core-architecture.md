@@ -332,7 +332,7 @@ packages/
   agent-operations/          # NEW: the catalogue (zod, behaviour, handlers, views hooks)
   api-client/                # NEW: from apps/mcp/src/api.ts, fetch injected, typed by api-schema
   document-views/            # NEW: outline (from apps/editor export-tab-text), ids, graph, comments, diff
-  render-png/                # NEW: from apps/mcp/src/render.ts, wasm + font loaders injected
+  render-png/                # NEW: from ../packages/mcp-kit/src/render.ts, wasm + font loaders injected
   document/                  # gains element-normalise, graph-input, tab-builders, element-format
   templates/, api-schema/, icons/   # unchanged
 ```

@@ -139,7 +139,7 @@ What livedocuments has, by file:
 - `graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
   line style, Mermaid via the editor's own `parseMermaid`.
 - `packages/templates`: 68 hand-tuned templates materialised server-side.
-- `packages/document/src/svg-render*.ts` and `apps/mcp/src/render.ts`: one SVG renderer for
+- `packages/document/src/svg-render*.ts` and `../packages/mcp-kit/src/render.ts`: one SVG renderer for
   editor export, MCP preview and api snapshots; resvg rasterisation.
 - `packages/document/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
   written for arrow rebinding, directly reusable for a lint.
@@ -533,7 +533,7 @@ These are product decisions, not research conclusions:
 - MermaidSeqBench, arXiv 2511.14967: <https://arxiv.org/abs/2511.14967>
 - GenAI-DrawIO-Creator, arXiv 2601.05162: <https://arxiv.org/abs/2601.05162>
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
-- In-repo: `graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
-  `apps/mcp/src/prompts.ts`, `graph-authoring.ts`, `auto-layout*.ts`,
+- In-repo: `graph-input.ts`, `../packages/mcp-kit/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
+  `../packages/mcp-kit/src/prompts.ts`, `graph-authoring.ts`, `auto-layout*.ts`,
   `arrow-path-hits.ts`, `mermaid-serialise.ts`, `../packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`
