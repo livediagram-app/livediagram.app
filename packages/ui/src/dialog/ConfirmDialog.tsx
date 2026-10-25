@@ -1,22 +1,17 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { useEffect, useId, useRef } from 'react';
+import { Button } from '../Button';
 import { Dialog } from './Dialog';
 import { DialogFooter } from './DialogFooter';
 
-// Branded confirmation modal. Visual sibling of DeleteAccountDialog
-// (same fly-up animation, same border/shadow stack, same button
-// rhythm) but generalised: title + body + a single yes/no choice.
-// Drives every "are you sure?" gesture in the editor app via the
-// useConfirm hook so we don't fall back to the OS-default
-// window.confirm chrome (which feels out of place against the rest
-// of the editor's UI).
+// The one "are you sure?" modal: a title, a message and a single yes/no choice, so nothing falls back to the
+// OS-default window.confirm chrome. Every editor's (through workbench's useConfirm, which adds the editor's modal
+// guard) and the Explorer's, so a confirm reads the same wherever it is asked.
 //
-// Pure presentation: open/close + confirm/cancel are all the
-// caller's concern. The hook in hooks/useConfirm.tsx owns the
-// imperative `confirm() => Promise<boolean>` adapter so call sites
-// stay declarative ("if (!await confirm({...})) return;").
+// Pure presentation: open/close + confirm/cancel are all the caller's concern. Workbench's hooks/ui/useConfirm owns
+// the imperative `confirm() => Promise<boolean>` adapter so call sites stay declarative
+// ("if (!await confirm({...})) return;").
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -38,6 +33,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
 
   // Focus the confirm button on open so Enter immediately commits
   // and Esc cancels via the keydown handler below. Matches the
@@ -48,10 +44,10 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
-    <Dialog open={open} onClose={onCancel} titleId="confirm-dialog-title">
+    <Dialog open={open} onClose={onCancel} titleId={titleId}>
       <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
         <h2
-          id="confirm-dialog-title"
+          id={titleId}
           className="text-lg font-semibold text-slate-900 dark:text-slate-50"
         >
           {title}

@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     // Web Crypto, fetch and URL only: this runs in Workers and in browsers alike.
     "lib": ["ES2023", "DOM"],

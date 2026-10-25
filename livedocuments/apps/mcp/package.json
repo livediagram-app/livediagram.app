@@ -22,7 +22,6 @@
     "@livedocuments/edit-operations": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
-    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/mcp-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",

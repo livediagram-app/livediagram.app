@@ -62,7 +62,7 @@ describe('Delete in the tab menu', () => {
     const onDelete = vi.fn();
     open({ onDelete, deleteWarning: 'A form sends its responses here.' });
     expect(onDelete).not.toHaveBeenCalled();
-    const dialog = screen.getByRole('dialog', { name: 'Delete this tab?' });
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete this tab?' });
     expect(dialog.textContent).toContain('A form sends its responses here.');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledTimes(1);

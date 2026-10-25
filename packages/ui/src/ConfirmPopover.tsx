@@ -1,7 +1,11 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { Button, clampIntoRange, lucideGlyph, Portal } from '@liveworkspace/ui';
+'use client';
+
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
-import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
+import { Button } from './Button';
+import { lucideGlyph } from './icons/lucide-glyph';
+import { Portal } from './Portal';
+import { POPOVER_VIEWPORT_MARGIN as EDGE, clampIntoRange } from './popover';
 import { usePopoverLayer } from './popover-stack';
 
 // A small confirmation popover anchored beside a trigger element, with an
@@ -14,7 +18,9 @@ import { usePopoverLayer } from './popover-stack';
 // `data-confirm-popover` so a host menu's outside-click handler can
 // exclude it. Esc cancels, Enter confirms. Sits at `--z-modal` (above the
 // `--z-overlay` context menus that spawn it) so the "are you sure?" prompt
-// is never hidden behind the menu it was opened from.
+// is never hidden behind the menu it was opened from. A press anywhere but
+// the popover, its anchor or a popover opened above it cancels, and Escape
+// hands focus back to the anchor. Every editor's and the Explorer's.
 
 const WIDTH = 240;
 const WarningIcon = lucideGlyph(lucideTriangleAlert, 13);
@@ -26,11 +32,22 @@ export function splitConfirmMessage(message: string): { title: string; detail: s
   return { title: message.slice(0, at + 1), detail: message.slice(at + 2).trim() };
 }
 
-function ConfirmText({ message, warning }: { message: string; warning?: string | undefined }) {
+function ConfirmText({
+  id,
+  message,
+  warning,
+}: {
+  id: string;
+  message: string;
+  warning?: string | undefined;
+}) {
   const { title, detail } = splitConfirmMessage(message);
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="text-[13px] font-semibold leading-snug text-slate-900 dark:text-slate-50">
+      <p
+        id={`${id}-title`}
+        className="text-[13px] font-semibold leading-snug text-slate-900 dark:text-slate-50"
+      >
         {title}
       </p>
       {warning ? (
@@ -40,7 +57,10 @@ function ConfirmText({ message, warning }: { message: string; warning?: string |
         </p>
       ) : null}
       {detail ? (
-        <p className="whitespace-pre-line text-xs leading-snug text-slate-500 dark:text-slate-400">
+        <p
+          id={`${id}-detail`}
+          className="whitespace-pre-line text-xs leading-snug text-slate-500 dark:text-slate-400"
+        >
           {detail}
         </p>
       ) : null}
@@ -73,6 +93,7 @@ export function ConfirmPopover({
   onCancel,
 }: ConfirmPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const id = useId();
   // left/top of the panel + which side the arrow is on + the arrow's top.
   const [layout, setLayout] = useState<{
     left: number;
@@ -108,23 +129,41 @@ export function ConfirmPopover({
 
   // It is the top popover while it is up (popover-stack.ts), so Escape cancels it alone, never the popover or menu
   // it was opened from.
-  usePopoverLayer(ref, (e) => {
+  const { withinAbove } = usePopoverLayer(ref, (e) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
       onCancel();
+      anchor.focus();
     } else if (e.key === 'Enter') {
       e.preventDefault();
       onConfirm();
     }
   });
 
+  // A press anywhere else cancels, as a popover does. Read through refs so the listener is added once per anchor.
+  const outsideRef = useRef({ onCancel, withinAbove });
+  useEffect(() => {
+    outsideRef.current = { onCancel, withinAbove };
+  });
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target || ref.current?.contains(target) || anchor.contains(target)) return;
+      if (outsideRef.current.withinAbove(target)) return;
+      outsideRef.current.onCancel();
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [anchor]);
+
   return (
     <Portal>
       <div
         ref={ref}
-        role="dialog"
-        // Named by its whole message, as the title and detail split it.
-        aria-label={message}
+        role="alertdialog"
+        // Named by its question, described by the rest (splitConfirmMessage).
+        aria-labelledby={`${id}-title`}
+        aria-describedby={splitConfirmMessage(message).detail ? `${id}-detail` : undefined}
         data-confirm-popover
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-modal)] flex animate-fade-in flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
@@ -143,7 +182,7 @@ export function ConfirmPopover({
             }}
           />
         ) : null}
-        <ConfirmText message={message} warning={warning} />
+        <ConfirmText id={id} message={message} warning={warning} />
         <div className="flex justify-end gap-2">
           {/* py-1 keeps the popover's tighter rhythm; the classes append
               after the size scale, so they win. */}

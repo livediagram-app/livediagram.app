@@ -41,7 +41,7 @@ import { InboxPane } from '../explorer/InboxPane';
 import { BrowserIcon, HostExtrasProvider, type ExplorerHostExtras } from '../explorer/host';
 import { useThisBrowserItems, type ThisBrowserHost } from '../explorer/ThisBrowser';
 import { PanelThisBrowser } from './PanelThisBrowser';
-import { Tooltip } from '@liveworkspace/ui';
+import { ConfirmDialog, Tooltip } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
   TRASH_BIN,
@@ -54,7 +54,6 @@ import {
   type DropPlace,
 } from '../drag/drag';
 import { BackBar } from '../ui/BackBar';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
@@ -1487,6 +1486,7 @@ function TrashSection() {
       ) : null}
       {confirming ? (
         <ConfirmDialog
+          open
           title="Delete for good?"
           message={`Delete "${confirming.title || 'Untitled'}" for good? This cannot be undone.`}
           confirmLabel="Delete permanently"

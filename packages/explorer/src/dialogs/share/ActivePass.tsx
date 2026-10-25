@@ -8,9 +8,8 @@
 import { useState } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
 import { timeLeftCompact } from '../../time';
-import { HoverCard, Select, Tooltip } from '@liveworkspace/ui';
+import { ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
-import { ConfirmPopover } from './ConfirmPopover';
 import { CopyMenu } from './CopyMenu';
 import { CodeGlyph, ImageGlyph, MarkdownGlyph, SmallClockGlyph } from './glyphs';
 import { embedSnippet, liveImageHtml, liveImageMarkdown, type ShareHandOver } from './handover';
