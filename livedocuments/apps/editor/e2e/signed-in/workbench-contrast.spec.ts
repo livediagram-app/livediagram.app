@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { auditContrast, type ContrastReport } from '../contrast';
-import { expect, expectNoPageErrors, openStartBlank, test } from '../fixtures';
+import { expect, expectNoPageErrors, startBlankDocument, test } from '../fixtures';
 import { WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
@@ -86,9 +86,9 @@ for (const scheme of ['dark', 'light'] as const) {
       await page.route('**/api/workbench/pairings', (route) =>
         route.fulfill({ json: { pairings: [PAIRING] } }),
       );
-      // Settings opens on its deep link wherever the editor is (a blank design here; the Explorer is
-      // liveworkspace.app's).
-      await openStartBlank(page);
+      // Settings opens on its deep link wherever the editor is (a blank document here, made on the server as the
+      // signed-in account, so no This Browser copy asks to move; the Explorer is liveworkspace.app's).
+      await startBlankDocument(page);
       await page.goto(`${new URL(page.url()).pathname}?settings=tokens`);
       const pairings = page.getByRole('list', { name: 'Paired workbenches' });
       await expect(pairings.getByText('Acme Editor')).toBeVisible();

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { E2E_SESSION_KEY } from '../../lib/workbench-keys';
+import { adoptAccount } from '../fixtures';
 
 // A signed-in session for the signed-in e2e specs (docs/specs/003-system-architecture/e2e-smoke.md
 // "Signed-in specs").
@@ -27,8 +28,11 @@ export async function installSession(page: Page, user: StubUser | null): Promise
       `/e2e/token?sub=${id}&email=${encodeURIComponent(user.email)}`,
     );
     if (!res.ok()) throw new Error(`minting an access token failed: ${res.status()}`);
+    const token = await res.text();
+    // What the spec then makes through the api (a document's folder, a seed) is this account's.
+    adoptAccount(page, id, token);
     session = JSON.stringify({
-      token: await res.text(),
+      token,
       userId: id,
       email: user.email,
       firstName: user.firstName,
