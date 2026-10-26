@@ -20,11 +20,11 @@ Work in livediagram is saved automatically as you go, so missing changes are usu
 2. **Check the right canvas.** It is easy to have two similar canvases open. Open [your canvases](/explorer/recent) and confirm you are in the one you edited.
 3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's canvases. If you just signed in, your guest canvases move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
 4. **Reload the page.** A refresh reloads your saved canvas and clears any temporary display issue.
-5. **Check whether the tab was a Plan tab.** Plan mode moved to [liveplanner](https://liveplanner.app), livediagram's sister app for planning work. A tab that was in Plan now opens in Diagram with its ordinary elements, but its boards, cards, sheets, dashboards and forms are no longer shown. See [Editor Modes](/help/canvas/editor-modes/).
+5. **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms belong to [liveplanner](https://liveplanner.app), livediagram's sister app for planning work. livediagram opens such a tab in Diagram with its ordinary elements and does not show those parts. See [Editor Modes](/help/canvas/editor-modes/).
 
 ## How saving works
 
-Changes are saved automatically after you make them, per tab, to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
+Changes are saved automatically after you make them, per tab: to the server for a synced canvas, and to this browser's storage for a canvas in [This Browser](/help/privacy-and-security/offline-mode/). There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
 There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
 
@@ -57,11 +57,11 @@ If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the 
 
 ## What collaboration does and doesn't protect
 
-**Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another. That was not always true, and it is the single most common shape of "my change vanished".
+**Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another.
 
 **Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while another editor has it selected, so you can see that it is spoken for before you start.
 
-If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the canvas, still without a page reload.
+If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection doesn't cost you your place. If it has been away too long to catch up, it re-fetches the canvas, still without a page reload.
 
 If you have checked the right tab, canvas, and identity, reloaded, and the change is still missing, [contact us](/help/contact/) with the canvas URL and roughly when you made the edit.
 

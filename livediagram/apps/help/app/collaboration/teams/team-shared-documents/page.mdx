@@ -12,9 +12,9 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Team Shared Canvases" description="A shared library of canvases and folders that everyone on the team can manage." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "team-shared-canvases")}>
 
-Every team has a shared library: a folder tree plus canvases that all joined members can see and manage. It works just like your personal folder tree, only shared. It appears as a **Team canvases** card on the team page in the Explorer.
+Every team has a shared library: a folder tree plus canvases that all joined members can see and manage. It works just like your personal folder tree, only shared. It is listed on the team's page in the Explorer, below the team's card.
 
-<Figure caption="A team's library shows one folder level at a time, under the Team canvases breadcrumb, with the view toggle and Create.">
+<Figure caption="A team's library shows one folder level at a time, under the team's breadcrumb, with the view toggle and Create.">
   <TeamSharedTree noun="canvas" />
 </Figure>
 
@@ -31,7 +31,7 @@ Deleting a team canvas moves it to the team's Trash, which every joined member c
 
 Joined membership grants edit access to every canvas in the library. There are no per-folder or per-member permissions inside a team: everyone who has joined can manage everything. People with a pending, un-accepted invite get nothing until they accept.
 
-A few things stay with the canvas's **owner** (the person who created it, or who moved it in): creating [share links](/help/collaboration/sharing/) and setting a share password. Other members open the canvas directly from the library and don't need a link. A team canvas also can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the team.
+Any member can [share](/help/collaboration/sharing/) a team canvas: create, extend and revoke its passes and set its share password, as its owner (the person who created it, or who moved it in) can. Members themselves open the canvas directly from the library and don't need a link. A team canvas also can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the team.
 
 ## How canvases are placed
 
@@ -42,7 +42,7 @@ A canvas lives in exactly one place: your personal tree, or one team's library. 
 - **Moving a canvas to another team** whose members don't include its owner also transfers ownership to you, so the canvas never stays owned by someone outside the team that holds it.
 - **Re-foldering within the team** can be done by any joined member.
 
-**Change Folder** opens a browser of every place you can file a canvas: pick a space first (**My Work**, or one of your teams), then browse into the folder you want, so you can file a canvas anywhere you have access from one place. A canvas already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back, under **All spaces**, so a team canvas can always be moved back to your personal tree.
+**Change Folder** opens a browser of every place you can file a canvas: pick a space first (**My Work**, or one of your teams), then browse into the folder you want, so you can file a canvas anywhere you have access from one place. A canvas already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team canvas can always be moved back to your personal tree.
 
 ## When someone leaves
 

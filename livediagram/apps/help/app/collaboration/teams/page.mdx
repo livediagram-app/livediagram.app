@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamMembers, TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import {
+  TeamMembers,
+  TeamSharedTree,
+} from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Teams',
@@ -34,11 +37,11 @@ Admins add people by email address at the foot of the team's card, or share a jo
 
 ## The shared library
 
-Every team has its own folder tree of canvases, shown as a **Team canvases** card on the team page. Any joined member can create, rename, duplicate, move, and delete canvases there, so the work belongs to the whole team rather than to one person. Team canvases also turn up in your Recent list, marked **Team**. See [Team Shared Canvases](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+Every team has its own folder tree of canvases, listed on the team page below the team's card. Any joined member can create, rename, duplicate, move, and delete canvases there, so the work belongs to the whole team rather than to one person. Team canvases also turn up in your Recent list, marked **Team**. See [Team Shared Canvases](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
 
 Inside a team canvas, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
-<Figure caption="The Team canvases card holds the team's shared folders and canvases, which every member can manage.">
+<Figure caption="The team's library holds its shared folders and canvases, which every member can manage.">
   <TeamSharedTree noun="canvas" />
 </Figure>
 

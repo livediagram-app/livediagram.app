@@ -14,7 +14,7 @@ hand, which is the friction the import exists to remove. This is also free,
 offline, instant, and testable against images we draw ourselves.
 
 Reading the handwriting on each detected note is a separate job, done by a
-reader the caller picks ([Event storming](../../docs/specs/021-event-storming/event-storming.md) Phase 9: in-browser OCR in the editor). This
+reader the caller picks ([Event storming](../../docs/specs/021-event-storming/event-storming.md) Phase 9: a small vision-language model the editor runs in the browser, or a hosted vision model when the deployment has a key). This
 package never sees text; it only finds paper.
 
 ## The pipeline

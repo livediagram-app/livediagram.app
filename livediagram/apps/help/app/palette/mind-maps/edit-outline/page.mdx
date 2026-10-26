@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('mind-maps').filter((a) => a.slug !== 'edit-outline')}
 >
 
-Dragging nodes around one at a time is slow when you want to rethink a whole map. **Edit Outline** opens the map as a list instead, one row per node, so you can reshuffle it the way you would reorganise notes in a canvas.
+Dragging nodes around one at a time is slow when you want to rethink a whole map. **Edit Outline** opens the map as a list instead, one row per node, so you can reshuffle it the way you would reorganise notes in a document.
 
 ## Open it
 
@@ -60,7 +60,7 @@ Select some text in a row and press **Bold**, **Italic** or **Underline** on the
 
 ## Paste a list in
 
-Paste several lines into a row and they arrive as rows after it, at its level (pasted into the root, they become its children; pasted into an empty row, the first one takes its place). Pasting is forgiving, so a list from a canvas or another app works:
+Paste several lines into a row and they arrive as rows after it, at its level (pasted into the root, they become its children; pasted into an empty row, the first one takes its place). Pasting is forgiving, so a list from a document or another app works:
 
 - Bullets (`-`, `*`, `+`), numbered items and indented lines nest by their indentation, and `#` headings nest by their `#` count (a `#` and a `##` arrive at the same level).
 - `**bold**`, `_italic_` and `<u>underline</u>` become formatting.

@@ -16,7 +16,16 @@ livediagram --help
 
 ## Sign in
 
-Create an API token in livediagram (Settings › API Tokens), then either set it for a command:
+You need a livediagram account. Sign in through your browser, or with a device code on a machine without one:
+
+```bash
+livediagram auth login            # opens a sign-in page
+livediagram auth login --device   # prints a page and a code to enter on any device
+```
+
+Either creates an API token named **livediagram CLI**, with an optional **Read-only access** switch. For CI and agents,
+create a token on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens) (up to 20 at a time, each
+optionally read-only), then either set it for a command:
 
 ```bash
 export LIVEDIAGRAM_TOKEN=lwt_...
@@ -28,7 +37,8 @@ or store it for this machine:
 printf %s "$TOKEN" | livediagram auth login --with-token
 ```
 
-The CLI never prompts. Another livediagram server, such as local development, is reached with `--host https://…` or `LIVEDIAGRAM_HOST`.
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes and CI. Another livediagram
+server, such as local development, is reached with `--host https://…` or `LIVEDIAGRAM_HOST`.
 
 ## Start
 

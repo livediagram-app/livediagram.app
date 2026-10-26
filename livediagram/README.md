@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client, the licences generator, test fakes, configs
+packages/    this product's document model, wire-format types, UI, template catalogue + template previews, help-article registry, agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client and licence tables (the api client, icons, configs and the rest are the monorepo's shared @liveworkspace/* packages)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -30,7 +30,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
+- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
 - **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
 - **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in), Cloudflare Email Service (transactional email, gated on its `send_email` binding), and OpenAI (the AI assistant), each gated on its own key or binding — and the editor runs fully without any of them.
+[MIT](LICENSE). A free hosted version runs at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in, Cloudflare Email Service for transactional email, gated on its `send_email` binding, and a vision model for reading sticky-note photos, Google AI Studio or any OpenAI-compatible endpoint, gated on its key), and the editor runs fully without any of them: without a key, the photo import reads notes with a model in the browser.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

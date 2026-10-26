@@ -1459,7 +1459,7 @@ export const articles: Article[] = [
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one canvas: add, name, reorder, and switch between them.',
+    description: 'Multiple tabs in one canvas: add, name, reorder, and switch between them.',
     keywords:
       'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start document',
     category: 'Tabs',
@@ -1921,7 +1921,8 @@ export const articles: Article[] = [
   {
     slug: 'shadows',
     title: 'Element Shadows',
-    description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
+    description:
+      'Lift an element with a drop shadow: None or four presets, plus offset/blur sliders.',
     keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
     category: 'Canvas',
     categorySlug: 'canvas',
