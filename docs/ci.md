@@ -20,10 +20,11 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 | platform      | `packages/`, `liveworkspace/` |                         |
 
 A group the change never reached runs no jobs. The base is the pull request's base, or for a push to
-`main` the commit before it. Everything runs when there is no base (a manual run, or a branch's first
-push), or when the change touches something every workspace leans on without turbo seeing it as
-theirs: `.github/`, the root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, a base `tsconfig`,
-or the Prettier config.
+`main` the commit before it. Everything runs when there is no base to compare with, or when the
+change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
+root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
+Prettier config and ignore file, or a product folder's own `package.json`, `tsconfig.base.json` or
+Prettier files.
 
 Turbo's own cache (`.turbo/cache`) is kept between runs with GitHub's cache, saved on `main` only and
 read by pull requests, so a workspace whose inputs haven't changed since `main`'s run replays its
@@ -117,7 +118,9 @@ each product's api, sites, MCP and router, and the platform's services and site.
 - **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, that commit
   deploys to every Worker's `[env.staging]`. A run for a commit `main` has already moved past is skipped,
   and the newer commit's run deploys both. Runs queue rather than cancel, so a deploy is never cut off
-  halfway. It can also be run by hand, with **all** to redeploy every Worker.
+  halfway. It can also be run by hand, with **all** to redeploy every Worker. A run by hand skips the
+  check for `main`'s tip and deploys the head of the branch it was started on, moving
+  `deployed/staging` there, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
   tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs. A
   `ref` ships another commit; one older than production's own (a rollback) redeploys every Worker, as
@@ -132,9 +135,12 @@ files or dependencies changed is never rebuilt or redeployed. A change to `.gith
 config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no tag yet, everything deploys.
 
-**Order.** Three tiers, each waiting for the one before: the services and apis (with D1, migrations
-apply before the code: `wrangler d1 migrations apply`), then the sites and MCP Workers, then the routers
-in front of them. A failing tier stops the ones after it.
+**Order.** Three tiers, each waiting for the one before: first each product's api and every
+liveworkspace Worker but the site (with D1, migrations apply before the code: `wrangler d1 migrations
+apply`), then the sites and MCP Workers, then the routers in front of them. Two exceptions
+(`TIER_OF` in `ci-plan.mjs`): accounts deploys with the sites, once every Worker that checks its tokens
+accepts the issuer it signs with, and liveworkspace's bare-domain redirect with the routers, once
+`www.` answers. A failing tier stops the ones after it.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
 product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's
