@@ -234,12 +234,12 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
 9. Each failure is `offsetPx` to 0.01 with `where` = up to three ancestors (tag plus `aria-label` /
    `data-testid`) and the first 24 characters of text.
 
-**Screens** (each `expect.soft(failures).toEqual([])` and `measured > 0`): wizard steps 1 and 2; the
-editor with a seeded design and its default panels, a shape selected, Settings, Share; the Join dialog;
-the Explorer; help home, a category and an article; the telemetry dashboard; marketing home
-and a feature page. Help and telemetry are same-origin under the e2e stack; marketing is on
-`E2E_MARKETING_PORT` (default `3413`). Against dev servers: `E2E_HELP_URL`, `E2E_TELEMETRY_URL`,
-`E2E_MARKETING_URL`. A site that is not built fails with the build command to run.
+**Screens** (each `expect.soft(failures).toEqual([])` and `measured > 0`): `/new`; the editor with a
+seeded design and its default panels, a shape selected, Settings, Share; the Join dialog
+(`optical-audit.spec.ts`); help home, a category and an article; marketing home and a feature page
+(`optical-audit-sites.spec.ts`). Help is same-origin under the e2e stack; marketing is on
+`E2E_MARKETING_PORT` (default `3413`). Against dev servers: `E2E_HELP_URL`, `E2E_MARKETING_URL`. A site
+that is not built fails with the build command to run.
 
 ## Static guard
 

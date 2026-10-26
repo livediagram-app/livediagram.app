@@ -43,9 +43,8 @@ The editor's `/new` page reads it once on arrival and then:
   URL they share.
 - Sends `Cta·Opened·<source>` straight away.
 - Holds the source for the life of the page and sends `Cta·Created·<source>`
-  beside the usual `Document·Created` when the design is committed, whichever
-  path committed it (the wizard's Create, its Skip, or a Start Blank / template
-  bypass).
+  beside the usual `Document·Created` when the design is committed, whatever
+  link committed it (`/new`, Start Blank or a template).
 
 So the marketing site still sends **only page views** ([Page view telemetry](../017-telemetry/page-view-telemetry.md)): no click
 handlers, no new emitter. Everything new is sent by the editor, which already
@@ -68,49 +67,39 @@ serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.
 
-| Surface     | Pages it covers                    | Slots                                                                                                                                                                                                                                                                                  |
-| ----------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surface     | Pages it covers                    | Slots                                                                                                                                                                                                                                                                                               |
+| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Home`      | `/`                                | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `HeroDraw`, `HeroBrainstorm`, `HeroCanvas`, `HeroBuild`, `HeroSearch`, `HeroBlank`, `HeroBlankDraw`, `HeroBlankSession`, `HeroBlankIllustration`, `HeroFan`, `HeroBoard`, `Gallery`, `GalleryDraw`, `Closing` |
-| `Feature`   | `/features/<id>`                   | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `Templates`, `Closing`                                                                                                                                                                           |
-| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
-| `Faq`       | `/faq`                             | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                   |
-| `Ai`        | `/ai`                              | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
-| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                           |
+| `Feature`   | `/features/<id>`                   | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Hero`, `Templates`, `Closing`                                                                                                                                                                                        |
+| `Compare`   | `/alternatives`, `/alternatives/*` | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                                |
+| `Faq`       | `/faq`                             | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `Card`                                                                                                                                                                                                                |
+| `Ai`        | `/ai`                              | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
+| `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
+| `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
+| `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderIllustration`, `HeaderSession`                                                                                                                                                                                                                        |
 
 The slots:
 
 - `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
   pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so its `HeaderBlank` no longer fires.
-- `HeaderDraw` / `HeaderIllustration` / `HeaderSession` (**retired** in October 2026 with the Start Blank
-  menu, [Start Blank](marketing-site.md#start-blank); the slots stay so their stored history still reads):
-  the menu's rows beside Choose Template. The help centre's header has one Start button, its `Header`.
+  bar has no Start Blank, so it never reports `HeaderBlank`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
-- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's old three buttons. On a feature page, `Hero` is the category hero's
-  start button.
-- `HeroBuild` (**retired** with the hero's stage in October 2026; the slot stays so its history still
-  reads): the **Build yours** button on each of the hero's old windows, opening the template
-  step narrowed to that window's kind.
+- `Hero`: on a feature page, the category hero's start button.
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
 - `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
-- `HeroBlank<Blank>` (**retired** with the Start Blank menu in October 2026; the slots stay so their history
-  still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
-  header's `Header<Blank>`.
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
 - `HeroBoard`: one of the template cards in the hero's moodboard, shown from `xl` (`/new?template=<kind>`).
-- `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
-  into the editor.
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
-  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**
-  when the gallery's search moved to the hero in October 2026) was the blank-canvas link shown when a
-  gallery search matched nothing.
+  `Template·Used`, so it is not repeated in the source.
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
 - `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
+- **Kept slots.** `HeaderDraw`, `HeaderIllustration`, `HeaderSession`, `HeroDraw`, `HeroBrainstorm`,
+  `HeroCanvas`, `HeroBuild`, `HeroBlankDraw`, `HeroBlankSession`, `HeroBlankIllustration` and `GalleryDraw` stay in
+  `CTA_SOURCES` with no link carrying them, so a page a browser still has cached reports and the dashboard labels
+  their stored rows. On the landing page, `Hero` is one of them too.
 
 A link into `/new` from a public page with no source (the Explorer
 footer's Editor link, a link inside a help article) is deliberately not a CTA and is not
@@ -160,8 +149,7 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 ### The Dashboard tab
 
 A **Calls to Action** chart stack (CTA Arrivals and Designs from CTAs, headed by
-Designs from CTAs) sits beside the funnel in the Pages section; it left the
-Dashboard's Visitors group in October 2026.
+Designs from CTAs) sits beside the funnel in the Pages section.
 
 ## Out of scope
 

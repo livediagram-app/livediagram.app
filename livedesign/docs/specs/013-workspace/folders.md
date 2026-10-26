@@ -37,9 +37,8 @@ In scope:
   folders, so a freshly created design is in plain sight.
 - A per-design-row "Move to folder…" menu item. The picker is a
   centred modal (`MoveToFolderDialog`) around the **shared placement
-  browser** — the same two-level space -> folder tile-grid browse as
-  the New Design wizard's Save In step ([Offline Mode](../006-design/offline-mode.md),
-  `components/placement/PlacementBrowser`), so the product has exactly
+  browser** (the shared Explorer's `PlacementBrowser`,
+  [Save Locations](../006-design/save-locations.md#the-folder-browser)), so the product has exactly
   one way to choose where a design lives. Spaces first (My Work +
   each team, [Team shared designs](team-shared-designs.md), on an overview that is shown even when My
   designs is the only space, so the choice is deliberate and the screen has
@@ -247,8 +246,8 @@ for.
   `placement: rejected reason=<code> scope=personal|team`, and
   `placement: skipped reason=existing` for a re-commit.
 
-What a caller does with a rejection is its own: the New Design wizard shows it
-([Dedicated route for new-design creation](../007-editor/new-design-route.md)), an Offline
+What a caller does with a rejection is its own: `/new` shows it
+([New design route](../007-editor/new-design-route.md#placement-rides-the-create)), an Offline
 Mode sync files the design at the root of My Work on a refused folder, saying so in its log
 ([Offline Mode](../006-design/offline-mode.md)).
 
@@ -313,20 +312,16 @@ toggle ([Live app](../007-editor/live-app.md)).
 - **Drag-and-drop**: design rows are HTML5-draggable. Drop targets
   are personal folder rows (any nested depth) and the My Work
   row, which files the design at the root. Drag-over highlights the target with a brand-blue ring so
-  the user sees where the design will land. Drop fires the same
-  `onMoveDesignToFolder(designId, targetFolderId)` callback the
-  picker uses, so the move travels through the same API path and
-  optimistic update. Drag transfer uses a custom MIME type
-  (`application/x-livedesign-id`) so dragging a design never
-  triggers a browser navigation when dropped outside any target.
-  The editor's Explorer floats over the canvas, so the canvas's own drop
-  handling stands aside for a drag a target inside it has already
-  accepted; otherwise its "dropped back on a panel" guard would turn the
-  folder's accepted move into a no-drop (`usePaletteDrop`).
+  the user sees where the design will land. A drop takes the same
+  path as the move picker, so the move travels through the same index
+  call and optimistic update. Drags carry the shared Explorer's own
+  types (`application/x-liveworkspace-item`, `-folder`,
+  `-this-browser`, `packages/explorer/src/drag/drag.tsx`), so dragging
+  a design never triggers a browser navigation when dropped outside any target.
   On the Explorer page a design, or one of the reader's own folders, can also be dragged onto the sidebar's
   **Trash** row to delete it ([Explorer structure: Dragging to the Trash](explorer-structure.md#dragging-to-the-trash)).
   **Resting a drag on a row with a chevron** for 800 ms
-  (`DRAG_HOVER_TOGGLE_MS`) opens it, so a design reaches a subfolder in
+  (`DRAG_HOVER_OPEN_MS`) opens it, so a design reaches a subfolder in
   one gesture; resting on an open row closes it. One rest toggles once:
   the row toggles again only after the drag has left it and come back.
   A drag passing over a row never toggles it.
@@ -385,8 +380,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   team's, one in this browser) drags from its list row or card; a
   design shared with them does not, nor one being renamed. It drops on
   a sidebar folder, My Work (the root), a team or team folder, or a
-  folder row or card in the pane. The drop takes the move picker's path
-  (`moveDesignTo`), so it moves within a space or across spaces exactly
+  folder row or card in the pane. The drop takes the move picker's path,
+  so it moves within a space or across spaces exactly
   as a pick does, with the same toast, rollback and telemetry. Dropping
   on the place the design already is does nothing. A design in this
   browser shows no drop on a team (the team's library is server-side).
@@ -434,8 +429,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     Explorer's own moves say (above), with the same log line.
   - Each other failure logs `[folders] <verb> failed`,
     `[team-folders] <verb> failed` or `[team-library] <what> failed` with
-    the error. These used to fail silently: a New Folder that did nothing, a
-    rename that snapped back.
+    the error, never failing silently.
 - **Selection state**: the selected sidebar row is the current route;
   which branches are expanded is session-local state that doesn't
   survive reload ([Explorer structure](explorer-structure.md#expansion)).

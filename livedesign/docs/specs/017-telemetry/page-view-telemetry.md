@@ -5,28 +5,26 @@ Status: shipped
 ## What
 
 Count **every page viewed** across the site, by page: the landing and other
-marketing pages, each help article, the Explorer's pages, the editor, and the
-`/telemetry` dashboard itself. A view is recorded whether the page arrived as a
+marketing pages, each help article, the Explorer's pages and the editor. A view is recorded whether the page arrived as a
 full load (typed URL, shared link, refresh) or as a client-side navigation
 inside a Next app (Explorer → a design, one help article → another).
 
-The dashboard gets a **Pages** tab of page views for the selected
-window, broken down by app (Marketing, Live, Help, Dashboard).
+The dashboard's **Pages** section shows page views for the selected
+window, broken down by app (`pageViewApp`: Marketing, Live, Help, and Dashboard for a
+`/telemetry` path, which livedesign's router redirects to liveworkspace's dashboard).
 
 ## Why
 
-The existing telemetry ([Telemetry + public transparency dashboard](telemetry.md)) counts what people _do_ in the editor and
-which help articles get read, but nothing says which pages people _land on_ or
-move between. "Is anyone reading the alternatives pages?", "how many people who
-hit the landing page reach `/new`?", "is `/explorer/timeline` used?" had no
-answer.
+The other events ([Telemetry + public transparency dashboard](telemetry.md)) count what people _do_ in the editor and
+which help articles get read; page views say which pages people _land on_ and
+move between: "is anyone reading the alternatives pages?", "how many people who
+hit the landing page reach `/new`?", "is `/explorer/timeline` used?".
 
 ## Why the browser, not the router
 
-The router ([Router app](../016-platform/router-app.md)) sees every request, so it looked like the cheap place to
-count. It is the wrong one, for two reasons:
+The router ([Router app](../016-platform/router-app.md)) sees every request, but it is the wrong place to count, for two reasons:
 
-1. **It cannot see client-side navigations.** All four frontends are Next apps.
+1. **It cannot see client-side navigations.** All three frontends are Next apps.
    Moving between their pages fetches no HTML, so the router sees first loads
    and refreshes only; the Explorer → editor hop, the most interesting one, is
    invisible to it.
@@ -43,8 +41,8 @@ A page view is an ordinary [Telemetry + public transparency dashboard](telemetry
 `/help/canvas/the-canvas`, `/explorer/recent`, `/design`.
 
 Carrying it as an event rather than a new table or endpoint means it rides the
-whole existing pipeline unchanged: the buffered emitter, the page-hide beacon,
-the central ingest's abuse controls, liveworkspace's events table, the 60-day retention sweep, the
+whole pipeline: the buffered emitter, the page-hide beacon,
+the central ingest's abuse controls, liveworkspace's storage and retention, the
 summary's per-window counts and per-metric 30-day series, and the dashboard's
 ranking cards. One row per view, like every other event.
 
@@ -105,17 +103,17 @@ whether or not the design exists.
 - The same path twice in a row is not counted twice. This suppresses React
   StrictMode's dev-only double effect; in production a path can't repeat
   without a navigation in between, and a real reload starts a fresh page.
-- `Help·View·<slug>` ([Help app](../018-help/help-app.md)) stays. It predates this, is keyed by slug and
-  drives the Pages & Help tab's Help section; the two overlap for articles by design.
+- `Help·View·<article id>` ([Help app](../018-help/help-app.md)) counts help articles too, keyed by article id,
+  and drives the Pages & Help tab's Help section; the two overlap for articles by design.
 
 ## Who emits
 
 All three frontends, each through the shared engine with the same policy as the
-existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
+other emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
-- **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
+- **editor** (`apps/live`) and **help centre** (`apps/help`), beside their other events.
 - **marketing** (`apps/marketing`): its _only_ event is the page view: it mounts the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel
@@ -123,46 +121,19 @@ preferences key.
   without changing that: each CTA's link names its button, and the editor
   sends the `Cta` events.
 
-This changes [Telemetry + public transparency dashboard](telemetry.md)'s "never the static marketing site" rule: the marketing
-site now reports page views, and nothing else. It is still first-party, sent to
-our own api, anonymous, cookie-free and opt-out-able, and the "0 third-party
+The marketing site reports page views and nothing else. They are first-party, sent to
+liveworkspace's own telemetry service, anonymous, cookie-free and opt-out-able, and the "0 third-party
 trackers" claim stays literally true. The privacy policy and What We Collect
 article say so.
 
 ## Dashboard
 
-A **Pages** tab (`PagesView`) reads page views **by app**: Marketing, Live
-(the editor app), Help and Dashboard. The app is derived from the path's first
-segment using the same live route-segment list the router routes by (shared
-from `@livedesign/api-schema`, so the dashboard and router can't disagree
-about which app serves a path). Top to bottom:
+The dashboard is liveworkspace's ([Telemetry + public transparency dashboard](telemetry.md) "Dashboard"). Its **Pages** section (Pages & Help) reads page views **by app**: Marketing, Live (the editor app), Help and Dashboard. The app is derived from the path's first segment using the same live route-segment list the router routes by (`LIVE_ROUTE_SEGMENTS` and `pageViewApp` in `packages/api-schema/src/page-views.ts`), so the dashboard and router can't disagree about which app serves a path.
 
-- **Views by app** now lives on **Dashboard** as the **Page Views by App**
-  chart stack ([Telemetry + public transparency dashboard](telemetry.md)): a head plotting each app's line with the combined
-  count, opening into one card per app (the shared metric card, matching a set
-  of paths rather than one type). The per-card "N% of page views" line went
-  with the move, since catalogue charts are fixed definitions and the share
-  depends on the selected window; each app's count sits in the head's legend.
-- **Top pages.** The ten most-viewed pages across every app, then each app's
-  own top ten, as ranking cards, each row labelled with the raw path (not
-  title-cased) with its share bar and 30-day sparkline, balanced across two
-  independent columns ([Telemetry + public transparency dashboard](telemetry.md) `CardColumns`): apps serve very different
-  numbers of pages, and grid rows stretched each short card to the tallest
-  beside it.
+- **Page Views by App** is a chart stack on the Dashboard: a head plotting each app's line with the combined count, opening into one card per app (a set of paths rather than one type).
+- **Top pages.** The ten most-viewed pages across every app, then each app's own top ten, as ranking cards, each row labelled with the raw path (not title-cased) with its share bar and 30-day sparkline.
 
-Removed in September 2026: an **Insights** row (landing, wizard, explorer,
-sign-up and help rates plus pages per visitor, each counted from the day page
-views began), a **Rising pages** card (biggest gain over the
-last 7 days against the 7 before), and the **All pages** list of every page
-(Search still reaches any single page; the Raw tab that also did was removed). The ten most-viewed
-pages were briefly a stack opening into the per-app lists; a set of rankings
-read side by side on the page is not a stack.
-
-The page-view helpers live in `../liveworkspace/apps/site/app/telemetry/_shared/page-views.ts`, pure and
-tested apart from the view.
-
-Page views are events, so they also count toward the window totals and Search
-like any other category.
+The page-view helpers live in `../liveworkspace/apps/site/app/telemetry/_shared/page-views.ts`, pure and tested apart from the view. Page views are events, so they also count toward the window totals and Search like any other category.
 
 ## Out of scope
 

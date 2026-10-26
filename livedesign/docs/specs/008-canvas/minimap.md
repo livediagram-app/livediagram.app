@@ -24,9 +24,8 @@ lets you jump the viewport anywhere with a tap or drag.
   help article's URL, and search keywords, so existing links, data and
   dashboards keep working and a reader typing "minimap" still finds it.
   The panel header keeps only the standard **Reset position** button, shown
-  once the map has left its default corner. It used to carry a settings gear
-  of its own; that popover was removed when every preference was centralised,
-  since one setting with two controls is one control too many.
+  once the map has left its default corner. It has no settings gear of its own:
+  every preference lives in the Settings dialog, since one setting with two controls is one control too many.
 - **What it shows.** A **full-fidelity miniature of the tab**: the map is
   drawn by the SAME headless renderer the exports / live image use
   (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its

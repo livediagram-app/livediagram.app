@@ -1,8 +1,8 @@
 # Within reach: blueprint
 
-Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
-surfaces that use the rule own their own blueprints ([Explorer Home, data](../../013-workspace/blueprints/explorer-home.md),
-[Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md)); this one is the allocation they share.
+Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. Home is the
+shared Explorer's view over liveworkspace's index; the local opens of an Offline Mode design follow
+[Explorer Home view](../../013-workspace/blueprints/explorer-home-view.md). This file is the allocation they share.
 
 Scope, by file:
 

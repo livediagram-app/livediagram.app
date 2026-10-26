@@ -103,7 +103,7 @@ page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`
 A template picked here on a design `/new` just made goes to that template's default folder, unless the design
 was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default
 folders](../013-workspace/default-folders.md) "A template picked after creation"). The move loads only at the pick
-(`useTemplatePickMove`, a dynamic import of `move-on-template-pick.ts`).
+(`useTemplatePickMove`, over `moveOnTemplatePick` in `@liveworkspace/explorer`'s `defaults/template-pick.ts`).
 
 ## The tour waits
 

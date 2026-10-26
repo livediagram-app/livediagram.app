@@ -10,7 +10,7 @@ Derived from [Trusted Types](../trusted-types.md).
 | Markup policy    | `MARKUP_POLICY` (`'liveworkspace-markup'`)     | Makes `TrustedHTML` from livedesign's own builders' markup                                   |
 | Default policy   | `'default'`                                    | The browser's fallback for a plain string at a sink                                          |
 | Boot script      | `trustedTypesBootScript(assetPrefix, origins)` | Inline, first in each layout's `<head>`: the default policy and the violation log            |
-| Asset prefix     | `''`, `/live`, `/help`, `/telemetry`           | Where an app's own build is served from (`assetPrefix` or `basePath`)                        |
+| Asset prefix     | `''`, `/live`, `/help`                         | Where an app's own build is served from (`assetPrefix` or `basePath`)                        |
 | Markup helper    | `trustedHtml(markup)`                          | `TrustedHTML` in a browser with Trusted Types, else the string itself                        |
 | Allowed origin   | `origins` (default `[]`)                       | Third-party script origins the default policy lets through; none since sign-in left the page |
 
@@ -20,9 +20,9 @@ Derived from [Trusted Types](../trusted-types.md).
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                      |
 | `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `isAllowedScriptUrl`, `trustedTypesBootScript`; exported from `@livedesign/ui` and `@livedesign/ui/trusted-types` |
-| `apps/*/app/layout.tsx` (all four)                           | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it        |
+| `apps/*/app/layout.tsx` (all three)                          | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix), first in `<head>`; help and telemetry gain a `<head>` for it        |
 | `apps/live/src/worker.ts`                                    | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                          |
-| `apps/{marketing,help,telemetry}/public/_headers`            | The same header on `/*`                                                                                                          |
+| `apps/{marketing,help}/public/_headers`                      | The same header on `/*`                                                                                                          |
 | `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                      |
 | Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                    |
 | Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                          |
@@ -84,9 +84,8 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 
 ### Third-party origins
 
-None. Every layout calls `trustedTypesBootScript(prefix)` with no origins, so `ORIGINS` is `[]`. Sign-in used to load
-Clerk's script (from the origin in its publishable key) and Cloudflare Turnstile for its sign-up CAPTCHA; it now
-happens on the accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
+None. Every layout calls `trustedTypesBootScript(prefix)` with no origins, so `ORIGINS` is `[]`. Sign-in happens on the
+accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
 `origins` stays as a parameter for a third party that one day needs it.
 
 ## Interfaces and contracts

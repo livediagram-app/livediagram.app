@@ -31,9 +31,8 @@ blocks on a network round-trip at boot.
   (`splitSettings`), so the editor sees one flat set. A shared key changed
   here changes in every app that has it, and the Settings dialog marks those
   rows with a quiet **All apps** note under their description.
-  The editor settings that became shared in October 2026 were this app's own
-  before, so a value may still sit in this app's scope: `joinSettings` uses it
-  until `all` has one, and the first change writes `all` and drops the old copy.
+  A shared key's value may still sit in this app's scope: `joinSettings` uses it
+  until `all` has one, and the first change writes `all` and drops the app's copy.
 - **Owners.** A signed-in person's settings are their account's
   (`user_…`). A guest's are kept under their server-minted guest id
   (`guest_<id>` to the accounts Worker), so a guest who clears
@@ -233,21 +232,20 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Pages tour's seen record (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
+  // The Pages tour's seen record (docs/specs/007-editor/pages-tour.md): true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been taken (completed or skipped; declined too, until 25 October
-  // 2026). Feeds Settings' row per kind (Logo Tour, ...), which adds or removes its own kind, and which page a
+  // The page kinds whose Pages tour track has been taken (completed or skipped). Feeds Settings' row per kind (Logo Tour, ...), which adds or removes its own kind, and which page a
   // Start Pages Tour press prefers; it never hides the button.
   pagesTourKinds?: PageKind[];
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
-  // (Play or Cancel on the offer toolbar, until 25 October 2026). Surfaced in Settings as Tours › Show Me, one switch
+  // (a press of Start Tour). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted); it never hides the Start Tour button.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
-  // DEAD (docs/specs/012-collaboration/presentation-mode.md): the presenter settings of the retired presentation
-  // mode. Nothing reads or writes this; a stored value is ignored and left in place.
+  // DEAD (docs/specs/012-collaboration/presentation-mode.md): presenter settings livedesign has no use for.
+  // Nothing reads or writes this; a stored value is ignored and left in place.
   presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the design's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -365,13 +363,11 @@ Missing key === undefined === default behaviour. Concretely:
   feature working (see the data model). Emits `UI`/`Toggled`/
   `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
-- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
-  hover preview went with the Activity panel (removed 2026-10-03). A value
-  still stored under either is ignored on read and dropped on the next
-  write; Undo and Redo always show in the bottom-right cluster.
-  `skipLocationStep` went with the New Design wizard's Location step: `/new` never asks where a design
-  goes ([New design route](new-design-route.md#what-new-makes)), so a stored place is dropped the same way
-  and new designs follow the [default folders](../013-workspace/default-folders.md).
+- **Retired keys.** A key no setting reads (`activityPanelEnabled`, the Activity panel's revert hover preview,
+  `skipLocationStep`) is ignored on read and dropped on the next write: Undo and Redo always show in the
+  bottom-right cluster, and `/new` never asks where a design goes
+  ([New design route](new-design-route.md#what-new-makes)), so new designs follow the
+  [default folders](../013-workspace/default-folders.md).
   The keys livediagram stored for its other modes (`pagesModeEnabled`, `infographicModeEnabled`,
   `planModeEnabled`, `recogniseShapes`, `tourSeen`, `planTourSeen`, `planTourTracks`, `workshopTourSeen`,
   `drawTourSeen`, `formTourSeen`, the `whiteboard…` dock keys and `drawPattern`) are ignored the same way.
@@ -430,10 +426,9 @@ that is the only control.
   It is the answer to "I half-remember a setting about layer previews" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
-- **One setting, one control.** The Palette / Layers / Activity / AI / Map
-  gear popovers that used to carry a subset each are gone: once every
-  preference had a row in the dialog, those were five second homes for
-  settings that already had one. A handful of preferences DO keep a second,
+- **One setting, one control.** No panel carries a gear popover of its own
+  settings: every preference has its row in the dialog, and a second home would
+  only drift from it. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
@@ -557,9 +552,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
   email stand-in card, the API Tokens manager), the message ends with a
-  **Sign In** link to `/sign-in/` that returns to the current page. Preferences whose
-  day-to-day home used to be a panel's own gear popover live here now, and
-  only here - see **UI placement** below.
+  **Sign In** link to `/sign-in/` that returns to the current page. Panel preferences live here, and
+  only here: see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds **Pages** (Contents and the logo guides); the
@@ -619,9 +613,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Grouped rows.** Each section of a category is **one card** (`SettingsGroup`),
   iOS grouped-list style: its rows are cells inside it, split by hairlines,
   rather than a card per row. A cell holds the **label** with a **short
-  description** under it (one or two lines; the long paragraphs that used to
-  sit as a footnote under each row's own card made the dialog impossible to
-  skim) and the **control** beside them; a **Learn more** link and an
+  description** under it (one or two lines, so the dialog stays skimmable) and the **control** beside them; a **Learn more** link and an
   **"Also in ..."** line close the description. Labels are **Title Case**.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
@@ -675,12 +667,11 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
-  one **Offer Again** section note. No tour offers itself any more: every tour is started from the footer's
+  one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
   **Start Tour** button, immediately left of Settings, and stays there once taken ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
-  tour when it is on offer right now. (The note's words, and the Show Me section's, still describe tours offering themselves
-  once, as they did until 25 October 2026.) (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
-  for them: a tour is not an accessibility setting.) Every switch is inverted: on means "not taken yet", the
+  tour when it is on offer right now. (The note's words, and the Show Me section's, say tours offer themselves once; none
+  does.) A tour is not an accessibility setting, so the rows are not under Accessibility. Every switch is inverted: on means "not taken yet", the
   preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
   `...SeenOff`), so each dashboard series keeps its meaning.
 
@@ -794,10 +785,8 @@ and the dialog stays as the one complete, browsable index of them.
   button to the browser. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
-  a full keyboard and off on a tablet; it used to sit in Controls, and
-  before that at the foot of the Shortcuts dialog. Below it, the shortcut
-  catalogue renders as collapsible groups, the same content the old dialog
-  listed. The
+  a full keyboard and off on a tablet. Below it, the shortcut
+  catalogue renders as collapsible groups. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is

@@ -92,15 +92,11 @@ view-role sender), and whether a client may originate it at all. The wire payloa
 itself stays `unknown`, so this shares the vocabulary without coupling the room
 to the editor's op shapes.
 
-It used to live in the room worker while the editor kept its own list of the
-kinds it sends and handles, in another app, with nothing comparing them — and
-the mutation branch is the FALL-THROUGH, so a presence kind nobody classified
-became a logged, ordered, replayed mutation. That is how `viewport` ([Follow-me viewport](follow-me-viewport.md))
-shipped: published on every pan at 10 Hz, roughly 26 seconds of one person
-scrolling filled all 256 log slots with camera positions and pushed the replay
-floor past every real mutation, so the next peer whose socket blipped was told to
-`resync` and re-hydrate every tab. A view-only visitor also could not be
-followed, since the role gate drops non-presence ops. Two tests now bracket it:
+The mutation branch is the FALL-THROUGH, so a presence kind nobody classified
+would become a logged, ordered, replayed mutation: `viewport`
+([Follow-me viewport](follow-me-viewport.md)), published on every pan at 10 Hz, would fill all 256 log slots with
+camera positions in about 26 seconds of one person scrolling and push the replay floor past every real mutation, and
+a view-only visitor could not be followed, since the role gate drops non-presence ops. Two tests bracket it:
 the room's suite compares the presence and mutation lists directly (a mutation
 kind in the presence set hands read-only visitors a write path), and
 `room-op-vocabulary.test.ts` in the editor checks the third list — every kind the
@@ -123,11 +119,9 @@ that let `viewport` through.
   outage longer than the attempts (a laptop asleep, wifi gone a while) does not
   end live collaboration for the rest of the session.
 - **The cursor must include the client's own ops.** The relay skips the
-  sender, so a client used to learn seqs only from other people's ops: a
-  reconnect asked for its own ops back, and a session that had heard nothing
-  asked for the whole log. Re-applying ops is harmless for element ops (by id),
-  but a delta replayed twice is wasted work. The
-  room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
+  sender, so a client hearing seqs only from other people's ops would ask for its
+  own ops back on a reconnect, and a session that had heard nothing would ask for
+  the whole log. The room sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
   a different epoch, which the `sync` / `catchup` exchange reconciles). An op
   frame may carry a `ref` (a positive integer the client picks); the room echoes

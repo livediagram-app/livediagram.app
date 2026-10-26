@@ -124,9 +124,7 @@ the identity source changes.
 
 ### 3.4 Access — full read + write, with an optional read-only flag
 
-> **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
-> share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
-> rest become edit tokens.
+A token has no share level ([Share roles](../013-workspace/share-roles.md#outside-the-levels)).
 
 A token grants its owner's **full** access — read AND write, the same surface
 the app has — **unless** it was minted **read-only** (the one scope that

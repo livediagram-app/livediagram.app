@@ -1194,8 +1194,8 @@ separate pages. It is explicit: never run on opening a tab.
 
 Zen shows the sheets alone: no labels, cogs, layout invites or add button.
 
-livedesign has no slides: a tab's pages are not a deck and are not presented (removed 25 October 2026,
-[Presentation mode](../012-collaboration/presentation-mode.md)).
+livedesign has no slides: a tab's pages are not a deck and are not presented
+([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 ## Chrome
 

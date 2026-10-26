@@ -6,8 +6,9 @@ Follow the references below only as needed; never upfront.
 - ./code-block.md - when implementing or changing the code block, its schemes, tokenizer, wrap or edit dialog
 - ./data-charts.md - when implementing or changing pie / bar / line charts, chart palettes, the key or the legend element
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
-- ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
+- ./image-reference-index.md - when implementing or changing `image_refs`, its writers, the push to the media service, or the share and render reads
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
+- ./image-search.md - when implementing or changing the picker's Search tab and its Openverse proxy
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker

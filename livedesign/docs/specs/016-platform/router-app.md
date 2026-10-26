@@ -8,23 +8,30 @@ A small Cloudflare Worker that fronts the apex domain (`livedesign.app`) and rou
 
 ## Routing table
 
-| Path                                                                                                                                   | Forwards to                                                                             |
-| -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `/api`, `/api/*`                                                                                                                       | api worker (`apps/api`)                                                                 |
-| `/telemetry`, `/telemetry/*`                                                                                                           | `301` to the central dashboard, `?app=livedesign.app` (liveworkspace/docs/telemetry.md) |
-| `/help`, `/help/*`                                                                                                                     | help app (`apps/help`), stripped                                                        |
-| `/live/*` (the live app's `_next` assets only)                                                                                         | live app (`apps/live`), stripped                                                        |
-| live page routes: `/design/*`, `/auth/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed/*`, `/oauth/*`, `/offline`, `/icon.svg` | live app (`apps/live`), as-is                                                           |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                       | 308 redirect to `/help/<path>`                                                          |
-| everything else                                                                                                                        | marketing app (`apps/marketing`)                                                        |
+In order; the first match wins.
 
-The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedesign/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
+| Path                                                                                                                                                | Forwards to                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| liveworkspace's pages and their calls (`/sign-in` with `sig`, `/explorer/*`, `/api/workspace/*`, `/api/workbench/*`, `/_liveworkspace/*`, ...)      | liveworkspace.app (`routeToWorkspace`; [Signing in](#signing-in-on-livedesignapp), [The Explorer](#the-explorer-on-livedesignapp)) |
+| previews and a share link's image and card                                                                                                          | liveworkspace's previews (`routeToPreviews`, [liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md))         |
+| `/api/index`, `/api/index/*`                                                                                                                        | liveworkspace's index (`forwardToIndex`), path and query kept                                                                      |
+| the Drive mirror's paths (`isDrivePath`)                                                                                                            | liveworkspace's Drive mirror (`forwardToDrive`), cookies dropped                                                                   |
+| `/api`, `/api/*`                                                                                                                                    | api worker (`apps/api`), as-is                                                                                                     |
+| `/live/*` (the live app's `_next` assets only)                                                                                                      | live app (`apps/live`), stripped                                                                                                   |
+| `/status`, `/status/*`                                                                                                                              | `301` to liveworkspace's status page at livedesign's group (`statusRedirect`)                                                      |
+| `/telemetry`, `/telemetry/*`                                                                                                                        | `301` to the central dashboard, `?app=livedesign.app` (`telemetryRedirect`, liveworkspace/docs/telemetry.md)                       |
+| `/help`, `/help/*`                                                                                                                                  | help app (`apps/help`), stripped                                                                                                   |
+| live page routes: `/design/*`, `/auth/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed/*`, `/oauth/*`, `/offline`, `/explorer`, `/icon.svg` | live app (`apps/live`), as-is                                                                                                      |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                    | 308 redirect to `/help/<path>`                                                                                                     |
+| everything else                                                                                                                                     | marketing app (`apps/marketing`)                                                                                                   |
 
-The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
+The live app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedesign/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip: the live worker's `out/` files are already prefix-free).
 
-`/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. Marketing sees `/`, `/faq`, etc. as-is.
+The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (the shared `forward()` helper, as for `/help/*`) so the worker serves them from `out/_next`. Only `assetPrefix` is set, on assets alone; no `basePath` prefixes the pages. A stripped app's own redirect gets its prefix back (`withPrefixedRedirect`), so a trailing-slash redirect inside `/help` stays inside it.
 
-**Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) used to fall through to marketing and 404, which is the wrong answer to an unambiguous address: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
+`/api/*` is forwarded **as-is**, with no prefix stripping: the api worker expects the full `/api/...` path. Marketing sees `/`, `/faq`, etc. as-is.
+
+**Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) is unambiguous: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`, rather than letting marketing answer 404. Still routing, not logic: a table of segments and a destination.
 
 **Not found.** An address no site has a page for gets that site's own not-found page, never the framework's bare
 "404 | This page could not be found.": the site's header and footer around one card (`PageNotFound` in
@@ -59,8 +66,7 @@ session (so the other apps sign in without a click) and comes straight back to `
 ## The Explorer on livedesign.app
 
 The Explorer is liveworkspace's page, served at livedesign.app's own `/explorer` with the address unchanged (path,
-query and hash): the router asks the same shared helper first (`routeToWorkspace`, its switch
-`EXPLORER_ON_APP_ORIGIN` on for livedesign; [liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+query and hash): the router asks the same shared helper first (`routeToWorkspace`; [liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
 
 | Path                                        | Forwards to                                                               |
 | ------------------------------------------- | ------------------------------------------------------------------------- |
@@ -75,41 +81,13 @@ forward again. The page is `no-store`, as every page; the assets are content-has
 
 ## Implementation
 
-In production the Worker has four **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP); `/telemetry` is a redirect to liveworkspace's central dashboard, not a binding (liveworkspace/docs/telemetry.md). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + help) when forwarding to a binding:
+In production the Worker has four **service bindings**, one to each downstream app (`MARKETING`, `LIVE`, `API`, `HELP`). liveworkspace's services (pages, index, previews, Drive) are reached by origin: `WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIGIN` and `DRIVE_ORIGIN`, each production's when unset (the helpers in `@liveworkspace/sites/workspace-proxy`). `/telemetry` and `/status` are redirects, not bindings. The source is `apps/router/src/index.ts`:
 
-```ts
-// sketch, real source: apps/router/src/index.ts
-const LIVE_ROUTE_SEGMENTS = new Set([
-  'design',
-  'embed',
-  'explorer',
-  'get-started',
-  'join',
-  'new',
-  'oauth',
-  'sign-in',
-]);
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
-      return forward(request, url, env.API, env.API_ORIGIN); // /api/* as-is; api worker wants the full path
-    }
-    // /live/* is now ONLY the live app's _next assets — strip and forward.
-    if (url.pathname === '/live' || url.pathname.startsWith('/live/')) {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN, '/live');
-    }
-    if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return telemetryRedirect(env); // 301 to the central dashboard, ?app=livedesign.app
-    }
-    // Clean live-app page routes + its root icon: forward as-is (no strip).
-    if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
-    }
-    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
-  },
-};
-```
+- `route(request, env)` is the routing table above, in order.
+- `forward(request, url, binding, origin, stripPrefix?)` resolves each target as _binding if present, else local-dev origin_ (see Local development below), strips the prefix for the assetPrefix and basePath paths (live assets and help) when forwarding to a binding, and answers 503 when it has neither.
+- `telemetryRedirect(env)` builds the 301 to `TELEMETRY_DASHBOARD_URL` with `?app=livedesign.app`.
+- `markNoIndex` stamps `X-Robots-Tag: noindex, nofollow` on staging's responses, leaving a WebSocket upgrade untouched ([Staging environment](staging-environment.md)).
+- `withCachePolicy` applies the caching rules (`cache-policy.ts`, [Stale builds](stale-builds.md) "Caching rules") to every response but the api's.
 
 Adding a new top-level route to the live app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.
 
@@ -119,25 +97,25 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3400` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port: `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, the local liveworkspace site at `http://localhost:3000/telemetry`), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
 | App       | Local URL                                                           |
 | --------- | ------------------------------------------------------------------- |
-| router    | `http://localhost:3400/` — everything, stitched like production     |
+| router    | `http://localhost:3400/`: everything, stitched like production      |
 | marketing | `http://localhost:3401/`                                            |
 | live      | `http://localhost:3402/new`, `/explorer/recent`, ... (clean routes) |
 | help      | `http://localhost:3404/help` (basePath baked in)                    |
 | api       | `http://localhost:8989/api/...` (wrangler dev)                      |
 
-**How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedesign/router dev` runs `wrangler dev --env local --port 3400`, and the root `pnpm dev` includes it.
+**How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app, and the local liveworkspace services: the site on `:3000`, the index on `:8793`, previews on `:8792`, Drive on `:3011`). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedesign/router dev` runs `wrangler dev --env local --port 3400`, and the root `pnpm dev` includes it.
 
-Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help, and the live app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
+Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves: `basePath` for help, and the live app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
 
-The routing decisions stay identical in both modes — only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
+The routing decisions stay identical in both modes; only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
 
 ## Routing infrastructure, not logic
 
-The router is **routing infrastructure**, not application logic, holding no data and running no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, telemetry, help, or api).
+The router is **routing infrastructure**, not application logic, holding no data and running no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, help, api, or liveworkspace's).
 
 Two response rules sit with the routing because every site passes through it, and they are HTTP
 policy rather than business rules: on staging every response is marked `X-Robots-Tag: noindex,

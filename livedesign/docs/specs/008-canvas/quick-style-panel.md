@@ -22,8 +22,8 @@ notation carry itself.
 
 ## What it is not
 
-A right-hand **Editor panel** once held every per-element setting. It was removed: it duplicated the
-context menu, grew with every feature, and covered the canvas it was meant to serve. Per-element
+There is no right-hand **Editor panel** of per-element settings: it would duplicate the context menu, grow
+with every feature, and cover the canvas it is meant to serve. Per-element
 formatting lives in the right-click context menus ([Live app](../007-editor/live-app.md),
 [Canvas and palette](canvas-and-palette.md)).
 

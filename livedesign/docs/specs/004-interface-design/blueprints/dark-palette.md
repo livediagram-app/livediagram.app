@@ -171,8 +171,8 @@ border-radius: inherit; pointer-events: none }`.
 | Element stroke `#64748b` on `#0d121a`    | 3.95       | 3.0 non-text |
 | Handle `#60a5fa` on `#0d121a`            | 7.38       | 3.0 non-text |
 
-The runtime guard enforces text contrast on the wizard (both steps), the editor with its default panels and a
-selection, Settings, Share, Join and the Explorer (D18). Light mode is out of its scope by operator decision (#74).
+The runtime guard enforces text contrast on `/new`, the editor with its default panels and a
+selection, Settings, Share and Join (D18). Light mode is out of its scope by operator decision (#74).
 Motion: none added.
 
 ## Web Experience

@@ -11,7 +11,7 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 ## Behaviour
 
 - Drag a **Pie**, **Column**, or **Line** chart in from the palette's **Data**
-  category. It drops with sample data. (The Column tile was called **Bar** until October 2026; it makes the same
+  category. It drops with sample data. (The Column tile makes the
   `bar-chart` element, named as Google Sheets and Excel name a chart of upright bars.) Any of them then becomes any
   chart type from its menu's **Chart Type** section. Each is a row with a one-line blurb
   ("Proportions of a whole", "A trend over time") rather than a caption tile:

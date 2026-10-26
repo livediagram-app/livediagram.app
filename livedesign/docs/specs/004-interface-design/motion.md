@@ -90,8 +90,7 @@ motion is stricter still.
 
 A state change that swaps a whole surface animates as a React View Transition
 ([React state and effects](../003-system-architecture/react-state-and-effects.md) "Animating a state change").
-No surface does today: the slide moves were the last, and left with slide decks on 25 October 2026
-([Presentation mode](../012-collaboration/presentation-mode.md)). These rules hold for the next one.
+No surface does; these rules hold for any that will.
 
 - **Its pace follows its surface.** A chrome surface runs within the ceiling on a motion token.
 - **Only the named surface moves.** The design root takes no part (`view-transition-name: none` on `<html>`), so
@@ -130,11 +129,11 @@ compositing again as that fade starts and again as it ends: about 300 ms of main
 time at the reference speed on the 1,000-element reference board. That alone kept opening the
 board over its 3 s time-to-interactive budget ([Canvas performance](../008-canvas/canvas-performance.md)).
 Measured on the reference board, with the elements' arrival change in
-[Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open
-went from 2.9 s and 3.0 s on livediagram's two reference boards, with runs up to 5.0 s and 4.2 s, to 2.2 s and
-1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, zoom), used to scale in from nothing with an overshoot
-(`pop-in`); a whole panel or toolbar popping read as abrupt, so they fade (`animate-fade-in`)
-instead. `pop-in` stays
+[Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open on the
+reference boards is 2.2 s and 1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they
+stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, zoom), fade in
+(`animate-fade-in`) rather than scale in with an overshoot (`pop-in`): a whole panel or toolbar popping reads as
+abrupt. `pop-in` stays
 on small controls, where it reads as feedback.
 
 A picker's first paint does not animate: the template picker's open shelf plays its entrance

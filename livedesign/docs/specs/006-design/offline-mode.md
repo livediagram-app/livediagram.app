@@ -20,16 +20,14 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a design; the default decides:
 
-- The **New Design** wizard ([Dedicated route for new-design creation](../007-editor/new-design-route.md#one-step-wizard))
-  asks only for a mode and creates the design in the default location for who is creating
-  ([Save Locations](save-locations.md)): **This Browser** for a guest, **livedesign** for a signed-in person.
-  Either moves later: **Take Offline** moves a cloud design into This Browser, **Sync Design** puts one in This Browser on
-  livedesign.
-- The links that create without the wizard (`/new?template=`, `/new?blank=1`,
-  [Dedicated route for new-design creation → Start Blank](../007-editor/new-design-route.md#start-blank-skip-the-wizard))
-  take the same default, so a guest following a template from the landing page
-  gets a design in This Browser.
-- The location only changes _where the design is stored_; the mode, templates and theme work identically.
+- **`/new`** ([New design route](../007-editor/new-design-route.md#what-new-makes)) asks nothing and creates the
+  design in the default location for who is creating ([Save Locations](save-locations.md)): **This Browser** for a
+  guest, **livedesign** for a signed-in person. Its links (`/new?template=`, `/new?blank=1`,
+  [Start Blank](../007-editor/new-design-route.md#start-blank)) take the same default, so a guest following a template
+  from the landing page gets a design in This Browser. A placement param (`?folder=`, `?team=`) makes it a cloud one.
+- Either moves later: **Take Offline** moves a cloud design into This Browser, **Sync Design** puts one in This
+  Browser on livedesign.
+- The location only changes _where the design is stored_; the templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per design**, so a person can
 have cloud designs and offline designs side by side.
@@ -45,9 +43,7 @@ have cloud designs and offline designs side by side.
 - **Every tab of the browser agrees on the index.** Each tab mirrors it in memory
   (`apps/live/lib/offline/offline-ids.ts`), and every id registered or removed is told
   to the other tabs on the `livedesign-offline` BroadcastChannel (`{ kind: 'add' |
-'remove', id }`), which apply it at once. Without it, a tab that missed a Take
-  Offline kept saving that design to the server (where it no longer is), and a tab
-  that missed a Sync Design or purge kept "saving" into a record that was gone.
+'remove', id }`), which apply it at once. Without it, a tab that missed a Take Offline would keep saving that design to the server, and a tab that missed a Sync Design or purge would keep "saving" into a record that is gone.
 - **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
   the order, the folder) finds its record missing while the tab still
   lists the id, the id is forgotten (and the other tabs told) and the write fails with
@@ -62,13 +58,11 @@ have cloud designs and offline designs side by side.
 
 <!-- legacy-names -->
 
-- **Store rename (version 2).** Offline designs were kept in the `diagrams` object store until
-  the container became a design ([Design](design.md#renaming-from-diagram)). Opening
-  version 2 of `livedesign-offline` moves every record into `designs` inside the upgrade
-  transaction, then drops the old store, logging how many moved
-  (`apps/live/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
-  asks for version 1, which the browser refuses once another tab has opened version 2; its offline
-  designs are out of reach in that tab until it reloads.
+- **The `designs` store (version 2).** Offline designs live in the `designs` object store of `livedesign-offline`.
+  Opening version 2 moves every record from an older `diagrams` store into `designs` inside the upgrade transaction,
+  then drops the old store, logging how many moved (`apps/live/lib/offline/legacy-offline-store.ts`;
+  [Design](design.md#older-names-it-reads)). A tab asking for version 1 is refused by the browser once another tab
+  has opened version 2, and reaches its offline designs after a reload.
 - **Durability honesty (important).** An offline design has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
@@ -188,7 +182,7 @@ Explorer lists follow after the paint.
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
 - **Inbox.** The Inbox reads offline designs in the browser and lists their open actions and comment
   threads among the cloud ones, each row with the **This Browser** pill
-  ([Inbox §2.6](../013-workspace/inbox.md#26-designs-in-this-browser)).
+  ([Inbox](../013-workspace/inbox.md) "This Browser").
 
 ### This Browser pill
 
@@ -203,8 +197,7 @@ rows and its Current Design card, and the Trash.
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
-  as whose an item is, or as fine or failing. Until October 2026 it was amber, livedocuments'
-  accent and the warning tone. One pill for every editor and the Explorer
+  as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
 - **What it means, on hover and focus.** Its hover card reads "This Browser" over
@@ -420,13 +413,11 @@ The editor already has a **single persistence boundary**: `apps/live/lib/api-cli
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
-- **Dispatch per call, not a backend pair.** This was first drafted as two
-  implementations of one interface, an `ApiBackend` and a `LocalBackend`. What
-  shipped is smaller: each load / save / delete in `lib/api/*` opens with
-  `if (await isOfflineId(id))` and hands off to `lib/offline/offline-store.ts`,
-  otherwise it does what it always did. There is no second class to keep in
-  step with the first, and an endpoint that offline has no answer for simply
-  never grows the branch.
+- **Dispatch per call, not a backend pair.** Each load / save / delete in
+  `lib/api/*` opens with `if (await isOfflineId(id))` and hands off to
+  `lib/offline/offline-store.ts`, otherwise it calls the api. There is no second
+  class to keep in step with the first, and an endpoint that offline has no
+  answer for never grows the branch.
 - Offline ids are client-generated (`crypto.randomUUID`) and registered in a
   local index; `isOfflineId` reads it. The `beforeunload` beacon flush cannot
   await, so it uses the synchronous `isOfflineIdSync` off the loaded cache.
@@ -434,8 +425,8 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Design wizard calls `offlineCreateDesign`
-  directly when the location is This Browser (picked, or a guest's default), and
+  to dispatch on yet: `/new` calls `offlineCreateDesign`
+  directly when the location is This Browser (a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the design/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -450,9 +441,8 @@ Offline Mode is **folded into the existing privacy / security area** of the
 landing page — no standalone section. It appears as a short point plus a small
 inline illustration/icon, framed as local-first:
 
-> **Work fully offline.** Flip on Offline Mode when you create a design and it is saved only in
-> your browser: no account, no server, no sync. Yours alone. Move it to the cloud (or pull one
-> back down) whenever you like.
+> **Work fully offline.** A guest's design is saved only in your browser: no account, no server,
+> no sync. Yours alone. Move it to the cloud (or pull one back down) whenever you like.
 
 The illustration is a small local-first glyph (a browser/device with a design
 inside, "no cloud"), consistent with the existing privacy iconography
@@ -460,34 +450,26 @@ inside, "no cloud"), consistent with the existing privacy iconography
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-Add a help article **"Offline Mode"** (under a saving / privacy-oriented
-category), and — per the help-registry rule — **register it in
-`apps/help/lib/articles.ts`** in the same change (slug, title, description,
-category, `categorySlug`, and bump the category `articleCount`). The article
-covers:
+The help centre has an **"Offline Mode"** article, registered in the help registry
+([Register a help article](../../instructions/register-a-help-article.md)). It covers:
 
-- What Offline Mode is and how to create one (the New Design wizard's Save
-  location chooser, [Save Locations](save-locations.md)).
+- What Offline Mode is and when a design is made in This Browser ([Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Design" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration and teams.
 
-Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Design
-wizard's data-loss warning to this article.
-
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Track adoption without content, reusing the closed vocabulary:
+Adoption is tracked without content, in the closed vocabulary:
 
-- On create, distinguish the mode via the `type` on the existing
-  `Design`/`Created` event (e.g. `Offline` vs `Cloud`).
+- On create, `Document`/`Created` with type `Offline` or `Cloud`.
 - The move prompt after signing in: `UI`/`Opened`/`LocalMovePrompt` when it
   shows, `UI`/`Selected`/`LocalMovePrompt` on Move, `UI`/`Closed`/`LocalMovePrompt`
   on Not Now. Each design it moves also sends the conversion event below.
 - On conversion, a coarse event for each direction, so uptake and the
-  destructive take-offline path are visible: `Design`/`Moved` with type
+  destructive take-offline path are visible: `Document`/`Moved` with type
   `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from
   the shared `useOfflineConversion` handlers, from `useSyncInPlace` for the
   Share dialog, and per design from the move prompt.
@@ -506,12 +488,10 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Implementation map
 
-- `apps/live/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
-  new `LocalBackend` (IndexedDB) beside the existing API calls; per-design
-  dispatch via a local index.
-- New Design wizard (`TemplatePicker` / `template-picker-settings.tsx`,
-  [Dedicated route for new-design creation](../007-editor/new-design-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
-  This Browser tile) + data-loss warning + contextual help link.
+- `apps/live/lib/api-client.ts` + `lib/api/*`: the persistence seam; per-design
+  dispatch via the local index (`lib/offline/offline-ids.ts`) to `lib/offline/offline-store.ts`.
+- `/new` (`app/new/page.tsx`, [New design route](../007-editor/new-design-route.md)): `offlineCreateDesign` for a
+  This Browser create.
 - `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline design is listed plus a
@@ -539,10 +519,10 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Design structure](design-structure.md) (design model),
 [API app](../015-api/api.md) (api + persistence),
 [Per-tab storage](per-tab-storage.md) (per-tab storage + autosave),
-[Dedicated route for new-design creation](../007-editor/new-design-route.md) (New Design),
+[New design route](../007-editor/new-design-route.md) (`/new`),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Help app](../018-help/help-app.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
 [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime — the separate concern),
-[Save Locations](save-locations.md) (the Save location chooser).
+[Save Locations](save-locations.md) (where a new design is stored).

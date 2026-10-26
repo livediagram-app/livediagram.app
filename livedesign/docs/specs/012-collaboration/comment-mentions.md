@@ -1,6 +1,6 @@
 # Comment Mentions
 
-Typing `@` in a comment tags a teammate by name (`@thomas-mcclean`). The
+Typing `@` in a comment tags a teammate by name (`@ada-lovelace`). The
 mention shows as a chip in the thread, puts the thread on the teammate's
 [Inbox](../013-workspace/inbox.md), and, if their settings allow, emails them.
 
@@ -34,8 +34,8 @@ almost certainly cannot.
   closes the list and leaves the text as typed. Clicking a row picks it.
   While the list is open, Enter picks rather than sends.
 - Picking replaces the `@query` with the member's **handle** plus a space.
-- A **handle** is the member's display name in lower kebab case (`Thomas
-McClean` becomes `thomas-mcclean`, accents folded, anything else dropped).
+- A **handle** is the member's display name in lower kebab case (`Ada
+Lovelace` becomes `ada-lovelace`, accents folded, anything else dropped).
   Two members with the same handle get `-2`, `-3` in list order. A member with
   no usable name falls back to the local part of their email.
 - On send, the comment keeps only the mentions whose `@handle` is still in the

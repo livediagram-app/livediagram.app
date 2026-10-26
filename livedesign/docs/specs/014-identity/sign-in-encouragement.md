@@ -129,8 +129,7 @@ host passes `surface` to `SignInBanner`; the type carries it as a suffix:
 - `UI` / `Closed` / `SignInBannerExplorer` | `SignInBannerEditor`: the banner
   was dismissed.
 
-Before September 2026 these were sent without the surface (`SignInReasons`,
-`SignInBanner`); those rows age out with the 60-day retention. The Assign
+The Assign
 Action dialog's guest nudge is its own event, `UI` / `Opened` /
 `ActionSignInNudge` ([Assigned actions](../012-collaboration/assigned-actions.md)). The dashboard's Sign-In Prompts stack charts
 each of these by surface ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).

@@ -2,7 +2,7 @@
 
 Status: shipped
 
-How the four Next.js apps (live, marketing, help, telemetry) are built: which Next.js they run, the one
+How the three Next.js apps (live, marketing, help) are built: which Next.js they run, the one
 shared configuration, and which Next.js features they use or decline, with the reason.
 
 ## Versions
@@ -31,7 +31,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `env.NEXT_PUBLIC_BUILD_YEAR` | the build's year                                                                                          | The footer's year, the same in the prerender and the browser                                          |
 
 - **An app's own settings**: `basePath`, `assetPrefix`, `trailingSlash`, `pageExtensions`, MDX and `transpilePackages`.
-- **The React Compiler runs in the editor alone.** The four static sites' pages rarely re-render, and on them it added
+- **The React Compiler runs in the editor alone.** The two static sites' pages rarely re-render, and on them it added
   6 to 12 KiB of first-load JavaScript per page (44 KiB, +14%, on the marketing home) for little gain.
 - **The React Compiler needs Turbopack.** Under the webpack escape hatch (`dev:webpack`) it is left off.
 - **An experimental flag stays only while it measures a gain.** Each row above records what it was adopted for;

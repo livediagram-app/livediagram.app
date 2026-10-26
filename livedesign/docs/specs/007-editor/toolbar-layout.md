@@ -248,19 +248,15 @@ on screen sideways as well as vertically, whatever the trigger's position.
 
 ## One layout
 
-There is no layout choice. An earlier version offered a second layout, **Floating**, as the
-desktop default: the Palette as a draggable corner panel, the Explorer as a corner panel, Layers
-minimising into its cluster button. It was retired
-because every new feature had to be built and kept working twice, and the strip had become the
-better layout. Its parts went with it:
+There is no layout choice: the strip is the one layout, so every feature is built and kept working once.
 
-- The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
-  (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
+- There is no `panelLayout` preference ([User preferences](user-preferences.md)); a stored value (`'floating'`,
+  `'toolbar'`, `'minimal'`) is ignored and left as it is.
 - Settings has no Panel Layout row.
-- The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
-  that names them is ignored ([Panel docking](panel-docking.md)).
-- Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
-  types, so the history still reads ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- The Palette, the Explorer and Layers are not corner panels, so a stored panel placement that names them is ignored
+  ([Panel docking](panel-docking.md)).
+- Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired types, so their stored
+  rows still read ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## On a phone
 
@@ -347,20 +343,13 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 
 ## Look
 
-- **Sharp at 1x.** Every tile glyph, on the strip and in its popovers,
-  sits on a whole pixel. Three causes were found and removed:
-  - The Palette's tile grid split its body into three fractional columns
-    (76.67px), so every glyph straddled a pixel. It uses fixed, even 76px
-    columns spread edge to edge instead.
-  - The strip was centred with `-translate-x-1/2` and followed a
-    text-width category label, both fractional. It is centred by flexbox,
-    and `SnapWidth` rounds the label and the whole card to whole pixels (the
-    card matching the canvas's parity so centring stays whole).
-  - Thirteen-pixel glyphs (the selection mode icons) centred on a half
-    pixel in an even tile. They are 14px.
-    Separately, the corner panels are no longer promoted to their own
-    compositing layer (it was a fix for the retired isometric view's flicker,
-    and cost sub-pixel text anti-aliasing on a 1x display). Tile captions went from 9px to 10px.
+- **Sharp at 1x.** Every tile glyph, on the strip and in its popovers, sits on a whole pixel:
+  - The Palette's tile grid uses fixed, even 76px columns spread edge to edge, never fractional ones.
+  - The strip is centred by flexbox, never `-translate-x-1/2`, and `SnapWidth` rounds the category label and the
+    whole card to whole pixels (the card matching the canvas's parity so centring stays whole).
+  - The selection mode icons are 14px, so they centre on a whole pixel in an even tile.
+  - The corner panels are not promoted to their own compositing layer, which would cost sub-pixel text
+    anti-aliasing on a 1x display. Tile captions are 10px.
 
 - The dropdown-style control (the selection mode) sits on a
   faint tint so

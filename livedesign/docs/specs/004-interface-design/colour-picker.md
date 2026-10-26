@@ -143,11 +143,11 @@ pick commits it, once, for undo.
 
 ## Skins
 
-| Skin              | What it is                                                                                  | Used by                                                                                                                                                                                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Page background                                                                                                                                                                                                                            |
-| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour                                                                                                                 |
-| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, Quick Style's **More colours**, a tag's colour in the tag picker and its menu's Change Colour ([Tags](../013-workspace/tags.md)) |
+| Skin              | What it is                                                                                  | Used by                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Page background                                                                                                                          |
+| **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour               |
+| **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, Quick Style's **More colours** |
 
 ## Quick Style
 

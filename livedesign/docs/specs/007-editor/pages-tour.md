@@ -37,7 +37,7 @@ and the closing card. This tour's part:
   runs it again.
 - **Taken, on every device.** However a run ends (completed or skipped), the synced `pagesTourKinds` user
   preference ([User preferences](user-preferences.md)) records its kind. The record feeds the Settings rows and
-  which page a press prefers; it no longer hides the button. `pagesTourSeen` true counts every kind as taken only
+  which page a press prefers; it never hides the button. `pagesTourSeen` true counts every kind as taken only
   while [Power user mode](power-user-mode.md) is on (`apps/live/lib/tour-tracks.ts`, shared with the [element
   tours](element-tours.md)).
 - **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
@@ -152,8 +152,7 @@ the card. The Pages tour and Show Me leave the page usable, as their steps ask t
   of it (`TourSpotlight`); no outline.
 - **Every tour wears the active tab's colours**, as the start panel does (`useStartPalette`; `tour-colours.ts`
   reads it into CSS variables). The primary buttons' label is white or near-black, whichever contrasts more with
-  the accent. The closing card is a step card like the others (until 25 October 2026 the offer and the last card were a
-  deep gradient banner of the tab's hue).
+  the accent. The closing card is a step card like the others.
 - **Arrival**: the dim fades in (250 ms) and the card settles in with it. **Hand-over**: on Next the spotlight and
   the card stay put while the next step prepares, then glide to it together once (250 ms, ease-in-out) and the
   card's words cross-fade. Between glides the hole follows its target exactly. One spotlight and one card for the
@@ -169,16 +168,14 @@ Only someone who may edit the tab sees Start Pages Tour, or Show Me: an **Editor
 The tour's funnel; the track shows in the step tokens:
 
 - **Offer**: `UI` · `Opened` · `PagesTourOffer` the first time the Start Tour button shows this tour in a page load.
-  Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `PagesTourOffer` counted **No**;
-  nothing sends Closed now.
+  Nothing sends `UI` · `Closed` · `PagesTourOffer`.
 - **Start**: `UI` · `Started` · `PagesTour` on a press of the button (or the Settings rerun).
 - **Stage views**: `UI` · `View` · `PagesTourStep<Kind><Id>` once per step entry, `<Kind>` the track
   (`Wireframe`, `Logo`, `Photo`): `PagesTourStepWireframeLayouts`,
   `PagesTourStepWireframePageSize`, `PagesTourStepLogoOutro`, ...
 - **End**: `UI` · `Ended` · `PagesTourCompleted` | `PagesTourSkipped`.
 - **Settings rows**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`, for
-  `WireframeTour`, `LogoTour` and `PhotoTour` (`PagesTourSeenOn` | `PagesTourSeenOff` until the row split
-  per kind in October 2026).
+  `WireframeTour`, `LogoTour` and `PhotoTour`.
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
   `<Kind>TourSkipped`, for `WireframeTour`, `LogoTour` and `PhotoTour` ([Show Me](show-me.md)).
 

@@ -48,12 +48,13 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.
 
-## Token levels
+## What a token may do
 
-What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
-as a share link: reading needs read access; comments, taking part and presence need the participation gate
-(`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
-submits no changesets; a view token reads and writes nothing, comments and presence included.
+What an agent may do follows its token ([Public API and API tokens](../015-api/public-api-and-tokens.md)), through
+the same gates as its owner, on the index's grant: reading needs read access; comments and taking part need the
+participation gate (`gateParticipate`); presence and changesets need the edit gate (`gateEdit`). A **read-only**
+token reads and writes nothing (`403 read_only_token` on every write, `apps/api/src/index.ts`), comments and presence
+included. Tokens carry no share level ([Share roles](../013-workspace/share-roles.md#outside-the-levels)).
 
 Until [share roles](../013-workspace/share-roles.md) are built, `gateParticipate` names today's rule: read access to
 the design or tab, as a view link may already comment, with a read-only token refused every write at the choke

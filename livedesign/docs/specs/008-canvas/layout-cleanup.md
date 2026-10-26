@@ -96,8 +96,7 @@ split; a back edge (a cycle) is drawn as it lands.
 
 ### Nodes sit by their neighbours
 
-Ranks used to be packed and centred on the widest one, so a node sat wherever
-its rank's width put it. Now each node is pulled toward the weighted mean
+Ranks are not simply packed and centred on the widest one: each node is pulled toward the weighted mean
 position of its neighbours in the adjacent rank, in alternating downward and
 upward sweeps (four pairs, then one pass using both sides), and the wanted
 positions are made legal (order kept, `SIBLING_GAP` between boxes) by isotonic

@@ -47,7 +47,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                | Spec ("a quarter of a pixel")                                    |
 | `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`               | Collinear merge distance; well under a device pixel              |
 | `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                | Refused above as Too detailed; measured runs stay under 4 ms     |
-| `MAX_PATH_NODES`                           | 5,000 (existing; now across all contours)     | `packages/design/src/validate.ts`                 | Existing                                                         |
+| `MAX_PATH_NODES`                           | 5,000 (across all contours)                   | `packages/design/src/validate.ts`                 | Existing                                                         |
 | `LOGO_KIT_PNG_SIZES`                       | 16, 32, 48, 64, 128, 180, 192, 256, 512, 1024 | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
 | `LOGO_ICO_SIZES`                           | 16, 32, 48                                    | `apps/live/lib/export-logo-kit.ts`                | Spec                                                             |
 | `BUTTON_ROOM` / `LABELLED_ROOM`            | 28 px / 72 px                                 | `apps/live/components/canvas/LogoTitleBar.tsx`    | Title-bar room a control takes, icon-only / named                |
@@ -212,8 +212,8 @@ buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's 
   (`combineShowing`: `[aria-label="Combine shapes"]` is in the DOM): `layouts` (rings `[data-page-panel]`, `requires`
   the page's cog, `prepare` opens the panel on Layouts through `requestPagePanel`, `cleanup` closes it), `guides` and
   `mirror` (the page's `[data-logo-title-bar]` buttons by name), `combine` (the Combine button, else an unanchored
-  card), `outro`. The same steps are the Pages tour's Logo track, started from the footer's Start Pages Tour button (no welcome
-  card before them since 25 October 2026, when `LOGO_WELCOME` went).
+  card), `outro`. The same steps are the Pages tour's Logo track, started from the footer's Start Pages Tour button, with no welcome
+  card before them.
 - `UI · Started · LogoTour` on the press; `UI · Ended · LogoTourCompleted` / `LogoTourSkipped` on
   finish.
 

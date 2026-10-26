@@ -12,7 +12,7 @@ drags for collaborators.
 | `apps/live/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
 | `apps/live/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
 | `apps/live/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
-| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the design                      |
+| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the design                        |
 | `apps/live/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
 | `apps/live/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
@@ -72,7 +72,7 @@ drags for collaborators.
 - The drag effect running with no drag while a preview remains (a route that neither committed nor
   cancelled) commits it, matching the old behaviour where every tick was a write.
 - Cancel (Escape, a pinch or second touch, unmount): `cancelPreview()`; nothing was written, so
-  nothing is restored (a cancelled pinch used to leave a half-applied move). Escape no longer calls
+  nothing is restored, so a cancelled pinch never leaves a half-applied move. Escape does not call
   `cancelToCheckpoint`.
 - A gesture that changed nothing (a click) commits nothing and logs nothing.
 
@@ -223,15 +223,15 @@ type DragPreviewOp =
 
 | Spec rule                                             | Test                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A gesture draws from a preview, not the design      | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
+| A gesture draws from a preview, not the design        | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
 | One change on release                                 | Same: one `markCheckpoint`, one `deps.tick`, one log schedule; result equals today's                                                                                                |
-| A cancel writes nothing                               | Same: Escape and pointercancel leave the design untouched, overlay cleared                                                                                                        |
+| A cancel writes nothing                               | Same: Escape and pointercancel leave the design untouched, overlay cleared                                                                                                          |
 | Drag logic reads the gesture's own result             | Existing `useEditorDrag.*` suites reading the board as drawn; the drag e2e specs                                                                                                    |
 | In a real browser                                     | `e2e/drag-preview.spec.ts`: drawn mid-drag, nothing saved, saved on release; Escape; one undo                                                                                       |
 | Overlay derivation and application                    | `drag-preview.test.ts`                                                                                                                                                              |
 | What is redrawn                                       | `CanvasElementsLayer.renders.test.tsx`: a preview re-renders the moved element and affected arrows only, never the layer; added and removed elements; `useLayerDragPreview.test.ts` |
 | Affected arrows                                       | `drag-affected-arrows.test.ts`                                                                                                                                                      |
-| Selection follows the preview                         | `usePreviewedElements.test.tsx`; `useCanvasSelectionView.covered.test.ts`: the chrome follows its own tab's preview                                                                 |
+| Selection follows the preview                         | `usePreviewedElements.test.tsx`; `useCanvasSelectionView.drag-preview.test.ts`: the chrome follows its own tab's preview                                                            |
 | Live movement, expiry, end, real-op clear, role check | `peer-drag-previews.test.ts`, `useDragPreviewBroadcast.test.tsx`                                                                                                                    |
 | Presence classification                               | `room-messages` test: `drag-preview` is presence                                                                                                                                    |
 | Budget                                                | The probe's drag rows                                                                                                                                                               |

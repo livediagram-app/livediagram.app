@@ -101,3 +101,20 @@
 - [x] Constants and configuration
 - [x] Assets and external resources
 - [x] Defaults ledger
+
+## wireframe-pages
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence (the `Page` fields, in Interfaces and contracts)
+- [x] Errors and edge cases
+- [x] Security and trust
+- [ ] Performance and limits: the frame is one SVG per page, drawn with the page
+- [ ] Presentation and UX: the spec's own
+- [ ] Accessibility: the device tiles follow the page-kind chooser's
+- [ ] Web Experience: none of its own
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [ ] Defaults ledger: none

@@ -1,79 +1,64 @@
 # Per-tab storage
 
-> **Storage today.** The `tabs` rows described here live in each design's own SQLite, in its Durable Object
-> ([API app](../015-api/api.md) "Storage"), not in a shared D1 database; the numbered migrations below are history.
-> A tab shared with other designs is a copy in each, kept in step ([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
-
-Move from the single-row `diagrams.data` JSON blob (which serialises every
-tab on every save) to a normalised `designs` + `tabs` split where each
-tab is its own row. The autosave path then only ships the tab that
-actually changed.
-
-Driven by the observation that today, every keystroke broadcasts a
-`tabs` op AND PUTs the whole design — including unchanged tabs — to
-D1. Cost grows linearly with the design's tab count.
+Each tab of a design is its own row in the design's own SQLite, in its Durable Object `DesignRoom`
+([API app](../015-api/api.md) "Storage"), so the autosave path ships only the tab that changed, and opening a design
+reads one tab rather than every tab. A tab shared with other designs is a copy in each, kept in step
+([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
 
 ## Goals
 
-- One DB write per editorial commit, scoped to the changed tab.
-- Per-tab snapshot fetch (open one tab, hydrate one row) so the
-  initial view of a many-tab design is fast.
-- Foundation for "this tab is shared across designs" reuse — landed in [Tab ↔ design many-to-many](tab-design-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
+- One write per editorial commit, scoped to the changed tab.
+- Per-tab snapshot fetch (open one tab, hydrate one row) so the initial view of a many-tab design is fast.
+- Reuse of one tab across designs, through the `design_tabs` link ([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
 
-## Non-goals (V1)
+## Non-goals
 
-- ~~Sharing a tab across designs~~ — landed in [Tab ↔ design many-to-many](tab-design-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-design placement.
-- Per-element rows / CRDT. Each tab still serialises its `elements`
-  array as JSON within its row; the granularity stops at the tab.
-- Online migration. The cutover is one D1 migration; the live app
-  hydrates the new schema on the next save.
+- Per-element rows / CRDT. Each tab serialises its `elements` array as JSON within its row; the granularity stops at
+  the tab.
 
 ## Data model
 
 ```sql
 CREATE TABLE tabs (
-  id          TEXT    PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  -- Same JSON shape as the Tab type minus { id, name } (which live
-  -- on the row). Holds elements + per-tab metadata: theme,
-  -- backgroundColor, backgroundPattern, backgroundOpacity,
-  -- patternColor, locked. `templateChosen` is intentionally ephemeral
-  -- client state (see migration 0009), stripped before persistence,
-  -- never stored here.
-  data        TEXT    NOT NULL,
-  updated_at  INTEGER NOT NULL
+  id            TEXT    PRIMARY KEY,
+  name          TEXT    NOT NULL,
+  -- The Tab type minus { id, name } (which live on the row): elements and per-tab metadata
+  -- (theme, background, pattern, locked, kind, layers, ...). `templateChosen` is ephemeral
+  -- client state, stripped before persistence, never stored here.
+  data          TEXT    NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  element_count INTEGER NULL,
+  -- Advances by exactly one on every body write (the `tabs_rev_advances` trigger aborts any
+  -- other), so a write against a stale rev fails rather than overwriting.
+  rev           INTEGER NOT NULL DEFAULT 0
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which designs contain it, and its order and folder in each, live on the `design_tabs` link ([Tab ↔ design many-to-many](tab-design-many-to-many.md)). Nothing on the row points at a design, so nothing cascades from `designs` into `tabs`: removing a tab from a design, deleting a design and deleting an account each drop a tab explicitly once no design links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+The schema is `apps/api/src/design-room/design-schema.ts`, made by the object's code on first use.
 
-The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `design_id` + `order_index` columns and the `design_id` foreign key.
+A `tabs` row is the tab's body and nothing else. Which tabs the design contains, and their order and folder, live on the `design_tabs` link ([Tab ↔ design many-to-many](tab-design-many-to-many.md)), and `tab_stats` holds each tab's counts for the Explorer's Details view ([Explorer details view](../013-workspace/explorer-details-view.md)). Removing a tab from the design drops its row once no link remains. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
 
-`designs` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
+`design` holds the design's own row: its name, owner and team as the grants and renames that reach it say, `saved_at` and `created_at` ([API app](../015-api/api.md) "Storage").
 
 ## API surface
 
 Owner / edit-role.
 
-- `GET    /api/designs/:id` — returns design metadata + tab list
+- `GET    /api/designs/:id`: design metadata + tab list
   (id, name, order; no `data`).
-- `GET    /api/designs/:id/tabs/:tabId` — full tab payload (data + everything).
-- `PUT    /api/designs/:id/tabs/:tabId` — upsert a single tab (active edit path).
-- `DELETE /api/designs/:id/tabs/:tabId` — remove a tab.
-- `PUT    /api/designs/:id` — design-level fields only (rename,
-  tab order, shareable). Body
-  carries `tabIds: string[]` in
-  the new order; the API
-  persists the order index
-  without touching tab content.
+- `GET    /api/designs/:id/tabs/:tabId`: full tab payload (data + everything).
+- `PUT    /api/designs/:id/tabs/:tabId`: upsert a single tab (active edit path).
+- `DELETE /api/designs/:id/tabs/:tabId`: remove a tab.
+- `PUT    /api/designs/:id`: design-level fields only, `{ name?, tabs?, tabIds? }`. `name` renames the design;
+  `tabs` (`{ id, folder }` entries in the new order, [Tab folders](tab-folders.md)) reorders and sets each tab's
+  folder, `tabIds` the same without folders; the API persists the order without touching tab content.
 
-The existing `GET /api/designs/:id` body grows a `tabs:
-TabSummary[]` field instead of `tabs: Tab[]`. The whole-design
-PUT goes away.
+`GET /api/designs/:id` carries `tabs: TabSummary[]`, never whole
+tabs, and no design-level PUT carries tab content.
 
-Realtime room op stays element-level for the cursor / select / log
-broadcasts; the `tabs` op shrinks to `{ kind: 'tab', tabId, tab }`
-so peers only get the one that changed.
+Realtime room ops stay element-level for the cursor / select / log
+broadcasts; a whole-tab op is `{ kind: 'tab', tabId, tab }`, so peers
+only get the one that changed.
 
 ## Live app
 
@@ -85,7 +70,6 @@ so peers only get the one that changed.
    `PUT /api/designs/:id/tabs/:activeTabId` with the changed tab.
 3. Tab rename / reorder go through the design-level PUT; element
    edits go through the tab-level PUT.
-4. The room op shrinks accordingly.
 
 ### Loading & failure UX for the lazy fetch
 
@@ -136,8 +120,8 @@ renders immediately rather than showing a spinner over real content.
   plain requests, which land when the page lives on. Two events on the same way out send the content once.
 - A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
   what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
-  flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
-  come back as its first letter.
+  flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`), so a label typed and left open never
+  comes back as its first letter.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
 
@@ -153,19 +137,13 @@ at once, as before.
 
 ### A refused save stops; a failed save doesn't
 
-The autosave used to treat every rejection as one thing: set the status to
-`error`, toast "Couldn't save your changes. Check your connection.", and try
-again on the next edit. That's right for a blip, a 5xx, or a dropped
-connection — the next attempt may well work (and it now comes without waiting for
-the next edit, see Retrying a failed save).
+A failed save (a blip, a 5xx, a dropped connection) sets the status to `error`, toasts "Couldn't save your
+changes. Check your connection." and retries, since the next attempt may well work (see Retrying a failed save).
 
-It's wrong for a **403**. The server isn't failing, it's refusing: the share
-link was revoked, we were removed from the team, or the role changed under us.
-No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
-and the only feedback blamed a connection that was fine — so someone could
-edit for an hour against a design that would never take a single write. Live
-telemetry showed the shape of it: **297 `Http403` in one day** against a
-baseline in single digits, which is one long session failing over and over.
+A **403** is different. The server isn't failing, it's refusing: the share link was revoked, we were removed from
+the team, or the role changed under us. No retry can succeed, and retrying on every keystroke would fire doomed PUTs
+while blaming a connection that is fine, so someone could edit for an hour against a design that would never take a
+single write.
 
 So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
 
@@ -190,7 +168,7 @@ whatever still differs from the last saved state, so nothing is sent twice
 
 A save that never answers counts as failed too. Each tab's saves run one after another, so a request
 left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
-used to hold back every later save of that tab. A tab save and a design meta save now give up
+would hold back every later save of that tab. A tab save and a design meta save give up
 after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
 `apps/live/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
 above sends the newest content on a fresh connection.
@@ -220,8 +198,8 @@ anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 
 A **413** (`payload_too_large`) is the server refusing a tab over its row cap
 ([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
-neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
-"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. Toasting "Couldn't save your changes. Check your connection." and retrying would be a save that could never
+land.
 
 So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
 
@@ -309,26 +287,15 @@ designs ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) is this desi
 copy, and this design's object sends it on to the others. Putting an existing tab into another design is the `link`
 route, never a save.
 
-## Cutover (historical)
-
-How this rolled out, recorded here so future schema changes can repeat the pattern:
-
-1. Migration 0005 created the `tabs` table + a same-migration backfill SQL step that split every existing `diagrams.data` JSON into N rows of `tabs` (one per array element), assigning `order_index` from the array position.
-2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
-3. Migration 0006 dropped `diagrams.data`.
-
 ## Risk
 
-- D1 doesn't currently support cross-row transactions cleanly, so the
-  backfill is per-design in its own statement set. If the backfill
-  step partially fails, the migration tracker re-runs it.
-- Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
-  tab. Acceptable for the small tab counts (< 20) we see in practice.
+- Tab reorder rewrites every link's `order_index` (and folder) in one batch (`reorderTabs`). Acceptable for the
+  small tab counts (< 20) seen in practice.
 
 ## What this does NOT change
 
 - Realtime presence (still room-level).
-- Sharing (per-design share codes; no per-tab sharing yet). Tab-level reuse across designs is a server-side relationship under [Tab ↔ design many-to-many](tab-design-many-to-many.md), not user-visible sharing.
+- Sharing: share links are the index's, for a whole design or one tab ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)). Tab reuse across designs is a relationship under [Tab ↔ design many-to-many](tab-design-many-to-many.md), not a share.
 - The frontend `Tab` type shape (just where it's persisted).
 
 ## Import carries identity, not just content

@@ -110,8 +110,9 @@ The kit lives in `apps/mcp/eval/`:
 - A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
   joined text (`resultJson` in `apps/mcp/eval/bench/mcp-client.mjs`).
 - `read_design` with `format: "json"` puts the elements under `tab.elements`, not at the top.
-- A token minted into an earlier session's D1 copy is refused after copying main's state again ("the token is not
-  accepted"); `run.mjs` mints its own into the copy each round.
+- A token from an earlier round is refused once the local accounts Worker's state is reset ("the token is not
+  accepted"); `run.mjs` mints fresh throwaway accounts and tokens from the accounts Worker at the start of every
+  round, so never reuse a saved `token.env` across a reset.
 - A check written from one model's output can quietly fit that model: the cross-test (step 16) and a second model's
   runs are what show a check is about the prompt.
 - The per-token limits count api requests (reads 120 a minute), and every run has its own token, so runs do not

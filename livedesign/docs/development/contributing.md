@@ -14,7 +14,7 @@ Start by reading [`docs/specs/README.md`](../specs/README.md) for the category i
 
 ## Setting up
 
-See [Local development](local-development.md). The short version: clone, `pnpm install`, `pnpm dev`.
+See [Local development](local-development.md). The short version: clone the monorepo, `corepack pnpm install` at its root, then `pnpm dev` in `livedesign/`.
 
 ## Code style
 
@@ -43,7 +43,7 @@ Adding or upgrading a dependency that ships to a browser or a worker can fail `p
 
 ### Security alerts and `pnpm.overrides`
 
-A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the root `package.json` `pnpm.overrides` is for when no upstream release fixes it; `package.json` holds no comments, so each such entry is listed here with its alert:
+A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the monorepo root `package.json` `pnpm.overrides` is for when no upstream release fixes it. `package.json` holds no comments, so the entries livedesign's dependencies need are listed here with their alerts:
 
 | Override          | Alert                                             | Why no upstream fix                                |
 | ----------------- | ------------------------------------------------- | -------------------------------------------------- |
@@ -53,14 +53,14 @@ Drop an entry once an upstream release makes it redundant.
 
 ### Merging to `main` deploys
 
-A merge to `main` that passes CI **deploys automatically to staging** —
+A merge to `main` that passes CI **deploys automatically to staging**,
 [staging.livedesign.app](https://staging.livedesign.app), a complete copy of the
 platform with its own data, against staging.liveworkspace.app's services ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
 presses anything. Within a few minutes your change is running somewhere public, and any
 new Durable Object `[[migrations]]` tag in it has been applied for real.
 
-Production is **not** affected: that deploy stays manual (`Deploy Production` in the
-Actions tab) and someone decides when to press it.
+Production is **not** affected: that deploy is manual (`Deploy Production` in the
+monorepo's Actions tab, `deploy-production.yml`) and ships what staging runs.
 
 Two things follow for you as a contributor:
 
@@ -84,13 +84,13 @@ TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` find
 
 The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livedesign/api gen:openapi` and its drift test.
 
-`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
+`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or build and dev race on one cache.
 
 ## Tests
 
 Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@liveworkspace/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
 
-`pnpm install` installs a pre-push hook (`.githooks/pre-push`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
+`corepack pnpm install` installs the monorepo's pre-push hook (`.githooks/pre-push`, through `scripts/git-hooks/install.mjs`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
 
 When you add a feature, add tests for the critical paths. When you fix a bug, add a test that would have caught it.
 
@@ -98,7 +98,7 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium: the layer the Vitest unit tests can't reach. It runs from the monorepo's root `.github/workflows/e2e.yml` on every pull request and push to `main` whose change reaches livedesign's editor (`e2e-product.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3402` / `:8989`):
 
@@ -115,7 +115,7 @@ pnpm --filter @livedesign/live build:signed-in
 pnpm --filter @livedesign/live test:e2e:signed-in
 ```
 
-Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3402` is already taken (a second checkout, a worktree):
+Those ports are defaults, not fixtures. Four environment variables move them, which is what you want when `:3402` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
@@ -124,11 +124,11 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | `E2E_API_PORT`       | `8989`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3413`                  | The port the stack serves the built marketing site on (optical audit) |
 
-`E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
+`E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. `E2E_BASE_URL` and `E2E_LIVE_PORT` are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
-The optical audit also opens the help centre and the marketing site: build them (`pnpm --filter @livedesign/help --filter @livedesign/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers. (The telemetry dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+The optical audit also opens the help centre and the marketing site: build them (`pnpm --filter @livedesign/help --filter @livedesign/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers.
 
-Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
+Keep the suite tiny: add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 
 ## PRs
 
@@ -142,7 +142,7 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 
 - **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes, no server-required image loader. Any server logic goes in the api worker.
 - **Server logic lives in Cloudflare Workers**, not in Next.js. Frontends call those workers.
-- **Database access goes through the api worker**, never from the browser.
+- **Stored data is reached through the api worker** (its Durable Objects, R2 and liveworkspace's services), never from the browser.
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
 - **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveworkspaceNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and the monorepo's `packages/next-config/apps-use-shared.test.js` finds the app and holds it to that.

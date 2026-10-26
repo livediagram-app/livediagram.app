@@ -12,7 +12,7 @@ It builds on the sibling blueprints and calls what they provide by these names:
 
 | Provided by      | Name used here                                                                    | What it is                                                                                                                                                                                                          |
 | ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| share-roles      | `ShareRole`, `TokenRole`                                                          | The levels on grants, tickets, room sessions and tokens; no member is named here                                                                                                                                    |
+| share-roles      | `ShareRole` (`AccessLevel`)                                                       | The levels on grants, tickets, room sessions and tokens; no member is named here                                                                                                                                    |
 | share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                | True when the caller's grant and its token (if any) pass that gate; until share roles land, `gateParticipate` is read access (`apps/api/src/routes/context.ts`), read-only tokens refused writes at the choke point |
 | share-roles      | The write choke point's route-gate matcher                                        | Lets a token's write reach a route only when the token passes that route's gate                                                                                                                                     |
 | agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                      | The presenting API token, null for a session or a guest                                                                                                                                                             |
@@ -33,8 +33,6 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                                                                                        | Re-exports the two new modules                                                                                                                          |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                                                 | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                                                                                  |
 | `packages/design/src/comments.ts`                                                                                         | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                                                                               |
-| apps/api/migrations/0001_livedesign_baseline.sql (removed)                                                                | `ws_tickets.person_tag` (PR1), landed with agent changesets, whose held check reads it                                                                  |
-| apps/api/src/db/ws-tickets.ts (removed)                                                                                   | `WsAdmission.personTag`; written at mint, returned at consume                                                                                           |
 | `apps/api/src/db/tabs.ts`                                                                                                 | `tabIdsWithComments(env, designId)`                                                                                                                     |
 | `apps/api/src/person-tag.ts`                                                                                              | `personTagFor(designId, ownerId)`                                                                                                                       |
 | `apps/api/src/comments.ts`                                                                                                | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                                        |
@@ -74,7 +72,7 @@ Scope, by file:
 | Focus           | `focus: string[]` (element ids), `AgentFocusOverlay`                   | Elements the agent marks, drawn with a ring in the owner's colour     |
 | Time to live    | `ttl` (request, ms), `expiresAt` (epoch ms)                            | How long the entry lives without a refresh                            |
 | Refresh         | `refreshAgentPresence`, room mode `refresh`                            | A changeset extending the entry, keeping status and focus             |
-| Person tag      | `personTag`, `X-Verified-Person`, `ws_tickets.person_tag`              | Opaque per-design stand-in for an owner id, held inside the room only |
+| Person tag      | `personTag`, `X-Verified-Person`                                       | Opaque per-design stand-in for an owner id, held inside the room only |
 | Joins           | `AgentPresence.joins`, `AgentPresence.self`, `AgentPresence.person`    | Which roster sessions are the same person as the agent, per recipient |
 | Thread verbs    | reply, resolve, reopen (`CommentVerb`)                                 | The comment endpoints beside add and delete-own                       |
 | Thread listing  | `DesignCommentThread`, `CommentListStatus` (`open`, `resolved`, `all`) | One thread across the design, with its element's ref and label        |
@@ -302,9 +300,9 @@ ascending, `joins` the presence ids of hello'd sessions other than the recipient
 entry's, `self` when the recipient's `personTag` equals it (both non-null), `person` numbered by first appearance
 in the frame. A frame with no live entries carries `agents: []`.
 
-Upgrade: the ticket mint stores `personTagFor(designId, ctx.resolveOwner())` when a verified account
-(`ctx.verifiedUserId`) mints it, else null (PR2). The upgrade sets `X-Verified-Person` on every path, empty when
-none, and the room pins it on the session attachment as `personTag`.
+Upgrade: the room ticket carries the grant (`@liveworkspace/index-app` `sealRoomTicket`); the upgrade opens it and
+sets `X-Verified-Person` on every path to `personTagFor(designId, claims.sub)` for a person's grant, empty for a
+share-link visitor (PR2), and the room pins it on the session attachment as `personTag`.
 
 ### Editor
 
@@ -333,7 +331,6 @@ none, and the room pins it on the session attachment as `personTag`.
 
 | Field                                 | Class     | Notes                                                      |
 | ------------------------------------- | --------- | ---------------------------------------------------------- |
-| `ws_tickets.person_tag`               | transient | TEXT NULL; lives as long as the ticket (60 s)              |
 | Session attachment `personTag`        | transient | Per socket, survives hibernation, gone with the socket     |
 | DO storage `agent-presence:<t>:<tab>` | ephemeral | `AgentPresenceRecord`, at most 120 s without a refresh     |
 | `Comment.tokenId`                     | audit     | Inside `tabs.data`; written once; deleted with its comment |
@@ -341,7 +338,7 @@ none, and the room pins it on the session attachment as `personTag`.
 `AgentPresenceRecord = { id, designId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- The person tag comes with the room ticket; no column is stored for it.
+- The person tag is derived from the room ticket's grant at the upgrade; no column is stored for it.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
   `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches the design's SQLite.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
@@ -488,7 +485,7 @@ client's copy.
 | Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                         |
 | The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                        |
 | Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                             |
-| Person tag through the ticket                                    | apps/api/src/db/ws-tickets.test.ts (removed), `routes/design-room-routes.test.ts`                                                                                             |
+| Person tag through the ticket                                    | `routes/design-room-routes.test.ts`                                                                                                                                           |
 | OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                               |
 | End to end, dark mode                                            | `apps/live/e2e/signed-in/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
 

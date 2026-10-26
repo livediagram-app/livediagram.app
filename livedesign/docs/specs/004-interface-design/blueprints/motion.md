@@ -194,7 +194,7 @@ the sticky peel, cursors and note ink.
 
 - **The root takes no part**: `html { view-transition-name: none; }` in the editor's `globals.css`, so only a named
   surface is captured.
-- **No surface has classes today** (the slide moves left with slide decks on 25 October 2026);
+- **No surface has classes**;
   `view-transitions.test.ts` pins both stylesheets empty. A chrome surface's would go in `globals.css`, a canvas
   surface's in `canvas-motion.css`.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the

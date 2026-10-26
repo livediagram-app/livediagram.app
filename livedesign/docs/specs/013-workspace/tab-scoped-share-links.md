@@ -11,7 +11,7 @@ Owners sometimes want to show one tab of a design, not the whole thing: the road
 - Every link has a role (`view` / `edit`, unchanged) and a scope. Role and scope are independent: a tab-scoped link can be view or edit.
 - **All tabs is the default.** A link created without a tab is exactly the link that existed before this spec.
 - A design holds any number of links, of any mix of scopes: different tabs to different people, several links to the same tab, all-tab links alongside.
-- The owner can **change a link's scope** after creation, both ways (All tabs ↔ a tab, one tab ↔ another tab). The code stays the same, and the change takes effect immediately for everyone holding it (see [Rescoping](#rescoping)).
+- The owner can **change a link's scope** after creation, both ways (All tabs ↔ a tab, one tab ↔ another tab). The code stays the same, and the change takes effect immediately for everyone holding it (see [Rescoping](#revoking-and-rescoping)).
 - Only the owner manages links, as for every share-link operation.
 
 ## Data model
@@ -81,18 +81,13 @@ For a scoped session:
 
 `share-revoked` and `share-rescoped` (below) now also **close** every room socket that joined with that code, after delivering the op. Before, a client had to honour the redirect itself; a modified client could ignore it and keep receiving ops.
 
-### Rescoping
+### Revoking and rescoping
 
-Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessions that joined with that code reload the page (the resolve then hands them the new scope) and the room closes their sockets. Sessions on other codes ignore it.
-
-### A change while joining
-
-A session's scope and code come from its room ticket, minted a moment before the upgrade. A revoke or rescope that lands between that mint and the room accepting the socket broadcasts to a room the session is not in yet. So once the room has accepted a share session's socket it reads that link once more (`room-link-recheck.ts`, one indexed read, share sessions only):
-
-- The link is gone, expired, or its tab deleted: the room sends that session `share-revoked { code }` and closes it, as the broadcast would have.
-- The link now opens another scope: the room sends it `share-rescoped { code }` and closes it, and the editor reloads into the new scope.
-- Otherwise nothing happens. A change this read did not see has not been written yet, and its broadcast reaches the socket, which is already in the room.
-- A failed read leaves the session as its ticket admitted it and logs `[room-link] join recheck failed`; a session told of a change logs `[room-link] joined on a changed link` with the op's kind.
+Links are liveworkspace's index's. When a link is revoked or rescoped (another level or tab), the index tells the
+design's room (`revoke`, `apps/api/src/routes/internal-items.ts`), and the room's `revokeCodes` broadcasts a system op
+to the sessions that joined with that code, `share-revoked { code }` or `share-rescoped { code }`, then closes their
+sockets and clears any agent presence on them. A rescoped session's editor reloads (the resolve then hands it the new
+scope); a revoked one leaves for the Explorer. Sessions on other codes ignore it.
 
 ## Visitor experience
 

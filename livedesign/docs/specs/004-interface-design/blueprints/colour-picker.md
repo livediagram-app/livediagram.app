@@ -184,7 +184,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`               |
 | page background                                           | `page-background-section.test.tsx`                                                                |
 | laser and colour wells                                    | `LaserColourRow.test.tsx`, `lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx` |
-| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`, `quick-style-mixed.spec.ts`   |
+| rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`                                |
 
 ## Constants and configuration
 

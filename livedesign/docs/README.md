@@ -12,7 +12,7 @@ These docs are the practical guide: what the app does, how to run it locally, an
 
 - ./specs/README.md - when building or changing product behaviour: the specs are the source of truth
 - ./instructions/README.md - when repeating a known process, such as registering a help article
-- ./development/architecture.md - when you need the repo shape: eight apps (one a CLI), twenty-four packages, Cloudflare-only deploys
+- ./development/architecture.md - when you need the repo shape: seven apps (one a CLI), fourteen product packages over the shared `@liveworkspace/*` ones, Cloudflare-only deploys from the monorepo
 - ./development/local-development.md - when cloning, installing, and running the apps locally
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
 - ./research/README.md - when you need measurements and experiment reports

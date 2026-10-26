@@ -79,7 +79,7 @@ frame turns with it (the iPhone's Dynamic Island and the Android camera then sit
   menu. The address is `example.com` on an unnamed page and `example.com/<the page's name, in lower
 case with dashes>` on a named one, so naming the page names the screen.
 - **Safe area**: the screen less the shown system bars, then a gutter each side: phone 16 px, tablet
-  24, computer 32, watch 8. Snapping offers the screen's edges and centre lines in place of the
+  24, computer 32, watch 12. Snapping offers the screen's edges and centre lines in place of the
   sheet's, and the safe area in place of the margin.
 
 ## Choosing the device

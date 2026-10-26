@@ -1,10 +1,10 @@
 # Transactional email
 
-**Status: in progress.** Optional: on wherever the `EMAIL` binding is declared. The api worker sends a small set of account and
+Status: shipped. Optional: on wherever the `EMAIL` binding is declared. The api worker sends a small set of account and
 notification emails through Cloudflare Email Service, the platform's one email path
 ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)),
 it is **entirely gated on configuration**: when the `EMAIL` binding is absent the whole feature is inert — no
-sends, no new request work — and everything else behaves exactly as before. Guests and the canvas stay
+sends, no new request work — and everything else behaves the same. Guests and the canvas stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -35,7 +35,7 @@ livedesign sends the rest, two kinds:
 notification — **someone joined my design** — read from the person's
 [User preferences](../007-editor/user-preferences.md), set in the Settings dialog.
 
-**Later additions (same gate + best-effort `ctx.waitUntil` contract):**
+**Notifications (same gate + best-effort `ctx.waitUntil` contract):**
 
 2. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    design count reaches 10, fired on a genuine create. Claimed once per account
@@ -161,10 +161,10 @@ name, or a recipient count.
 - Off without the binding; a deployment opts in by declaring it, with a sender on an onboarded domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) intact — no required SaaS call).
 
-## 8. Out of scope (for now)
+## 8. Out of scope
 
 Dark-mode email variants, bounce handling (Email Service handles
 delivery; sends are best-effort, and one-time ones are idempotent through their claims and stamps). Per-notification
-**email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
-adds an opt-out toggle for its notification, stored
-with the person's [User preferences](../007-editor/user-preferences.md).
+**email preferences** are in scope: [Account settings & email notifications](profile-and-email-notifications.md)
+has an opt-out toggle for each notification, stored with the person's
+[User preferences](../007-editor/user-preferences.md).

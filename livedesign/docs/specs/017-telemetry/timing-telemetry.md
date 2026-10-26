@@ -101,7 +101,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 
 ## Dashboard: the Timings section
 
-A **Timings** section on the dashboard's Health tab, after Exceptions.
+A **Timings** section on the dashboard's Health tab, after Exceptions (liveworkspace's shared views over livedesign's `catalogue/timings.ts`).
 
 - **Editor timings**: one card per editor metric (Design Load, Tab Switch, Save, Live Connect, Live
   Reconnect). Each card's big number is the **p75** for the selected window, with the median (p50) and
@@ -113,7 +113,7 @@ A **Timings** section on the dashboard's Health tab, after Exceptions.
   always shown.
 - **Percentiles are estimates.** A percentile is found by walking the buckets to the one holding it and
   interpolating linearly inside that bucket, so it reads "about 0.8 s". A percentile that falls in the
-  open last bucket reads "over 30 s", never a made-up number. The tab says this in a line under its
+  open last bucket reads "over 30 s", never a made-up number. The section says this in a line under its
   heading.
 - **Every timing has a chart** in the dashboard's own sense ([Telemetry](telemetry.md) "Every event has a
   chart"): each metric is a `Timing·Measured` metric whose `typeIn` takes that metric's buckets, so the
@@ -121,20 +121,7 @@ A **Timings** section on the dashboard's Health tab, after Exceptions.
 
 ## Privacy
 
-Unchanged by timings: three fields, a closed vocabulary, no id, no content. A bucket says "this page
+Timings are ordinary events: three fields, a closed vocabulary, no id, no content. A bucket says "this page
 opened in under a second somewhere", never which page instance, which design or whose browser. The
 per-user opt-out ([User preferences](../007-editor/user-preferences.md)) and the server
 `TELEMETRY_ENABLED` gate stop timings exactly as they stop every other event.
-
-## Next ideas
-
-Not built yet; each fits the same `Timing·Measured` event with a new metric on an existing scale.
-
-- **Explorer first load**: opening the Explorer to its first list rendered (Home, Recent).
-- **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest
-  "how quickly does someone get going" number.
-- **Export**: PNG, SVG and PDF export, from the click to the file handed over, typed by format.
-- **Sign-in round trip**: submitting the sign-in or sign-up code to the editor signed in.
-- **Image upload**: dropping an image to it showing on the canvas from the server.
-- **Server-side api latency**: the api worker timing its own design reads and writes, reported with
-  `reportServerEvent`, to separate a slow network from a slow worker.

@@ -49,10 +49,9 @@ a grid is not always the better shape:
   rather than taking a column of their own. A shortcut is worth discovering
   and worth nothing at the cost of the label's line.
 - **The selected option is shown, in its selected tone**, not filtered out.
-  It used to be hidden on the reasoning that the trigger already names it —
-  but that makes the reader infer the current value from the trigger alone,
-  and worse, the remaining options _shift position_ every time the selection
-  changes, so the thing you want is never twice in the same place. Showing all
+  Hiding it would make the reader infer the current value from the trigger alone,
+  and the remaining options would _shift position_ every time the selection
+  changes, so the thing you want would never be twice in the same place. Showing all
   of them keeps the layout stable and states the current value where you are
   looking. Applies to the list layout too.
 - The menu takes a **floor width** (13.5rem) in grid mode. Without it the

@@ -1,43 +1,35 @@
 # Staging environment
 
 A second, complete copy of the platform at **https://staging.livedesign.app**, deployed
-**automatically on every merge to `main`** once CI is green. Production stays exactly
-as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
+**automatically on every merge to `main`** once CI is green. Production is manual,
+`workflow_dispatch` only, and by default ships what staging runs ([Deployment](deployment.md)).
 
-The point is to have somewhere a change is _running_ before anyone decides to ship it —
+The point is to have somewhere a change is _running_ before anyone decides to ship it,
 in particular somewhere a new Durable Object `[[migrations]]` tag is applied to real
 remote Durable Objects before it reaches the ones holding people's designs.
 
 ## The two environments
 
-|               | Production                           | Staging                                    |
-| ------------- | ------------------------------------ | ------------------------------------------ |
-| Hostname      | `livedesign.app`                     | `staging.livedesign.app`                   |
-| MCP host      | `mcp.livedesign.app`                 | `mcp-staging.livedesign.app`               |
-| Trigger       | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
-| Workflow      | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names  | `livedesign-<app>`                   | `livedesign-<app>-staging`                 |
-| R2            | `livedesign-photo-blobs`             | `livedesign-photo-blobs-staging`           |
-| liveworkspace | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
-| Indexable     | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
+|               | Production                                      | Staging                                    |
+| ------------- | ----------------------------------------------- | ------------------------------------------ |
+| Hostname      | `livedesign.app`                                | `staging.livedesign.app`                   |
+| MCP host      | `mcp.livedesign.app`                            | `mcp-staging.livedesign.app`               |
+| Trigger       | Manual (`workflow_dispatch`)                    | Automatic, on every green CI run on `main` |
+| Workflow      | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
+| Worker names  | `livedesign-<app>`                              | `livedesign-<app>-staging`                 |
+| R2            | `livedesign-photo-blobs`                        | `livedesign-photo-blobs-staging`           |
+| liveworkspace | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
+| Indexable     | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`  |
 
 ### "live" is an app, not an environment
 
-Worth stating once, because the two readings collide constantly in this repo: **`live`
-is the name of the editor app** — `apps/live`, the `livedesign-live` worker, the
-`LIVE` service binding, the `deploy-live` job. It is a proper noun. The environments
-are **production** and **staging**, and nothing else.
+**`live` is the name of the editor app**: `apps/live`, the `livedesign-live` worker, the `LIVE` service binding. It is
+a proper noun. The environments are **production** and **staging**, and nothing else; there is no "live environment".
 
-So `deploy-live` deploys the editor, in whichever environment the run targets; there is
-no "live environment". Phrases like "goes live" are avoided in the deploy workflow for
-exactly this reason — in a file that also contains `deploy-live`, the same word would
-be doing two jobs.
-
-Both run in the **same Cloudflare account**, under the same `CF_API_TOKEN` /
-`CF_ACCOUNT_ID`. Two accounts would isolate harder, but every binding, secret and
-dashboard step would then need doing twice by hand, and the thing most likely to break
-staging is drift between the two — so the isolation is drawn at the **resource**, not
-the account.
+Both run in the **same Cloudflare account** (the liveworkspace account every `wrangler.toml` pins), under the one
+`CLOUDFLARE_API_TOKEN`. Two accounts would isolate harder, but every binding, secret and dashboard step would then
+need doing twice by hand, and the thing most likely to break staging is drift between the two, so the isolation is
+drawn at the **resource**, not the account.
 
 ## Wrangler environments, not a second config file
 
@@ -95,9 +87,9 @@ declared through `[[migrations]]` tags in `apps/api/wrangler.toml`, restated und
 ([Deployment](deployment.md) "Durable Object migrations"). Every merge to `main` therefore
 applies a new tag to staging's Durable Objects one manual deploy before production's.
 
-A deploy that fails halts the staging run and turns the `main` build red — which
-is the whole point, and the reason the staging deploy is chained to CI rather than fired
-in parallel with it.
+A deploy that fails stops the staging run before the tiers after it, and the
+`deployed/staging` tag stays put, so the next deploy retries it. The staging deploy is
+chained to CI rather than fired in parallel with it, so only a green `main` reaches it.
 
 ## noindex, at the edge
 
@@ -126,12 +118,12 @@ Two deliberate non-changes:
 ## Build-time configuration
 
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is
-its own build** — the two workflows never share an artifact. Staging's build differs
+its own build**: each deploy builds its sites for its environment. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                       | Staging                              |
-| ------------------------ | ------------------------------------------------ | ------------------------------------ |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedesign.app`) | `https://mcp-staging.livedesign.app` |
+| Variable                 | Production                                       | Staging                                                                                                                                        |
+| ------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livedesign.app`) | the staging mcp worker's `workers.dev` address (`https://livedesign-mcp-staging.<subdomain>.workers.dev`, set in the root `deploy-worker.yml`) |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -147,7 +139,7 @@ both environments it returns `{"emailEnabled":true}` on staging as on production
 
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`.                                       |
+| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`, set with `--env staging`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`.                                 |
 | **Telemetry** — ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                            |
 | **Email** — ON     | Cloudflare Email Service through the `[[env.staging.send_email]]` binding `EMAIL` ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)), restated because bindings don't inherit. `EMAIL_FROM` is production's sender, and `APP_BASE_URL` points every link back at staging. No key: the binding is the credential. Staging runs the same daily email cron as production, so it mails **real people** (see the warning below). |
 
@@ -160,51 +152,30 @@ both environments it returns `{"emailEnabled":true}` on staging as on production
 
 ## Secrets
 
-Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
-value the deploy workflow syncs:
+Worker secrets are per environment: staging's are set with `wrangler secret put --env staging` and are never
+production's (its own accounts client and resource, its own `MEDIA_KEY` for staging liveworkspace's media service, its
+own `TELEMETRY_KEY` on the api and mcp). A deploy writes no secret, so they survive every deploy
+([Secrets policy](../002-project-scope/secrets-policy.md)).
 
-| GitHub secret                    | Synced to                       | Notes                                                                                                                   |
-| -------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                           |
-| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                 |
-| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                         |
-| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                   |
-| `MEDIA_KEY_STAGING`              | staging api                     | Staging's own key for staging liveworkspace's media service. Never production's.                                        |
-| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | Same value on both, and as staging telemetry's `TELEMETRY_KEY_LIVEDESIGN` ([Telemetry](../017-telemetry/telemetry.md)). |
-
-`CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
-
-Email needs no secret in either environment: the `EMAIL` binding is the credential. Keeping
-the workflow's secret list identical across the two environments is deliberate: a secret that
-exists in one workflow and not the other is how the environments start to differ.
+Email needs no secret in either environment: the `EMAIL` binding is the credential.
 
 ## One workflow body, two callers
 
-`.github/workflows/deploy-reusable.yml` holds the entire deploy — build, the six parallel
-app deploys, mcp, router — as a `workflow_call` reusable workflow taking the target
-environment as inputs. `deploy.yml` (manual, production) and `deploy-staging.yml`
-(automatic, staging) are thin callers.
+The monorepo's root `deploy.yml` holds the whole deploy as a reusable workflow taking the environment as an input;
+`deploy-staging.yml` and `deploy-production.yml` are thin callers ([Deployment](deployment.md#deploy)). A staging
+environment whose deploy has drifted from production's tests nothing.
 
-This is the reuse rule applied to CI: the alternative was a second ~450-line file that
-would be a faithful copy of production's deploy for about a week. A staging environment
-whose deploy has drifted from production's tests nothing.
-
-`deploy-staging.yml` triggers on `workflow_run` — CI completing successfully on `main` —
-not on `push`. Deploying a red `main` to staging would mean the environment's state no
-longer tells you anything. Every commit on `main` runs CI to the end
-([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish
-out of order: a first job (**Still main's tip**) lets a run deploy only when its commit
-is still `main`'s tip, and an older commit finishing last is skipped rather than putting
-staging behind `main`. The deploy job's own `concurrency: cancel-in-progress: true` means
-a rapid series of merges deploys the last one rather than queueing all of them; it sits
-on the job, not the workflow, so a skipped run never cancels the tip's deploy. Production
-keeps `cancel-in-progress: false`, because cancelling a half-finished production deploy
-is worse than queueing.
+`deploy-staging.yml` triggers on `workflow_run` (CI completing successfully for a push to `main`), not on `push`:
+deploying a red `main` would mean staging's state tells you nothing. Every commit on `main` runs CI to the end
+([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish out of order: a first job
+(**Still main's tip**) lets a run deploy only when its commit is still `main`'s tip. An older commit finishing last is
+skipped, and the tip's run deploys both, since the plan diffs against what staging last deployed. Runs queue rather
+than cancel (`cancel-in-progress: false`, for staging and production alike), so a deploy is never cut off halfway.
 
 ## One-time setup
 
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
-(they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
+(they are identifiers, not secrets: [Secrets policy](../002-project-scope/secrets-policy.md)).
 
 **Data stores** staging needs, each created once with wrangler:
 
@@ -214,29 +185,20 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 | KV       | `livedesign-mcp-oauth-staging`   | `wrangler kv namespace create livedesign-mcp-oauth-staging` (see below) | `apps/mcp/wrangler.toml`, `[env.staging]` |
 
 `wrangler r2 bucket list` and `wrangler kv namespace list` show whether each exists. The
-KV namespace's id goes into `apps/mcp/wrangler.toml` once it is created; until then the
-file holds a placeholder id and the mcp deploy fails. The api's Durable Objects need no
+KV namespace's id is in `apps/mcp/wrangler.toml`. The api's Durable Objects need no
 setup: they exist once the staging api worker deploys.
 
 Note the KV **title** is `livedesign-mcp-oauth-staging`, matching production's
 `livedesign-mcp-oauth`: the product's name leads, because every liveworkspace app's
 namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
-It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
+It is not `OAUTH_KV`: that is the binding name inside `wrangler.toml`, a different
 thing, and `wrangler kv namespace create OAUTH_KV --env staging` would produce
 `livedesign-mcp-staging-OAUTH_KV` instead.
 
-The **workers** are not on this list: a worker is its uploaded script, so all seven
-`livedesign-*-staging` workers come into existence on the first staging deploy. The
-job graph bootstraps them in the right order — the five path-routed workers first,
-then mcp (service binding to api), then router (service bindings to the five) — exactly
-as production's first deploy did ([Deployment](deployment.md) "First deploy").
-
-Still outstanding:
-
-```bash
-# GitHub secrets — Settings → Secrets and variables → Actions
-#    the _STAGING entries in the table above
-```
+The **workers** are not on this list: a worker is its uploaded script, so every
+`livedesign-*-staging` worker comes into existence on the first staging deploy. The tiers
+bootstrap them in order: the api first, then the sites and mcp (bound to the api), then the
+router (bound to the four) ([Deployment](deployment.md) "First deploy").
 
 **Nothing to do for hostnames**: both are declared in the workers' `[env.staging]` blocks
 and attached by the deploy itself, as production's are ([Deployment](deployment.md#custom-domain)):
@@ -249,18 +211,17 @@ router's service bindings and never touch DNS, exactly as in production.
 
 **Sign-in needs one registration**: staging's OAuth client on the accounts Worker, with
 `https://staging.livedesign.app/api/auth/callback` as its redirect URI and its own
-resource. (Under Clerk, staging used an origin-permissive development tenant and needed
-nothing.)
+resource.
 
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
   Per-PR previews would need a worker per PR, their own storage and a wildcard hostname;
-  if that's wanted later it's a different spec, not a knob on this one.
+  that would be a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's design.
-- **Not a rollback target.** Rolling production back is still a production deploy of an
-  older `main`.
+- **Not a rollback target.** Rolling production back is a production deploy of an
+  older commit (`deploy-production.yml` with a `ref`).
 
 ## Known sharp edge, inherited
 
@@ -272,14 +233,4 @@ the hosted profile, which the deploy sends with `--var` on every run and then re
 off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
 
-**This prediction came true.** The image gallery caps (`IMAGE_MAX_PER_OWNER`,
-`IMAGE_MAX_BYTES_PER_OWNER`) were documented as hosted-set but set by nothing, so the R2
-quota guard was off. A dashboard var leaves no trace either way, and no amount of reading
-the repo would have revealed it. They moved into the hosted profile, where the deploy's
-verify step is the probe that fails when one is not live, and have since moved to
-liveworkspace's media service, which keeps the images and their caps for every app.
-
-The general lesson, worth more than the specific fix: **an optional guard that fails open is
-untestable from the source tree.** Every file can read as though a protection is active while
-production runs without it. Where a guard is config-gated, the audit step is a probe against
-the deployment, not a code review, and for the hosted profile that probe runs on every deploy.
+Image caps are not livedesign's to set: liveworkspace's media service keeps the images and their caps for every app.

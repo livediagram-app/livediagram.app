@@ -80,7 +80,7 @@ snapped to, within the usual threshold (`ALIGN_SNAP_THRESHOLD`) and with the usu
 
 ## Moving and scaling a free arrow
 
-An arrow whose two ends are both free (attached to nothing) no longer moves by dragging its line,
+An arrow whose two ends are both free (attached to nothing) does not move by dragging its line,
 because dragging the line bends it. When selected, a free arrow wears a box's selection: the same
 brand ring round its drawn extent (padded clear of its endpoint grips), and the same corner and edge
 handles.

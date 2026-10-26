@@ -153,8 +153,8 @@ the unchosen view is the one that shows them their work. Card view renders the
 same folders + designs as a responsive grid of cards (1 / 2 / 3 columns
 by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
-card share one badge module (`design-badges.tsx`) and one actions-menu
-module (`design-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
+card share one badge module and one row module in the shared Explorer
+(`packages/explorer/src/explorer/badges.tsx`, `rows.tsx`) so they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
 
 **On a phone** (the `phone:` breakpoint: narrower than `sm`, or a touch screen under 500px tall)
@@ -180,10 +180,9 @@ verbs scans down in one. The rows are `MenuActionRow` in its `plain`
 form the note menu uses, because here the rows are the whole menu. A
 shared-with-you design's menu (Open, Dismiss) is the same shape.
 **The editor's Explorer rows use this same menu** (both the
-personal rows and a team library's rows). The panel used to carry its
-own toolbar-and-accordion menu with a Share section; sharing is the
-editor header's job, and a menu that looked like no other in the app was
-one people had to learn twice. A row that can't offer a verb (the panel
+personal rows and a team library's rows). The panel has no menu of its
+own and no Share section: sharing is the editor header's job, and a menu
+that looked like no other in the app would be one people learn twice. A row that can't offer a verb (the panel
 has no star or history) simply doesn't pass its handler, and the menu
 leaves that tile out.
 

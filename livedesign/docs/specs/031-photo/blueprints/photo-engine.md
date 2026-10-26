@@ -91,7 +91,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     - Export: `photo-export.ts`.
   - `components/photo/`: `PhotoPagesLayer.tsx` and `PhotoSurface.tsx` (the page's canvas), `PhotoChrome.tsx`,
     `PhotoCanvasOverlays.tsx` and `PhotoToolOverlay.tsx` (presses, the cursor, marching ants, boxes),
-    `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoOptionsBar.tsx`, `PhotoBrushPresets.tsx`,
+    `PhotoToolsRail.tsx` (the photo tools: `placement="strip"` in the palette strip, `"row"` on a phone), `PhotoColours.tsx`, `PhotoToolOptionsBody.tsx` (with `PhotoPhoneOptions.tsx` and `PhotoTransformOptions.tsx`), `PhotoBrushPresets.tsx`,
     `PhotoGradientField.tsx`, `PhotoTitleBar.tsx`, `PhotoPanel.tsx` with `PhotoPanelParts.tsx`,
     `PhotoLayersTab.tsx`, `PhotoLayerRow.tsx` (rows restack by the shared `useRowPointerDrag` the canvas's `useLayerRowDrag` also runs on), `PhotoBlendPicker.tsx`, `PhotoAdjustTab.tsx`,
     `AdjustmentEditor.tsx`, `CurvesEditor.tsx`, `PhotoEffectsEditor.tsx`, `PhotoTextEditor.tsx`, the dialogs
@@ -255,10 +255,19 @@ params) }`; `FILTERS[id] = { id, name, category, params: ParamSpec[], margin(par
 ## Data and persistence
 
 - `Tab.photos` is stored in the tab body (`tabs.data`, in the design's own SQLite). Each layer's tile maps are small: 610 tile keys at most.
-- `photo_blobs (id TEXT PRIMARY KEY, content_type TEXT NOT NULL, byte_size INTEGER NOT NULL, created_at INTEGER
-NOT NULL)`; `photo_blob_refs (tab_id TEXT NOT NULL, blob_id TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY
-KEY (tab_id, blob_id)) WITHOUT ROWID`; indexes `photo_blob_refs_blob_idx (blob_id)` and `photo_blob_refs_created_idx
-(created_at)`. R2 key `photo/<blob id>` in `PHOTO_BLOBS`, metadata `{ contentType }`.
+- `photo_blob_refs (tab_id TEXT NOT NULL, blob_id TEXT NOT NULL, created_at INTEGER NOT NULL, content_type TEXT
+NOT NULL, byte_size INTEGER NOT NULL, PRIMARY KEY (tab_id, blob_id)) WITHOUT ROWID`, index `photo_blob_refs_blob
+(blob_id)`, in the design's own SQLite (`design-schema.ts`): which blobs each tab may read, and what each is (type
+  and size, for the read and the tab's cap, `tabPhotoBytes`).
+- R2 (`PHOTO_BLOBS`): the bytes at `photo/<blob id>`, metadata `{ contentType }`, shared between designs by content;
+  and an empty marker `photo-refs/<blob id>/<design id>` for each design that holds a ref to it. A design writes its
+  marker before its first ref (`markBlobsHeld`, `recordBlobs`), and removes it once its last ref goes;
+  `releaseBlobs` deletes the bytes when no marker is left.
+- **Retention.** The design's daily upkeep (`design-room.ts`) runs `sweepDesignPhotoBlobs`: for up to
+  `PHOTO_SWEEP_TABS` tabs with refs older than `PHOTO_SWEEP_GRACE_MS`, the refs its saved body no longer names go
+  (every ref of a tab no longer linked); a body that will not parse keeps every blob. The blobs the design no longer
+  holds are then released. A ref made again is renewed, so the grace starts over. A purged design releases every
+  blob it held (`designBlobIds`).
 - Snapshot and restore: the tab body is the snapshot; blobs are content-addressed and immutable.
 - Migration: none for existing tabs (`photos` absent). A future engine change to tile size bumps a `v` on
   `LayerPixels` (absent is v1, 512).
@@ -360,7 +369,7 @@ Every spec rule maps to a test file:
   `engine.perf.test.ts` for the budget table.
 - Design: `page.test.ts` photo kind parsing and label; `withPages` dropping a removed page's photo.
 - Api: `photo-blob-routes.test.ts` (each refusal, dedupe, cap, adopt, read gate, tab-scoped visitor),
-  `photo-sweep.test.ts` against real SQLite, copy carries refs, `room` refuses a Participant's `photo` op.
+  `db/photo-blobs.test.ts` (refs, markers, release and the sweep against real SQLite), copy carries refs, `room` refuses a Participant's `photo` op.
 - Live: `upload-queue.test.ts`, `session-active.test.ts` (the active layer), `session-remote.test.ts` (a peer's
   tiles held on unfinished work, taken up on cancel), `photo-ops.test.ts`, `photo-tools.test.ts`,
   `photo-actions.test.ts`, `tools/*.test.ts`, `selection-ops.test.ts`, `select-and-mask.test.ts`,
@@ -394,9 +403,14 @@ Every spec rule maps to a test file:
 | `TILE_CACHE_BYTES_DESKTOP` / `TILE_CACHE_BYTES_COARSE` | 512 MB / 128 MB | Store spec                                  | 64 MB to 2 GB  |
 | `GPU_TILE_BYTES_DESKTOP` / `GPU_TILE_BYTES_COARSE`     | 768 MB / 192 MB | This blueprint's limits                     | 128 MB to 2 GB |
 | `PHOTO_SWEEP_GRACE_MS`                                 | 86,400,000      | Store spec                                  | ≥ 3,600,000    |
-| `PHOTO_SWEEP_TABS` / `PHOTO_SWEEP_BLOBS`               | 200 / 5000      | Store spec                                  | per run budget |
+| `PHOTO_SWEEP_TABS` (`apps/api/src/db/photo-blobs.ts`)  | 200             | Store spec                                  | per run budget |
 | `PHOTO_ADJUST_COMMIT_MS`                               | 500             | Adjustments spec                            | 200 to 2000    |
 | `PHOTO_TEXT_MAX`                                       | 2000            | Layers spec                                 | ≤ 10,000       |
+| `PHOTO_MAX_GROUP_DEPTH`                                | 5               | Layers spec                                 | 2 to 10        |
+| `PHOTO_LAYER_NAME_MAX`                                 | 60              | Layers spec                                 | 30 to 120      |
+| `PHOTO_HAS_MAX_IDS`                                    | 500             | Store spec (one `has` ask)                  | 100 to 2000    |
+| `PHOTO_ADOPT_MAX_IDS`                                  | 2000            | Store spec (one adoption)                   | 500 to 5000    |
+| `PHOTO_DEFAULT_WIDTH` / `PHOTO_DEFAULT_HEIGHT`         | 1920 / 1080     | Pages spec (a new blank photo)              | any            |
 | `HARD_EDGES_FROM`                                      | 4               | Pages spec (hard pixel edges)               | 2 to 8         |
 | `PIXEL_GRID_FROM`                                      | 8               | Pages spec (the pixel grid)                 | 4 to 16        |
 | `PHOTO_PIXEL_ZOOM_MAX`                                 | 32              | Pages spec (zoom past the canvas's ceiling) | 16 to 64       |

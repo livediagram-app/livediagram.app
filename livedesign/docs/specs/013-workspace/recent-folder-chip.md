@@ -1,71 +1,10 @@
 # Folder location on Recent rows
 
-Status: shipped, in the shared Explorer
-([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)).
+Status: shipped, in the shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md))
 
-## What
-
-Every row and card in the Explorer's **Recent** and **Favourites** views
-carries a small chip naming the folder the design lives in. Clicking it goes
-to that folder instead of opening the design.
-
-Those are the two panes that AGGREGATE across folders, so without this there
-is no way to tell a "Q3 plan" filed in Design from one in Archive without
-opening it. Every other pane _is_ a folder, where the chip would just repeat
-the pane's own title. (Favourites arrived with [Favourite designs](favourites.md), which needs exactly
-this as its "which team did this come from" indicator.)
-
-## Immediate parent only
-
-One folder name, not a breadcrumb and not a full path. Folders nest
-arbitrarily deep, so a path would be unbounded on a row that has to stay
-compact, and the containing folder is the identifying bit in practice. A
-two-level breadcrumb was considered for disambiguating repeated names
-("Archive"), but it costs width on every row to fix an occasional collision.
-
-Special cases:
-
-- **No folder** still shows a location: `My Work`, linking to its root.
-- **A design kept in this browser** shows `This Browser`, linking to that place ([Explorer structure](explorer-structure.md) "Places"): it is not in My Work, and its chip used to say it was.
-  "Filed at the root" is information too. An AI-made design is no
-  exception: provenance is the
-  `made-by:ai` filter ([Explorer filters](explorer-filters.md)), not a
-  location.
-- **Team designs** name the **team** and open its library. A team design's
-  folder lives in the team's own tree, which the personal `folderById` index
-  doesn't cover — and for a team row the team is the location that matters.
-- **Shared-with-you rows get no chip.** They carry no `folderId` at all: they
-  live in the sharer's library, not yours, so any label would be a guess.
-
-## Not a badge
-
-The chip is deliberately _not_ the `badgeBase` treatment used by Offline /
-Shared / Team / Private. Those are uppercase, ring-outlined statements about
-the design; this is a quiet lower-case location that happens to be
-clickable, so it reads as a link rather than competing with them for the same
-attention. It also hides below `sm` in the list view, where the row has no
-width to spare.
-
-The click `preventDefault()`s and `stopPropagation()`s: the whole row is a
-link to the design, so without that the chip would open the design it is
-supposed to navigate away from.
-
-## Scope: the Explorer page only
-
-The editor's Explorer does **not** get the chip.
-
-Its Recent list is five rows in a ~256 px rail, where a chip would crowd out
-the thing you came for — the design name. Its folder sections are also
-expandable accordions rather than routes, so "click to go to the folder" has
-no natural destination there short of navigating out of the editor entirely,
-which is a heavy thing to do from a side panel. The panel also has no
-`folderById` index, so this would mean building one for a chip that doesn't
-fit.
-
-Worth revisiting if the panel ever grows a routable folder view.
-
-## Where it lives
-
-In the shared Explorer package: [`FolderChip`](../../../../packages/explorer/src/explorer/badges.tsx), beside `VisibilityBadge`, so the list
-row and the card can't drift; the [rows and cards](../../../../packages/explorer/src/explorer/rows.tsx) take a ready-made place (label and open) from
-the item, so the naming rules stay in one place.
+Lists that span places (Recent, Favourites, Search, Shared With Me) carry a quiet location chip on each row and
+card, which opens that place instead of the design: its folder (the immediate parent only), its team for a team item
+in no folder, **My Work** for one of yours in none, and **This Browser** for an
+[Offline Mode](../006-design/offline-mode.md) design. An item reached through a link lives in someone else's library
+and has none. It is the shared Explorer's `FolderChip` (`packages/explorer/src/explorer/badges.tsx` at the repo
+root); livedesign adds nothing of its own.

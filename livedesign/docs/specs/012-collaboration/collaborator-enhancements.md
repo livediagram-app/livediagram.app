@@ -35,8 +35,7 @@ result for a click whose obvious meaning is "tell me about this person".
   status line: the presence word plus how long ago they were last active, the
   same text the avatar hover card uses.
 - **One person, one entry.** The room mints an id per connection, so the same
-  browser open in two tabs used to show up twice (once as "You", once as a
-  peer with your name). Every tab in a browser shares one collab key
+  browser open in two tabs would show up twice. Every tab in a browser shares one collab key
   (`participantKey`), so presence collapses on it: your
   own other tabs are left out, and a peer connected more than once appears
   once, on the tab of their most recently active connection. This applies to

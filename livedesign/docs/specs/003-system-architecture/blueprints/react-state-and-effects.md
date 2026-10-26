@@ -135,7 +135,7 @@ No new log lines: a Trusted Types violation is logged by its own blueprint.
 | No `typeof window` in render             | `apps/live/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed |
 | Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                     |
 | Reduced motion starts no transition      | The mode-switch test stubs `prefersReducedMotion` and asserts no `startTransition` type        |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node           |
+| Ref-only wrappers are gone               | `LayerRowMenu.test.tsx`: focus and anchor with no bare node                                    |
 
 ## Constants and configuration
 

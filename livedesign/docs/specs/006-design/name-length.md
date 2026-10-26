@@ -41,8 +41,7 @@ character the way a reader counts it rather than two.
 ## Where it applies
 
 At the **mutation points**, not at each input, so a name can't arrive over-long
-from any direction — inline rename, command palette, the `/new` wizard, an
-import, or an API-driven change.
+from any direction: inline rename, command palette, an import, or an API-driven change.
 
 ### The server is the enforcement point
 
@@ -86,15 +85,14 @@ already the stored name without waiting on a round trip:
 
 - `useSelectionEditing` — the auto-name path (the case that prompted this).
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- `useDesignListActions.renameDesign` and `useTeamLibrary.renameDesign`.
+- The shared Explorer's rename (`@liveworkspace/explorer`), which the index caps too.
 - `EditorView`'s header rename.
-- The `/new` wizard's design-name field.
 
 An Offline Mode design never reaches the server until it syncs, so for it
-these editor points are the enforcement until it does; the sync is a create,
+these editor points are its enforcement; the sync is a create,
 so the server cap applies to it like any other.
 
-The text inputs (`NameEditor`, `InlineRenameInput`, the wizard field) also
+The text inputs (`NameEditor`, `InlineRenameInput`) also
 carry `maxLength={NAME_MAX_LENGTH}`. That is a **third** line of defence, not
 the enforcement: it makes the limit visible while typing instead of silently
 eating the end of what someone wrote.

@@ -2,7 +2,7 @@
 
 Derived from [CLI](../cli.md), with the OAuth server of [MCP server](../mcp-server.md) §3 and its tool contracts
 (§4), the token surface of [Public API and API tokens](../public-api-and-tokens.md) §3.4 to §3.7, the room and
-routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#api-tokens), the
+routes of [API](../api.md), the token rules of [Public API and API tokens](../public-api-and-tokens.md), the
 words of [Domain language](../../003-system-architecture/domain-language.md#agents) and the `Cli` category of
 [Telemetry](../../017-telemetry/telemetry.md). The write path, the operation vocabulary, the views, the lint and
 agent presence are other blueprints' and are consumed through the interfaces they name:

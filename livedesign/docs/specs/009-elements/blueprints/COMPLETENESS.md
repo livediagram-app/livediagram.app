@@ -4,15 +4,15 @@
 
 - [x] Domain and naming
 - [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
+- [ ] Interfaces and contracts: the media service's (liveworkspace/docs/media.md)
+- [x] Data and persistence (in Scope and Writers)
 - [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
+- [ ] Security and trust: in the images blueprint (placement grants)
+- [ ] Performance and limits: one indexed statement per write, one push per drained outbox key
 - [x] Observability
 - [x] Testing
 - [x] Constants and configuration
-- [x] Defaults ledger
+- [ ] Defaults ledger: none
 
 ## checklist
 

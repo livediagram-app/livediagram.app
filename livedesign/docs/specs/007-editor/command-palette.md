@@ -33,7 +33,7 @@ forks, no drifted telemetry):
 
 ## Read-only visitors
 
-The registry previously returned nothing for read-only views. Now it returns
+For read-only views the registry returns
 the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
 the canvas tool switches that do not write to the design); mutating
 commands and the Format painter tool stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives

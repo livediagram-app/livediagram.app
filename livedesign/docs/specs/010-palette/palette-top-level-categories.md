@@ -80,8 +80,7 @@ the other flowchart-only kinds: livedesign has no stored designs that could hold
 
 ## The body scrolls when it has to
 
-A long category (Components runs to ten rows) used to run off the bottom of a short window with no way to reach the
-last few. The panel body's height is now capped at the space between its top edge and the bottom chrome — the zoom
+A long category (Components runs to ten rows) never runs off the bottom of a short window. The panel body's height is capped at the space between its top edge and the bottom chrome — the zoom
 dock and the tab bar, both measured rather than assumed, since the dock hides in Zen mode — and only then does it
 scroll. A category that fits shows no scrollbar and still animates its height on switch.
 
@@ -100,7 +99,7 @@ picker look identical — the one thing the animation exists to distinguish.
 
 The menu's `transform-origin` is now the corner its trigger sits at: top-left for the left-aligned canvas-tool picker,
 top-right for the right-aligned category picker (and the bottom corners when a menu flips up). One direction-agnostic
-keyframe scales uniformly out of that origin, replacing the old `scaleY`-only pair — squashing the Y axis on top of a
+keyframe scales uniformly out of that origin: a `scaleY`-only pair, squashing the Y axis on top of a
 corner origin read as a blind coming down rather than a menu growing out of a button.
 
 ## What did not move

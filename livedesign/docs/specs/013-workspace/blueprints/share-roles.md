@@ -1,8 +1,9 @@
 # Share roles: blueprint
 
-> **Partly superseded (October 2026).** Share links, their levels and who may reach a design are the index's now
-> ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
-> shared one from `@liveworkspace/explorer`. Files marked (removed) below went with livedesign's own copies.
+Share links, their levels and who may reach a design are liveworkspace's index's
+([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the
+Share dialog is the shared one from `@liveworkspace/explorer`. This blueprint covers what livedesign builds on them:
+the level on a session, the room's op gate and the participant content rule.
 
 Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
@@ -12,33 +13,26 @@ types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answer
 `docs/research/access-levels/current-abilities.md`. The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `SRn`.
 
-The spec's [Later](../share-roles.md#later) items (token levels, ownership powers, collaboration keys pinned per
-socket) are not derived here.
-
 ## Scope, by file
 
-| File                                                                                                       | Role                                                                                        |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts` (new)                                                        | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`      |
-| `packages/api-schema/src/index.ts`                                                                         | `ShareRole` becomes an alias of `AccessLevel`                                               |
-| `packages/api-schema/src/room-messages.ts`                                                                 | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                  |
-| `packages/design/src/participant-content.ts` (new)                                                         | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets |
-| `packages/design/src/element-types.ts`, `validate.ts`                                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                          |
-| apps/api/migrations/0001_livedesign_baseline.sql (removed)                                                 | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                 |
-| apps/api/src/share-link-row.ts (removed), db/ws-tickets.ts (removed), db/shared.ts (removed)               | Readers through `parseStoredLevel`; the ticket's `adderKey`                                 |
-| apps/api/src/auth/design-access.ts (removed)                                                               | Gates compare levels; `canParticipateDesign`                                                |
-| `apps/api/src/routes/context.ts`                                                                           | `gateParticipate` is the Participant check                                                  |
-| apps/api/src/routes/design-share-routes.ts (removed)                                                       | `POST /share` takes three levels                                                            |
-| `apps/api/src/adder-key.ts` (new)                                                                          | `adderKeyFor(designId, ownerId)`                                                            |
-| `apps/api/src/routes/design-room-routes.ts`                                                                | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`    |
-| `apps/api/src/design-room/design-room.ts`, `room-op-gate.ts`, `design-room-rules.ts`                       | Level on the session; op gate by class; participant `el` ops through the tab write queue    |
-| `apps/api/src/participant-write.ts` (new)                                                                  | `writeParticipantOps`: compare-and-swap writes of the rule's output                         |
-| `packages/agent-verbs/src/mcp/*`                                                                           | `share_design.role` takes three levels, default `participate`                               |
-| `apps/live/lib/editor-capabilities.ts` (new)                                                               | `resolveEditorCapabilities`, `EditorCapabilities`                                           |
-| `apps/live/app/design/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                |
-| apps/live/components/dialogs/ShareComposer.tsx (removed), `share-dialog-parts.tsx`                         | Three cards                                                                                 |
-| `apps/live/components/chrome/RoleIndicator.tsx`, `app/design/[id]/useRoleIndicator.ts`                     | Participating pill                                                                          |
-| `apps/live/lib/collaborator-roster.ts`, app/explorer/views.tsx (removed)                                   | Participant badge; Participate chip                                                         |
+| File                                                                                       | Role                                                                                     |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/access-levels.ts`                                              | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`   |
+| `packages/design/src/participant-content.ts`                                               | The participant content rule: `applyParticipantOp`, `participantTabChange`, field sets   |
+| `packages/design/src/element-types.ts`, `validate.ts`                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                       |
+| `apps/api/src/routes/context.ts`                                                           | `gateEdit`, `gateParticipate` on the index's grant                                       |
+| `apps/api/src/adder-key.ts`                                                                | `adderKeyFor(designId, ownerId)`                                                         |
+| `apps/api/src/routes/design-room-routes.ts`                                                | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder` |
+| `apps/api/src/design-room/design-room.ts`, `room-op-gate.ts`, `design-room-rules.ts`       | Level on the session; op gate by kind; participant `el` ops through the tab write queue  |
+| `apps/api/src/room-participant.ts`                                                         | The per-socket pending cap (`PARTICIPANT_PENDING_MAX`)                                   |
+| `apps/api/src/participant-write.ts`                                                        | `writeParticipantOp`: compare-and-swap writes of the rule's output                       |
+| `packages/agent-verbs/src/mcp/schema.ts`                                                   | `share_design.role` takes three levels, default `participate`                            |
+| `apps/live/lib/editor-capabilities.ts`                                                     | `resolveEditorCapabilities`, `EditorCapabilities`                                        |
+| `apps/live/app/design/[id]/*` (`useParticipantSession`, `useEditorState`, `tab-save-flow`) | `sessionRole: AccessLevel`; `can`; the participant save flow                             |
+| `apps/live/components/chrome/RoleIndicator.tsx`, `app/design/[id]/useRoleIndicator.ts`     | Participating pill                                                                       |
+| `apps/live/lib/collaborator-roster.ts`                                                     | Participant badge                                                                        |
+
+The Share dialog's three cards (`LEVEL_PASS`, `RolePicker`) are `packages/explorer/src/dialogs/share/`'s.
 
 ## Domain and naming
 
@@ -87,26 +81,26 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 `applyParticipantOp(tab, op, adderKey)` (pure), returning `{ result: 'applied', tab, op } | { result: 'refused',
 correction: ElementOp | null, reason }`:
 
-| Op        | Applied when                                                                                 | Result                                                                                                                                                                              | Refusal correction                       |
-| --------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked`, its layer not locked                     | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
-| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                              | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
-| `reorder` | never                                                                                        | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
+| Op        | Applied when                                                                            | Result                                                                                                                                                                              | Refusal correction                       |
+| --------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `add`     | `addableOn(element)`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type, not `locked`, its layer not locked                | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
+| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                         | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
+| `reorder` | never                                                                                   | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
 
 Permitted fields on another's element:
 
 | Element                   | Fields                                                                                                      |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`) (`participantWritesOn`)                                     |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`)                                                             |
 | `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                           |
 | `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`) |
 | `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                 |
 | `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                               |
 | `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture  |
 
-`addableOn(tab, el)`: `sticky`, `text` and `image` anywhere. An own
-element's update must leave it `addableOn` the tab, else `refused` (`not-holdable`).
+`addableOn(el)` (module-private): `sticky`, `text` and `image`. An own
+element's update must leave it addable, else `refused` (`not-holdable`).
 
 - An `update` whose merge equals the stored element is `applied` with no write (`unchanged`) and no relay.
 - The applied tab must pass `isValidTab`; one that does not is refused with the stored element as correction.
@@ -189,29 +183,13 @@ export function levelAtLeast(level: AccessLevel, min: AccessLevel): boolean;
 export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 'Edit'>;
 ```
 
-`packages/design/src/participant-content.ts`:
+`packages/design/src/participant-content.ts` (the field sets, `PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text',
+'image']`, `PARTICIPANT_TEXT_FIELDS`, `PARTICIPANT_PLACE_TYPES`, `PARTICIPANT_PLACE_FIELDS`,
+`PARTICIPANT_STICKY_FIELDS` and `PARTICIPANT_IMAGE_FIELDS`, are module constants):
 
 ```ts
-export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image'];
-export const PARTICIPANT_IMAGE_FIELDS: readonly [
-  'imageId',
-  'naturalWidth',
-  'naturalHeight',
-  'alt',
-  'credit',
-];
-export function addableOn(tab: Tab, el: Element): boolean;
-export function participantWritesOn(el: Element): boolean;
-export const PARTICIPANT_TEXT_FIELDS: readonly ['label', 'richText'];
-export const PARTICIPANT_PLACE_TYPES: readonly ['sticky', 'image'];
-export const PARTICIPANT_PLACE_FIELDS: readonly ['x', 'y', 'width', 'height'];
 export function isParticipantPlaceable(el: Element): boolean;
-export const PARTICIPANT_STICKY_FIELDS: readonly [
-  'fillColor',
-  'strokeColor',
-  'textColor',
-  'penTextColour',
-];
+export function addedByAdder(el: Element, adderKey: string | null): boolean;
 export type ParticipantOpResult =
   | { result: 'applied'; tab: Tab; op: ElementOp; changed: boolean }
   | { result: 'refused'; correction: ElementOp | null; reason: ParticipantRefusal };
@@ -247,38 +225,33 @@ export function writeParticipantOp(
 ): Promise<ParticipantWriteResult>;
 ```
 
-REST: `POST /api/designs/:id/share` takes `role?: 'view' | 'participate' | 'edit'`, omitted `edit`; anything else is
-400 `invalid role`. `GET /api/share/:code` answers `role: AccessLevel`. `POST .../room-ticket` answers
-`RoomTicketResponse { ticket, adderKey? }`, the key only for a Participant.
+REST: links are made on the index ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access));
+the api reads the session's level from the grant. `POST .../room-ticket` answers `RoomTicketResponse { ticket,
+adderKey? }`, the key only for a Participant.
 
 MCP: `share_design.role` is `z.enum(['view', 'participate', 'edit']).optional()`, default `participate`; the
-description reads `"participate" (default): recipients add stickies, write and comment but cannot reshape it. "view":
-they only look, with no comments. "edit": they can change anything.`
+description reads `"participate" (default): recipients comment, react, and add stickies and text, but cannot reshape
+it; right for feedback on a design. "view": they only look, with no comments. "edit": they can change anything. No
+sign-in is needed to open any.`
 
 ## Data and persistence
 
-| Field                                    | Class      | Notes                                                               |
-| ---------------------------------------- | ---------- | ------------------------------------------------------------------- |
-| `share_links.role`, `shared_with.role`   | credential | Legacy `CHECK (role IN ('edit', 'view'))`: `view` for a Participant |
-| `share_links.level`, `shared_with.level` | credential | `NULL` or a level; set only for `participate` (SR11)                |
-| `ws_tickets.role`                        | ephemeral  | The effective level; no CHECK                                       |
-| `ws_tickets.adder_key`                   | ephemeral  | `TEXT NULL`; 60 s like the ticket                                   |
-| Element `addedBy`                        | content    | Optional, ≤ `ADDER_KEY_LENGTH` chars; on `sticky` and `text` only   |
-| Room attachment `adderKey`               | ephemeral  | Per socket, survives hibernation                                    |
+| Field                      | Class      | Notes                                                             |
+| -------------------------- | ---------- | ----------------------------------------------------------------- |
+| A link's level             | credential | The index's (`view`, `participate` or `edit`)                     |
+| Room ticket `adderKey`     | ephemeral  | Answered with the ticket, only for a Participant                  |
+| Element `addedBy`          | content    | Optional, ≤ `ADDER_KEY_LENGTH` chars; on `sticky` and `text` only |
+| Room attachment `adderKey` | ephemeral  | Per socket, survives hibernation                                  |
 
-A link's and a Shared with me row's level are the index's (`view`, `participate` or `edit`), and the room ticket
-carries the adder key. No row changes level (SR11). Readers take `parseStoredLevel(level ?? role)` (`storedLevelOf`); writers
-keep `role` two-valued (`legacyRoleColumn`) and set `level` only for `participate` (`levelColumn`); the Shared lists
-join on `COALESCE(level, role)`. Copies,
-exports, templates and duplicates keep `addedBy` as data (it identifies nobody outside its design); a Make a copy
-lands in a new design, where no adder key matches it.
+Readers take `parseStoredLevel(level)`: an unknown level reads as `view`. Copies, exports, templates and duplicates
+keep `addedBy` as data (it identifies nobody outside its design); a Make a copy lands in a new design, where no adder
+key matches it.
 
 ## Errors and edge cases
 
-- **E1** `POST /share` with `role: 'admin'`, `null` or a number: 400, nothing written.
-- **E2** An editor bundle older than this change opens a Participant link: it reads the level as edit, shows edit
-  controls, its tab PUT is refused 403 and `writesForbiddenRef` stops its autosave; its room ops below the
-  participant classes are dropped.
+- **E1** An MCP `share_design` with a `role` outside the three: refused by the schema, nothing written.
+- **E2** A client that saves a Participant's tab whole: its tab PUT is refused 403 and `writesForbiddenRef` stops
+  its autosave; its room ops outside the participant classes are dropped.
 - **E3** A Participant adds a shape (crafted client): refused `not-addable`; the sender gets `remove`.
 - **E4** A Participant deletes an Editor's sticky: refused `not-own`; the sender gets the sticky back at its index.
 - **E5** A Participant resizes an Editor's shape while editing its label: applied as the label alone; the sender gets
@@ -301,7 +274,7 @@ lands in a new design, where no adder key matches it.
 
 ## Security and trust
 
-- The level is resolved on the server (grant, ticket, `X-Verified-Role`) and enforced per door; the editor's `can` is
+- The level is resolved on the server (the index's grant, the ticket, `X-Verified-Role`) and enforced per door; the editor's `can` is
   presentation only (I5).
 - Every trust header the upgrade forwards, `X-Verified-Adder` included, is set on every path so a client cannot
   supply its own.
@@ -327,11 +300,14 @@ lands in a new design, where no adder key matches it.
 
 Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 
-| Level       | Title / blurb                                                                    | Stub          | Glyph              | Solid (stub)                                 |
-| ----------- | -------------------------------------------------------------------------------- | ------------- | ------------------ | -------------------------------------------- |
-| edit        | **Editor** / "Draws with you in real time."                                      | `EDITOR`      | `lucidePencilLine` | as today                                     |
-| participate | **Participant** / "Adds stickies, writes and comments. Can't reshape the pages." | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
-| view        | **Viewer** / "Watches, pans and zooms. Can't comment or change a thing."         | `VIEWER`      | `lucideEye`        | as today                                     |
+| Level       | Title / blurb                                                          | Stub          | Glyph            | Solid (stub)                                     |
+| ----------- | ---------------------------------------------------------------------- | ------------- | ---------------- | ------------------------------------------------ |
+| edit        | **Editor** / "Works with you in real time."                            | `EDITOR`      | `PencilLineIcon` | `bg-brand-700 text-white dark:bg-brand-600`      |
+| participate | **Participant** / "Comments, votes and works items. Can't reshape it." | `PARTICIPANT` | `VoteIcon`       | `bg-teal-700 text-white dark:bg-teal-600/60`     |
+| view        | **Viewer** / "Watches along. Can't comment or change a thing."         | `VIEWER`      | `EyeIcon`        | `bg-violet-500 text-white dark:bg-violet-500/60` |
+
+The cards' copy is the shared dialog's (`LEVEL_PASS` in `packages/explorer/src/dialogs/share/parts.tsx`), the same in
+every app.
 
 - Three cards, one per row at every width (SR8); the pass stub widens to fit `PARTICIPANT` (SR7).
 - Arrow keys step through `LEVEL_ORDER`, wrapping; Home and End reach the ends.
@@ -366,43 +342,39 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Testing
 
-| Rule                                                            | Test                                                             |
-| --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Ladder, `parseStoredLevel`, telemetry types                     | `packages/api-schema/src/access-levels.test.ts`                  |
-| Op classes                                                      | `packages/api-schema/src/room-messages.test.ts`                  |
-| Every row of the participant rule, every refusal and correction | `packages/design/src/participant-content.test.ts`                |
-| `addedBy` validation                                            | `packages/design/src/validate.test.ts`                           |
-| `mergeLedgerAnswersIntoTab`                                     | `packages/design/src/collab-ledger.test.ts`                      |
-| Gates compare levels                                            | apps/api/src/auth/design-access.test.ts (removed)                |
-| Share create validates three levels                             | apps/api/src/routes/design-share-routes.test.ts (removed)        |
-| Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                         |
-| Room: op gate per level; participant path; adder header         | `apps/api/src/design-room.test.ts`, `design-room-routes.test.ts` |
-| Capabilities per level                                          | `apps/live/lib/editor-capabilities.test.ts`                      |
-| Participant save branch                                         | `apps/live/app/design/[id]/tab-save-flow.test.ts`                |
-| Three cards and keys                                            | apps/live/components/dialogs/ShareDialog.test.tsx (removed)      |
-| Pill per level                                                  | `apps/live/components/chrome/RoleIndicator.test.tsx`             |
-| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                          |
+| Rule                                                            | Test                                                                                                        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Ladder, `parseStoredLevel`, telemetry types                     | `../packages/api-schema/src/access-levels.test.ts`                                                          |
+| Op classes                                                      | `packages/api-schema/src/room-messages.test.ts`                                                             |
+| Every row of the participant rule, every refusal and correction | `packages/design/src/participant-content.test.ts`                                                           |
+| `addedBy` validation                                            | `packages/design/src/validate.test.ts`                                                                      |
+| Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                                                                    |
+| Room: op gate per level; participant path; adder header         | `apps/api/src/room-op-gate.test.ts`, `design-room-participant.test.ts`, `routes/design-room-routes.test.ts` |
+| Pending cap                                                     | `apps/api/src/room-participant.test.ts`                                                                     |
+| Capabilities per level                                          | `apps/live/lib/editor-capabilities.test.ts`                                                                 |
+| Participant save branch                                         | `apps/live/app/design/[id]/tab-save-flow.test.ts`                                                           |
+| Pill per level                                                  | `apps/live/components/chrome/RoleIndicator.test.tsx`                                                        |
+| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                                                                     |
 
 ## Constants and configuration
 
-| Constant                    | Value                                           | Provenance                                     | Safe range          |
-| --------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------- |
-| `ACCESS_LEVELS`             | `['view', 'participate', 'edit']`               | Spec, ascending                                | fixed               |
-| `DEFAULT_LINK_LEVEL`        | `'edit'`                                        | Spec: an omitted role is edit                  | fixed               |
-| `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                                 | Spec                                           | fixed               |
-| `LEVEL_ORDER`               | `['edit', 'participate', 'view']`               | Spec's card order                              | fixed               |
-| `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image', 'shape', 'arrow']` | Spec (shape and arrow narrowed by `addableOn`) | grows with the spec |
-| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The room's existing bound                      | 3 to 20             |
-| `ADDER_KEY_LENGTH`          | 32                                              | 128 bits of hex (SR4)                          | 16 to 64            |
-| `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
-| `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
+| Constant                    | Value                             | Provenance                    | Safe range          |
+| --------------------------- | --------------------------------- | ----------------------------- | ------------------- |
+| `ACCESS_LEVELS`             | `['view', 'participate', 'edit']` | Spec, ascending               | fixed               |
+| `DEFAULT_LINK_LEVEL`        | `'edit'`                          | Spec: an omitted role is edit | fixed               |
+| `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                   | Spec                          | fixed               |
+| `LEVEL_ORDER`               | `['edit', 'participate', 'view']` | Spec's card order             | fixed               |
+| `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image']`     | Spec                          | grows with the spec |
+| `TAB_CAS_MAX_ATTEMPTS`      | 8                                 | The room's existing bound     | 3 to 20             |
+| `ADDER_KEY_LENGTH`          | 32                                | 128 bits of hex (SR4)         | 16 to 64            |
+| `PARTICIPANT_PENDING_MAX`   | 64                                | SR12                          | 8 to 512            |
+| `HELD_BACK_NOTICE_MS`       | 4000                              | SR13                          | 1000 to 30000       |
 
 No new environment variable or binding.
 
 ## Assets and external resources
 
-No new asset. The Participant glyph is `lucideVote`, already vendored in `../packages/icons/src/lucide.generated.ts`
-from Lucide (ISC licence).
+No asset of its own. The Participant glyph is the shared dialog's `VoteIcon`, from Lucide (ISC licence).
 
 ## Defaults ledger
 

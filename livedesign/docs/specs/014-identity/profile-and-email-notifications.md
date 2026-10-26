@@ -40,7 +40,7 @@ picture or it fails to load. The rules are liveworkspace's, the same in every ap
 
 - **Source.** The picture is the one Google gave the account at its last Google sign-in; an account made with an
   email code has none, and so does every guest.
-- **Show My Google Picture.** A switch in Settings › Profile, on by default. Off, other people see the initials;
+- **Show My Google Picture.** A switch in liveworkspace.app's Settings › Profile, on by default. Off, other people see the initials;
   the person's own chrome (the header's account button, their own presence avatar, the composer beside their
   comments) still shows their picture, since it is their own screen.
 - **Across tabs.** Each session reads the switch from its ID token's `picture_hidden`. Within the accounts Worker's
@@ -82,27 +82,18 @@ directly.
 
 ### Delete account moves here
 
-Account self-deletion already exists end to end (`DELETE /api/account`,
-[Transactional email](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
-to hang off the header dropdown; now that there is a dedicated account home,
-the **Delete account** trigger lives on the profile page's Danger zone and is
-**removed from the header menu** (one home for destructive account actions,
-no drift). The dialog component itself is unchanged and simply reused — the
-confirmation flow (type your email, then wipe livedesign's data and close the
-liveworkspace account, then end the session) is exactly as [Transactional email](transactional-email.md) describes.
-Account deletion is immediate and total within livedesign: it removes the account's designs
-**including every one in its [Trash](../013-workspace/trash.md)**, which the
-dialog and the Danger Zone row both say.
+Account self-deletion (`DELETE /api/account`, `apps/api/src/routes/account.ts`; `DeleteAccountDialog`, the
+type-your-email confirmation) is the **Delete account** row on Settings › Account's Danger Zone, its one home. It
+removes livedesign's data first, then closes the liveworkspace account, which closes it in every liveworkspace app
+([Auth + guest access](auth-and-guest-access.md) "Deleting an account"): the data first, so a failure leaves a
+signed-in person who can try again. The person's own designs go for good through the index, **including every one
+in their [Trash](../013-workspace/trash.md)**, which the dialog and the Danger Zone row both say; up to 1,000 a
+run, so a person with more is told to try again. Team designs stay with the team.
 
-**Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
-account's memberships are removed so no ghost member (or dead sole admin)
-lingers. If the user was the **last joined member**, the team is deleted
-outright. Otherwise their **team-library designs transfer to an heir** — the
-longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared designs](../013-workspace/team-shared-designs.md)'s "deleting a team must never destroy
-members' work"), and the heir is **promoted to admin** when the deleted user
-was the only one. The user's own `shared_with` references (rows for OTHER
-people's designs they visited) are wiped too.
+**Teams on deletion** are liveworkspace's: the accounts Worker removes the memberships and hands a team's designs on
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). When the index reports the
+closed account (`personClosed`, `apps/api/src/routes/internal-items.ts`), livedesign removes what it keeps for them
+beside their designs (their images) and their name from each design of someone else's that names them.
 
 ## 2. Capabilities gains `emailEnabled`
 
@@ -159,15 +150,11 @@ address, asked of the accounts Worker), never from a client header.
 ### a. Someone joins my design — `notifyDesignJoin`
 
 The signal is **a new person opening one of my shared designs for the first
-time**: the share-resolve path (`GET /api/share/<code>`) already records a
-visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
-identifies and isn't the owner. `recordSharedAccess` now reports whether the
-row was **new** (first visit) vs a repeat. On a new visit by a **verified**
-visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDesignJoin(env, liveDoc, joinerName)`. A guest token is free to
-get, so every fresh guest would be another first visit;
-a guest visit is still recorded in `shared_with` and counted as
-`Document·Joined`, but never emails. `notifyDesignJoin`:
+time**. liveworkspace's index records every visit through a link, and on a person's first it sends livedesign a
+join notice (`notice`, `apps/api/src/routes/internal-items.ts`), which the api answers with the design room's
+`joined(personId)` and `Document·Joined` by the link's level. A guest visit is counted as `Document·Joined` but never
+emails: a guest token is free to get, so every fresh guest would be another first visit. The room's
+`notifyDesignJoin`:
 
 - no-ops unless `emailEnabled(env)`;
 - resolves the owner's verified address from their liveworkspace account (so

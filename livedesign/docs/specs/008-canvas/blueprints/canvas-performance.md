@@ -104,7 +104,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`,
-  `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
+  `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
   path reads the zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
@@ -128,7 +128,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   checks): 50-90 ms a frame at the reference speed.
 - The drag's snap guides (alignment, equal spacing, arrow-endpoint markers) live in a
   `SnapGuideStore` per editor (`useSnapGuideState`), not in the editor's state: a dense board
-  changes them on most frames of a drag, and each change used to render the whole editor.
+  changes them on most frames of a drag, and each change in the editor's state would render the whole editor.
   `useEditorDrag` writes it through the rAF-coalesced `scheduleGuides` / `scheduleSnapTargets`;
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.

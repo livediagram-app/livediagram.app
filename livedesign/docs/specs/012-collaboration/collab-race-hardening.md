@@ -66,7 +66,7 @@ applied by the sender and every receiver through the same pure
 
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
-  row with that text, or nothing. A tick is no longer undoable.
+  row with that text, or nothing. A tick is not undoable.
 - `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`:
   one change to a thread, by comment id, so a replay is a no-op.
 
@@ -137,16 +137,15 @@ and the next save from anybody repairs it.
 
 - **A cleared tab field travels by name.** A `tab-meta` op carries a
   `clear` list of the fields the sender removed, and receivers delete them.
-  A reset background used to fall back to a
-  whole-`tab` op, which replaced every element on every receiver and wiped
-  their unsaved presses. Whole-tab ops remain only for a new tab and a bulk
-  change.
+  A reset background never falls back to a whole-`tab` op, which would
+  replace every element on every receiver and wipe their unsaved presses.
+  Whole-tab ops are only for a new tab and a bulk change.
 - **A view-role comment reaches the room.** The comment endpoints (the only
-  write a view-role visitor has) now hand the room the same `comment-add` /
+  write a view-role visitor has) hand the room the same `comment-add` /
   `comment-remove` delta an editor's comment sends, through an internal
   `POST /mutation` on the Durable Object, which sequences, logs and records it
-  like a peer's op. Editors see it at once and their next save keeps it; it
-  used to reach the store only, and the next editor save erased it. The relayed
+  like a peer's op. Editors see it at once and their next save keeps it, rather
+  than erasing a comment that reached the store only. The relayed
   comment carries no `authorId` (the author's owner id, which a tab GET
   redacts for everyone else); the author's own browser keeps it when it swaps
   its local comment id for the server's.
@@ -190,9 +189,9 @@ confirms it sequenced each one (the `cursor` frame the room sends the sender of 
 `ref`), and only then PUTs, so a peer's save always finds the change in the ledger. A room that does not confirm in
 time does not hold the save back; it is logged, and the save goes through.
 
-A tab's writes are queued per tab (`tab-save-queue.ts`): a save waiting on the room, and a newer save of the same tab used to overtake it, so
-the server kept the older snapshot while the client believed the newer one saved and peers received the older
-element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or
+A tab's writes are queued per tab (`tab-save-queue.ts`), so a newer save of a tab never overtakes one waiting on the
+room (which would leave the server on the older snapshot while the client believed the newer one saved, and peers
+receiving the older element ops last). Each save or delete of a tab starts only once that tab's previous one has settled, landed or
 failed; different tabs never wait on each other.
 
 ### A save that wrote over a peer's change writes again

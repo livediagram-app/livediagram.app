@@ -1,10 +1,8 @@
 # Emoji section in the Icons tab
 
-> **Superseded by [Stickers](stickers.md)** for where they live. The model
-> below is unchanged and still correct — emoji are catalogue entries with a
-> `text` prim, and their ids are unchanged — but they are no longer a category
-> inside the Icons tab. They are the top-level **Stickers** category, and the
-> set grew from ~60 to ~190.
+> Where they live is [Stickers](stickers.md): the top-level **Stickers**
+> category, about 190 of them, not a section of the Icons tab. The model below
+> holds: emoji are catalogue entries with a `text` prim, with stable ids.
 
 Native colour emoji as first-class icon-catalogue entries, browsable under a new **Emoji** category in the palette's Icons tab. Stickies, retros, and reactions want emoji; the icon pipeline already gives us every behaviour for free once emoji are catalogue entries.
 

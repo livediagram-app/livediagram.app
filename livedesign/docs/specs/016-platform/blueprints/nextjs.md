@@ -47,7 +47,7 @@ export function liveworkspaceNextConfig({
 
 - It logs one line when it builds: `[next-config] turbopack=<bool> export=<bool> compiler=<bool>`, so a build log shows
   what ran.
-- **App configs**: `marketing`, `help`, `telemetry` spread `liveworkspaceNextConfig()`; `live` spreads
+- **App configs**: `marketing` and `help` spread `liveworkspaceNextConfig()`; `live` spreads
   `liveworkspaceNextConfig({ exportInDev: false, reactCompiler: true })`. Each adds only `basePath`, `assetPrefix`, `trailingSlash`,
   `pageExtensions`, `transpilePackages` and (help) the MDX wrapper.
 - `experimental.reactBrowserBailout` (Next's client-rendering bailouts through `browser()`) is on by default in 16.4.1, so
@@ -94,7 +94,7 @@ Measured before and after, in the PR: each app's build time, first-load JavaScri
 
 ## Web Experience
 
-First-load JavaScript per page no larger than before: the React Compiler stays out of the four static apps, where it
+First-load JavaScript per page no larger than before: the React Compiler stays out of the two static apps, where it
 added 6 to 44 KiB.
 
 ## Observability

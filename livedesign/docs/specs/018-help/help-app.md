@@ -21,7 +21,7 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 livedesign is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Its support categories cover the account, privacy, developer tooling and the hosted service's policies.
 
-**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. The Slide Deck feature and its three sub-articles (`/selection-modes/slide-deck/`, with `building-a-deck`, `presenting` and `presenter-controls` under it) retired with slide decks on 25 October 2026 ([Presentation mode](../012-collaboration/presentation-mode.md)) and land on Selection Modes. Isometric Mode (`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
+**Retired articles.** A category that is removed keeps its old URLs landing: `apps/help/public/_redirects` moves each one permanently to the live page nearest to it (for a whole retired category, the help centre home). Paths there carry no `/help` prefix, since the router strips it, and Workers Static Assets reads the file from `out/`. `lib/retired-articles.test.ts` pins every target to a live page and keeps live articles and categories from being redirected away. The Slide Deck article and its three sub-articles (`/selection-modes/slide-deck/`, with `building-a-deck`, `presenting` and `presenter-controls` under it) land on Selection Modes, since livedesign has no slide decks ([Presentation mode](../012-collaboration/presentation-mode.md)). Isometric Mode (`selection-modes/isometric-mode`) goes to the Selection Modes page too, since livedesign has no isometric view ([Canvas and palette](../008-canvas/canvas-and-palette.md#not-in-livedesign)).
 
 ## Information architecture
 
@@ -277,7 +277,7 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `livedesign-help`.
+`livedesign-help` deploys with the other sites, in the tier before the router ([Deployment](../016-platform/deployment.md#deploy)); `apps/router/wrangler.toml` binds it as `HELP`.
 
 ## Out of scope (for now)
 
@@ -286,10 +286,9 @@ A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing`
   keywords, capped at 6; registry order decides ties. Revisit if keyword
   coverage makes the group noisy.
 
-(Previously listed here: surfacing the full article catalogue in editor
-search. That shipped — the registry moved to `@livedesign/help-registry` with
-per-article `keywords`, and `help-search.ts` now derives from it.)
+Editor search covers the full article catalogue: `help-search.ts` derives from `@livedesign/help-registry`, with
+per-article `keywords`.
 
 ## articleCount is pinned by a test
 
-A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.
+A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two conventions: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.

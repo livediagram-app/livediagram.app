@@ -113,7 +113,7 @@ The hero speaks to a beginning:
 - **The lead** is "Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up
   again."
 - **The field searches templates**, not designs (there are none): its placeholder is "Search templates", and
-  Enter opens the New Design wizard with the words in its template search (`/new?q=`). Inside its right end,
+  Enter opens `/new` with the words handed to the new design's template search (`/new?q=`). Inside its right end,
   **Start Blank** makes a blank Pages design with its start closed (`/new?start=blank`).
 - **What it makes**: the same four pictures as the ordinary hero, so a first run shows what can be made.
 
@@ -124,7 +124,7 @@ Under it, beside the sidebar, Home holds three sections in place of Jump Back In
   that blank at once (`/new?template=<kind>`).
 - **Popular Templates**: the first eight non-blank templates of the shared Popular list, as large cards with their
   previews, titles and descriptions; activating one makes it at once. A quiet **Browse All Templates** link in the
-  heading row opens the wizard (`/new`).
+  heading row opens `/new`, whose new design opens on its template start.
 - Every start card shows its **whole title and description**, wrapped onto as many lines as they need and never
   cut short with an ellipsis, at every width; the cards in a row stand as tall as the tallest of them.
 - **Already Have Work?**, for a guest on a deployment with sign-in only: **Nothing here yet? Sign in**: "If you have
@@ -221,10 +221,10 @@ the **4 most used** and the **4 most recent**, no design twice.
 ### Making a design
 
 - **Making a design is a use.** The day a person makes a design is a use day of it, and the moment they make
-  it a use, however they make it: the New Design wizard, a duplicate, a copy of a
+  it a use, however they make it: `/new`, a duplicate, a copy of a
   design shared with them, or one an AI tool or an API client makes for them. So a design made without being
   opened is in Jump Back In at once.
-- **Once a day, as ever.** The wizard opens what it makes: the making and the first open fall on one day, which is
+- **Once a day, as ever.** `/new` opens what it makes: the making and the first open fall on one day, which is
   one use day, not two.
 - **The create says so.** Creating a design says whether it counts as a use: `markUsed`, true unless the caller
   sends `false` ([API](../015-api/api.md), `POST /api/designs`). The editor never sends it; any API

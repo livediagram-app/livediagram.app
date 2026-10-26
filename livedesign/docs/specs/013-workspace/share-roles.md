@@ -1,7 +1,6 @@
 # Share roles
 
-**Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
-ahead ([Later](#later)).**
+Status: shipped
 
 Everyone who reaches a design without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
@@ -42,8 +41,8 @@ A Participant changes the design's **content**, never its **shape**.
 | Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                          |
 | Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; rename the design |
 
-- **"It added"** means the server recorded the Participant as the element's adder when the element was created.
-  An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
+- **"It added"** means the server recorded the Participant as the element's adder (`addedBy`) when the element was
+  created. An element an Editor added belongs to nobody a Participant can claim.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often carry the layout) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
@@ -79,24 +78,25 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 ## Ownership
 
 Ownership is a set of powers, held by the design's **owner**: its creator, or whoever moved it into their own
-library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner; delete, Trash
-and moves stay with the owner and joined team members. No level grants any of them. The full ownership model is
-[Later](#later).
+library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner (and, on a team
+design, every joined member); delete, Trash and moves stay with the owner and joined team members. No level grants
+any of them. Who owns an item and who may reach it is liveworkspace's index's
+([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
 
 ## Share links
 
-- The Share dialog offers three role cards, in this order: **Editor** ("Draws with you in real time."),
-  **Participant** ("Adds stickies, writes and comments. Can't reshape the pages.") and **Viewer** ("Watches, pans
-  and zooms. Can't comment or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
-  glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
-- `POST /api/designs/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
+- Links are liveworkspace's index's: one link carries a level, `view`, `participate` or `edit`, and optionally one
+  tab ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access").
+  The shared Share dialog (`LEVEL_PASS` in `packages/explorer/src/dialogs/share/parts.tsx`) offers the three in this
+  order: **Editor** ("Works with you in real time."), **Participant** ("Comments, votes and works items. Can't
+  reshape it.") and **Viewer** ("Watches along. Can't comment or change a thing."), a new pass starting as an
+  Editor's ([Live app](../007-editor/live-app.md#share-dialog)).
+- The api reads the level off the index's grant on every request and room socket (`X-Index-Grant`).
 - The editor's role pill reads Editing, Participating or Viewing.
-- **A visit is through one link.** Opening a design through a share link records that link with the visit
-  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the design through
-  that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it
-  granted: those people lose the design from Shared with you, and from the copy and activity legs, even when
-  another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
-  before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
+- **A visit is through one link.** The index records which link a visit came through; Shared With Me and Home open
+  the design through that same link only while it is live. **Revoking a link** (or rescoping it) ends every visit it
+  granted: the index asks the design's room to close those sockets (`revokeCodes`), and those people lose the design
+  from Shared With Me even when another link of the same level is still live.
 - **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
   a warning toast ("The link you opened that design with was revoked, so it is no longer open to you."). A session
   ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
@@ -108,15 +108,18 @@ and moves stay with the owner and joined team members. No level grants any of th
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
-- The MCP's `share_design` creates a **Participant** link when no level is named.
+- The MCP's `share_design` creates a **Participant** link when no `role` is named
+  (`packages/agent-verbs/src/mcp/schema.ts`).
 
 ## Integrity
 
-- **Participation is its own class of room op**, between presence (anyone) and mutation (editors): every mutation
-  from a Participant's socket is dropped; its content goes through the server (below).
-- **Content goes through the server.** A Participant never saves a whole tab and never relays element changes over
-  its socket: it sends them to the server, which applies the rule, stores the result, and relays what it accepted
-  to everyone.
+- **The room gates every op by kind** (`gateClientOp`, `apps/api/src/room-op-gate.ts`): a presence op passes from
+  anyone (a Viewer's reaction is dropped); every other op needs edit, except a Participant's `el` op, which the room
+  applies through the participant content rule (`applyParticipantOp`, `packages/design/src/participant-content.ts`,
+  written by `writeParticipantOp`, `apps/api/src/participant-write.ts`).
+- **Content goes through the server.** A Participant never saves a whole tab: each element change it sends is
+  applied by the room against the stored tab (a compare-and-swap on the tab's revision, retried up to
+  `TAB_CAS_MAX_ATTEMPTS`, 8), stored, and relayed as what was accepted.
 - **The adder is stamped by the server**, never read from the request, from the caller's identity on the design.
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
@@ -125,27 +128,15 @@ and moves stay with the owner and joined team members. No level grants any of th
   someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
 - A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
 
-## Moving to three levels
-
-- **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
-  change loses commenting (decided 2026-10-10): an owner who wants an audience to
-  chime in issues a Participant link.
-- **No old reader escalates.** Before the server can write a `participate` link, every reader of a stored level
-  reads an unknown value as Viewer. An editor bundle from before this change reads a Participant link as Editor,
-  shows editing controls, and the server refuses its first save; a reload fixes it.
-
 ## Telemetry
 
 `Document·Shared` and `Document·Joined` take the type `Participate` beside `Edit` and `View`
 ([Telemetry](../017-telemetry/telemetry.md)).
 
-## Later
+## Outside the levels
 
-Specified in the research and not built yet:
-
-- **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
-- **Ownership powers** as a named set every door asks beside the level.
-- **Server-derived collaboration keys**, pinned per socket, so nobody can act as someone else's session.
+- **API tokens** carry a read-only flag, not a level ([Public API and API tokens](../015-api/public-api-and-tokens.md)).
+- **Collaboration keys** are the client's own per-session keys; the server does not derive them.
 
 ## Domain language
 

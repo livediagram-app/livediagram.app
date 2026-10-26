@@ -2,7 +2,8 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./images.md - when working on Image element + per-owner gallery: Image element + per-owner R2-backed gallery with dedupe, the `image_refs` reference index and unused-image retention
+- ./images.md - when working on Image element + per-owner gallery: the image element, the gallery on liveworkspace's media service, the `image_refs` reference index each design keeps, and placement grants
+- ./image-search.md - when working on Image search: the image picker's Search tab, openly licensed pictures from Openverse saved into the gallery
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
 - ./progress.md - when working on Progress elements: Horizontal bar + donut ring shapes showing a 0–100 percentage, with fill animations (fill/pulse/stripes)

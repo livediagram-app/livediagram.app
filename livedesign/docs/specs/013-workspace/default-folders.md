@@ -52,7 +52,7 @@ order:
 - **Sent on the create** as `intent: { mode, tabKind? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
-  - every create that makes something new: the New Design wizard and its bypasses
+  - every create that makes something new: `/new` whatever its params
     (`/new?blank=1`, `/new?template=`), imports into the account and the MCP `create_design` tool, which sends the intent of the first
     tab it built;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
@@ -110,9 +110,8 @@ A create's place is decided in this order; the first that answers wins:
 - **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
   space, chosen on purpose; with no team it is the explicit root of My Work, and it always wins
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
-- **The wizard** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
-  `/new` (**Create**, **Skip**, a bypass link without context) sends no placement, so these
-  defaults decide ([The New Design wizard](#the-new-design-wizard)).
+- **`/new`** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
+  `/new` sends no placement, so these defaults decide ([New designs](#new-designs)).
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -212,10 +211,9 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   moves nothing on the row.
 - A dangling default marks nothing; the My Work row shows no marker.
 
-### The New Design wizard
+### New designs
 
-The wizard never asks where a design goes ([New design route](../007-editor/new-design-route.md#one-step-wizard)):
-it has no Location step and shows no folder browser.
+`/new` never asks where a design goes ([New design route](../007-editor/new-design-route.md#what-new-makes)).
 
 - **No context, no placement.** A design made from `/new` without a `/new?folder=` or `?team=` context carries no
   placement, only its intent, so the server's [precedence](#precedence) files it: the default for its key, else the
@@ -224,7 +222,7 @@ it has no Location step and shows no folder browser.
 - **A context is explicit.** A `/new?folder=` or `?team=` link files the design there, in livedesign, ahead of
   any default.
 - **Where to change it.** Settings > Designs > Default Folders ([Settings](#settings)), the folder menus' **Use as
-  Default for** and My Work' own menu. The wizard itself sets nothing.
+  Default for** and My Work's own menu. `/new` itself sets nothing.
 - None of this applies to **This Browser**: an offline design has no folder ([Non-goals](#non-goals)).
 
 ### Settings

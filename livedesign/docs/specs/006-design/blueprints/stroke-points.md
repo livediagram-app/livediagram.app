@@ -17,7 +17,7 @@ spec.
 | Freehand geometry | `FreehandGeometry`               | A box and its normalised points, before packing (the live ink's layout)  |
 
 "Packed points" is the only name for the stored string: never "binary points", "ink data" or
-"point blob". `points` and `pressures` no longer name element fields anywhere.
+"point blob". `points` and `pressures` name no element field anywhere.
 
 ## Modules
 

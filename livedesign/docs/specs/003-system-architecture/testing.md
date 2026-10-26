@@ -162,7 +162,7 @@ the "decides who may see this" or "decides what may be deleted" set.
 
 ## CI
 
-CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
+CI runs parallel jobs (the monorepo's root `.github/workflows/ci.yml`, livedesign's group when a change reaches it): **Checks** runs lint →
 format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
 suite exactly once (a workspace with `test:coverage` runs only that), for every
 workspace but the editor; **Editor unit tests i/3** run the editor's suite
@@ -176,10 +176,10 @@ Checks, Tests, every Editor unit tests job and Build are required status checks 
 ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
 `workflow_dispatch` run on the same commit is not attached to it.
 
-Coverage is a separate step because it enforces the thresholds above — and
-because running it at all keeps the coverage tooling exercised. It previously
-did not run in CI, which is how a v4 coverage provider came to sit against a
-v5 test runner with every check green: nothing invoked the broken path.
+Coverage is a separate step because it enforces the thresholds above, and
+because running it at all keeps the coverage tooling exercised: a coverage
+provider that no longer matches the test runner fails CI rather than sitting
+unnoticed with every check green.
 
 ### Sizing the shards
 
@@ -205,8 +205,7 @@ which no longer run.
 
 The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
 changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
-It replaces the hook this product carried in its own repository, whose `.githooks/` and
-`scripts/git-hooks/` are no longer installed.
+It is the only hook: this product installs none of its own.
 
 The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
 inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
@@ -303,11 +302,10 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because real bugs could not be caught without it, both in the
+  This exists because real bugs could not be caught without it in the
   Timeline, whose state lives in hooks rather than in pure helpers:
-  `useTimelineFeed.test.ts` covers a failed Show More that swapped every
-  event already shown for an error ([Timeline](../013-workspace/timeline.md) §3), and `useTimelineControls.test.tsx` covers a
-  Clear filters button that cleared only half the filters. Each fails if its
+  `useTimelineFeed.test.ts` (in `@liveworkspace/explorer`) covers a failed Show More that swapped every
+  event already shown for an error ([Timeline](../013-workspace/timeline.md)). It fails if its
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of

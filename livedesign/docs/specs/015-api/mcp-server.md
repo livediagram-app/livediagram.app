@@ -175,7 +175,7 @@ browser. A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
-Fourteen tools: thirteen for designs and one for pages ([§4.9d](#49d-the-pages-tools)),. The search/view capability is two tools (find, then read); create,
+Fourteen tools: thirteen for designs and one for pages ([§4.9d](#49d-the-pages-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
@@ -324,7 +324,7 @@ like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition
 and radii, and the content kinds' looks, media, attach points and pyramid variants: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
-pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
+pointer to `search_icons`. The check passes every element
 of every template, so a tab read back as JSON writes again unchanged. A refusal names the element by its id, an ops
 `add` without one as "the added element" and an ops `update` by its `elementId` (never "element 1", its place in the
 op's own one-element list), and the fields like an unknown camelCase one share its first word (`strokeColour` →
@@ -509,7 +509,7 @@ assistant to "rename that" or "delete the old one":
   [Trash](../013-workspace/trash.md) (`DELETE /api/designs/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
   There is no permanent option: an AI tool can only ever bin a design, never
-  destroy it. A permanent delete stays with the person (Settings › Trash) or
+  destroy it. A permanent delete stays with the person (the Explorer's Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
   With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
   no Trash. Still destructive, so the description tells the model to confirm
@@ -626,7 +626,7 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the fifteen tools, and each is a preset in
+Three behaviours cover the fourteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                        |

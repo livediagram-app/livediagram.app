@@ -13,32 +13,25 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | Local development      | `.env.local` (gitignored) per app/worker                          |
 | Cloudflare Workers     | `wrangler secret put` — never in `wrangler.toml`                  |
 | Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
-| CI / Deploy            | GitHub repo secrets — see below                                   |
+| CI / Deploy            | GitHub repo secrets: see below                                    |
 | Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
 
 ### GitHub Actions secrets
 
-Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
-
-| Secret          | Purpose                                                                                                                                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
-
-The deploy workflow also **syncs** the sign-in values, `MEDIA_KEY` and `TELEMETRY_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `MEDIA_KEY` and `TELEMETRY_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
+livedesign deploys from the liveworkspace monorepo's root workflows ([Deployment](../016-platform/deployment.md)), whose one credential is `CLOUDFLARE_API_TOKEN`, a Cloudflare API token for the liveworkspace account; every `wrangler.toml` pins the account id ([docs/ci.md](../../../../docs/ci.md) "Deploys"). A deploy writes code and plain vars only: the worker secrets below are set on each worker with `wrangler secret put` and survive every deploy.
 
 ## Worker secrets in use today
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which keeps every outside service optional (see [03](open-source-and-business-model.md)).
 
-| Secret                                          | Worker          | Absent means                                                                                                                              |
-| ----------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md))                |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                         |
-| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))                    |
-| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export designs as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps)) |
+| Secret                                          | Worker          | Absent means                                                                                                                                                                                                                 |
+| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Pure-guest mode: no Bearer is verified, so every caller is a link visitor ([04](../014-identity/auth-and-guest-access.md))                                                                                                   |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                            |
+| `MEDIA_KEY`                                     | api             | Image uploads and the gallery are off: every `/api/images*` endpoint answers 503 ([Images](../009-elements/images.md))                                                                                                       |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export designs as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                                                    |
 | `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
-| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                       |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                                                          |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDESIGN`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 

@@ -19,15 +19,15 @@ by any column.
 
 ## Columns
 
-| Column   | A design shows                                                                   | A folder shows                          |
-| -------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
-| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker     |
-| Type     | The mode its most recently written tab is in, as the mode's icon                   | The folder icon                         |
-| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                   |
-| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                   |
+| Column   | A design shows                                                                     | A folder shows                        |
+| -------- | ---------------------------------------------------------------------------------- | ------------------------------------- |
+| Name     | Its name (a link that opens it), favourite star, This Browser and Made by AI pills | Its name (opens it), default marker   |
+| Type     | The mode its most recently written tab is in, as the mode's icon                   | The folder icon                       |
+| Comments | A speech bubble holding how many comments its tabs hold; empty for none            | Empty                                 |
+| Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer      | Empty                                 |
 | Size     | "N objects (S)": elements across all its tabs, and the stored size of those tabs   | "N items": its subfolders and designs |
-| Created  | Date and time it was created                                                       | Date and time it was created            |
-| Updated  | Date and time it was last saved                                                    | Date and time it was last changed       |
+| Created  | Date and time it was created                                                       | Date and time it was created          |
+| Updated  | Date and time it was last saved                                                    | Date and time it was last changed     |
 
 - **Icon columns.** Type, Comments and Access are narrow columns of one icon each, with no words: their
   headers show the column's icon (shapes, a speech bubble, a key) in place of a title, still sortable,
@@ -105,19 +105,15 @@ by any column.
 ## Where the numbers come from
 
 - **Tab stats.** Every tab carries a stats record: its mode, its element count, its comment count,
-  the byte size of its stored body, and when it was written. The record is written in the same batch
-  as the tab, by every write (a save, a changeset, a seeded create, a participant write, a
-  duplicate's copied tab), so it never drifts from the tab it describes. It lives apart from the tab
-  body so a list reads the numbers without reading any body.
-- **A design's stats** are summed over the tabs it links: elements, comments and bytes added, the
-  mode taken from the tab written last. `GET /api/designs` and each team library carry them on every
-  row as `stats` (`{ mode, elements, comments, bytes }`), or `null` when the design has no tabs or one
-  of its tabs has no record yet.
-- **Counting the existing tabs.** Tabs written before the stats existed are counted by the daily
-  cron, a bounded number per run, each dated by the tab's own last write so a counted old tab never
-  outranks a newer one for Type; a write that lands meanwhile keeps its own count, never overwritten
-  by the older one. The api logs
-  `tab-stats: backfilled n=<n> left=<more|none>` each run.
+  the byte size of its stored body, and when it was written (`tab_stats` in the design's Durable Object,
+  `apps/api/src/design-room/design-schema.ts`; `tabStatsOf` from `@livedesign/design`). The record is written
+  in the same batch as the tab, by every write (a save, a changeset, a seeded create, a participant write, a
+  duplicate's copied tab), so it never drifts from the tab it describes, and it lives apart from the tab body.
+- **A design's stats** are summed over its tabs: elements, comments and bytes added, the mode taken from the tab
+  written last. The design's Durable Object pushes them to liveworkspace's index in the item's content summary
+  (`stats: { mode, elements, comments, bytes }`, `apps/api/src/db/content-summary.ts`), after any write changes a
+  tab's stats (an outbox trigger on `tab_stats`), so the shared Explorer's lists carry them on every row, or
+  `null` when the design has no tabs ([API](../015-api/api.md) "Storage").
 
 ## Not in scope
 
