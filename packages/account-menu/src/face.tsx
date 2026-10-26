@@ -28,8 +28,10 @@ export function GuestAvatar({ large = false }: { large?: boolean }) {
         strokeLinejoin="round"
         className={large ? 'size-5' : 'size-4'}
       >
-        <circle cx="12" cy="8" r="4" />
-        <path d="M20 21a8 8 0 0 0-16 0" />
+        {/* Lucide's user, drawn 0.75 units higher: as drawn its ink sat 0.38px low in the disc, and a header that
+            puts the disc on a half pixel took it to 0.88px (optical-alignment.md). */}
+        <circle cx="12" cy="7.25" r="4" />
+        <path d="M20 20.25a8 8 0 0 0-16 0" />
       </svg>
     </span>
   );
