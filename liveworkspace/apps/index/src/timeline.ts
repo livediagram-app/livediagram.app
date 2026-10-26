@@ -41,6 +41,7 @@ import {
 } from '@liveworkspace/index-client';
 import { isMergeCaller, scopesOf, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId } from './codec';
+import { unionAll } from './compound';
 import type { PersonContext } from './context';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject, unauthorized } from './http';
@@ -287,7 +288,7 @@ export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQue
              e.actor_name AS e_actor_name, e.type AS e_type, e.title AS e_title, e.detail AS e_detail,
              e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
       FROM timeline_events e LEFT JOIN items i ON i.id = e.item_id
-      WHERE e.id IN (${ranges.join(' UNION ALL ')})
+      WHERE e.id IN (${unionAll(ranges)})
       ORDER BY e.occurred_at DESC, e.id DESC LIMIT ?
     ) x ON 1`;
   return { sql, args };
@@ -393,7 +394,7 @@ export function timelineNewQuery(person: Person, app: App | null, now: number): 
   }
   args.push(take);
   const sql = `WITH st AS (SELECT last_seen_at AS seen FROM timeline_scope_state WHERE person_id = ?)
-    SELECT COUNT(*) AS n FROM (SELECT DISTINCT event_id FROM (${ranges.join(' UNION ALL ')}) LIMIT ?)`;
+    SELECT COUNT(*) AS n FROM (SELECT DISTINCT event_id FROM (${unionAll(ranges)}) LIMIT ?)`;
   return { sql, args };
 }
 

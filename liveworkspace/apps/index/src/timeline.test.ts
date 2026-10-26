@@ -172,6 +172,27 @@ describe('Remove from Timeline and the new count', () => {
   });
 });
 
+describe('a person in many teams', () => {
+  // D1 refuses a compound SELECT of more than five terms. The Timeline reads one range per scope (two with an app
+  // filter), so a person in two teams filtered to one app already needed six, and their Inbox failed on its new count.
+  it('reads the Timeline and its new count across every team, filtered to an app or not', async () => {
+    const next = tick();
+    const teams = Array.from({ length: 6 }, (_, i) => ({ id: `team_many${i}` }));
+    const ada = await person('user_many', { teams });
+    const cy = await person('user_manyc', { teams });
+    await call('/timeline/seen', { method: 'POST', auth: cy.auth });
+    next();
+    for (const team of teams) await makeItem(ada.auth, { title: team.id, teamId: team.id });
+    next();
+    const inbox = async (query: string) =>
+      body<{ timelineNew: number }>(await call(`/inbox${query}`, { auth: cy.auth }));
+    expect((await inbox('?app=liveplanner')).timelineNew).toBe(6);
+    expect((await inbox('')).timelineNew).toBe(6);
+    expect((await feed(cy.auth, 'app=liveplanner')).events).toHaveLength(6);
+    expect((await feed(cy.auth)).events).toHaveLength(6);
+  });
+});
+
 describe('who sees what', () => {
   it("shows a person their own space and their teams', and an item's history follows it", async () => {
     const next = tick();
@@ -558,12 +579,15 @@ describe('the bound', () => {
   const ada: Person = { id: 'user_big', kind: 'account', teams: ['team_a', 'team_b'] };
 
   it('reads each scope through its own index range and never scans the events', () => {
-    for (const spec of [
-      { limit: 30, app: 'liveplanner' as const },
-      { limit: 30 },
-      { limit: 30, cursor: { at: 5, id: 'x' } },
-    ]) {
-      const { sql, args } = buildTimelineQuery(ada, spec);
+    // Twelve teams nest their ranges in groups of five, under D1's compound limit, and keep the same plan.
+    const many: Person = { ...ada, teams: Array.from({ length: 12 }, (_, i) => `team_${i}`) };
+    for (const [who, spec] of [
+      [ada, { limit: 30, app: 'liveplanner' as const }],
+      [ada, { limit: 30 }],
+      [ada, { limit: 30, cursor: { at: 5, id: 'x' } }],
+      [many, { limit: 30, app: 'liveplanner' as const }],
+    ] as const) {
+      const { sql, args } = buildTimelineQuery(who, spec);
       const lines = h.db.sql
         .prepare(`EXPLAIN QUERY PLAN ${sql}`)
         .all(...(args as SQLInputValue[]))
