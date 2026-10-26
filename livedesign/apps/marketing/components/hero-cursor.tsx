@@ -1,3 +1,4 @@
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT } from '@/components/art-tokens';
 
 // A collaborator's cursor in the hero art: the arrow and its name badge, drawn at the origin (the caller's <g>
@@ -23,7 +24,8 @@ export function CursorMark({
       <rect x="10" y="12" width={width} height={height} rx="3" fill={colour} />
       <text
         x={10 + width / 2}
-        y={15 + height / 2}
+        // The label centres on its cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(12 + height / 2, fontSize)}
         textAnchor="middle"
         fontFamily={FONT}
         fontSize={fontSize}
