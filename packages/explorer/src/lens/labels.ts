@@ -11,20 +11,28 @@ import {
 import type { LensContext, LensOption } from './types';
 
 const UNKNOWN_TEAM_LABEL = 'Unknown team';
+
+/** The options a host names for a dimension of its own: its editor modes, or its template families. */
+function hostOptions(
+  dimension: 'mode' | 'template',
+  context: Pick<LensContext, 'templates' | 'modes'>,
+): readonly LensOption[] {
+  return dimension === 'mode' ? (context.modes ?? []) : context.templates;
+}
 const TEAM_NAME_ORDER = new Intl.Collator('en-GB');
 
 /** The label of a value; a team reads by its name and never by its id. */
 export function valueLabel(
   dimension: LensDimension,
   value: string,
-  context: Pick<LensContext, 'teams' | 'templates'>,
+  context: Pick<LensContext, 'teams' | 'templates' | 'modes'>,
 ): string {
   if (dimension === 'space' && value.startsWith(SPACE_TEAM_PREFIX)) {
     const id = value.slice(SPACE_TEAM_PREFIX.length);
     return context.teams.find((team) => team.id === id)?.name ?? UNKNOWN_TEAM_LABEL;
   }
-  if (dimension === 'template') {
-    return context.templates.find((t) => t.value === value)?.label ?? value;
+  if (dimension === 'template' || dimension === 'mode') {
+    return hostOptions(dimension, context).find((t) => t.value === value)?.label ?? value;
   }
   const labels: Readonly<Record<string, string>> = VALUE_LABELS[dimension];
   return labels[value] ?? value;
@@ -33,9 +41,9 @@ export function valueLabel(
 /** Every value a dimension offers, in catalogue order; teams follow the fixed spaces, by name A to Z. */
 export function valueOptions(
   dimension: LensDimension,
-  context: Pick<LensContext, 'teams' | 'templates'>,
+  context: Pick<LensContext, 'teams' | 'templates' | 'modes'>,
 ): LensOption[] {
-  if (dimension === 'template') return [...context.templates];
+  if (dimension === 'template' || dimension === 'mode') return [...hostOptions(dimension, context)];
   if (dimension !== 'space') {
     return FIXED_VALUES[dimension].map((value) => ({
       value,

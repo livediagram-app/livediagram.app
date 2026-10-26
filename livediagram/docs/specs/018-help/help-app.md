@@ -285,7 +285,17 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
 | `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
 
-The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`.
+Three features left livediagram on purpose, and their articles with them; each old address answers a `308` to the nearest live article, so a shared link still lands somewhere useful:
+
+| Old address                          | New address                              | Why                                                             |
+| ------------------------------------ | ---------------------------------------- | --------------------------------------------------------------- |
+| `/help/canvas/themes/custom-themes/` | `/help/canvas/themes/`                   | Custom themes were deleted; the built-in themes stay            |
+| `/help/explorer/themes-library/`     | `/help/canvas/themes/`                   | The Explorer's Themes page went with custom themes              |
+| `/help/explorer/tags/`               | `/help/explorer/folders/`                | Tags were removed; folders are how documents are grouped now    |
+| `/help/tools/ai/`                    | `/help/account-and-data/connect-ai-mcp/` | The in-editor AI assistant was removed; connected AI tools stay |
+| `/help/tools/ai/ai-tools/`           | `/help/account-and-data/connect-ai-mcp/` | The same                                                        |
+
+The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 
 "Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
 <!-- /legacy-names -->

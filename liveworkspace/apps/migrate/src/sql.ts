@@ -36,7 +36,11 @@ export function literal(value: SqlValue): string {
 
 /** What an earlier run wrote: a row's version as JSON text, or undefined when it was never written. */
 export interface LedgerView {
-  version(db: Db | 'rooms' | 'r2' | 'kv', table: string, key: string): string | undefined;
+  version(
+    db: Db | 'rooms' | 'people' | 'r2' | 'kv',
+    table: string,
+    key: string,
+  ): string | undefined;
 }
 
 export const EMPTY_LEDGER: LedgerView = { version: () => undefined };

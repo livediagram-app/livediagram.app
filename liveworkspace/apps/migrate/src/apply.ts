@@ -1,6 +1,6 @@
 // `migrate apply <bundle> --env staging|production [--dry-run]` (docs/migration.md "Tooling"): runs a bundle's steps
 // in the manifest's order (accounts, index, media; the R2 copies; the rooms through each app's migration door;
-// community; the MCP's KV), recording each unit in the ledger as soon as it has succeeded, so a stopped run resumes
+// livediagram's people through its person migration door; community; the MCP's KV), recording each unit in the ledger as soon as it has succeeded, so a stopped run resumes
 // where it left off and never repeats a finished unit.
 //
 // Every command and request is built here and handed to a Runner and an Http (real ones in ./run.ts); the tests use
@@ -212,10 +212,12 @@ export function roomRequest(o: {
   app: MigrationApp;
   id: string;
   body: string;
+  /** `people`: livediagram's person migration door, for a person's own data. Absent: the item's room. */
+  door?: 'items' | 'people';
 }): HttpRequest {
   return {
     method: 'PUT',
-    url: `${o.origin.replace(/\/+$/, '')}/api/internal/items/${encodeURIComponent(o.id)}/migration`,
+    url: `${o.origin.replace(/\/+$/, '')}/api/internal/${o.door ?? 'items'}/${encodeURIComponent(o.id)}/migration`,
     headers: { authorization: `Bearer ${o.key}`, 'content-type': 'application/json' },
     body: o.body,
   };
@@ -396,13 +398,17 @@ export async function apply(o: ApplyOptions): Promise<ApplySummary> {
         } finally {
           rmSync(scratch, { recursive: true, force: true });
         }
-      } else if (step.step === 'rooms') {
+      } else if (step.step === 'rooms' || step.step === 'people') {
+        // The rooms through each app's migration door, or the people through livediagram's person door: the same
+        // walk, one PUT per line.
+        const kind = step.step;
+        const noun = kind === 'rooms' ? 'room' : 'person';
         const lines = readFileSync(join(o.bundleDir, step.file), 'utf8')
           .split('\n')
           .filter(Boolean)
           .map((l) => JSON.parse(l) as RoomLine);
         const pending = lines.filter(([app, id]) => {
-          const skip = done(`rooms:${app}/${id}`);
+          const skip = done(`${kind}:${app}/${id}`);
           if (skip) summary.skipped++;
           return !skip;
         });
@@ -416,24 +422,25 @@ export async function apply(o: ApplyOptions): Promise<ApplySummary> {
             key,
             app: a,
             id,
-            body: o.dryRun
-              ? ''
-              : readFileSync(join(o.bundleDir, 'rooms', app, `${id}.json`), 'utf8'),
+            body: o.dryRun ? '' : readFileSync(join(o.bundleDir, kind, app, `${id}.json`), 'utf8'),
+            door: kind === 'rooms' ? 'items' : 'people',
           });
           log(
-            `${o.dryRun ? '[dry-run] ' : ''}room ${app}/${id}: PUT ${request.url} (Bearer $${keyVar(a)})`,
+            `${o.dryRun ? '[dry-run] ' : ''}${noun} ${app}/${id}: PUT ${request.url} (Bearer $${keyVar(a)})`,
           );
           if (!o.dryRun) {
             const response = await o.http.send(request);
             if (response.status < 200 || response.status >= 300) {
               throw new Error(
-                `room ${app}/${id}: the door answered ${response.status}: ${response.body.slice(0, 500)}`,
+                `${noun} ${app}/${id}: the door answered ${response.status}: ${response.body.slice(0, 500)}`,
               );
             }
-            const answer = JSON.parse(response.body) as MigrationDoorAnswer;
-            if (answer.edited?.length) summary.edited.push({ app, id, tabs: answer.edited });
+            if (kind === 'rooms') {
+              const answer = JSON.parse(response.body) as MigrationDoorAnswer;
+              if (answer.edited?.length) summary.edited.push({ app, id, tabs: answer.edited });
+            }
           }
-          mark(`rooms:${app}/${id}`, [['rooms', app, id, version]]);
+          mark(`${kind}:${app}/${id}`, [[kind, app, id, version]]);
         });
       } else if (step.step === 'kv') {
         if (done('kv') || step.count === 0) {

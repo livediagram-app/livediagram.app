@@ -148,6 +148,9 @@ export type ExplorerProps = {
   /** The filter lens's Template values: the host app's template families, matched against the last word of each
    *  item's creation intent. Without them there is no Template filter. */
   lensTemplates?: readonly LensOption[];
+  /** The filter lens's Mode values: the host app's editor modes (livediagram's Diagram, Draw and Workshop), matched
+   *  against the mode each item's summary reports. Without them there is no Mode filter. */
+  lensModes?: readonly LensOption[];
   /** Default Folders' entries for what the host's items open in and the kinds of their first tabs (livediagram's
    *  Diagrams, Whiteboards, Sessions, Event Storming boards), between the app's own and its templates'. */
   defaultFolderOptions?: readonly DefaultFolderOption[];
@@ -309,6 +312,7 @@ function ExplorerInner({
   onHome,
   onOrganise,
   lensTemplates,
+  lensModes,
   defaultFolderOptions,
   onFolderShown,
   onLensSelected,
@@ -384,6 +388,7 @@ function ExplorerInner({
       onHome={onHome}
       onOrganise={onOrganise}
       lensTemplates={lensTemplates}
+      lensModes={lensModes}
       defaultFolderOptions={defaultFolderOptions}
       onFolderShown={onFolderShown}
       onLensSelected={onLensSelected}

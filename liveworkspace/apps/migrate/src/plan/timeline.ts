@@ -3,6 +3,9 @@
 // never as fresh activity, and nobody is notified (the index notifies on its own writes, not on these rows).
 // - A document's event goes on the part that kept the document's id (events are about documents, not tabs).
 // - A team's or token's event is an account event, under the platform's app (`liveworkspace`), no item.
+// - A document taken offline is the person's own event (`taken_offline`), about no item, titled with its name.
+// - A kind the index has under another name is mapped to it (visitors' opens and copies, syncs, accepted invitations,
+//   a member leaving as `team_member_removed` marked `left`).
 // - An old event kind with no new equivalent is counted in the report and dropped, never guessed.
 // Each event is written once under `imp:<old id>` and never updated: history doesn't change.
 import type { PlanContext } from './context.ts';
@@ -28,17 +31,22 @@ const ITEM_TYPES: Readonly<Record<string, string>> = {
   comment_resolved: 'comment_resolved',
   action_assigned: 'action_assigned',
   action_completed: 'action_done',
+  document_synced: 'synced',
+  document_opened_by_visitor: 'opened_by_visitor',
+  document_copied_by_visitor: 'copied_by_visitor',
 };
 const ACCOUNT_TYPES: Readonly<Record<string, string>> = {
   team_invite_sent: 'team_invite_sent',
   team_member_invited: 'team_invite_sent',
   team_joined: 'team_joined',
   team_member_joined: 'team_joined',
+  team_invite_accepted: 'team_joined',
   team_declined: 'team_declined',
   team_invite_declined: 'team_declined',
   team_role_changed: 'team_role_changed',
   team_member_role_changed: 'team_role_changed',
   team_member_removed: 'team_member_removed',
+  team_member_left: 'team_member_removed',
   team_renamed: 'team_renamed',
   team_deleted: 'team_deleted',
   token_created: 'token_created',
@@ -46,8 +54,25 @@ const ACCOUNT_TYPES: Readonly<Record<string, string>> = {
   token_expiring: 'token_expiring',
   token_expiry_warning: 'token_expiring',
 };
-// A person's own event, about no item: the app it happened in.
-const PERSON_TYPES: Readonly<Record<string, string>> = { image_uploaded: 'image_uploaded' };
+// A person's own event, about no item: the app it happened in. A document taken offline left the server, so its event
+// names no item, only the document's name as it was.
+const PERSON_TYPES: Readonly<Record<string, string>> = {
+  image_uploaded: 'image_uploaded',
+  document_offline: 'taken_offline',
+};
+
+// The index's detail beside the import mark, where its card reads one: a member who left says so (`left`), with
+// their team and name, which the old snapshot kept.
+function detailOf(oldType: string, snapshot: Record<string, unknown>): string {
+  if (oldType !== 'team_member_left') return IMPORTED;
+  const text = (v: unknown) => (typeof v === 'string' ? v.slice(0, TITLE_MAX) : null);
+  return JSON.stringify({
+    imported: '1',
+    left: '1',
+    teamId: text(snapshot.teamId),
+    memberName: text(snapshot.memberName),
+  });
+}
 
 const IMPORTED = JSON.stringify({ imported: '1' });
 const TITLE_MAX = 200;
@@ -77,8 +102,9 @@ export function writeTimeline(ctx: PlanContext): void {
     const snapshot = parse(e.snapshot);
     const actorOld = e.actor_id === null ? null : String(e.actor_id);
     const actor = actorOld ? ctx.owners.ownerOf(actorOld) : null;
-    const actorName =
-      typeof snapshot.actorName === 'string' ? snapshot.actorName.slice(0, TITLE_MAX) : null;
+    // A visitor's events kept their name as `visitorName`.
+    const named = snapshot.actorName ?? snapshot.visitorName;
+    const actorName = typeof named === 'string' ? named.slice(0, TITLE_MAX) : null;
     let app: string;
     let itemId: string | null = null;
     let type: string;
@@ -111,7 +137,12 @@ export function writeTimeline(ctx: PlanContext): void {
     } else if (personType && actor) {
       app = 'livediagram';
       type = personType;
-      title = String(e.title).slice(0, TITLE_MAX);
+      const documentName =
+        typeof snapshot.documentName === 'string' ? snapshot.documentName : e.description;
+      title = String(oldType === 'document_offline' ? (documentName ?? e.title) : e.title).slice(
+        0,
+        TITLE_MAX,
+      );
       found.add(`p:${actor}`);
     } else {
       ctx.report.dropHistory(oldType);
@@ -143,7 +174,7 @@ export function writeTimeline(ctx: PlanContext): void {
         'detail',
         'occurred_at',
       ],
-      values: [id, app, itemId, actor, actorName, type, title, IMPORTED, at],
+      values: [id, app, itemId, actor, actorName, type, title, detailOf(oldType, snapshot), at],
       conflict: ['id'],
       version: 1,
     });

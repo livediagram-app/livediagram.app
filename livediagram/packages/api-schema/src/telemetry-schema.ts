@@ -165,7 +165,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModeWorkshop', fired before the mode applies.
   'Editor',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
-  // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |
+  // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Mode' | 'Kind' | 'Template' | 'MadeBy' |
   // 'Edited' | 'People' | 'Space', LENS_TELEMETRY_TYPES), from a chip, a suggestion or a typed token.
   // Never a value, a word, a team or an id.
   'Explorer',

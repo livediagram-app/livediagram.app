@@ -170,7 +170,9 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 (at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
 (with `app` as well, both must hold); `source` (`ai`: made by an AI tool
 through MCP); `since`, changed at or after (epoch ms); `owner`, `me` or `others`; `intent`, the creation intent's
-last word (`plan:board:kanban` is `kanban`); and `space`, `mine`, `shared` (reached through a link) or
+last word (`plan:board:kanban` is `kanban`); `modes`, the mode the item's app last reported in its summary
+(`summary.mode`, livediagram's `diagram`, `draw` or `workshop`; an item that never pushed a summary has none and
+matches no mode), each value matching `INTENT_WORD`; and `space`, `mine`, `shared` (reached through a link) or
 `team:<id>` of a joined team (403 otherwise). A filter's values are a comma list of at most 8, combined with or;
 filters combine with and. Anything else is 400 `invalid_query`.
 
@@ -504,6 +506,11 @@ occurredAt, item}`, `title` being the item's name then and `item` the item as it
   about no item). One statement a page: an index range of at most `limit + 1` rows per scope (by scope, then
   app, then time; filtered, a second for `liveworkspace`), the newest of those joined to their events and
   items.
+- `GET /timeline?team=<id>&app=&limit=&cursor=`: one team's activity (the team page's Team Activity), the same
+  shape: only the team's scope (`t:<team>`), so events on its items and the team's own events, including those
+  from before the person joined. A joined member only, checked against the accounts Worker as every team filter
+  is (403 `not_team_member` otherwise; 400 `invalid_query` for a malformed id). `seenAt` is the person's, as on any
+  page; a team feed marks nothing new. One index range: a single term, never a compound past D1's limit.
 - `GET /timeline?item=<id>&limit=&cursor=` — one item's history (an item menu's History), the same shape:
   only that item's events, read through the events' item index, each kept when one of the person's scopes
   sees it and they haven't removed it.

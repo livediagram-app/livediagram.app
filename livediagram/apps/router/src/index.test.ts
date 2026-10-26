@@ -303,7 +303,8 @@ describe('bare help-article paths', () => {
 
   it("lists exactly the editor's route segments in the spec's live page routes row", async () => {
     // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
-    // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's).
+    // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's), and
+    // so does `form` (old form links, sent on to liveplanner before the editor sees them).
     const { LIVE_ROUTE_SEGMENTS } = await import('@livediagram/api-schema');
     const spec = readFileSync(
       fileURLToPath(
@@ -314,7 +315,9 @@ describe('bare help-article paths', () => {
     const row = spec.split('\n').find((line) => line.startsWith('| live page routes:'));
     expect(row).toBeDefined();
     const listed = [...row!.matchAll(/`\/([a-z-]+)(?:\/\*)?`/g)].map((m) => m[1]!);
-    const routed = [...LIVE_ROUTE_SEGMENTS].filter((segment) => segment !== 'explorer');
+    const routed = [...LIVE_ROUTE_SEGMENTS].filter(
+      (segment) => segment !== 'explorer' && segment !== 'form',
+    );
     expect(listed.filter((s) => s !== 'icon.svg').toSorted()).toEqual(routed.toSorted());
   });
 

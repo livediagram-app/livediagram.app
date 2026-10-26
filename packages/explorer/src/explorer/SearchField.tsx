@@ -67,18 +67,22 @@ let barFocusRequested = false;
 
 /** The lens's parsing context for the view on screen. */
 export function useLensContext(): LensContext {
-  const { view, teams, lensTemplates, app, filter } = useExplorer();
+  const { view, teams, lensTemplates, lensModes, app, filter } = useExplorer();
   const kind = lensViewOf(view.kind) ?? 'aggregate';
   // Held to the host's own app, a list offers no Opens in chip.
   const oneApp = filter === 'app' ? APP_KINDS[app] : null;
+  // This Browser's list keeps no template, maker or mode, so it offers no chip for them.
+  const local = view.kind === 'offline';
   return useMemo(
     () => ({
       view: kind,
       teams: teams.map((t) => ({ id: t.id, name: t.name })),
       templates: lensTemplates,
+      modes: lensModes,
       oneApp,
+      local,
     }),
-    [kind, teams, lensTemplates, oneApp],
+    [kind, teams, lensTemplates, lensModes, oneApp, local],
   );
 }
 

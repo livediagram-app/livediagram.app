@@ -301,6 +301,8 @@ export type ItemFilters = {
   owner?: ItemOwner;
   // The last word of the creation intent (FILTER_VALUES_MAX at most; INTENT_WORD each).
   intent?: readonly string[];
+  // The mode the item's app last reported (`summary.mode`: livediagram's `diagram`, `draw`, `workshop`).
+  modes?: readonly string[];
   // Where it lives: `mine`, `shared` (reached through a link) or `team:<id>` of a joined team.
   space?: readonly string[];
 };
@@ -404,6 +406,8 @@ export type TimelineQuery = {
   app?: App;
   // One item's events only (its History).
   item?: string;
+  // One team's events only (its Team Activity): the team's own scope. A joined member only.
+  team?: string;
   limit?: number;
   cursor?: string;
 };

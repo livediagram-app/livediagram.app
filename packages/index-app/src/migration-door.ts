@@ -5,8 +5,10 @@
 import type {
   MigrationApp,
   MigrationChangeset,
+  MigrationPersonPayload,
   MigrationPlanData,
   MigrationRoomPayload,
+  MigrationShapeLibrary,
   MigrationTab,
 } from '@liveworkspace/migration';
 
@@ -18,7 +20,8 @@ const MAX_NAME = 1000;
 type Rec = Record<string, unknown>;
 
 const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
-const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= MAX_ID;
+const isId = (v: unknown): v is string =>
+  typeof v === 'string' && v.length > 0 && v.length <= MAX_ID;
 const isText = (v: unknown): v is string => typeof v === 'string';
 const isTextOrNull = (v: unknown): v is string | null => v === null || typeof v === 'string';
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v);
@@ -57,11 +60,23 @@ function changesetOf(v: unknown, i: number): MigrationChangeset {
   const c = v as Rec;
   need(isId(c.id) && isId(c.tabId), `${at} ids`);
   need(isInt(c.rev) && isInt(c.baseRev), `${at} revs`);
-  for (const k of ['authorId', 'authorName', 'authorColor', 'tokenId', 'summary', 'fingerprints', 'revertOf'])
+  for (const k of [
+    'authorId',
+    'authorName',
+    'authorColor',
+    'tokenId',
+    'summary',
+    'fingerprints',
+    'revertOf',
+  ])
     need(isTextOrNull(c[k]), `${at}.${k}`);
-  for (const k of ['added', 'changed', 'removed', 'createdTab', 'createdAt']) need(isInt(c[k]), `${at}.${k}`);
+  for (const k of ['added', 'changed', 'removed', 'createdTab', 'createdAt'])
+    need(isInt(c[k]), `${at}.${k}`);
   every(c.parts, `${at}.parts`, (part, j) => {
-    need(isRec(part) && PARTS.has(String((part as Rec).part)) && isText((part as Rec).data), `${at}.parts[${j}]`);
+    need(
+      isRec(part) && PARTS.has(String((part as Rec).part)) && isText((part as Rec).data),
+      `${at}.parts[${j}]`,
+    );
   });
   return c as unknown as MigrationChangeset;
 }
@@ -154,7 +169,10 @@ export function parseMigrationPayload(
     need(new Set(tabs.map((t) => t.id)).size === tabs.length, 'tabs must not repeat an id');
     every(p.changesets, 'changesets', changesetOf);
     every(p.imageGrants, 'imageGrants', (g, i) => {
-      need(isRec(g) && isId((g as Rec).imageId) && isInt((g as Rec).createdAt), `imageGrants[${i}]`);
+      need(
+        isRec(g) && isId((g as Rec).imageId) && isInt((g as Rec).createdAt),
+        `imageGrants[${i}]`,
+      );
     });
     every(p.imageOwners, 'imageOwners', (o, i) => {
       need(isRec(o) && isId((o as Rec).imageId) && isText((o as Rec).owner), `imageOwners[${i}]`);
@@ -164,6 +182,42 @@ export function parseMigrationPayload(
       planOf(p.plan);
     }
     return { ok: true, payload: p as unknown as MigrationRoomPayload };
+  } catch (err) {
+    if (err instanceof Refusal) return { ok: false, error: err.message };
+    throw err;
+  }
+}
+
+function libraryOf(v: unknown, i: number): MigrationShapeLibrary {
+  const at = `shapeLibraries[${i}]`;
+  need(isRec(v), `${at} must be an object`);
+  const l = v as Rec;
+  need(isId(l.id), `${at}.id`);
+  need(isText(l.name) && (l.name as string).length <= MAX_NAME, `${at}.name`);
+  need(isText(l.source) && isText(l.items), `${at} source or items`);
+  need(isInt(l.createdAt) && isInt(l.updatedAt), `${at} times`);
+  return l as unknown as MigrationShapeLibrary;
+}
+
+/** The person door's body (docs/migration.md "The person migration door") for this app and person, or what is wrong
+ *  with it. */
+export function parseMigrationPersonPayload(
+  body: unknown,
+  app: MigrationApp,
+  personId: string,
+): { ok: true; payload: MigrationPersonPayload } | { ok: false; error: string } {
+  try {
+    need(isRec(body), 'body must be a JSON object');
+    const p = body as Rec;
+    need(p.v === 1, 'v must be 1');
+    need(p.app === app, `app must be ${app}`);
+    need(p.personId === personId, 'personId must be the path’s');
+    const libraries = every(p.shapeLibraries, 'shapeLibraries', libraryOf);
+    need(
+      new Set(libraries.map((l) => l.id)).size === libraries.length,
+      'shapeLibraries must not repeat an id',
+    );
+    return { ok: true, payload: p as unknown as MigrationPersonPayload };
   } catch (err) {
     if (err instanceof Refusal) return { ok: false, error: err.message };
     throw err;

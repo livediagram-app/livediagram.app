@@ -28,6 +28,7 @@ import { DAY_MS, KIND_OF, scopeOf } from './context.ts';
 import type { JsonArrayFile, R2Entry, RoomFiles } from './files.ts';
 import type { FolderInfo } from './folders.ts';
 import { upgradeTab } from '../hooks.ts';
+import { readHiddenFromRecent } from './recent-hidden.ts';
 import { writeShares } from './shares.ts';
 
 type Row = Record<string, string | number | null>;
@@ -93,6 +94,7 @@ export async function documentPass(ctx: PlanContext, deps: DocumentPassDeps): Pr
   const tags = ctx.snapshot.prepare(
     'SELECT COUNT(*) AS n FROM document_tags WHERE document_id = ?',
   );
+  const hiddenFromRecent = readHiddenFromRecent(ctx);
   const pictureIds = new Map<string, string>();
 
   for (const doc of new DocumentReader(ctx.snapshot).all()) {
@@ -220,22 +222,32 @@ export async function documentPass(ctx: PlanContext, deps: DocumentPassDeps): Pr
         });
       }
     }
-    for (const o of opens.all(d.id) as Row[]) {
-      const person = ctx.owners.ownerOf(String(o.owner_id));
-      const at = Number(o.last_opened_at);
+    // Who hid the document from Recent: their open row says so, and someone who hid it without ever opening it
+    // gets a row with no open (last_opened_at 0), as the index's own hide makes.
+    const hiders = hiddenFromRecent.get(d.id);
+    const openRows = (opens.all(d.id) as Row[]).map((o) => ({
+      person: ctx.owners.ownerOf(String(o.owner_id)),
+      at: Number(o.last_opened_at),
+    }));
+    for (const person of [...(hiders ?? [])].sort()) {
+      if (!openRows.some((o) => o.person === person)) openRows.push({ person, at: 0 });
+    }
+    for (const { person, at } of openRows) {
+      const hidden = hiders?.has(person) ? 1 : 0;
+      if (hidden) ctx.report.add('opens.hidden', parts.length);
       const day = Math.floor(at / DAY_MS);
       for (const part of parts) {
         ctx.sql.index.row({
           table: 'opens',
           key: `${person}|${part.id}`,
           columns: ['person_id', 'item_id', 'last_opened_at', 'hidden'],
-          values: [person, part.id, at, 0],
+          values: [person, part.id, at, hidden],
           conflict: ['person_id', 'item_id'],
           version: at,
           guard: 'last_opened_at',
-          update: ['last_opened_at'],
+          update: ['last_opened_at', 'hidden'],
         });
-        if (ctx.now - at <= USE_WINDOW_DAYS * DAY_MS) {
+        if (at > 0 && ctx.now - at <= USE_WINDOW_DAYS * DAY_MS) {
           ctx.sql.index.row({
             table: 'use_days',
             key: `${person}|${part.id}|${day}`,

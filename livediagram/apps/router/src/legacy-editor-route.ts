@@ -20,8 +20,10 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // became the Diagram Tour. Infographics became Illustrate mode and then Pages mode, which has
 // since left livediagram for livedocuments: every article of all three sections lands on the
 // Editor Modes article. Plan mode left for liveplanner the same way, its articles landing there too, and the API's
-// Plan Items, Sheets and Images article became Images, Copies and Libraries. The Self-Hosting category was retired; its pages land on the help centre home
-// (an empty target). The old addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+// Plan Items, Sheets and Images article became Images, Copies and Libraries. Custom themes, tags and the in-editor AI
+// assistant were removed: their articles land on the nearest live one (Themes, Folders, Connect AI Tools). The
+// Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
+// links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
@@ -73,6 +75,11 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'activity-panel/redo': 'canvas/redo',
   'activity-panel/reverting-changes': 'canvas/undo',
   'getting-started/welcome-tour': 'getting-started/diagram-tour',
+  'canvas/themes/custom-themes': 'canvas/themes',
+  'explorer/themes-library': 'canvas/themes',
+  'explorer/tags': 'explorer/folders',
+  'tools/ai': 'account-and-data/connect-ai-mcp',
+  'tools/ai/ai-tools': 'account-and-data/connect-ai-mcp',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
   'self-hosting/deploying-livediagram': '',
@@ -80,7 +87,16 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'self-hosting/configuration/drive-and-mcp': '',
 };
 
+// A retired help category's link that lost its `/help` prefix. The router's bare-category redirect no longer knows
+// `self-hosting` (the registry has no such category), so it is answered here, straight to the help centre home.
+const RETIRED_BARE_HELP_SEGMENTS = new Set(['self-hosting']);
+
 export function legacyHelpRedirect(url: URL): Response | null {
+  if (RETIRED_BARE_HELP_SEGMENTS.has(url.pathname.split('/')[1] ?? '')) {
+    const target = new URL(url.toString());
+    target.pathname = '/help/';
+    return Response.redirect(target.toString(), 308);
+  }
   const match = /^\/help\/(.+?)(\/?)$/.exec(url.pathname);
   const next =
     match && Object.prototype.hasOwnProperty.call(LEGACY_HELP_ARTICLES, match[1]!)
@@ -89,5 +105,24 @@ export function legacyHelpRedirect(url: URL): Response | null {
   if (!match || next === undefined) return null;
   const target = new URL(url.toString());
   target.pathname = next ? `/help/${next}${match[2]}` : '/help/';
+  return Response.redirect(target.toString(), 308);
+}
+
+// Forms are liveplanner's now (docs/specs/016-platform/router-app.md, "Old form links go to liveplanner"). The
+// migration carries every form's public link across with its code, so an old `/form/<code>` link goes on to the same
+// path on liveplanner, query string included, for good.
+const LEGACY_FORM_PATH = '/form';
+
+/** liveplanner's address for this deployment: the router's `DEPLOY_ENV` (unset in production). */
+export function liveplannerOrigin(deployEnv: string | undefined): string {
+  if (deployEnv === 'staging') return 'https://staging.liveplanner.app';
+  if (deployEnv === 'local') return 'http://localhost:3200';
+  return 'https://www.liveplanner.app';
+}
+
+export function legacyFormRedirect(url: URL, deployEnv: string | undefined): Response | null {
+  const { pathname } = url;
+  if (pathname !== LEGACY_FORM_PATH && !pathname.startsWith(`${LEGACY_FORM_PATH}/`)) return null;
+  const target = new URL(`${pathname}${url.search}`, liveplannerOrigin(deployEnv));
   return Response.redirect(target.toString(), 308);
 }

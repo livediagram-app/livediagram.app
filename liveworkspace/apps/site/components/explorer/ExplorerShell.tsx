@@ -51,6 +51,7 @@ import {
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
 import { createIndexClient } from '@liveworkspace/index-client';
+import { useSearchShortcut } from '@liveworkspace/explorer/search-shortcut';
 import { BrandMark } from '@livediagram/ui';
 import { APP_ITEMS, APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
@@ -65,6 +66,7 @@ import {
   helpHrefFor,
   itemHref,
   defaultFolderOptionsFor,
+  lensModesFor,
   lensTemplatesFor,
   newItemHref,
   templateHref,
@@ -423,20 +425,12 @@ export function ExplorerShell() {
       : [];
   }, [app, host]);
 
-  // The Search panel: the bottom bar's Search, or Cmd/Ctrl+K.
+  // The Search panel: the bottom bar's Search, or Cmd/Ctrl+K or Cmd/Ctrl+. (not while typing or in a dialog).
   const [searchOpen, setSearchOpen] = useState(false);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const prepareSearch = useCallback(() => void loadSearch(), []);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.key.toLowerCase() !== 'k') return;
-      e.preventDefault();
-      setSearchOpen(true);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  useSearchShortcut(openSearch);
   // A result: the Explorer's own addresses move inside the page, anything else (an item, a settings page) loads.
   const openResult = useCallback(
     (href: string) => {
@@ -583,6 +577,7 @@ export function ExplorerShell() {
           onHome={trackHome}
           onOrganise={trackOrganise}
           lensTemplates={lensTemplatesFor(app)}
+          lensModes={lensModesFor(app)}
           defaultFolderOptions={defaultFolderOptionsFor(app)}
           onLensSelected={trackLens}
           onViewToggled={trackViewToggled}

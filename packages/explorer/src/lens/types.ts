@@ -14,6 +14,7 @@ export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 /** The value type of each dimension. A template is one of the host's families. */
 export type LensValueOf = {
   'opens-in': OpensInValue;
+  mode: string;
   template: string;
   'made-by': MadeByValue;
   edited: EditedValue;
@@ -30,14 +31,17 @@ export type LensTeam = { id: string; name: string };
 /** One value a dimension offers, with its label. */
 export type LensOption = { value: string; label: string };
 
-/** What parsing needs to know: where the reader is, their teams, and the host's template families (none: no
- *  Template dimension). `oneApp`: the kind the list is held to (the host's own-app filter), so Opens in offers no
+/** What parsing needs to know: where the reader is, their teams, the host's editor modes (none: no Mode dimension)
+ *  and its template families (none: no Template dimension). `oneApp`: the kind the list is held to (the host's own-app filter), so Opens in offers no
  *  chip or suggestion; a typed `opens-in:` token still reads, and narrows within it. */
 export type LensContext = {
   view: LensView;
   teams: readonly LensTeam[];
   templates: readonly LensOption[];
+  modes?: readonly LensOption[];
   oneApp?: OpensInValue | null;
+  /** The list is This Browser's, which keeps no template, maker or mode: those dimensions offer no chip there. */
+  local?: boolean;
 };
 
 /** The applied values of each dimension, deduplicated, in the dimension's value order; empty when unset. */
@@ -104,6 +108,8 @@ export type LensSubject = {
   name: string;
   // The kind of the app it opens in.
   opensIn: OpensInValue;
+  // The editor mode its app last reported (`summary.mode`), or null when it has none.
+  mode: string | null;
   savedAt: number;
   space: SpaceValue;
   people: PeopleValue;

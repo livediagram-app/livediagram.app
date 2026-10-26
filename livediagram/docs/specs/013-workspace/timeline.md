@@ -59,6 +59,28 @@ the This app / All filter (the Explorer's one filter, remembered per app in this
   minutes ahead, so this is for events written as scheduled.
 - The sidebar's Timeline row counts events by someone else since the last look ("99+" past 99), from the Inbox
   read the sidebar already makes (`timelineNew`). Opening the Timeline clears it once the visit is marked seen.
+- **Coming back to the tab.** The feed has no push, so a Timeline left open overnight would show last night's feed.
+  When the browser tab becomes visible again or the window takes focus, the first page is read again and merged in
+  at the head: events already shown keep their place, pages already loaded stay, and a new event joins the top.
+  The New marks keep the visit's first `seenAt`, so the read cannot clear what the reader came back to look at. At
+  most one read per 30 seconds (`useReturnToTab`, the Inbox's), since switching tabs is not a request for fresh
+  data. A read that fails keeps what is shown; a feed whose first page failed is read again whole.
+
+## 3a. Team Activity
+
+A team's view (`/explorer/team?id=`, at its root) carries the team's own feed under its card and library: **Team
+Activity**, the events on the team's canvases and the team's own events (joined, renamed, roles), from the team's
+scope alone (`GET /timeline?team=<id>`). Every joined member reads the team's whole history, including what happened
+before they joined; anyone else is refused (`403 not_team_member`) and the view is the team's not-found card anyway.
+
+- A section headed **Team Activity** (an `h2`), closed by default as a disclosure (`aria-expanded`), so the
+  library stays the first thing on the page and nothing is read until it is opened. Opening it reads the first page.
+- The same cards, stacks and Show More as the Timeline, every app's events (each card wears its app's mark), no
+  New marks (a shared feed has no one "last look") and no Remove from Timeline (that is the reader's own Timeline).
+- Empty: the shared empty state, "No Team Activity Yet", "What the team does will show here." Failed: "Couldn't
+  load this team's activity." with Try again.
+- Moving to another team starts the feed again: the section is keyed on the team.
+- It reads again on coming back to the tab, the same way and at the same rate as the Timeline.
 
 ## 4. Telemetry
 
@@ -72,6 +94,10 @@ workbench's Explorer (`apps/editor/app/embed/workbench/ExplorerHost.tsx`).
 One indexed statement per page (by scope, then app, then time; at most `limit + 1` rows read per scope). Measured on
 the index with 10,000 events of the reader's among 100,000: 14.7 ms for every app, 2.2 ms for one app. The view
 renders one page at a time; working out the days and stacks of 10,000 loaded events stays under the test's budget.
+
+A team's feed is the same statement over one scope: one index range of at most `limit + 1` rows, so a single term
+and far inside D1's five-term compound limit (`unionAll`). Coming back to the tab reads one page at most every 30
+seconds.
 
 Removed events are skipped inside each scope's range by their primary key, so a page past 1,000 removed events
 reads in 1.0 ms. The sidebar count rides in the Inbox's batch, no request of its own, bounded at 100 rows per

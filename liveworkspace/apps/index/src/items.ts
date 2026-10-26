@@ -112,6 +112,12 @@ export async function parseListFilters(
     if (!values) return badRequest('invalid_query');
     filters.intent = values;
   }
+  const modes = params.get('modes');
+  if (modes !== null) {
+    const values = readList(modes, (v) => INTENT_WORD.test(v));
+    if (!values) return badRequest('invalid_query');
+    filters.modes = values;
+  }
   const space = params.get('space');
   if (space !== null) {
     // A team needs its id: `team:` alone is a malformed filter, not a team the person isn't in.

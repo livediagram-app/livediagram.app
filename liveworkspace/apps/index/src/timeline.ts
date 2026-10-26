@@ -40,11 +40,12 @@ import {
   type TimelineEventType,
 } from '@liveworkspace/index-client';
 import { unionAll } from '@liveworkspace/api-kit/d1-compound';
-import { isMergeCaller, scopesOf, type Person } from './auth';
+import { isMergeCaller, scopesOf, teamScope, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId } from './codec';
 import type { PersonContext } from './context';
 import type { Env } from './env';
-import { badRequest, json, noContent, notFound, readObject, unauthorized } from './http';
+import { inTeamNow } from './fresh-teams';
+import { badRequest, forbidden, json, noContent, notFound, readObject, unauthorized } from './http';
 import { useDayOf, useDayStatements } from './items';
 import { ITEM_COLUMNS, directAccess, toItem, type Access, type ItemRow } from './rows';
 
@@ -216,6 +217,8 @@ export type TimelineSpec = {
   app?: App;
   // One item's own history (its History dialog): only its events, in whichever of the person's scopes see them.
   item?: string;
+  // One team's activity (its Team Activity): only the team's scope, checked by the route against the accounts Worker.
+  team?: string;
   limit: number;
   cursor?: { at: number; id: string };
 };
@@ -260,7 +263,9 @@ export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQue
   const ranges: string[] = [];
   // Filtered to one app, the account's own events (teams, tokens) show too: a second range per scope.
   const apps: (TimelineApp | null)[] = spec.app ? [spec.app, TIMELINE_PLATFORM] : [null];
-  for (const scope of scopesOf(person)) {
+  // A team's activity reads the team's scope alone: one range (two with an app), never a compound past D1's limit.
+  const scopes = spec.team ? [teamScope(spec.team)] : scopesOf(person);
+  for (const scope of scopes) {
     for (const app of apps) {
       // An event the person removed from their Timeline is skipped in the range; removals are rare, so the
       // range reads at most limit + 1 rows plus those.
@@ -444,9 +449,19 @@ export async function handleTimeline(ctx: PersonContext): Promise<Response> {
   if (cursor === null) return badRequest('invalid_cursor');
   const itemParam = url.searchParams.get('item');
   if (itemParam !== null && !isId(itemParam)) return badRequest('invalid_query');
+  const teamParam = url.searchParams.get('team');
+  // One team's or one item's, never both.
+  if (teamParam !== null && (!isId(teamParam) || itemParam !== null)) {
+    return badRequest('invalid_query');
+  }
+  // Read against the accounts Worker, as every team filter is: a member who just left is refused at once.
+  if (teamParam !== null && !(await inTeamNow(env, person, teamParam))) {
+    return forbidden('not_team_member');
+  }
   const page = await listTimeline(env, person, {
     app: appParam ? (appParam as App) : undefined,
     ...(itemParam ? { item: itemParam } : {}),
+    ...(teamParam ? { team: teamParam } : {}),
     limit,
     cursor,
   });

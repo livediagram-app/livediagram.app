@@ -20,17 +20,38 @@ export function itemSubject(
   item: Pick<
     Item,
     'app' | 'title' | 'updatedAt' | 'ownerId' | 'teamId' | 'source' | 'intent' | 'sharedVia'
-  >,
+  > & { summary?: Item['summary'] },
   viewerId: string | null,
 ): LensSubject {
+  const mode = item.summary?.mode;
   return {
     name: item.title,
     opensIn: APP_KINDS[item.app],
+    mode: typeof mode === 'string' && mode ? mode : null,
     savedAt: item.updatedAt,
     space: item.sharedVia ? 'shared' : item.teamId ? `team:${item.teamId}` : 'mine',
     people: viewerId !== null && item.ownerId === viewerId ? 'me' : 'others',
     madeByAi: item.source === 'ai',
     template: intentWord(item.intent),
+  };
+}
+
+/** An item kept only in this browser, as the lens reads it (explorer-filters.md "Views", This Browser): the
+ *  reader's own, in My Work, opening in the host app. What the list does not keep (a template, how it was made, its
+ *  mode) is unknown, so a lens holding those matches nothing here. */
+export function thisBrowserSubject(
+  item: { title: string; updatedAt: number },
+  app: Item['app'],
+): LensSubject {
+  return {
+    name: item.title,
+    opensIn: APP_KINDS[app],
+    mode: null,
+    savedAt: item.updatedAt,
+    space: 'mine',
+    people: 'me',
+    madeByAi: null,
+    template: null,
   };
 }
 
@@ -82,6 +103,7 @@ export function compileLens(
   const cutoff = editedSince(filters.edited, now);
   return (subject) =>
     admits(filters['opens-in'], subject.opensIn) &&
+    admits(filters.mode, subject.mode) &&
     admits(filters.template, subject.template) &&
     (filters['made-by'].length === 0 || subject.madeByAi === true) &&
     (cutoff === null || subject.savedAt >= cutoff) &&

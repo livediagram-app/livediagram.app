@@ -28,17 +28,27 @@
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
+//   PUT    /api/internal/people/:id/migration  MigrationPersonPayload  an old livediagram.app person's own data (their
+//                                                            shape libraries) into the app's store for them
+//                                                            (docs/migration.md "The person migration door").
+//                                                            MIGRATION_KEY alone.
 //
-// The Drive key opens those two doors and nothing else; the migration key the migration door alone.
+// The Drive key opens those two doors and nothing else; the migration key the two migration doors alone.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
 import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
 import type {
   MigrationApp,
   MigrationDoorAnswer,
+  MigrationPersonAnswer,
+  MigrationPersonPayload,
   MigrationRoomPayload,
 } from '@liveworkspace/migration';
-import { MigrationTabTooLarge, parseMigrationPayload } from './migration-door';
+import {
+  MigrationTabTooLarge,
+  parseMigrationPayload,
+  parseMigrationPersonPayload,
+} from './migration-door';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
 
@@ -117,7 +127,11 @@ export type InternalItemHandlers = {
   // a per-person store) moves to the account. Idempotent. An app with nothing to move leaves it out and the door
   // just confirms. `legacy`: a returning guest of the old livediagram.app claiming its migrated work
   // (docs/migration.md step 6), where `intoId` may be another guest (the browser's new one) as well as an account.
-  personMerged?: (guestId: string, intoId: string, options: { legacy: boolean }) => Promise<unknown>;
+  personMerged?: (
+    guestId: string,
+    intoId: string,
+    options: { legacy: boolean },
+  ) => Promise<unknown>;
   // Their name off one item they worked in that outlives them (anonymise.ts). Idempotent.
   anonymise?: (itemId: string, personId: string) => Promise<unknown>;
   // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
@@ -134,6 +148,10 @@ export type InternalItemHandlers = {
   // version, app and id before it is called. Throws MigrationTabTooLarge (migration-door.ts) for a tab over the
   // app's tab cap, which the door answers 413 naming the tab.
   migrate?: (payload: MigrationRoomPayload) => Promise<MigrationDoorAnswer>;
+  // What the app keeps for one old livediagram.app person beside their items (the person migration door,
+  // docs/migration.md): their shape libraries into their store, added once, never updated. Checked for shape,
+  // version, app and person before it is called. An app with nothing to take leaves it out and the door is a 404.
+  migratePerson?: (payload: MigrationPersonPayload) => Promise<MigrationPersonAnswer>;
 };
 
 // The import door's body (liveworkspace/docs/drive.md "Contracts > The apps"): whose item it is (an account id,
@@ -306,14 +324,8 @@ async function importItem(
 // The largest migration body the door reads: the same RPC message cap as the import door's.
 export const MIGRATION_MAX_BYTES = IMPORT_MAX_BYTES;
 
-// PUT /api/internal/items/:id/migration: an old document's part into the item's room.
-async function migrateItem(
-  request: Request,
-  id: string,
-  app: MigrationApp | undefined,
-  run: NonNullable<InternalItemHandlers['migrate']>,
-): Promise<Response> {
-  if (!app) return notFound();
+// A migration door's body, read up to MIGRATION_MAX_BYTES and parsed as JSON, or the refusal to answer.
+async function migrationBody(request: Request): Promise<{ body: unknown } | Response> {
   const declared = Number(request.headers.get('Content-Length'));
   if (Number.isFinite(declared) && declared > MIGRATION_MAX_BYTES) {
     console.warn('[internal] migration refused', { reason: 'too_large', bytes: declared });
@@ -324,13 +336,51 @@ async function migrateItem(
     console.warn('[internal] migration refused', { reason: 'too_large', bytes: bytes.byteLength });
     return json({ error: 'too_large' }, 413);
   }
-  let body: unknown;
   try {
-    body = JSON.parse(new TextDecoder().decode(bytes));
+    return { body: JSON.parse(new TextDecoder().decode(bytes)) as unknown };
   } catch {
     return badRequest('body must be JSON');
   }
-  const parsed = parseMigrationPayload(body, app, id);
+}
+
+// PUT /api/internal/people/:id/migration: what the app keeps for an old person beside their items.
+async function migratePerson(
+  request: Request,
+  person: string,
+  app: MigrationApp | undefined,
+  run: InternalItemHandlers['migratePerson'],
+): Promise<Response> {
+  if (!app || !run || !PERSON_ID.test(person)) return notFound();
+  const read = await migrationBody(request);
+  if (read instanceof Response) return read;
+  const parsed = parseMigrationPersonPayload(read.body, app, person);
+  if (!parsed.ok) {
+    console.warn('[internal] person migration refused', { reason: 'invalid', error: parsed.error });
+    return badRequest(parsed.error);
+  }
+  let answer: MigrationPersonAnswer;
+  try {
+    answer = await run(parsed.payload);
+  } catch (err) {
+    // The tool runs again; adding a library is safe to repeat.
+    console.error('[internal] person migration failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  console.info('[internal] person migrated', answer);
+  return json(answer);
+}
+
+// PUT /api/internal/items/:id/migration: an old document's part into the item's room.
+async function migrateItem(
+  request: Request,
+  id: string,
+  app: MigrationApp | undefined,
+  run: NonNullable<InternalItemHandlers['migrate']>,
+): Promise<Response> {
+  if (!app) return notFound();
+  const read = await migrationBody(request);
+  if (read instanceof Response) return read;
+  const parsed = parseMigrationPayload(read.body, app, id);
   if (!parsed.ok) {
     console.warn('[internal] migration refused', { reason: 'invalid', error: parsed.error });
     return badRequest(parsed.error);
@@ -345,7 +395,10 @@ async function migrateItem(
         tabId: err.tabId,
         bytes: err.bytes,
       });
-      return json({ error: 'tab_too_large', tabId: err.tabId, bytes: err.bytes, cap: err.cap }, 413);
+      return json(
+        { error: 'tab_too_large', tabId: err.tabId, bytes: err.bytes, cap: err.cap },
+        413,
+      );
     }
     // The tool runs again; every write is safe to repeat.
     console.error('[internal] migration failed', { error: String(err) });
@@ -361,6 +414,7 @@ async function migrateItem(
 
 const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
 const MIGRATION_PATH = /^\/api\/internal\/items\/[^/]+\/migration$/;
+const PERSON_MIGRATION_PATH = /^\/api\/internal\/people\/[^/]+\/migration$/;
 const IMPORT_PATH = '/api/internal/items/import';
 
 export async function handleInternalItems(
@@ -384,13 +438,16 @@ export async function handleInternalItems(
   const exporting = EXPORT_PATH.test(pathname) && request.method === 'GET';
   const importing = pathname === IMPORT_PATH && request.method === 'POST';
   const migrating = MIGRATION_PATH.test(pathname) && request.method === 'PUT';
+  const migratingPerson = PERSON_MIGRATION_PATH.test(pathname) && request.method === 'PUT';
   const keys = exporting
     ? [key, exportKey, driveKey]
     : importing
       ? [key, driveKey]
       : migrating
         ? [key, migrationKey]
-        : [key];
+        : migratingPerson
+          ? [migrationKey]
+          : [key];
   const present = keys.filter((k): k is string => Boolean(k));
   if (present.length === 0) return notFound();
   let allowed = false;
@@ -405,6 +462,7 @@ export async function handleInternalItems(
     if (parts.length === 6 && parts[5] === 'merge' && request.method === 'POST') {
       return personMerged(request, person, handlers);
     }
+    if (migratingPerson) return migratePerson(request, person, app, handlers.migratePerson);
     return notFound();
   }
   // After `api/internal/items/`.

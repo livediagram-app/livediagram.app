@@ -90,6 +90,19 @@ export function scenario(): DatabaseSync {
     created_at: NOW - 3 * DAY,
     updated_at: NOW - 3 * DAY,
     status: 'invited',
+    clock_started_at: NOW - 2 * DAY,
+    reminder1_sent_at: NOW - DAY,
+  });
+  // An invitation from before the reminder clock: it starts at the invitation.
+  put(db, 'team_members', {
+    id: 'm5',
+    team_id: 'team1',
+    user_id: null,
+    email: 'early@x.com',
+    role: 'member',
+    created_at: NOW - 4 * DAY,
+    updated_at: NOW - 4 * DAY,
+    status: 'invited',
   });
   put(db, 'team_members', {
     id: 'm4',
@@ -153,9 +166,44 @@ export function scenario(): DatabaseSync {
       notifyFormResponses: false,
       planModeEnabled: true,
       snapToGrid: false,
+      // Another app's now: Plan's and Forms' tours, the Pages tour (split by page kind), a logo page's guides.
+      planTourSeen: true,
+      planTourTracks: ['boards'],
+      formTourSeen: true,
+      pagesTourSeen: false,
+      pagesTourKinds: ['slide', 'logo'],
+      logoGuides: false,
+      logoGuidesHidden: ['grid'],
+      logoGuideStrength: 'faint',
+      // Hidden from Recent: one Ali opened, and one never opened.
+      recentExcludedIds: ['doc-diagram', 'doc-slides', 7],
     }),
     updated_at: NOW - 3 * DAY,
   });
+  // A blob that isn't JSON hides nothing (and its settings are skipped, reported).
+  put(db, 'user_preferences', { owner_id: 'user_cy', prefs: '{not json', updated_at: NOW - DAY });
+  // A guest who hid nothing.
+  put(db, 'user_preferences', {
+    owner_id: GUEST_A,
+    prefs: JSON.stringify({ recentExcludedIds: 'none' }),
+    updated_at: NOW - DAY,
+  });
+
+  // Shape libraries: Ali's two, Cy's under the guest Cy was, and one whose owner has no account anywhere.
+  const library = (id: string, owner: string, name: string, at: number) =>
+    put(db, 'shape_libraries', {
+      id,
+      owner_id: owner,
+      name,
+      source: 'drawio',
+      items: '[{"id":"s1"}]',
+      created_at: at,
+      updated_at: at + 1,
+    });
+  library('lib-a2', 'user_ali', 'Flows', NOW - 5 * DAY);
+  library('lib-a1', 'user_ali', 'Icons', NOW - 6 * DAY);
+  library('lib-cy', GUEST_B, 'Sketches', NOW - 7 * DAY);
+  library('lib-zz', 'user_zz', 'Lost', NOW - 7 * DAY);
   put(db, 'email_lifecycle', {
     owner_id: 'user_ali',
     email: 'ali@example.com',
@@ -484,6 +532,76 @@ export function scenario(): DatabaseSync {
       occurred_at: NOW - 8 * DAY,
     },
     [['document', 'doc-mixed']],
+  );
+  // Kinds the index has under another name.
+  const doc = (event_type: string, actor_id: string | null, snapshot = '{}') => ({
+    actor_id,
+    source_type: 'document',
+    source_id: 'doc-diagram',
+    event_type,
+    snapshot,
+  });
+  event('e5', doc('document_opened_by_visitor', null, '{"visitorName":"Visitor"}'), [
+    ['user', 'user_ali'],
+  ]);
+  event('e6', doc('document_copied_by_visitor', 'user_cy'), [['user', 'user_ali']]);
+  event('e7', doc('document_synced', 'user_ali'), [['user', 'user_ali']]);
+  event(
+    'e8',
+    {
+      actor_id: 'user_ali',
+      source_type: 'document',
+      source_id: 'doc-gone',
+      event_type: 'document_offline',
+      description: 'Old name',
+      snapshot: '{"documentName":"Offline plan"}',
+    },
+    [['user', 'user_ali']],
+  );
+  event(
+    'e9',
+    {
+      actor_id: 'user_ali',
+      source_type: 'document',
+      source_id: 'doc-gone',
+      event_type: 'document_offline',
+      dedupe_key: 'second',
+      description: 'Described',
+    },
+    [['user', 'user_ali']],
+  );
+  event(
+    'e10',
+    {
+      actor_id: 'user_cy',
+      source_type: 'team',
+      source_id: 'team1',
+      event_type: 'team_invite_accepted',
+    },
+    [['team', 'team1']],
+  );
+  event(
+    'e11',
+    {
+      actor_id: 'user_bo',
+      source_type: 'team',
+      source_id: 'team1',
+      event_type: 'team_member_left',
+      snapshot: '{"teamId":"team1","teamName":"Team","memberName":"Bo"}',
+    },
+    [['team', 'team1']],
+  );
+  event(
+    'e12',
+    {
+      actor_id: 'user_bo',
+      source_type: 'team',
+      source_id: 'team1',
+      event_type: 'team_member_left',
+      dedupe_key: 'second',
+      snapshot: '{"teamId":7}',
+    },
+    [['team', 'team1']],
   );
   return db;
 }

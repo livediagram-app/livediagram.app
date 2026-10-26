@@ -32,11 +32,15 @@ function wordAround(input: string, caret: number): Range {
 
 /** The dimensions this view offers: Opens in while the list shows every app, Space on aggregate views only,
  *  Template when the host has families. */
+// What This Browser's list doesn't keep, so it can't be filtered by (a typed token still reads, and matches nothing).
+const LOCAL_UNKNOWN: ReadonlySet<LensDimension> = new Set(['template', 'made-by', 'mode']);
+
 export function availableDimensions(context: LensContext): LensDimension[] {
   return LENS_DIMENSIONS.filter(
     (dimension) =>
       (dimension !== 'opens-in' || !context.oneApp) &&
       (dimension !== 'space' || context.view === 'aggregate') &&
+      !(context.local && LOCAL_UNKNOWN.has(dimension)) &&
       dimensionAvailable(dimension, context),
   );
 }

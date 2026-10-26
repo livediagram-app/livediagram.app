@@ -13,7 +13,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'document',
   'embed',
   'explorer',
-  // A retired form link's page, /form/<code>: old links still arrive, their code is never recorded.
+  // A retired form link, /form/<code>: the router sends it on to liveplanner now, and the segment stays so page views
+  // recorded for it before that are still filed under the editor app. Its code is never recorded.
   'form',
   'get-started',
   // The liveworkspace Explorer's "Import from", /import (docs/specs/013-workspace/folders.md "Import from").

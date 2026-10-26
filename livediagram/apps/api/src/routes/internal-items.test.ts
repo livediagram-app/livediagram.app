@@ -271,3 +271,53 @@ describe('POST /api/internal/people/:guest/merge', () => {
     expect((await call(`${GUEST}/merge`, { into: GUEST })).status).toBe(400);
   });
 });
+
+describe('PUT /api/internal/people/:id/migration', () => {
+  const put = (env: ReturnType<typeof arrange>['env'], person: string, body: unknown) =>
+    handleInternalItems(
+      new Request(`https://api.test/api/internal/people/${person}/migration`, {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer mig-key' },
+        body: JSON.stringify(body),
+      }),
+      { ...env, MIGRATION_KEY: 'mig-key' },
+    );
+  const old = (id: string, name: string) => ({
+    id,
+    name,
+    source: 'drawio',
+    items: '[]',
+    createdAt: 5,
+    updatedAt: 6,
+  });
+
+  it("adds an old person's shape libraries to their store, once, with their old times", async () => {
+    const { env, library } = arrange();
+    await library(USER, 'lib-new', 'Sketches');
+    const body = {
+      v: 1,
+      app: 'livediagram',
+      personId: USER,
+      shapeLibraries: [old('lib-old', 'Sketches'), old('lib-two', 'Flows')],
+    };
+    const first = await put(env, USER, body);
+    expect(first.status).toBe(200);
+    expect(await first.json()).toEqual({ moved: 2, renamed: 1 });
+    expect(await (await put(env, USER, body)).json()).toEqual({ moved: 0, renamed: 0 });
+
+    const libs = await personStore(env, USER).shapeLibraries();
+    expect(libs.map((l) => l.name).sort()).toEqual(['Flows', 'Sketches', 'Sketches (2)']);
+    expect(libs.find((l) => l.id === 'lib-two')).toMatchObject({ createdAt: 5, updatedAt: 6 });
+  });
+
+  it('is a 404 without MIGRATION_KEY, so the index key opens nothing here', async () => {
+    const { send } = arrange();
+    const res = await send('PUT', `people/${USER}/migration`, {
+      v: 1,
+      app: 'livediagram',
+      personId: USER,
+      shapeLibraries: [],
+    });
+    expect(res.status).toBe(404);
+  });
+});

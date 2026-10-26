@@ -106,7 +106,8 @@ box of its own.
 | `renderAppLogo?`           | `(app: App \| 'all') => ReactNode`     | The filter's logos: the app's on its choice, the platform's on the every-app one (the Explorer page and the panel). The host draws them, since the brands are its.                                                                          |
 | `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                                                                                                          |
 | `lensTemplates?`           | `{ value, label }[]`                   | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.                                                                                                |
-| `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                                                                                             |
+| `lensModes?`               | `{ value, label }[]`                   | The editor modes the lens's Mode chip offers, matched to the mode an item's summary reports (`summary.mode`). Without them there is no Mode chip. livediagram names Diagram, Draw and Workshop.                                             |
+| `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Mode`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                                                                                     |
 | `gallery?`                 | `GalleryHost`                          | The Image Gallery: a Library row and its page, `/explorer/images` (list, usage, upload, delete). `appLibraryHosts` builds it over an app's API.                                                                                             |
 | `shapeLibraries?`          | `ShapeLibrariesHost`                   | Shape Libraries: a Library row and its page (rename, delete, show and delete shapes). `renderShape?` draws a shape; without it shapes are plain tiles.                                                                                      |
 | `imports?`                 | `ImportHost`                           | Import from: a toolbar beside New in My Work and its folders, on Home's first run, and on Shape Libraries for sources that bring libraries.                                                                                                 |
@@ -130,7 +131,8 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'shape-libraries' }`         | `/explorer/shape-libraries`     | Shape Libraries, from the host's `shapeLibraries`                        |
 | `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)            |
 | `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                 |
-| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card (members, run in place) over its library, or a folder      |
+| `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card over its library, then Team Activity; or a folder          |
+| `{ kind: 'offline', q? }`             | `/explorer/offline`             | This Browser: the host's items kept only here, narrowed by the lens      |
 
 There is no Unsorted view: My Work's root, and a team's, list the items in no folder (the index's `view=unsorted`).
 The old `/explorer/unsorted` reads as My Work, and the Explorer page replaces it with `/explorer/all`.
@@ -218,7 +220,7 @@ the team's name, or Shared with you (the index keeps no names, so a sharer is no
 
 ### `<SearchPanel>` (`@liveworkspace/explorer/search-panel`)
 
-The Search panel a host's Search button and Cmd/Ctrl+K open (liveworkspace/docs/site.md "The Explorer"): one field
+The Search panel a host's Search button and Cmd/Ctrl+K or Cmd/Ctrl+. open (liveworkspace/docs/site.md "The Explorer"): one field
 over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`).
 Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
 
@@ -228,6 +230,11 @@ Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
 - **Entries** are the host's (`SearchEntry`: help articles, which open in a new tab, and settings sections).
 
 Props: `client`, `app?`, `itemHref`, `teams?`, `entries?`, `basePath?`, `renderAppLogo?`, `onOpen(href)`, `onClose`.
+
+`useSearchShortcut(onOpen)` (`@liveworkspace/explorer/search-shortcut`) binds the chords that open it, Cmd/Ctrl+K and
+Cmd/Ctrl+. (the editors' command palette's, livediagram/docs/specs/007-editor/command-palette.md "Shortcut"). It stands
+aside for a chord with Alt, one another handler already took, one pressed while typing (an input, a text area, a select
+or editable text) and one pressed while a dialog is open (an `aria-modal` element in the page).
 
 ## Teams
 
