@@ -46,6 +46,18 @@ describe('mirrorPathFor', () => {
     taken.add('home-screen-abcdef12-3456.livediagram.json');
     expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
   });
+
+  it('keeps a whole id that names another folder inside its own', () => {
+    const hostile = { id: '../../etc/x', name: 'Home screen' };
+    const taken = new Set([
+      'screens/home-screen.livediagram.json',
+      mirrorPathFor(hostile, ['screens'], new Set(['screens/home-screen.livediagram.json'])),
+    ]);
+    const path = mirrorPathFor(hostile, ['screens'], taken);
+    expect(path.startsWith('screens/')).toBe(true);
+    expect(path).not.toContain('..');
+    expect(path.split('/')).toHaveLength(2);
+  });
 });
 
 describe('outlinePathOf', () => {

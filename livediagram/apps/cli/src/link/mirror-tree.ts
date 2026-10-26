@@ -52,7 +52,8 @@ export function mirrorTree(io: CliIo, link: LinkFile): MirrorTree {
   // through a directory that is a symbolic link (`screens -> /elsewhere`, committed to a cloned repo) would.
   let baseReal: Promise<string | null> | null = null;
   const inside = async (rel: string) => {
-    for (let at = posix.dirname(abs(rel)); at.startsWith(`${base}/`); at = posix.dirname(at)) {
+    let at = posix.dirname(abs(rel));
+    for (; at.startsWith(`${base}/`); at = posix.dirname(at)) {
       const real = await io.files.realpath(at);
       if (real === null) continue;
       // The nearest existing directory inside the mirror directory: still inside it once links resolve.
@@ -60,8 +61,9 @@ export function mirrorTree(io: CliIo, link: LinkFile): MirrorTree {
       const root = (await baseReal) ?? base;
       return real === root || real.startsWith(`${root}/`);
     }
-    // Nothing exists between the path and the mirror directory, which is itself checked (E18).
-    return true;
+    // Nothing exists between the path and the mirror directory, which is itself checked (E18). A path that never
+    // was below it (`../elsewhere`) is outside.
+    return at === base;
   };
   const guard = async (rel: string) => {
     if (await inside(rel)) return;

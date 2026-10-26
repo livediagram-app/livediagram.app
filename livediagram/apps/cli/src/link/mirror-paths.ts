@@ -30,7 +30,9 @@ export function mirrorPathCandidates(
   folderPath: readonly string[],
 ): string[] {
   const slug = fileSlug(document.name, document.id);
-  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${document.id}`];
+  // The whole id is the server's: kept to name-safe characters, so an id holding `/` or `..` never leaves the folder.
+  const whole = document.id.replace(/[^A-Za-z0-9_-]/g, '-');
+  const candidates = [slug, `${slug}-${idSlug(document.id)}`, `${slug}-${whole}`];
   return candidates.map((name) => posix.join(...folderPath, `${name}${PULL_FILE_SUFFIX}`));
 }
 

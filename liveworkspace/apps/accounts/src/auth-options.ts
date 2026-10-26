@@ -112,9 +112,10 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         },
       },
     }),
-    // Google verifies the address it hands over, so signing in with Google on an address that
-    // already has an account (made with an email code) joins that account rather than failing.
-    account: { accountLinking: { enabled: true, trustedProviders: ['google'] } },
+    // Signing in with Google on an address that already has an account (made with an email code) joins that account
+    // rather than failing, when Google says it verified the address (`email_verified`). Google is not a trusted
+    // provider: trusted, better-auth would join on an address Google had not verified too.
+    account: { accountLinking: { enabled: true } },
     databaseHooks: {
       user: {
         create: {
