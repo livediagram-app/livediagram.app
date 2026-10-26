@@ -213,8 +213,14 @@ records it so.
   every document of an import that makes more than one in one go, which then join Jump Back In at their first open
   or edit.
 - This api validates `markUsed` on a create (anything but a boolean is refused whole, 400 "invalid markUsed";
-  nothing is created) and records no open itself, so an API client's create joins Jump Back In at its first open or
-  edit.
+  nothing is created). For an API client's create (one the worker makes the index's item for), absent or `true`,
+  the worker records the open at the index for the caller beside the create, so the canvas joins their Jump Back In
+  at once; `false` leaves it to join at its first open or edit. An editor's create (it sends the index's grant) is
+  the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded
+  here.
+- The create itself is the canvas's making, not an edit: the canvas's room records no editor for
+  `POST /api/documents` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that
+  `markUsed: false` withheld.
 
 ### Documents in the Trash
 
