@@ -35,7 +35,7 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
   <McpConsent product="liveplanner" noun="plan" />
 </Figure>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears in **Settings**, under **Account**, then **API Tokens**, named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; you get a reminder in its last week (by email, where email is set up), and reconnecting the tool then creates a fresh one.
+Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears in your token list on liveworkspace.app (in liveplanner, **Settings**, **Account**, **API Tokens**, then **Manage API Tokens**), named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; you get a reminder in its last week (by email, where email is set up), and reconnecting the tool then creates a fresh one.
 
 ## What the AI can do
 
@@ -72,19 +72,19 @@ Your AI tool may also surface a few ready-made **prompts** ("Plan this", "Board 
 
 When the AI changes a tab you have open, you see it happen: the change arrives straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Cards, cells and forms it changes arrive live too. Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). Something someone else in the plan has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
-The AI does the thinking; liveplanner checks, saves and shows what it produces. The MCP server runs no AI model of its own. New plans an AI creates land at the root of **My Work**, like any new plan.
+The AI does the thinking; liveplanner checks, saves and shows what it produces. The MCP server runs no AI model of its own. New plans an AI creates go where any new plan goes: into your default folder when you have set one (**Settings**, **Plans**, **Where New Plans Go**), otherwise at the root of **My Work**.
 
 ## What a connection can and can't touch
 
-By default the token behind a connection has full read and write access to your plans, including the plans in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your plans (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
+By default the token behind a connection has full read and write access to your plans, including the plans in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your plans (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than plans stay in the app. It can never delete a plan for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 
-Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first.
+Approving a connection creates a token, so it fails if you already have 20 tokens that haven't expired; revoke one on liveworkspace.app first.
 
 <Tip>
-  Connected a tool you no longer use? Open **Settings**, then **Account**, then **API Tokens**, and
-  revoke its token. That cuts off its access at once.
+  Connected a tool you no longer use? Revoke its token on liveworkspace.app (**Manage API Tokens**
+  in Settings takes you there). Its access stops within a minute.
 </Tip>
 
 </ArticleLayout>

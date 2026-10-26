@@ -842,7 +842,7 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library every liveworkspace app shares: Plans or All Apps, the sidebar's Overview, Spaces and More, views and search.",
+      "The full-page library every liveworkspace app shares: liveplanner or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
       'library home dashboard files my plans list manage browse sidebar overview spaces more search all apps every app filter canvases designs liveworkspace duplicate copy plans project',
     category: 'Explorer',
@@ -897,7 +897,7 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
+      'What is outstanding for you across every app: actions and cards assigned to you or by you, new form responses and open comment threads.',
     keywords:
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps plan plans',
     category: 'Explorer',
@@ -959,7 +959,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
+    description: 'Each team as a space beside My Work, with its shared folders, and New Team.',
     keywords:
       'teams team spaces shared workspace library manage teams liveworkspace membership group',
     category: 'Explorer',
@@ -981,7 +981,7 @@ export const articles: Article[] = [
     slug: 'teams',
     title: 'Teams',
     description:
-      'Your liveworkspace teams, run on liveworkspace.app, and the library every member shares.',
+      'Your liveworkspace teams, made and run in the Explorer, and the library every member shares.',
     keywords:
       'workspace organisation organization members invite group company manage teams liveworkspace project',
     category: 'Collaboration',

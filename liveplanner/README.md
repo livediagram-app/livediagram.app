@@ -1,13 +1,13 @@
 # liveplanner
 
-A free, real-time planner for teams. A **project** holds Board, Sheet, Dashboard and Form tabs: boards of cards for the work, spreadsheets for the numbers, dashboards that show both side by side, and forms whose responses land as cards. Share one link and everyone plans it together, live, with presence, cursors, comments and assigned actions. Nothing sits behind a sign-in wall: open a link and start planning.
+A free, real-time planner for teams. A **project** (a **plan**, as people see it) holds Board, Sheet, Dashboard and Form tabs: boards of cards for the work, spreadsheets for the numbers, dashboards that show both side by side, and forms whose responses land as cards. Share one link and everyone plans it together, live, with presence, cursors, comments and assigned actions. Nothing sits behind a sign-in wall: open a link and start planning.
 
-liveplanner is free to use, with no trackers and no ads. It has **not been deployed yet**; liveplanner.app is where it will run.
+liveplanner is free to use, with no trackers and no ads. It runs at liveplanner.app, deployed from the monorepo's root workflows ([CI](../docs/ci.md)).
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
-packages/    shared project model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds (form covers), Form tabs, items and the Plan board projection, Plan images, the Sheet engine, the api client and agent verbs, the edit-operations engine, tab views, PNG rendering, telemetry client, the TypeScript source parser for static guards, the licences generator, configs
-scripts/     repo-wide dev tooling (shared Next.js dev launcher)
+packages/    the project model, wire-format types, UI, template catalogues + template previews, help-article registry, Form tabs, items and the Plan board projection, Plan images, the Sheet engine, agent verbs, the edit-operations engine, tab views, telemetry facts, licence tables, the brand ramps (code every product shares is in the monorepo's packages/ as @liveworkspace/*)
+scripts/     dev tooling (the shared Next.js dev launcher, the e2e stack, coverage and CI test filters, git hooks)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
 ```
@@ -34,7 +34,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 | **mcp** (`apps/mcp`)             | A Cloudflare Worker at its own host, `mcp.liveplanner.app`, that gives AI clients the project tools (boards, cards, sheets, forms) over OAuth.                                                                                                                                                                                                         | 8888     |
 | **cli** (`apps/cli`)             | `liveplanner`, the command line agents and scripts read and change projects with ([CLI](docs/specs/015-api/cli.md)).                                                                                                                                                                                                                                   | n/a      |
 
-The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR and no Next.js API routes. Cloudflare resource ids in the wrangler configs are placeholders until the liveplanner account is set up ([Deployment](docs/specs/016-platform/deployment.md)).
+The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR and no Next.js API routes. The wrangler configs pin the liveworkspace Cloudflare account, which also holds liveplanner.app ([Deployment](docs/specs/016-platform/deployment.md)).
 
 ## The rules that keep the repo honest
 
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately to [security@liveplanner.app](
 
 ## Licence
 
-[MIT](LICENSE). The source is not public. liveplanner is free to use; there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/business-model-and-licence.md`](docs/specs/002-project-scope/business-model-and-licence.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own key or binding — and the planner runs fully without either of them.
+[MIT](LICENSE). The source is not public. liveplanner is free to use; there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/business-model-and-licence.md`](docs/specs/002-project-scope/business-model-and-licence.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, each gated on its own key or binding), and the planner runs fully without either of them.
 
 Third-party components keep their own licences. Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the apps ship is credited, with its licence and notices, on the generated `/licences` page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

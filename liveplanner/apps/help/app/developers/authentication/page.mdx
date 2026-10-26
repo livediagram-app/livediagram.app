@@ -19,7 +19,7 @@ External API calls authenticate with an **API token**: a long-lived, revocable c
 
 ## Get a token
 
-Tokens are created from the editor, not the API. Open **Settings**, choose **Account**, then **API Tokens** beneath it, and create one. The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the six-month lifetime and the ten-token limit.
+Tokens are made on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), not through the API. In liveplanner, open **Settings**, choose **Account**, then **API Tokens** beneath it, and choose **Manage API Tokens** to get there. The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the read-only option, the six-month lifetime and the 20-token limit.
 
 Tokens have the form `lwt_` followed by a random string, so they are easy to spot in logs and secret scanners.
 
@@ -34,7 +34,7 @@ curl https://liveplanner.app/api/projects \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same access to your plans, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read (except a plan's share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
+Every request authenticated this way acts as your account, with the same access to your plans, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one made with **Read only** ticked, or approved with **Read-only access** on when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) or the CLI) can read (except a plan's share-link list, which would hand it edit links), and every write is refused except revoking itself and opening or pairing a (view-only) workbench.
 
 ## Check or retire the token you are using
 
@@ -58,8 +58,8 @@ The editor itself does not use an API token. When you are signed in it sends you
 <Note>
   A token has your account's full read and write access to your plans. Treat it like a password:
   keep it out of source control and shared logs, and never put it in client-side code that ships to
-  a browser. If a token might have leaked, revoke it from the **API Tokens** category in Settings
-  and create a replacement.
+  a browser. If a token might have leaked, revoke it on liveworkspace.app (**Manage API Tokens** in
+  Settings takes you there) and create a replacement.
 </Note>
 
 ## Errors

@@ -31,7 +31,7 @@ Each category groups its settings into cards, one card per section, with a short
 
 - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a tab's [theme](/help/user-interface/themes/), although every tab theme has a light and a dark half that follows it. The same control sits at the end of the tab bar. Saved on this device only (see below). See [Appearance](/help/tools/dark-mode/).
 - **Button Labels**: names the buttons along the bottom (Search, Settings, the appearance switch, and **Trash**, **New**, **Find**, **Types** and **Style** in the bottom-right corner) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
-- **UI Scale**: makes the panels, the menu button and the buttons in the bottom-right corner bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. Your boards, sheets, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own; moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+- **UI Scale**: makes the panels, the menu button and the buttons in the bottom-right corner bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. Your boards, sheets, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** (which goes up to 140%) and **Corner Buttons Scale** size each of those on its own; moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
 
 ## Keyboard
 
@@ -42,7 +42,7 @@ Each category groups its settings into cards, one card per section, with a short
 
 - **Panel Opacity**: fades the panels, from 30% to 100%, so what is behind them shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it.
 
-**Panels** also holds **Collaborate**, with **Enable Collaborate Panel**: the list of a tab's comment threads, behind a button in the bottom-right corner that only appears while the tab has a comment. With it off, comments still work where they were left. See [Comments](/help/collaboration/comments/).
+**Panels** also holds **Collaborate**, with **Enable Collaborate Panel**: the list of a tab's comment threads and actions, behind a button in the bottom-right corner that only appears while the tab has a comment. With it off, comments still work where they were left. See [Comments](/help/collaboration/comments/).
 
 ## Accessibility
 
@@ -52,6 +52,11 @@ Each category groups its settings into cards, one card per section, with a short
 ## Tours
 
 One switch per guided tour. **Plan Tours** switches the planning tours all at once, with **Boards Tour**, **Sheets Tour** and **Dashboards Tour** beneath it, and **Forms Tour** sits on its own. Every tour starts from its **Start Tour** button in the bottom bar, just left of **Settings** (Start Boards Tour, Start Forms Tour and so on), which is there whenever the tour can run and stays after you've taken it. A tour's switch turns itself off once you have finished or skipped it. Switch one back on and close Settings to take that tour again: it starts straight away if you are where it belongs; otherwise use the button when you get there. See [The Plan Tour](/help/plan/plan-tour/).
+
+## Plans
+
+- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of the Explorer's [Home](/help/explorer/home/). On by default. When it is off, Home's search sits in the header, as on every other Explorer page; closing the banner on Home turns this off too.
+- **Where New Plans Go**, under **Default Folders**: the folders new plans are saved in when you make one without choosing a place, with a separate entry for Kanban and Retrospective plans. Each entry has **Change** and **Clear**. See [Default folders](/help/explorer/folders/#default-folders).
 
 ## Account
 
@@ -64,7 +69,7 @@ One switch per guided tour. **Plan Tours** switches the planning tours all at on
 
 ### API Tokens
 
-- Create, view and revoke the tokens your own scripts and connected AI tools use to call liveplanner as you. Each expires six months after it is created. A new token's secret is shown once, so copy it before you choose **Done**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+- **Manage API Tokens** takes you to liveworkspace.app, where you make, see and revoke the tokens your own scripts and connected AI tools use to call liveplanner as you. Tokens belong to your liveworkspace account, so one works in every liveworkspace app. Each expires six months after it is created. Below the link, **Paired workbenches** lists the developer tools your CLI sign-in has paired, each with **Unpair** ([Workbenches](/help/developers/workbenches/)). Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
 
 Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
 

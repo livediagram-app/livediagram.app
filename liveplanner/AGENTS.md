@@ -227,7 +227,7 @@ docs/           # developer docs, indexed in docs/README.md
   instructions/ # repeatable processes (e.g. registering a help article)
 ```
 
-Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestrated with **Turborepo** (`turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
+liveplanner is one product folder in the liveworkspace monorepo: its workspaces are managed with **pnpm** from the monorepo root's `pnpm-workspace.yaml` (run it as `corepack pnpm`), and tasks are orchestrated with **Turborepo** (the root `turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
 
 ## What's built, what's still ahead
 
@@ -248,7 +248,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secrets in source. Ever.**
 
-- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
+- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
 - Server-only secrets (the accounts client secret, the index key) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
@@ -297,7 +297,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Hard constraints
 
-- **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
+- **All websites must be static, served by Cloudflare Workers Static Assets.** Next.js apps use `output: 'export'`: no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
 - Storage access goes through a Worker that holds the binding — never from the browser.
 
@@ -314,7 +314,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 ## Guidelines
 
 - **Every feature decides its share roles.** When specifying or building anything a shared project can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
-- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
+- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app: it breaks the static export the Workers serve.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - Rely on CI rather than running full E2E locally before a PR

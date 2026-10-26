@@ -42,7 +42,7 @@ The first time your tool connects, it opens a liveplanner page in your browser:
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.
 </Step>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke from **Settings**, **Account**, **API Tokens** to disconnect it. It lasts six months; reconnect the tool after that.
+Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke on liveworkspace.app to disconnect it (in liveplanner, **Settings**, **Account**, **API Tokens**, then **Manage API Tokens**). It lasts six months; reconnect the tool after that.
 
 ## Claude
 
@@ -62,7 +62,7 @@ Add the server from your terminal:
 claude mcp add --transport http liveplanner https://mcp.liveplanner.app/mcp
 ```
 
-Then, in a Claude Code session, run `/mcp`, choose `liveplanner`, and authenticate: your browser opens the liveplanner approval page. Add `--scope user` to the `claude mcp add` command to make liveplanner available in every plan rather than only the current one.
+Then, in a Claude Code session, run `/mcp`, choose `liveplanner`, and authenticate: your browser opens the liveplanner approval page. Add `--scope user` to the `claude mcp add` command to make liveplanner available in every project on your computer rather than only the current one.
 
 If you'd rather use an API token than sign in through the browser, pass it as a header instead:
 
@@ -75,7 +75,7 @@ For coding agents working in a repository, the [liveplanner CLI](/help/developer
 
 ## Cursor
 
-Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every plan, or `.cursor/mcp.json` inside one plan.
+Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every Cursor project, or `.cursor/mcp.json` inside one project's folder.
 
 ```json
 {
@@ -110,20 +110,20 @@ Authorization: Bearer lwt_...
 ```
 
 <Step n={1}>
-  Create a token in **Settings**, **Account**, **API Tokens** (see [API
-  Tokens](/help/account-and-data/api-tokens/)), and copy its secret: it is shown once.
+  Make a token on liveworkspace.app (see [API Tokens](/help/account-and-data/api-tokens/)), and copy
+  its secret: it is shown once.
 </Step>
 <Step n={2}>
   In your tool, add the MCP server with the address above, and set the `Authorization` header to
   `Bearer` followed by a space and the secret.
 </Step>
 
-A token you create in Settings always has full read and write access, so there is no read-only option on this path: approve the connection in the browser instead when you want **Read-only access**. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
+Tick **Read only** when you make the token if the tool should only find and read your plans. Treat the secret like a password, keep it out of files you share or commit, and revoke the token when you stop using the tool.
 
 ## If It Doesn't Connect
 
 - **The page says "This link has expired" or "This request has expired"**: a connection request lasts ten minutes. Start the connection again from your tool.
-- **It says your account has reached its limit of API tokens**: you can have ten unexpired tokens. Revoke one in **API Tokens**, then connect again.
+- **It says your account has reached its limit of API tokens**: you can have 20 unexpired tokens across every liveworkspace app. Revoke one on liveworkspace.app, then connect again.
 - **The tool keeps asking you to sign in**: the token it held may have expired or been revoked. Remove the connection in the tool and add it again.
 
 </ArticleLayout>

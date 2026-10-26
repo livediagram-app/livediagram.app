@@ -3,7 +3,7 @@
 One-word tags for directory listings, app stores and Product Hunt. Ranked by how tightly they fit the product, then split by platform so you
 can paste the right set into each field.
 
-Built from [`facts.md`](facts.md). No tag may imply an unshipped feature (CRDT /
+Built from [`facts.md`](facts.md). No tag may imply a feature liveplanner lacks (CRDT /
 conflict-free editing, native apps): that means no `crdt`, `offline-first`,
 `ios` or `android`.
 
@@ -31,7 +31,7 @@ conflict-free editing, native apps): that means no `crdt`, `offline-first`,
   cards, sheets and forms) but mean little to a general audience. Use them on
   developer and AI-tool directories.
 - **Skip** `crdt`, `offline-first`, `ios`, `android`. They imply features that
-  aren't shipped.
+  liveplanner lacks.
 - **Skip** any tag about the source code or running your own copy: the source is not public.
 - **Skip** tech-stack tags (`nextjs`, `cloudflare`, `typescript`): they mean
   nothing to a general audience.
