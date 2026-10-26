@@ -347,6 +347,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       const liveDoc = await getDocument(env, body.id);
       if (!clash)
         console.info('[documents] created', { documentId: body.id, marked: making.markUsed });
+      // Made but not used: one of a batch, say. Its first open or edit is what brings it to Jump Back In.
+      if (!making.markUsed) ctx.notAUse?.();
       // A genuine create may be the owner's tenth document (docs/specs/014-identity/transactional-email.md #6).
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
       // Making a document is activity for liveworkspace's onboarding series (it has made something), even before

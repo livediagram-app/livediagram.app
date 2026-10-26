@@ -17,6 +17,7 @@ carries an identity (`document-room.ts`, `recordItemEditor` from `@liveworkspace
 save, so a burst of saves is one row. The outbox drains them with the document's other index reports, up to
 `APP_EVENTS_MAX` a batch, as `PUT /app/items/:id/events`. The index keeps one `edited` event per person, document and
 UTC day, moving its time forward, and records a use day for that person, so editing a document counts toward Most Used.
+A create that says `markUsed: false` is not recorded as an edit ([Marking a document used](../015-api/api.md#marking-a-document-used)).
 Writes from a WebSocket participant carry no account and are not attributed.
 
 ## 2. Who sees what

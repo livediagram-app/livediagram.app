@@ -195,7 +195,7 @@ where its age puts it.
 
 ### Marking a document used
 
-The create body's `markUsed` (absent or `true`, or `false`) is still read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. It changes no list: what Recent and Jump back in show is the index's record of opens, which the editor writes when it loads a document (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
+Making a document is a use of it, for whoever makes it: the create's write is their edit (a Most Used day and a Timeline edit, pushed to the index like any save's), so a document an API client makes is in Jump Back In before anyone opens it. The create body's `markUsed` (absent or `true`, or `false`) says otherwise: `false` (one of a batch, say) records no edit for the create, so the document joins Jump Back In at its first open or edit. Anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. Opens are the index's too: the editor records one when it loads a document (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
 
 ### Documents in the Trash
 

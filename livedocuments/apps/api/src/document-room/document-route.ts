@@ -45,6 +45,7 @@ export async function answerDocumentRequest(
   request: Request,
   identity: RouteIdentity,
   waitUntil: (promise: Promise<unknown>) => void,
+  notAUse?: () => void,
 ): Promise<Response> {
   const url = new URL(request.url);
   const ctx: DocumentRouteContext = {
@@ -62,6 +63,7 @@ export async function answerDocumentRequest(
     bearer: identity.bearer,
     grant: identity.grant,
     waitUntil,
+    notAUse,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).
   return handleDocumentRequest(ctx);

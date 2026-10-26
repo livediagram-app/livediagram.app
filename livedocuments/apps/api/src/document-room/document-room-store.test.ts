@@ -347,6 +347,41 @@ describe("a document's content lives in its own Durable Object", () => {
     ]);
   });
 
+  it('counts making a document as its maker’s edit, unless the create says markUsed: false', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    const tabs = [{ id: 't1', name: 'Board', elements: [box('a')] }];
+    const edits = (id: string) =>
+      w.documents.get(id)!.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all();
+
+    await createDocument(w, 'A', tabs);
+    expect(edits('A')).toHaveLength(1);
+
+    const made = await w.send('POST', '/api/documents', {
+      id: 'B',
+      name: 'B',
+      tabs: [{ ...tabs[0], id: 't2' }],
+      markUsed: false,
+    });
+    expect(made.status).toBe(201);
+    expect(edits('B')).toEqual([]);
+    // Its summary still reaches the index; only the use is left out.
+    indexCalls.length = 0;
+    await w.documents.get('B')!.room.drain();
+    expect(indexCalls.sort()).toEqual([
+      'PUT /api/index/app/items/B/collab/t2',
+      'PUT /api/index/app/items/B/summary',
+    ]);
+
+    // Its first edit afterwards is a use like any other.
+    const saved = await w.send('PUT', '/api/documents/B/tabs/t2', {
+      id: 't2',
+      name: 'Board',
+      elements: [box('a'), box('b')],
+    });
+    expect(saved.status).toBe(200);
+    expect(edits('B')).toHaveLength(1);
+  });
+
   it('keeps the images its tabs place, answers the share check itself, and pushes the set to the media service', async () => {
     const w = world();
     const media = mediaServiceFor(w.env, { passOn: true });

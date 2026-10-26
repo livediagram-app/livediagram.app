@@ -531,12 +531,20 @@ export class DocumentRoom extends DurableObject<Env> {
     // Before the write counter is read: taking the owner and team is no edit.
     if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
     const writesBefore = this.writes;
-    const response = await answerDocumentRequest(env, request, identity, (p) =>
-      this.state.waitUntil(p),
+    let use = true;
+    const response = await answerDocumentRequest(
+      env,
+      request,
+      identity,
+      (p) => this.state.waitUntil(p),
+      () => {
+        use = false;
+      },
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
-    if (response.ok && identity.owner && this.writes > writesBefore) {
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals, requests that changed nothing and a create that
+    // says it is no use (`markUsed: false`) are not.
+    if (response.ok && identity.owner && use && this.writes > writesBefore) {
       const sql = this.state.storage.sql;
       recordItemEditor(
         (q, ...b) => sql.exec(q, ...b),
