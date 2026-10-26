@@ -3,7 +3,7 @@
 import type { AccountSecurity, AccountSession } from '@liveworkspace/settings-ui';
 import { call } from './accounts';
 
-// Settings › Profile › Sign-in and Security on liveworkspace.app (liveworkspace/docs/site.md "Settings", "Profile"):
+// Settings › Profile › Sign-in and Security on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"):
 // Better Auth's own session endpoints on this origin, with the session cookie. Each is asked only when its rows are
 // first shown.
 

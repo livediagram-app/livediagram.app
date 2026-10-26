@@ -35,7 +35,7 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 export const WEBFONTS_STYLESHEET_ID = 'livedocuments-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
 
-// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
+// Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): once per browser
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when
 // it has a liveworkspace session and a guest when not. First in <head> (after Trusted Types), because when it
 // bounces it stops the page loading, so nothing signed-out paints and no app code starts. Never on the sign-in
@@ -57,7 +57,7 @@ export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
   skipPaths: SILENT_SIGN_IN_SKIP_PATHS,
 });
 
-// The document's grant, asked for while the editor's code loads (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// The document's grant, asked for while the editor's code loads (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
 // on /document/<id>, a guest's token (or a link's code from `?s=`, with its remembered password) is all the request
 // needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__ldocGrant`
 // for lib/api/document-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the

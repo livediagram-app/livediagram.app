@@ -20,7 +20,7 @@ const ArrowIcon = lucideGlyph(lucideArrowUpRight, 14);
 const BrowserIcon = lucideGlyph(lucideUser, 13);
 const HourlyIcon = lucideGlyph(lucideCloud, 13);
 
-// One group of services (liveworkspace/docs/site.md "Status"): liveworkspace's under its wordmark, or an app's under
+// One group of services (liveworkspace/docs/specs/010-site/site.md "Status"): liveworkspace's under its wordmark, or an app's under
 // its own logo (never a coloured dot), with the group's own summary and a row per service. Each row has this visit's
 // check and, when the hourly history is in, liveworkspace's last check and the service's 90 days.
 // Memoised, with a clock that moves once a minute: the board's one-second tick re-renders none of it.

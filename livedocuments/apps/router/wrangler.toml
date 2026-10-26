@@ -41,22 +41,22 @@ service = "livedocuments-help"
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
-# switch is on (liveworkspace/docs/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
+# switch is on (liveworkspace/docs/specs/004-index/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
 MARKETING_ORIGIN = "http://127.0.0.1:3301"
 EDITOR_ORIGIN = "http://127.0.0.1:3302"
 API_ORIGIN = "http://127.0.0.1:8987"
-# /telemetry redirects to the central dashboard (liveworkspace/docs/telemetry.md), run locally by
+# /telemetry redirects to the central dashboard (liveworkspace/docs/specs/008-telemetry/telemetry.md), run locally by
 # liveworkspace/apps/site; production's needs no var.
 TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3304"
-# The central index `/api/index/*` forwards to (liveworkspace/docs/one-explorer.md), run locally by
+# The central index `/api/index/*` forwards to (liveworkspace/docs/specs/004-index/one-explorer.md), run locally by
 # liveworkspace/apps/index; production's (https://www.liveworkspace.app) needs no var.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
 # liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
 DRIVE_ORIGIN = "http://127.0.0.1:3011"
 # liveworkspace's media service (`pnpm dev` in liveworkspace/apps/media), which serves every app's previews:
-# `/api/previews/*` and a share link's image.svg, image.png and card go there (liveworkspace/docs/previews.md).
+# `/api/previews/*` and a share link's image.svg, image.png and card go there (liveworkspace/docs/specs/006-media/previews.md).
 PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 
 # ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-// The consent's addresses (liveworkspace/docs/drive.md "Connecting"): where Google sends the code back, the page the
+// The consent's addresses (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where Google sends the code back, the page the
 // browser returns to afterwards, and Google's consent URL itself.
 
 import { DRIVE_SCOPES } from '@liveworkspace/drive';

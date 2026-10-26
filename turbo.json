@@ -22,7 +22,7 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
     // liveworkspace.app's build also generates its /licences page from what the site
-    // and the platform's Workers bundle (liveworkspace/docs/site.md "Licences"), so
+    // and the platform's Workers bundle (liveworkspace/docs/specs/010-site/site.md "Licences"), so
     // their sources, the packages the site draws from and the lockfile are inputs.
     "@liveworkspace/site#build": {
       "dependsOn": ["^build"],

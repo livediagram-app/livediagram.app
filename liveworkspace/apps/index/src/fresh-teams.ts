@@ -1,4 +1,4 @@
-// A team made or joined since the caller's access token was minted (liveworkspace/docs/one-explorer-contracts.md
+// A team made or joined since the caller's access token was minted (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Teams"): the token's `teams` claim is up to an hour old, so when a request names a team the claim does not
 // hold, the index asks accounts for the person's teams as they are now (`POST /api/account/index/teams`, with the
 // key the two share) and the team is usable at once. @liveworkspace/index-app's team access does the asking and

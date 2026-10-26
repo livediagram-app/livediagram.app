@@ -1,6 +1,6 @@
-// Teams, run in the Explorer (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"): the person's
+// Teams, run in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"): the person's
 // teams and the invitations waiting for them, one team's members and join link, and every change to a team. They
-// are liveworkspace accounts' routes (liveworkspace/docs/accounts.md "The API"), the same team in every app. The host
+// are liveworkspace accounts' routes (liveworkspace/docs/specs/003-accounts/accounts.md "The API"), the same team in every app. The host
 // hands them over as a `TeamsHost`, built here once for every host: on liveworkspace.app by the session cookie, on an
 // app's address and in an editor through the app's router (`/api/workspace/account`) by the app's access token.
 
@@ -18,7 +18,7 @@ export type TeamMember = {
   // An invitation nobody answered in 28 days.
   expired?: boolean;
   createdAt?: number;
-  // A joined member's published Google picture (liveworkspace/docs/accounts.md "Profile pictures"), read with the
+  // A joined member's published Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), read with the
   // members list; null or absent for none.
   picture?: string | null;
 };

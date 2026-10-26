@@ -1,4 +1,4 @@
-// How an answer is judged (liveworkspace/docs/site.md "Status", liveworkspace/docs/status.md "The hourly run"): the
+// How an answer is judged (liveworkspace/docs/specs/010-site/site.md "Status", liveworkspace/docs/specs/009-status/status.md "The hourly run"): the
 // same rules in the visitor's browser and in the status Worker, so a service is up, slow or down for the same reasons
 // in both.
 

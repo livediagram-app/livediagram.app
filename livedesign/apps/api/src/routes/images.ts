@@ -1,5 +1,5 @@
 // /api/images — the gallery, uploads and the auth-gated byte read (docs/specs/009-elements/images.md). The
-// images live in liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts): this route keeps
+// images live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts): this route keeps
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';

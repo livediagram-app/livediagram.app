@@ -6,7 +6,7 @@ compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
-# The Google Drive mirror (liveworkspace/docs/drive.md): /api/drive on liveworkspace.app, and on each app's address
+# The Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md): /api/drive on liveworkspace.app, and on each app's address
 # through its router.
 routes = [
   { pattern = "www.liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" },
@@ -40,12 +40,12 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   INDEX_KEY_DRIVE        the index's INDEX_KEY_DRIVE: acting for a person, and their drive_mirrored flag.
 [vars]
 ENVIRONMENT = "production"
-# The liveworkspace Google Cloud project's web client (liveworkspace/docs/drive.md "Google"); one client for
+# The liveworkspace Google Cloud project's web client (liveworkspace/docs/specs/005-drive/drive.md "Google"); one client for
 # every environment while the app is in Testing. Empty: no Drive.
 GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
 # liveworkspace's origin: the consent's redirect URI (<this>/drive/connected), the
 # files' lwOrigin, Google's push address (<this>/api/drive/push), and where a refused return page goes.
-# Still the bare domain after the move to www. (liveworkspace/docs/drive.md "Addresses"): it is stamped on every
+# Still the bare domain after the move to www. (liveworkspace/docs/specs/005-drive/drive.md "Addresses"): it is stamped on every
 # mirrored file and root folder in people's Google Drives (lwOrigin, lwRoot) and a mirror finds its root by it, so
 # changing it would start a second root folder for everyone. The consent page it names redirects to www. in one hop.
 DRIVE_PUBLIC_URL = "https://liveworkspace.app"

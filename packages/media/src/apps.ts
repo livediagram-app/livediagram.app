@@ -1,4 +1,4 @@
-// The apps that keep their pictures in liveworkspace's media service (liveworkspace/docs/media.md).
+// The apps that keep their pictures in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md).
 // One service holds every app's uploads, so a person's gallery follows them from app to app. Each
 // request names the app it comes from, by its public site, the way people know it.
 

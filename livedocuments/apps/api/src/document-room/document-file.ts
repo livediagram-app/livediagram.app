@@ -1,4 +1,4 @@
-// The document as its Google Drive file (liveworkspace/docs/drive.md "The file", "Contracts > The apps";
+// The document as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the `livedocuments.document` envelope the CLI's pull files write, every tab
 // with its per-document folder, and the slide deck. The export runs inside the document's Durable Object, from the
 // same tab read a copy makes (document-content.ts readContentTabRows), stamped with the document's last save so

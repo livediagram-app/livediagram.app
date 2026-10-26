@@ -1,4 +1,4 @@
-// What an app's api Worker sends the central ingest itself (liveworkspace/docs/telemetry.md "Sending events").
+// What an app's api Worker sends the central ingest itself (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events").
 //
 // A few events can only be counted honestly by a Worker, because the browser either never sees them (an email
 // sent from a cron) or cannot tell whether they are the first of their kind (a new account, a first visit to a

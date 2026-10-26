@@ -1,4 +1,4 @@
-// Closing an account empties the index too (liveworkspace/docs/accounts.md "Closing an account"). The
+// Closing an account empties the index too (liveworkspace/docs/specs/003-accounts/accounts.md "Closing an account"). The
 // request is written to pending_purges before the user row goes, then sent to the index
 // (`POST ${INDEX_URL}/internal/purge-person`, the same key as the guest merge); the row is cleared only
 // once the index has taken it. A request the index couldn't take, or a Worker that died between the two,

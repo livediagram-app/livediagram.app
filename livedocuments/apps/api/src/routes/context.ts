@@ -72,7 +72,7 @@ export type RouteContext = {
   // The browser's own bearer (an access or guest token), passed to the index as it is; null for an API token,
   // a workbench session and a link visitor with no identity.
   bearer?: string | null;
-  // The index's grant on the document this request is about (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+  // The index's grant on the document this request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
   // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/documents.ts). It is
   // the whole of who may do what to a document; null or for another document, nothing.
   grant?: DocumentGrant | null;

@@ -276,7 +276,7 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
-// A guest as production makes one: a guest token from liveworkspace (liveworkspace/docs/accounts.md "Guests"), here
+// A guest as production makes one: a guest token from liveworkspace (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), here
 // from the e2e stack's accounts stand-in (scripts/e2e-stack.mjs, /e2e/guest-token). Answers the guest id
 // (`guest_<uuid>`); ownerHeaders sends its token.
 const guestTokens = new Map<string, string>();
@@ -316,7 +316,7 @@ export function ownerHeaders(
   return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
-// The index's grant on a document for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// The index's grant on a document for whoever `headers` names (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
 // every api request about one document carries it as X-Index-Grant.
 export async function documentGrant(
   request: import('@playwright/test').APIRequestContext,
@@ -346,7 +346,7 @@ export async function documentHeaders(
 }
 
 // A document made as the app makes one: the item at the index first, then its content with the grant the create
-// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// answers (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
 // tabs, ... }). Answers the content create's response.
 export async function seedDocumentItem(
   request: import('@playwright/test').APIRequestContext,

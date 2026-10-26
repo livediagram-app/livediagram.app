@@ -1,4 +1,4 @@
-// The account control, one for liveworkspace.app and every app, signed in or as Guest (liveworkspace/docs/site.md
+// The account control, one for liveworkspace.app and every app, signed in or as Guest (liveworkspace/docs/specs/010-site/site.md
 // "The header").
 export { AccountMenu, type GuestAccount, SETTINGS_HREF } from './AccountMenu';
 export { AppAccountMenu } from './AppAccountMenu';

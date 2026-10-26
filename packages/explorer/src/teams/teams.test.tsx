@@ -1,4 +1,4 @@
-// Teams run in the Explorer (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"): New Team from the
+// Teams run in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"): New Team from the
 // sidebar and the panel's rail, the team card (its members, roles, removals, Invite, Invite by Link, Edit, Leave and
 // Delete), the last-admin rule, and what loads when.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';

@@ -435,7 +435,7 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') {
           // The Explorer says why we arrived, rather than landing without a word. The note rides in the address:
-          // the Explorer is liveworkspace's, on another origin (liveworkspace/docs/site.md "Addresses handed over").
+          // the Explorer is liveworkspace's, on another origin (liveworkspace/docs/specs/010-site/site.md "Addresses handed over").
           window.location.assign('/explorer?ended=revoked');
         } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {

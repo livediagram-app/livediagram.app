@@ -1,4 +1,4 @@
-// The onboarding series' emails (liveworkspace/docs/accounts.md "Onboarding emails"): a welcome, the
+// The onboarding series' emails (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): a welcome, the
 // Explorer at a week, teams at two weeks, a nudge for someone who hasn't made anything, and a win-back
 // for someone who has been away. One series per account, from liveworkspace, whichever apps the person
 // uses. The same timings and the same tips as each app's series had, worded for all four apps. Plain,

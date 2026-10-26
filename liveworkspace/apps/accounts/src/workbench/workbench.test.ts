@@ -1,4 +1,4 @@
-// The workbench service (liveworkspace/docs/workbench.md): pairing, tickets, sessions, the apps' session checks,
+// The workbench service (liveworkspace/docs/specs/011-workbench/workbench.md): pairing, tickets, sessions, the apps' session checks,
 // ending access, the allowance, and a store that sits idle with no alarm.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from '../account-api.ts';
@@ -625,7 +625,7 @@ describe('a store at rest', () => {
   });
 });
 
-// What each step costs, for liveworkspace/docs/workbench.md "Performance".
+// What each step costs, for liveworkspace/docs/specs/011-workbench/workbench.md "Performance".
 describe('round trips', () => {
   it('counts the store calls and index calls of a mint, a redemption and a session check', async () => {
     const t = await token();

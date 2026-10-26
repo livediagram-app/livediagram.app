@@ -2,16 +2,16 @@
 // "Internal"), answered by the shared kit (@liveworkspace/index-app handleInternalItems): the bearer check against
 // INDEX_KEY, the paths and their bodies. See it for the doors: a purge (one canvas, or up to a hundred for a closed
 // account), revoked links, notices for the emails, a copy into a new canvas, a person closed, merged or
-// anonymised, and a workbench pairing's sessions closed in a canvas's room (liveworkspace/docs/workbench.md
+// anonymised, and a workbench pairing's sessions closed in a canvas's room (liveworkspace/docs/specs/011-workbench/workbench.md
 // "Ending access").
 //
 // Each is a call to the canvas's Durable Object (document-client.ts) or the person's own stores. Where the canvas is
 // filed, its sharing and its Trash are the index's; a purge also tells the media service the canvas places nothing
-// now and drops its previews there (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's
+// now and drops its previews there (liveworkspace/docs/specs/006-media/previews.md "Purging"). A notice is worked out off the index's
 // path: a share link made (the first-share milestone), or someone's first time in through a link (the owner's
 // "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
 // MEDIA_KEY, and answers its whole file for liveworkspace's Drive mirror, which calls it and the import door with
-// DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps", routes/internal-file.ts). The migration's two doors
+// DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts). The migration's two doors
 // take MIGRATION_KEY (docs/migration.md "Tooling"): a document's part into its room, and a person's shape libraries.
 import {
   JOINED_TELEMETRY_TYPE,

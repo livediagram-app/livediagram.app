@@ -1,4 +1,4 @@
-// Grants (liveworkspace/docs/one-explorer-contracts.md "Grants"): ES256 JWTs saying who may open an item
+// Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): ES256 JWTs saying who may open an item
 // at what level, valid for ten minutes, signed with the index's own key. Apps check them offline against
 // GET /jwks.
 

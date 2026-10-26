@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer on liveworkspace.app (liveworkspace/docs/site.md "The Explorer"): the shared Explorer
+// The Explorer on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "The Explorer"): the shared Explorer
 // (@liveworkspace/explorer) once, for every app, instead of at each app's /explorer. Mounted by app/explorer's
 // layout, so a list already loaded stays loaded from view to view.
 //

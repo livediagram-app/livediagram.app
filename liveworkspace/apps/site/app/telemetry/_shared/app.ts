@@ -13,7 +13,7 @@ import type { MetricGroup } from './metric-series';
 import type { TypeAliases } from './rank';
 import type { TimingChart } from './timing-stats';
 
-// One app's dashboard, as data (liveworkspace/docs/telemetry.md "The dashboard"). Every app's
+// One app's dashboard, as data (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"). Every app's
 // dashboard is the same set of views in _shared; what differs between livediagram, liveplanner,
 // livedocuments and livedesign is this: its events and how they read, its charts, and its name.
 // Each app's folder exports one (`<app>/config.ts`) and the page hands it to AppDashboard.

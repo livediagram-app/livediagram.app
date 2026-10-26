@@ -197,7 +197,7 @@ function isTagsEvent(category: string, action: string, type: string | null): boo
   return false;
 }
 
-// livediagram's own Google Drive mirror (removed 2026-10-25, liveworkspace/docs/drive.md "Coming from livediagram's
+// livediagram's own Google Drive mirror (removed 2026-10-25, liveworkspace/docs/specs/005-drive/drive.md "Coming from livediagram's
 // mirror"): every Drive event. Google Drive sync is liveworkspace's now, for every app, and sends none of these.
 const DRIVE_MIRROR_CATEGORY = 'Drive';
 

@@ -2,7 +2,7 @@
 
 // What the shared Explorer (@liveworkspace/explorer) needs from livedocuments to be its host: an item's address in
 // its own app, a share link's, where New goes, and the person's teams from their token
-// (liveworkspace/docs/one-explorer.md). The Explorer page and the editor's panel both use these.
+// (liveworkspace/docs/specs/004-index/one-explorer.md). The Explorer page and the editor's panel both use these.
 
 import { useEffect, useState } from 'react';
 import type {
@@ -44,7 +44,7 @@ export function newDocumentHref(placement: Placement | null): string {
 
 export { teamsOfToken };
 
-// The teams the person's access token names (its `teams` claim, liveworkspace/docs/accounts.md "Teams"); none for a
+// The teams the person's access token names (its `teams` claim, liveworkspace/docs/specs/003-accounts/accounts.md "Teams"); none for a
 // guest.
 export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
   const [teams, setTeams] = useState<TeamRef[]>([]);

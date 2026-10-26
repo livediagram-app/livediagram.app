@@ -1,4 +1,4 @@
-// Who an image belongs to (liveworkspace/docs/media.md "Owners"): the person who uploaded it. A
+// Who an image belongs to (liveworkspace/docs/specs/006-media/media.md "Owners"): the person who uploaded it. A
 // signed-in person is their liveworkspace account id, the same in every app, which is what lets their
 // gallery follow them across the suite. A guest has no account: their app's guest id is their
 // credential, so it never leaves the app. The app sends a one-way hash of it instead, scoped to the app,

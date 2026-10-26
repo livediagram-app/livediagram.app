@@ -1,5 +1,5 @@
 // docs/specs/014-identity/transactional-email.md: the email client. Mail goes out through Cloudflare Email Service's
-// `EMAIL` binding, by way of @liveworkspace/email (liveworkspace/docs/email.md). The whole email feature is gated on
+// `EMAIL` binding, by way of @liveworkspace/email (liveworkspace/docs/specs/003-accounts/email.md). The whole email feature is gated on
 // that binding: without it, every send is a no-op, so a deployment with email off does zero extra work. Sends are
 // best-effort: this never throws, so an email or network failure can't fail or delay the request that triggered it
 // (callers run sends inside ctx.waitUntil or the daily cron).

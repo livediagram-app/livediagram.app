@@ -23,7 +23,7 @@ describe('ParticipantAvatar', () => {
   afterEach(cleanup);
   afterEach(resetPictureFailures);
 
-  // liveworkspace/docs/accounts.md "Profile pictures": the Google picture over the initials, which come back if it
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures": the Google picture over the initials, which come back if it
   // fails; an agent row never wears one.
   it('draws a Google picture over the initials, at the avatar size, and falls back on error', () => {
     const picture = 'https://lh3.googleusercontent.com/a/webber=s96-c';

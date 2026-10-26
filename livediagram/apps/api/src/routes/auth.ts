@@ -14,7 +14,7 @@ import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
 //   GET  /api/auth/callback?code&state       → back in the app, signed in
 //   POST /api/auth/token                     → { accessToken, expiresAt, user }
 //   GET  /api/auth/silent?return=/path       → the accounts site with prompt=none, and straight back:
-//                                              signed in, or a guest (liveworkspace/docs/accounts.md
+//                                              signed in, or a guest (liveworkspace/docs/specs/003-accounts/accounts.md
 //                                              "Signing in without a click")
 //   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
 //                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/
@@ -61,7 +61,7 @@ const PKCE_MAX_AGE_SECONDS = 600;
 const REFRESH_MAX_AGE_SECONDS = 30 * 24 * 3600;
 // Signing in without a click: the signed-out mark, the loop guard and the bounce's own PKCE cookie.
 const SILENT_COOKIES = silentCookiesForHint(SIGNED_IN_HINT_COOKIE);
-// The readable account name beside the hint (`<prefix>account`, liveworkspace/docs/accounts.md "An app's
+// The readable account name beside the hint (`<prefix>account`, liveworkspace/docs/specs/003-accounts/accounts.md "An app's
 // signed-in cookies"): who is signed in, for the marketing header's account menu.
 const ACCOUNT_NAME_COOKIE = accountNameCookieFor(SIGNED_IN_HINT_COOKIE);
 const DEFAULT_RETURN = '/explorer/home';
@@ -75,7 +75,7 @@ export type AuthUser = {
   name: string | null;
   // The profile's presence colour (the ID token's `presence_color`), for the avatar; null for Automatic.
   color: string | null;
-  // The account's Google picture (the ID token's `picture`, liveworkspace/docs/accounts.md "Profile pictures"), for
+  // The account's Google picture (the ID token's `picture`, liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), for
   // the person's own avatar; null without one.
   picture: string | null;
   // Show My Google Picture is off (`picture_hidden`): the person's own chrome still shows it, but presence and
@@ -355,7 +355,7 @@ function signOut(): Response {
 }
 
 // GET /api/auth/silent?return=: the page's boot script sends a browser here once per browser session when it has
-// no session in this app (liveworkspace/docs/accounts.md "Signing in without a click"). Handled before the
+// no session in this app (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"). Handled before the
 // configuration check and the rate limit, because the page is waiting on it: whatever happens it goes back to
 // where it came from, never to an error page.
 async function silent(request: Request, env: Env, config: Configured | null): Promise<Response> {
@@ -374,7 +374,7 @@ async function silent(request: Request, env: Env, config: Configured | null): Pr
   });
 }
 
-// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// A guest's identity is liveworkspace's (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"): the browser goes to the accounts
 // site with this app's client, which answers with a year-long guest token in the fragment of /auth/guest. Routed
 // through here so the client id and resource live in one place; the editor makes and checks `state` itself.
 function guest(request: Request, env: Env, config: Configured | null): Response {

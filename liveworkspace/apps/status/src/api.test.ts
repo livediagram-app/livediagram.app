@@ -12,7 +12,7 @@ import worker from './index';
 import { runOnce } from './run';
 import { testEnv } from './test-env';
 
-// liveworkspace/docs/status.md "The read API".
+// liveworkspace/docs/specs/009-status/status.md "The read API".
 
 const T0 = Date.parse('2026-10-25T09:07:00Z');
 const up: CheckResult = { state: 'up', code: 200, ms: 80, error: null };

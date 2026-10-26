@@ -8,7 +8,7 @@
 // sets the ramp (a help centre's own; an Explorer tile its app's, explorer.css `.lw-work-art`) and turns them for dark
 // (help-art.css, or `.lw-work-art`). `help-art-as-drawn` marks a part whose colour is its identity in both
 // appearances. Static: no state, no effects, no motion. The help centres and the Explorer's hero share them
-// (liveworkspace/docs/one-explorer.md "What you can make, on Home's hero").
+// (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's hero").
 
 export type WorkBox = { x: number; y: number; w: number; h: number };
 type Box = WorkBox;

@@ -1,5 +1,5 @@
 // The ticket a socket joins an item's room with (`…/ws?t=`), and renews its session with: the index's grant itself
-// (liveworkspace/docs/one-explorer-contracts.md "Grants"). A browser can't put headers on a WebSocket upgrade, so it
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"). A browser can't put headers on a WebSocket upgrade, so it
 // goes on the URL; it is short-lived (ten minutes) and names its item.
 //
 // A workbench session's ticket carries one fact more, its pairing (so unpairing closes exactly its sockets) and its

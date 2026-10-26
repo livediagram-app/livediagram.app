@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useLatest } from '../ui/useLatest';
 
 // The chords that open the Explorer's Search panel, Cmd/Ctrl+K and Cmd/Ctrl+. (the editors' command palette's,
-// livediagram/docs/specs/007-editor/command-palette.md "Shortcut"; liveworkspace/docs/site.md "The Explorer"). Like the
+// livediagram/docs/specs/007-editor/command-palette.md "Shortcut"; liveworkspace/docs/specs/010-site/site.md "The Explorer"). Like the
 // editors' chords they stand aside while the person is typing and while a dialog is open, so a chord pressed in a
 // field or a dialog stays there.
 

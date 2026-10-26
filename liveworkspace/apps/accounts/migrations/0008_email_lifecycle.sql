@@ -1,4 +1,4 @@
--- The onboarding series each account is sent (liveworkspace/docs/accounts.md "Onboarding emails"): one
+-- The onboarding series each account is sent (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): one
 -- series per person, whichever apps they use, sent by this Worker's cron. Written by hand, like 0002.
 -- Goes with the account (foreign key).
 CREATE TABLE email_lifecycle (

@@ -30,7 +30,7 @@ Sections, top to bottom:
   - **Signed out**: "Sign in to keep your content" with body "A free account keeps your documents and content across sessions and devices." and a primary CTA linking to `/sign-in/`.
   - **Signed in**: renders nothing. The signed-in user already has the account that syncs everything; the nudge would just be noise.
 
-The Explorer's rows, their badges and menus are the platform's ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).
+The Explorer's rows, their badges and menus are the platform's ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 
 ## Text alignment
 

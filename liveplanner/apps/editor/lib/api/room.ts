@@ -67,7 +67,7 @@ type RoomConnectOptions = {
   // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent the
   // first one again was refused, and the session lost the room for good. Called before every reconnect.
   mintTicket?: () => Promise<string | null>;
-  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/one-explorer-contracts.md
+  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/specs/004-index/one-explorer-contracts.md
   // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket and the
   // reconnect mints anew.
   renewGrant?: () => Promise<string | null>;

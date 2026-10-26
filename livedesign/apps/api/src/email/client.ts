@@ -1,5 +1,5 @@
 // docs/specs/014-identity/transactional-email.md: livedesign's email, sent through Cloudflare Email Service's
-// `send_email` binding by the shared @liveworkspace/email (liveworkspace/docs/email.md). The whole email feature is
+// `send_email` binding by the shared @liveworkspace/email (liveworkspace/docs/specs/003-accounts/email.md). The whole email feature is
 // gated on the `EMAIL` binding: absent, every send is a no-op, so a deployment with email off does zero extra work.
 // Sends are best-effort: this never throws, so an email failure can't fail or delay the request that triggered it
 // (callers run sends inside ctx.waitUntil or the daily cron).

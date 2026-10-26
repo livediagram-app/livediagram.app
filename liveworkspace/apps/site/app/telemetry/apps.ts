@@ -1,4 +1,4 @@
-// The app filter (liveworkspace/docs/telemetry.md "The dashboard"): which choice the page shows, and
+// The app filter (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): which choice the page shows, and
 // how it rides in the URL, so `?app=livediagram.app` is a link to that app's numbers.
 
 import {

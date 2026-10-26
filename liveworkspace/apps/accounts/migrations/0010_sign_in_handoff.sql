@@ -1,4 +1,4 @@
--- Signing in on an app's own address (liveworkspace/docs/accounts.md "Signing in on the app's own address"): the
+-- Signing in on an app's own address (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address"): the
 -- one-time token the sign-in pages hand the browser so the session made there is set on liveworkspace.app too. Only
 -- the token's hash is kept, with the session it carries, the hash of the nonce cookie the starting browser holds, the
 -- app address it goes back to, and when it stops working (60 seconds). Spent once (usedAt); rows go a minute after

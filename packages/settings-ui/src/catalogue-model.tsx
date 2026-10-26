@@ -1,6 +1,6 @@
 // One app's settings as plain data (its derived catalogue, @liveworkspace/settings/catalogues/<app>, and its stored
 // scopes) as the Settings view's model, so the Settings panel draws another app's settings exactly as that app's
-// own Settings does (liveworkspace/docs/site.md "Settings"). Values are read from both scopes together; a change
+// own Settings does (liveworkspace/docs/specs/010-site/site.md "Settings"). Values are read from both scopes together; a change
 // hands the row's binding and the value to store to `change`, which saves it.
 import { isAllSetting, joinSettings, type SettingsBlob } from '@liveworkspace/settings';
 import {

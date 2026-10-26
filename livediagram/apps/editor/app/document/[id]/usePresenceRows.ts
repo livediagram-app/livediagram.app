@@ -113,7 +113,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   const remoteBesideTabs = useRemoteBesideTabs();
   const selfBesideTabId = useLocalBesideTab();
   // Our own row shows our Google picture to us whatever the switch says: it is our screen
-  // (liveworkspace/docs/accounts.md "Profile pictures").
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
   const ownPicture = useDeferredAuth().user?.picture ?? null;
   const shownSelf = useMemo(
     () => (ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant),

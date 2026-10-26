@@ -1,4 +1,4 @@
-// The old account pages (liveworkspace/docs/site.md "Your account"): `/account`, `/account/settings…` and
+// The old account pages (liveworkspace/docs/specs/010-site/site.md "Your account"): `/account`, `/account/settings…` and
 // `/account/tokens` are no longer pages, but emails and bookmarks carry them, so each sends the browser on to the
 // Explorer with the Settings panel open on the same section (`?settings=`, lib/explorer/host.ts settingsOpening).
 // Kept light: the page that runs it is a one-line hop, so it imports the sites registry alone, not the panel.

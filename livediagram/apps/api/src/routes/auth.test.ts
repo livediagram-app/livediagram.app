@@ -282,7 +282,7 @@ describe('the /api/auth surface', () => {
 });
 
 describe('the account name cookie (ld_account)', () => {
-  // liveworkspace/docs/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
+  // liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
   const named = (claims: Record<string, unknown>) =>
     tokenResponse({ id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', ...claims }) });
 
@@ -315,7 +315,7 @@ describe('the account name cookie (ld_account)', () => {
     expect(cookieValue(email, 'ld_account')).toBe(encodeURIComponent('ada@example.com'));
   });
 
-  // liveworkspace/docs/accounts.md "Profile pictures".
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures".
   it("keeps the account's Google picture beside it, and says when Show My Google Picture is off", async () => {
     const picture = 'https://lh3.googleusercontent.com/a/ada=s96-c';
     fetchMock.mockResolvedValueOnce(named({ name: 'Ada', picture, picture_hidden: true }));
@@ -392,7 +392,7 @@ describe('readCookie', () => {
   });
 });
 
-// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): the page's boot
+// Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): the page's boot
 // script sends a browser with no session here once per browser session; it always comes back to where it was.
 describe('GET /api/auth/silent', () => {
   async function bounce(

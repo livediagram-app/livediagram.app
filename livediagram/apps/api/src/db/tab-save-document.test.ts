@@ -1,6 +1,6 @@
 // The tab save's one-query document read (db/tab-save-document.ts), against the real migrations: the fields the
 // save uses (the writer's name and colour come from liveworkspace, read by the save itself), the tab count, and an
-// unknown document reading as missing. The Trash is the index's (liveworkspace/docs/one-explorer.md).
+// unknown document reading as missing. The Trash is the index's (liveworkspace/docs/specs/004-index/one-explorer.md).
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { getDocument } from './documents';

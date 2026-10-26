@@ -1,6 +1,6 @@
 'use client';
 
-// The Settings panel's Account section (liveworkspace/docs/site.md "Settings"): what belongs to the person in
+// The Settings panel's Account section (liveworkspace/docs/specs/010-site/site.md "Settings"): what belongs to the person in
 // every app rather than to one, built once here and shown in the All view wherever the panel opens. Its switches
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
@@ -28,7 +28,7 @@ export interface AccountSection {
   // The `all` scope as it stands, and how to change one of its keys.
   all: SettingsBlob;
   set: (key: string, value: boolean) => void;
-  // Who is signed in, for the Profile's header card (liveworkspace/docs/site.md "Settings", "Profile").
+  // Who is signed in, for the Profile's header card (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile").
   identity?: AccountIdentity | null;
   // The profile collaborators see (the display name and presence colour), edited in place over the host's door: the
   // session on liveworkspace.app, the app's token on an app's address and in an editor. There is no address to link
@@ -46,7 +46,7 @@ export interface AccountSection {
   tokensHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
-  // Cloud Sync (liveworkspace/docs/drive.md "Connecting"): where the deployment offers Drive and the person is signed
+  // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
   // in (useCloudSync), its section in the Profile, before Your Account.
   cloudSync?: CloudSync | null;
 }

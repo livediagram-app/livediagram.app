@@ -1,4 +1,4 @@
-// What an item's Durable Object owes the index (liveworkspace/docs/one-explorer-contracts.md "What an item
+// What an item's Durable Object owes the index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item
 // pushes"): its summary (`PUT /app/items/:id/summary`), each changed tab's comment threads and actions for the
 // Inbox (`PUT /app/items/:id/collab/:tabId`), and who edited it, for the Timeline and their Most Used days
 // (`PUT /app/items/:id/events`), all with the app's key.

@@ -1,4 +1,4 @@
-// What each app makes, as Home's hero pictures it (liveworkspace/docs/one-explorer.md "What you can make, on Home's
+// What each app makes, as Home's hero pictures it (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's
 // hero"): four kinds of work per app, each its name, the template that starts one (the app's New route takes it as
 // `/new?template=<template>`, the address its welcome uses) and its picture, drawn from the shared miniatures every
 // help centre draws a product's work with. One table for every app, so every app's set is laid out alike.

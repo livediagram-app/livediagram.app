@@ -1,4 +1,4 @@
-// A person's settings (liveworkspace/docs/accounts.md "Settings"), kept with the account so every
+// A person's settings (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), kept with the account so every
 // app reads the same ones. A row is one owner's settings in one scope: 'all', shown by every app, or
 // one app's site id, shown only there. Writes patch keys one by one, so two apps writing different
 // keys never undo each other.

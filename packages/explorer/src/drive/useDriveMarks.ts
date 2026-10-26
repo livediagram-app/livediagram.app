@@ -1,4 +1,4 @@
-// Where each of the person's items stands with Google Drive, for the Explorer's marks (liveworkspace/docs/drive.md
+// Where each of the person's items stands with Google Drive, for the Explorer's marks (liveworkspace/docs/specs/005-drive/drive.md
 // "The Explorer shows each item's sync"). The config answer says first whether the person is connected; only then are
 // the marks (and the connection, for the reconnect banner) asked for, so someone who never connected costs one cheap
 // read per Explorer and nothing more. Read once per mount and again when the window regains focus, at most every

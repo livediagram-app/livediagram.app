@@ -1,4 +1,4 @@
-// Where Google is, and the one way a call to it fails (liveworkspace/docs/drive.md "Tokens"). Tests point every
+// Where Google is, and the one way a call to it fails (liveworkspace/docs/specs/005-drive/drive.md "Tokens"). Tests point every
 // call at the fake Google (`@liveworkspace/fake-google`) with one base URL.
 
 import { GOOGLE_CALL_TIMEOUT_MS } from '../constants';

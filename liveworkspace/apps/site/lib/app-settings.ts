@@ -1,4 +1,4 @@
-// The Settings panel's reach into the account's settings from this site (liveworkspace/docs/site.md "Settings"):
+// The Settings panel's reach into the account's settings from this site (liveworkspace/docs/specs/010-site/site.md "Settings"):
 // `/api/account/settings…` with the session on liveworkspace.app, or through an app's router with the page's token
 // on that app's address (accountApi). The panel itself, its catalogues and what it reads are the shared package's
 // (@liveworkspace/settings-ui); this is the site's one store of what it has read, kept for the page's lifetime.

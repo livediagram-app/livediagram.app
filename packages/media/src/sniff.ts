@@ -1,4 +1,4 @@
-// Magic-number sniffing for the accepted formats (liveworkspace/docs/media.md "Uploads"). The service
+// Magic-number sniffing for the accepted formats (liveworkspace/docs/specs/006-media/media.md "Uploads"). The service
 // runs it on every upload so a declared Content-Type can't smuggle an SVG or anything else past
 // ACCEPTED_IMAGE_TYPES, and an app can run it to label bytes whose stored type is missing. Pure, so it
 // runs in Workers and browsers alike.

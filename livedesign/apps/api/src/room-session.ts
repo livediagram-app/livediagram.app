@@ -45,7 +45,7 @@ export type SessionAttachment = {
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
-  //   - `account`: an account holds this session, from X-Verified-Account (liveworkspace/docs/accounts.md "Profile
+  //   - `account`: an account holds this session, from X-Verified-Account (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
   //     pictures"). Only such a session may put a Google picture on the roster, and only such a session is sent
   //     the pictures on it.
   account?: boolean;

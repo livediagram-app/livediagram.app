@@ -10,7 +10,7 @@ vi.mock('../server-telemetry', async (importOriginal) => ({
 
 import { appBaseUrl, EMAIL_SEND_TIMEOUT_MS, emailEnabled, sendEmail } from './client';
 
-// A stand-in for the `send_email` binding (liveworkspace/docs/email.md).
+// A stand-in for the `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md).
 function fakeBinding(send = vi.fn(async (_message: unknown) => ({ messageId: 'm' }))) {
   return { send };
 }

@@ -77,7 +77,7 @@ describe('useAccountBootstrap token provider', () => {
   });
 });
 
-// A guest who signs in becomes the account (liveworkspace/docs/one-explorer-contracts.md "Guests"): the accounts
+// A guest who signs in becomes the account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the accounts
 // site merges the guest's items into the account at sign-in, so the editor only lets go of the guest token, and
 // nothing waits on a migration of its own.
 describe('useAccountBootstrap after sign-in', () => {

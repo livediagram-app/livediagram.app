@@ -1,4 +1,4 @@
-// The apps' servers' doors into the workbench service (liveworkspace/docs/workbench.md "The handoff"), under
+// The apps' servers' doors into the workbench service (liveworkspace/docs/specs/011-workbench/workbench.md "The handoff"), under
 // /api/account/internal with their client credentials, each for the client's own app only:
 //
 //   POST workbench/session {session}                      a `lvw_` session as this app may use it, or 404 {reason}

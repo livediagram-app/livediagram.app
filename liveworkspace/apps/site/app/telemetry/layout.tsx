@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './telemetry.css';
 
-// The public transparency dashboard for every liveworkspace app (liveworkspace/docs/telemetry.md).
+// The public transparency dashboard for every liveworkspace app (liveworkspace/docs/specs/008-telemetry/telemetry.md).
 // Indexable: it's part of the open, "here's exactly what we measure" story, not a private app.
 export const metadata: Metadata = {
   title: 'Telemetry · liveworkspace',

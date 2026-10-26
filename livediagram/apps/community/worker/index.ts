@@ -6,7 +6,7 @@
 //                 404 when there is no such public post, so a dead post link never indexes as a page;
 //   /sitemap.xml  every public post, from the Community service's /sitemap.
 //
-// The posts are the liveworkspace Community service's (liveworkspace/docs/community.md), asked over HTTPS for this
+// The posts are the liveworkspace Community service's (liveworkspace/docs/specs/007-community/community.md), asked over HTTPS for this
 // app's posts only: production's, or the one COMMUNITY_URL names. When it is slow or failing, the shell is served
 // exactly as built: the page still works, it just names no post until its script runs.
 

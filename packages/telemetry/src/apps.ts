@@ -1,4 +1,4 @@
-// The apps that send telemetry to liveworkspace (liveworkspace/docs/telemetry.md). One central
+// The apps that send telemetry to liveworkspace (liveworkspace/docs/specs/008-telemetry/telemetry.md). One central
 // service, so each event names the app it came from, and the dashboard can show every app at once or
 // filter to one. An app is named by its public site, the way people know it.
 
@@ -58,7 +58,7 @@ export function telemetryAppOfOrigin(origin: string): TelemetryApp | null {
   return null;
 }
 
-// liveworkspace.app itself, as a sender: the one Explorer (liveworkspace/docs/site.md "The Explorer")
+// liveworkspace.app itself, as a sender: the one Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer")
 // lives there for every app, so its events count for the app the page is filtered to, or, filtered to
 // All Apps, for liveworkspace.app. Only the Explorer's own events are taken from it
 // (explorer-events.ts), in an app's name or its own.

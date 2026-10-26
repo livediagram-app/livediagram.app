@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { metadata as root } from './layout';
 import { metadata } from './not-found';
 
-// An unknown address must never pass itself off as the home page (liveworkspace/docs/site.md).
+// An unknown address must never pass itself off as the home page (liveworkspace/docs/specs/010-site/site.md).
 describe('the not-found page', () => {
   it('has its own title and description, not the home page’s', () => {
     expect(metadata.title).toBe('Nothing here · liveworkspace');

@@ -1,4 +1,4 @@
-// One pass's view of both sides (liveworkspace/docs/drive.md "The service"): the person's own work as the index
+// One pass's view of both sides (liveworkspace/docs/specs/005-drive/drive.md "The service"): the person's own work as the index
 // holds it, and the mirror's rows, indexed the ways the planners look them up.
 
 import type { DriveFile } from '../server/drive-client';

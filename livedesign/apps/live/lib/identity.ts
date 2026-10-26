@@ -42,7 +42,7 @@ export type Participant = {
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
-  // Their Google picture (liveworkspace/docs/accounts.md "Profile pictures"), as the room relayed it: absent for
+  // Their Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), as the room relayed it: absent for
   // guests, for anyone who turned Show My Google Picture off, and on a guest's or link visitor's screen. Our own
   // entry carries our picture whatever the switch says: it is our screen.
   picture?: string;
@@ -114,7 +114,7 @@ const ANIMALS = [
   'Wolf',
 ];
 
-// The presence palette every liveworkspace app offers (liveworkspace/docs/accounts.md "Profiles"), so
+// The presence palette every liveworkspace app offers (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), so
 // a colour picked in one app is a named swatch in all of them. White initials fall below AA on every
 // one of them; dark mode paints their deeper shade (identity-fill.ts) instead.
 export const PARTICIPANT_COLORS = PRESENCE_COLOUR_VALUES;

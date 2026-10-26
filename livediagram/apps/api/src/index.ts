@@ -90,7 +90,7 @@ async function routeApiRequest(
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
-  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/workbench.md): the router sends
+  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
   // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
   // forwarded the same way, as livediagram, before identity, since accounts checks the credential.
   if (segments[1] === 'workbench') {
@@ -296,7 +296,7 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow.
-  // A link's previews are liveworkspace's (liveworkspace/docs/previews.md), so only the resolve itself counts here.
+  // A link's previews are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), so only the resolve itself counts here.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
     const key = clientRateKey(request);
     if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();

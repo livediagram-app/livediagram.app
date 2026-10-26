@@ -58,7 +58,7 @@ const HIGHLIGHTS: LegalHighlight[] = [
   },
 ];
 
-// The one set of terms for liveworkspace.app and every app in it (liveworkspace/docs/site.md
+// The one set of terms for liveworkspace.app and every app in it (liveworkspace/docs/specs/010-site/site.md
 // "Privacy and terms"), built from the apps' own terms, which said the same things app by app. What only one
 // app does is in that app's section.
 const SECTIONS: LegalSection[] = [

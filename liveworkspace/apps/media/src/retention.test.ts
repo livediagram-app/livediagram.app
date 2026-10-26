@@ -1,4 +1,4 @@
-// The unused-image sweep (liveworkspace/docs/media.md "Retention"), against the real schema.
+// The unused-image sweep (liveworkspace/docs/specs/006-media/media.md "Retention"), against the real schema.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { syncRefs } from './refs';
 import { sweepTripped, sweepUnusedImages } from './retention';

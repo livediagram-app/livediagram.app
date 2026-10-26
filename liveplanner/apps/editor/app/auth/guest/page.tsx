@@ -1,6 +1,6 @@
 'use client';
 
-// Where the accounts site's guest handoff comes back to (liveworkspace/docs/one-explorer-contracts.md "Guests"):
+// Where the accounts site's guest handoff comes back to (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"):
 // `#guest_token=…&state=…`. The token is kept (lib/guest-token.ts) and the page goes straight back to where the
 // handoff started, replacing this entry so Back never lands here again. The fragment never reaches a server.
 import { useEffect, useRef } from 'react';

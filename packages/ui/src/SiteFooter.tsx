@@ -62,7 +62,7 @@ const columns = ({
     links: [
       { href: '/help/', label: 'Help Centre', icon: HelpIcon },
       { href: `/help/about/what-is-${app}/`, label: 'About' },
-      // liveworkspace's one status page, for every app (liveworkspace/docs/site.md "Status").
+      // liveworkspace's one status page, for every app (liveworkspace/docs/specs/010-site/site.md "Status").
       { href: STATUS_PAGE_URL, label: 'Status' },
       { href: '/telemetry', label: 'Telemetry' },
     ],

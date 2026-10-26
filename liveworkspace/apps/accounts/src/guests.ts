@@ -1,4 +1,4 @@
-// Guests: one identity across every app (liveworkspace/docs/one-explorer-contracts.md "Guests").
+// Guests: one identity across every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").
 // An app sends the browser to GET /api/auth/guest; this Worker keeps the guest's id in its own
 // long-lived `lw_guest` cookie and hands the app a guest token in the redirect's fragment. When
 // someone signs in with that cookie, the guest's settings and profile move to the account and the
@@ -144,7 +144,7 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
   if (!resource || !client.resources.includes(resource)) return refuse('invalid_resource');
 
   // From here the browser is always sent back to the app: a failure goes back saying so, rather than leaving it on
-  // an error page the app never hears from (docs/accounts.md "Guests").
+  // an error page the app never hears from (docs/specs/003-accounts/accounts.md "Guests").
   try {
     return await handOff(request, env, auth, { redirectUri, state, resource });
   } catch (error) {

@@ -1,7 +1,7 @@
 import { ButtonContent, buttonClassName } from '@liveworkspace/ui';
 
 // Where a page that used to manage teams lands now (the invite, join and decline pages): teams are
-// run on liveworkspace.app (liveworkspace/docs/accounts.md "Teams"), the same team in every app, so
+// run on liveworkspace.app (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"), the same team in every app, so
 // this says so and links there.
 export function ManagedOnLiveworkspace({
   title,

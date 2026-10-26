@@ -1,4 +1,4 @@
-// A guest becoming an account (liveworkspace/docs/one-explorer-contracts.md "Becoming an account"):
+// A guest becoming an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"):
 // accounts calls this with its own key, and everything the guest had moves to the account in one batch. Each
 // app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
 // Where the account already has the same thing (a favourite, a default), the

@@ -1,4 +1,4 @@
-// The two sides a pass compares (liveworkspace/docs/drive.md "The service"): the person's own work as the index
+// The two sides a pass compares (liveworkspace/docs/specs/005-drive/drive.md "The service"): the person's own work as the index
 // holds it, and the mirror's rows, the last Drive state the service knows for each item and folder.
 
 import type { AppName } from '../formats';

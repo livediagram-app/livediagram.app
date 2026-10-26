@@ -1,4 +1,4 @@
-// A person's mirror state in their Durable Object's SQLite (liveworkspace/docs/drive.md "The service"):
+// A person's mirror state in their Durable Object's SQLite (liveworkspace/docs/specs/005-drive/drive.md "The service"):
 // `drive_connection`, one row (the sealed refresh token, the root, the page token, status, the Google account, a
 // pending switch, the push channel, back-off, pass progress), and `drive_items`, one row per mirrored item and folder
 // (DriveRow, plus the item's updatedAt last seen, for the Explorer's marks). `drive_failures` holds the items whose

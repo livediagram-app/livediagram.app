@@ -1,4 +1,4 @@
-// A person's display name and presence colour (liveworkspace/docs/accounts.md "Profiles"): what
+// A person's display name and presence colour (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): what
 // collaborators see on their cursor, their comments and the presence list, the same in every app. An
 // account's name is its account name unless it sets a display name of its own; a guest's is whatever
 // it sets. Kept with the account, so no app keeps a participants table of its own. An account that signed in with

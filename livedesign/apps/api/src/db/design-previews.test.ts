@@ -3,14 +3,14 @@ import type { Env } from '../types';
 import { purgeDesignPreviews } from './designs';
 
 // When the index purges a design (an account closing, the Trash emptying; routes/internal-items.ts), its previews
-// are liveworkspace's (liveworkspace/docs/previews.md), so the purge asks the media service to drop them.
+// are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), so the purge asks the media service to drop them.
 
 const { deletePreviews } = vi.hoisted(() => ({ deletePreviews: vi.fn() }));
 vi.mock('../media', () => ({
   mediaClient: (env: Env) => (env.MEDIA_KEY ? { deletePreviews } : null),
 }));
 
-describe('purgeDesignPreviews (liveworkspace/docs/previews.md "Purging")', () => {
+describe('purgeDesignPreviews (liveworkspace/docs/specs/006-media/previews.md "Purging")', () => {
   beforeEach(() => {
     deletePreviews.mockReset();
   });

@@ -1,4 +1,4 @@
-// Sharing (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"): share links, the share
+// Sharing (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): share links, the share
 // password, what a link opens, and Shared with me. Managing links needs the item's owner or a joined
 // member of its team. Revoking a link also tells the item at once, so its holders are dropped.
 
@@ -383,7 +383,7 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
     }
   }
   const [item] = await decorate(env, person, [row], new Map([[row.id, access]]));
-  // `public`: a Community post's link, whose live image and card its app decides on (liveworkspace/docs/previews.md).
+  // `public`: a Community post's link, whose live image and card its app decides on (liveworkspace/docs/specs/006-media/previews.md).
   return json({ item, level: access.level, tabId: access.tabId, public: link.public === 1 });
 }
 

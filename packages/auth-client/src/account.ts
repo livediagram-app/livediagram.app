@@ -1,4 +1,4 @@
-// An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
+// An app's server talking to the liveworkspace account API (liveworkspace/docs/specs/003-accounts/accounts.md "Teams",
 // "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
 // for an AI tool someone connects, making a team for someone, reading the teams change feed,
 // reading and writing someone's settings, reading profiles and setting one's own, this app's
@@ -307,7 +307,7 @@ export interface Profile {
   id: string;
   name: string | null;
   color: string | null;
-  // The person's published Google picture (liveworkspace/docs/accounts.md "Profile pictures"): null with none or
+  // The person's published Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): null with none or
   // with their Show My Google Picture switch off. An app passes it on only to signed-in viewers. Absent from an
   // accounts Worker older than pictures.
   picture?: string | null;

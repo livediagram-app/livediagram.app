@@ -5,7 +5,7 @@ import { type Fetch, pooled, probeAll, probeOne } from './probe';
 import { probeTargets } from './run';
 import { testEnv } from './test-env';
 
-// liveworkspace/docs/status.md "The hourly run": checks, judged as the page judges them, with a timeout.
+// liveworkspace/docs/specs/009-status/status.md "The hourly run": checks, judged as the page judges them, with a timeout.
 
 const jsonProbe: Probe = {
   kind: 'read',

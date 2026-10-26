@@ -1,4 +1,4 @@
-// The Community's shared contract (liveworkspace/docs/community.md): the vocabulary, limits, search
+// The Community's shared contract (liveworkspace/docs/specs/007-community/community.md): the vocabulary, limits, search
 // grammar and wire shapes the service, every app's Workers and every app's pages agree on.
 export * from './apps';
 export * from './authors';

@@ -57,7 +57,7 @@ export type TeamMember = {
 };
 
 // One row of `GET /api/teams/invites`: an invitation waiting for the caller on liveworkspace.app, where
-// it is answered (liveworkspace/docs/accounts.md "Invitations"), with enough of the team to decide:
+// it is answered (liveworkspace/docs/specs/003-accounts/accounts.md "Invitations"), with enough of the team to decide:
 // its name and organisation, how many people have joined, the role offered, who invited them and when.
 export type TeamInvite = {
   memberId: string;

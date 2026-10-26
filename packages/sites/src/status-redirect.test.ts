@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { APP_NAMES } from './index';
 import { PRODUCTION_WORKSPACE_ORIGIN, statusPageUrl, statusRedirect } from './workspace-proxy';
 
-// liveworkspace.app keeps the one status page (liveworkspace/docs/site.md "Status"); an app's old /status goes there,
+// liveworkspace.app keeps the one status page (liveworkspace/docs/specs/010-site/site.md "Status"); an app's old /status goes there,
 // to the app's own group.
 describe('statusRedirect', () => {
   it('sends /status and everything under it to the app’s group on liveworkspace’s page, permanently', () => {

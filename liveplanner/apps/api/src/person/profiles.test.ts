@@ -10,7 +10,7 @@ import {
   saveParticipant,
 } from './profiles';
 
-// Names and colours are the accounts Worker's profiles (liveworkspace/docs/accounts.md "Profiles"),
+// Names and colours are the accounts Worker's profiles (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"),
 // read a list at a time and remembered per isolate for a minute.
 
 const env = ACCOUNTS_ON as Env;

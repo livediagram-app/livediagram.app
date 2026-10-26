@@ -50,7 +50,7 @@ const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.B
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
 
-// The liveworkspace telemetry dashboard (liveworkspace/docs/telemetry.md "The dashboard"): every app's
+// The liveworkspace telemetry dashboard (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's
 // anonymous events, all together or one app at a time.
 export default function TelemetryDashboard() {
   // The filter rides in the URL (`?app=…`), so a link opens on it.
@@ -148,7 +148,7 @@ export default function TelemetryDashboard() {
             </div>
           ) : !loaded ? (
             // The first visit and a switch to an app not fetched yet: the shapes the numbers will
-            // take, never an empty page (liveworkspace/docs/telemetry.md "The dashboard", Loading).
+            // take, never an empty page (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", Loading).
             <DashboardSkeleton variant={app === ALL_TELEMETRY_APPS ? 'all' : 'app'} />
           ) : !loaded.enabled ? (
             <div className="mt-12">

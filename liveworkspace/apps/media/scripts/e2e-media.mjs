@@ -1,4 +1,4 @@
-// liveworkspace's media service for an app's e2e stack (liveworkspace/docs/media.md): the real Worker under
+// liveworkspace's media service for an app's e2e stack (liveworkspace/docs/specs/006-media/media.md): the real Worker under
 // `wrangler dev --local`, on a fresh local D1 and R2 of its own (apart from a developer's `wrangler dev` state), with
 // a test-only key for each app the stack names. The app's api is then started with `MEDIA_URL` and `MEDIA_KEY` from
 // what this returns, so its image routes (upload, gallery, bytes, account merges) run end to end.

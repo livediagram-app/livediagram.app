@@ -11,7 +11,7 @@ import { setGrantVerifierForTests } from '../index-service';
 import type { Env } from '../types';
 import { DesignRoom } from './design-room';
 
-// A session holds the index's grant, which lapses after ten minutes (liveworkspace/docs/one-explorer-contracts.md
+// A session holds the index's grant, which lapses after ten minutes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Grants"): the room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before, moves the lapse on when one comes, and
 // drops the socket once it has lapsed. A revoked share link closes exactly the sockets it admitted.
 

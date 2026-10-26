@@ -37,7 +37,7 @@ export function settingsPanelApp(site: {
 }
 
 // The one Settings panel (each app's docs/specs/007-editor/user-preferences.md "This app or All";
-// liveworkspace/docs/site.md "Settings"): every app's Settings and liveworkspace.app's render it, inside their own
+// liveworkspace/docs/specs/010-site/site.md "Settings"): every app's Settings and liveworkspace.app's render it, inside their own
 // dialog frame. Its header switch, as the Explorer's, picks between this app's settings alone and All: the
 // account's own (its profile, emails, privacy and accessibility, API tokens), then one set of categories merged
 // across every app, each app's own rows under its name and logo (merge-categories.ts). The host passes only what differs: which app it is, its own settings model where it has one

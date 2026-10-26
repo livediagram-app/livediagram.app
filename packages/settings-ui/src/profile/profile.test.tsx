@@ -10,7 +10,7 @@ import { requestProfileHost, type ProfileHost } from './profile-host';
 import { guestProfileRows, profileRows } from './profile-rows';
 import { deviceName, type AccountSecurity, type AccountSession } from './SecurityRows';
 
-// Settings › Profile (liveworkspace/docs/site.md "Settings", "Profile"): the header card, Name and Colour, Sign-in
+// Settings › Profile (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): the header card, Name and Colour, Sign-in
 // Methods, Where You're Signed In and Your Account for someone signed in; the guest's card and the way in for a guest.
 
 const base = { all: {}, set: () => {} };

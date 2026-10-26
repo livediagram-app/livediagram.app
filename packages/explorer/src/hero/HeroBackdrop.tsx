@@ -1,5 +1,5 @@
 // Home's hero backdrop: what tells the apps apart behind the same words, pills, search and tiles
-// (liveworkspace/docs/one-explorer.md "Each app's backdrop, on Home's hero"). It follows the app the list is filtered
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Each app's backdrop, on Home's hero"). It follows the app the list is filtered
 // to; All Apps keeps the dots. Static SVG and CSS in the host's brand ramp: no motion, nothing fetched.
 
 import { useId } from 'react';

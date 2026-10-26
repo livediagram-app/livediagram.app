@@ -1,4 +1,4 @@
-// The access rule (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"): the owner, and
+// The access rule (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): the owner, and
 // every joined member of the item's team, edit everything; anyone else needs a live share link, at its
 // level and on its tab, and the item's share password when it has one. Team membership comes from the
 // token's `teams` claim, and from accounts for a team the claim does not hold yet (fresh-teams.ts).

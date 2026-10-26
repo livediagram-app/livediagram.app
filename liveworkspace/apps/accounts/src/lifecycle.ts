@@ -1,4 +1,4 @@
-// The onboarding series (liveworkspace/docs/accounts.md "Onboarding emails"): one per account, not one
+// The onboarding series (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): one per account, not one
 // per app, so a person who uses all four apps hears it once. A row is made with the account; the welcome
 // goes as soon as the sign-up's response has gone, and the cron sends the rest when each is due:
 //

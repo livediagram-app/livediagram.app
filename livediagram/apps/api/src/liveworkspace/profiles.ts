@@ -1,6 +1,6 @@
 // Display names and presence colours (docs/specs/015-api/api.md "participants"), kept by the
 // liveworkspace accounts Worker as one profile per person across every app
-// (liveworkspace/docs/accounts.md "Profiles"). This app keeps no participants table: it reads
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"). This app keeps no participants table: it reads
 // profiles in batches and writes only the caller's own.
 //
 // Reads are remembered per isolate for PROFILE_CACHE_MS, so the hot paths that name someone (a
@@ -53,7 +53,7 @@ function toParticipant(id: string, profile: Profile): ParticipantDTO | null {
   };
 }
 
-// A participant as a caller who is not signed in reads it: never a picture (liveworkspace/docs/accounts.md
+// A participant as a caller who is not signed in reads it: never a picture (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Profile pictures": pictures go only to signed-in viewers).
 export function withoutPicture(p: ParticipantDTO): ParticipantDTO {
   if (p.picture === undefined) return p;

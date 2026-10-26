@@ -1,7 +1,7 @@
 import { TELEMETRY_APPS } from '@liveworkspace/telemetry';
 import { WINDOW_META } from './_shared/windows';
 
-// What the dashboard shows while its numbers load (liveworkspace/docs/telemetry.md "The dashboard",
+// What the dashboard shows while its numbers load (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard",
 // Loading): the shapes the data will take, in the layout it will take, so the page never empties and
 // nothing above the cards moves when the data lands. Static markup: no state, no effects, no requests.
 // The pulse is the site's skeleton tone and stops under reduced motion.

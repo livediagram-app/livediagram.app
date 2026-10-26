@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
 // The Explorer, its menus and the Share dialog are liveworkspace's shared package
-// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md), which the editor
+// (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md), which the editor
 // renders as its own. Its labels are what a reader sees in liveplanner, so they
 // are read as the editor's.
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;

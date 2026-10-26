@@ -17,7 +17,7 @@ export function AccountMenuPlaceholder() {
 /** What the menu's own chunk renders in the stand-in's place: open, or focused, as the stand-in was left. */
 export type DeferredMenuProps = { openOnMount?: boolean; focusOnMount?: boolean };
 
-/** The Guest button on a page that must cost a visitor nothing (an app's marketing header, liveworkspace/docs/site.md
+/** The Guest button on a page that must cost a visitor nothing (an app's marketing header, liveworkspace/docs/specs/010-site/site.md
  *  "The header"): the account menu's Guest trigger, drawn here with none of the menu's code. `load` fetches the menu's
  *  chunk when the pointer or focus reaches the button; a press made before it arrives opens the menu once it has. */
 export function DeferredAccountMenu({

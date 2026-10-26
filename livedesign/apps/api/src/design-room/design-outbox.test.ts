@@ -147,7 +147,7 @@ describe('the outbox', () => {
     });
   });
 
-  // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/accounts.md "Onboarding
+  // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding
   // emails"): the design's owner, reported with its summary, never a guest.
   it("reports the owner's newest save to the accounts Worker with the summary", async () => {
     const accounts = fakeAccounts();

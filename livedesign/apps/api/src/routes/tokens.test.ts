@@ -36,7 +36,7 @@ beforeEach(() => {
   db.retractTimelineWarning.mockResolvedValue(undefined);
 });
 
-// Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/accounts.md "API
+// Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/specs/003-accounts/accounts.md "API
 // tokens"): this app routes only /api/tokens/current, and touches nothing for anything else.
 describe('token management is on liveworkspace.app', () => {
   it('404s every other tokens route', async () => {
@@ -85,7 +85,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
   });
 
-  // Its workbench pairings end at liveworkspace with the revoke (liveworkspace/docs/workbench.md).
+  // Its workbench pairings end at liveworkspace with the revoke (liveworkspace/docs/specs/011-workbench/workbench.md).
   it('revokes itself at liveworkspace', async () => {
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));

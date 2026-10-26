@@ -1,4 +1,4 @@
-// The team invitations waiting for an account (liveworkspace/docs/accounts.md "The API",
+// The team invitations waiting for an account (liveworkspace/docs/specs/003-accounts/accounts.md "The API",
 // `POST /api/account/internal/invitations`), for an app's Invites view and its sidebar badge. They are
 // answered in the Explorer's Invites, over liveworkspace's account API; this read only shows them.
 //

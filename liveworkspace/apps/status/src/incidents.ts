@@ -1,4 +1,4 @@
-// Incidents (liveworkspace/docs/status.md "The hourly run"): outages only. A run of consecutive down checks of one
+// Incidents (liveworkspace/docs/specs/009-status/status.md "The hourly run"): outages only. A run of consecutive down checks of one
 // service, from its first down check to the first check after it that answered (up or slow). Each run opens, extends or
 // closes them. A slow hour is no incident: the day's bar shows it. Pure.
 

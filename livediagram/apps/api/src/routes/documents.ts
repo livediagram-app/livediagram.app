@@ -1,6 +1,6 @@
 // /api/documents: a canvas's content and what it knows of itself (name, owner, provenance), its tabs, comments and
 // slide deck, and the realtime room. Where a canvas is filed, who may open it, its sharing and its Trash are the
-// index's (liveworkspace/docs/one-explorer.md); the doors an API client still calls for those are answered from it
+// index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are answered from it
 // (document-index-routes.ts).
 
 import type { Tab } from '@livediagram/document';
@@ -237,7 +237,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
   if (segments[1] !== 'documents') return notFound();
   // A canvas in the Trash answers its owner and team 410 `document_trashed`, as the index's grant says
   // (docs/specs/013-workspace/trash.md). Its preview still shows in the Trash's rows: that is liveworkspace's
-  // (liveworkspace/docs/previews.md), behind the index, which lets its owner and team see it.
+  // (liveworkspace/docs/specs/006-media/previews.md), behind the index, which lets its owner and team see it.
   if (ctx.grant?.trashed && segments.length >= 3) return documentTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') {

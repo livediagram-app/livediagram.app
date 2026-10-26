@@ -12,7 +12,7 @@ import { type ListedApp, listedApps } from '@/lib/apps';
 import { AppMark } from './AppLogo';
 import { Cursor } from './Cursor';
 
-// The illustrations on "What every app shares" (liveworkspace/docs/site.md "The front door"): each
+// The illustrations on "What every app shares" (liveworkspace/docs/specs/010-site/site.md "The front door"): each
 // promise drawn as a small piece of the product, in the apps' own colours, light and dark. All
 // decorative; the tile's words carry the meaning.
 

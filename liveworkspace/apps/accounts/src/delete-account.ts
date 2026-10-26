@@ -9,8 +9,8 @@
 // already issued runs out on its own (minutes). Then the index is told to purge everything it holds
 // for the person (index-purge.ts): recorded before the user goes, so it can't be lost, and sent again
 // by the cron if the index doesn't take it now. Its workbench goes last: pairings, sessions and the rooms they had
-// open (liveworkspace/docs/workbench.md "Ending access"), and its Google Drive mirror is disconnected, its files left in
-// Drive (liveworkspace/docs/drive.md). The account is closed either way.
+// open (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"), and its Google Drive mirror is disconnected, its files left in
+// Drive (liveworkspace/docs/specs/005-drive/drive.md). The account is closed either way.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';

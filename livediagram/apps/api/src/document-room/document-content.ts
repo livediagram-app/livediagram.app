@@ -107,7 +107,7 @@ export async function readDocumentMeta(
 }
 
 // What the document knows of itself, its last save and its slide deck, in one read: the export door's version
-// (liveworkspace/docs/previews.md), without the tab outline.
+// (liveworkspace/docs/specs/006-media/previews.md), without the tab outline.
 export async function readDocumentHead(
   env: DocumentEnv,
   documentId: string,

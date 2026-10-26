@@ -1,4 +1,4 @@
-// The Worker over HTTP (liveworkspace/docs/media.md "The API"): each app behind its own key, uploads and
+// The Worker over HTTP (liveworkspace/docs/specs/006-media/media.md "The API"): each app behind its own key, uploads and
 // what they refuse, the gallery across apps, the bytes, references and owners.
 import type {
   MediaImageResponse,

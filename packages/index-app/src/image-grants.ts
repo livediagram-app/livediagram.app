@@ -1,5 +1,5 @@
 // Which images an item may serve, answered in the item's own SQLite (its Durable Object): placement grants
-// (liveworkspace/docs/media.md "References"; an app's images spec, "Placement grants").
+// (liveworkspace/docs/specs/006-media/media.md "References"; an app's images spec, "Placement grants").
 //
 // A reference alone does not let an item serve an image: an id pasted into an unrelated item must not keep the bytes
 // reachable after its reader loses access to the original. An item serves image X when X's owner owns the item, X's

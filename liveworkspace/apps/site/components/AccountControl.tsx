@@ -15,7 +15,7 @@ const SiteSettingsDialog = lazy(loadSettings);
 /** A surface's own Settings panel: opening it in place, and fetching its code ahead of the press. */
 export type SettingsControl = { onOpen: () => void; onPrepare: () => void };
 
-// The header's account control (liveworkspace/docs/site.md "The header"): AccountMenu from
+// The header's account control (liveworkspace/docs/specs/010-site/site.md "The header"): AccountMenu from
 // @liveworkspace/account-menu, the one every app's marketing header and the Explorer show too. Signed in, the person's
 // avatar and name, opening the Explorer, Settings and Sign out; Settings opens the Settings panel over this page, in
 // place: the Explorer's own panel there (`settings`), else this control's own, its code fetched only when Settings is

@@ -1,5 +1,5 @@
 // What a share link opens, for API clients (index-adapters.ts). What a link shows without opening (its live image,
-// its share card and the name a link preview reads) is liveworkspace's (liveworkspace/docs/previews.md): the router
+// its share card and the name a link preview reads) is liveworkspace's (liveworkspace/docs/specs/006-media/previews.md): the router
 // sends `/api/share/<code>/image.svg|image.png|card` there, and the design only draws (routes/internal-items.ts, the
 // export door).
 

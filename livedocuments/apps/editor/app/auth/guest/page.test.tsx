@@ -5,7 +5,7 @@ import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 import { guestTokenFor } from '@liveworkspace/index-client/testing';
 import GuestHandoffPage from './page';
 
-// The page the accounts site's guest handoff comes back to (liveworkspace/docs/one-explorer-contracts.md "Guests"):
+// The page the accounts site's guest handoff comes back to (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"):
 // it keeps the token for the state this tab sent and goes back where the handoff started, replacing itself.
 
 const replace = vi.fn();

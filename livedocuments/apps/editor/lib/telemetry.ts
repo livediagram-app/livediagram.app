@@ -53,7 +53,7 @@ function ensurePreferenceListeners(): void {
 }
 
 // Constructed lazily on the first track(), so a page that never tracks never
-// builds one. Events go to liveworkspace's central service (liveworkspace/docs/telemetry.md).
+// builds one. Events go to liveworkspace's central service (liveworkspace/docs/specs/008-telemetry/telemetry.md).
 let emitter: TelemetryEmitter | null = null;
 
 export const track: TelemetryEmitter['track'] = (category, action, type) => {

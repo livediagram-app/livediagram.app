@@ -1,4 +1,4 @@
-// /api/previews (liveworkspace/docs/previews.md "The addresses"): every app's item pictures, for browsers, on
+// /api/previews (liveworkspace/docs/specs/006-media/previews.md "The addresses"): every app's item pictures, for browsers, on
 // liveworkspace.app and (forwarded by each app's router) on every app's own origin.
 //
 //   GET /api/previews/items/:id?v=              the Explorer's preview, for whoever the index lets read the item

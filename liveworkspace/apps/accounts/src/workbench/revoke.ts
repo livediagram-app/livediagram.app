@@ -1,4 +1,4 @@
-// Ending a workbench's access from accounts' side (liveworkspace/docs/workbench.md "Ending access"): a token revoked
+// Ending a workbench's access from accounts' side (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): a token revoked
 // ends its pairings and requests, an account closed drops the whole store. The store's rows go first, in the request;
 // the rooms their sessions had open close through the index after it, off the response's path when it can be.
 

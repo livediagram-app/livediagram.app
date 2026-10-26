@@ -32,7 +32,7 @@ describe('email templates', () => {
   });
 
   // The opt-out emails link to the toggle that stops them, in their footer and their List-Unsubscribe
-  // header. The onboarding series is liveworkspace's own (liveworkspace/docs/accounts.md).
+  // header. The onboarding series is liveworkspace's own (liveworkspace/docs/specs/003-accounts/accounts.md).
   it.each([
     ['milestone', () => milestoneEmail(env, 10)],
     ['comment', () => commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna')],

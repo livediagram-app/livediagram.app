@@ -1,4 +1,4 @@
-// What an item pushes for the Inbox (liveworkspace/docs/one-explorer-contracts.md "Inbox"), from its app's server
+// What an item pushes for the Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"), from its app's server
 // with the app's key: each tab's comment threads and actions, its cards and their threads (under COLLAB_CARDS_TAB),
 // and each form's response count and who has seen how many. Shown text is cut rather than refused; ids and times
 // must be well formed.

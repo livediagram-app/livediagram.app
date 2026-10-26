@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Search panel (liveworkspace/docs/site.md "The Explorer", Search): the shared panel
+// The Explorer's Search panel (liveworkspace/docs/specs/010-site/site.md "The Explorer", Search): the shared panel
 // (@liveworkspace/explorer/search-panel) with this site's own entries, help and settings (lib/explorer/search.ts).
 // ExplorerShell loads this module only when the panel first opens.
 

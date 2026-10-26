@@ -39,7 +39,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
       return notFound();
     }
     // The Google picture only to a signed-in caller (an account's session or token), never a guest or a link
-    // visitor (liveworkspace/docs/accounts.md "Profile pictures").
+    // visitor (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
     return json({ participant: ctx.verifiedUserId ? p : withoutPicture(p) });
   }
   if (request.method === 'PUT') {

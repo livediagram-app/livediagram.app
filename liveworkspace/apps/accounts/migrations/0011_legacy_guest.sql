@@ -1,4 +1,4 @@
--- Returning guests of the old livediagram.app (liveworkspace/docs/accounts.md "Returning guests of the old
+-- Returning guests of the old livediagram.app (liveworkspace/docs/specs/003-accounts/accounts.md "Returning guests of the old
 -- livediagram.app", docs/migration.md step 6): one row per migrated guest, written by the migrate tool, never by
 -- this Worker. `id` is `guest_<old uuid>`, the owner their copied work is under; `firstSeenAt` is when the old site
 -- first saw them (epoch ms), which decides whether an unsigned id may be claimed; `claimedAt` and `claimedBy` are

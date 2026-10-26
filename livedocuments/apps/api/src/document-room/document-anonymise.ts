@@ -1,4 +1,4 @@
-// A closed account's name off a document that outlives them (liveworkspace/docs/one-explorer-contracts.md "Closing an
+// A closed account's name off a document that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which documents name them (POST /api/internal/people/:id/purge), and each document's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments and
 // assignments in each tab's elements and articles, the changesets they wrote, and the document's owner when it was

@@ -1,4 +1,4 @@
-/* The status page's motion (liveworkspace/docs/site.md "Status"): a slow pulse behind the overall state, the cards
+/* The status page's motion (liveworkspace/docs/specs/010-site/site.md "Status"): a slow pulse behind the overall state, the cards
  * rising as the page opens, each new check settling into its strip, and the checking glyph turning. Paced as
  * content, not chrome (motion-budget.test.ts lists this file), and all of it stops for reduced motion. */
 

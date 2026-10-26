@@ -1,4 +1,4 @@
--- Which app each OAuth client is (liveworkspace/docs/accounts.md "Which app a client is"), so an app's
+-- Which app each OAuth client is (liveworkspace/docs/specs/003-accounts/accounts.md "Which app a client is"), so an app's
 -- server reaches only what is its own: its own settings scope beside 'all', its own sightings and
 -- milestones. Set when the client is registered (src/clients.ts); scripts/map-clients.ts sets it for a
 -- client registered before. Written by hand, like 0002. A client without a row may still check tokens and

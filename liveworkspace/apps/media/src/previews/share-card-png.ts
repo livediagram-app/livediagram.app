@@ -1,4 +1,4 @@
-// The share card as a PNG (liveworkspace/docs/previews.md): link previews draw rasters only, so
+// The share card as a PNG (liveworkspace/docs/specs/006-media/previews.md): link previews draw rasters only, so
 // the card's SVG (./share-card.ts) goes through the shared resvg renderer. Its own module because it reaches the
 // renderer's wasm, which plain node cannot load: the renderer is imported on first use, so the many suites that load
 // the worker's router never reach it, and the route's own tests mock this file.

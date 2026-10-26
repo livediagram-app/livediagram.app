@@ -5,7 +5,7 @@ import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
 // help centre and the marketing site. The e2e stack serves their static builds (help under its basePath
 // on this origin, marketing on its own port); against a dev stack, point E2E_HELP_URL / E2E_MARKETING_URL
-// at the dev servers. (The telemetry dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+// at the dev servers. (The telemetry dashboard is liveworkspace's now, liveworkspace/docs/specs/008-telemetry/telemetry.md.)
 
 test.use({
   colorScheme: 'dark',

@@ -1,4 +1,4 @@
-// Who may see a preview (liveworkspace/docs/previews.md): the index decides, with the same rule it applies to the
+// Who may see a preview (liveworkspace/docs/specs/006-media/previews.md): the index decides, with the same rule it applies to the
 // item itself. The service asks it once per request, through the INDEX service binding: one indexed read.
 
 import {

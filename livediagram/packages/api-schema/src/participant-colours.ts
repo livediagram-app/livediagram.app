@@ -1,5 +1,5 @@
 // The colour an identity takes when it has none of its own: a profile whose colour was never set
-// (liveworkspace/docs/accounts.md "Profiles", `color` null), or a team member row keyed by email.
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles", `color` null), or a team member row keyed by email.
 // It comes from liveworkspace's one presence palette (@liveworkspace/settings PRESENCE_COLOURS), the
 // same in every app. Shared by the api worker, which fills in a missing colour, and the editor,
 // which picks a fresh one from the same palette.

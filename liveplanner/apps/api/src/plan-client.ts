@@ -27,7 +27,7 @@ export type PlanRoomClient = {
   route(request: Request, identity: RouteIdentity): Promise<Response>;
   // The plan drawn for liveworkspace's previews (the export door, plan-room.ts `exportImage`), where the content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
-  // The plan as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new plan made
+  // The plan as its Drive file (the export door's `file` format, liveworkspace/docs/specs/005-drive/drive.md), and a new plan made
   // from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: ProjectFileImport): Promise<void>;

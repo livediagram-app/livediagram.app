@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer inside a workbench's workspace frame (WorkspaceFrame.tsx): the shared Explorer
-// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
+// (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served at this address's /explorer (@liveworkspace/workbench/lib/explorer-href.ts); a frame keeps its own. Everything it
 // lists comes from the index through /api/index; livediagram supplies the addresses and Help articles
 // (lib/explorer-host.ts), New (the /new flow), the Library (Image Gallery, Shape Libraries and Import from,

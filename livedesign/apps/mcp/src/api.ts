@@ -39,7 +39,7 @@ export function apiFetch(
   return clientFor(env, token).fetch(path, init);
 }
 
-// Fire-and-forget anonymous telemetry to liveworkspace's central service (liveworkspace/docs/telemetry.md),
+// Fire-and-forget anonymous telemetry to liveworkspace's central service (liveworkspace/docs/specs/008-telemetry/telemetry.md),
 // handed to the request's waitUntil (request-scope.ts) so the runtime can't cancel it when the response
 // goes out. A Worker sends no Origin, so the post carries livedesign's Worker key; without one there is
 // nothing to send. Whether it is stored is the service's call (its TELEMETRY_ENABLED).

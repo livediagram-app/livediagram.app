@@ -23,7 +23,7 @@ not_found_handling = "404-page"
 # everything but the hashed /_next/ bundles, which need no page headers.
 run_worker_first = ["/*", "!/_next/*"]
 
-# A share link's preview names its document from liveworkspace's previews (liveworkspace/docs/previews.md), at
+# A share link's preview names its document from liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md), at
 # https://www.liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed

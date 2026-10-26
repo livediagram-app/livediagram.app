@@ -1,5 +1,5 @@
 // This Browser: what an app keeps only in this browser (its offline items), for the Explorer served on that app's own
-// address (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). The index never sees these, and
+// address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). The index never sees these, and
 // they live in the app's own storage, which only a page on the app's origin can read. So the app keeps a small list
 // of them in localStorage under one shared key (`liveworkspace:this-browser:<app>`): id, title and the few dates the
 // Explorer sorts and groups by, never their content. The Explorer page, on the same origin, reads it and hears each

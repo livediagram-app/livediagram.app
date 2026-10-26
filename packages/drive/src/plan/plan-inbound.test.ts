@@ -5,7 +5,7 @@ import { LOCAL_NAME_MAX, orderChanges, planAdoption, planInbound } from './plan-
 import { buildSnapshot } from './snapshot';
 import type { DriveRow, MirrorFolder, MirrorItem, MirrorTrashed } from './types';
 
-// Each row of the spec's Inbound table as a pure decision (liveworkspace/docs/drive.md "Inbound: Drive to
+// Each row of the spec's Inbound table as a pure decision (liveworkspace/docs/specs/005-drive/drive.md "Inbound: Drive to
 // liveworkspace").
 
 const ORIGIN = 'https://liveworkspace.test';

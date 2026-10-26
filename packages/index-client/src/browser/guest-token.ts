@@ -1,4 +1,4 @@
-// A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/one-explorer-contracts.md
+// A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Guests"). The first time a browser needs one, the editor sends it to the accounts site through its api's
 // `/api/auth/guest` (which names the app's client there), and it comes back to the editor's /auth/guest page with a
 // year-long guest token in the fragment. The token is kept in localStorage and sent as the Bearer, exactly as an
@@ -128,7 +128,7 @@ export function createGuestTokens(opts: GuestTokenOptions): GuestTokens {
     );
     // On the next task, never inside the caller's own: a handoff begun from a React effect would otherwise fire
     // beforeunload mid-commit, where the editors' unload flush (flushSync) cannot run.
-    // In place of this page (liveworkspace/docs/one-explorer-contracts.md "Guests"): the round trip leaves no history
+    // In place of this page (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the round trip leaves no history
     // entry, so Back from where it comes back to skips this page, which would only hand off again or, on a /new,
     // make another document. Pushed, it trapped Back on the editor.
     const to = `${opts.apiBase}/auth/guest?state=${encodeURIComponent(state)}`;

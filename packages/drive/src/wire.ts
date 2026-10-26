@@ -1,4 +1,4 @@
-// What the service's browser routes answer (liveworkspace/docs/drive.md "The service"), shared by the service and
+// What the service's browser routes answer (liveworkspace/docs/specs/005-drive/drive.md "The service"), shared by the service and
 // the UI (`@liveworkspace/settings-ui`'s Cloud Sync row, the site's /drive pages, the Explorer's marks).
 
 import type { AppName } from './formats';

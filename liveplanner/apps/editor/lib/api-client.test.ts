@@ -64,7 +64,7 @@ async function call(...args: Parameters<typeof apiHeaders>): Promise<Record<stri
   return (await apiHeaders(...args)) as Record<string, string>;
 }
 
-// Who a request is from (liveworkspace/docs/one-explorer-contracts.md "Guests"): the account's token, else the
+// Who a request is from (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the account's token, else the
 // guest's, both as the Bearer; a link visitor with neither sends no identity at all.
 describe('apiHeaders', () => {
   afterEach(() => localStorage.clear());
@@ -117,7 +117,7 @@ describe('apiHeaders', () => {
   });
 });
 
-// A link opens a plan at the level its grant says (liveworkspace/docs/one-explorer-contracts.md "Sharing and
+// A link opens a plan at the level its grant says (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and
 // access"): the index answers the grant, or why not; the plan is then read once.
 describe('apiLoadShared', () => {
   afterEach(() => {
@@ -350,7 +350,7 @@ describe('apiCreateProject persisted body (docs/specs/006-project/tab-folders.md
     expect(out).toEqual({ id: 'd1' });
   });
 
-  // liveworkspace/docs/one-explorer-contracts.md "Items": the index makes the item first, and its grant lets the
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items": the index makes the item first, and its grant lets the
   // content in; the placement is the index's, never the api's.
   it('creates the item at the index, then the content with its grant', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(Response.json({ project: { id: 'd2' } }));
@@ -598,7 +598,7 @@ describe('apiLoadTab load boundary', () => {
     expect(tab!.elements.find((e) => e.id === 's')).toEqual(shape); // unchanged
   });
 
-  // liveworkspace/docs/one-explorer-contracts.md "Opens": only a read the editor declares counts, at the index.
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Opens": only a read the editor declares counts, at the index.
   it('records an open at the index only when asked to', async () => {
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
     await apiLoadTab('owner', 'd1', 't-open', null, { open: true });

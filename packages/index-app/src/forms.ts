@@ -1,4 +1,4 @@
-// A public form's code, as an app's Worker finds the item behind it (liveworkspace/docs/one-explorer-contracts.md
+// A public form's code, as an app's Worker finds the item behind it (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "What an item pushes"). The item's Durable Object keeps its form links; the index keeps each live link's code on
 // the form's Inbox row (`pushForm` with `code`), so the Worker asks the index which item a code names
 // (`GET /app/forms/:code`) and routes the request there. The item's own check (deleted, suspended, closed) stays

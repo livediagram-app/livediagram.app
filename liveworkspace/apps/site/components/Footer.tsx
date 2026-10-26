@@ -6,7 +6,7 @@ import { Wordmark } from './Wordmark';
 const linkClass =
   'relative touch-target-y text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white';
 
-// The footer (liveworkspace/docs/site.md "The front door"): every app again, the platform's own
+// The footer (liveworkspace/docs/specs/010-site/site.md "The front door"): every app again, the platform's own
 // pages and services (Comparison, which points at each app's comparisons), and the privacy
 // policy and terms that cover all of them, and the site's third-party licences.
 export function Footer() {
@@ -49,7 +49,7 @@ export function Footer() {
           <a href="/terms" className={linkClass}>
             {TERMS_LABEL}
           </a>
-          {/* Third-party licences (liveworkspace/docs/site.md "Licences"). */}
+          {/* Third-party licences (liveworkspace/docs/specs/010-site/site.md "Licences"). */}
           <a href="/licences" className={linkClass}>
             Licences
           </a>

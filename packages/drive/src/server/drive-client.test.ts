@@ -5,7 +5,7 @@ import { DRIVE_FOLDER_MIME, DRIVE_MULTIPART_MAX_BYTES } from '../constants';
 import { APP_FILE_FORMATS } from '../formats';
 import { createDriveClient, DriveApiError, DriveFileTooLarge } from './drive-client';
 
-// The service's Drive client against the fake Google (liveworkspace/docs/drive.md "The service").
+// The service's Drive client against the fake Google (liveworkspace/docs/specs/005-drive/drive.md "The service").
 
 const MIME = APP_FILE_FORMATS.liveplanner.mimeType;
 

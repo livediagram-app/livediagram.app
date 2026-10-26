@@ -4,7 +4,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 //
 // Storage:
 //   - The person's liveworkspace account is the authoritative store
-//     (liveworkspace/docs/accounts.md "Settings"), reached through the
+//     (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), reached through the
 //     api's /api/preferences: the keys every app shares (ALL_SETTING_KEYS
 //     in @liveworkspace/settings) in its `all` scope, the rest in
 //     livedesign's own. Fetched once per page load via

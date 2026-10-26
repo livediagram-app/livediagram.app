@@ -8,7 +8,7 @@
 //     NOT SignedIn as well.
 //   - Otherwise it is a sign-in of an existing account: count SignedIn.
 //
-// "Never seen" is per app, and liveworkspace keeps it (liveworkspace/docs/accounts.md "Sign-ups and
+// "Never seen" is per app, and liveworkspace keeps it (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and
 // milestones per app", recordSighting): an account made on livedocuments that signs in to livediagram
 // for the first time counts as a livediagram sign-up. The sighting is recorded whether or not
 // telemetry is on, since this app's milestone emails can only be claimed for an account it has seen.

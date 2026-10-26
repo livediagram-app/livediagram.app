@@ -1,5 +1,5 @@
 -- A person's display name and presence colour, the ones collaborators see in every app
--- (liveworkspace/docs/accounts.md "Profiles"), and when each guest id was last handed to an app, which
+-- (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), and when each guest id was last handed to an app, which
 -- is how a guest who can never come back is told apart (src/guest-sweep.ts). Written by hand, like 0002.
 
 -- One row per owner: an account id (`user_…`) or a guest id (`guest_<uuid>`). Guests aren't rows in

@@ -31,7 +31,7 @@ import { sendTeamInviteEmail } from './email.ts';
 import { startLifecycle } from './lifecycle.ts';
 import { flushServerEvents } from './telemetry.ts';
 
-// The parts of teams that came back from livediagram (liveworkspace/docs/accounts.md "Teams"): the
+// The parts of teams that came back from livediagram (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): the
 // join link, the organisation line, declining from the email, reminders and expiry, invitations
 // turned down staying on the list, and the admins hearing the answer.
 

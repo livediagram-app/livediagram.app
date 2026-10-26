@@ -15,8 +15,8 @@ const NAV: { href: string; label: string; icon: ReactNode }[] = [
   { href: '/telemetry', label: 'Telemetry', icon: <TelemetryIcon /> },
 ];
 
-// The header on every page (liveworkspace/docs/site.md "The header"): the wordmark, whose hover lists
-// every site (liveworkspace/docs/site-switcher.md), two links, each with its icon, and Sign in or the
+// The header on every page (liveworkspace/docs/specs/010-site/site.md "The header"): the wordmark, whose hover lists
+// every site (liveworkspace/docs/specs/010-site/site-switcher.md), two links, each with its icon, and Sign in or the
 // account menu. The sign-in pages leave the account control out: they are the sign-in.
 //
 // Light / Dark / System is never in the bar: it is on the rail at the page's right edge (SiteRail),

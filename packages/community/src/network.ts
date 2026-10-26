@@ -1,4 +1,4 @@
-// The network a request comes from (liveworkspace/docs/community.md "Public routes"): the caller's address range
+// The network a request comes from (liveworkspace/docs/specs/007-community/community.md "Public routes"): the caller's address range
 // rather than the exact address, so one person cannot pass for many by rotating addresses inside what they hold (an
 // IPv6 user typically holds a whole /56 or /64, and an IPv4 one can often hop within a /24). IPv4 keeps its /24, IPv6 its
 // /56. Anything unparseable is its own network. The Community service counts likes, copies and reports per network;

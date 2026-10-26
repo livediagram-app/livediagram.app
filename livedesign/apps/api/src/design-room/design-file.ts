@@ -1,4 +1,4 @@
-// The design as its Google Drive file (liveworkspace/docs/drive.md "The file", "Contracts > The apps";
+// The design as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the `livedesign.design` envelope the CLI's pull files write, every tab with
 // its per-design folder. The export runs inside the design's Durable Object, from the same tab
 // read a copy makes (design-content.ts readContentTabRows), stamped with the design's last save so unchanged content

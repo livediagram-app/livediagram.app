@@ -1,4 +1,4 @@
-// Saving what the Settings panel changes over the accounts API (liveworkspace/docs/site.md "Settings"). Each change
+// Saving what the Settings panel changes over the accounts API (liveworkspace/docs/specs/010-site/site.md "Settings"). Each change
 // shows at once and is written alone, as a patch of just the key it touches in its scope (an app's own, or `all`);
 // a write that fails puts that key back to what the server last took, unless a newer change to it has gone since. Kept outside React: the rows
 // carry `change`, and what the saves share (the scopes as last shown, each key's newest change, the writes on their

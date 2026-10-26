@@ -1,5 +1,5 @@
-// liveplanner's side of liveworkspace's media service (liveworkspace/docs/media.md), which serves every app's
-// previews (liveworkspace/docs/previews.md). liveplanner keeps no images there: the service draws a plan's
+// liveplanner's side of liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md), which serves every app's
+// previews (liveworkspace/docs/specs/006-media/previews.md). liveplanner keeps no images there: the service draws a plan's
 // preview through the export door (routes/internal-items.ts), and this api only tells it when a purged plan's
 // previews can go. Every call carries MEDIA_KEY as a bearer token and names this app.
 

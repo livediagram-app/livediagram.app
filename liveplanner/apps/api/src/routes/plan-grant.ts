@@ -1,4 +1,4 @@
-// The index's grant on the plan a request is about (liveworkspace/docs/one-explorer-contracts.md "Grants"), as the
+// The index's grant on the plan a request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as the
 // worker settles it before the request goes to the plan's Durable Object: @liveworkspace/index-app's
 // resolveItemGrant, with this api's caller and responses. See it for the order (the sent X-Index-Grant first,
 // then one fetched for the caller) and what a refusal answers.

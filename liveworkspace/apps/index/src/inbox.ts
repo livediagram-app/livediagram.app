@@ -1,4 +1,4 @@
-// The Inbox (liveworkspace/docs/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
+// The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 // mentioned, and forms with responses I haven't seen on items I own or reach through a team, limited to items I can
 // reach. Three queries, each starting from an index on the person.

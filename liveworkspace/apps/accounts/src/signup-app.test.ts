@@ -1,4 +1,4 @@
-// Which app a sign-up came through (liveworkspace/docs/accounts.md "Onboarding emails"): a real Better
+// Which app a sign-up came through (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): a real Better
 // Auth over an in-memory D1, signing up with an email code from an app's authorize request, and on
 // liveworkspace.app itself.
 import { betterAuth } from 'better-auth';

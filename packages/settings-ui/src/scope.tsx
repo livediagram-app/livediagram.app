@@ -4,7 +4,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 
 // The Settings panel's header switch, as the Explorer's (each app's name with its logo, beside All with
 // liveworkspace's): this app's settings alone, or every setting the account has (each app's
-// docs/specs/007-editor/user-preferences.md "This app or All"; liveworkspace/docs/site.md "Settings").
+// docs/specs/007-editor/user-preferences.md "This app or All"; liveworkspace/docs/specs/010-site/site.md "Settings").
 export type SettingsScope = 'app' | 'all';
 
 function isScope(value: unknown): value is SettingsScope {

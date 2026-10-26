@@ -458,7 +458,7 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(on.calls).toEqual([]);
   });
 
-  // liveworkspace/docs/previews.md "The export door": the document draws itself for liveworkspace's previews, on the
+  // liveworkspace/docs/specs/006-media/previews.md "The export door": the document draws itself for liveworkspace's previews, on the
   // index's key or the media service's, and stores nothing.
   it('draws the document for the previews, versioned by its save, on either key', async () => {
     const w = world({ INDEX_KEY: 'index-key', MEDIA_KEY: 'media-key' });

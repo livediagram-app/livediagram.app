@@ -1,4 +1,4 @@
-// An item's owner and team, as its Durable Object keeps them (liveworkspace/docs/one-explorer-contracts.md
+// An item's owner and team, as its Durable Object keeps them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Grants"). The index decides both, and changes them without asking the item: a guest who becomes an account takes
 // over everything the guest owned, and an item moves to another team or back to its owner. The item keeps a copy for
 // the work it does with no request in hand (its emails, its Inbox and Timeline pushes, its alarm), and that copy is

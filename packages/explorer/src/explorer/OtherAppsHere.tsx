@@ -1,6 +1,6 @@
 'use client';
 
-// A place that is empty in this app but holds other apps' items (liveworkspace/docs/one-explorer.md "A place that
+// A place that is empty in this app but holds other apps' items (liveworkspace/docs/specs/004-index/one-explorer.md "A place that
 // is empty here but not elsewhere"): instead of "This folder is empty", a fan of those items' own cards, each in its
 // app's colour, what they are, and Show All Apps to see them. So a folder full of plans never reads as empty in
 // livediagram, and nobody deletes it thinking so.

@@ -10,7 +10,7 @@ const entry = (presence: ParticipantPresence | null): RosterEntry => ({
 });
 
 describe('rosterFrames pictures', () => {
-  // liveworkspace/docs/accounts.md "Profile pictures": only an account session is sent others' pictures.
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures": only an account session is sent others' pictures.
   it('strips pictures from the roster a guest or link visitor is sent, and keeps them for an account', () => {
     const ada = {
       ...entry({ ...person('ada'), picture: 'https://lh3.googleusercontent.com/a/ada=s96-c' }),

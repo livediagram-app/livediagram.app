@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { WorkKinds, defaultTemplateHref } from './WorkKinds';
 import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
 
-// What Home's hero pictures (liveworkspace/docs/one-explorer.md "What you can make, on Home's hero"): each app's own
+// What Home's hero pictures (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's hero"): each app's own
 // kinds, one per app under All, every set built the same way, each tile in its own app's colours and starting its
 // template.
 

@@ -1,5 +1,5 @@
 // /api/images — the gallery, uploads and the auth-gated byte read (docs/specs/009-elements/images.md). The
-// images live in liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts): this route keeps
+// images live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts): this route keeps
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
@@ -90,7 +90,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!uploaded.ok) return serviceAnswer(uploaded);
     const { image, deduped } = uploaded.value;
     rememberMediaOwner(image.id, named);
-    // The Timeline's image_uploaded (liveworkspace/docs/one-explorer-contracts.md "Timeline"): only a genuinely
+    // The Timeline's image_uploaded (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): only a genuinely
     // NEW upload, so pasting the same screenshot twice is one event, and the day's uploads coalesce into one
     // counted entry at the index.
     if (!deduped) ctx.waitUntil?.(reportImagesUploaded(indexAppClient(env), owner));

@@ -1,6 +1,6 @@
 'use client';
 
-// Item previews in the Explorer (liveworkspace/docs/previews.md): one address for every app's items,
+// Item previews in the Explorer (liveworkspace/docs/specs/006-media/previews.md): one address for every app's items,
 // `/api/previews/items/<id>` on the page's own origin (liveworkspace.app's media service, which each app's router
 // forwards to), asked with the page's token, and the share code for an item reached through a link. The service asks
 // the index whether the reader may see the item, so a preview is never more visible than the item. An empty item

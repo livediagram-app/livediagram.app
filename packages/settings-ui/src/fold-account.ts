@@ -1,4 +1,4 @@
-// The All view shows the Account section once (liveworkspace/docs/site.md "Settings", "The Account section shows
+// The All view shows the Account section once (liveworkspace/docs/specs/010-site/site.md "Settings", "The Account section shows
 // once"). Each editor's own Settings carries Account, Notifications, API Tokens, Privacy and Accessibility categories
 // of its own, and each app's catalogue an Account › Notifications; listed under the app as well, the account read
 // twice. Here an app's copies are folded into the Account section's category of the same name: the rows the Account

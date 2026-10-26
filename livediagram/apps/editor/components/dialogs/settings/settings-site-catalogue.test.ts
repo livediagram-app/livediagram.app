@@ -34,7 +34,7 @@ describe("liveworkspace.app's copy of this app's settings", () => {
 });
 
 // The Explorer on this app's address changes a guest's settings in this browser
-// (liveworkspace/docs/site.md "Settings", "A guest"), under the keys liveworkspace keeps for this app. They must
+// (liveworkspace/docs/specs/010-site/site.md "Settings", "A guest"), under the keys liveworkspace keeps for this app. They must
 // be this editor's own, or a guest's change there would never reach the editor.
 describe("liveworkspace's keys for this app's settings in the browser", () => {
   it('are the editor’s cache and its unsynced mark', () => {

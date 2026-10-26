@@ -1,5 +1,5 @@
 // What the liveworkspace accounts Worker keeps of a signed-in person for livedesign
-// (liveworkspace/docs/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
 // livedesign has seen the account before (its sign-ups), the one-time milestone emails it has claimed,
 // and where its notification emails go. When the person last saved something they own is reported with each
 // design's summary push (design-room/design-outbox.ts, @liveworkspace/index-app reportOwnerActivity).

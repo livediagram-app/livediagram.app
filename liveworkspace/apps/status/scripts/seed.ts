@@ -1,4 +1,4 @@
-// Made-up history for the local database only (liveworkspace/docs/status.md "Running it locally"): 90 days of hourly
+// Made-up history for the local database only (liveworkspace/docs/specs/009-status/status.md "Running it locally"): 90 days of hourly
 // checks for every service, with a few slow and down spells, rolled up, turned into incidents and snapshotted by the
 // Worker's own code, so the page has something real-looking to show. Not part of the Worker: `seed:local` bundles it
 // on its own, writes SQL and runs it with `wrangler d1 execute --local`. It never touches a remote database.

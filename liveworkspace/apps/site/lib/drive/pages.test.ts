@@ -14,7 +14,7 @@ import {
   takeConsent,
 } from './pages';
 
-// liveworkspace's three Drive pages (liveworkspace/docs/drive.md "Connecting", "Open with").
+// liveworkspace's three Drive pages (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Open with").
 const LW = 'https://lw.test';
 const EXPLORER = `${LW}/explorer?settings=profile&section=cloud-sync`;
 const ours = (url: URL) => url.origin === LW || url.host === 'liveplanner.app';

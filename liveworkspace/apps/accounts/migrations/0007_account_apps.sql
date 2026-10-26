@@ -1,4 +1,4 @@
--- Which apps an account has used, and when each first saw it (liveworkspace/docs/accounts.md "Sign-ups
+-- Which apps an account has used, and when each first saw it (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups
 -- and milestones per app"): an app counts a sign-up the first time it sees an account, and keeps its
 -- one-time milestone emails here. Written by hand, like 0002. Goes with the account (foreign key).
 CREATE TABLE account_app (

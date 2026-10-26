@@ -1,4 +1,4 @@
-// The import door (liveworkspace/docs/drive.md "Contracts > The apps"; docs/specs/015-api/api.md "Internal"): a new
+// The import door (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"; docs/specs/015-api/api.md "Internal"): a new
 // plan for `owner` from a `.liveplanner` file, the Drive mirror's Import as a copy. The file is read here
 // (plan-room/project-file.ts readProjectFile: another kind or a malformed tab, card, type catalogue or Sheet refused,
 // fresh tab ids with their links re-pointed as a copy's are, every store's caps), the index makes the item as the

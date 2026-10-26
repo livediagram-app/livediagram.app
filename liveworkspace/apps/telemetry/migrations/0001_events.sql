@@ -1,4 +1,4 @@
--- liveworkspace telemetry (liveworkspace/docs/telemetry.md). Anonymous: each row is the app it came
+-- liveworkspace telemetry (liveworkspace/docs/specs/008-telemetry/telemetry.md). Anonymous: each row is the app it came
 -- from, the three-field event and a server-stamped time. No identity, no IP, no owner column.
 CREATE TABLE events (
   app TEXT NOT NULL,

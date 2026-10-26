@@ -328,7 +328,7 @@ export * from '@liveworkspace/api-schema/document-source';
 export * from '@liveworkspace/api-schema/catalogues';
 export * from '@liveworkspace/api-schema/comment-threads';
 export * from '@liveworkspace/api-schema/agent-presence';
-// The Community's shared contract is liveworkspace's (liveworkspace/docs/community.md); re-exported so the
+// The Community's shared contract is liveworkspace's (liveworkspace/docs/specs/007-community/community.md); re-exported so the
 // editor, the Community pages and the api read it from here as before.
 export * from '@liveworkspace/community';
 export * from './community-paths';

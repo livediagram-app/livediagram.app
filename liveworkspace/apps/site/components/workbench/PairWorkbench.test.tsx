@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { codeFrom, PendingRequest } from './PairWorkbench';
 
-// The one pairing page (liveworkspace/docs/workbench.md): its code from the address, and its question in the app's
+// The one pairing page (liveworkspace/docs/specs/011-workbench/workbench.md): its code from the address, and its question in the app's
 // own words.
 describe('the pairing page', () => {
   it('takes a code from the address only when it looks like one', () => {

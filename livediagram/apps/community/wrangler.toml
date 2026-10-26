@@ -21,7 +21,7 @@ not_found_handling = "404-page"
 run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 
 # The post the page names and the sitemap's list come from the liveworkspace Community service
-# (liveworkspace/docs/community.md), over HTTPS.
+# (liveworkspace/docs/specs/007-community/community.md), over HTTPS.
 [vars]
 COMMUNITY_URL = "https://www.liveworkspace.app/api/community"
 

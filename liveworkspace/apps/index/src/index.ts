@@ -1,4 +1,4 @@
-// liveworkspace's index (liveworkspace/docs/index-service.md): one Worker on liveworkspace.app/api/index
+// liveworkspace's index (liveworkspace/docs/specs/004-index/index-service.md): one Worker on liveworkspace.app/api/index
 // holding where every Canvas, Plan, Document and Design is and who can reach it, for the One Explorer in
 // every app. Browsers reach it through their own app's router; apps' servers push summaries and comments
 // with their key; grants it signs let an app's item open without asking again.
@@ -36,7 +36,7 @@ function splitPath(path: string): string[] | null {
 // The lists an app acting for a person sees filtered to that app.
 const LISTS = new Set(['items', 'trash', 'shared', 'inbox', 'timeline']);
 
-// What the Drive mirror acting for a person may reach: their items, Trash and folders (liveworkspace/docs/drive.md).
+// What the Drive mirror acting for a person may reach: their items, Trash and folders (liveworkspace/docs/specs/005-drive/drive.md).
 const DRIVE_ROUTES = new Set(['items', 'trash', 'folders']);
 
 // The routes that need a person: anything listing or changing a person's own things.

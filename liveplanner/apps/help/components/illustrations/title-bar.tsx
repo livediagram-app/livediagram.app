@@ -146,7 +146,7 @@ export function TitleBarParts() {
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
-      {/* The logo, with the chevron of its site switcher (liveworkspace/docs/site-switcher.md). */}
+      {/* The logo, with the chevron of its site switcher (liveworkspace/docs/specs/010-site/site-switcher.md). */}
       <rect x={10} y={y + 10} width={20} height={20} rx={5} className="fill-brand-500" />
       <path
         d={`M15 ${y + 23} l4 -6 l3 4 l3 -3`}

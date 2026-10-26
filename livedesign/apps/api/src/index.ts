@@ -77,7 +77,7 @@ async function routeApiRequest(
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
-  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/workbench.md): the router sends
+  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
   // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
   // forwarded the same way, as livedesign, before identity, since accounts checks the credential.
   if (segments[1] === 'workbench') {
@@ -273,7 +273,7 @@ async function routeApiRequest(
   // read (GET /api/share/<code>), which carries the optional share
   // password and is otherwise an unauthenticated read exempt from the
   // write limiter above. Per-IP. Absent binding → allow (a deployment without it).
-  // A link's previews are liveworkspace's (liveworkspace/docs/previews.md), so only the resolve itself counts here.
+  // A link's previews are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), so only the resolve itself counts here.
   if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
     const key = clientRateKey(request);
     if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
@@ -372,7 +372,7 @@ const worker = {
   },
 
   // Scheduled handler (wrangler.toml's one cron). The Trash, its purge and the empty-design sweep are the index's
-  // (liveworkspace/docs/index-service.md); a design's changesets and photo blobs are kept by the design's own Durable
+  // (liveworkspace/docs/specs/004-index/index-service.md); a design's changesets and photo blobs are kept by the design's own Durable
   // Object, swept by its daily upkeep alarm (design-room.ts `maintain`); its images' references go to the media
   // service from its outbox (design-outbox.ts); a person's workbench is liveworkspace's. What is
   // left is the daily announce that this app's set of image references is complete, so a quiet day never holds the

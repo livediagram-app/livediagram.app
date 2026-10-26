@@ -1,6 +1,6 @@
 'use client';
 
-// The Search panel (README.md "Search panel"; liveworkspace/docs/site.md "The Explorer", Search): one field over
+// The Search panel (README.md "Search panel"; liveworkspace/docs/specs/010-site/site.md "The Explorer", Search): one field over
 // the person's items, folders and teams and the host's own entries (help articles, settings), as livediagram's
 // Explorer had it. Its own entry point (`@liveworkspace/explorer/search-panel`), so a host loads it only when it
 // first opens. Items come from the index's `search` view once the typing pauses, the request before cancelled;

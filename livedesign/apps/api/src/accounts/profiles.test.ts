@@ -11,7 +11,7 @@ import {
   writeParticipant,
 } from './profiles';
 
-// Names and colours come from the liveworkspace accounts Worker's profiles (liveworkspace/docs/accounts.md
+// Names and colours come from the liveworkspace accounts Worker's profiles (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Profiles"). These pin the costs: a page of people is one request, a person read in the last minute is no
 // request at all, and an unreachable accounts Worker never fails the read it decorates.
 

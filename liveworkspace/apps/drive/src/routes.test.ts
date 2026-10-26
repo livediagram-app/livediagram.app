@@ -1,4 +1,4 @@
-// The Worker's routes (liveworkspace/docs/drive.md "The service"): who may call what, the 503 when not configured,
+// The Worker's routes (liveworkspace/docs/specs/005-drive/drive.md "The service"): who may call what, the 503 when not configured,
 // config's cheap answer, the state and consent round trip, Google's push, and the index's and accounts' calls, over
 // the test harness's mirror standing in for the Durable Object.
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';

@@ -1,4 +1,4 @@
-// Telling the apps about a closed account (liveworkspace/docs/one-explorer-contracts.md "Closing an account"):
+// Telling the apps about a closed account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"):
 // the index anonymises its own rows, but the person's name is also in the content of items that outlive them
 // (their comments, the actions they were given or gave, the cards they edited), which only each item's app holds,
 // and each app may keep something of the person's beside their items (images, a workbench).

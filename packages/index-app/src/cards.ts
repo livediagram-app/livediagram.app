@@ -1,4 +1,4 @@
-// An item's cards in the Inbox (liveworkspace/docs/one-explorer-contracts.md "What an item pushes"): the open cards
+// An item's cards in the Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): the open cards
 // assigned to someone, and every card's comment thread, pushed under COLLAB_CARDS_TAB
 // (`PUT /app/items/:id/collab/~cards`) by the item's outbox drain, so the Inbox lists them however the card was
 // changed (the editor, an agent, a form response).

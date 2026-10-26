@@ -1,4 +1,4 @@
-// Teams' and API tokens' events on the Timeline (liveworkspace/docs/accounts.md "On the Timeline"). The
+// Teams' and API tokens' events on the Timeline (liveworkspace/docs/specs/003-accounts/accounts.md "On the Timeline"). The
 // index keeps one Timeline for every app; teams and tokens are this Worker's, so it tells the index what
 // happened to them: an invitation sent, joined or declined, a role changed, a member removed or leaving, a
 // team renamed or deleted, a token made, revoked or about to expire.

@@ -34,9 +34,9 @@ export type Env = {
   // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
   PERSON_STORE: DurableObjectNamespace<PersonStore>;
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
-  // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;
-  // liveworkspace's index (liveworkspace/docs/one-explorer.md): where every canvas is filed and who may open it.
+  // liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md): where every canvas is filed and who may open it.
   // The grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their
   // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.
   INDEX_ORIGIN?: string;
@@ -48,7 +48,7 @@ export type Env = {
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
   // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://livediagram-router.liveworkspace-easing509.workers.dev/api`, and every access token must
-  // name it as its audience, as must a guest's token (liveworkspace/docs/accounts.md "Guests"). With either unset
+  // name it as its audience, as must a guest's token (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). With either unset
   // no caller has an identity: only share-link visitors are served.
   ACCOUNTS_URL?: string;
   API_RESOURCE?: string;
@@ -87,20 +87,20 @@ export type Env = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
-  // The liveworkspace Community service (liveworkspace/docs/community.md), which keeps every app's posts. Unset means
+  // The liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md), which keeps every app's posts. Unset means
   // production's, https://www.liveworkspace.app/api/community; staging and local development name their own.
   COMMUNITY_URL?: string;
   // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
   // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
   COMMUNITY_KEY?: string;
-  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
+  // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livediagram's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
-  // livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEDIAGRAM: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
@@ -115,14 +115,14 @@ export type Env = {
   // Absent/anything-else keeps telemetry fully off — the deployment
   // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
+  // The liveworkspace telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means production's,
   // https://www.liveworkspace.app/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's `send_email` binding for this app's notification and milestone emails
-  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md; the onboarding series is
+  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/specs/003-accounts/email.md; the onboarding series is
   // liveworkspace's). Declared in wrangler.toml, no key: the binding is the credential. When absent the whole
   // email feature is inert: no sends.
   EMAIL?: SendEmail;

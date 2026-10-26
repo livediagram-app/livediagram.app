@@ -33,7 +33,7 @@ type ParticipantAvatarProps = {
   badges?: string[];
 };
 
-// Round avatar showing the participant's Google picture where they have one (liveworkspace/docs/accounts.md
+// Round avatar showing the participant's Google picture where they have one (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Profile pictures"), over their initials on their assigned colour, framed by a coloured "presence" ring
 // (green / orange / red).
 // Used in the editor header today; will appear next to comments and

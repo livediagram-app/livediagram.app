@@ -1,5 +1,5 @@
 // The Community end to end, this api and the liveworkspace Community service both real (docs/specs/025-community/
-// community.md; liveworkspace/docs/community.md): the owner's publish guards and Edit Listing, My Shares, the canvas's
+// community.md; liveworkspace/docs/specs/007-community/community.md): the owner's publish guards and Edit Listing, My Shares, the canvas's
 // check that keeps the service in step with where it stands at the index, the off switch, and how a community link
 // behaves on the share resolve, the drawing the canvas gives liveworkspace's previews (its export door) and the
 // copy route. The service's own rules (lists, likes, reports,
@@ -266,7 +266,7 @@ const viaWorker = (ctx: ReturnType<typeof makeTestRouteContext>) =>
     typeof makeTestRouteContext
   >;
 
-// What the canvas's export door answers liveworkspace's previews for a link's code (liveworkspace/docs/previews.md):
+// What the canvas's export door answers liveworkspace's previews for a link's code (liveworkspace/docs/specs/006-media/previews.md):
 // whether the link is open is the index's to say, so this is only the canvas's own part, its Community post.
 const drawnFor = async (code: string) =>
   (
@@ -696,7 +696,7 @@ describe('what a community link reveals', () => {
   });
 
   // Its drawing behind a share password is refused by the index before liveworkspace's previews ask the canvas
-  // (liveworkspace/docs/previews.md "Who may see one").
+  // (liveworkspace/docs/specs/006-media/previews.md "Who may see one").
   it('answers a closed link with 404 alone, not trashed', async () => {
     const post = await publish();
     index.trashed.add('d1');

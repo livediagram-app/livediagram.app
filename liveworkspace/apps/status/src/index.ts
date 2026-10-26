@@ -1,4 +1,4 @@
-// liveworkspace status (liveworkspace/docs/status.md): every service, liveworkspace's own and each app's, checked once
+// liveworkspace status (liveworkspace/docs/specs/009-status/status.md): every service, liveworkspace's own and each app's, checked once
 // an hour from Cloudflare and kept for 90 days. Its API, on liveworkspace.app/api/status, serves the latest run and the
 // history; the page itself is the static site's (liveworkspace/apps/site), at liveworkspace.app/status.
 

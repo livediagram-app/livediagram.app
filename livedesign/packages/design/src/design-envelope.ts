@@ -94,7 +94,7 @@ export function parseDesignEnvelope(
   };
 }
 
-// A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/drive.md): fresh tab ids, with
+// A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/specs/005-drive/drive.md): fresh tab ids, with
 // the tab links following them, so the copy navigates like the original.
 export function copyDesignEnvelope(envelope: DesignEnvelope): { tabs: EnvelopeTab[] } {
   const idMap = new Map(envelope.design.tabs.map((t) => [t.id, crypto.randomUUID()] as const));

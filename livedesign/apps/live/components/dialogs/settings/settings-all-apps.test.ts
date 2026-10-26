@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { rowSharedAcrossApps, settingKeyOf } from './settings-all-apps';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
 
-// A setting every liveworkspace app shares says so, quietly (liveworkspace/docs/accounts.md
+// A setting every liveworkspace app shares says so, quietly (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Settings"; docs/specs/007-editor/user-preferences.md "Where they are kept"). The shared view
 // draws the "All apps" note (@liveworkspace/settings-ui); this is which rows get it.
 
@@ -19,7 +19,7 @@ describe('rowSharedAcrossApps', () => {
     expect(rowSharedAcrossApps('notifyDesignJoin')).toBe(false);
   });
 
-  it('marks a setting two or more apps have (liveworkspace/docs/accounts.md "Common settings")', () => {
+  it('marks a setting two or more apps have (liveworkspace/docs/specs/003-accounts/accounts.md "Common settings")', () => {
     expect(rowSharedAcrossApps('showMinimap')).toBe(true);
   });
 

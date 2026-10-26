@@ -1,7 +1,7 @@
 // The Worker's settings. They live apart from src/index.ts because a Worker's entry module may only export handlers.
 
 export const DAY_MS = 86_400_000;
-// Checks, days and closed incidents are kept this long (liveworkspace/docs/status.md).
+// Checks, days and closed incidents are kept this long (liveworkspace/docs/specs/009-status/status.md).
 export const RETENTION_DAYS = 90;
 export const RETENTION_MS = RETENTION_DAYS * DAY_MS;
 

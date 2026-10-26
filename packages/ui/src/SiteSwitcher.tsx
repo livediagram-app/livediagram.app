@@ -1,6 +1,6 @@
 'use client';
 
-// The site switcher (liveworkspace/docs/site-switcher.md): hover the logo and a card lists
+// The site switcher (liveworkspace/docs/specs/010-site/site-switcher.md): hover the logo and a card lists
 // liveworkspace.app, then each app, one click to any of them. It wraps whatever logo the header
 // draws (the Brand, tinted or not), so the logo itself still links home.
 //

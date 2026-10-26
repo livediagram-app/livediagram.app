@@ -69,7 +69,7 @@ export function helloPresence(
   if (typeof c.key === 'string' && c.key.length > 0) {
     presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
   }
-  // The Google picture (liveworkspace/docs/accounts.md "Profile pictures"): kept only from a session a verified
+  // The Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): kept only from a session a verified
   // account holds, and only when it is a Google picture URL. Refused whole, never clamped: a cut URL is a broken
   // image.
   if (c.picture !== undefined && c.picture !== '') {

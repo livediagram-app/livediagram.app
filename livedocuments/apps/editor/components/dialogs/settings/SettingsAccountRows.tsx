@@ -21,7 +21,7 @@ const DeleteAccountDialog = dynamic(
 
 // Identity, read from the account. Never written here: names and emails are managed
 // on the liveworkspace accounts site, so this is a card, not a form. The card is the shared Profile's header
-// (@liveworkspace/settings-ui ProfileHeaderCard; liveworkspace/docs/site.md "Settings", "Profile"): the avatar,
+// (@liveworkspace/settings-ui ProfileHeaderCard; liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): the avatar,
 // name, email and when they joined; a guest gets the guest card and the way in.
 export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
   const { authLoaded, isSignedIn, user } = useDeferredAuth();

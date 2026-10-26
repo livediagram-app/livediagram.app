@@ -69,7 +69,7 @@ const LIVE_APP_DIR = fileURLToPath(new URL('../../live/app', import.meta.url));
 // find. The router stitches these under the same hostname (docs/specs/016-platform/router-app.md).
 const OTHER_WORKERS = new Set(['/telemetry']);
 // The Explorer is liveworkspace's page, which the router serves at /explorer/* with the address kept
-// (liveworkspace/docs/one-explorer.md), so the editor has no page for it.
+// (liveworkspace/docs/specs/004-index/one-explorer.md), so the editor has no page for it.
 const OTHER_WORKER_PREFIXES = ['/explorer'];
 
 // Markdown [label](/path) and JSX href="/path", excluding /help (covered

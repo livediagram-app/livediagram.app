@@ -1,4 +1,4 @@
-// liveworkspace's sites (liveworkspace/docs/site-switcher.md): the platform first, then each app. Every
+// liveworkspace's sites (liveworkspace/docs/specs/010-site/site-switcher.md): the platform first, then each app. Every
 // app's logo switcher lists them in this order, so a new app is one row here.
 
 export type SiteId =
@@ -105,7 +105,7 @@ export const APP_SITES: readonly Site[] = [
 export const SITES: readonly Site[] = [PLATFORM_SITE, ...APP_SITES];
 
 // ---------- The apps' items, for the Explorer on liveworkspace.app ----------------------------------------------
-// The Explorer lives once, at liveworkspace.app/explorer (liveworkspace/docs/one-explorer.md). It lists every app's
+// The Explorer lives once, at liveworkspace.app/explorer (liveworkspace/docs/specs/004-index/one-explorer.md). It lists every app's
 // items, so it needs each app's word for one item, where the app opens one, where it makes one, and where its own
 // offline view is. Keyed by the app's name as the index knows it (`@liveworkspace/index-client` APPS).
 
@@ -118,7 +118,7 @@ export type AppItems = {
   noun: string;
   nouns: string;
   // The app's API's word for one item: its path segment (`/api/<apiNoun>s/…`), and a workbench's item scope with its
-  // `<apiNoun>Id` (liveworkspace/docs/workbench.md).
+  // `<apiNoun>Id` (liveworkspace/docs/specs/011-workbench/workbench.md).
   apiNoun: 'document' | 'project' | 'design';
   // Where the app opens one item: `${url}${itemPath}<id>`.
   itemPath: string;
@@ -302,7 +302,7 @@ export function explorerUrl(
 
 // ---------- The site switcher on an Explorer page ---------------------------------------------------------------
 // On the Explorer, the logo's switcher keeps the person on the Explorer: each site's row opens that site's Explorer at
-// the same view (liveworkspace/docs/site-switcher.md "On an Explorer page").
+// the same view (liveworkspace/docs/specs/010-site/site-switcher.md "On an Explorer page").
 
 // Query that speaks only on arrival, or hands over to one app's editor: never carried to another site.
 const EXPLORER_ARRIVAL_PARAMS = [
@@ -352,6 +352,6 @@ export {
   type AppSiteId,
 } from './app-origins';
 
-// The label every footer gives the platform-wide terms (liveworkspace/docs/site.md "Privacy and
+// The label every footer gives the platform-wide terms (liveworkspace/docs/specs/010-site/site.md "Privacy and
 // terms"): one document for liveworkspace.app and every app, so each footer names it the same way.
 export const TERMS_LABEL = 'Terms of Use';

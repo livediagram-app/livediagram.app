@@ -1,4 +1,4 @@
-// Returning guests of the old livediagram.app (liveworkspace/docs/accounts.md "Returning guests of the old
+// Returning guests of the old livediagram.app (liveworkspace/docs/specs/003-accounts/accounts.md "Returning guests of the old
 // livediagram.app", docs/migration.md step 6). Their copied work is under `guest_<old uuid>`, which no browser is
 // ever handed; the new editor finds the old id in the browser and livediagram's api forwards it here with its
 // client credentials. This checks the browser really holds it (the old signature, or for an id from before signing

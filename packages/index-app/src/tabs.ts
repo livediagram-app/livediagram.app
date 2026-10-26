@@ -1,4 +1,4 @@
-// An item's tabs alone (liveworkspace/docs/one-explorer-contracts.md "An item's tabs"): `GET /api/<items>/:id/tabs`
+// An item's tabs alone (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "An item's tabs"): `GET /api/<items>/:id/tabs`
 // answers `{ tabs: [{ id, name, kind }] }`, in the item's order, for whoever may read the item. The Share dialog's
 // tab picker on liveworkspace.app reads it once per open (`share.tabsPath` in @liveworkspace/sites), rather than the
 // whole item with every tab's content. An app on the index serves it from its item's Durable Object, from the tab

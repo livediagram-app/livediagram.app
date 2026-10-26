@@ -15,7 +15,7 @@ import {
 } from '@liveworkspace/index-client';
 
 /** A folder's preview, and, filtered to one app with none of its items inside, what the other apps keep there
- *  (liveworkspace/docs/one-explorer.md "A place that is empty here but not elsewhere"). */
+ *  (liveworkspace/docs/specs/004-index/one-explorer.md "A place that is empty here but not elsewhere"). */
 export type ShownFolderPreview = FolderPreview & {
   elsewhere?: Pick<FolderPreview, 'itemCount' | 'items'>;
 };

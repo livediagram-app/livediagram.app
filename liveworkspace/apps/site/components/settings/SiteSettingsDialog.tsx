@@ -57,7 +57,7 @@ const renderLogo = (id: SettingsAppId | 'all') => (
   />
 );
 
-// The Settings panel over a page of this site (liveworkspace/docs/site.md "Settings"): the one panel every app's
+// The Settings panel over a page of this site (liveworkspace/docs/specs/010-site/site.md "Settings"): the one panel every app's
 // Settings renders (@liveworkspace/settings-ui SettingsPanel), opened for the app the person came from (its settings,
 // with All one click away) or for none (All). Its code, and each app's catalogue, load only when it first opens or
 // the pointer heads for Settings. Escape, the close button or a click outside closes it.

@@ -1,4 +1,4 @@
-// Each app's two Drive doors (liveworkspace/docs/drive.md "Contracts > The apps"), at
+// Each app's two Drive doors (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), at
 // `<APP_ORIGIN_<APP>>/api/internal/items/…` with the app's DRIVE_KEY: the item's whole-item envelope (and its
 // drawing, for the thumbnail) out, and a new item from a file in. And where an item opens in its app.
 

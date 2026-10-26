@@ -1,4 +1,4 @@
-// What an item pushes (liveworkspace/docs/one-explorer-contracts.md "What an item pushes"), from its app's
+// What an item pushes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"), from its app's
 // server with the app's key: the summary derived from its content, each tab's comment threads and
 // actions for the Inbox, and its Timeline events (timeline.ts). Only the item's own app may push for it.
 

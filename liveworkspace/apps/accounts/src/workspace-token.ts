@@ -1,4 +1,4 @@
-// The liveworkspace Explorer's identity (liveworkspace/docs/accounts.md "liveworkspace.app's own token"). The
+// The liveworkspace Explorer's identity (liveworkspace/docs/specs/003-accounts/accounts.md "liveworkspace.app's own token"). The
 // Explorer lives on liveworkspace.app itself, which has a session cookie rather than an OAuth client, so it asks
 // here for a short-lived token addressed to every app's API: the index takes it (its audiences are those APIs),
 // and so does an app's API when the Explorer asks it for an item's preview. A signed-in person gets an access

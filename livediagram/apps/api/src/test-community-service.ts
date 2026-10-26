@@ -1,4 +1,4 @@
-// The real liveworkspace Community service (liveworkspace/docs/community.md) for tests, in this process: its Worker
+// The real liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md) for tests, in this process: its Worker
 // over an in-memory database with its migrations applied, answering this api's calls to it through a stubbed
 // `fetch`. So a test of publishing, the sync or a community link runs both sides for real. Not a `.test.ts` file,
 // so vitest doesn't collect it.

@@ -307,7 +307,7 @@ describe('the /api/auth surface', () => {
 });
 
 describe('the account name cookie (ldes_account)', () => {
-  // liveworkspace/docs/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
+  // liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
   const named = (claims: Record<string, unknown>) =>
     tokenResponse({ id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', ...claims }) });
 
@@ -397,7 +397,7 @@ describe('readCookie', () => {
   });
 });
 
-// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): the page's boot
+// Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): the page's boot
 // script sends a browser with no session here once per browser session; it always comes back to where it was.
 describe('GET /api/auth/silent', () => {
   async function bounce(

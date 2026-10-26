@@ -11,7 +11,7 @@ import {
   stripSummary,
 } from './history';
 
-// liveworkspace/docs/site.md "Status": what the page makes of the stored history.
+// liveworkspace/docs/specs/010-site/site.md "Status": what the page makes of the stored history.
 
 const AT = Date.parse('2026-10-25T09:07:00Z');
 const H = 3_600_000;

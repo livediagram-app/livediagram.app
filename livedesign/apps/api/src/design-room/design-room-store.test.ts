@@ -639,7 +639,7 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(authorsIn('O')).toEqual([owner, 'user_visitor']);
   });
 
-  // A workbench ticket or session on the design stays at liveworkspace (liveworkspace/docs/workbench.md) until it
+  // A workbench ticket or session on the design stays at liveworkspace (liveworkspace/docs/specs/011-workbench/workbench.md) until it
   // expires or is swept, reaching nothing: the index grants nothing on a design that is gone.
   it('purges a design: every row and every session', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -653,7 +653,7 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(0);
   });
 
-  // liveworkspace/docs/previews.md "The export door": the design draws itself for liveworkspace's previews, on the
+  // liveworkspace/docs/specs/006-media/previews.md "The export door": the design draws itself for liveworkspace's previews, on the
   // index's key or the media service's, and stores nothing.
   it('draws the design for the previews, versioned by its save, on either key', async () => {
     const w = world({ INDEX_KEY: 'index-key', MEDIA_KEY: 'media-key' });

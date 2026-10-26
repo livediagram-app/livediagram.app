@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
-// Google Drive sync, the platform's one help article (liveworkspace/docs/site.md "Help", liveworkspace/docs/drive.md):
+// Google Drive sync, the platform's one help article (liveworkspace/docs/specs/010-site/site.md "Help", liveworkspace/docs/specs/005-drive/drive.md):
 // the mirror is liveworkspace's, the same for every app, so it is explained once here. Each app's help keeps a short
 // Google Drive article that points to this page, and Settings › Account › Cloud Sync links here.
 

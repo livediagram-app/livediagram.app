@@ -4,7 +4,7 @@ import type { Env } from '../types';
 import { ownerEmail, ownerEmails, recordOwnerSighting, reportOwnerActivity } from './account-app';
 import { claimOwnerMilestone } from './notify';
 
-// What the accounts Worker keeps of an account for livedocuments (liveworkspace/docs/accounts.md
+// What the accounts Worker keeps of an account for livedocuments (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Sign-ups and milestones per app"): accounts only, and nothing ever throws.
 
 const env = ACCOUNTS_ON as Env;

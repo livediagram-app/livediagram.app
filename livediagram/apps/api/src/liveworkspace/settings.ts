@@ -1,5 +1,5 @@
 // A person's editor preferences (docs/specs/007-editor/user-preferences.md), kept by the liveworkspace
-// accounts Worker (liveworkspace/docs/accounts.md "Settings"), not by this app. Two scopes hold them:
+// accounts Worker (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), not by this app. Two scopes hold them:
 // `all`, the keys every app shares (ALL_SETTING_KEYS in @liveworkspace/settings: privacy,
 // notifications, the editors' chrome), and this app's own, `livediagram.app`. The editor sees one
 // flat set: joinSettings on the way out, splitSettings on the way in.

@@ -1,4 +1,4 @@
-// liveworkspace pages served under an app's own address (liveworkspace/docs/one-explorer.md "The Explorer on
+// liveworkspace pages served under an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on
 // each app's address"). An app's router answers some paths by fetching them from liveworkspace.app, so the
 // address bar keeps the app's name: `liveplanner.app/explorer/recent` shows the Explorer the site builds once,
 // with liveplanner's session, offline items and colours. Every app's router uses this one helper, so turning it on
@@ -20,7 +20,7 @@ export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
 export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
 
 // ---------- The status page ---------------------------------------------------------------------------------------
-// liveworkspace.app keeps one status page for the platform and every app (liveworkspace/docs/site.md "Status"). The
+// liveworkspace.app keeps one status page for the platform and every app (liveworkspace/docs/specs/010-site/site.md "Status"). The
 // apps' own `/status` pages are gone, so each app's router sends that address here, to the app's own group.
 
 /** The path an app's old status page answered on. */
@@ -105,7 +105,7 @@ function pageLoadToWww(
 }
 
 // ---------- The Explorer on the app's address ---------------------------------------------------------------------
-// Every app serves liveworkspace's Explorer at its own /explorer (liveworkspace/docs/one-explorer.md "The Explorer
+// Every app serves liveworkspace's Explorer at its own /explorer (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer
 // on each app's address"), through EXPLORER_ROUTE below.
 
 /** Where an app's own pages open the Explorer's Home: the Explorer on the app's own address. */
@@ -149,7 +149,7 @@ export const ACCOUNT_ROUTE: WorkspaceRoute = {
 };
 
 // ---------- Signing in on the app's own address -------------------------------------------------------------------
-// (liveworkspace/docs/accounts.md "Signing in on the app's own address"). The accounts site's sign-in, registration
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address"). The accounts site's sign-in, registration
 // and consent pages are served under the app's address when they carry an OAuth request (the accounts Worker sends
 // them there, signed, with `sig`); without one the path stays the app's own (its sign-in hand-off page). The few
 // accounts calls those pages make go under /api/workspace/auth, beside the app's own /api/auth.
@@ -192,7 +192,7 @@ export const SITE_ASSETS_ROUTE: WorkspaceRoute = {
 };
 
 // ---------- Workbenches ---------------------------------------------------------------------------------------------
-// (liveworkspace/docs/workbench.md). Pairing, tickets and sessions are the accounts Worker's for every app; each app
+// (liveworkspace/docs/specs/011-workbench/workbench.md). Pairing, tickets and sessions are the accounts Worker's for every app; each app
 // keeps `/api/workbench/*` on its own address, with the same requests and answers, and its router (and its API Worker,
 // for a caller that reaches it directly) forwards them there. The app's name rides in WORKSPACE_PROXY_HEADER, which
 // is how accounts knows whose item a ticket opens. No cookies either way: the routes take a bearer or the ticket.
@@ -428,7 +428,7 @@ export const isDrivePath = (pathname: string): boolean =>
   pathname === DRIVE_PATH || pathname.startsWith(`${DRIVE_PATH}/`);
 
 /**
- * `/api/drive/*` on an app's address (liveworkspace/docs/drive.md "The service"): the same request at the Drive
+ * `/api/drive/*` on an app's address (liveworkspace/docs/specs/005-drive/drive.md "The service"): the same request at the Drive
  * mirror's origin, minus this site's cookies, as the index's calls are forwarded. The person's access token goes
  * along; the service reads nothing else.
  */
@@ -455,7 +455,7 @@ function carryVisitorAddress(request: Request, headers: Headers): void {
 }
 
 // ---------- Previews, on the app's address ---------------------------------------------------------------------------
-// (liveworkspace/docs/previews.md). Every app's item pictures are liveworkspace's media service's, under
+// (liveworkspace/docs/specs/006-media/previews.md). Every app's item pictures are liveworkspace's media service's, under
 // /api/previews. The router forwards them, and a share link's three public doors at the address every app has always
 // served them on (`/api/share/<code>/image.svg|image.png|card`), so live images already embedded keep working.
 // `@liveworkspace/media` names the same paths (PREVIEWS_API_PATH, SHARE_PREVIEW_DOORS); this file stays

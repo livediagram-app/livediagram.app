@@ -85,7 +85,7 @@ export type ExplorerProps = {
   renderThumbnail?: RenderThumbnail;
   /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
   renderItemMark?: RenderItemMark;
-  /** Google Drive's marks and reconnect banner (liveworkspace/docs/drive.md "The Explorer shows each item's sync"):
+  /** Google Drive's marks and reconnect banner (liveworkspace/docs/specs/005-drive/drive.md "The Explorer shows each item's sync"):
    *  the Drive service over the host's origin, for a signed-in person. Without it, or for someone not connected,
    *  nothing shows and only the config is read. */
   drive?: ExplorerDriveHost | null;

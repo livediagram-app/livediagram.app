@@ -9,7 +9,7 @@ import type { Env } from '../types';
 
 // Checks the token a browser sends, minted by the liveworkspace accounts Worker (liveworkspace.app,
 // docs/specs/014-identity/auth-and-guest-access.md): a signed-in person's access token, or a guest's token
-// (liveworkspace/docs/accounts.md "Guests"), the same `guest_…` in every app. The check is local: a signature
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), the same `guest_…` in every app. The check is local: a signature
 // against the accounts Worker's published key set, plus its issuer and this API's own audience, so a token
 // minted for livediagram is refused here. No call to the accounts Worker per request.
 
@@ -35,7 +35,7 @@ export type GuestIdentity = { kind: 'guest'; guestId: string };
 
 export type PersonIdentity = AccountIdentity | GuestIdentity;
 
-// This app's client at the accounts Worker, for the account API (liveworkspace/docs/accounts.md):
+// This app's client at the accounts Worker, for the account API (liveworkspace/docs/specs/003-accounts/accounts.md):
 // checking API tokens and following teams. Null on a guest-only deployment.
 export function accountCredentials(
   env: Pick<Env, 'ACCOUNTS_URL' | 'ACCOUNTS_CLIENT_ID' | 'ACCOUNTS_CLIENT_SECRET'>,

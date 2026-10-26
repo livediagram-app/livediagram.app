@@ -4,7 +4,7 @@
 // design is in the Trash"). Set when the load answers design_trashed, when
 // the room says the design was trashed, or when a save is refused because
 // of it. Whether the reader may restore it is the index's answer
-// (liveworkspace/docs/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
 // or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
 import type { TrashedDesign } from '@/components/chrome/DesignTrashedCard';

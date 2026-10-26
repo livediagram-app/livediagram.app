@@ -1,4 +1,4 @@
-// Google pictures in livedesign's rooms and participant reads (liveworkspace/docs/accounts.md "Profile pictures",
+// Google pictures in livedesign's rooms and participant reads (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures",
 // docs/specs/014-identity/profile-and-email-notifications.md "Avatars"): a picture is kept only from an account
 // session and only when it is a Google picture URL, and it reaches only account sessions and signed-in readers.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -14,7 +14,7 @@ import {
   rememberMediaOwner,
 } from './media';
 
-// livedocuments' side of the media service's references (liveworkspace/docs/media.md "References"): each document
+// livedocuments' side of the media service's references (liveworkspace/docs/specs/006-media/media.md "References"): each document
 // tells the service its whole set of images as it changes, from its own outbox, and a purged one tells it none.
 
 let db: SqliteD1;

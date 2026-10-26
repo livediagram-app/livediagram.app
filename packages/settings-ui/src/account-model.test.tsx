@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { accountCategories } from './account-model';
 
-// The Account section's API Tokens (liveworkspace/docs/site.md "Settings"): drawn in the panel where the host can make
+// The Account section's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): drawn in the panel where the host can make
 // and revoke them, a link to them where it can't, and left out where it has neither.
 const base = { all: {}, set: () => {} };
 const tokensOf = (section: Parameters<typeof accountCategories>[0]) =>

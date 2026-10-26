@@ -1,4 +1,4 @@
-// What the legal pages share (liveworkspace/docs/site.md "Privacy and terms").
+// What the legal pages share (liveworkspace/docs/specs/010-site/site.md "Privacy and terms").
 
 // The date /privacy and /terms last changed, shown at the top of each.
 export const LEGAL_UPDATED = '25 October 2026';

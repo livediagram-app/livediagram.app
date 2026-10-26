@@ -1,4 +1,4 @@
-// What an app's notification emails need from accounts (liveworkspace/docs/accounts.md "Notification
+// What an app's notification emails need from accounts (liveworkspace/docs/specs/003-accounts/accounts.md "Notification
 // emails"), beside the addresses (account-apps.ts `verifiedEmails`): whether each person has turned an
 // email off, read for many people at once, and the people in a team, which an app checks a mention or
 // an assignment against before it writes to anyone.

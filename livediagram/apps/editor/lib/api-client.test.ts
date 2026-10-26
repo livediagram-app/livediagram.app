@@ -419,7 +419,7 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(out).toEqual({ id: 'd1' });
   });
 
-  // liveworkspace/docs/one-explorer-contracts.md "Items": the index makes the item first, and its grant lets the
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items": the index makes the item first, and its grant lets the
   // content in; the placement is the index's, never the api's.
   it('creates the item at the index, then the content with its grant', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(Response.json({ document: { id: 'd2' } }));
@@ -534,7 +534,7 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
   });
 });
 
-// liveworkspace/docs/one-explorer-contracts.md "Items": the index holds the canvas's title, and a meta save tells it
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items": the index holds the canvas's title, and a meta save tells it
 // only when the name changed.
 describe('apiSaveDocumentMeta renames at the index', () => {
   afterEach(() => vi.unstubAllGlobals());

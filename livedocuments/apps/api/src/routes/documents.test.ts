@@ -5,7 +5,7 @@ import type { DocumentGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
-// /api/documents/<id> on the index's grants (liveworkspace/docs/one-explorer-contracts.md "Grants"): a document answers
+// /api/documents/<id> on the index's grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a document answers
 // whoever holds a grant on it, as the grant says (level, tab), and answers anyone else as missing. Real SQLite
 // (test-sqlite-d1.ts), whose stand-in index grants as the real one does: the owner and the document's team edit, a
 // share link grants its level on its tab.

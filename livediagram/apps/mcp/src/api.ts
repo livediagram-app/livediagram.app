@@ -40,7 +40,7 @@ export function apiFetch(
 }
 
 // Fire-and-forget anonymous telemetry to the liveworkspace telemetry service
-// (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), handed to the request's
+// (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), handed to the request's
 // waitUntil (request-scope.ts) so the runtime can't cancel it when the response goes out. The key
 // proves the batch is livediagram's own; without one nothing is sent.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {

@@ -1,4 +1,4 @@
-// Running the status page's checks (liveworkspace/docs/site.md "Status") and reading them: each service's state,
+// Running the status page's checks (liveworkspace/docs/specs/010-site/site.md "Status") and reading them: each service's state,
 // each group's, and the page's. Pure apart from `runProbe`, which takes its fetch and clock, so tests drive it.
 
 import {

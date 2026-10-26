@@ -1063,7 +1063,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
 
   // Every other Community read, and likes and reports, are the liveworkspace Community service's
-  // (liveworkspace/docs/community.md), which the Community pages call directly.
+  // (liveworkspace/docs/specs/007-community/community.md), which the Community pages call directly.
   {
     method: 'GET',
     path: '/community/mine',

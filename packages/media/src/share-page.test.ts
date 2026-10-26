@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKSPACE_CLIENT_IP_HEADER } from '@liveworkspace/sites/workspace-proxy';
 import { createSharePage, SHARE_CARD_TIMEOUT_MS } from './share-page';
 
-// A share link's page head (liveworkspace/docs/previews.md "The share page's head"): a working share link previews
+// A share link's page head (liveworkspace/docs/specs/006-media/previews.md "The share page's head"): a working share link previews
 // with its item's name and card; anything else is the shell as built.
 
 const PITCH = 'Open it in livediagram: diagrams, made together.';

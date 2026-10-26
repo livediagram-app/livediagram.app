@@ -9,7 +9,7 @@ import { metadata as status } from './status/page';
 import { metadata as telemetry } from './telemetry/layout';
 import { metadata as terms } from './terms/page';
 
-// Every indexable page but the front door (liveworkspace/docs/site.md, sitemap.ts) speaks for itself when shared: an
+// Every indexable page but the front door (liveworkspace/docs/specs/010-site/site.md, sitemap.ts) speaks for itself when shared: an
 // Open Graph block of its own, whose address is its canonical, never the root layout's `/` and home-page title.
 const PAGES: Record<string, Metadata> = {
   '/compare': compare,

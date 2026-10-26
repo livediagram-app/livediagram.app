@@ -1,5 +1,5 @@
 // Workbench calls (docs/specs/013-workspace/workbench-embeds.md, blueprint "Routes"). liveworkspace serves them
-// (liveworkspace/docs/workbench.md); this api forwards /api/workbench there. Redemption is credential-free (the
+// (liveworkspace/docs/specs/011-workbench/workbench.md); this api forwards /api/workbench there. Redemption is credential-free (the
 // ticket is the bearer); the page's own end presents the session it ends; the pairings list and unpair are the
 // signed-in person's, through apiHeaders like every account route. Pairing requests are answered on
 // liveworkspace.app's own page, never here.

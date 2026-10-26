@@ -1,4 +1,4 @@
--- liveworkspace's media service (liveworkspace/docs/media.md): every app's uploaded images, indexed here,
+-- liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md): every app's uploaded images, indexed here,
 -- their bytes in the R2 bucket bound as MEDIA (key = images.id).
 
 -- One row per stored image. (owner, sha256) is unique, so the same person uploading the same bytes in any

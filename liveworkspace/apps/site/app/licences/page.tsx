@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 const apps = listedApps();
 
-// Third-party licences (liveworkspace/docs/site.md "Licences"): every product's page body, from
+// Third-party licences (liveworkspace/docs/specs/010-site/site.md "Licences"): every product's page body, from
 // @liveworkspace/marketing-site, for the platform's own website and services.
 export default function LicencesPage() {
   const manifest = loadLicencesManifest();

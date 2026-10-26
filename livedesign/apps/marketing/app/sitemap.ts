@@ -15,7 +15,7 @@ export const dynamic = 'force-static';
 // See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
 // Lists the indexable pages on the marketing origin. /status and /telemetry
-// redirect to liveworkspace.app's pages, one for every app (liveworkspace/docs/site.md),
+// redirect to liveworkspace.app's pages, one for every app (liveworkspace/docs/specs/010-site/site.md),
 // so neither is listed. The editor (/live/*) and API (/api/*) live on the same
 // domain but aren't public-content surfaces, so they don't belong in
 // the sitemap (robots.ts Disallows them too).

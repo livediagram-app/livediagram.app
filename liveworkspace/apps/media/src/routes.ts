@@ -1,4 +1,4 @@
-// The media API (`/api/media/app/*`, liveworkspace/docs/media.md "The API"): what an app's own Worker
+// The media API (`/api/media/app/*`, liveworkspace/docs/specs/006-media/media.md "The API"): what an app's own Worker
 // does with the pictures of the people it has signed in. Each request names its app (X-Media-App) and
 // carries that app's key as a bearer token. The app has already checked what only it can: who the
 // person is, and for the bytes, that the viewer may see a document that places the image.
@@ -143,7 +143,7 @@ export async function handleApp(
     return notFound();
   }
 
-  // DELETE /app/previews/<itemId>: an item purged; every preview kept of it goes (liveworkspace/docs/previews.md
+  // DELETE /app/previews/<itemId>: an item purged; every preview kept of it goes (liveworkspace/docs/specs/006-media/previews.md
   // "Purging"). Only the calling app's: the key names the app, and the app names the folder.
   if (segments[0] === 'previews' && segments.length === 2 && method === 'DELETE') {
     const itemId = segments[1];

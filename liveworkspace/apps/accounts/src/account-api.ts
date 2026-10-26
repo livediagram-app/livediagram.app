@@ -1,4 +1,4 @@
-// The account API under /api/account (liveworkspace/docs/accounts.md "Teams" and "API tokens"):
+// The account API under /api/account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and "API tokens"):
 //   - for the signed-in person on liveworkspace.app, by their session cookie: their teams, members and
 //     invitations, their API tokens, their settings shared by every app, and their profile;
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
@@ -240,7 +240,7 @@ async function overLinkLimit(request: Request, env: Env, door = 'team-link'): Pr
 }
 
 // Display names by id: what collaborators see on a cursor or a comment anyway, up to MAX_PROFILE_IDS a read; ids
-// not found are left out. With `pictures` (an account asking, never a guest: liveworkspace/docs/accounts.md "Profile
+// not found are left out. With `pictures` (an account asking, never a guest: liveworkspace/docs/specs/003-accounts/accounts.md "Profile
 // pictures"), each person's published Google picture too, read in the same query as the name.
 async function peopleNames(
   request: Request,
@@ -357,7 +357,7 @@ async function handleSignedIn(
 }
 
 // --- The profile, on both doors: the session's on liveworkspace.app, the bearer's on an app's address and in the
-// editors (liveworkspace/docs/accounts.md "Profiles") ---
+// editors (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles") ---
 
 // GET answers the person's own profile, PATCH `{ name?, color?, showPicture? }` sets any of them (null clears a name
 // or colour). Both answer it with their own picture and its switch (OwnProfile). Null for a method that isn't one of
@@ -381,7 +381,7 @@ async function profileRoute(
 
 // --- Running teams, on both doors: the session's on liveworkspace.app, the bearer's on an app's address ---
 
-// Making, running and leaving teams and answering invitations (liveworkspace/docs/one-explorer.md "Teams are run in
+// Making, running and leaving teams and answering invitations (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in
 // the Explorer"). The Explorer runs a team wherever it shows, so these answer the session on liveworkspace.app and
 // the app's bearer alike. Null for a route that isn't one of these.
 async function teamRoutes(

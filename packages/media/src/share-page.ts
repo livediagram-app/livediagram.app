@@ -1,4 +1,4 @@
-// A share link's page head (liveworkspace/docs/previews.md "The share page's head"), the same in every app. An app's
+// A share link's page head (liveworkspace/docs/specs/006-media/previews.md "The share page's head"), the same in every app. An app's
 // share page (`/<item>/shared?s=<code>`) is the same static shell as every item, so a link preview, whose crawler
 // never runs the page's script, would see the app's name over an empty box. For a link whose preview may name its
 // item, the previews service answers its name (`GET /api/previews/share/<code>/card`), and the shell's head is

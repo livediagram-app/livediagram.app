@@ -1,4 +1,4 @@
-// The page's own words for each app (liveworkspace/docs/site.md "The apps"): what the card
+// The page's own words for each app (liveworkspace/docs/specs/010-site/site.md "The apps"): what the card
 // says beyond the shared name and pitch in @liveworkspace/sites. Keyed by site, and a test requires a
 // row for every app, so a new app can't ship with an empty card.
 

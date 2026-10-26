@@ -1,6 +1,6 @@
 // The once-per-UTC-day "returning visitor" gate (a product's docs/specs/017-telemetry/telemetry.md,
 // `Participant·Returned`), shared by every editor and by liveworkspace's Explorer on an app's own address
-// (liveworkspace/docs/telemetry.md "The Explorer on liveworkspace.app"). Both read and write the same
+// (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"). Both read and write the same
 // `<app>:v2:last-active-day` key on the app's origin, so the first open of the day wins wherever it happens
 // and the rest no-op: a person who lands on the Explorer and then opens a project counts once.
 //

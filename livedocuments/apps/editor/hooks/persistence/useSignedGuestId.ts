@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 
-// A guest's id, from liveworkspace's guest token (liveworkspace/docs/one-explorer-contracts.md "Guests"):
+// A guest's id, from liveworkspace's guest token (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"):
 // every entry path waits for it before its first owner-scoped call, so the guest's Bearer is there even
 // for a first-time visitor. Null until auth has settled and the identity resolved, and always null
 // for a signed-in user, whose id is the account's. An existing signed id resolves with no network.

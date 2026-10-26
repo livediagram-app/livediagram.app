@@ -1,4 +1,4 @@
-// Sealing the Google refresh token at rest (liveworkspace/docs/drive.md "Tokens").
+// Sealing the Google refresh token at rest (liveworkspace/docs/specs/005-drive/drive.md "Tokens").
 //
 // AES-GCM under DRIVE_TOKEN_KEY (base64 of 32 bytes), a fresh 12-byte IV per seal, and the person's id as
 // additional authenticated data: a sealed value copied onto another person's store fails to open rather than

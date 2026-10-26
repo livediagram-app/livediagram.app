@@ -4,7 +4,7 @@ import { planOutbound, type OutboundOp } from './plan-outbound';
 import { buildSnapshot } from './snapshot';
 import type { DriveRow, MirrorFolder, MirrorItem, MirrorTrashed } from './types';
 
-// Each row of the spec's Outbound table as a pure plan (liveworkspace/docs/drive.md "Outbound: liveworkspace to
+// Each row of the spec's Outbound table as a pure plan (liveworkspace/docs/specs/005-drive/drive.md "Outbound: liveworkspace to
 // Drive").
 
 const ORIGIN = 'https://liveworkspace.test';

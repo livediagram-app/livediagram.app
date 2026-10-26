@@ -1,4 +1,4 @@
-// A guest token's shape for tests (liveworkspace/docs/one-explorer-contracts.md "Guests"): the claims the editor
+// A guest token's shape for tests (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the claims the editor
 // reads, unsigned. The editor never checks the signature (the api and the index do), so a test needs none.
 const b64url = (value: string) =>
   btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

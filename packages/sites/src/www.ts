@@ -1,4 +1,4 @@
-// The move to www. (liveworkspace/docs/specs/010-site/site.md "www. is the address", liveworkspace/docs/accounts.md "The move to
+// The move to www. (liveworkspace/docs/specs/010-site/site.md "www. is the address", liveworkspace/docs/specs/003-accounts/accounts.md "The move to
 // www."). Every product and the platform live on their www. host, APIs included, and every URL we generate names it.
 // The bare domains only redirect page loads; for a transition window a bare name (an issuer, an audience, an origin, a
 // host a CLI file recorded) is still the same as its www. twin, so nothing minted or saved before the move breaks.

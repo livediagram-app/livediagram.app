@@ -1,4 +1,4 @@
-// The push channel (liveworkspace/docs/drive.md "Cadence"): a `changes.watch` on the person's Drive, so Google posts
+// The push channel (liveworkspace/docs/specs/005-drive/drive.md "Cadence"): a `changes.watch` on the person's Drive, so Google posts
 // to /api/drive/push when it changes and a pass follows. Opened on connect, renewed DRIVE_CHANNEL_RENEW_BEFORE_MS
 // before it ends, stopped on disconnect. A channel Google won't open (a local address, an outage) is tried again
 // after DRIVE_FALLBACK_CHECK_MS; meanwhile the fallback check runs at its shorter interval.

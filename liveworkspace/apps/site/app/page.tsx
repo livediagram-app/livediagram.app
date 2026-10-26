@@ -26,7 +26,7 @@ const STEPS: Partial<Record<SiteId, string>> = {
 
 const PROMISES = ['Completely free', 'No sign-up needed', 'No trackers or ads'];
 
-// liveworkspace.app's front door (liveworkspace/docs/site.md "The front door"): what liveworkspace
+// liveworkspace.app's front door (liveworkspace/docs/specs/010-site/site.md "The front door"): what liveworkspace
 // is, the apps in it and how they join up, and the one account that ties them together.
 export default function Home() {
   const apps = listedApps();

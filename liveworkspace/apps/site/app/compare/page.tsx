@@ -7,7 +7,7 @@ import { Header } from '@/components/Header';
 import { AppLogo } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 
-// Comparison (liveworkspace/docs/site.md): each app compares itself with the tools it
+// Comparison (liveworkspace/docs/specs/010-site/site.md): each app compares itself with the tools it
 // answers on its own site (packages/comparisons/README.md), so this page only points at them. The
 // old /alternatives addresses redirect here and to each app's pages (public/_redirects).
 

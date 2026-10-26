@@ -1,4 +1,4 @@
-// The Drive service as this site's pages call it (liveworkspace/docs/drive.md "The service"): `/api/drive` on this
+// The Drive service as this site's pages call it (liveworkspace/docs/specs/005-drive/drive.md "The service"): `/api/drive` on this
 // origin, liveworkspace.app or an app's router, with the person's account token. A guest's token is never
 // sent: the service refuses it, so a guest's page asks nothing.
 import { createDriveClient, DRIVE_HELP_PATH } from '@liveworkspace/drive/client';

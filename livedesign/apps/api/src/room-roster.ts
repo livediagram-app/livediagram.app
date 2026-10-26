@@ -16,7 +16,7 @@ import {
 import type { ParticipantPresence } from './types';
 
 /** One connected socket as the roster reads it: its hello'd presence (null before hello), and whether an account
- *  holds it (only an account session is sent other people's Google pictures, liveworkspace/docs/accounts.md
+ *  holds it (only an account session is sent other people's Google pictures, liveworkspace/docs/specs/003-accounts/accounts.md
  *  "Profile pictures"; a guest or link visitor gets the same roster with every picture taken out). */
 export type RosterEntry = {
   ws: WebSocket;

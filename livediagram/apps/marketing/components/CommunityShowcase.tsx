@@ -27,7 +27,7 @@ import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): six documents people are proud of, the most liked over the
 // last three months topped up with the best of all time, picked by the liveworkspace Community service
-// (liveworkspace/docs/community.md) from this app's posts. The page is a static export,
+// (liveworkspace/docs/specs/007-community/community.md) from this app's posts. The page is a static export,
 // so the six arrive after it loads: placeholder cards hold their space meanwhile (no layout shift), and
 // with nothing to show (an empty Community, the api unreachable) the section invites the first share. While
 // the Community is switched off the section is not shown at all.

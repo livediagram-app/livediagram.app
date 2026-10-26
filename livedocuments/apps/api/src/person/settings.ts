@@ -1,5 +1,5 @@
 // A person's settings (docs/specs/007-editor/user-preferences.md), kept by the liveworkspace accounts
-// Worker in two scopes (liveworkspace/docs/accounts.md "Settings"): `all`, which every app shows, and
+// Worker in two scopes (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"): `all`, which every app shows, and
 // livedocuments.app's own. Which key goes where is one list, ALL_SETTING_KEYS in
 // @liveworkspace/settings. The editor still sees one flat set of preferences: a read joins the
 // scopes, a write splits them. livedocuments keeps no copy.

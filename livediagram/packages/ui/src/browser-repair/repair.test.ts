@@ -48,7 +48,7 @@ describe('isRepairClearable', () => {
     }
   });
 
-  it('clears what the removed Google Drive mirror left behind (liveworkspace/docs/drive.md)', () => {
+  it('clears what the removed Google Drive mirror left behind (liveworkspace/docs/specs/005-drive/drive.md)', () => {
     for (const k of [
       'livediagram:v2:drive-state',
       'livediagram:v2:drive-seen:user_a',

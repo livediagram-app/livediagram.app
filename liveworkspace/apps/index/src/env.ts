@@ -22,7 +22,7 @@ export interface Env {
   INDEX_KEY_LIVEPLANNER?: string;
   INDEX_KEY_LIVEDOCUMENTS?: string;
   INDEX_KEY_LIVEDESIGN?: string;
-  // The Google Drive mirror's service (liveworkspace/docs/drive.md "Contracts > The index"): its key here, with
+  // The Google Drive mirror's service (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"): its key here, with
   // which it acts for a person and sets their drive_mirrored flag; the key the index signals it with (its
   // DRIVE_KEY_INDEX); and the binding the signal goes through. Without the binding no signal is sent.
   INDEX_KEY_DRIVE?: string;

@@ -1,4 +1,4 @@
-// Previews on an app's address (liveworkspace/docs/previews.md "The addresses"): what each router forwards to the
+// Previews on an app's address (liveworkspace/docs/specs/006-media/previews.md "The addresses"): what each router forwards to the
 // media service, and how.
 import { describe, expect, it } from 'vitest';
 import {

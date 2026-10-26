@@ -52,7 +52,7 @@ describe('handleParticipants', () => {
     expect(res.status).toBe(200);
   });
 
-  // liveworkspace/docs/accounts.md "Profile pictures": pictures go only to signed-in readers.
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures": pictures go only to signed-in readers.
   it('GET gives the Google picture to a signed-in reader and never to a guest', async () => {
     db.getParticipant.mockResolvedValue({
       id: 'p1',

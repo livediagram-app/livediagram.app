@@ -1,4 +1,4 @@
-// A plan as this api knows it (liveworkspace/docs/one-explorer.md): its content and what it knows of itself (name,
+// A plan as this api knows it (liveworkspace/docs/specs/004-index/one-explorer.md): its content and what it knows of itself (name,
 // owner, team, provenance, creation intent) live in its Durable Object's own SQLite (plan-room/plan-schema.ts,
 // the `plan` row). Where it is filed, who may open it, its sharing and its Trash state are the index's; this
 // module never answers them. The read adds the owner's display name, from their profile at the liveworkspace
@@ -62,7 +62,7 @@ export async function getProjectMeta(
   return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// What liveworkspace keeps of a plan's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// What liveworkspace keeps of a plan's pictures (liveworkspace/docs/specs/006-media/previews.md), for when the index purges it
 // (routes/internal-items.ts): its previews go too. Its form links and reports are in its own Durable Object (wiped
 // with it), and the index's form row and code cascade with the item. Workbench tickets and sessions scoped to it are
 // liveworkspace's: a ticket lapses in a minute, and a session's every request is gated on the

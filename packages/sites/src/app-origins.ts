@@ -1,4 +1,4 @@
-// Every address an app answers on, per environment (liveworkspace/docs/accounts.md "Signing in on the app's own
+// Every address an app answers on, per environment (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own
 // address"). The accounts Worker accepts a sign-in hand-off back to these and nowhere else, beside its own check that
 // the address is one of the app's registered OAuth redirect URIs; the sign-in pages read them to know when they are
 // being served under an app's address. Kept Worker-safe: no Node, no DOM.
@@ -45,7 +45,7 @@ export function stagingOrigin(site: SiteId): string {
 }
 
 /** A link to `site` (`href`, on its live origin `site.url`) as a page on `host` gives it: moved to the site's staging
- *  origin from a staging page (liveworkspace/docs/site-switcher.md), unchanged anywhere else. */
+ *  origin from a staging page (liveworkspace/docs/specs/010-site/site-switcher.md), unchanged anywhere else. */
 export function siteHrefFrom(site: Site, href: string, host: string): string {
   if (!isStagingHost(host) || !href.startsWith(site.url)) return href;
   return `${stagingOrigin(site.id)}${href.slice(site.url.length)}`;

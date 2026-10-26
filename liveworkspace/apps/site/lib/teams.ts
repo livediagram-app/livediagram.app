@@ -1,6 +1,6 @@
-// What the join and decline landings need (liveworkspace/docs/site.md "Joining and declining"): where a team and
+// What the join and decline landings need (liveworkspace/docs/specs/010-site/site.md "Joining and declining"): where a team and
 // the invitations are in the Explorer, the token a join link carries, and a team's tile. Teams themselves are made
-// and run in the Explorer (@liveworkspace/explorer; liveworkspace/docs/one-explorer.md "Teams are run in the
+// and run in the Explorer (@liveworkspace/explorer; liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the
 // Explorer").
 
 /** The Explorer's Invites, where invitations are answered and teams made. */

@@ -1,5 +1,5 @@
-// What the status page checks (liveworkspace/docs/site.md "Status") and the status Worker checks every hour
-// (liveworkspace/docs/status.md): liveworkspace's shared services, then each app's own, each with an endpoint it
+// What the status page checks (liveworkspace/docs/specs/010-site/site.md "Status") and the status Worker checks every hour
+// (liveworkspace/docs/specs/009-status/status.md): liveworkspace's shared services, then each app's own, each with an endpoint it
 // already answers that says it is up. The one list both use, so the page and the stored history never drift. Every
 // check is a route the service serves anyway, picked to be cheap (no database read where one can be avoided, or one
 // the edge caches).

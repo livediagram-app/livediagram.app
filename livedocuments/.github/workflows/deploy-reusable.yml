@@ -10,7 +10,7 @@ name: Deploy (reusable)
 # Builds each app, then deploys to Cloudflare Workers in dependency order:
 # marketing + live + help + api in parallel → mcp
 # (service binding to api) → router last (service bindings to the four
-# path-routed workers). Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md), not deployed here.
+# path-routed workers). Telemetry is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md), not deployed here.
 on:
   workflow_call:
     inputs:
@@ -64,7 +64,7 @@ on:
         required: false
       ACCOUNTS_CLIENT_SECRET:
         required: false
-      # livedocuments's key at the central index (liveworkspace/docs/one-explorer-contracts.md).
+      # livedocuments's key at the central index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
       INDEX_KEY:
         required: false
       TELEMETRY_KEY:
@@ -360,7 +360,7 @@ jobs:
               | pnpm exec wrangler secret put "$name" ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
           done
 
-      # Same provisioning story for livedocuments's key at the central index (liveworkspace/docs/one-explorer.md):
+      # Same provisioning story for livedocuments's key at the central index (liveworkspace/docs/specs/004-index/one-explorer.md):
       # the plan rooms push their summaries with it and the api asks for API tokens' grants with it. It holds
       # the same value as the index's key for livedocuments. Empty/unset leaves the worker's copy untouched.
       - name: Sync INDEX_KEY secret
@@ -389,7 +389,7 @@ jobs:
           printf '%s' "$TELEMETRY_KEY" \
             | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-      # MEDIA_KEY (liveworkspace/docs/media.md) is livedocuments' secret on the liveworkspace media service, which
+      # MEDIA_KEY (liveworkspace/docs/specs/006-media/media.md) is livedocuments' secret on the liveworkspace media service, which
       # holds it as MEDIA_KEY_LIVEDOCUMENTS. Unset = the step skips, leaving whatever is already on the worker untouched.
       - name: Sync MEDIA_KEY secret
         if: ${{ env.MEDIA_KEY != '' }}

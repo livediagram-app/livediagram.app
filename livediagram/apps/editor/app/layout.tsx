@@ -114,7 +114,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
-        {/* Signing in without a click (liveworkspace/docs/accounts.md): before anything else loads,
+        {/* Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md): before anything else loads,
             since when it bounces it stops the page. */}
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_BOOT_SCRIPT) }} />
         {/* Ids work outside a secure context too (docs/specs/016-platform/secure-context.md), before any app code. */}

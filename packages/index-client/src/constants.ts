@@ -1,4 +1,4 @@
-// The index's fixed names and numbers (liveworkspace/docs/one-explorer-contracts.md). Both sides read
+// The index's fixed names and numbers (liveworkspace/docs/specs/004-index/one-explorer-contracts.md). Both sides read
 // these, so the Explorer, the apps and the index can never disagree on a limit.
 
 // The four apps, and the one kind of item each makes: the word people see.
@@ -102,7 +102,7 @@ export const USE_WINDOW_DAYS = 90;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
 
-// The Timeline (liveworkspace/docs/one-explorer-contracts.md "Timeline"). Where each kind comes from:
+// The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"). Where each kind comes from:
 // - the index, in the batch that makes the change: created, renamed, moved, trashed, restored, shared,
 //   unshared, favourited, synced (an offline item created again) and taken_offline (an item purged to live in
 //   one browser);

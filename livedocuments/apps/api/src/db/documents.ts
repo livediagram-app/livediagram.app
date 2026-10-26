@@ -1,4 +1,4 @@
-// A document as this api knows it (liveworkspace/docs/one-explorer.md): its content and what it knows of itself (name,
+// A document as this api knows it (liveworkspace/docs/specs/004-index/one-explorer.md): its content and what it knows of itself (name,
 // owner, team, provenance, the slide deck) live in its Durable Object's own SQLite (document-room/document-schema.ts,
 // the `document` row). Where it is filed, who may open it, its sharing and its Trash state are the index's; this
 // module never answers them. The read joins the owner's display name from their profile (person/profiles.ts).
@@ -54,7 +54,7 @@ export async function getDocumentMeta(
   return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// What liveworkspace keeps of a document's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// What liveworkspace keeps of a document's pictures (liveworkspace/docs/specs/006-media/previews.md), for when the index purges it
 // (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are liveworkspace's:
 // a ticket lapses in a minute, and a session's every request is gated on the document's grant,
 // which a purged document never gets again. Best effort: a preview the purge misses is unreachable (every read asks

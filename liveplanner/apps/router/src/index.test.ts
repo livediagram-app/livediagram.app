@@ -417,7 +417,7 @@ describe('the caching rules', () => {
   });
 });
 
-describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+describe("liveworkspace's previews under this address (liveworkspace/docs/specs/006-media/previews.md)", () => {
   it("sends every plan's preview and a link's image and card to the previews service, never the api", async () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);

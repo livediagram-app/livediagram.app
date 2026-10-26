@@ -6,9 +6,9 @@ compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
-# Its API, /api/media, on liveworkspace.app (liveworkspace/docs/media.md): browsers never call it, each app's own
+# Its API, /api/media, on liveworkspace.app (liveworkspace/docs/specs/006-media/media.md): browsers never call it, each app's own
 # Worker does, and serves the bytes to the people it lets in. And every app's previews, /api/previews
-# (liveworkspace/docs/previews.md): browsers do call these, on liveworkspace.app and through each app's router.
+# (liveworkspace/docs/specs/006-media/previews.md): browsers do call these, on liveworkspace.app and through each app's router.
 routes = [
   { pattern = "www.liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },
   { pattern = "liveworkspace.app/api/media*", zone_name = "liveworkspace.app" },

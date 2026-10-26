@@ -78,7 +78,7 @@ type RoomConnectOptions = {
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
-  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/one-explorer-contracts.md
+  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/specs/004-index/one-explorer-contracts.md
   // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket and the
   // reconnect mints anew.
   renewGrant?: () => Promise<string | null>;
@@ -138,7 +138,7 @@ const RECONNECT_MAX_MS = 15_000;
 export const ROOM_FULL_NOTICE = `${ROOM_FULL_MESSAGE}, so you can't join it live right now. We'll keep trying.`;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). `picture`: the published
- *  Google picture (liveworkspace/docs/accounts.md "Profile pictures"), which the room keeps only from an account. */
+ *  Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), which the room keeps only from an account. */
 type RoomSelf = { id: string; name: string; color: string; key?: string; picture?: string };
 
 export function connectRoom(

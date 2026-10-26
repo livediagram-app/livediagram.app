@@ -1,4 +1,4 @@
-// Opening a canvas through a share link (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"). The link
+// Opening a canvas through a share link (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"). The link
 // is the index's: the api resolves it there and answers the canvas as the link opens it, with the level, the tab it
 // is scoped to and, for a Community post's link, the post. Later requests about the canvas carry the index's grant
 // through the link (document-grants.ts). Managing links and the share password is the shared Explorer's Share

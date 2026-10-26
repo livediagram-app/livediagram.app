@@ -1,5 +1,5 @@
 // Every email the platform sends, accounts' and each app's, goes out through Cloudflare Email Service's `send_email`
-// binding (liveworkspace/docs/email.md). This is the one place that calls it: a Worker declares the binding as
+// binding (liveworkspace/docs/specs/003-accounts/email.md). This is the one place that calls it: a Worker declares the binding as
 // `EMAIL`, names its sender in `EMAIL_FROM`, and hands each message here. No key to keep: the binding is the
 // credential, and the sender must be on a domain onboarded to Email Service on this account.
 

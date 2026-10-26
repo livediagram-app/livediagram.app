@@ -1,4 +1,4 @@
-# Teams are made and run in the Explorer now (liveworkspace/docs/one-explorer.md "Teams are run in the
+# Teams are made and run in the Explorer now (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the
 # Explorer"). The old teams pages move there permanently, so links in sent emails keep landing: the list to
 # the Invites, a team's page to its view. lib/teams-redirects.test.ts pins them.
 /account/teams /explorer/invites 301

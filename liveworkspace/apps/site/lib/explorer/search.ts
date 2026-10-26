@@ -1,4 +1,4 @@
-// The Search panel's own entries on the Explorer (liveworkspace/docs/site.md "The Explorer", Search): the
+// The Search panel's own entries on the Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer", Search): the
 // Explorer's help articles in the app's help centre, and, signed in, the sections of the Settings panel.
 // Loaded with the panel (components/explorer/ExplorerSearch.tsx), never with the page.
 

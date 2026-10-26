@@ -17,7 +17,7 @@ import { API_BASE, communityApi } from './config';
 
 // The Community app's api client (blueprint §4 routes, §5 "Community app"), typed with the shared
 // api-schema DTOs. The gallery, posts, likes and reports are the liveworkspace Community service's
-// (liveworkspace/docs/community.md), asked for this app's posts only; My Shares is this app's api, which
+// (liveworkspace/docs/specs/007-community/community.md), asked for this app's posts only; My Shares is this app's api, which
 // alone knows who is signed in. Every request carries the community key so lists and posts come back
 // with `liked` filled in. Only My Shares sends a session token
 // (blueprint §7).

@@ -1,4 +1,4 @@
-// Telling the apps a guest became an account (liveworkspace/docs/one-explorer-contracts.md "Becoming an
+// Telling the apps a guest became an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an
 // account"): the merge moves the index's own rows, but each app may keep something of the guest's beside their
 // items (the images they uploaded, a per-person store), which only the app can move.
 //

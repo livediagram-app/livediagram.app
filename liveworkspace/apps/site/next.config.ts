@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 
-// liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/site.md).
+// liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/specs/010-site/site.md).
 // Every page is here: the home page, the telemetry dashboard, the sign-in pages and the account
 // pages, and the Explorer. The APIs are Workers on more specific routes of the same origin: accounts on
 // /api/auth/* and /api/account/* (and the two .well-known documents), the index on /api/index/* (the
@@ -63,13 +63,13 @@ const nextConfig: NextConfig = {
               destination: `${TELEMETRY_DEV}/api/telemetry/:path*`,
             },
             { source: '/api/index/:path*', destination: `${INDEX_DEV}/api/index/:path*` },
-            // Every app's item previews (liveworkspace/docs/previews.md), from the media Worker.
+            // Every app's item previews (liveworkspace/docs/specs/006-media/previews.md), from the media Worker.
             { source: '/api/previews/:path*', destination: `${MEDIA_DEV}/api/previews/:path*` },
             {
               source: '/api/community/:path*',
               destination: `${COMMUNITY_DEV}/api/community/:path*`,
             },
-            // The status page's stored history (liveworkspace/docs/status.md); `:path*` takes /api/status itself too.
+            // The status page's stored history (liveworkspace/docs/specs/009-status/status.md); `:path*` takes /api/status itself too.
             { source: '/api/status/:path*', destination: `${STATUS_DEV}/api/status/:path*` },
             { source: '/api/drive/:path*', destination: `${DRIVE_DEV}/api/drive/:path*` },
           ];

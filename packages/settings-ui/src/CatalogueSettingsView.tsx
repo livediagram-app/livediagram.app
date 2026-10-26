@@ -1,6 +1,6 @@
 'use client';
 
-// The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/site.md "Settings"): one
+// The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/specs/010-site/site.md "Settings"): one
 // app's settings from its plain-data catalogue (liveworkspace.app, where no app's own Settings is loaded), or the
 // All view: the Account section, then one set of categories, Common's and every app's merged by their place
 // (merge-categories.ts), each app's own rows under its logo and name. Its own chunk, loaded only when

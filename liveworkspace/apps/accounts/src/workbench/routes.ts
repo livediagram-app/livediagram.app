@@ -1,4 +1,4 @@
-// /api/account/workbench/* (liveworkspace/docs/workbench.md "Addresses"): every app's workbench pairing, tickets
+// /api/account/workbench/* (liveworkspace/docs/specs/011-workbench/workbench.md "Addresses"): every app's workbench pairing, tickets
 // and sessions. Each app's address keeps `/api/workbench/*` and forwards it here with its name, so the requests and
 // answers are the app's own (apps.ts holds its words).
 //

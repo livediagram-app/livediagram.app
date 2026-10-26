@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { base64ToBytes, bytesToBase64Url } from '../base64';
 import { driveKeyBytes, importDriveKey, openRefreshToken, sealRefreshToken } from './crypto';
 
-// The refresh token is sealed with AES-GCM under DRIVE_TOKEN_KEY before it is stored (liveworkspace/docs/drive.md
+// The refresh token is sealed with AES-GCM under DRIVE_TOKEN_KEY before it is stored (liveworkspace/docs/specs/005-drive/drive.md
 // "Tokens").
 
 const plainBase64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));

@@ -10,7 +10,7 @@ export type Env = {
   // authorize endpoint redirects the signed-in user there. Defaults to the
   // hosted app; other deployments point it at their own editor origin.
   CONSENT_BASE_URL?: string;
-  // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
+  // The liveworkspace telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means production's,
   // TELEMETRY_URL in @liveworkspace/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // The product's secret on that service, sent as X-Telemetry-Key (the same value as its api

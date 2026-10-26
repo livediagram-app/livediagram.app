@@ -7,7 +7,7 @@ import { workspaceOriginFor } from '@liveworkspace/sites';
 // and serves each post's card image, viewer and copy.
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-// Where the posts live: the liveworkspace Community service (liveworkspace/docs/community.md), which keeps
+// Where the posts live: the liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md), which keeps
 // every app's posts, likes and reports. The build can name one (a `wrangler dev` on port 8791); else it is
 // liveworkspace.app's as seen from this page (@liveworkspace/sites workspaceOriginFor): production's, staging's
 // from a staging app, and the local site's on a dev server, which forwards it. Production's outside a browser.

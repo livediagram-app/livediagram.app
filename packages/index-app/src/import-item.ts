@@ -1,4 +1,4 @@
-// The import door's work every app shares (liveworkspace/docs/drive.md "Contracts > The apps"): read the file, make
+// The import door's work every app shares (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): read the file, make
 // the index's item as its owner's personal item in the folder named, then write the content into the new item's
 // Durable Object. The app supplies the reading (its envelope parser, fresh ids, its limits) and the writing.
 //

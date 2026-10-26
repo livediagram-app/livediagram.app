@@ -27,7 +27,7 @@ import type { SectionFocus } from './SectionedView';
 import { TelemetryAppProvider, type TelemetryAppConfig } from './app';
 import { dropRetiredEvents } from './retired-events';
 
-// One app's own dashboard (liveworkspace/docs/telemetry.md "The dashboard"), the same for every app,
+// One app's own dashboard (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"), the same for every app,
 // filled from the app's config: the key metrics first, then the Detail tabs (each gathering what
 // were separate tabs until October 2026 as sections): what people build with (Features), how they
 // find their way (Pages & Help), what they share with everyone (Community, for an app that has

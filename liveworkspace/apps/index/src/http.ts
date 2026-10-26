@@ -1,5 +1,5 @@
 // Responses and request bodies. Every refusal is `{ "error": "<code>" }` with a 4xx status
-// (liveworkspace/docs/one-explorer-contracts.md "Reaching the index").
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index").
 
 import type { IndexErrorCode } from '@liveworkspace/index-client';
 import { MAX_BODY_BYTES } from './config';

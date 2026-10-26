@@ -1,4 +1,4 @@
-// Who an owner id is to the liveworkspace accounts Worker (liveworkspace/docs/accounts.md "Settings",
+// Who an owner id is to the liveworkspace accounts Worker (liveworkspace/docs/specs/003-accounts/accounts.md "Settings",
 // "Profiles"), which keeps settings and profiles for every app. Ids are liveworkspace's own: an account
 // is `user_…` and a guest `guest_<uuid>` (its guest token's, docs/specs/014-identity/auth-and-guest-access.md),
 // the same here and there. Any other id (a test fixture, a stand-in) has no record at liveworkspace.

@@ -1,4 +1,4 @@
-// Opening a design through a share link (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"). The link
+// Opening a design through a share link (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"). The link
 // is the index's: its grant on the design says what the link allows (the level, and the tab it is scoped to), and
 // the design is then read with that grant. Managing links is the shared Explorer's Share dialog
 // (@liveworkspace/explorer `ShareDialog`), straight to the index.

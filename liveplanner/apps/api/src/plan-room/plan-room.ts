@@ -536,7 +536,7 @@ export class PlanRoom extends DurableObject<Env> {
     return response;
   }
 
-  // The export door (liveworkspace/docs/previews.md, routes/internal-items.ts): the plan drawn as an SVG, the first
+  // The export door (liveworkspace/docs/specs/006-media/previews.md, routes/internal-items.ts): the plan drawn as an SVG, the first
   // tab or one, with its last save as the version. Unchanged since `ifVersion`, it is not drawn. A plan never
   // started is not found, and asking does not start it.
   async exportImage(planId: string, query: ExportQuery): Promise<ExportResult> {
@@ -558,7 +558,7 @@ export class PlanRoom extends DurableObject<Env> {
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
-  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", project-file.ts): the
+  // The export door's `file` format (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", project-file.ts): the
   // plan's whole envelope, its last save as the version, unread when the caller holds that save. A plan never
   // started is not found, and asking does not start it.
   async exportFile(planId: string, query: ExportQuery): Promise<ExportResult> {
@@ -768,7 +768,7 @@ export class PlanRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  // ---------- Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants") ---------------------------------
   //
   // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
   // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame

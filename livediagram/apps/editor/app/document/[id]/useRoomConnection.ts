@@ -240,7 +240,7 @@ export function useRoomConnection(opts: {
   // change goes out over the open socket rather than warranting a reconnect.
   //
   // A signed-in session says hello with its Google picture unless Show My Google Picture is off; the room keeps it
-  // only from an account session and sends it only to account sessions (liveworkspace/docs/accounts.md "Profile
+  // only from an account session and sends it only to account sessions (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
   // pictures"). A switch flipped mid-session reaches the room on the next connect.
   const authUser = useDeferredAuth().user;
   const helloPicture = authUser && !authUser.pictureHidden ? (authUser.picture ?? null) : null;

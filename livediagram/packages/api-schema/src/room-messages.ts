@@ -371,7 +371,7 @@ export type ClientMessage =
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | GrantMessage;
 
-// The session's grant is about to lapse (liveworkspace/docs/one-explorer-contracts.md "Grants"): the room asks
+// The session's grant is about to lapse (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the room asks
 // for a fresh one ROOM_GRANT_ASK_BEFORE_MS before it does, and drops the socket (GRANT_LAPSED_CLOSE) when none
 // came by then. `expiresAt`: when the session's grant runs out, epoch ms.
 export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };

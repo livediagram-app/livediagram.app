@@ -1,4 +1,4 @@
-// The invitations waiting for an account, for an app's server (liveworkspace/docs/accounts.md "The
+// The invitations waiting for an account, for an app's server (liveworkspace/docs/specs/003-accounts/accounts.md "The
 // API"): `POST /api/account/internal/invitations` `{ userId }`. An app shows them in its Invites view
 // and answers them through liveworkspace's account API (the Explorer's TeamsHost); this read never does.
 //

@@ -2,7 +2,7 @@
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the four-process stack the Playwright smoke suite
 // runs against — the real static `apps/editor/out` build served with the
 // production router/worker rewrites, the api worker with local Durable Objects, and liveworkspace's index
-// (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
+// (liveworkspace/apps/index, liveworkspace/docs/specs/004-index/one-explorer.md) on its own local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
 // Boots:
@@ -187,7 +187,7 @@ const b64url = (buf) => Buffer.from(buf).toString('base64url');
 // The client the api worker is started with (below), as register-client.ts would make it.
 const ACCOUNTS_CLIENT = { id: 'e2e-livediagram', secret: 'e2e-client-secret' };
 
-// The stand-in's records, as liveworkspace.app keeps them (liveworkspace/docs/accounts.md "Teams" and
+// The stand-in's records, as liveworkspace.app keeps them (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and
 // "API tokens"). Every team and member carries the feed position of its last change, so the change
 // feed is "everything after the cursor" and the api follows it as it follows the real one. Positions
 // start at the boot time, so a feed reader never sees positions go backwards between runs of the stack.

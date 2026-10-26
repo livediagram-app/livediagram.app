@@ -5,7 +5,7 @@ import { migratePersonSchema } from './person-schema';
 
 // A person's own SQLite (docs/specs/015-api/api.md "What each person's object holds"): steps append, and a store
 // at any version reaches the latest. The second step drops livediagram's own Google Drive mirror's tables
-// (liveworkspace/docs/drive.md "Coming from livediagram's mirror").
+// (liveworkspace/docs/specs/005-drive/drive.md "Coming from livediagram's mirror").
 
 const tables = (db: DatabaseSync) =>
   (

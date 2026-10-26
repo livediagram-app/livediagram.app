@@ -1,6 +1,6 @@
 'use client';
 
-// What other apps keep in a place that looks empty in this app (liveworkspace/docs/one-explorer.md "A place that
+// What other apps keep in a place that looks empty in this app (liveworkspace/docs/specs/004-index/one-explorer.md "A place that
 // is empty here but not elsewhere"): filtered to the app, a folder holding only another app's items would read as
 // empty and be deleted by mistake. Asked only once the app's own list has come back empty: one request, the
 // place's first page across every app, counted by app.

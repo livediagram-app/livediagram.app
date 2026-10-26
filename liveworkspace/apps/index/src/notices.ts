@@ -1,5 +1,5 @@
 // What the index tells an item's app for its notification emails, and the one count it answers for them
-// (liveworkspace/docs/one-explorer-contracts.md "Notices"): someone made a share link on an item, a
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Notices"): someone made a share link on an item, a
 // person opened one through a link for the first time, and how many items a person has made in the app.
 // The index sends no email; it says what happened, once, after the change is written.
 

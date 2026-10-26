@@ -1,5 +1,5 @@
 // A form's place in liveworkspace's index (docs/specs/030-forms/forms.md "Hearing about responses";
-// liveworkspace/docs/one-explorer-contracts.md "What an item pushes"). The plan's Durable Object keeps its form
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"). The plan's Durable Object keeps its form
 // links (db/forms.ts); the index keeps, per live link:
 //   - its Inbox row (`PUT /app/items/:id/forms/:tabId`): heading, the board its responses land on, how many it has
 //     taken and when the last came, and its public code, which is how the Worker finds the plan a code names

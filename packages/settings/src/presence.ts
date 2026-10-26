@@ -1,4 +1,4 @@
-// The presence colours every app offers (liveworkspace/docs/accounts.md "Profiles"): the colour
+// The presence colours every app offers (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the colour
 // collaborators see on a person's cursor, comments and avatar, in every app and on liveworkspace.app.
 // One palette, so a colour picked in one place is a named swatch in all of them. Each is a Tailwind
 // 500 step, painted exactly in light mode; under white text in dark mode, where white falls below AA

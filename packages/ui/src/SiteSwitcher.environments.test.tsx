@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { explorerSwitchHref } from '@liveworkspace/sites';
 import { SiteSwitcher } from './SiteSwitcher';
 
-// The switcher's links follow the page's environment (liveworkspace/docs/site-switcher.md): a staging page links each
+// The switcher's links follow the page's environment (liveworkspace/docs/specs/010-site/site-switcher.md): a staging page links each
 // site's staging origin, any other page each site's live one. The host is read in the browser, so this renders in
 // jsdom at the page's address rather than to static markup.
 const dom = (globalThis as unknown as { jsdom: { reconfigure(settings: { url: string }): void } })

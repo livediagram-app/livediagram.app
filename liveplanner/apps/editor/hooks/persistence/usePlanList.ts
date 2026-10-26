@@ -1,7 +1,7 @@
 'use client';
 
 // The person's plans, for the editor's pickers that name another plan (Add to Project, a link to a plan, search).
-// They are the index's (liveworkspace/docs/one-explorer-contracts.md): one page of liveplanner items, read once the
+// They are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one page of liveplanner items, read once the
 // open plan has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
 // after this editor changed it (a tab moved to another plan).
 

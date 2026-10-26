@@ -41,7 +41,7 @@ describe('appApiResources', () => {
 describe('isExplorerRead', () => {
   it('is an item’s tabs, read', () => {
     expect(isExplorerRead(get('/api/documents/abc/tabs?x=1'), 'documents')).toBe(true);
-    // Previews are liveworkspace's now (liveworkspace/docs/previews.md), not an app's read.
+    // Previews are liveworkspace's now (liveworkspace/docs/specs/006-media/previews.md), not an app's read.
     expect(isExplorerRead(get('/api/documents/abc/thumbnail'), 'documents')).toBe(false);
   });
 

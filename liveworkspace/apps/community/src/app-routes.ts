@@ -1,4 +1,4 @@
-// The app routes (`/api/community/app/*`, liveworkspace/docs/community.md "The API"): what only an app's
+// The app routes (`/api/community/app/*`, liveworkspace/docs/specs/007-community/community.md "The API"): what only an app's
 // own Worker may do, for the people it has signed in and the documents it holds. Publishing, Edit
 // Listing and removing a post; keeping each post's document state in step; My Shares; and counting
 // copies. Each request names its app (X-Community-App) and carries that app's key as a bearer token.

@@ -1,7 +1,7 @@
-// API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): made and revoked on
+// API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): made and revoked on
 // liveworkspace.app, and good on every app. This app checks a presented `lwt_` token with liveworkspace and keeps
 // no copy of it. What hangs off a token (workbench pairings and sessions) is liveworkspace's too, which ends it when
-// the token stops working (liveworkspace/docs/workbench.md "Ending access").
+// the token stops working (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
 
 import {
   createTokenChecker,

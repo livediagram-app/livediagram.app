@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccountsUnavailable } from '../db/api-tokens';
 import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
 
-// Sessions are liveworkspace's (liveworkspace/docs/workbench.md): the api asks accounts about each with its client
+// Sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api asks accounts about each with its client
 // credentials and reads the answer in its own words.
 const ENV = {
   ACCOUNTS_URL: 'https://accounts.test',

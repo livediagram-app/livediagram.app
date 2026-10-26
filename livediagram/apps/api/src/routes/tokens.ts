@@ -1,4 +1,4 @@
-// /api/tokens — API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API
+// /api/tokens — API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API
 // tokens"): made, listed and revoked on liveworkspace.app, so the management routes answer 410 with
 // where to go. What stays is the token a request presented:
 //
@@ -52,7 +52,7 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
     return json(body);
   }
   // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app. Its workbench pairings and
-  // sessions are liveworkspace's, which ends them with it (liveworkspace/docs/workbench.md "Ending access").
+  // sessions are liveworkspace's, which ends them with it (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
   const secret = bearerTokenOf(request.headers.get('Authorization'));
   if (secret) await revokePresentedToken(env, secret);
   console.info('[tokens] current revoked', { tokenId: token.id });

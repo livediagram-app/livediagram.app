@@ -1,4 +1,4 @@
-// One pass (liveworkspace/docs/drive.md "The service", "Cadence"), run by the object's alarm: a token, the root, the
+// One pass (liveworkspace/docs/specs/005-drive/drive.md "The service", "Cadence"), run by the object's alarm: a token, the root, the
 // push channel, the person's whole picture from the index, the gate (changes.getStartPageToken) and inbound, then
 // outbound in batches of DRIVE_PASS_MAX_WRITES, and the next alarm: the next batch straight away, else the soonest of
 // the next content write that falls due, the fallback check and the channel's renewal.

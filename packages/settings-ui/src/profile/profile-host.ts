@@ -1,4 +1,4 @@
-// How the Settings panel's Profile reaches the person's profile (liveworkspace/docs/accounts.md "Profiles"): the host
+// How the Settings panel's Profile reaches the person's profile (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): the host
 // loads it and saves a patch, over whatever door it has. liveworkspace.app's session (`/api/account/profile`), or an
 // app's token through its router (`/api/workspace/account/profile`, the bearer door) on an app's address and in each
 // editor. Either way the panel edits it in place; there is no address to link away to.
@@ -7,7 +7,7 @@ import { announceProfileSaved } from './profile-events';
 
 /** The accounts API's profile: the display name (its own, or the account's) and the presence colour, null for each
  *  app's own pick. The person's own read adds their Google picture and Show My Google Picture
- *  (liveworkspace/docs/accounts.md "Profile pictures"); an account with no picture has `googlePicture` null. */
+ *  (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"); an account with no picture has `googlePicture` null. */
 export interface Profile {
   id: string;
   name: string | null;

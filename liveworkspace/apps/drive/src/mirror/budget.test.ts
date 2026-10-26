@@ -1,4 +1,4 @@
-// A pass's limits (liveworkspace/docs/drive.md "Cadence", "Limits and cost"): a burst of Drive-side changes is
+// A pass's limits (liveworkspace/docs/specs/005-drive/drive.md "Cadence", "Limits and cost"): a burst of Drive-side changes is
 // applied in batches of DRIVE_PASS_MAX_INBOUND over several alarms, each change exactly once, and no alarm makes more
 // subrequests than its budget, whichever half spends it.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // The site has one Appearance setting: livediagram's store, which the boot script and the header's
-// toggle use (liveworkspace/docs/site.md "Behaviour"). liveplanner's, livedocuments' and livedesign's UI
+// toggle use (liveworkspace/docs/specs/010-site/site.md "Behaviour"). liveplanner's, livedocuments' and livedesign's UI
 // packages each keep their own store under their own key and paint <html> from it once anything subscribes,
 // so the dashboard flipped between light and dark when liveplanner was picked. Nothing here may
 // read appearance from either.

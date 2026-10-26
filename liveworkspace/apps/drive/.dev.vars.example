@@ -1,4 +1,4 @@
-# Local development: `wrangler dev` reads .dev.vars (liveworkspace/docs/drive.md "Configuration"). Without
+# Local development: `wrangler dev` reads .dev.vars (liveworkspace/docs/specs/005-drive/drive.md "Configuration"). Without
 # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY every route but /api/drive/config answers 503.
 ENVIRONMENT=development
 # The local liveworkspace site: the consent's redirect URI (<this>/drive/connected), the files' lwOrigin, and the
@@ -13,7 +13,7 @@ APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
 APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
-# Staging's Google client allows localhost (liveworkspace/docs/drive.md "Google").
+# Staging's Google client allows localhost (liveworkspace/docs/specs/005-drive/drive.md "Google").
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_PICKER_KEY=

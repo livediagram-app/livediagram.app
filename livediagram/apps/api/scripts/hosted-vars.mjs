@@ -110,7 +110,7 @@ export function wranglerVarFlags(vars) {
  *  and NEXT_PUBLIC_TELEMETRY_URL to send to the same liveworkspace telemetry
  *  service as the api (staging's on staging),
  *  and NEXT_PUBLIC_COMMUNITY_API to read the same liveworkspace Community service
- *  (liveworkspace/docs/community.md) as the api. */
+ *  (liveworkspace/docs/specs/007-community/community.md) as the api. */
 export function buildEnv(vars) {
   const out = [];
   if (vars.TELEMETRY_ENABLED) out.push(`NEXT_PUBLIC_TELEMETRY_ENABLED=${vars.TELEMETRY_ENABLED}`);

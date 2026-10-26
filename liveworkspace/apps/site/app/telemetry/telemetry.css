@@ -68,7 +68,7 @@
   --color-brand-950: #4c0519;
 }
 
-/* The dim behind an open stack's modal (liveworkspace/docs/telemetry.md), fading in with it. */
+/* The dim behind an open stack's modal (liveworkspace/docs/specs/008-telemetry/telemetry.md), fading in with it. */
 .stack-dim {
   background: rgb(15 23 42 / 0.45);
   animation: fade-in var(--transition-duration-micro) ease-out;

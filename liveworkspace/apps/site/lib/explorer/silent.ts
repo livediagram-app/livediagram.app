@@ -1,4 +1,4 @@
-// Signing in without a click on an app's own address (liveworkspace/docs/accounts.md "Signing in without a click"),
+// Signing in without a click on an app's own address (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"),
 // for the Explorer served there (page-app.ts). The apps' editors run the shared boot script in their pages' <head>;
 // this page is built once, here, so it carries each app's script behind a check of the address it is on, and runs
 // at most one of them: the one for the app whose address it is. On liveworkspace.app none runs (its own session is

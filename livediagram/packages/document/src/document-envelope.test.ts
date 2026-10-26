@@ -7,7 +7,7 @@ import {
   type EnvelopeTab,
 } from './document-envelope';
 
-// The `.livediagram` file's contents (liveworkspace/docs/drive.md, "The file").
+// The `.livediagram` file's contents (liveworkspace/docs/specs/005-drive/drive.md, "The file").
 
 const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas' };
 

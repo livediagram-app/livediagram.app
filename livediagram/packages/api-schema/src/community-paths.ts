@@ -15,6 +15,6 @@ export function communityImagePath(shareCode: string): string {
   return `/share/${encodeURIComponent(shareCode)}/image.svg`;
 }
 
-// Where the Community pages keep their per-browser key (liveworkspace/docs/community.md "Likes"): livediagram's
+// Where the Community pages keep their per-browser key (liveworkspace/docs/specs/007-community/community.md "Likes"): livediagram's
 // own, on its own origin.
 export const COMMUNITY_KEY_STORAGE = 'livediagram:v2:community-key';

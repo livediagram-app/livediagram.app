@@ -1,6 +1,6 @@
 // The sign-in pages' side of the accounts API (liveworkspace/apps/accounts), which answers on this
 // same origin under /api/auth. The same pages are also served under each app's own address
-// (liveworkspace/docs/accounts.md "Signing in on the app's own address"), where the app's router
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address"), where the app's router
 // forwards the API under /api/workspace/auth instead, beside the app's own /api/auth.
 
 import { isSameSitePath } from '@liveworkspace/auth-client/return-path';

@@ -8,7 +8,7 @@ import {
 } from './guest-token';
 import { fakeWindow } from './fake-window';
 
-// A guest is liveworkspace's (liveworkspace/docs/one-explorer-contracts.md "Guests"): the editor sends the browser
+// A guest is liveworkspace's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the editor sends the browser
 // to the accounts site through its api's /api/auth/guest, keeps the token the /auth/guest page brings back, and asks
 // again when fewer than 30 days are left.
 

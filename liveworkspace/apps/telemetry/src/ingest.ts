@@ -1,4 +1,4 @@
-// POST /api/telemetry/events: every app's anonymous events (liveworkspace/docs/telemetry.md "Sending
+// POST /api/telemetry/events: every app's anonymous events (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending
 // events"). A batch names its app; only that app's closed vocabulary is stored, with a server-stamped
 // time. Always 204, because telemetry must never surface an error to the page or Worker that sent it.
 

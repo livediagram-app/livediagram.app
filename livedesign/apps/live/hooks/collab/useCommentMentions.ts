@@ -3,7 +3,7 @@
 // Who a comment can @-mention, and what follows a mention (docs/specs/012-collaboration/comment-mentions.md). The
 // candidates are the people of the team whose library holds this design, joined and invited, except yourself: the
 // Assign Action picker's rule, for the same reason (a mention should reach someone who can open the design). A
-// personal design or a guest has none. The team is one the account's token names (liveworkspace/docs/accounts.md
+// personal design or a guest has none. The team is one the account's token names (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Teams"); its people come from the api, which reads them from liveworkspace.
 //
 // The email itself is the api's: it sends one to each person a comment mentions when the comment is saved (a

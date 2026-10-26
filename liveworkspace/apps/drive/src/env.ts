@@ -6,7 +6,7 @@ export interface Env {
   // 'production', 'staging' or 'development': names the Drive root folder and which app origins a return page may
   // be on.
   ENVIRONMENT?: string;
-  // The OAuth client (a var) and its secret, the Picker's key and app id (liveworkspace/docs/drive.md "Configuration").
+  // The OAuth client (a var) and its secret, the Picker's key and app id (liveworkspace/docs/specs/005-drive/drive.md "Configuration").
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   GOOGLE_PICKER_KEY?: string;

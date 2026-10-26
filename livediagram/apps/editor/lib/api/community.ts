@@ -54,7 +54,7 @@ export async function apiRemoveCommunityPost(ownerId: string, documentId: string
 }
 
 // The most used tags, offered as suggestions in the publish dialog: this app's, from the liveworkspace
-// Community service (liveworkspace/docs/community.md). The facets read is public, so it goes out with no
+// Community service (liveworkspace/docs/specs/007-community/community.md). The facets read is public, so it goes out with no
 // identity at all; any failure is just no suggestions.
 export async function apiCommunityPopularTags(): Promise<string[]> {
   try {

@@ -1,6 +1,6 @@
 // The browser side of every product's telemetry (a product's docs/specs/017-telemetry/telemetry.md):
 // three-field {category, action, type} events, batched to the liveworkspace telemetry service
-// (liveworkspace/docs/telemetry.md) by its one engine (@liveworkspace/telemetry emitter.ts) on a short
+// (liveworkspace/docs/specs/008-telemetry/telemetry.md) by its one engine (@liveworkspace/telemetry emitter.ts) on a short
 // timer and on page-hide. Strictly fire-and-forget: every failure is swallowed, because telemetry must
 // never affect the host app.
 //

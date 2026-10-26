@@ -5,7 +5,7 @@ compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
-# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). Custom domains, so a deploy creates their
+# Every page of liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Hosting"). Custom domains, so a deploy creates their
 # DNS records and certificates. The APIs' path routes on the same hosts win over a custom domain: accounts
 # (/api/auth/*, /api/account/* and the two .well-known documents), the index, media, telemetry, the Community,
 # status and Drive (/api/index*, /api/media*, /api/previews*, /api/telemetry*, /api/community*, /api/status*,

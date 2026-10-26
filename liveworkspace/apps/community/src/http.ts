@@ -1,4 +1,4 @@
-// Responses, CORS and the edge cache for the Community API (liveworkspace/docs/community.md "The API").
+// Responses, CORS and the edge cache for the Community API (liveworkspace/docs/specs/007-community/community.md "The API").
 
 import { communityAppOfOrigin, type CommunityApp } from '@liveworkspace/community';
 import { isLocalhostOrigin, json } from '@liveworkspace/index-app/worker-http';

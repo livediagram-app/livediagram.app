@@ -1,4 +1,4 @@
-// Where the Explorer page is being shown (liveworkspace/docs/site.md "The Explorer"). It is built once, here, and
+// Where the Explorer page is being shown (liveworkspace/docs/specs/010-site/site.md "The Explorer"). It is built once, here, and
 // served two ways: on liveworkspace.app itself, and under an app's own address through that app's router
 // (`liveplanner.app/explorer/…`, @liveworkspace/sites/workspace-proxy), where the address bar keeps the app's name.
 // On an app's address the page is that app's: it signs in with the app's own session (its refresh cookie and its

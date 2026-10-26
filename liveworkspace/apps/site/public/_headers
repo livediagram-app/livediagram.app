@@ -1,4 +1,4 @@
-# Defence-in-depth response headers for every page (liveworkspace/docs/site.md). Static assets only,
+# Defence-in-depth response headers for every page (liveworkspace/docs/specs/010-site/site.md). Static assets only,
 # so Cloudflare applies this file directly. Every app's UI creates the same shared Trusted Types
 # policies (@liveworkspace/trusted-types), so the telemetry dashboard and the Explorer, served here
 # and under every app's own address, need only those (trusted-types-guard.test.ts).

@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's header on liveworkspace.app (liveworkspace/docs/site.md "The Explorer"): the liveworkspace logo,
+// The Explorer's header on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "The Explorer"): the liveworkspace logo,
 // then, for a person who came from an app, a hairline and that app's logo, which leads back to it (on a phone, the
 // app's logo alone). The search field
 // sits in the middle (on Home the hero holds it instead) and the account control on the right, as the site's own
@@ -12,7 +12,7 @@
 // Either way the account menu's Settings opens the Explorer's own Settings panel in place (`settings`).
 //
 // The logo's site switcher keeps the person on the Explorer: each site's row opens that site's Explorer at the same
-// view (liveworkspace/docs/site-switcher.md "On an Explorer page"), worked out from this page's address. It marks the
+// view (liveworkspace/docs/specs/010-site/site-switcher.md "On an Explorer page"), worked out from this page's address. It marks the
 // app whose address this is, else liveworkspace.
 
 import { useMemo, useSyncExternalStore, type ReactNode } from 'react';

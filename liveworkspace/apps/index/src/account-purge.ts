@@ -1,4 +1,4 @@
-// Closing an account (liveworkspace/docs/one-explorer-contracts.md "Closing an account"): accounts calls
+// Closing an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"): accounts calls
 // POST /internal/purge-person with its own key once the account is gone, and everything the index holds
 // for that person goes.
 //
@@ -190,7 +190,7 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
-    // Their Drive mirror's flag (liveworkspace/docs/drive.md): accounts tells the service itself.
+    // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.
     byPerson('drive_people'),
     anonymiseAction('assignee_id'),
     anonymiseAction('assigner_id'),

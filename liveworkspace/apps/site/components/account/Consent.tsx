@@ -11,7 +11,7 @@ import {
   SECONDARY_BUTTON,
 } from './AccountPage';
 
-// Asking whether an app may use the account (liveworkspace/docs/site.md "Accounts"). Our own apps
+// Asking whether an app may use the account (liveworkspace/docs/specs/010-site/site.md "Accounts"). Our own apps
 // skip this page; it is here for any client registered without that trust.
 export function Consent() {
   const client = new URLSearchParams(useLocationSearch()).get('client_id') || 'An app';

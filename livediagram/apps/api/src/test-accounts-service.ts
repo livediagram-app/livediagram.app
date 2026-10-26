@@ -1,7 +1,7 @@
-// A stand-in for the liveworkspace accounts Worker's app API (liveworkspace/docs/accounts.md "The API",
+// A stand-in for the liveworkspace accounts Worker's app API (liveworkspace/docs/specs/003-accounts/accounts.md "The API",
 // the routes an app's server calls with its client credentials) for tests, in this process: settings
 // in their two scopes, profiles, sightings, milestones, emails, activity, making a team and a sender's
-// notification allowance (liveworkspace/docs/workbench.md), answered
+// notification allowance (liveworkspace/docs/specs/011-workbench/workbench.md), answered
 // from in-memory records through a stubbed `fetch`, with the same semantics the real Worker has (a
 // settings patch per key, null deleting; an account's profile falling back to its account name). Not a
 // `.test.ts` file, so vitest doesn't collect it.

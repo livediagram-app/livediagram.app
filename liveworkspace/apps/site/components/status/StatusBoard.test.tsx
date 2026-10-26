@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StatusHistory } from '@liveworkspace/status';
 import { StatusBoard } from './StatusBoard';
 
-// liveworkspace/docs/site.md "Status": the board shows every group, and each service's state from its check, as an
+// liveworkspace/docs/specs/010-site/site.md "Status": the board shows every group, and each service's state from its check, as an
 // icon and a word.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -116,7 +116,7 @@ describe('StatusBoard', () => {
   });
 });
 
-// The stored history (liveworkspace/docs/status.md), served at /api/status/history; every other address as fetchWhere.
+// The stored history (liveworkspace/docs/specs/009-status/status.md), served at /api/status/history; every other address as fetchWhere.
 const AT = Date.now() - 23 * 60_000;
 const DAYS = 90;
 // An hour before the run, but never before its UTC midnight: the strip's days are UTC days, so an incident begun

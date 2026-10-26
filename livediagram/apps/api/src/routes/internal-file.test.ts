@@ -1,4 +1,4 @@
-// The Drive mirror's two doors into a canvas (liveworkspace/docs/drive.md "Contracts > The apps";
+// The Drive mirror's two doors into a canvas (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the canvas as its `.livediagram` file, and a new canvas from one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_TAB_BYTES } from '@livediagram/api-schema';

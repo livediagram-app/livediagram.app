@@ -42,7 +42,7 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
     case 'clerk':
       return [{ Bearer: [] }];
     case 'guest-or-clerk':
-      // A guest is a Bearer too: the guest token liveworkspace mints (liveworkspace/docs/accounts.md "Guests").
+      // A guest is a Bearer too: the guest token liveworkspace mints (liveworkspace/docs/specs/003-accounts/accounts.md "Guests").
       return [{ Bearer: [] }];
   }
 }

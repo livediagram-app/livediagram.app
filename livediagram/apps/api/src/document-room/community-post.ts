@@ -128,7 +128,7 @@ export function communityCheckDueAt(post: CommunityPost | null): number | null {
   return post ? post.checkedAt + COMMUNITY_CHECK_MS : null;
 }
 
-// Where the post's canvas stands, as the listing knows it (liveworkspace/docs/community.md "document_state"): 'gone'
+// Where the post's canvas stands, as the listing knows it (liveworkspace/docs/specs/007-community/community.md "document_state"): 'gone'
 // once the canvas or its link is gone; 'away' in the Trash or no longer the author's; 'closed' in a team or behind a
 // share password (a public post cannot ask for one); else 'public'.
 export async function communityStateOf(

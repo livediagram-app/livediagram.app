@@ -1,4 +1,4 @@
-// The dashboard's data (liveworkspace/docs/telemetry.md "The dashboard"): grouped counts for three
+// The dashboard's data (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): grouped counts for three
 // FIXED windows and a 30-day daily series, for one app or for every app. No custom ranges, so the one
 // query stays simple and the response is cacheable.
 

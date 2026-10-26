@@ -818,7 +818,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useEffect(
     () =>
       onProfileSaved((saved) => {
-        // Show My Google Picture (liveworkspace/docs/accounts.md "Profile pictures"): the room hears it at once
+        // Show My Google Picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): the room hears it at once
         // (useRoomConnection's identity update), whoever this editor is.
         if (saved.showPicture !== undefined) setOwnPictureShown(saved.showPicture);
         const current = selfParticipantRef.current;

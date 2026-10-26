@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 
-// liveworkspace/docs/site.md "Status": one status page, here, and no app with a status page of its own. The list of
+// liveworkspace/docs/specs/010-site/site.md "Status": one status page, here, and no app with a status page of its own. The list of
 // services it checks is @liveworkspace/status's, tested there.
 
 // Every app used to keep its own /status page; now only liveworkspace's exists, and every link goes there.

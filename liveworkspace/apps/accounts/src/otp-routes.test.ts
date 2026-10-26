@@ -1,4 +1,4 @@
-// The emailed sign-in code (liveworkspace/docs/accounts.md): only the sign-in route may check it. Better Auth's
+// The emailed sign-in code (liveworkspace/docs/specs/003-accounts/accounts.md): only the sign-in route may check it. Better Auth's
 // `/email-otp/check-verification-otp` reads the attempt count and writes it back in two steps, so guesses sent at once
 // all count as one, and a code found that way still signs in. That route, and the code flows nothing here uses
 // (no passwords, no email change), are off.

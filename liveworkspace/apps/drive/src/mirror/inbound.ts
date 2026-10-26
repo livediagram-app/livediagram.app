@@ -1,4 +1,4 @@
-// Inbound: Drive's changes applied to liveworkspace (liveworkspace/docs/drive.md "Inbound"), ported from
+// Inbound: Drive's changes applied to liveworkspace (liveworkspace/docs/specs/005-drive/drive.md "Inbound"), ported from
 // livediagram's engine-inbound. The planner (`planInbound`) decides; every effect goes through the index acting as
 // the person, and the snapshot follows along so later changes in the same read see what earlier ones did.
 

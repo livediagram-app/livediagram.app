@@ -29,7 +29,7 @@ export type Env = {
   // Each design's Durable Object (src/design-room/design-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through design-client.ts `designRoom(env, designId)`.
   DESIGN_ROOM: DurableObjectNamespace<DesignRoom>;
-  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every design is and who
+  // liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md, src/index-service.ts): where every design is and who
   // may open it. INDEX_ORIGIN is its origin (`https://www.liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
@@ -59,14 +59,14 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
+  // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livedesign's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
-  // livedesign's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // livedesign's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEDESIGN: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
@@ -103,14 +103,14 @@ export type Env = {
   // Absent/anything-else keeps telemetry fully off — the
   // default, so a deployment never sends analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
+  // liveworkspace's central telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
   TELEMETRY_URL?: string;
   // livedesign's Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's `send_email` binding for livedesign's own email
-  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md): notifications, milestones and
+  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/specs/003-accounts/email.md): notifications, milestones and
   // account deletion. No key: the binding is the credential. When absent none of them is sent. The onboarding
   // series is liveworkspace's, sent by its accounts Worker. `wrangler dev` simulates it, printing each email.
   EMAIL?: SendEmail;

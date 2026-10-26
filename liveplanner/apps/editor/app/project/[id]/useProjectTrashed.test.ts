@@ -9,7 +9,7 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index
 
 // docs/specs/013-workspace/trash.md: the open project turns to its deleted page when the room says it was
 // trashed, except when this page deleted it and is already leaving for the Explorer. Whether it can be restored
-// here is the index's answer (liveworkspace/docs/one-explorer-contracts.md).
+// here is the index's answer (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
 
 afterEach(() => {
   unmarkProjectDeleted('d1');

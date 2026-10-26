@@ -1,4 +1,4 @@
-// The export door (liveworkspace/docs/previews.md "The export door"), answered by handleInternalItems.
+// The export door (liveworkspace/docs/specs/006-media/previews.md "The export door"), answered by handleInternalItems.
 import { describe, expect, it, vi } from 'vitest';
 import { etagVersion, handleInternalItems, type InternalItemHandlers } from './internal';
 

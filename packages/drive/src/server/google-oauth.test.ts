@@ -11,7 +11,7 @@ import {
   revokeToken,
 } from './google-oauth';
 
-// The service's calls to Google's OAuth endpoint and `about` (liveworkspace/docs/drive.md "Tokens").
+// The service's calls to Google's OAuth endpoint and `about` (liveworkspace/docs/specs/005-drive/drive.md "Tokens").
 
 function stubbed(status: number, body: unknown) {
   const calls: { url: string; form: URLSearchParams; init: RequestInit }[] = [];

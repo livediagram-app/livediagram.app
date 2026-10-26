@@ -32,11 +32,11 @@ export interface AccountClaims {
   scopes: string[];
   // The teams the account is in, as liveworkspace minted them into the token; null from a token
   // minted before teams were in it. Up to an hour old, so an app reads it as a sign its own copy may
-  // be behind, never as who may see what (liveworkspace/docs/accounts.md "Teams").
+  // be behind, never as who may see what (liveworkspace/docs/specs/003-accounts/accounts.md "Teams").
   teams: TeamClaim[] | null;
 }
 
-// A guest token (liveworkspace/docs/one-explorer-contracts.md "Guests"): signed with the same keys and
+// A guest token (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): signed with the same keys and
 // addressed to the same API resources as an access token, told apart by `kind: "guest"`.
 export interface GuestClaims {
   // `guest_<uuid>`, the same in every app.

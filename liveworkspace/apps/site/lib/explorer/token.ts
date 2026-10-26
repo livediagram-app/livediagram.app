@@ -1,4 +1,4 @@
-// Who the Explorer asks the index as (liveworkspace/docs/site.md "The Explorer"): the token accounts hands this
+// Who the Explorer asks the index as (liveworkspace/docs/specs/010-site/site.md "The Explorer"): the token accounts hands this
 // site for its session's account, or for the browser's guest (GET /api/auth/workspace-token, same origin). One
 // request per page load, then one a minute before each runs out; callers waiting meanwhile share it.
 //

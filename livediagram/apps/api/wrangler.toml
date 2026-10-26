@@ -20,14 +20,14 @@ port = 8687
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
 # first-party product analytics this worker sends to the liveworkspace
-# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. TELEMETRY_URL
 # names that service per environment (hosted-vars.json); unset means
 # production's, https://www.liveworkspace.app/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 # The sender for this app's email (see EMAIL below). liveplanner.app until livediagram.app moves to this
-# account and is onboarded to Email Service (liveworkspace/docs/email.md "Senders until the domains move").
+# account and is onboarded to Email Service (liveworkspace/docs/specs/003-accounts/email.md "Senders until the domains move").
 EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 
 # Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
@@ -60,7 +60,7 @@ AI_ALLOWED_ORIGINS = "https://livediagram-router.liveworkspace-easing509.workers
 OAUTH_ISSUER = "https://livediagram-mcp.liveworkspace-easing509.workers.dev"
 
 # No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
-# its previews (liveworkspace/docs/previews.md). The bytes uploaded before that move are still in the previous
+# its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
 # Cloudflare account's livediagram-images bucket, until they are migrated into the media service.
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
@@ -111,7 +111,7 @@ class_name = "PersonStore"
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 
-# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/specs/011-workbench/workbench.md),
 # so this Worker's per-person WorkbenchStore goes, with whatever it held.
 [[migrations]]
 tag = "v2"
@@ -182,10 +182,10 @@ simple = { limit = 120, period = 60 }
 # answers 503. That is the default when unset.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
-# (liveworkspace/docs/media.md "Uploads"), not this worker's.
+# (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
 
 # Transactional & lifecycle email (docs/specs/014-identity/transactional-email.md) goes out through
-# Cloudflare Email Service (liveworkspace/docs/email.md). No API key: the `send_email` binding below is the
+# Cloudflare Email Service (liveworkspace/docs/specs/003-accounts/email.md). No API key: the `send_email` binding below is the
 # credential, and without it the whole email feature is inert — no sends, and the email_lifecycle table is
 # never touched, so a deployment with email off (a fork that drops the binding) does zero extra work:
 #
@@ -219,15 +219,15 @@ name = "EMAIL"
 #     independently of this file.
 #
 # Guests are liveworkspace's too: the accounts Worker hands each browser a
-# guest token for this API (liveworkspace/docs/accounts.md "Guests"), checked
+# guest token for this API (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), checked
 # with the same keys. With ACCOUNTS_URL or API_RESOURCE unset no caller has an
 # identity and only share-link visitors are served
 # (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
 # The client id and secret come from registering livediagram with the
-# accounts Worker (liveworkspace/docs/integrating-an-app.md).
+# accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md).
 
 # TELEMETRY_KEY is livediagram's secret on the liveworkspace telemetry service
-# (liveworkspace/docs/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
+# (liveworkspace/docs/specs/008-telemetry/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
 # no Origin (this worker's own events, the relay's, the mcp worker's) is livediagram's.
 # Provisioned out-of-band like the two above; never in [vars] — it is secret material:
 #
@@ -242,7 +242,7 @@ name = "EMAIL"
 # `wrangler secret list` on all three if server-side counts look flat.
 
 # COMMUNITY_KEY is livediagram's secret on the liveworkspace Community service
-# (liveworkspace/docs/community.md), sent as a bearer token on its app routes, where
+# (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where
 # it proves a publish, a sync or a copy is livediagram's. The service holds the same
 # value as COMMUNITY_KEY_LIVEDIAGRAM. Never in [vars]:
 #
@@ -253,7 +253,7 @@ name = "EMAIL"
 #
 # Unset = no Community: publishing answers 404, and the sync does nothing.
 
-# MEDIA_KEY is livediagram's secret on liveworkspace's media service (liveworkspace/docs/media.md,
+# MEDIA_KEY is livediagram's secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as
 # MEDIA_KEY_LIVEDIAGRAM. Never in [vars]:
 #
@@ -264,7 +264,7 @@ name = "EMAIL"
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
-# DRIVE_KEY is livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md
+# DRIVE_KEY is livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
 # "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDIAGRAM. It opens the
 # internal export door's `file` format and the import door, nothing else. Never in [vars]:
 #

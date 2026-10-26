@@ -14,7 +14,7 @@ const SCENES: Record<AppArt, { address: string; scene: ReactNode }> = {
   design: { address: 'livedesign.app/d/northwind', scene: <DesignScene /> },
 };
 
-// The apps (liveworkspace/docs/site.md "The front door"): one section each, in the shared order,
+// The apps (liveworkspace/docs/specs/010-site/site.md "The front door"): one section each, in the shared order,
 // with its own logo, what it is for, three things it does, a window onto its work, and the way in.
 // Each says it signs in with the liveworkspace account: the thread between them.
 export function Apps() {

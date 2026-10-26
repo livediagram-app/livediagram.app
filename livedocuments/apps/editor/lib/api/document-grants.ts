@@ -1,4 +1,4 @@
-// The index's grant on a document (liveworkspace/docs/one-explorer-contracts.md "Grants"): a ten-minute token naming
+// The index's grant on a document (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a ten-minute token naming
 // the document, the level and the tab, which the api and the document's room check offline. Held by
 // @liveworkspace/index-client/browser's item grants: the editor asks for it while the document's code loads, keeps it
 // until a minute before it lapses, and sends it with every request about that document as `X-Index-Grant` (apiFetch

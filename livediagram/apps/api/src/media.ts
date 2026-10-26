@@ -1,4 +1,4 @@
-// livediagram's side of liveworkspace's media service (liveworkspace/docs/media.md). The images people upload
+// livediagram's side of liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md). The images people upload
 // live there, with their gallery, dedupe and caps; this api keeps its own access rules (who may read a
 // document, which documents may serve whose image) and serves the bytes to the people they let in. Every call
 // carries MEDIA_KEY as a bearer token and names this app.

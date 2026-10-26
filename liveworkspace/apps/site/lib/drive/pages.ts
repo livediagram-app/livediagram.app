@@ -1,4 +1,4 @@
-// What liveworkspace's three Drive pages decide (liveworkspace/docs/drive.md "Connecting", "Open with"), pure so every
+// What liveworkspace's three Drive pages decide (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Open with"), pure so every
 // outcome is tested: /drive/connect asks for a consent state and leaves for Google; /drive/connected takes Google's
 // answer to the service and sends the browser back where it came from; /drive/open is Drive's Open with.
 import {

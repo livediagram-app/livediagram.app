@@ -178,7 +178,7 @@ export async function probeDispatch(
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder document, so a document route reaches its own routing instead of answering "no access".
   const env = {
-    // Images, which live in liveworkspace's media service (liveworkspace/docs/media.md); never reached.
+    // Images, which live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
     TELEMETRY_ENABLED: 'true',

@@ -27,7 +27,7 @@ import {
 } from './AccountPage';
 import { APP_NAMES, Pitch } from './Pitch';
 
-// Signing in and registering (liveworkspace/docs/site.md "Accounts"): an email code, or Google, and
+// Signing in and registering (liveworkspace/docs/specs/010-site/site.md "Accounts"): an email code, or Google, and
 // the person's first and last name. The page is static; an app's OAuth request rides in its query,
 // signed by the accounts Worker, and goes back with each step so the sign-in finishes in the app.
 

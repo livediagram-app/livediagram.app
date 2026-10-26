@@ -1,4 +1,4 @@
-// A person's Google Drive mirror (liveworkspace/docs/drive.md "The service"): everything its Durable Object answers,
+// A person's Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "The service"): everything its Durable Object answers,
 // as a plain class over injected deps (context.ts), so the object (durable-object.ts) only wires the runtime in and
 // the tests drive this directly. Each call names the person; the connection row remembers whose it is, and the alarm
 // reads it from there.

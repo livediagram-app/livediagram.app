@@ -306,7 +306,7 @@ export const TEAMS_CREATED: Metric = {
 };
 
 // Teams are run on liveworkspace.app, where accounts counts each change under the app the person acting signed up
-// through (liveworkspace/docs/accounts.md "Teams").
+// through (liveworkspace/docs/specs/003-accounts/accounts.md "Teams").
 export const INVITES_SENT: Metric = {
   category: 'Team',
   action: 'Added',

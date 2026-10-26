@@ -1,4 +1,4 @@
-// What a plan pushes from its Durable Object (liveworkspace/docs/one-explorer-contracts.md "What an item pushes";
+// What a plan pushes from its Durable Object (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes";
 // docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each changed
 // tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for the
 // Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key, a Form tab's name and

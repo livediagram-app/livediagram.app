@@ -1,4 +1,4 @@
-// An app's server and liveworkspace's workbench service (liveworkspace/docs/workbench.md): pairing, tickets and
+// An app's server and liveworkspace's workbench service (liveworkspace/docs/specs/011-workbench/workbench.md): pairing, tickets and
 // sessions live in the accounts Worker, and an app only checks the `lvw_` sessions its API is shown, tells accounts
 // which room a workspace session joined, and takes its senders' notification email allowance. Each sends the app's
 // client credentials, so these run in the app's Worker only.

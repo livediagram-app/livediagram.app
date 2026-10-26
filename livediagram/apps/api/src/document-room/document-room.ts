@@ -679,7 +679,7 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  // The export door (liveworkspace/docs/previews.md, routes/internal-items.ts): the canvas drawn as an SVG, the first
+  // The export door (liveworkspace/docs/specs/006-media/previews.md, routes/internal-items.ts): the canvas drawn as an SVG, the first
   // tab or one, with its last save as the version. Through the canvas's Community post's link it is the redacted
   // drawing, and nothing while the post does not open the canvas. Unchanged since `ifVersion`, it is not drawn.
   async exportImage(documentId: string, query: ExportQuery): Promise<ExportResult> {
@@ -712,7 +712,7 @@ export class DocumentRoom extends DurableObject<Env> {
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
-  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", document-file.ts): the
+  // The export door's `file` format (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", document-file.ts): the
   // canvas's whole envelope, its last save as the version, unread when the caller holds that save.
   async exportFile(documentId: string, query: ExportQuery): Promise<ExportResult> {
     this.bindDocument(documentId);
@@ -955,7 +955,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  // ---------- Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants") ---------------------------------
   //
   // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
   // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame

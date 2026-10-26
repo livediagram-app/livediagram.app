@@ -1,6 +1,6 @@
-// Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/accounts.md
+// Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/specs/003-accounts/accounts.md
 // "The API"): settings, profiles, sightings, milestones, emails, teams' people, the teams it makes, activity and
-// a sender's notification allowance (liveworkspace/docs/workbench.md),
+// a sender's notification allowance (liveworkspace/docs/specs/011-workbench/workbench.md),
 // kept in memory with the same rules (a write is a patch per key, null deletes; a milestone claims once, and only
 // after a sighting). Stubs the global fetch; batches posted to the telemetry service are kept too, and the
 // index's count of a person's documents (`documentCounts`, at INDEX_ON's origin) is answered as well. Pair with

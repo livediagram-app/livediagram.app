@@ -1,4 +1,4 @@
-// The canvas as its Google Drive file (liveworkspace/docs/drive.md "The file", "Contracts > The apps";
+// The canvas as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the `livediagram.document` envelope the CLI exports, every tab with its
 // per-document folder, and the slide deck. The export runs inside the canvas's Durable Object, from the same tab read
 // a copy makes (document-content.ts readContentTabRows), stamped with the canvas's last save so unchanged content is

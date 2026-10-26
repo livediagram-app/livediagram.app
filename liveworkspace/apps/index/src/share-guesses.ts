@@ -1,4 +1,4 @@
-// Share-password guesses (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"): each try at an item's
+// Share-password guesses (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access"): each try at an item's
 // password that this isolate hasn't already found right is counted twice, at Cloudflare's edge so the counts hold
 // across isolates: once against the visitor's network (SHARE_GUESS_VISITOR_LIMITER, 10 a minute) and once against
 // the item, whatever the network (SHARE_GUESS_ITEM_LIMITER, 30 a minute), so a guesser can't spread tries across

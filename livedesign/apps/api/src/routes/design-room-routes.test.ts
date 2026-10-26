@@ -1,5 +1,5 @@
 // Realtime-room admission: the ticket mint and the WebSocket upgrade, on the index's grants
-// (liveworkspace/docs/one-explorer-contracts.md "Grants").
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants").
 //
 // The upgrade is the one place in the worker that hands a Durable Object a TRUST HEADER: the room has no
 // identities of its own, so it believes whatever arrives as `X-Verified-Role` (room-session.ts). What makes that

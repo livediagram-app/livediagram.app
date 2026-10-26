@@ -1,5 +1,5 @@
 // What the liveworkspace accounts Worker keeps of an account for liveplanner
-// (liveworkspace/docs/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
 // liveplanner has seen it (a sign-up), its verified address, and when it last saved something.
 // liveplanner keeps none of these. Each call is for an account only; a guest has no address or
 // sign-up. None of these throw: without the accounts Worker, or when it can't be reached, each answers

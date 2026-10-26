@@ -1,4 +1,4 @@
-// Who is asking (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
+// Who is asking (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"):
 //   - a person, by an accounts access token or a guest token, checked offline against accounts' keys;
 //   - an app's server acting for an account it checked itself (an API token's), by its key, X-Index-App and
 //     X-Index-Person: that account, for that app's items only;
@@ -8,7 +8,7 @@
 //   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
 //     token) as an app's server does, for the app X-Index-App names;
 //   - the Google Drive mirror's service, by its key, X-Index-App: drive and X-Index-Person: that account, for
-//     their personal items and folders only, in every app (liveworkspace/docs/drive.md "Contracts > The index").
+//     their personal items and folders only, in every app (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index").
 
 import { createPersonVerifier } from '@liveworkspace/auth-client';
 import {
@@ -107,7 +107,7 @@ export async function delegatedPersonOf(
     return { id: personId, kind: 'account', teams: [], drive: true };
   }
   // The app's own key, or accounts' (its workbench service acting for a token's account on one app's items,
-  // liveworkspace/docs/workbench.md).
+  // liveworkspace/docs/specs/011-workbench/workbench.md).
   const app = (await callerApp(request, env)) ?? (await mergeDelegateApp(request, env));
   // An account only: a guest has no API token, and a link visitor is no person.
   if (!app || !isId(personId) || personId.startsWith('guest_') || personId.includes(':')) {

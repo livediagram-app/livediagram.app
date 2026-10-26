@@ -1,4 +1,4 @@
-// A document drawn as an SVG, for its preview (liveworkspace/docs/previews.md): the first tab (a Pages tab's first
+// A document drawn as an SVG, for its preview (liveworkspace/docs/specs/006-media/previews.md): the first tab (a Pages tab's first
 // page), or one tab, with the shared DOM-free renderer, its images inlined and its icons drawn as their glyphs. Drawn
 // in the document's Durable Object, where the content is, when liveworkspace's previews service asks the export door
 // (document-room.ts `exportImage`); the platform stores it, decides when it is stale and serves it, so nothing here

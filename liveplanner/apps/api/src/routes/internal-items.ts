@@ -1,14 +1,14 @@
 // /api/internal/items/**: the One Explorer index's doors into a plan's content (docs/specs/015-api/api.md
 // "Internal"), served by @liveworkspace/index-app's handleInternalItems with the app's key (INDEX_KEY). See it for
 // the doors: a purge (one plan, or up to a hundred for a closed account), revoked links, notices for the emails,
-// a copy into a new plan, and a workbench pairing's sessions closed in a plan's room (liveworkspace/docs/workbench.md
+// a copy into a new plan, and a workbench pairing's sessions closed in a plan's room (liveworkspace/docs/specs/011-workbench/workbench.md
 // "Ending access").
 //
 // Each is a call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
 // Trash are the index's; a purge also drops the plan's previews at liveworkspace's media service (db/projects.ts
-// `purgePlanPreviews`). The export door draws a plan for those previews (liveworkspace/docs/previews.md), on the
+// `purgePlanPreviews`). The export door draws a plan for those previews (liveworkspace/docs/specs/006-media/previews.md), on the
 // index's key or the media service's (MEDIA_KEY), and answers a plan's whole file for liveworkspace's Drive mirror, which
-// calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps",
+// calls it and the import door with DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps",
 // routes/internal-file.ts). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
 import {

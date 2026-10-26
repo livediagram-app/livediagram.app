@@ -1,4 +1,4 @@
-// The app's export door (liveworkspace/docs/previews.md "The export door"): the only place an item is drawn. The
+// The app's export door (liveworkspace/docs/specs/006-media/previews.md "The export door"): the only place an item is drawn. The
 // service calls it with the app's media key, on a miss or a stale preview, and for a public link every time
 // (conditionally, so an unchanged drawing is not drawn again).
 

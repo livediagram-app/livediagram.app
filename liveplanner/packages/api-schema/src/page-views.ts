@@ -9,7 +9,7 @@
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'project',
-  // The guest handoff's way back, /auth/guest (liveworkspace/docs/one-explorer-contracts.md "Guests").
+  // The guest handoff's way back, /auth/guest (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").
   'auth',
   'embed',
   // liveworkspace's Explorer, which the router proxies first (@liveworkspace/sites workspace-proxy); listed so a page

@@ -1,4 +1,4 @@
-// /api/internal/items/**: the index's doors into an app's items (liveworkspace/docs/one-explorer-contracts.md).
+// /api/internal/items/**: the index's doors into an app's items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
 // Server to server only: the caller sends `Authorization: Bearer <INDEX_KEY>`, compared in constant time; without
 // INDEX_KEY configured every path here is a plain 404, as if it did not exist.
 //
@@ -7,7 +7,7 @@
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
-//                                                            in the item's room (liveworkspace/docs/workbench.md)
+//                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?}  copy an item's content (or one tab)
 //                                                            into a new item, for `by` (who copies) through link `code`
 //                                                            (if any), from address `ip` (if known)
@@ -19,10 +19,10 @@
 //                                                            its migrated work, docs/migration.md step 6) `into` may
 //                                                            be a guest too
 //   GET    /api/internal/items/:id/export?format=svg[&tab=][&code=]   the item drawn as a file, for liveworkspace's
-//                                                            previews (liveworkspace/docs/previews.md). Also takes the
+//                                                            previews (liveworkspace/docs/specs/006-media/previews.md). Also takes the
 //                                                            app's MEDIA_KEY (`exportKey`) and DRIVE_KEY (`driveKey`).
 //   GET    /api/internal/items/:id/export?format=file       the item's whole-item envelope, the Drive mirror's file
-//                                                            (liveworkspace/docs/drive.md "Contracts > The apps")
+//                                                            (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps")
 //   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
 //                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
@@ -73,7 +73,7 @@ const IP_TEXT = /^[0-9A-Fa-f:.]{2,45}$/;
 
 export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'conflict';
 
-// ---------- The export door (liveworkspace/docs/previews.md "The export door") --------------------------------------
+// ---------- The export door (liveworkspace/docs/specs/006-media/previews.md "The export door") --------------------------------------
 
 // What an item can be exported as. `svg`: the first tab (or `tabId`) drawn, the platform's previews. `file`: the
 // item's whole-item envelope as JSON text, the Drive mirror's file (`tabId` and `code` play no part).
@@ -140,7 +140,7 @@ export type InternalItemHandlers = {
   // index as the owner's personal item in `folderId`. Refuses a file of another kind or that doesn't parse
   // (`invalid_file`) and one past the app's item limits (`too_large`).
   import?: (input: ImportInput) => Promise<ImportResult>;
-  // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/workbench.md
+  // A workbench pairing was unpaired, its token revoked or its account closed (liveworkspace/docs/specs/011-workbench/workbench.md
   // "Ending access"): close that pairing's sessions in the item's room. Answers whether the room was reached.
   workbenchClose?: (itemId: string, pairingId: string) => Promise<boolean>;
   // An old livediagram.app document's part into the item's room (the migration door, docs/migration.md): one
@@ -154,7 +154,7 @@ export type InternalItemHandlers = {
   migratePerson?: (payload: MigrationPersonPayload) => Promise<MigrationPersonAnswer>;
 };
 
-// The import door's body (liveworkspace/docs/drive.md "Contracts > The apps"): whose item it is (an account id,
+// The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.
 export type ImportInput = { owner: string; folderId: string | null; name: string; file: string };
 

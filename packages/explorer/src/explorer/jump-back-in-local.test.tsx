@@ -1,4 +1,4 @@
-// An item kept only in this browser among Home's Jump Back In (liveworkspace/docs/one-explorer.md "This Browser in
+// An item kept only in this browser among Home's Jump Back In (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser in
 // Jump Back In"): the same card as the index's, with This Browser's menu, and a drag each target reads as This
 // Browser's (the Trash deletes it for good after asking where the host can; a place asks to sync it first).
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';

@@ -5,7 +5,7 @@ import { listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';
 import { Cursor } from './Cursor';
 
-// The hero's picture of how liveworkspace fits together (liveworkspace/docs/site.md "The front
+// The hero's picture of how liveworkspace fits together (liveworkspace/docs/specs/010-site/site.md "The front
 // door"): the platform's prism at the centre and each app at a corner, joined to it by a line in the
 // app's accent with a current running along it, read clockwise in the order work moves through them.
 // Laid out on a 600 × 500 grid that the lines and the cards share, so it scales as one. Each app is a

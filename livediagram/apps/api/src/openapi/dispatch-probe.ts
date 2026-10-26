@@ -192,10 +192,10 @@ export async function probeDispatch(
     PERSON_STORE: trap('PERSON_STORE'),
     TELEMETRY_ENABLED: 'true',
     GOOGLE_AI_STUDIO_API_KEY: 'probe-key',
-    // The Community, which lives in liveworkspace's service (liveworkspace/docs/community.md); never reached.
+    // The Community, which lives in liveworkspace's service (liveworkspace/docs/specs/007-community/community.md); never reached.
     COMMUNITY_URL: 'http://community.invalid/api/community',
     COMMUNITY_KEY: 'probe-key',
-    // Images, which live in liveworkspace's media service (liveworkspace/docs/media.md); never reached.
+    // Images, which live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md); never reached.
     MEDIA_URL: 'http://media.invalid/api/media',
     MEDIA_KEY: 'probe-key',
     INDEX_ORIGIN: 'https://index.probe',

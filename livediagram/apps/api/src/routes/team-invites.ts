@@ -1,5 +1,5 @@
 // GET /api/teams/invites (docs/specs/013-workspace/teams.md "Invitations"): the team invitations waiting
-// for the caller. They live and are answered on liveworkspace.app (liveworkspace/docs/accounts.md
+// for the caller. They live and are answered on liveworkspace.app (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Invitations"); this lists them for the Explorer's Invites view and its sidebar badge, read from
 // liveworkspace (pendingInvitationsFor in @liveworkspace/auth-client, remembered per isolate for 30
 // seconds, so an Explorer load costs at most one call there).

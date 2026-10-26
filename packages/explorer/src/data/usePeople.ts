@@ -1,7 +1,7 @@
 'use client';
 
 // Other people's display names for the Owner column and the owner line, and their Google pictures for the avatars
-// (liveworkspace/docs/accounts.md "Profile pictures"): asked for as rows come on screen, gathered into one request a
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): asked for as rows come on screen, gathered into one request a
 // beat later (never one per row or per avatar), and kept for the page, bounded. A name and a picture come in the same
 // answer. Without an accounts reader every name is unknown and the rows say who in other words ("Shared with you"),
 // and every avatar shows initials.

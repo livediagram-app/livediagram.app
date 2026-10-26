@@ -34,19 +34,19 @@ export interface Env {
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
   // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
-  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
   WORKSPACE_ORIGIN?: string;
-  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
+  // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/specs/008-telemetry/telemetry.md): unset means
   // production's, staging and local dev name their own.
   TELEMETRY_DASHBOARD_URL?: string;
-  // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // The central index (liveworkspace/docs/specs/004-index/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
   // production's; staging and local dev name their own.
   INDEX_ORIGIN?: string;
-  // liveworkspace's Google Drive mirror (liveworkspace/docs/drive.md): `/api/drive/*` goes there, not to the api.
+  // liveworkspace's Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md): `/api/drive/*` goes there, not to the api.
   // Unset means production's.
   DRIVE_ORIGIN?: string;
-  // liveworkspace's previews (liveworkspace/docs/previews.md): `/api/previews/*` and a share link's image.svg,
+  // liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): `/api/previews/*` and a share link's image.svg,
   // image.png and card go there, not to the api. Unset means production's.
   PREVIEWS_ORIGIN?: string;
 }
@@ -206,7 +206,7 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
-  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/site.md "Status"): an old link
+  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/specs/010-site/site.md "Status"): an old link
   // lands on it at liveplanner's group.
   const status = statusRedirect(url, 'liveplanner', env.WORKSPACE_ORIGIN);
   if (status) return status;
@@ -224,15 +224,15 @@ async function route(request: Request, env: Env): Promise<Response> {
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, { app: 'liveplanner', origin: env.WORKSPACE_ORIGIN });
   if (workspace) return workspace;
-  // Every plan's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/previews.md).
+  // Every plan's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
   const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);
   if (preview) return preview;
-  // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
+  // The Explorer's own calls (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the index answers them, so the editor
   // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
   }
-  // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/drive.md): the Drive mirror answers them, cookies
+  // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/specs/005-drive/drive.md): the Drive mirror answers them, cookies
   // dropped.
   if (isDrivePath(url.pathname)) {
     return forwardToDrive(request, url, env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN);

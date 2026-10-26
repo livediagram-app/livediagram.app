@@ -24,10 +24,10 @@ export type DocumentRoomClient = {
   // One API request about this document, answered inside its Durable Object by the same handlers as before
   // (document-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
-  // The document drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
+  // The document drawn for liveworkspace's previews (the export door, liveworkspace/docs/specs/006-media/previews.md), where the
   // content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
-  // The document as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new
+  // The document as its Drive file (the export door's `file` format, liveworkspace/docs/specs/005-drive/drive.md), and a new
   // document made from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: DocumentFileImport): Promise<void>;

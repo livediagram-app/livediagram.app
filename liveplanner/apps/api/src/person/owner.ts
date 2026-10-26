@@ -1,4 +1,4 @@
-// Who a person is at the liveworkspace accounts Worker (liveworkspace/docs/accounts.md "Settings" and
+// Who a person is at the liveworkspace accounts Worker (liveworkspace/docs/specs/003-accounts/accounts.md "Settings" and
 // "Profiles"), which keeps everyone's settings and profile: liveplanner keeps neither.
 //
 // liveplanner's owners are the accounts Worker's own ids: an account's `user_…`, or a guest's

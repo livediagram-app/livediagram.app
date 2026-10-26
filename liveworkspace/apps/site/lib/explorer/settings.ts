@@ -1,6 +1,6 @@
 'use client';
 
-// The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/accounts.md
+// The person's synced settings the Explorer on liveworkspace.app follows (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Settings"): whether Home's banner is hidden (`homeBanner`, a common setting in the `all` scope, an app's copy from
 // before it was shared counting until `all` has one) and whether anonymous events may be sent (`telemetryEnabled`,
 // the `all` scope too). One read per

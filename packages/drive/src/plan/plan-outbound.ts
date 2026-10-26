@@ -1,4 +1,4 @@
-// Outbound: what Drive must do to match liveworkspace (liveworkspace/docs/drive.md "Outbound"). Pure: returns ops
+// Outbound: what Drive must do to match liveworkspace (liveworkspace/docs/specs/005-drive/drive.md "Outbound"). Pure: returns ops
 // in the order the service runs them. Drive parents are resolved when an op runs, since a folder created earlier in
 // the same pass is the parent of what follows.
 

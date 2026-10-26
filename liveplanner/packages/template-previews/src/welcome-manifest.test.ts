@@ -1,4 +1,4 @@
-// The first-run welcome's manifest (liveworkspace/docs/one-explorer.md "First run"): what liveworkspace.app's
+// The first-run welcome's manifest (liveworkspace/docs/specs/004-index/one-explorer.md "First run"): what liveworkspace.app's
 // Explorer offers a person with no plans yet, written beside the catalogue as @liveplanner/templates/welcome.json so
 // the Explorer reads a small static file instead of the catalogue and its pictures. This test is the generator and
 // its guard: run with WELCOME_WRITE=1 to write it; without, it fails when the file has drifted from the catalogue.

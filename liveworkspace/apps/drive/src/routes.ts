@@ -1,4 +1,4 @@
-// The browser's routes (liveworkspace/docs/drive.md "The service"), under /api/drive on liveworkspace's origin and
+// The browser's routes (liveworkspace/docs/specs/005-drive/drive.md "The service"), under /api/drive on liveworkspace's origin and
 // on each app's through its router. Every route but `config` needs a configured deployment (503 otherwise) and an
 // account access token (401 otherwise); each answers from the person's object, by account id.
 

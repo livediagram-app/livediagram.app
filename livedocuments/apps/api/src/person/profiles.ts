@@ -1,6 +1,6 @@
 // A person's display name and presence colour (docs/specs/014-identity/auth-and-guest-access.md "Identity
 // display name"), kept by the liveworkspace accounts Worker as their profile, one for every app
-// (liveworkspace/docs/accounts.md "Profiles"). livedocuments keeps no copy: every read asks the accounts Worker, a list of people in one
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"). livedocuments keeps no copy: every read asks the accounts Worker, a list of people in one
 // call (`readProfiles` takes up to 100 ids a request and splits a longer list itself).
 //
 // Reads are remembered per isolate for PROFILE_CACHE_MS, so a run of autosaves, each needing the writer's

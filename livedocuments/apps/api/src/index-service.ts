@@ -1,4 +1,4 @@
-// liveworkspace's index as this api reaches it (liveworkspace/docs/one-explorer.md, one-explorer-contracts.md):
+// liveworkspace's index as this api reaches it (liveworkspace/docs/specs/004-index/one-explorer.md, one-explorer-contracts.md):
 // where every document is and who may open it. The grant check, the grant fetched for a caller that has none, and the
 // clients are @liveworkspace/index-app's, bound here to livedocuments; this file names them as the api has always
 // called them.

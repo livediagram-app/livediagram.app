@@ -48,7 +48,7 @@ describe('driveRootName', () => {
   });
 });
 
-describe('the cadence (liveworkspace/docs/drive.md "Cadence")', () => {
+describe('the cadence (liveworkspace/docs/specs/005-drive/drive.md "Cadence")', () => {
   it('holds the spec’s values', () => {
     expect(DRIVE_PASS_DEBOUNCE_MS).toBe(30_000);
     expect(DRIVE_ITEM_MIN_WRITE_INTERVAL_MS).toBe(5 * 60_000);

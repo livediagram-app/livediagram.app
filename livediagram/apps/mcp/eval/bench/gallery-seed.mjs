@@ -1,6 +1,6 @@
 // Puts a task's pictures into one run's image gallery before the run (a task's `gallery`: the user has uploaded
 // these). Each picture is uploaded to liveworkspace's local media service as livediagram's api uploads one
-// (liveworkspace/docs/media.md "The API": `POST /api/media/app/images?owner=`), so it lands in the run's account's
+// (liveworkspace/docs/specs/006-media/media.md "The API": `POST /api/media/app/images?owner=`), so it lands in the run's account's
 // gallery exactly as an upload would. MEDIA_URL and MEDIA_KEY are the api's own (its .dev.vars), or the environment's.
 // Each run gets its own account, so its own copies: an image belongs to one owner.
 import { createHash } from 'node:crypto';

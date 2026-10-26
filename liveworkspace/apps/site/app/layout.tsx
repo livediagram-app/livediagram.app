@@ -6,7 +6,7 @@ import { trustedHtml, trustedTypesBootScript } from '@liveworkspace/trusted-type
 import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { TURNSTILE_ORIGIN } from '@/lib/turnstile';
 
-// liveworkspace.app (liveworkspace/docs/site.md). Trusted Types before anything else: the default
+// liveworkspace.app (liveworkspace/docs/specs/010-site/site.md). Trusted Types before anything else: the default
 // policy and the violation log, and this site's own scripts, under its asset prefix (next.config.ts),
 // on liveworkspace.app and on every app's address alike. The one script from another origin is
 // Turnstile, on the sign-in pages.

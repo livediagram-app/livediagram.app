@@ -3,7 +3,7 @@ import { base64ToBytes, bytesToBase64Url } from '../base64';
 import { DRIVE_STATE_TTL_MS } from '../constants';
 import { signDriveState, verifyDriveState } from './state';
 
-// The consent `state` binds the person, the redirect URI, the return page and ten minutes (liveworkspace/docs/drive.md
+// The consent `state` binds the person, the redirect URI, the return page and ten minutes (liveworkspace/docs/specs/005-drive/drive.md
 // "Connecting").
 
 const plainBase64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));

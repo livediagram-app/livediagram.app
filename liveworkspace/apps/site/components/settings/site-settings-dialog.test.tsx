@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import SiteSettingsDialog from './SiteSettingsDialog';
 
-// The Settings panel on liveworkspace.app (liveworkspace/docs/site.md "Settings"): the shared panel
+// The Settings panel on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Settings"): the shared panel
 // (@liveworkspace/settings-ui) over the site, filtered to an app or showing All, each change saved a key at a time
 // to its scope, put back when a save fails; opened on what it is asked for, the API tokens drawn in place.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

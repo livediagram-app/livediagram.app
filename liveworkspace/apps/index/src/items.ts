@@ -1,4 +1,4 @@
-// Items (liveworkspace/docs/one-explorer-contracts.md "Items"): listing, making, reading, renaming and
+// Items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): listing, making, reading, renaming and
 // moving, the Trash, copies, opens and grants.
 
 import { inTeamNow, inTeamsNow } from './fresh-teams';
@@ -397,7 +397,7 @@ async function getItem(ctx: RouteContext, id: string): Promise<Response> {
   const loaded = await loadItem(ctx.env, id, ctx.caller, 'view');
   if (loaded instanceof Response) return loaded;
   const { row, access } = loaded;
-  // Beside the item, how the caller reaches it, for the previews service (liveworkspace/docs/previews.md): the
+  // Beside the item, how the caller reaches it, for the previews service (liveworkspace/docs/specs/006-media/previews.md): the
   // one tab a link confines them to, and the public link's code when that is their only way in.
   return json({
     item: await itemFor(ctx.env, ctx.caller.person, row, access),

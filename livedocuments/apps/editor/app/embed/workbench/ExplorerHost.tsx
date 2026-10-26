@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer inside a workbench's workspace frame (WorkspaceFrame.tsx): the shared Explorer
-// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
+// (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served on this app's own address by its router; a frame keeps its own. Everything it lists comes
 // from the index through /api/index; livedocuments supplies the addresses and Help articles
 // (lib/explorer-host.ts), New (the /new flow), the hero's setting (the synced

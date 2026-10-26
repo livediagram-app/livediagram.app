@@ -1,7 +1,7 @@
 import type { LicenceApp } from '@liveworkspace/licences/tables';
 
 // Every deployed app of liveworkspace, in the order liveworkspace.app/licences lists them
-// (liveworkspace/docs/site.md "Licences"). licences.test.ts fails when a directory in
+// (liveworkspace/docs/specs/010-site/site.md "Licences"). licences.test.ts fails when a directory in
 // liveworkspace/apps/ is missing here.
 export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'site', label: 'Website', side: 'browser', bundler: 'next' },

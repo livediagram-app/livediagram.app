@@ -52,7 +52,7 @@ export type SessionAttachment = {
   //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
   personTag?: string | null;
   //   - `account`: a verified account (not a guest, a link visitor or an API token) holds this session, from
-  //     X-Verified-Account (liveworkspace/docs/accounts.md "Profile pictures"): only such a session may put a
+  //     X-Verified-Account (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): only such a session may put a
   //     Google picture on the roster, and only such a session is sent the pictures on it.
   account?: boolean;
   //   - `networkTag`: the caller's network, hashed with the document id, from X-Verified-Network
@@ -74,7 +74,7 @@ export type SessionAttachment = {
   adderKey?: string | null;
   documentId?: string | null;
   //   - `grantExp`: when the session's grant lapses (epoch ms), from X-Verified-Grant-Exp
-  //     (liveworkspace/docs/one-explorer-contracts.md "Grants"), moved on by each fresh grant the session sends. The
+  //     (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), moved on by each fresh grant the session sends. The
   //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
   grantExp?: number | null;
   renewAsked?: boolean;

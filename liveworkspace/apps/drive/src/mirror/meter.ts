@@ -1,4 +1,4 @@
-// The subrequest budget (liveworkspace/docs/drive.md "Limits and cost"): one meter per pass or per call to the
+// The subrequest budget (liveworkspace/docs/specs/005-drive/drive.md "Limits and cost"): one meter per pass or per call to the
 // object, charged before every request to Google, the index or an app's door, so no invocation goes past
 // DRIVE_PASS_SUBREQUEST_BUDGET. The inbound and outbound loops ask `afford` before each step and stop cleanly; a
 // charge past the budget throws BudgetSpent, which ends the pass as a batch to continue, never as a failure.

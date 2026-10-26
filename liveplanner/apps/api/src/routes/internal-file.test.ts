@@ -1,4 +1,4 @@
-// The Drive mirror's two doors into a plan (liveworkspace/docs/drive.md "Contracts > The apps";
+// The Drive mirror's two doors into a plan (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the plan as its `.liveplanner` file, and a new plan from one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_TAB_BYTES } from '@liveplanner/api-schema';

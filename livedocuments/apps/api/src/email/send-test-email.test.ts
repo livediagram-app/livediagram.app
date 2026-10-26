@@ -1,7 +1,7 @@
 // MANUAL email preview harness (docs/specs/014-identity/transactional-email.md). Renders one email per
 // template through the real client, so you can eyeball them in a browser before enabling email on a
 // deployment. Cloudflare Email Service's `send_email` binding only exists inside a Worker
-// (liveworkspace/docs/email.md), so the binding here is a stand-in that writes each message's HTML to
+// (liveworkspace/docs/specs/003-accounts/email.md), so the binding here is a stand-in that writes each message's HTML to
 // `apps/api/.wrangler/email-preview/<template>.html` (gitignored) instead of sending it. To send for real,
 // trigger the email from `wrangler dev`, which simulates the binding the same way, or from staging.
 // Gated so it never runs during a normal test run / CI:

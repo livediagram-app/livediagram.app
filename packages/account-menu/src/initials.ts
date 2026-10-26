@@ -44,7 +44,7 @@ function whiteContrast(colour: string): number | null {
   return 1.05 / (0.2126 * r! + 0.7152 * g! + 0.0722 * b! + 0.05);
 }
 
-// The avatar's fill under white initials (liveworkspace/docs/site.md "The header"): the person's own presence colour
+// The avatar's fill under white initials (liveworkspace/docs/specs/010-site/site.md "The header"): the person's own presence colour
 // when they chose one, else the colour picked from the name. A palette colour paints in its deep shade; a custom one
 // as it is when white already reads on it, else mixed with black in OKLab. Mixing with black at 55% scales every
 // linear RGB channel by 0.55³ ≈ 0.166, so even white comes out at 4.86:1, whatever syntax the colour is in. A colour

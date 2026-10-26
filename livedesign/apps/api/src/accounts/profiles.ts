@@ -1,5 +1,5 @@
 // Display names and presence colours (docs/specs/014-identity/auth-and-guest-access.md "Identity display name"), kept by the liveworkspace
-// accounts Worker as each person's profile, one for every app (liveworkspace/docs/accounts.md "Profiles").
+// accounts Worker as each person's profile, one for every app (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles").
 //
 // Reads are batched: a list that names several people (a page of shared designs, a team's members, Home's
 // events) asks once for all of them, and the accounts Worker answers up to 100 ids a request. Each answer
@@ -19,7 +19,7 @@ import type { Env, ParticipantDTO } from '../types';
 import { accountsClient, accountsOwner } from './client';
 
 // The colour of someone who has not picked one: the first of the shared presence palette (sky). A
-// profile's colour may be unset (liveworkspace/docs/accounts.md "Profiles"), but a cursor, a comment and
+// profile's colour may be unset (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"), but a cursor, a comment and
 // an owner badge always need one.
 const DEFAULT_COLOR = PRESENCE_COLOUR_VALUES[0]!;
 
@@ -36,7 +36,7 @@ export type StoredProfile = {
   ownSet: boolean;
   // When the accounts Worker first stored something they set: null when they never have.
   createdAt: number | null;
-  // Their published Google picture (liveworkspace/docs/accounts.md "Profile pictures"): null for none, for a
+  // Their published Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): null for none, for a
   // guest and when Show My Google Picture is off. Kept beside the participant, never in it, so only a route that
   // knows its reader is signed in hands it on (routes/participants.ts).
   picture: string | null;

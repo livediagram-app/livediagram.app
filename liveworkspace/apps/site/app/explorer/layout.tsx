@@ -5,7 +5,7 @@ import { SilentSignInScript } from '@/components/explorer/SilentSignInScript';
 import { explorerSilentSignInScript } from '@/lib/explorer/silent';
 import './explorer.css';
 
-// The Explorer (liveworkspace/docs/site.md "The Explorer"): every view is its own route page under /explorer, and
+// The Explorer (liveworkspace/docs/specs/010-site/site.md "The Explorer"): every view is its own route page under /explorer, and
 // this layout keeps the one Explorer mounted across them, so a list already loaded stays loaded. Suspense: the view
 // is read from the address with useSearchParams, which a static export requires to sit under a boundary. Private
 // to the person, so never indexed.

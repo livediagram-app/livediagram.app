@@ -1,4 +1,4 @@
-// Accounts' workbench service ending a pairing's access (liveworkspace/docs/workbench.md "Ending access"): it asks
+// Accounts' workbench service ending a pairing's access (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"): it asks
 // here, with its merge key, to tell an app to close the rooms that pairing's sessions joined, since this Worker
 // already holds each app's key and origin. POST /internal/workbench-close {app, pairingId, itemIds} answers 200
 // {closed, unreached} once every app call has settled.

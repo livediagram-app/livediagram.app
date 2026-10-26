@@ -1,5 +1,5 @@
 // What liveworkspace.app hands the shared Explorer (@liveworkspace/explorer) to be its host
-// (liveworkspace/docs/site.md "The Explorer"): which app the person came from, and every app's addresses (an item,
+// (liveworkspace/docs/specs/010-site/site.md "The Explorer"): which app the person came from, and every app's addresses (an item,
 // a share link, New, Help, the offline view), all from the sites registry (@liveworkspace/sites).
 
 import {
@@ -60,7 +60,7 @@ export type Arrival = {
 };
 
 /** `?from=<app>` (set by the apps' links and redirects), then the referrer. Anyone else is in no app: on
- *  liveworkspace.app they see every app's work (liveworkspace/docs/site.md "The Explorer", Which app). */
+ *  liveworkspace.app they see every app's work (liveworkspace/docs/specs/010-site/site.md "The Explorer", Which app). */
 export function arrival(search: string, referrer: string): Arrival {
   const from = new URLSearchParams(search).get(EXPLORER_FROM_PARAM);
   if (isAppName(from)) return { app: from, via: 'from' };
@@ -196,7 +196,7 @@ export function defaultFolderOptionsFor(app: App): readonly DefaultFolderOption[
 
 // ---------- Settings, asked for on the Explorer's address ------------------------------------------------------
 
-/** `?settings=<section>`: the Settings panel's own address (liveworkspace/docs/site.md "Settings", Addresses). */
+/** `?settings=<section>`: the Settings panel's own address (liveworkspace/docs/specs/010-site/site.md "Settings", Addresses). */
 export const SETTINGS_PARAM = 'settings';
 /** A section of the category `?settings=` opens, to scroll to (`?settings=profile&section=cloud-sync`). */
 export const SECTION_PARAM = 'section';

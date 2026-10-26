@@ -10,7 +10,7 @@ import {
   stripDriveName,
 } from './formats';
 
-// The file each app's item becomes in Drive (liveworkspace/docs/drive.md "The file").
+// The file each app's item becomes in Drive (liveworkspace/docs/specs/005-drive/drive.md "The file").
 
 describe('APP_FILE_FORMATS', () => {
   it('names the four apps with the spec table’s kind, MIME type and extension', () => {

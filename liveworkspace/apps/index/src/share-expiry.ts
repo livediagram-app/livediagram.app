@@ -1,4 +1,4 @@
-// Share Link Expiring (liveworkspace/docs/one-explorer-contracts.md "Timeline"): a warning on an item owner's
+// Share Link Expiring (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): a warning on an item owner's
 // Timeline before its share links stop working. One event per item (`sx:<item>`), dated at the soonest expiry
 // among its live links that lapse within SHARE_EXPIRY_WARNING_MS, so it sits in the Upcoming band above Today
 // until then; seen by the owner alone, as who an item is shared with is theirs to manage.

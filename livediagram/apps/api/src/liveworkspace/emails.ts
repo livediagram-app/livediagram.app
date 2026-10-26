@@ -1,7 +1,7 @@
 // Where this app's notification emails go, and its one-time milestones (docs/specs/014-identity/
 // transactional-email.md). An app keeps no addresses of its own: liveworkspace answers an account's
 // verified address, and keeps which milestone emails this app has already sent
-// (liveworkspace/docs/accounts.md "Sign-ups and milestones per app"). Guests have neither.
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app"). Guests have neither.
 
 import {
   accountEmails,

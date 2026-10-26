@@ -1,6 +1,6 @@
 'use client';
 
-// Take Offline and Sync in the Explorer on an app's own address (liveworkspace/docs/one-explorer.md "The Explorer on
+// Take Offline and Sync in the Explorer on an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on
 // each app's address"). Moving an item into this browser, or back into the account, is the app's own code: only it
 // can write its offline store. So the Explorer offers the verbs and hands over to the app's editor, at the item's own
 // address (`?convert=…&item=…`, @liveworkspace/explorer/this-browser), which confirms and runs the move. A request

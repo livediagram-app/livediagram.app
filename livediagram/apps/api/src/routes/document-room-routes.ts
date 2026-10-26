@@ -1,5 +1,5 @@
 // /api/documents/<id>/room-ticket + /ws: joining a canvas's realtime room (docs/specs/015-api/api.md "Realtime
-// model"). The index's grant is the whole admission (liveworkspace/docs/one-explorer-contracts.md "Grants"): the
+// model"). The index's grant is the whole admission (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the
 // upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps what
 // it says on the headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
@@ -107,7 +107,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
     // Whether a verified account holds this session (not a guest, a link visitor or an API token's CLI, which
     // reaches the room as its account but draws no avatars): only such a session may publish a Google picture
-    // and be sent others' (liveworkspace/docs/accounts.md "Profile pictures"). Set on every path, like the rest.
+    // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');

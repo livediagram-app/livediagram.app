@@ -1,9 +1,9 @@
-// What a document pushes from its Durable Object (liveworkspace/docs/one-explorer-contracts.md "What an item
+// What a document pushes from its Durable Object (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item
 // pushes"; docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each
 // changed tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`) and who edited it for
 // the Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key through
 // @liveworkspace/index-app's drainIndexOutbox; the images it places to liveworkspace's media service
-// (liveworkspace/docs/media.md "References"); and the owner's newest save to the liveworkspace accounts Worker for
+// (liveworkspace/docs/specs/006-media/media.md "References"); and the owner's newest save to the liveworkspace accounts Worker for
 // its onboarding emails (person/account-app.ts reportOwnerActivity).
 //
 // The document's triggers fill `outbox` with a key per changed thing (document-schema.ts), in the same transaction

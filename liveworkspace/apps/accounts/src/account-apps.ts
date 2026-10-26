@@ -1,4 +1,4 @@
-// What one app keeps about an account (liveworkspace/docs/accounts.md "Sign-ups and milestones per
+// What one app keeps about an account (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per
 // app"): when it first saw the account, which is how it counts a sign-up, and its one-time milestone
 // emails. The app is the calling client's own (oauth_client_app), never one the request names.
 import type { SettingsApp } from './settings.ts';

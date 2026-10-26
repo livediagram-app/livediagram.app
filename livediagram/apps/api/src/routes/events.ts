@@ -9,7 +9,7 @@ import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportServerEvents } from '../server-telemetry';
 import type { RouteContext } from './context';
 
-// Telemetry is stored by the liveworkspace service (liveworkspace/docs/telemetry.md), which takes a
+// Telemetry is stored by the liveworkspace service (liveworkspace/docs/specs/008-telemetry/telemetry.md), which takes a
 // batch only from one of livediagram.app's pages or from a Worker holding livediagram's key. The CLI
 // is neither: it runs on somebody's machine and posts to its profile's api, so the api passes its
 // anonymous counts on under its own key. Batched POST of { events }; no auth, no stored identity;

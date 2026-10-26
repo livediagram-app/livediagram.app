@@ -1,4 +1,4 @@
-// Team access for an app on the index (liveworkspace/docs/accounts.md "Teams"): an app keeps no copy of teams.
+// Team access for an app on the index (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): an app keeps no copy of teams.
 // Who is in which team is the accounts Worker's; every access token and API token check carries the person's
 // teams (`TeamClaim[]`), and the index decides team access from them.
 //
@@ -102,7 +102,7 @@ export function createTeamAccess() {
 }
 
 // ---------- New Team: POST /api/teams `{ name, organisation? }` in every app's API --------------------------------
-// Makes a team for the person signed in, on liveworkspace, with them as its admin (liveworkspace/docs/accounts.md
+// Makes a team for the person signed in, on liveworkspace, with them as its admin (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Teams", createTeamFor): the same team on liveworkspace.app and in every app, managed there. It is usable at
 // once, since a team the caller's token does not name yet is asked of accounts (createTeamAccess above, and the
 // index's own check). The app checks the interactive session (an API token or a workbench can't make one) and

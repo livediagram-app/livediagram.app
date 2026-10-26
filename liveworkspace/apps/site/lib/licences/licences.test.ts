@@ -46,7 +46,7 @@ describe('the tables', () => {
 });
 
 // Each app's declared dependencies, through the generator's own collector on the real install
-// (liveworkspace/docs/site.md "Licences"): every one listed, each with a licence and its text.
+// (liveworkspace/docs/specs/010-site/site.md "Licences"): every one listed, each with a licence and its text.
 describe('each app', () => {
   it.each(LICENCE_APPS.map((app) => [app.id]))('%s lists its own dependencies', (id) => {
     const { declared, collected } = collectDeclared(config, id);

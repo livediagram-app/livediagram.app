@@ -4,7 +4,7 @@ import { useCallback, useState, useSyncExternalStore } from 'react';
 import { profilePictureOf, sizedPictureUrl } from '@liveworkspace/sites/picture';
 import { GlyphDisc, isText, type GlyphDiscProps } from './GlyphDisc';
 
-// A person's avatar: their Google profile picture over the initials on their disc (liveworkspace/docs/accounts.md
+// A person's avatar: their Google profile picture over the initials on their disc (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Profile pictures"). The disc and its initials always render, so the avatar is the same size in every state and a
 // picture never moves anything: the picture is an <img> of fixed size laid over it, shown once it has loaded. With
 // no picture, one that isn't a Google picture URL (isProfilePictureUrl), or one that failed to load, it is the

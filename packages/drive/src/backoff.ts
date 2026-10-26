@@ -1,4 +1,4 @@
-// Back-off on Google's rate limits (liveworkspace/docs/drive.md "Cadence"): each 403 userRateLimitExceeded / 429
+// Back-off on Google's rate limits (liveworkspace/docs/specs/005-drive/drive.md "Cadence"): each 403 userRateLimitExceeded / 429
 // doubles the intervals, up to their ceilings; an hour without errors returns them to normal. Plain data, so the
 // person's store keeps it between passes.
 

@@ -1,4 +1,4 @@
-// A profile just saved in the Settings panel's Profile (liveworkspace/docs/site.md "Settings", "Profile"), told to
+// A profile just saved in the Settings panel's Profile (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), told to
 // whatever on the page shows the person: an editor's own presence (its cursor, name tag and avatar in the room), the
 // Explorer's header avatar on an app's address. Its own module, with no React, so a page that only listens carries
 // nothing of the panel.

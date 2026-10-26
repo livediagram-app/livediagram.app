@@ -1,4 +1,4 @@
-// livedesign's side of liveworkspace's media service (liveworkspace/docs/media.md). The images people upload
+// livedesign's side of liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md). The images people upload
 // live there, with their gallery, dedupe and caps; this api keeps its own access rules (who may read a
 // design, which designs may serve whose image) and serves the bytes to the people they let in. Every call
 // carries MEDIA_KEY as a bearer token and names this app.
@@ -86,7 +86,7 @@ export async function mediaImageOwnerFor(
   return owner || null;
 }
 
-// ---------- References (liveworkspace/docs/media.md "References") ----------
+// ---------- References (liveworkspace/docs/specs/006-media/media.md "References") ----------
 
 // The images the design places now, from the reference index.
 export async function designImageIds(env: DesignEnv, designId: string): Promise<string[]> {

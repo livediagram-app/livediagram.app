@@ -1,6 +1,6 @@
 // /api/designs: a design's content and what it knows of itself (name, owner, provenance), its tabs, comments,
 // cards, sheets and forms, and the realtime room. Where a design is filed, who may open it, its sharing and its
-// Trash are the index's (liveworkspace/docs/one-explorer.md); the doors an API client still calls for those are
+// Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (design-index-routes.ts).
 
 import type { Tab } from '@livedesign/design';

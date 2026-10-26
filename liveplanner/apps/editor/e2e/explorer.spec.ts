@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
 
-// The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) as liveplanner hosts it at
+// The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) as liveplanner hosts it at
 // /explorer: what it lists is the index's, reached through /api/index on this origin, beside this browser's own
 // plans (This Browser). One guest, one plan, every verb a person uses on it: make it (in This Browser, a guest's
 // default), sync it to liveplanner, rename it, open it, find it in Recent, star it, file it in a new folder, delete it

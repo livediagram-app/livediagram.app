@@ -88,7 +88,7 @@ type RoomConnectOptions = {
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
-  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/one-explorer-contracts.md
+  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/specs/004-index/one-explorer-contracts.md
   // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket
   // (GRANT_LAPSED_CLOSE) and the reconnect mints anew.
   renewGrant?: () => Promise<string | null>;

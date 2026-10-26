@@ -1,4 +1,4 @@
-// What livediagram's notification emails ask of liveworkspace (liveworkspace/docs/accounts.md "Notification
+// What livediagram's notification emails ask of liveworkspace (liveworkspace/docs/specs/003-accounts/accounts.md "Notification
 // emails"; the shared rules are @liveworkspace/auth-client's notify.ts): who gets one (a verified address and the
 // switch not off, for many people in two requests) and how many canvases someone has made (the index). livediagram
 // keeps none of it. Neither throws: without the accounts Worker or the index, or when one can't be reached, each

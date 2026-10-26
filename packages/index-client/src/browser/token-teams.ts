@@ -1,4 +1,4 @@
-// The teams an access token names (its `teams` claim, liveworkspace/docs/accounts.md "Teams"), read without
+// The teams an access token names (its `teams` claim, liveworkspace/docs/specs/003-accounts/accounts.md "Teams"), read without
 // checking the signature: for the Explorer's team list. None for a guest or anything unreadable.
 export type TokenTeam = { id: string; name: string };
 

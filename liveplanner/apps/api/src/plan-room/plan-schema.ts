@@ -1,6 +1,6 @@
 // The plan's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
 // plan holds as content, and what it knows of itself. Where the plan is and who may reach it is liveworkspace's
-// index (liveworkspace/docs/one-explorer.md), which this plan pushes its summary and its tabs' comments and
+// index (liveworkspace/docs/specs/004-index/one-explorer.md), which this plan pushes its summary and its tabs' comments and
 // actions to (plan-outbox.ts).
 //
 // One database per plan, so `plan_id` names the same plan on every row. It stays a column (and in the keys)
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS plan (
   -- 0 until the plan is started: made by a create, or on its first open with a grant (plan-content.ts initPlan).
   created_at          INTEGER NOT NULL,
   -- What the plan knows of itself for its own reads (a project read, emails, an agent's listing). The index
-  -- holds the truth for the title, owner and team (liveworkspace/docs/one-explorer.md); these are kept from the
+  -- holds the truth for the title, owner and team (liveworkspace/docs/specs/004-index/one-explorer.md); these are kept from the
   -- grants and renames that reach the plan, and the editor puts a stale name right.
   name                TEXT    NOT NULL DEFAULT '',
   owner_id            TEXT    NOT NULL DEFAULT '',

@@ -1,4 +1,4 @@
-// Guests who can never come back (liveworkspace/docs/accounts.md "Guests who never come back"). A
+// Guests who can never come back (liveworkspace/docs/specs/003-accounts/accounts.md "Guests who never come back"). A
 // guest id lives in liveworkspace.app's `lw_guest` cookie and in each app's guest token. Every hand-off
 // stamps when the id was last seen (at most once a day). A guest still using an app is handed a fresh
 // token before its year is up, so it is never more than a year unseen. Once an id has gone 400 days

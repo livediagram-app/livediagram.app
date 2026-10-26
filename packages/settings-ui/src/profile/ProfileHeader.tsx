@@ -5,7 +5,7 @@ import { avatarFill, initials } from '@liveworkspace/account-menu/initials';
 import { presenceColour } from '@liveworkspace/settings/presence';
 import { buttonClassName, PictureDisc } from '@liveworkspace/ui';
 
-// The Profile's header card (liveworkspace/docs/site.md "Settings", "Profile"): who is signed in, as the old
+// The Profile's header card (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): who is signed in, as the old
 // livediagram Profile page opened with, richer. A banner in the app's brand tint, drawn as a canvas where the person's
 // cursor and name tag sit in their presence colour, then their avatar, name, email and what kind of account it is.
 // A guest gets the same card as a guest, with the way to sign in, rather than empty rows.
@@ -17,7 +17,7 @@ export type AccountIdentity = {
   email?: string | null;
   // The presence colour, null for Automatic (each app picks one).
   colour?: string | null;
-  // Their own Google picture, null with none (liveworkspace/docs/accounts.md "Profile pictures"): the avatar shows
+  // Their own Google picture, null with none (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): the avatar shows
   // it over the initials. Their own screen always shows it, whatever Show My Google Picture says.
   picture?: string | null;
   // When the account was made.

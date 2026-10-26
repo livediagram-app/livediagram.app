@@ -16,7 +16,7 @@ import {
 } from './context';
 
 // The gates in routes/context.ts: who may do what to a plan is the index's grant
-// (liveworkspace/docs/one-explorer-contracts.md "Grants"), read here. Levels form a ladder (view < participate
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), read here. Levels form a ladder (view < participate
 // < edit), a tab-scoped grant reaches its own tab only, a grant for another plan reaches nothing, and a workbench
 // session holds no more than its own level.
 

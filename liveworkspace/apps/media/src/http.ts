@@ -1,4 +1,4 @@
-// Responses for the media API (liveworkspace/docs/media.md "The API"). Every route is server to
+// Responses for the media API (liveworkspace/docs/specs/006-media/media.md "The API"). Every route is server to
 // server, so there is no CORS: a browser is never let in.
 
 import { json } from '@liveworkspace/index-app/worker-http';

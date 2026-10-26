@@ -1,4 +1,4 @@
-// The daily unused-image sweep (liveworkspace/docs/media.md "Retention"). An image goes once it is old
+// The daily unused-image sweep (liveworkspace/docs/specs/006-media/media.md "Retention"). An image goes once it is old
 // enough and no document in any app places it. It keeps bytes whenever in doubt: it waits until every
 // app with a key has reported its documents, a tripwire slows a run that would reap a suspicious share,
 // and each page re-checks the references at the moment it deletes.

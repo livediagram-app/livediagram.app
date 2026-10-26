@@ -39,7 +39,7 @@ import {
 // carries TabSummary rows.
 //
 // `open` declares this read an open of the document, for the reader's Recent
-// (liveworkspace/docs/one-explorer-contracts.md "Items", `POST /items/:id/open`): only the
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items", `POST /items/:id/open`): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
 // Offline or an embed. Told to the index beside the read, never waited on.
 //

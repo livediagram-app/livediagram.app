@@ -14,7 +14,7 @@ import {
   pushDesignMediaRefs,
 } from './media';
 
-// livedesign's side of the media service (liveworkspace/docs/media.md): each design's own outbox queues it when
+// livedesign's side of the media service (liveworkspace/docs/specs/006-media/media.md): each design's own outbox queues it when
 // the images it places change, and its drain sends the design's whole set (whose each image is, for its serving
 // rules, is db/image-grants.test.ts'); an account's images go with the account.
 

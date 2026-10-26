@@ -135,7 +135,7 @@ describe('a workspace session at the front door', () => {
     expect(reached).not.toHaveBeenCalled();
   });
 
-  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): /api/workbench/* goes there before the
+  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): /api/workbench/* goes there before the
   // session is looked at, and accounts takes a session for nothing but ending itself.
   it('leaves /api/workbench/* to liveworkspace without resolving the session', async () => {
     const res = await call('GET', 'workbench/pairings');

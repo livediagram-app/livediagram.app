@@ -1,4 +1,4 @@
-// Signing in on an app's own address (liveworkspace/docs/accounts.md "Signing in on the app's own address"): a real
+// Signing in on an app's own address (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address"): a real
 // Better Auth over an in-memory D1, from an app's authorize request through the sign-in on the app's address to the
 // one-time hop that sets the session on liveworkspace.app. The security cases: a token spent twice, a stale one, one
 // carried to another browser, a return address that isn't the app's, and redirects that would leave our sites.

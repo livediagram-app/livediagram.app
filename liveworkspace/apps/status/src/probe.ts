@@ -1,4 +1,4 @@
-// Checking every service from the Worker (liveworkspace/docs/status.md "The hourly run"): each probe of the shared
+// Checking every service from the Worker (liveworkspace/docs/specs/009-status/status.md "The hourly run"): each probe of the shared
 // list, with a timeout, judged by the same rules as the page's, and never a response body kept.
 
 import {

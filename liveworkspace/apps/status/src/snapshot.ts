@@ -1,4 +1,4 @@
-// The read API's two answers (liveworkspace/docs/status.md "The read API"), built once a run from what it stored, so
+// The read API's two answers (liveworkspace/docs/specs/009-status/status.md "The read API"), built once a run from what it stored, so
 // a read is one row. Pure.
 
 import {

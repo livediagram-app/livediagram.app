@@ -1,6 +1,6 @@
 'use client';
 
-// Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/drive.md "Connecting"). One row: the provider on the left, its status and one
+// Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"). One row: the provider on the left, its status and one
 // button on the right; a second line only while something needs the person. The status keeps one width per phase
 // (Layout stability). Syncing is the service's and automatic, so there is no Sync now: opening the row asks for a
 // pass (`POST /api/drive/check`), and the row reads the connection again only while a pass or a first copy runs.
@@ -28,7 +28,7 @@ import {
 } from './cloud-sync-copy';
 
 // How often the row reads the connection again while a pass or a first copy runs, and how many times it waits for a
-// connection just made to show up (liveworkspace/docs/drive.md "Connecting", the row).
+// connection just made to show up (liveworkspace/docs/specs/005-drive/drive.md "Connecting", the row).
 export const DRIVE_ROW_REFRESH_MS = 5_000;
 const DRIVE_ROW_ARRIVAL_READS = 6;
 // The status's "Last synced" clock.

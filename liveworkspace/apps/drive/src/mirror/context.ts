@@ -1,4 +1,4 @@
-// What a person's mirror runs on (liveworkspace/docs/drive.md "The service"): its store, its alarm, Google, the
+// What a person's mirror runs on (liveworkspace/docs/specs/005-drive/drive.md "The service"): its store, its alarm, Google, the
 // index, the apps' doors and the clock, all injected, so the Durable Object is a thin shell and the tests run the
 // same code on node:sqlite, the fake Google and in-memory stand-ins.
 

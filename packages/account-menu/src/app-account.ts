@@ -1,6 +1,6 @@
 'use client';
 
-// Who is signed in on an app's own pages (liveworkspace/docs/accounts.md "An app's signed-in cookies"), for the
+// Who is signed in on an app's own pages (liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies"), for the
 // marketing header's account menu. The page is static and loads no session: it reads the app's readable cookies,
 // `<prefix>signed_in` (whether) and `<prefix>account` (who). A visitor with no hint costs nothing, not even a
 // request. Only a session from before the name cookie existed (the hint without the name) asks the app's

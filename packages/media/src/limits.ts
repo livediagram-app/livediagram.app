@@ -1,4 +1,4 @@
-// What an upload may be (liveworkspace/docs/media.md "Uploads"). The service enforces these, and each
+// What an upload may be (liveworkspace/docs/specs/006-media/media.md "Uploads"). The service enforces these, and each
 // app's editor checks the same numbers before it uploads, so a person hears their file is too big while
 // picking it rather than after the upload fails. Both read them from here so they can't drift.
 

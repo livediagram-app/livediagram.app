@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PEN_INK, penColourHex } from '@livediagram/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
-// A canvas drawn for liveworkspace's previews (liveworkspace/docs/previews.md): the platform stores and serves it, so
+// A canvas drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it, so
 // these pin only the drawing. The tab body and its count stamp come through the db layer, mocked here;
 // renderElementsToSvg stays real, it's pure.
 const db = vi.hoisted(() => ({

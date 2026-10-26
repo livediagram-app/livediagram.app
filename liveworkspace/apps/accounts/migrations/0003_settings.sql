@@ -1,4 +1,4 @@
--- A person's settings (liveworkspace/docs/accounts.md "Settings"), kept with the account rather than in
+-- A person's settings (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), kept with the account rather than in
 -- each app, so a setting shared by every app is set once. Written by hand, like 0002.
 
 -- One row per owner per scope: 'all' for what every app shows, or an app's site id

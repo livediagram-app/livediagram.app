@@ -13,7 +13,7 @@ import { WINDOW_META } from './_shared/windows';
 // How many of the busiest events the overview lists.
 const TOP_EVENTS = 12;
 
-// "All apps" (liveworkspace/docs/telemetry.md "The dashboard"): every app's events summed. Each app's
+// "All apps" (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's events summed. Each app's
 // own tabs read its own vocabulary, so the overview keeps to what every app shares: how much happens,
 // how it splits between the apps, and the busiest events. Picking an app opens its full dashboard.
 export function AllApps({

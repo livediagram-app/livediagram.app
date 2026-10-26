@@ -1,7 +1,7 @@
 'use client';
 
 // The person's documents, for the editor's pickers that name another document (Add to Document, a link to a document, search).
-// They are the index's (liveworkspace/docs/one-explorer-contracts.md): one page of livediagram items, read once the
+// They are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one page of livediagram items, read once the
 // open document has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
 // after this editor changed it (a tab moved to another document).
 

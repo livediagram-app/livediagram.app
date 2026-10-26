@@ -1,4 +1,4 @@
-// The file each app's item becomes in Google Drive (liveworkspace/docs/drive.md "The file"): one place for the
+// The file each app's item becomes in Google Drive (liveworkspace/docs/specs/005-drive/drive.md "The file"): one place for the
 // envelope kind, the MIME type and the extension, so the service and every app's export and import doors agree.
 import type { AppSiteId } from '@liveworkspace/sites';
 

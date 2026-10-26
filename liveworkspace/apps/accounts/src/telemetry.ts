@@ -1,5 +1,5 @@
-// The accounts Worker's own telemetry (liveworkspace/docs/accounts.md "Onboarding emails",
-// liveworkspace/docs/telemetry.md "Sending events"): `Email·Sent·<kind>` for each onboarding email that
+// The accounts Worker's own telemetry (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails",
+// liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events"): `Email·Sent·<kind>` for each onboarding email that
 // went, the count each app's dashboard has always kept. The kind and the app only, never a recipient.
 //
 // An event is counted under the app the email speaks for, the one its links go to (livediagram for

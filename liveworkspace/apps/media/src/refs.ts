@@ -1,4 +1,4 @@
-// The references (liveworkspace/docs/media.md "References"): which images each app's documents place,
+// The references (liveworkspace/docs/specs/006-media/media.md "References"): which images each app's documents place,
 // as each app last reported. The app's documents stay the source of truth; this is what lets the service
 // tell an image no app places any more.
 

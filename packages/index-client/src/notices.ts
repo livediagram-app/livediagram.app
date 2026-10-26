@@ -1,5 +1,5 @@
 // What the index tells an item's app, and asks of it, for the app's notification emails
-// (liveworkspace/docs/one-explorer-contracts.md "Notices"). The index holds who shared an item and who
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Notices"). The index holds who shared an item and who
 // opened it through a link, and how many items each person has made; the app holds the email.
 //
 //   - A notice: `POST <app>/api/internal/items/:id/notices` with the app's key, sent by the index after the

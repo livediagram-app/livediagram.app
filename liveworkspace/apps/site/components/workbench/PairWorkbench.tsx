@@ -1,6 +1,6 @@
 'use client';
 
-// The pairing page (liveworkspace/docs/workbench.md; each app's docs/specs/013-workspace/workbench-embeds.md
+// The pairing page (liveworkspace/docs/specs/011-workbench/workbench.md; each app's docs/specs/013-workspace/workbench-embeds.md
 // "Pairing"): a workbench asked, with one of the person's API tokens, to open their work in one app, and they answer
 // here, signed in to liveworkspace.app, in their own browser. One read once the session is known, one answer; focus
 // follows the heading at each state.

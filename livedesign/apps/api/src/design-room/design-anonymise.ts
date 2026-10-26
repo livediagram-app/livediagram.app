@@ -1,4 +1,4 @@
-// A closed account's name off a design that outlives them (liveworkspace/docs/one-explorer-contracts.md "Closing an
+// A closed account's name off a design that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which designs name them (POST /api/internal/people/:id/purge), and each design's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments
 // and assignments in each tab, the changesets they wrote, the design's owner when it was their team design, and

@@ -1,6 +1,6 @@
 // The design's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
 // design holds as content, and what it knows of itself. Where the design is and who may reach it is liveworkspace's
-// index (liveworkspace/docs/one-explorer.md), which this design pushes its summary and its tabs' comments and
+// index (liveworkspace/docs/specs/004-index/one-explorer.md), which this design pushes its summary and its tabs' comments and
 // actions to (design-outbox.ts).
 //
 // One database per design, so `design_id` names the same design on every row. It stays a column (and in the keys)
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS design (
   -- 0 until the design is started: made by a create, or on its first open with a grant (design-content.ts initDesign).
   created_at          INTEGER NOT NULL,
   -- What the design knows of itself for its own reads (a design read, emails, an agent's listing). The index
-  -- holds the truth for the title, owner and team (liveworkspace/docs/one-explorer.md); these are kept from the
+  -- holds the truth for the title, owner and team (liveworkspace/docs/specs/004-index/one-explorer.md); these are kept from the
   -- grants and renames that reach the design, and the editor puts a stale name right.
   name                TEXT    NOT NULL DEFAULT '',
   owner_id            TEXT    NOT NULL DEFAULT '',

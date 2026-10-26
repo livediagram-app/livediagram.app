@@ -22,7 +22,7 @@ const PAGES = [
 const PROSE =
   'text-[1.0625rem] leading-relaxed text-slate-700 dark:text-slate-300 [&_a]:font-medium [&_a]:text-slate-900 [&_a]:underline [&_a]:decoration-slate-300 [&_a]:underline-offset-4 hover:[&_a]:decoration-slate-900 dark:[&_a]:text-white dark:[&_a]:decoration-slate-600 dark:hover:[&_a]:decoration-white [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.9em] dark:[&_code]:bg-slate-800 [&_li]:pl-1 [&_li]:marker:text-slate-400 [&_p]:mt-4 first:[&_p]:mt-0 [&_strong]:font-semibold [&_strong]:text-slate-900 dark:[&_strong]:text-white [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-3 [&_ul]:pl-5 first:[&_ul]:mt-0';
 
-// The site's legal pages, /privacy and /terms (liveworkspace/docs/site.md "Privacy and terms"): one
+// The site's legal pages, /privacy and /terms (liveworkspace/docs/specs/010-site/site.md "Privacy and terms"): one
 // of each for liveworkspace and every app in it. A band with the promises at a glance and the apps
 // covered, then the text, with its contents alongside: what applies everywhere, then app by app.
 export function LegalPage({

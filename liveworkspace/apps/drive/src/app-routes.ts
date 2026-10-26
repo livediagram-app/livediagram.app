@@ -1,4 +1,4 @@
-// The routes no browser calls (liveworkspace/docs/drive.md "The service"):
+// The routes no browser calls (liveworkspace/docs/specs/005-drive/drive.md "The service"):
 //   POST   /api/drive/push        Google's change notifications: the channel token names the person
 //   POST   /app/changes           the index's change signal, `{ personId, at }`, with DRIVE_KEY_INDEX
 //   DELETE /app/people/<id>       accounts' account deletion, with DRIVE_KEY_ACCOUNTS

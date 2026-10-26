@@ -7,7 +7,7 @@
 //   does in production, through the account API (account.ts: `/api/account/internal/tokens/verify`,
 //   `/tokens/live`, `/tokens/revoke`). An app connecting an AI tool makes one through the same API (`/tokens
 //   {accessToken, name, readOnly}`), for the person its access token names, as the accounts Worker does.
-// - Profiles (display names and colours, liveworkspace/docs/accounts.md "Profiles") are kept in memory: the api
+// - Profiles (display names and colours, liveworkspace/docs/specs/003-accounts/accounts.md "Profiles") are kept in memory: the api
 //   writes one when someone sets their name (`/profiles/write {owner, name?, color?}`) and reads them for
 //   presence, comments and changeset toasts (`/profiles/read {ids}`), as against the accounts Worker. An id
 //   nobody wrote a profile for is left out of a read, so the app falls back to its own default name.

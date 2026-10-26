@@ -1,4 +1,4 @@
-// The signed-in person's own Google picture (liveworkspace/docs/accounts.md "Profile pictures",
+// The signed-in person's own Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures",
 // docs/specs/014-identity/profile-and-email-notifications.md "Avatars"): read from the session's ID token
 // (`picture`, `picture_hidden`, by way of POST /api/auth/token), and Show My Google Picture as Settings › Profile
 // last saved it. The person's own chrome always shows their picture; what goes to the room (`publishedPicture`)

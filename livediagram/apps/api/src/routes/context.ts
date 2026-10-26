@@ -72,7 +72,7 @@ export type RouteContext = {
   // The teams the caller is in, from their token's claim (null for a guest or a token minted without them): what
   // an API token delegates to the index with, and the list GET /api/teams answers.
   teams?: TeamClaim[] | null;
-  // The index's grant on the document the request is about (liveworkspace/docs/one-explorer-contracts.md
+  // The index's grant on the document the request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
   // "Grants"), settled by the worker before the request reaches the document's room. Null when the caller holds
   // none; unset outside a document's own routes.
   grant?: ItemGrant | null;

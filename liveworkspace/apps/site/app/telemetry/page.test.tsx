@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
 import TelemetryDashboard from './page';
 
-// The page never empties while numbers load (liveworkspace/docs/telemetry.md "The dashboard",
+// The page never empties while numbers load (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard",
 // Loading): the first visit and a switch to an app not fetched yet keep the chrome on screen with a
 // skeleton where the numbers go, and the numbers replace it once they land.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

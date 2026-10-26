@@ -120,7 +120,7 @@ export function SettingsDialog({
       allowAll ? requestProfileHost(settingsRequest, { accountName: identityName }) : undefined,
     [allowAll, identityName],
   );
-  // Cloud Sync (liveworkspace/docs/drive.md "Connecting"), only where All is offered: an account's.
+  // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"), only where All is offered: an account's.
   const cloudSyncFor = useMemo(() => (allowAll ? cloudSyncHost() : null), [allowAll]);
   const cloudSync = useCloudSync(cloudSyncFor);
   const account = useMemo<AccountHost>(

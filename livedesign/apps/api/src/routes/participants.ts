@@ -39,7 +39,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     }
     // Named, so it reads as this route answering about the id rather than no route at all.
     if (!profile.participant) return json({ error: 'participant_not_found' }, { status: 404 });
-    // Their Google picture goes only to a signed-in reader (liveworkspace/docs/accounts.md "Profile pictures"):
+    // Their Google picture goes only to a signed-in reader (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"):
     // a guest or a link visitor gets the name and colour alone.
     const picture = ctx.verifiedUserId ? profile.picture : null;
     return json({

@@ -1,6 +1,6 @@
 // /api/share/<code>: what a share link opens (docs/specs/013-workspace/share-roles.md), as the index resolves it. What
 // a link shows without opening (its live image, its share card and the name a link preview reads) is liveworkspace's
-// (liveworkspace/docs/previews.md): the router sends `/api/share/<code>/image.svg|image.png|card` there, and the
+// (liveworkspace/docs/specs/006-media/previews.md): the router sends `/api/share/<code>/image.svg|image.png|card` there, and the
 // canvas only draws (routes/internal-items.ts, the export door).
 
 import { documentRoom } from '../document-client';

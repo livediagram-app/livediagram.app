@@ -10,7 +10,7 @@ import {
   statusGroups,
 } from './services';
 
-// liveworkspace/docs/site.md "Status": the one list of services the page and the status Worker both check.
+// liveworkspace/docs/specs/010-site/site.md "Status": the one list of services the page and the status Worker both check.
 
 describe('the status page’s services', () => {
   const groups = statusGroups('production');

@@ -1,4 +1,4 @@
-// An app's api reaching liveworkspace's index (liveworkspace/docs/one-explorer.md, one-explorer-contracts.md):
+// An app's api reaching liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md, one-explorer-contracts.md):
 // where every item is and who may open it. The index decides access and says so in a grant, an ES256 JWT the
 // app checks offline against the index's published keys; the item's content stays in its Durable Object.
 //

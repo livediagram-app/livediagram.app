@@ -54,7 +54,7 @@ beforeEach(() => {
 
 describe('the share router', () => {
   // A link's previews (image.svg, image.png, card) are liveworkspace's: the router sends them there
-  // (liveworkspace/docs/previews.md), so here they are paths like any other.
+  // (liveworkspace/docs/specs/006-media/previews.md), so here they are paths like any other.
   it('404s everything this surface does not answer, the previews included', async () => {
     for (const [method, path] of [
       ['POST', '/api/share/C'],

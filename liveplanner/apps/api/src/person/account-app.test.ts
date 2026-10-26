@@ -3,7 +3,7 @@ import { ACCOUNTS_ON, stubAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
 import { ownerEmail, ownerEmails, recordOwnerSighting, reportOwnerActivity } from './account-app';
 
-// What the accounts Worker keeps of an account for liveplanner (liveworkspace/docs/accounts.md
+// What the accounts Worker keeps of an account for liveplanner (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Sign-ups and milestones per app"): accounts only, and nothing ever throws.
 
 const env = ACCOUNTS_ON as Env;

@@ -1,4 +1,4 @@
-// GET /api/telemetry/summary?app=…: the dashboard's numbers (liveworkspace/docs/telemetry.md "The
+// GET /api/telemetry/summary?app=…: the dashboard's numbers (liveworkspace/docs/specs/008-telemetry/telemetry.md "The
 // dashboard"), for one app or, with app=all or no app, for every app. Public and anonymous.
 
 import {

@@ -1,4 +1,4 @@
-// Previews (liveworkspace/docs/previews.md): every app's item pictures, served once by liveworkspace's media
+// Previews (liveworkspace/docs/specs/006-media/previews.md): every app's item pictures, served once by liveworkspace's media
 // service under /api/previews. Each app's router forwards the same paths on its own origin, so a browser always
 // asks its own origin. The addresses and cache rules live here, so the Explorer, the routers, the apps' share pages
 // and the service cannot drift.

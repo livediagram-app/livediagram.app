@@ -41,9 +41,9 @@ const HistoryIcon = lucideGlyph(lucideHistory, 16);
 
 const noSubscription = () => () => {};
 
-// The status page's live board (liveworkspace/docs/site.md "Status"). A round of checks runs on load, and after that
+// The status page's live board (liveworkspace/docs/specs/010-site/site.md "Status"). A round of checks runs on load, and after that
 // only when Check now is pressed, which then rests for CHECK_COOLDOWN_MS: each round asks every service at once, so
-// the page never checks on its own or faster than that. Beside them, liveworkspace's hourly checks and their 90 days (liveworkspace/docs/status.md): read once on load
+// the page never checks on its own or faster than that. Beside them, liveworkspace's hourly checks and their 90 days (liveworkspace/docs/specs/009-status/status.md): read once on load
 // and again every HISTORY_REFRESH_MS while visible. Without them (no Worker, no runs yet) it shows this visit's alone.
 export function StatusBoard({
   fetchImpl,

@@ -1,4 +1,4 @@
-// livedesign.app's telemetry dashboard, as data (liveworkspace/docs/telemetry.md "The dashboard"): every
+// livedesign.app's telemetry dashboard, as data (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every
 // view is shared (../_shared); this is what makes it this app's. Its events and how they read, its
 // charts on each tab, and its name, noun and accent.
 

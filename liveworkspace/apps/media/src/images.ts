@@ -1,4 +1,4 @@
-// The images index (liveworkspace/docs/media.md "Storage"): one row per stored image, its bytes in R2
+// The images index (liveworkspace/docs/specs/006-media/media.md "Storage"): one row per stored image, its bytes in R2
 // under the same id.
 
 import type { MediaApp, MediaImage, MediaUsage } from '@liveworkspace/media';

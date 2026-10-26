@@ -1,4 +1,4 @@
-// Connecting, switching Google account and disconnecting (liveworkspace/docs/drive.md "Connecting", "Tokens",
+// Connecting, switching Google account and disconnecting (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Tokens",
 // "Disconnecting and account deletion"), carried over from livediagram's api (routes/drive.ts, account-switch.ts,
 // disconnect.ts) into the person's object.
 //

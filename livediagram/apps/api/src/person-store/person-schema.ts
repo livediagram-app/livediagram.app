@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS drive_items (
 );
 `;
 
-// livediagram's own Google Drive mirror is gone (liveworkspace/docs/drive.md "Coming from livediagram's mirror"):
+// livediagram's own Google Drive mirror is gone (liveworkspace/docs/specs/005-drive/drive.md "Coming from livediagram's mirror"):
 // Google Drive sync is liveworkspace's service now, which keeps its rows itself. Its two tables go, with every
 // connection's sealed token and every mirrored item in them. The files stay in the person's Drive.
 const V2 = `

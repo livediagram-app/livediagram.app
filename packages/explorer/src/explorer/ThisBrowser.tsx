@@ -231,7 +231,7 @@ function LocalRow({
         </button>
       ) : null}
       {sync && thisBrowser?.remove ? (
-        // For good, asked first: the panel's This Browser rows do the same (liveworkspace/docs/one-explorer.md "This Browser").
+        // For good, asked first: the panel's This Browser rows do the same (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser").
         <span className="mr-3 shrink-0">
           <PaneIconButton
             label={`Delete ${name}`}

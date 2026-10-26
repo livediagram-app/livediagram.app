@@ -183,7 +183,7 @@ export type SharedDesignResolution =
   | { design: LiveDoc; role: ShareRole; tabId: string | null }
   | { passwordRequired: true; invalid: boolean };
 
-// Identity (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"). A signed-in page registers a
+// Identity (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"). A signed-in page registers a
 // token provider (`setTokenProvider`) whose account access token goes out as `Authorization: Bearer <jwt>`;
 // without one (a guest, or signed out) the guest token goes out the same way. A link visitor with neither sends
 // only its share code in `X-Share-Code`, which is enough for the index to grant what the link allows.

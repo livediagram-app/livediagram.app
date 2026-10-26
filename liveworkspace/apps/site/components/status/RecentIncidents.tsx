@@ -25,7 +25,7 @@ const WHEN = new Intl.DateTimeFormat('en-GB', {
   minute: '2-digit',
 });
 
-// The incidents of the last 90 days from the hourly checks (liveworkspace/docs/site.md "Status"), newest first: each
+// The incidents of the last 90 days from the hourly checks (liveworkspace/docs/specs/010-site/site.md "Status"), newest first: each
 // under its group's logo (never a coloured dot), its worst state as an icon and a word, when it began and how long it
 // lasted, or that it is ongoing. A service that only takes another's check (the realtime rooms take the API's) would
 // repeat that one's incidents, so its own are left out here. The latest SHOWN show, and the rest on request.

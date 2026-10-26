@@ -1,4 +1,4 @@
-// Closing an account disconnects its Google Drive mirror too (liveworkspace/docs/drive.md "Disconnecting and account
+// Closing an account disconnects its Google Drive mirror too (liveworkspace/docs/specs/005-drive/drive.md "Disconnecting and account
 // deletion"): the Drive service revokes the grant and forgets the token and every mirror row, and leaves the files in
 // Drive. `DELETE /app/people/<id>` with `DRIVE_KEY_ACCOUNTS`, through the DRIVE service binding. Best effort: a
 // failure is logged and never keeps the account open, and the service holds nothing it could act on without the

@@ -33,7 +33,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   sql.exec('PRAGMA foreign_keys = ON');
   const designSql = nodeItemSql(sql);
   migrateDesignSchema((q) => designSql.exec(q));
-  // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_designs`
+  // Test scaffolding for what the index holds in production (liveworkspace/docs/specs/004-index/one-explorer.md): `test_designs`
   // writes a started design's own row (what a create writes), and `test_share_links` holds the links the index
   // would grant through. `testGrantFor` (below) reads both, as the index's access rule does.
   sql.exec(`CREATE TEMP VIEW test_designs AS

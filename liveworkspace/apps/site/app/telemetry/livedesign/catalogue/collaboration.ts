@@ -163,7 +163,7 @@ export const COMMENTS_MENTIONED: Metric = {
   blurb: 'A comment was sent that @-mentioned at least one teammate.',
 };
 
-// Teams (liveworkspace/docs/accounts.md "Teams"): run on liveworkspace.app, where accounts counts each change
+// Teams (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): run on liveworkspace.app, where accounts counts each change
 // under the app the person acting signed up through; moves into and out of a team come from the Explorer.
 export const TEAMS_CREATED: Metric = {
   category: 'Team',

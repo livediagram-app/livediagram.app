@@ -12,7 +12,7 @@ next-env.d.ts
 test-results/
 playwright-report/
 
-# Written by the licences generator on every site build (docs/site.md "Licences").
+# Written by the licences generator on every site build (docs/specs/010-site/site.md "Licences").
 /apps/site/generated/
 /apps/site/public/licences/
 

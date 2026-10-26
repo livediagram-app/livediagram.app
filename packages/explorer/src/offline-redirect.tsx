@@ -1,7 +1,7 @@
 'use client';
 
 // An app's old This Browser page (`/offline`): what it listed is the Explorer's This Browser view now
-// (`/explorer/offline`, liveworkspace/docs/one-explorer.md "This Browser"), so the page only sends people there, its
+// (`/explorer/offline`, liveworkspace/docs/specs/004-index/one-explorer.md "This Browser"), so the page only sends people there, its
 // query and hash kept, the history entry replaced so Back never lands on it again. A Take Offline or Sync an older
 // link still asks for (`?convert=…&item=…`) goes on from there to the app's editor (ThisBrowser.tsx).
 

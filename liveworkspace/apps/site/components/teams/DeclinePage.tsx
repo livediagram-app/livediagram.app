@@ -10,7 +10,7 @@ const noChange = () => () => {};
 
 type InviteState = 'invited' | 'declined' | 'expired' | 'joined';
 
-// An invitation email's Decline link, /join/decline?token=… (liveworkspace/docs/accounts.md
+// An invitation email's Decline link, /join/decline?token=… (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Invitations"). Works signed in or out. Opening it only reads, so a mail scanner that follows the
 // link changes nothing; only the button declines.
 export function DeclinePage() {

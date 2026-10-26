@@ -1,5 +1,5 @@
-// What the Explorer reads from liveworkspace accounts (liveworkspace/docs/accounts.md "The API") beyond teams
-// (data/teams.ts): other people's display names and Google pictures (liveworkspace/docs/accounts.md "Profile
+// What the Explorer reads from liveworkspace accounts (liveworkspace/docs/specs/003-accounts/accounts.md "The API") beyond teams
+// (data/teams.ts): other people's display names and Google pictures (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
 // pictures"), for the Owner column, the Inbox, What Happened and the Timeline. On
 // liveworkspace.app these are the person's own routes on its origin (`/api/account/*`, by the session cookie). A host
 // elsewhere passes its own `ExplorerAccounts`, or none, and the Explorer goes without.

@@ -5,7 +5,7 @@ import type { Env } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import { appBaseUrl, emailEnabled, sendEmail } from './client';
 
-// A fake Cloudflare Email Service binding (liveworkspace/docs/email.md), standing in for `env.EMAIL`.
+// A fake Cloudflare Email Service binding (liveworkspace/docs/specs/003-accounts/email.md), standing in for `env.EMAIL`.
 const fakeEmail = (send = vi.fn(async (_message: unknown) => ({ messageId: 'm' }))) => ({ send });
 const withBinding = (email = fakeEmail(), extra: Partial<Env> = {}) =>
   ({ EMAIL: email, ...extra }) as unknown as Env;

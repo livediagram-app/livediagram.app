@@ -1,4 +1,4 @@
-// Teams (liveworkspace/docs/accounts.md "Teams"): made and run on liveworkspace.app, the same team in
+// Teams (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): made and run on liveworkspace.app, the same team in
 // every app. A member row doubles as the invitation: 'invited' until the person with that verified
 // address accepts ('joined') or declines ('declined', from the site or the email's link; an invitation
 // nobody answers in 28 days becomes 'declined' too, stamped expiredAt); leaving or being removed
@@ -17,7 +17,7 @@ export const ORGANISATION_MAX_LENGTH = 80;
 // How long a join link works once an admin turns it on (or makes a new one).
 export const INVITE_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-// An unanswered invitation is reminded at these ages, then expires (liveworkspace/docs/accounts.md
+// An unanswered invitation is reminded at these ages, then expires (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Reminders and expiry").
 export const REMINDER_AGES_MS = [1 * DAY_MS, 7 * DAY_MS, 21 * DAY_MS] as const;
 export const INVITATION_TTL_MS = 28 * DAY_MS;
@@ -135,7 +135,7 @@ export interface MemberPreview {
   name: string | null;
   email: string;
   role: TeamRole;
-  // Their published Google picture (liveworkspace/docs/accounts.md "Profile pictures"), read with the name.
+  // Their published Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), read with the name.
   picture: string | null;
 }
 
@@ -246,7 +246,7 @@ export interface TeamClaim {
 }
 
 // What the apps' access tokens carry: every team the account is in, so an app can tell from the token
-// alone when its copy of the account's teams is out of date (liveworkspace/docs/accounts.md).
+// alone when its copy of the account's teams is out of date (liveworkspace/docs/specs/003-accounts/accounts.md).
 export async function teamsClaim(db: D1Database, userId: string): Promise<TeamClaim[]> {
   const { results } = await db
     .prepare(
@@ -1366,7 +1366,7 @@ export interface ReminderEmail {
   declineToken: string;
 }
 
-// The daily sweep (liveworkspace/docs/accounts.md "Reminders and expiry"). First, invitations nobody
+// The daily sweep (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"). First, invitations nobody
 // answered in 28 days expire, whether or not email is set up. Then each one still waiting hears the
 // latest reminder it is due (1, 7 and 21 days after its clock started), one email per invitation per
 // run; a reminder it skipped is stamped 0. A failed send is tried again tomorrow, three times at most.

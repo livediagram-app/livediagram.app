@@ -17,7 +17,7 @@ port = 8987
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
 # anonymous, first-party product events, sent to liveworkspace's central
-# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
@@ -25,7 +25,7 @@ port = 8987
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
-# The central index (liveworkspace/docs/one-explorer.md): where every document is filed and who may open it. The
+# The central index (liveworkspace/docs/specs/004-index/one-explorer.md): where every document is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
 INDEX_ORIGIN = "https://www.liveworkspace.app"
@@ -36,12 +36,12 @@ INDEX_ORIGIN = "https://www.liveworkspace.app"
 OAUTH_ISSUER = "https://mcp.livedocuments.app"
 
 # The From identity for transactional email (docs/specs/014-identity/transactional-email.md). Its domain is
-# onboarded to Cloudflare Email Service on this account (liveworkspace/docs/email.md).
+# onboarded to Cloudflare Email Service on this account (liveworkspace/docs/specs/003-accounts/email.md).
 EMAIL_FROM = "livedocuments <hello@livedocuments.app>"
 
 # No R2 bucket: uploaded images live in liveworkspace's media service (MEDIA_KEY below), and a document's previews
 # (its Explorer picture, live image and share card) are liveworkspace's too, drawn on request through the export
-# door (liveworkspace/docs/previews.md).
+# door (liveworkspace/docs/specs/006-media/previews.md).
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -81,7 +81,7 @@ class_name = "DocumentRoom"
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
 
-# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/specs/011-workbench/workbench.md),
 # so this Worker's per-person WorkbenchStore goes, with whatever it held.
 [[migrations]]
 tag = "v2"
@@ -119,10 +119,10 @@ namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
-# (liveworkspace/docs/media.md "Uploads"), not this worker's.
+# (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
 
 # Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email
-# Service's `send_email` binding (liveworkspace/docs/email.md); the onboarding series is liveworkspace's. No
+# Service's `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md); the onboarding series is liveworkspace's. No
 # API key: the binding is the credential, and `wrangler dev` simulates it, printing each email instead of
 # sending it. Without this block the whole email feature is inert — no sends, so a deployment with email
 # off does zero extra work. EMAIL_FROM (in [vars]) is the sender; APP_BASE_URL, the public origin for links
@@ -151,18 +151,18 @@ name = "EMAIL"
 #     independently of this file.
 #
 # ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name livedocuments's client at the
-# liveworkspace accounts Worker (liveworkspace/docs/integrating-an-app.md): every caller, a guest included, is a
+# liveworkspace accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): every caller, a guest included, is a
 # token it minted (docs/specs/014-identity/auth-and-guest-access.md). Unset, nobody is signed in or a guest, and
 # only share links open documents.
 #
-# INDEX_KEY is livedocuments's key at the central index (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
+# INDEX_KEY is livedocuments's key at the central index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"):
 # what the document rooms push their summaries with, what the api asks for an API token's grants with, and what the
 # index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-livedocuments-index-key` in
 # `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
 # livedocuments. Unset, no document opens.
 
 # TELEMETRY_KEY is livedocuments' Worker key for liveworkspace's central
-# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), sent as
 # X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
 # speak for livedocuments.app. Secret material, provisioned out-of-band like the
 # two above; never in [vars]:
@@ -175,7 +175,7 @@ name = "EMAIL"
 #
 # Unset = this worker sends no telemetry, so local dev can ignore it.
 
-# MEDIA_KEY is livedocuments' secret on liveworkspace's media service (liveworkspace/docs/media.md,
+# MEDIA_KEY is livedocuments' secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as
 # MEDIA_KEY_LIVEDOCUMENTS. Never in [vars]:
 #
@@ -186,7 +186,7 @@ name = "EMAIL"
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
-# DRIVE_KEY is livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md
+# DRIVE_KEY is livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
 # "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDOCUMENTS. It opens the
 # internal export door's `file` format and the import door, nothing else. Never in [vars]:
 #
@@ -266,7 +266,7 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
-# Email, restated because bindings don't inherit (liveworkspace/docs/email.md). Staging sends real email from
+# Email, restated because bindings don't inherit (liveworkspace/docs/specs/003-accounts/email.md). Staging sends real email from
 # the same domain as production (docs/specs/016-platform/staging-environment.md "Integrations").
 [[env.staging.send_email]]
 name = "EMAIL"

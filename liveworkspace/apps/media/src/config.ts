@@ -3,14 +3,14 @@
 
 import { MEDIA_API_PATH, PREVIEWS_API_PATH } from '@liveworkspace/media';
 
-// The paths of liveworkspace.app this Worker owns: the media API, and previews (liveworkspace/docs/previews.md).
+// The paths of liveworkspace.app this Worker owns: the media API, and previews (liveworkspace/docs/specs/006-media/previews.md).
 export const API_PATH = MEDIA_API_PATH;
 export const PREVIEWS_PATH = PREVIEWS_API_PATH;
 
 // The largest JSON body a route takes: a reference sync of MEDIA_REFS_SYNC_MAX documents.
 export const MAX_JSON_BYTES = 2 * 1024 * 1024;
 
-// The unused-image sweep (liveworkspace/docs/media.md "Retention"). An image is deleted only once it is
+// The unused-image sweep (liveworkspace/docs/specs/006-media/media.md "Retention"). An image is deleted only once it is
 // this old and no document in any app places it. Generous on purpose: this is storage hygiene, so an
 // image picked but not placed yet is never reaped from under someone.
 export const UNUSED_IMAGE_AGE_MS = 30 * 24 * 60 * 60 * 1000;

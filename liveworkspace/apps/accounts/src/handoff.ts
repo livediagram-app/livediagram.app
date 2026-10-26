@@ -1,4 +1,4 @@
-// Signing in on the app's own address (liveworkspace/docs/accounts.md "Signing in on the app's own address").
+// Signing in on the app's own address (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in on the app's own address").
 //
 // An app's sign-in still starts with a full-page visit to /oauth2/authorize here, so someone already signed in to
 // liveworkspace goes straight back with a code, as before. Someone who isn't is sent to the sign-in pages, and those

@@ -1,4 +1,4 @@
-// Who a person is at the liveworkspace accounts Worker (liveworkspace/docs/accounts.md "Settings" and
+// Who a person is at the liveworkspace accounts Worker (liveworkspace/docs/specs/003-accounts/accounts.md "Settings" and
 // "Profiles"), which keeps everyone's settings and profile: livedocuments keeps neither.
 //
 // An account is `user_…` in both places. A livedocuments guest is a server-minted UUID

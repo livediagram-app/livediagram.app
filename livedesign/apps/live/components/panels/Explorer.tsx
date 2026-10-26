@@ -81,7 +81,7 @@ function ExplorerImpl({
   );
   // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
-  // Google Drive's marks on the person's items (liveworkspace/docs/drive.md "The Explorer shows each item's sync"),
+  // Google Drive's marks on the person's items (liveworkspace/docs/specs/005-drive/drive.md "The Explorer shows each item's sync"),
   // over the same Drive host as Settings' Cloud Sync: an account's only, made once per sign-in so the marks read keeps
   // one client. The panel mounts only while open, so nothing is asked before it opens.
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);

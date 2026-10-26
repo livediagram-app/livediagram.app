@@ -1,4 +1,4 @@
-// Community posts (liveworkspace/docs/community.md): what an app's Worker writes (publish, Edit Listing,
+// Community posts (liveworkspace/docs/specs/007-community/community.md): what an app's Worker writes (publish, Edit Listing,
 // remove, and where each post's document stands), and the public reads (list, facets, one post, related,
 // featured, sitemap), every one of them for one app. Likes, copies and reports are in engagement.ts.
 

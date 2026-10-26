@@ -1,4 +1,4 @@
-// A closed account's name off a plan that outlives them (liveworkspace/docs/one-explorer-contracts.md "Closing an
+// A closed account's name off a plan that outlives them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an
 // account"): the index tells the app which plans name them (POST /api/internal/people/:id/purge), and each plan's
 // Durable Object runs this over what it stores, with @liveworkspace/index-app's anonymiseJsonText: the comments,
 // cards and assignments in each tab, the cards' own fields and who made or changed them, the changesets they

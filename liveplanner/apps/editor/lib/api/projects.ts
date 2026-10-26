@@ -79,7 +79,7 @@ async function _apiLoadProject(ownerId: string, id: string): Promise<Project | n
 }
 
 // The title the index holds for each plan this page has read or named, so a meta save tells the index only when
-// the name changed: never on a save that merely carries it (liveworkspace/docs/one-explorer-contracts.md "Items").
+// the name changed: never on a save that merely carries it (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items").
 const indexTitles = new Map<string, string>();
 
 function renameInIndex(id: string, name: string, shareCode: string | null): void {
@@ -179,7 +179,7 @@ export async function apiCreateProject(
   // without this the worker records it as a brand-new project being created.
   opts: { conversion?: ProjectConversion } = {},
 ): Promise<Project> {
-  // The index makes the plan first (liveworkspace/docs/one-explorer-contracts.md "Items"): its place, its title
+  // The index makes the plan first (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): its place, its title
   // and the grant on it come back together. The content is then started in the plan's room with that grant.
   let created: Awaited<ReturnType<typeof indexClient.createItem>>;
   try {
@@ -256,7 +256,7 @@ export async function apiFetchProjectThumbnailUrl(
   return { url: blobUrl, backgroundColor };
 }
 
-// The project's preview SVG, liveworkspace's (liveworkspace/docs/previews.md: the router sends /api/previews there),
+// The project's preview SVG, liveworkspace's (liveworkspace/docs/specs/006-media/previews.md: the router sends /api/previews there),
 // through the authenticated client; null on 404 / 503 (nothing drawn, no access, the service down). `version` is
 // only the browser's cache key. Behind the Explorer's thumbnails and the landing page's Welcome back
 // (docs/specs/019-marketing/returning-visitor.md).

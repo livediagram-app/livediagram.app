@@ -1,4 +1,4 @@
-// The browser's batching emitter (liveworkspace/docs/telemetry.md "Sending events"), one engine for
+// The browser's batching emitter (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events"), one engine for
 // every sender: each app's `@<app>/telemetry-client` wraps it with its own vocabulary's types, and
 // liveworkspace.app's Explorer uses it as it is. Three-field events are buffered and flushed, batched,
 // to the central service (POST <url>/events) on a short timer and on page hide (by

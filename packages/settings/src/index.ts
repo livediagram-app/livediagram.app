@@ -1,4 +1,4 @@
-// Which of a person's settings every app shares (liveworkspace/docs/accounts.md "Settings"). The
+// Which of a person's settings every app shares (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"). The
 // accounts database keeps two rows per person: the `all` scope, which every app reads and shows,
 // and one per app. A key listed here lives in `all`, so changing it in one app changes it in every
 // app that has it; any other key is the app's own. An app shows only the settings it has, so a
@@ -7,7 +7,7 @@
 // Pure data and helpers: the editors (to read and write) and the apps' servers (to split a stored
 // blob) both use it.
 
-// The editor settings two or more apps have, shared since October 2026 (liveworkspace/docs/accounts.md "Common
+// The editor settings two or more apps have, shared since October 2026 (liveworkspace/docs/specs/003-accounts/accounts.md "Common
 // settings"): the same type, values and default in every app that has one. The Settings panel's All view shows them
 // once, under Common. They were each app's own before, so a person's value may still sit in an app's scope:
 // joinSettings falls back to it, and splitSettings drops it on the first write.

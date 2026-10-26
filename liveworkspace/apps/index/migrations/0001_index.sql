@@ -1,4 +1,4 @@
--- The One Explorer index (liveworkspace/docs/index-service.md, liveworkspace/docs/one-explorer-contracts.md):
+-- The One Explorer index (liveworkspace/docs/specs/004-index/index-service.md, liveworkspace/docs/specs/004-index/one-explorer-contracts.md):
 -- one row per Canvas, Plan, Document and Design across every app, and everything about it except its
 -- content, which stays in the item's own Durable Object in its app. Nothing here keeps a copy of teams:
 -- membership comes from the `teams` claim of the caller's access token.

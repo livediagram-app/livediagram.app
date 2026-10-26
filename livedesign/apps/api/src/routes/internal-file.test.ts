@@ -1,4 +1,4 @@
-// The Drive mirror's two doors into a design (liveworkspace/docs/drive.md "Contracts > The apps";
+// The Drive mirror's two doors into a design (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the design as its `.livedesign` file, and a new design from one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_TAB_BYTES } from '@livedesign/api-schema';

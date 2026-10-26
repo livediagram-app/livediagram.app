@@ -21,7 +21,7 @@ import { isTimingType } from './timing-telemetry';
 import { TELEMETRY_TYPE_PATTERN } from '@liveworkspace/telemetry';
 
 // The generic half of telemetry (the type-token bound, the dashboard's windows and summary) is
-// liveworkspace's, shared by every app (liveworkspace/docs/telemetry.md); re-exported so liveplanner
+// liveworkspace's, shared by every app (liveworkspace/docs/specs/008-telemetry/telemetry.md); re-exported so liveplanner
 // code keeps one import. The vocabulary below stays liveplanner's own.
 export {
   metricKey,

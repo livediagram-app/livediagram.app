@@ -1,4 +1,4 @@
-// The index as the Explorer and the editors call it (liveworkspace/docs/one-explorer-contracts.md): one
+// The index as the Explorer and the editors call it (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one
 // typed method per call. A browser calls its own origin's `/api/index`, which its app's router forwards
 // to liveworkspace.app, so there is no CORS and no liveworkspace.app cookie. A refusal throws an
 // IndexError carrying the status and the `error` code, so a caller can branch on `password_required`
@@ -286,7 +286,7 @@ export type IndexDelegateOptions = {
 // The index as an app's server calls it for an account it has checked itself, when the account's own access
 // token is not in hand (an API token from the CLI or an AI tool). The index treats the call as that account's,
 // but only for this app's items: it lists only them, makes only them, and answers any other as missing
-// (liveworkspace/docs/one-explorer-contracts.md "Reaching the index").
+// (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index").
 export function createIndexDelegateClient({
   app,
   key,

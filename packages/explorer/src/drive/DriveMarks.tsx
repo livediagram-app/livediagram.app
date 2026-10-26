@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's Google Drive marks (liveworkspace/docs/drive.md "The Explorer shows each item's sync"): beside an
+// The Explorer's Google Drive marks (liveworkspace/docs/specs/005-drive/drive.md "The Explorer shows each item's sync"): beside an
 // item's Updated time, a small cloud saying where it stands with Drive; beside its name, the unseen-folder mark when its file sits in a
 // Drive folder liveworkspace can't see (that mark instead of the cloud). Only items the service mirrors carry
 // either: it answers marks for the person's own work alone. And, while Google refuses the stored grant, a quiet
@@ -140,7 +140,7 @@ function readDismissed(): boolean {
   }
 }
 
-/** The quiet banner while Google refuses the stored grant (liveworkspace/docs/drive.md "Tokens"): bottom-left,
+/** The quiet banner while Google refuses the stored grant (liveworkspace/docs/specs/005-drive/drive.md "Tokens"): bottom-left,
  *  dismissible for the session. Nothing is deleted meanwhile. */
 export function DriveReconnectBanner({
   workspaceOrigin,

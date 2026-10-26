@@ -1,4 +1,4 @@
-// The server side every app on liveworkspace's index shares (liveworkspace/docs/one-explorer-contracts.md): its
+// The server side every app on liveworkspace's index shares (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): its
 // grants and clients, the index's doors into its items, purging, and what an item's Durable Object reports.
 export * from './service';
 export * from './request';

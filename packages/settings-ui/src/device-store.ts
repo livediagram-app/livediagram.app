@@ -1,4 +1,4 @@
-// A guest's settings for the Settings panel (liveworkspace/docs/site.md "Settings", "A guest"): the copy the app's
+// A guest's settings for the Settings panel (liveworkspace/docs/specs/010-site/site.md "Settings", "A guest"): the copy the app's
 // editor keeps in this browser on the app's own address, read and written in place of the accounts API. The editor
 // holds one flat object (`<app>:user-preferences:v1`) with the `all` keys and its own side by side; the panel asks
 // for the two scopes apart, as the accounts API answers, so this splits on read and writes back flat.

@@ -3,7 +3,7 @@
 // A product's own surfaces (Home, Editor, Explorer, Community, Help, Telemetry), as a row of links for
 // the Explorer's footer. The header's section menu that used to share these went in October 2026:
 // headers now switch between liveworkspace's sites from the logo instead (SiteSwitcher,
-// liveworkspace/docs/site-switcher.md). Links are plain <a> with absolute hrefs because the
+// liveworkspace/docs/specs/010-site/site-switcher.md). Links are plain <a> with absolute hrefs because the
 // destinations live in different apps stitched under one host by the router. Community is livediagram's alone,
 // which binds this to its Community's address while the Community is on (its ProductNav).
 

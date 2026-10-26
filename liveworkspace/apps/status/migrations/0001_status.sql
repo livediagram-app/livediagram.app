@@ -1,4 +1,4 @@
--- liveworkspace status history (liveworkspace/docs/status.md). Public facts about public addresses: no people, no
+-- liveworkspace status history (liveworkspace/docs/specs/009-status/status.md). Public facts about public addresses: no people, no
 -- response bodies.
 
 -- Every service's check, once an hour, for 90 days (35 rows an hour). The key leads with the time, so today's checks

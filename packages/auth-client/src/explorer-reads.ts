@@ -1,9 +1,9 @@
-// The Explorer's reads from another app (liveworkspace/docs/one-explorer.md): on an app's own address the Explorer
+// The Explorer's reads from another app (liveworkspace/docs/specs/004-index/one-explorer.md): on an app's own address the Explorer
 // asks as that app, with a token addressed to that app's API, yet it draws every app's items, so it asks each item's
 // own app for its tabs (the Share dialog's tab picker). That read, and only that, accepts a token addressed to any of
 // the four apps' APIs in the same environment, the audiences liveworkspace.app's own token already carries. What the
 // token may read is unchanged: the route still checks the person may read the item. Previews are no app's any more:
-// they are liveworkspace's (liveworkspace/docs/previews.md), behind the index, which takes every app's token.
+// they are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), behind the index, which takes every app's token.
 
 import { APP_SITES, STAND_INS, type AppSiteId } from '@liveworkspace/sites';
 

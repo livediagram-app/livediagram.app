@@ -1,5 +1,5 @@
 // What a share link opens, for API clients (index-adapters.ts). What it shows without opening (its live image, its
-// share card and the name on its page's head) is liveworkspace's previews (liveworkspace/docs/previews.md): the
+// share card and the name on its page's head) is liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the
 // router sends `/api/share/<code>/image.svg|image.png|card` there, and they never reach this api.
 
 import { notFound, json } from '../responses';

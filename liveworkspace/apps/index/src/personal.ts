@@ -1,4 +1,4 @@
-// A person's own things about items (liveworkspace/docs/one-explorer-contracts.md "Folders, favourites,
+// A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders, favourites,
 // defaults"): favourites, what they hid from Recent, and the folder New files each kind of item into.
 
 import { personalScope, scopesOf, type Person } from './auth';

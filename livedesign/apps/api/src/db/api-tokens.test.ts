@@ -8,7 +8,7 @@ import {
   revokePresentedToken,
 } from './api-tokens';
 
-// API tokens are the liveworkspace account's (liveworkspace/docs/accounts.md "API tokens"): these
+// API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): these
 // stand liveworkspace up at `fetch` and check what this app does with its answers. It keeps no copy.
 
 const ACCOUNTS = {

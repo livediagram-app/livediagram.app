@@ -4,7 +4,7 @@ import { Header } from '@/components/Header';
 import { StatusBoard } from '@/components/status/StatusBoard';
 import './status-motion.css';
 
-// Status (liveworkspace/docs/site.md "Status"): one page for liveworkspace's shared services and every app's own,
+// Status (liveworkspace/docs/specs/010-site/site.md "Status"): one page for liveworkspace's shared services and every app's own,
 // checked live from the visitor's browser. Each app's old /status redirects here, to its own group.
 
 const TITLE = 'Status';

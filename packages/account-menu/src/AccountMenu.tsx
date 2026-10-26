@@ -19,8 +19,8 @@ import {
 import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
 import { avatarFill, initials } from './initials';
 
-// The account control (liveworkspace/docs/site.md "The header"). Signed in: the person's avatar (their Google picture
-// over their initials, liveworkspace/docs/accounts.md "Profile pictures") and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
+// The account control (liveworkspace/docs/specs/010-site/site.md "The header"). Signed in: the person's avatar (their Google picture
+// over their initials, liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures") and name, opening a menu of the Explorer (liveworkspace.app's header only), Settings and Sign
 // out. Signed out: the same trigger as **Guest**, on a neutral avatar, opening Sign in (the primary), Create account
 // and, where a guest has settings (the Explorer on an app's address), Settings. One component for liveworkspace.app's
 // header, the Explorer on any address and every app's marketing header.
@@ -40,8 +40,8 @@ const SettingsIcon = lucideGlyph(lucideSettings, 16);
 const MENU_LABEL = 'Account';
 
 /** Where Settings goes on a surface with no Settings panel of its own: the same address's Explorer, which opens the
- *  panel on load (liveworkspace/docs/site.md "Settings", Addresses). Teams are made and run in the Explorer too
- *  (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"), so the menu has no Teams entry. */
+ *  panel on load (liveworkspace/docs/specs/010-site/site.md "Settings", Addresses). Teams are made and run in the Explorer too
+ *  (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"), so the menu has no Teams entry. */
 export const SETTINGS_HREF = '/explorer?settings=all';
 
 /** Where a guest's menu leads: the surface's own Sign in and Create account, and Settings where a guest has some. */

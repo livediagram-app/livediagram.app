@@ -37,7 +37,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.clearAllMocks());
 
-// Copy and delete are the index's (liveworkspace/docs/one-explorer-contracts.md "Items"): the index makes the copy's
+// Copy and delete are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): the index makes the copy's
 // row and has this app copy the content; a delete sends the plan to the Trash.
 describe('useProjectActions', () => {
   it('copies through the link a visitor came in on, then opens the copy', async () => {

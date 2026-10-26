@@ -1,4 +1,4 @@
-// Passes (liveworkspace/docs/drive.md "Outbound", "Inbound", "Cadence"): the first mirror, both directions of
+// Passes (liveworkspace/docs/specs/005-drive/drive.md "Outbound", "Inbound", "Cadence"): the first mirror, both directions of
 // renames, moves and the bin, echoes, conflicts, deleted folders, purges, batches and back-off, against the fake
 // Google and an in-memory index.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

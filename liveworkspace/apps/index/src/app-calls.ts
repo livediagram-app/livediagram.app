@@ -1,4 +1,4 @@
-// The index calling an app's internal routes (liveworkspace/docs/one-explorer-contracts.md): copy an
+// The index calling an app's internal routes (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): copy an
 // item's content, drop a purged item's content, tell an item a link was revoked, and the migration's handoff
 // (migration-handoff.ts). Each carries the
 // app's key and name, the same pair the app pushes with.

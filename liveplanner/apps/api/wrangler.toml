@@ -17,7 +17,7 @@ port = 8887
 # "Hosted profile"). A fork is therefore telemetry-off until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
 # anonymous, first-party product events, sent to liveworkspace's central
-# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
@@ -25,10 +25,10 @@ port = 8887
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
-# The sender for outbound email (the EMAIL binding, below; liveworkspace/docs/email.md).
+# The sender for outbound email (the EMAIL binding, below; liveworkspace/docs/specs/003-accounts/email.md).
 EMAIL_FROM = "liveplanner <hello@liveplanner.app>"
 
-# The central index (liveworkspace/docs/one-explorer.md): where every plan is filed and who may open it. The
+# The central index (liveworkspace/docs/specs/004-index/one-explorer.md): where every plan is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the plan rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
 INDEX_ORIGIN = "https://www.liveworkspace.app"
@@ -39,7 +39,7 @@ INDEX_ORIGIN = "https://www.liveworkspace.app"
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
 # No bucket: a plan's previews (the Explorer thumbnail, a link's live image and share card) are liveworkspace's
-# (liveworkspace/docs/previews.md), drawn through the export door on request and stored by its media service.
+# (liveworkspace/docs/specs/006-media/previews.md), drawn through the export door on request and stored by its media service.
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -79,7 +79,7 @@ class_name = "PlanRoom"
 tag = "v1"
 new_sqlite_classes = ["PlanRoom", "WorkbenchStore"]
 
-# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/workbench.md),
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/specs/011-workbench/workbench.md),
 # so this Worker's per-person WorkbenchStore goes, with whatever it held.
 [[migrations]]
 tag = "v2"
@@ -120,7 +120,7 @@ namespace_id = "1011"
 simple = { limit = 60, period = 60 }
 
 # Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email
-# Service's `send_email` binding (liveworkspace/docs/email.md); the onboarding series is liveworkspace's. No API
+# Service's `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md); the onboarding series is liveworkspace's. No API
 # key: the binding is the credential. A deployment without it sends nothing and does zero extra work, so a fork
 # turns email off by deleting this block (and staging's). `wrangler dev` simulates it, printing each email and
 # saving its text and HTML to files instead of sending. EMAIL_FROM (in [vars]) is the From identity; its domain
@@ -150,31 +150,31 @@ name = "EMAIL"
 #     independently of this file.
 #
 # ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name liveplanner's client at the
-# liveworkspace accounts Worker (liveworkspace/docs/integrating-an-app.md): every caller, a guest included, is a
+# liveworkspace accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): every caller, a guest included, is a
 # token it minted (docs/specs/014-identity/auth-and-guest-access.md). Unset, nobody is signed in or a guest, and
 # only share links open plans.
 #
-# INDEX_KEY is liveplanner's key at the central index (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
+# INDEX_KEY is liveplanner's key at the central index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"):
 # what the plan rooms push their summaries with, what the api asks for an API token's grants with, and what the
 # index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-liveplanner-index-key` in
 # `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
 # liveplanner. Unset, no plan opens.
 #
-# MEDIA_KEY is liveplanner's key at liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which
-# serves every plan's previews (liveworkspace/docs/previews.md): the service calls the export door with it, and a
+# MEDIA_KEY is liveplanner's key at liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which
+# serves every plan's previews (liveworkspace/docs/specs/006-media/previews.md): the service calls the export door with it, and a
 # purge drops the plan's previews with it. The service holds the same value as MEDIA_KEY_LIVEPLANNER. Never in
 # [vars]: `MEDIA_KEY=dev-liveplanner-media-key` and `MEDIA_URL=http://localhost:8792/api/media` in `.dev.vars`
 # locally; the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the deploy workflow, in production and
 # staging. MEDIA_URL unset means production's (https://www.liveworkspace.app/api/media); staging sets its own below.
 #
-# DRIVE_KEY is liveplanner's key at liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps");
+# DRIVE_KEY is liveplanner's key at liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps");
 # the service holds the same value as DRIVE_KEY_LIVEPLANNER. It opens the internal export door's `file` format and
 # the import door, nothing else. Never in [vars]: `DRIVE_KEY=dev-liveplanner-drive-key` in `.dev.vars` locally,
 # `wrangler secret put DRIVE_KEY` (and `--env staging`) in production and staging. Unset, the mirror cannot export or
 # import plans.
 
 # TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
-# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), sent as
 # X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
 # speak for liveplanner.app. Secret material, provisioned out-of-band like the
 # two above; never in [vars]:

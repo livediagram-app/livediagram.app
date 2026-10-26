@@ -27,7 +27,7 @@ import { track } from './telemetry';
 const NS = 'livedocuments:v2:';
 
 const KEYS = {
-  // The guest's id is its token's (lib/guest-token.ts, liveworkspace/docs/one-explorer-contracts.md "Guests"),
+  // The guest's id is its token's (lib/guest-token.ts, liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"),
   // kept by the token module; it is listed here so a browser repair keeps it.
   guestToken: GUEST_TOKEN_STORAGE_KEY,
   // Boolean flag — '1' once the user has confirmed their display

@@ -1,4 +1,4 @@
-// Each app's own settings as plain data (liveworkspace/docs/accounts.md "Settings"), for
+// Each app's own settings as plain data (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"), for
 // liveworkspace.app to show and change outside the app: the settings in the app's scope that are one
 // stored value each, worded, grouped and ordered as the app's own Settings shows them.
 //

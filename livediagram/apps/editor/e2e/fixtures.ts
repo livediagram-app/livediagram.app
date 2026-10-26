@@ -397,7 +397,7 @@ export function ownerHeaders(
   return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
-// The index's grant on a document for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// The index's grant on a document for whoever `headers` names (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
 // every api request about one document carries it as X-Index-Grant.
 export async function documentGrant(
   request: import('@playwright/test').APIRequestContext,
@@ -427,7 +427,7 @@ export async function documentHeaders(
 }
 
 // A document made as the app makes one: the item at the index first, then its content with the grant the create
-// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// answers (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
 // tabs, ... }). Answers the content create's response.
 export async function seedDocumentItem(
   request: import('@playwright/test').APIRequestContext,

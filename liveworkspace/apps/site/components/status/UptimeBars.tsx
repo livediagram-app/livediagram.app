@@ -19,7 +19,7 @@ import {
 } from '@/lib/status/history';
 import { STATE_LOOK } from './status-ui';
 
-// A service's last 90 days from the hourly checks (liveworkspace/docs/site.md "Status"): a bar per day, oldest on the
+// A service's last 90 days from the hourly checks (liveworkspace/docs/specs/010-site/site.md "Status"): a bar per day, oldest on the
 // left. A bar's colour and its height both say the day's worst state, and the day itself (date, uptime, worst state
 // as an icon and a word, incidents) shows on hover, focus or tap. To assistive tech the strip is one image with its
 // summary in words; the arrow keys move through the days, and the day shown is announced.

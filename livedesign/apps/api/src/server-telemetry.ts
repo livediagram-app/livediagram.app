@@ -1,5 +1,5 @@
 // The api Worker's own telemetry (docs/specs/017-telemetry/telemetry.md), sent to liveworkspace's central service
-// (liveworkspace/docs/telemetry.md) as livedesign.app. The send itself, its gate and its key are the shared
+// (liveworkspace/docs/specs/008-telemetry/telemetry.md) as livedesign.app. The send itself, its gate and its key are the shared
 // `postServerEvents` (@liveworkspace/telemetry); this file only fixes the app and its event vocabulary.
 
 import type { TelemetryAction, TelemetryCategory } from '@livedesign/api-schema';

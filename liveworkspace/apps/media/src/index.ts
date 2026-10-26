@@ -1,9 +1,9 @@
-// liveworkspace's media service (liveworkspace/docs/media.md): one Worker holding every app's uploaded
+// liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md): one Worker holding every app's uploaded
 // images, on liveworkspace.app/api/media, so a person's pictures follow them from app to app. It answers
 // only the apps' own Workers. Each app still decides who may see a picture, from its own documents and
 // shares, and serves the bytes it fetches here.
 //
-// It also serves every app's previews on liveworkspace.app/api/previews (liveworkspace/docs/previews.md): the
+// It also serves every app's previews on liveworkspace.app/api/previews (liveworkspace/docs/specs/006-media/previews.md): the
 // pictures of items, to browsers, behind the index's access rule.
 
 import { API_PATH, PREVIEWS_PATH, UNUSED_IMAGE_AGE_MS } from './config';

@@ -1,4 +1,4 @@
-// Who is asking (liveworkspace/docs/drive.md "Who and what", "The service"):
+// Who is asking (liveworkspace/docs/specs/005-drive/drive.md "Who and what", "The service"):
 //   - a person, by an accounts access token, checked offline against accounts' keys exactly as the index checks it
 //     (issuer `${ACCOUNTS_URL}/api/auth`, any app API audience). A guest token is refused: a guest has no lasting
 //     identity to attach a Google account to. So is anything else, an API token included;

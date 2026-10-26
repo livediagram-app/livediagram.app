@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest';
 // test does: the article's correctness genuinely depends on the editor's
 // strings, so the coupling is real and worth failing on.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
-// The shared Explorer and its dialogs (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md), which the editor
+// The shared Explorer and its dialogs (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md), which the editor
 // renders as its own. Its labels are what a reader sees in livedesign, so they are read as the editor's.
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 // The shared Settings view (@liveworkspace/settings-ui) prints the Settings dialog's own controls.

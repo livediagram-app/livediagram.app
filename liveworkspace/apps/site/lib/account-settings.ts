@@ -1,4 +1,4 @@
-// The account's own settings on this site (liveworkspace/docs/site.md "Settings", accounts.md "Settings"). The
+// The account's own settings on this site (liveworkspace/docs/specs/010-site/site.md "Settings", accounts.md "Settings"). The
 // switches themselves are plain data every host of the Settings panel shares (@liveworkspace/settings/account); what
 // is here is the site's side: each app's way into its editor, and the panel's sections for the Explorer's search.
 // The profile's helpers are shared (@liveworkspace/settings/presence, @liveworkspace/settings-ui ProfileEditor).

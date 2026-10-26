@@ -1,4 +1,4 @@
-// Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/one-explorer-contracts.md "Timeline"): who came in
+// Opened by a Visitor and Copied by a Visitor (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): who came in
 // to an item through one of its share links, on its owner's Timeline (theirs alone: who an item is shared with is
 // the owner's business). An open is one event per visitor, item and UTC day, its time moving on, so a visitor
 // reloading all day is one card; a copy is one per visitor and item. A visitor with no identity is known by the link

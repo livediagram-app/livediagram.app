@@ -1,4 +1,4 @@
-// The Google Drive row's words in Settings > Account > Cloud Sync (liveworkspace/docs/drive.md "Connecting": the
+// The Google Drive row's words in Settings > Account > Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting": the
 // statuses, the problem lines, layout stability). Pure, so every state is tested.
 //
 // The row keeps one size within each phase and reserves nothing for another (Layout stability, "reserve per phase,

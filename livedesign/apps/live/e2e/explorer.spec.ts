@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
 
-// The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) as livedesign hosts it at
+// The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) as livedesign hosts it at
 // /explorer: everything it lists is the index's, reached through /api/index on this origin. One guest, one design,
 // every verb a person uses on it: make it, rename it, open it, find it in Recent, star it, file it in a new folder,
 // delete it and restore it.

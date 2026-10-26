@@ -6,7 +6,7 @@ import { freshUserId, installSession } from './session';
 
 // Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
 // workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is
-// liveworkspace.app's, liveworkspace/docs/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
+// liveworkspace.app's, liveworkspace/docs/specs/011-workbench/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
 // consent, both drawn by OauthShell and its primary fill, and Settings > API Tokens with a paired workbench (the
 // tokens themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings).
 // All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode

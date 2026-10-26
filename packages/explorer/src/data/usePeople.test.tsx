@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Explorer's one people store, for names and Google pictures (liveworkspace/docs/accounts.md "Profile
+// The Explorer's one people store, for names and Google pictures (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
 // pictures"): however many avatars ask, the people come in one gathered request per PEOPLE_MAX ids, never one per
 // avatar, and the picture rides with the name.
 import { act, render } from '@testing-library/react';

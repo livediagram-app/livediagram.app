@@ -1,4 +1,4 @@
-// How the Settings panel reaches the accounts API (liveworkspace/docs/accounts.md "Who calls what"). Its own module,
+// How the Settings panel reaches the accounts API (liveworkspace/docs/specs/003-accounts/accounts.md "Who calls what"). Its own module,
 // apart from the store, so an editor's Settings carries only this until All is first chosen.
 
 export type SettingsApiResult<T> =

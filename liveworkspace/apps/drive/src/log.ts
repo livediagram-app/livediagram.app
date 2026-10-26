@@ -1,4 +1,4 @@
-// The service's log lines (liveworkspace/docs/drive.md "Logs"): `drive: <step>` and ids, never a name or an address,
+// The service's log lines (liveworkspace/docs/specs/005-drive/drive.md "Logs"): `drive: <step>` and ids, never a name or an address,
 // so a failure is traceable in `wrangler tail` without the log holding anyone's work.
 
 type Fields = Record<string, string | number | boolean | null | undefined>;

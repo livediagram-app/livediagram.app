@@ -550,7 +550,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return response;
   }
 
-  // The export door (liveworkspace/docs/previews.md "The export door"): the document drawn on request for
+  // The export door (liveworkspace/docs/specs/006-media/previews.md "The export door"): the document drawn on request for
   // liveworkspace's previews, which store and serve it and decide when it is stale; nothing is kept here. Versioned
   // by the last save, so a preview the service already holds costs one row read. Whether the asker may see the
   // document (and, through a link, which tab) is the index's, checked before the service calls.
@@ -573,7 +573,7 @@ export class DocumentRoom extends DurableObject<Env> {
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
-  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", document-file.ts): the
+  // The export door's `file` format (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", document-file.ts): the
   // document's whole envelope, its last save as the version, unread when the caller holds that save.
   async exportFile(documentId: string, query: ExportQuery): Promise<ExportResult> {
     const sql = this.state.storage.sql;
@@ -792,7 +792,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  // ---------- Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants") ---------------------------------
   //
   // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
   // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame

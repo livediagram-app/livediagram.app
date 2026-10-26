@@ -119,7 +119,7 @@ describe('owner-keyed columns (docs/specs/015-api/api.md)', () => {
   });
 
   // A person's settings, profile, sign-up and onboarding emails live with their liveworkspace account
-  // (liveworkspace/docs/accounts.md), so closing it there removes them; livedesign keeps no copy to forget.
+  // (liveworkspace/docs/specs/003-accounts/accounts.md), so closing it there removes them; livedesign keeps no copy to forget.
   it('keeps no settings, profiles, sightings or onboarding rows of its own', () => {
     const { sql } = sqliteD1();
     const tables = sql

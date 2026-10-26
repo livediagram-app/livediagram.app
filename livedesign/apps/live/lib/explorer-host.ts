@@ -2,7 +2,7 @@
 
 // What the shared Explorer (@liveworkspace/explorer) needs from livedesign to be its host: an item's address in
 // its own app, a share link's, where New goes, and the person's teams from their token
-// (liveworkspace/docs/one-explorer.md). The Explorer page and the editor's panel both use these.
+// (liveworkspace/docs/specs/004-index/one-explorer.md). The Explorer page and the editor's panel both use these.
 
 import { useEffect, useState } from 'react';
 import type {

@@ -5,7 +5,7 @@ import { siteUrl } from '@liveworkspace/sites';
 import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
 
 // /join/decline?token=… — where an invite email's Decline link used to land. Invitations are answered
-// on liveworkspace.app now (liveworkspace/docs/accounts.md "Invitations"), so an old link forwards
+// on liveworkspace.app now (liveworkspace/docs/specs/003-accounts/accounts.md "Invitations"), so an old link forwards
 // there with its token: siteUrl keeps a dev server on the local liveworkspace port, and
 // NEXT_PUBLIC_ACCOUNTS_SITE_URL points a staging build at staging. The card is the fallback if the
 // forward doesn't run. `index: false` is inherited from the root layout.

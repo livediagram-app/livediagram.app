@@ -28,7 +28,7 @@ export type Env = {
   // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
-  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
+  // liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md, src/index-service.ts): where every plan is and who
   // may open it. INDEX_ORIGIN is its origin (`https://www.liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
@@ -58,15 +58,15 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which serves every plan's previews
-  // (liveworkspace/docs/previews.md): its API's base URL (`https://www.liveworkspace.app/api/media`; locally
+  // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which serves every plan's previews
+  // (liveworkspace/docs/specs/006-media/previews.md): its API's base URL (`https://www.liveworkspace.app/api/media`; locally
   // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
   // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
   // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge
   // leaves the plan's previews to lapse.
   MEDIA_URL?: string;
   MEDIA_KEY?: string;
-  // liveplanner's secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // liveplanner's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEPLANNER: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
@@ -98,14 +98,14 @@ export type Env = {
   // Absent/anything-else keeps telemetry fully off — the unconfigured
   // default, so deployments never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
+  // liveworkspace's central telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
   TELEMETRY_URL?: string;
   // liveplanner's Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's send_email binding for transactional email (docs/specs/014-identity/transactional-email.md,
-  // liveworkspace/docs/email.md). No API key: the binding is the credential. When absent the whole email feature
+  // liveworkspace/docs/specs/003-accounts/email.md). No API key: the binding is the credential. When absent the whole email feature
   // is inert: no sends. `wrangler dev` simulates it locally, printing each email instead of sending it.
   EMAIL?: SendEmail;
   // From identity for outbound email (optional). Defaults to

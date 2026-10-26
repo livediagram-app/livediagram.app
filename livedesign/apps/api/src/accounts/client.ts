@@ -1,4 +1,4 @@
-// The liveworkspace accounts Worker as this api's server sees it (liveworkspace/docs/accounts.md): where a
+// The liveworkspace accounts Worker as this api's server sees it (liveworkspace/docs/specs/003-accounts/accounts.md): where a
 // person's settings, profile (display name and colour), sign-up sighting, milestones, verified address and
 // activity live. livedesign keeps none of them in its own database.
 //

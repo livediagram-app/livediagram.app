@@ -1,8 +1,8 @@
 // The document's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
 // document holds as content, and what it knows of itself. Where the document is filed and who may reach it is
-// liveworkspace's index (liveworkspace/docs/one-explorer.md), which this document pushes its summary, its tabs'
+// liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md), which this document pushes its summary, its tabs'
 // comments and actions, and who edited it to (document-outbox.ts); the images it places it tells the media service
-// itself (liveworkspace/docs/media.md "References").
+// itself (liveworkspace/docs/specs/006-media/media.md "References").
 //
 // One database per document, so `document_id` names the same document on every row. It stays a column (and in
 // the keys) because the content modules were written for a store holding many documents, and keeping their SQL
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS document (
   -- initDocument).
   created_at          INTEGER NOT NULL,
   -- What the document knows of itself for its own reads (a document read, emails, an agent's listing). The index
-  -- holds the truth for the title, owner and team (liveworkspace/docs/one-explorer.md); these are kept from the
+  -- holds the truth for the title, owner and team (liveworkspace/docs/specs/004-index/one-explorer.md); these are kept from the
   -- grants and renames that reach the document, and the editor puts a stale name right.
   name                TEXT    NOT NULL DEFAULT '',
   owner_id            TEXT    NOT NULL DEFAULT '',

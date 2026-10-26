@@ -1,4 +1,4 @@
-// livediagram's side of the liveworkspace Community service (liveworkspace/docs/community.md; docs/specs/025-community/
+// livediagram's side of the liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md; docs/specs/025-community/
 // community.md). The posts, likes, copies and reports live there; each canvas keeps its own post's link
 // (document-room/community-post.ts), and tells the service what only it knows: who may publish, where its canvas
 // stands, and who copied it. Every call carries COMMUNITY_KEY as a bearer token and names this app.

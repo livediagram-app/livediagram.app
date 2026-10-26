@@ -174,8 +174,8 @@ export default {
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
   // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
-  // (liveworkspace/docs/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
-  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); owners of API tokens that expire
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
+  // reminders (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"); owners of API tokens that expire
   // within a week are warned, once per token, and see it on their Timelines ("API tokens"); and the settings and profiles
   // of guests who can never come back are deleted ("Guests who never come back").
   // Each step is isolated (`step`): one that throws is logged and the run goes on to the next.

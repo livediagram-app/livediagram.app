@@ -3,7 +3,7 @@ import { ACCOUNTS_ON, stubAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
 import { getNotificationPrefs, readPreferences, SETTINGS_APP, writePreferences } from './settings';
 
-// A person's settings live at the accounts Worker in two scopes (liveworkspace/docs/accounts.md
+// A person's settings live at the accounts Worker in two scopes (liveworkspace/docs/specs/003-accounts/accounts.md
 // "Settings"); the editor sees one flat set (docs/specs/007-editor/user-preferences.md).
 
 const env = ACCOUNTS_ON as Env;

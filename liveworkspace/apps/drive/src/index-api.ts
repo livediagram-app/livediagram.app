@@ -1,4 +1,4 @@
-// The index as the mirror reaches it (liveworkspace/docs/drive.md "Contracts > The index"), through the INDEX
+// The index as the mirror reaches it (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"), through the INDEX
 // binding: acting as one person on their personal items and folders (INDEX_KEY_DRIVE, X-Index-App: drive,
 // X-Index-Person), and the person's drive_mirrored flag. An inbound change goes through the index's ordinary routes,
 // so authorisation, the Timeline, the Explorer and open rooms behave as if the person had done it in an app.

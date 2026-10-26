@@ -1,4 +1,4 @@
-// The consent `state` (liveworkspace/docs/drive.md "Connecting"). The service mints it before the browser leaves
+// The consent `state` (liveworkspace/docs/specs/005-drive/drive.md "Connecting"). The service mints it before the browser leaves
 // for Google and checks it when the code comes back, so a code can only be redeemed by the person who asked for it,
 // against the redirect URI it was issued for, within ten minutes, and the browser returns only to the page it named.
 // Signed with HMAC-SHA256 under a key derived from DRIVE_TOKEN_KEY by HKDF, so the key that seals refresh tokens is

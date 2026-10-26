@@ -129,7 +129,7 @@ export function EditorHeader({
     >
       <div className="flex w-auto items-center gap-2.5">
         {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage.
-            Hovering it lists liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
+            Hovering it lists liveworkspace's other sites (liveworkspace/docs/specs/010-site/site-switcher.md). */}
         <SiteSwitcher current={SITE_ID}>
           <Brand
             href={explorerHref()}

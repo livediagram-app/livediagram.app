@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Header } from '../Header';
 
-// The frame of the sign-in, registration and consent pages (liveworkspace/docs/site.md "Accounts"):
+// The frame of the sign-in, registration and consent pages (liveworkspace/docs/specs/010-site/site.md "Accounts"):
 // the site's header over a dotted ground, and the card, beside what an account adds when there is
 // a pitch. The look is livediagram's account pages ("Night Band"), in liveworkspace's slate.
 export function AccountPage({ children, alone = false }: { children: ReactNode; alone?: boolean }) {

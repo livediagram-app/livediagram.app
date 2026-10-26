@@ -5,7 +5,7 @@ import type { PlanGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
 
-// /api/projects/<id> on the index's grants (liveworkspace/docs/one-explorer-contracts.md "Grants"): a plan answers
+// /api/projects/<id> on the index's grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a plan answers
 // whoever holds a grant on it, as the grant says (level, tab), and answers anyone else as missing. Real SQLite
 // (test-sqlite-d1.ts), whose stand-in index grants as the real one does: the owner and the plan's team edit, a
 // share link grants its level on its tab.

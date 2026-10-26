@@ -1,4 +1,4 @@
-// Drive's "Open with" (liveworkspace/docs/drive.md "Open with"), carried over from livediagram's open-with.ts to the
+// Drive's "Open with" (liveworkspace/docs/specs/005-drive/drive.md "Open with"), carried over from livediagram's open-with.ts to the
 // server: what `<liveworkspace>/drive/open` should do with a file, and Import as a copy.
 //
 //   - open: the person reaches the item as their own, and the mirror records this file for it (or records none);

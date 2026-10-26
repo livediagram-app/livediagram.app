@@ -17,7 +17,7 @@ import { currentBearer } from '@/lib/api/core';
 // nothing is asked (or loaded) until All is first chosen, and what is read is kept for the page's lifetime.
 export const SETTINGS_APP = settingsPanelApp({ ...siteOfApp('livedesign'), id: 'livedesign.app' });
 
-// Settings' Cloud Sync (liveworkspace/docs/drive.md "Connecting"): the Drive service through this app's router
+// Settings' Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): the Drive service through this app's router
 // (`/api/drive`), with the person's token, and the way back to Account > Profile (`?settings=account:account`) once
 // Google has answered. Made for an account only; its section shows once the service says the deployment offers Drive.
 export const cloudSyncHost = () =>

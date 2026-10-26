@@ -1,4 +1,4 @@
-// The public Community API (liveworkspace/docs/community.md "The API"): what every app's Community
+// The public Community API (liveworkspace/docs/specs/007-community/community.md "The API"): what every app's Community
 // pages read, and the likes and reports they send. Each request names its app (`?app=`), and only that
 // app's posts answer. No identity: likes and reports carry the browser's community key, which is never
 // an owner id. Nobody moderates by hand: enough reports hide a post.

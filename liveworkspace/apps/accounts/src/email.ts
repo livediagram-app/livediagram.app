@@ -5,7 +5,7 @@ import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 import { reportServerEvent } from './telemetry.ts';
 
-// Every email goes through Cloudflare Email Service's binding (liveworkspace/docs/email.md), as the apps' do.
+// Every email goes through Cloudflare Email Service's binding (liveworkspace/docs/specs/003-accounts/email.md), as the apps' do.
 // Without the binding a development Worker prints the message to its log instead (the code is in the subject), so
 // local sign-in works without it; staging and production refuse, so a missing binding is never silent.
 
@@ -70,7 +70,7 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.ch
 const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
 
 // The account's notification settings on liveworkspace.app (this deployment's BASE_URL): the Explorer with the Settings
-// panel open on Notifications (liveworkspace/docs/site.md "Settings"), where every email
+// panel open on Notifications (liveworkspace/docs/specs/010-site/site.md "Settings"), where every email
 // that can be turned off is turned off, for every app. Signed out, it signs them in and comes back.
 export function settingsUrl(baseUrl: string): string {
   return `${origin(baseUrl)}/explorer?settings=notifications`;

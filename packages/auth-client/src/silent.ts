@@ -1,4 +1,4 @@
-// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click").
+// Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click").
 //
 // Each app is its own site and liveworkspace.app another, so an app can't see the liveworkspace session from a
 // fetch or an iframe: Safari and Chrome withhold third-party cookies. What always works is a full-page visit. So

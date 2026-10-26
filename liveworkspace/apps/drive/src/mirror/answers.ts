@@ -1,4 +1,4 @@
-// What Cloud Sync's row and the Explorer's marks read (liveworkspace/docs/drive.md "Connecting", "The Explorer shows
+// What Cloud Sync's row and the Explorer's marks read (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "The Explorer shows
 // each item's sync"): answered from the person's rows alone, with no call to Google or the index.
 
 import {

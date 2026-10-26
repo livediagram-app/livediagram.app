@@ -1,4 +1,4 @@
-// How the apps talk to liveworkspace's Community service (liveworkspace/docs/community.md "The API"):
+// How the apps talk to liveworkspace's Community service (liveworkspace/docs/specs/007-community/community.md "The API"):
 // where it lives, and the shapes its app-only routes take and give. The public routes' shapes are the
 // wire shapes in ./post.
 
@@ -35,7 +35,7 @@ export const COMMUNITY_APP_HEADER = 'X-Community-App';
 export type CommunityAppPost = CommunityOwnPost & { own: boolean };
 export type CommunityAppPostResponse = { post: CommunityAppPost | null };
 
-// Where a post's document stands in its app (liveworkspace/docs/community.md "Keeping in step"):
+// Where a post's document stands in its app (liveworkspace/docs/specs/007-community/community.md "Keeping in step"):
 //   - 'public': it passes the app's public rule, so the post is listed (unless hidden after reports);
 //   - 'closed': it is in a team library or has a share password. Not listed, but still its author's, so
 //     still in their My Shares;

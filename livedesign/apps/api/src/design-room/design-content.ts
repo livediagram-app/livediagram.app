@@ -86,7 +86,7 @@ export async function readDesignMeta(env: DesignEnv, designId: string): Promise<
 }
 
 // What the design knows of itself and its last save, in one read: the export door's version
-// (liveworkspace/docs/previews.md), without the tab outline.
+// (liveworkspace/docs/specs/006-media/previews.md), without the tab outline.
 export async function readDesignHead(
   env: DesignEnv,
   designId: string,

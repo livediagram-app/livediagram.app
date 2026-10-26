@@ -108,7 +108,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
           // the browser last used.
           prompt: 'select_account' as const,
           // Google's first and last name fill the account's, and its picture is the account's
-          // profile picture (liveworkspace/docs/accounts.md "Profile pictures") when it is one the
+          // profile picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures") when it is one the
           // apps draw. A later sign-in refreshes the picture (the account hook below), not the names.
           mapProfileToUser: (profile) => ({
             givenName: profile.given_name,
@@ -208,7 +208,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // Clients belong to liveworkspace, not to whichever account registered them, so
         // deleting an account never takes an app's client with it.
         clientReference: () => 'liveworkspace',
-        // The account's teams ride in the token too (liveworkspace/docs/accounts.md "Teams"): an app
+        // The account's teams ride in the token too (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): an app
         // compares them with its own copy and catches up when they differ, at no cost per request.
         customAccessTokenClaims: async ({ user }) =>
           user
@@ -221,7 +221,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // The provider sends profile and email claims only from /userinfo. The apps read who
         // signed in from the ID token they already have, so the claims go in it as well.
         // The profile's presence colour rides beside the names (one primary-key read per token), so
-        // each app's header paints the avatar in it (liveworkspace/docs/accounts.md "An app's
+        // each app's header paints the avatar in it (liveworkspace/docs/specs/003-accounts/accounts.md "An app's
         // signed-in cookies"). A failed read leaves it out rather than failing the token.
         // The picture rides the same way, as the standard `picture` claim (the person's own, for their own
         // chrome), with `picture_hidden` when they turned Show My Google Picture off; the same one read.

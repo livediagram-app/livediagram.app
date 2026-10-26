@@ -10,7 +10,7 @@ import {
 import { getNotificationPrefs } from './settings';
 
 // What the liveworkspace accounts Worker keeps of a signed-in person for livedesign
-// (liveworkspace/docs/accounts.md "Sign-ups and milestones per app"), against its stand-in.
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app"), against its stand-in.
 
 let accounts: FakeAccounts;
 let env: Env;

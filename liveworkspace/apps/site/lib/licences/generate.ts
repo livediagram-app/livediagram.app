@@ -1,4 +1,4 @@
-// Generates liveworkspace.app's /licences data (liveworkspace/docs/site.md "Licences") with the
+// Generates liveworkspace.app's /licences data (liveworkspace/docs/specs/010-site/site.md "Licences") with the
 // monorepo's one generator and liveworkspace's own tables. Runs in the site's build:
 //   node lib/licences/generate.ts --out .
 // Writes generated/licences.json and public/licences/texts/*.txt.

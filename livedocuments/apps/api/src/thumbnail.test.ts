@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PEN_INK, penColourHex } from '@livedocuments/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
-// A document drawn for liveworkspace's previews (liveworkspace/docs/previews.md): the platform stores and serves it,
+// A document drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it,
 // so these pin only the drawing. The tab body comes through the db layer, mocked here; the renderers stay real,
 // they're pure.
 const db = vi.hoisted(() => ({

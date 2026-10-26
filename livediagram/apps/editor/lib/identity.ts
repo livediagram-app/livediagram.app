@@ -56,7 +56,7 @@ export type Participant = {
   statusLine?: string;
   // A row standing for an agent whose owner is not on the tab: never counted as a person, never followed.
   agent?: true;
-  // Their Google picture (liveworkspace/docs/accounts.md "Profile pictures"): only ever on the roster when the
+  // Their Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): only ever on the roster when the
   // room judged us an account session, and on our own row from our own session. Drawn over the initials.
   picture?: string;
 };

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
-// The Profile's Sign-in and Security (liveworkspace/docs/site.md "Settings", "Profile"): how the person signs in and
+// The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
 // where they are signed in, from the accounts Worker's own session endpoints. Only liveworkspace.app can reach them
 // (they are the session's), so the host hands them over as `AccountSecurity`; elsewhere the Profile links there.
 

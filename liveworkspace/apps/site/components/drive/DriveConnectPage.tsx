@@ -1,6 +1,6 @@
 'use client';
 
-// /drive/connect?return=<page> (liveworkspace/docs/drive.md "Connecting"): where every Connect and Reconnect, from any
+// /drive/connect?return=<page> (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where every Connect and Reconnect, from any
 // app or from liveworkspace.app, leaves for. Signed in, it asks the service for a signed consent state for the return
 // page, keeps the page against it in this tab (a cancel at Google brings back the state alone), and goes to Google. It
 // says Connecting… all the while, so there is never a moment where nothing seems to happen.

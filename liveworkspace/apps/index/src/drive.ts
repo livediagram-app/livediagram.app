@@ -1,4 +1,4 @@
-// The Google Drive mirror's side of the index (liveworkspace/docs/drive.md "Contracts > The index"): the per-person
+// The Google Drive mirror's side of the index (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"): the per-person
 // `drive_mirrored` flag (`/app/people/:id/drive`), and the change signal that tells the service a flagged person's
 // own items or folders changed. Its key, and acting for a person with it, are auth.ts's.
 //

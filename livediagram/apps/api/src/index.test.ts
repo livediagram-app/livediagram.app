@@ -38,7 +38,7 @@ function get(path: string, headers: Record<string, string> = {}): Request {
   return new Request(`https://api.test${path}`, { method: 'GET', headers });
 }
 
-// A guest is who their guest token says (liveworkspace/docs/accounts.md "Guests"); nothing a request names in a
+// A guest is who their guest token says (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"); nothing a request names in a
 // header makes anyone a guest.
 describe('worker guest identity', () => {
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
@@ -144,7 +144,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
-  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): the api forwards them as livediagram, before
+  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as livediagram, before
   // any token check of its own, and accounts checks the credential.
   it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
     const seen: Request[] = [];

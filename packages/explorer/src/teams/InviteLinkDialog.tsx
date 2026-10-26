@@ -1,6 +1,6 @@
 'use client';
 
-// Invite by Link (livediagram's TeamInviteLinkDialog; liveworkspace/docs/accounts.md "The join link"): off until an
+// Invite by Link (livediagram's TeamInviteLinkDialog; liveworkspace/docs/specs/003-accounts/accounts.md "The join link"): off until an
 // admin turns it on; then the link to copy, when it ends, New Link (the old stops working) and Turn Off.
 
 import { useId, useState } from 'react';

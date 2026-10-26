@@ -8,7 +8,7 @@ import {
   test,
 } from './fixtures';
 
-// What livediagram owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md): the
+// What livediagram owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md): the
 // editor's Explorer panel around the open canvas, This Browser in it for the canvases the index never sees (the old
 // /offline page only redirects to the Explorer's This Browser view), and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
 // index holds through /api/index on this origin).

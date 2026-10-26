@@ -1,4 +1,4 @@
-// What livedocuments's notification emails ask of liveworkspace (liveworkspace/docs/accounts.md "Notification
+// What livedocuments's notification emails ask of liveworkspace (liveworkspace/docs/specs/003-accounts/accounts.md "Notification
 // emails"; the shared rules are @liveworkspace/auth-client's notify.ts): who gets one (a verified address and
 // the switch not off, for many people in two requests), a team's people (whom a mention or an assignment may
 // reach), a once-per-account milestone claim, and how many documents someone has made (the index). livedocuments

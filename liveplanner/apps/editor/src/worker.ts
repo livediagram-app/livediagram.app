@@ -8,7 +8,7 @@ import { TRUSTED_TYPES_CSP } from '@liveplanner/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
 // PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the
-// project's name (liveworkspace/docs/previews.md). Unset means production's; staging names its own.
+// project's name (liveworkspace/docs/specs/006-media/previews.md). Unset means production's; staging names its own.
 type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 
 // Defense-in-depth response headers. None of these block existing

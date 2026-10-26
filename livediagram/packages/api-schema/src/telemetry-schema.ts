@@ -21,7 +21,7 @@ import { isTimingType } from './timing-telemetry';
 import { TELEMETRY_TYPE_PATTERN } from '@liveworkspace/telemetry';
 
 // The wire bound on `type`, the fixed dashboard windows and the summary shapes are the liveworkspace
-// telemetry service's (liveworkspace/docs/telemetry.md), shared by every app: re-exported so callers
+// telemetry service's (liveworkspace/docs/specs/008-telemetry/telemetry.md), shared by every app: re-exported so callers
 // here keep one import.
 export {
   metricKey,

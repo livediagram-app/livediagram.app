@@ -1,6 +1,6 @@
 'use client';
 
-// Settings > Account > Cloud Sync (liveworkspace/docs/drive.md "Connecting"): a catalogue of cloud providers, one row
+// Settings > Account > Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): a catalogue of cloud providers, one row
 // each, Google Drive the first. Every host (liveworkspace.app's panel, each app's Explorer and each editor) hands the
 // panel the same thing: a Drive client over its own origin's `/api/drive` with the person's account token, where
 // liveworkspace is, and how its Settings deep link names Account > Profile. The section is there only once the

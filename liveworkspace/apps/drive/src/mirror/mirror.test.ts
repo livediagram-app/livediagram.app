@@ -1,4 +1,4 @@
-// A person's mirror outside its passes (liveworkspace/docs/drive.md "Connecting", "Tokens", "Folders liveworkspace
+// A person's mirror outside its passes (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Tokens", "Folders liveworkspace
 // can't see", "Open with", "Disconnecting"): consent, the account switch, disconnect, the Picker's token, adopting a
 // folder, the marks, Check now, and what Open with does with a file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

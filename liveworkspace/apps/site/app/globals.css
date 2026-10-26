@@ -22,7 +22,7 @@
 /* The design system every app shares (@liveworkspace/ui): the Tooltip and HoverCard with the hint surface they
  * draw on, the dialog frame, the buttons and fields. All of it, so a piece a page starts using is never unstyled. */
 @source '../../../../packages/ui/src';
-/* The shared /licences page body (liveworkspace/docs/site.md "Licences"). */
+/* The shared /licences page body (liveworkspace/docs/specs/010-site/site.md "Licences"). */
 @source '../../../../packages/marketing-site/src/components/licences';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */

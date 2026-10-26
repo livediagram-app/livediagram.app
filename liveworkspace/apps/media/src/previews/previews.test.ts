@@ -1,4 +1,4 @@
-// Previews over HTTP (liveworkspace/docs/previews.md): the index's access rule, freshness by its `updatedAt`, the
+// Previews over HTTP (liveworkspace/docs/specs/006-media/previews.md): the index's access rule, freshness by its `updatedAt`, the
 // app's export door on a miss, public links asked every time, the share doors and the card, and the purge.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from '../index';

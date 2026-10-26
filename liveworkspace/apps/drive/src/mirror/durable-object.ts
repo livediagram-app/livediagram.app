@@ -1,4 +1,4 @@
-// The person's Durable Object (liveworkspace/docs/drive.md "The service"): one SQLite-backed `DriveMirror` per
+// The person's Durable Object (liveworkspace/docs/specs/005-drive/drive.md "The service"): one SQLite-backed `DriveMirror` per
 // connected account, by `idFromName(accountId)`. A thin shell: it wires its storage, its alarm and the Worker's
 // configuration into the Mirror (mirror.ts) and exposes its calls over RPC.
 

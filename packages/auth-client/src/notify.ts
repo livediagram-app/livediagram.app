@@ -1,4 +1,4 @@
-// What every app's notification emails share (liveworkspace/docs/accounts.md "Notification emails"):
+// What every app's notification emails share (liveworkspace/docs/specs/003-accounts/accounts.md "Notification emails"):
 // the rules each one keeps, and the two questions each asks of accounts before it writes, so the apps
 // send them the same way and none keeps addresses, switches or teams of its own.
 //

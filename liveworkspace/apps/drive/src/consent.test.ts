@@ -1,4 +1,4 @@
-// The consent's addresses and the push channel's token (liveworkspace/docs/drive.md "Connecting", "Cadence").
+// The consent's addresses and the push channel's token (liveworkspace/docs/specs/005-drive/drive.md "Connecting", "Cadence").
 import { describe, expect, it } from 'vitest';
 import { channelPerson, channelToken } from './channel-token';
 import { safeReturnTo } from './consent';

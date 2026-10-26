@@ -80,7 +80,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
-  // Workbenches are liveworkspace's (liveworkspace/docs/workbench.md): the api forwards them as livedocuments,
+  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as livedocuments,
   // before any token check of its own, and accounts checks the credential.
   it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
     const seen: Request[] = [];

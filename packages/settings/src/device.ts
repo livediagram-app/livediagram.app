@@ -1,5 +1,5 @@
 // Where each app's editor keeps a person's settings in the browser, on the app's own address (each app's
-// docs/specs/007-editor/user-preferences.md, liveworkspace/docs/site.md "Settings", "A guest"): one flat JSON object
+// docs/specs/007-editor/user-preferences.md, liveworkspace/docs/specs/010-site/site.md "Settings", "A guest"): one flat JSON object
 // holding the `all` keys and the app's own side by side, and the mark that says this browser's copy has a change the
 // server hasn't confirmed. The Explorer on the app's address shares that origin, so it reads and writes a guest's
 // settings here, and sets the mark so the editor's next load keeps this copy and sends it on.

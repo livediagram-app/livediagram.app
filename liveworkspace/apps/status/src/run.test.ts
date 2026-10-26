@@ -12,7 +12,7 @@ import type { Fetch } from './probe';
 import { runOnce } from './run';
 import { testEnv } from './test-env';
 
-// liveworkspace/docs/status.md "The hourly run": what one run stores, rolls up, derives and prunes.
+// liveworkspace/docs/specs/009-status/status.md "The hourly run": what one run stores, rolls up, derives and prunes.
 
 const HOUR = 3_600_000;
 const T0 = Date.parse('2026-10-25T09:07:00Z');

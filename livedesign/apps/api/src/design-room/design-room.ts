@@ -549,7 +549,7 @@ export class DesignRoom extends DurableObject<Env> {
     return response;
   }
 
-  // The design drawn for liveworkspace's previews (liveworkspace/docs/previews.md "The export door"): the first tab or
+  // The design drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md "The export door"): the first tab or
   // the one asked for, versioned by its last save. Stores nothing; the platform keeps and serves the picture.
   async exportImage(designId: string, query: ExportQuery): Promise<ExportResult> {
     this.bindDesign(designId);
@@ -571,7 +571,7 @@ export class DesignRoom extends DurableObject<Env> {
       : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
-  // The export door's `file` format (liveworkspace/docs/drive.md "Contracts > The apps", design-file.ts): the
+  // The export door's `file` format (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", design-file.ts): the
   // design's whole envelope, its last save as the version, unread when the caller holds that save.
   async exportFile(designId: string, query: ExportQuery): Promise<ExportResult> {
     this.bindDesign(designId);
@@ -783,7 +783,7 @@ export class DesignRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  // ---------- Grants (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants") ---------------------------------
   //
   // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
   // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
@@ -1120,7 +1120,7 @@ export class DesignRoom extends DurableObject<Env> {
       return;
     }
     if (msg.kind === 'identity') {
-      // An identity update over the open socket (liveworkspace/docs/accounts.md "Profile pictures"): Show My Google
+      // An identity update over the open socket (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): Show My Google
       // Picture flipped. The hello rules again, keeping the tab this session is on, then a fresh roster. Not a
       // join, so none of the join's side effects run, and a session that never said hello has nothing to update.
       if (!session.presence) return;

@@ -2,14 +2,14 @@
 // "Internal"), served by @liveworkspace/index-app's handleInternalItems with the app's key (INDEX_KEY). See it for
 // the doors: a purge (one design, or up to a hundred for a closed account), revoked links, notices for the emails,
 // a copy into a new design, and a workbench pairing's sessions closed in a design's room
-// (liveworkspace/docs/workbench.md "Ending access").
+// (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
 //
 // Each is a call to the design's Durable Object (design-client.ts). Where the design is filed, its sharing and its
 // Trash are the index's; a purge also drops the design's previews in liveworkspace's media service
-// (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's path: a share link made (the
+// (liveworkspace/docs/specs/006-media/previews.md "Purging"). A notice is worked out off the index's path: a share link made (the
 // first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The export
 // door draws the design for liveworkspace's previews, which call it with MEDIA_KEY, and answers its whole file for
-// liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY (liveworkspace/docs/drive.md
+// liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md
 // "Contracts > The apps", routes/internal-file.ts).
 import {
   JOINED_TELEMETRY_TYPE,

@@ -1,4 +1,4 @@
-// The index's grant on an item (liveworkspace/docs/one-explorer-contracts.md "Grants"), as an editor holds it: a
+// The index's grant on an item (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an editor holds it: a
 // ten-minute token naming the item, the level and the tab, which the app's api and the item's room check offline.
 // The editor asks for it while the item's code loads, keeps it until a minute before it lapses, and sends it with
 // every request about that item as `X-Index-Grant`, and on the room's upgrade as the ticket.

@@ -1,6 +1,6 @@
 'use client';
 
-// Settings changed on liveworkspace.app, counted for the app they belong to (liveworkspace/docs/telemetry.md "The
+// Settings changed on liveworkspace.app, counted for the app they belong to (liveworkspace/docs/specs/008-telemetry/telemetry.md "The
 // Explorer on liveworkspace.app"): each change once, where it was made. A change in an app's own Settings is the
 // app's to report; one made here is reported here, with the event the app's Settings would have sent (its catalogue,
 // @liveworkspace/settings), so the app's settings cards count both.

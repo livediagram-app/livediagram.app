@@ -1,4 +1,4 @@
-// Timeline events about a person rather than an item (docs/one-explorer-contracts.md "Timeline"): images
+// Timeline events about a person rather than an item (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): images
 // uploaded, one entry per person, app and day whose count grows with each upload. Sent once per upload request,
 // after the response (`waitUntil`), so an upload never waits on the index. Never throws: a report the index
 // didn't take is only a smaller count.

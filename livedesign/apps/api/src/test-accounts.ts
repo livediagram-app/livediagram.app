@@ -1,9 +1,9 @@
 import type { TeamPerson } from '@liveworkspace/auth-client';
 import type { Env } from './types';
 
-// A stand-in for the liveworkspace accounts Worker's internal API (liveworkspace/docs/accounts.md "The
+// A stand-in for the liveworkspace accounts Worker's internal API (liveworkspace/docs/specs/003-accounts/accounts.md "The
 // API"), for the tests of what livedesign keeps there: settings, profiles, sightings, milestones, verified
-// addresses, activity, the teams it makes and a sender's notification allowance (liveworkspace/docs/workbench.md). Answers the same shapes from memory, following the same rules (a patch per key,
+// addresses, activity, the teams it makes and a sender's notification allowance (liveworkspace/docs/specs/011-workbench/workbench.md). Answers the same shapes from memory, following the same rules (a patch per key,
 // null deletes; a profile read answers an account's name until it sets one; a claim wins once; a milestone
 // needs a sighting), and records every call so a test can count them.
 //
@@ -31,7 +31,7 @@ type StoredProfile = {
   color: string | null;
   createdAt: number;
   updatedAt: number;
-  // The published Google picture the accounts Worker answers (liveworkspace/docs/accounts.md "Profile pictures").
+  // The published Google picture the accounts Worker answers (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
   picture?: string | null;
 };
 

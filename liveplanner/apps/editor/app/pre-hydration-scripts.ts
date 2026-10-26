@@ -35,7 +35,7 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 export const WEBFONTS_STYLESHEET_ID = 'liveplanner-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
 
-// The plan's grant, asked for while the editor's code loads (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// The plan's grant, asked for while the editor's code loads (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"):
 // on /project/<id>, a guest's token (or a link's code from `?s=`, with its remembered password) is all the request
 // needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__lpGrant`
 // for lib/api/plan-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the
@@ -46,7 +46,7 @@ export const SHARE_PASSWORD_STORAGE_PREFIX = 'liveplanner:share-password:';
 const THIS_BROWSER_KEY = thisBrowserKey('liveplanner');
 export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);var k=localStorage.getItem('${THIS_BROWSER_KEY}');if(!(k&&(JSON.parse(k).items||[]).some(function(i){return i&&i.id===id})))window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
 
-// Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
+// Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): once per browser
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when
 // it has a liveworkspace session and a guest when not. First in <head> (after Trusted Types), because when it
 // bounces it stops the page loading, so nothing signed-out paints and no app code starts. Never on the sign-in

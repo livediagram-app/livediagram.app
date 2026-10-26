@@ -1,4 +1,4 @@
-// Accounts' workbench service (liveworkspace/docs/workbench.md): it acts for a token's account on one app's items
+// Accounts' workbench service (liveworkspace/docs/specs/011-workbench/workbench.md): it acts for a token's account on one app's items
 // with its merge key, and asks the index to tell an app to close a pairing's rooms.
 import type { GrantResponse } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';

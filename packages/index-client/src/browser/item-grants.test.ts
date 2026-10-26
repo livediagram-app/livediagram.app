@@ -8,7 +8,7 @@ import {
 } from './item-grants';
 import { fakeWindow } from './fake-window';
 
-// The index's grant on an item (liveworkspace/docs/one-explorer-contracts.md "Grants"), as an editor holds it: one
+// The index's grant on an item (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an editor holds it: one
 // request per item per ten minutes however many ask, renewed a minute before it lapses, sent as X-Index-Grant.
 
 const TEN_MIN = 10 * 60_000;

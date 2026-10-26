@@ -10,7 +10,7 @@ import {
   DriveSwitchDialog,
 } from './DriveSwitchDialog';
 
-// Switch Google Account? on /drive/connected (liveworkspace/docs/drive.md "Connecting").
+// Switch Google Account? on /drive/connected (liveworkspace/docs/specs/005-drive/drive.md "Connecting").
 let root: Root;
 let host: HTMLDivElement;
 beforeEach(() => {

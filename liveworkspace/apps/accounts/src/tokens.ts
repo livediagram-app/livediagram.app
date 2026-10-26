@@ -1,4 +1,4 @@
-// API tokens (liveworkspace/docs/accounts.md "API tokens"): one per integration, belonging to the
+// API tokens (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): one per integration, belonging to the
 // account, so the same token works on every app's API and MCP server. Only the SHA-256 hash is kept;
 // the secret is shown once. A token is 32 random bytes, so an indexed lookup by its hash leaks nothing
 // a timing attack could use.

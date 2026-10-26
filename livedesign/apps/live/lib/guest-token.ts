@@ -1,4 +1,4 @@
-// A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/one-explorer-contracts.md
+// A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Guests"): livedesign's settings for the shared handoff (`@liveworkspace/index-client/browser`). The token is kept
 // under GUEST_TOKEN_STORAGE_KEY and sent as the Bearer, exactly as an account's access token is.
 import { createGuestTokens } from '@liveworkspace/index-client/browser';

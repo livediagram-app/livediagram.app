@@ -1,4 +1,4 @@
-// Purging (liveworkspace/docs/one-explorer-contracts.md "Purging"): a permanent delete, emptying the
+// Purging (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): a permanent delete, emptying the
 // Trash, or the daily sweep of items 30 days in it. The index rows go at once, in one batch with a
 // tombstone each (the item's other rows cascade); then the app is asked to drop the content. A tombstone
 // stays until the app confirms, and the daily run retries it.

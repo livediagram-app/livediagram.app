@@ -1,5 +1,5 @@
 // FakeGoogle: an in-memory stand-in for the Google endpoints the Drive mirror
-// talks to (liveworkspace/docs/drive.md), so every
+// talks to (liveworkspace/docs/specs/005-drive/drive.md), so every
 // test proves the mirror without real Google credentials.
 //
 //   - OAuth: POST /token (authorization_code, refresh_token) and POST /revoke.
@@ -192,7 +192,7 @@ export class FakeGoogle {
   }
 
   // Drive's "Make a copy" in its own UI, as real Drive does it (verified,
-  // liveworkspace/docs/drive.md, "Copies made in Drive"): a new
+  // liveworkspace/docs/specs/005-drive/drive.md, "Copies made in Drive"): a new
   // file id, "Copy of <name>" in the same folder, the same contents and
   // appProperties, and invisible to the app under drive.file until the user
   // opens it with the app (`openWithState`). `visibleToApp` and

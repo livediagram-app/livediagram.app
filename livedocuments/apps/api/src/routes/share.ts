@@ -1,5 +1,5 @@
 // What a share link opens, for API clients (index-adapters.ts). What it shows without opening (its live image and
-// preview card) is liveworkspace's (liveworkspace/docs/previews.md): the router sends `/api/share/<code>/image.svg|
+// preview card) is liveworkspace's (liveworkspace/docs/specs/006-media/previews.md): the router sends `/api/share/<code>/image.svg|
 // image.png|card` there, and the service asks the export door (routes/internal-items.ts) for the drawing.
 
 import { notFound, json } from '../responses';

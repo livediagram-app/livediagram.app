@@ -1,6 +1,6 @@
 'use client';
 
-// /drive/connected: Google's redirect URI (liveworkspace/docs/drive.md "Connecting"). The code and the state go to the
+// /drive/connected: Google's redirect URI (liveworkspace/docs/specs/005-drive/drive.md "Connecting"). The code and the state go to the
 // service, which checks the state, redeems the code and keeps the sealed refresh token; then the browser goes back to
 // the page the connect started from, with Settings open on Cloud Sync. A cancel at Google comes back the same way,
 // calmly. A consent from another Google account than the one Cloud Sync uses asks first (Switch Google Account?).

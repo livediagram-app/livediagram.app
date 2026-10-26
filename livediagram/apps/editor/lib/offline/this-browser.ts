@@ -1,4 +1,4 @@
-// This Browser for the Explorer on livediagram's own address (liveworkspace/docs/one-explorer.md "The Explorer on each
+// This Browser for the Explorer on livediagram's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each
 // app's address"): the canvases kept only in this browser live in IndexedDB, which the Explorer page does not read, so
 // the store keeps the shared list of them (@liveworkspace/explorer/this-browser). Each write notes its record
 // (offline-store.ts), and the id cache's one read of every record per page load rebuilds it (offline-ids.ts), so

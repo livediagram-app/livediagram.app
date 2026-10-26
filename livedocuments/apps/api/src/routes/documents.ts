@@ -1,6 +1,6 @@
 // /api/documents: a document's content and what it knows of itself (name, owner, provenance), its tabs, pages,
 // comments and slide deck, and the realtime room. Where a document is filed, who may open it, its sharing and its
-// Trash are the index's (liveworkspace/docs/one-explorer.md); the doors an API client still calls for those are
+// Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (document-index-routes.ts).
 
 import type { Tab } from '@livedocuments/document';

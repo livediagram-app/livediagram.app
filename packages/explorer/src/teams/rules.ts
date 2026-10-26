@@ -41,7 +41,7 @@ export function orderMembers(members: readonly TeamMember[]): TeamMember[] {
   });
 }
 
-/** The last-admin rule, as the server keeps it (liveworkspace/docs/accounts.md "Teams"): a team always keeps a joined
+/** The last-admin rule, as the server keeps it (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): a team always keeps a joined
  *  admin. So the only one can't step down, and can't leave while anyone else is in it; alone, leaving deletes the
  *  team. */
 export function lastAdmin(members: readonly TeamMember[], myMemberId: string) {

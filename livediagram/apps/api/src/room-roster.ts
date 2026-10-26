@@ -9,7 +9,7 @@
 // Presence comes off each socket's attachment (deserialized once per
 // socket, then reused for every recipient's roster).
 //
-// Google pictures go only to account sessions (liveworkspace/docs/accounts.md "Profile pictures"): a guest or an
+// Google pictures go only to account sessions (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): a guest or an
 // anonymous share-link visitor gets the same roster with every picture removed, so the URL never reaches them.
 import {
   agentRosterFor,

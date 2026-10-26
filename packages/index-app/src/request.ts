@@ -1,4 +1,4 @@
-// The index's grant on the item a request is about (liveworkspace/docs/one-explorer-contracts.md "Grants"), as an
+// The index's grant on the item a request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an
 // app's worker settles it before the request goes to the item's Durable Object.
 //
 //   - The editor sends the grant it fetched itself (`POST /api/index/items/:id/grant`) as X-Index-Grant

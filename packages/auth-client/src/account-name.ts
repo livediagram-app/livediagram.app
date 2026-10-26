@@ -1,4 +1,4 @@
-// The app's readable account name (liveworkspace/docs/accounts.md "An app's signed-in cookies"). Each app's API
+// The app's readable account name (liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies"). Each app's API
 // keeps it beside its `<prefix>signed_in` hint: the hint says whether someone is signed in, this says who, so a
 // public page (the marketing header's account menu) can show the person without asking the API. It holds no secret
 // and authenticates nothing; every request still authenticates with the access token.
@@ -86,7 +86,7 @@ export function accountColourOf(user: NamedUser | null | undefined): string | nu
 }
 
 /** The picture cookie beside the name cookie (`ld_account` → `ld_account_picture`), for the avatar's picture
- *  (liveworkspace/docs/accounts.md "Profile pictures"). */
+ *  (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). */
 export function accountPictureCookieFor(nameCookie: string): string {
   return `${nameCookie}_picture`;
 }

@@ -1,5 +1,5 @@
 // The `lvw_` bearer (docs/specs/013-workspace/blueprints/workbench-embeds.md "A request bearing lvw_"). Sessions are
-// liveworkspace's (liveworkspace/docs/workbench.md): this api asks accounts about each one with its client
+// liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): this api asks accounts about each one with its client
 // credentials, and keeps the answer per isolate (a live one for up to a minute, never past its expiry; a refused one
 // ten seconds), so a frame's burst of saves and reads costs one request a minute, not one each.
 

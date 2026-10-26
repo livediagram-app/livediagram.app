@@ -1,7 +1,7 @@
 import { IDENTITY_FILL, PictureDisc, identityVars } from '@livedesign/ui';
 import { initialsOf } from '@/lib/identity';
 
-// The pill's leading Google picture (liveworkspace/docs/accounts.md "Profile pictures"), only when there is one.
+// The pill's leading Google picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"), only when there is one.
 const CURSOR_PICTURE_PX = 14;
 
 // Floating cursor for a remote participant (extracted from Canvas so

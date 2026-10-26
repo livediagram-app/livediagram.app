@@ -1,5 +1,5 @@
 // A person's preferences (docs/specs/007-editor/user-preferences.md), kept by the liveworkspace accounts
-// Worker in two scopes (liveworkspace/docs/accounts.md "Settings"): `all`, which every app shows, and
+// Worker in two scopes (liveworkspace/docs/specs/003-accounts/accounts.md "Settings"): `all`, which every app shows, and
 // `livedesign.app`, livedesign's own. Which key is which is one list, ALL_SETTING_KEYS in
 // @liveworkspace/settings; the editor holds them as one flat set, which joinSettings and splitSettings turn
 // into the two scopes and back.

@@ -191,7 +191,7 @@ export function useRoomConnection(opts: {
   // change goes out over the open socket rather than warranting a reconnect.
   //
   // A signed-in person says hello with their Google picture while Show My Google Picture is on; the room keeps it
-  // only from an account session (liveworkspace/docs/accounts.md "Profile pictures").
+  // only from an account session (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
   const picture = publishedPicture(useOwnPicture());
   const selfForRoom = () => ({
     id: selfParticipant.id,

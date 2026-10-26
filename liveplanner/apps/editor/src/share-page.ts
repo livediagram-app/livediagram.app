@@ -1,5 +1,5 @@
 // The share page's head (docs/specs/013-workspace/share-link-previews.md), liveworkspace's for every app
-// (@liveworkspace/media createSharePage, liveworkspace/docs/previews.md "The share page's head"):
+// (@liveworkspace/media createSharePage, liveworkspace/docs/specs/006-media/previews.md "The share page's head"):
 // `/project/shared?s=<code>` is the same static shell as every project, so for a link whose preview may name its
 // project the head is rewritten to carry its name and share card. Only liveplanner's words are here.
 

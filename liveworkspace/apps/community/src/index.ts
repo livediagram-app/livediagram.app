@@ -1,4 +1,4 @@
-// liveworkspace's Community (liveworkspace/docs/community.md): one Worker for every app's Community
+// liveworkspace's Community (liveworkspace/docs/specs/007-community/community.md): one Worker for every app's Community
 // listings, on liveworkspace.app/api/community. It hosts no pages: each app serves its own Community
 // pages, which read the gallery from here, and each app's own Worker publishes its documents here and
 // keeps them in step. The documents themselves never leave their app.

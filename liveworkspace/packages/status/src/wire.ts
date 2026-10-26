@@ -1,4 +1,4 @@
-// The status Worker's read API, as it goes over the wire (liveworkspace/docs/status.md "The read API"): compact on
+// The status Worker's read API, as it goes over the wire (liveworkspace/docs/specs/009-status/status.md "The read API"): compact on
 // purpose, since the page reads every service's 90 days in one answer. The Worker builds these, the page reads them.
 
 import type { CheckError, CheckState } from './judge';

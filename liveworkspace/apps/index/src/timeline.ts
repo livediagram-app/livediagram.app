@@ -1,4 +1,4 @@
-// The Timeline (liveworkspace/docs/one-explorer-contracts.md "Timeline"): what happened to the items a person
+// The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): what happened to the items a person
 // reaches as owner or team member, newest first, in every app or one.
 //
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared,

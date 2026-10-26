@@ -1,4 +1,4 @@
-// The Image Gallery's "Used in" map (liveworkspace/docs/media.md "Usage"), as every app's api answers
+// The Image Gallery's "Used in" map (liveworkspace/docs/specs/006-media/media.md "Usage"), as every app's api answers
 // `GET /api/images/usage`. The gallery lists the person's images from every app, so their uses are every app's
 // too: an image placed only in another app's documents is used, not "Not used". The service says which
 // documents, in which apps, place each image; the caller names each one (the index holds every app's items) and

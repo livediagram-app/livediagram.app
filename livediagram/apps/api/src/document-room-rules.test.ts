@@ -78,7 +78,7 @@ describe('helloPresence', () => {
     expect(p.color).toBe('');
   });
 
-  // liveworkspace/docs/accounts.md "Profile pictures".
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures".
   it('keeps a Google picture only from an account session', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const claimed = {

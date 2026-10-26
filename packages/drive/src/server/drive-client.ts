@@ -1,4 +1,4 @@
-// The service's view of Google Drive (liveworkspace/docs/drive.md "The service"): the calls a pass makes, over
+// The service's view of Google Drive (liveworkspace/docs/specs/005-drive/drive.md "The service"): the calls a pass makes, over
 // Drive's REST API v3, with an access token the caller supplies. Every call names its `fields`, since Drive's default
 // subset omits parents, md5Checksum and appProperties.
 

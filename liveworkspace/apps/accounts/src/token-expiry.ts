@@ -1,4 +1,4 @@
-// The expiring-token warning (liveworkspace/docs/accounts.md "API tokens"): once a day, the owner of
+// The expiring-token warning (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): once a day, the owner of
 // each live token that expires within a week hears about it once, so a script or connected AI tool
 // doesn't stop without warning. An account message: it can't be turned off.
 //

@@ -10,7 +10,7 @@ import {
   type StatusHistory,
 } from './wire';
 
-// liveworkspace/docs/status.md "The read API".
+// liveworkspace/docs/specs/009-status/status.md "The read API".
 
 const NOW = Date.parse('2026-10-25T09:07:00Z');
 

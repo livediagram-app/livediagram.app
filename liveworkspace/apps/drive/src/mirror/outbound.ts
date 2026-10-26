@@ -1,4 +1,4 @@
-// Outbound: running the planner's ops against Drive (liveworkspace/docs/drive.md "Outbound"), ported from
+// Outbound: running the planner's ops against Drive (liveworkspace/docs/specs/005-drive/drive.md "Outbound"), ported from
 // livediagram's engine-outbound. Each write records the Drive state Google returns, so the change it causes reads
 // back as an echo. A pass writes at most `budget` files and hands the rest to the next alarm. A rate limit, a lapsed
 // grant or a network failure stops the run; any other failure of one op is logged, the item marked failed, and the

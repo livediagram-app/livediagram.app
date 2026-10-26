@@ -1,4 +1,4 @@
-// One hourly run (liveworkspace/docs/status.md "The hourly run"): check every service, then one D1 read batch (today's
+// One hourly run (liveworkspace/docs/specs/009-status/status.md "The hourly run"): check every service, then one D1 read batch (today's
 // checks so far, the open incidents, the window's days and closed incidents) and one write batch (this run's checks,
 // today's rollups, the incidents it changed, the prune and the two snapshots).
 
@@ -67,7 +67,7 @@ export type RunReport = {
   down: number;
   opened: number;
   closed: number;
-  // From D1's own counts, for the logs (docs/status.md "Performance").
+  // From D1's own counts, for the logs (docs/specs/009-status/status.md "Performance").
   rowsRead: number;
   rowsWritten: number;
 };

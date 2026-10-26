@@ -1,4 +1,4 @@
-// Where previews are kept and when they are fresh (liveworkspace/docs/previews.md "Storage", "Staleness"). One
+// Where previews are kept and when they are fresh (liveworkspace/docs/specs/006-media/previews.md "Storage", "Staleness"). One
 // bucket, the service's own, under `previews/`: image ids never hold a slash, so the two never meet.
 //
 //   previews/<app>/<itemId>/<view>-<tab>.svg   view: full | public; tab: first | <tabId>

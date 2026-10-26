@@ -1,4 +1,4 @@
-// The frame every accounts email is drawn in (liveworkspace/docs/accounts.md "Emails"), the same as the apps' own
+// The frame every accounts email is drawn in (liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), the same as the apps' own
 // (each product's docs/specs/014-identity/transactional-email.md): a card on the brand's palest tint, its prism's
 // colours in a band across the top, the logo mark beside the wordmark, and a sign-off. Plain, inline-styled HTML in
 // tables, which email clients keep. An email speaks for liveworkspace, or for the app it was sent through, in that

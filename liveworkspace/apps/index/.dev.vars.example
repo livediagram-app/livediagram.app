@@ -14,7 +14,7 @@ APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
 APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
-# The Google Drive mirror's service (liveworkspace/docs/drive.md): INDEX_KEY_DRIVE the same as its INDEX_KEY_DRIVE,
+# The Google Drive mirror's service (liveworkspace/docs/specs/005-drive/drive.md): INDEX_KEY_DRIVE the same as its INDEX_KEY_DRIVE,
 # DRIVE_KEY_INDEX the same as its DRIVE_KEY_INDEX. Without its DRIVE binding (wrangler.toml) no signal is sent.
 INDEX_KEY_DRIVE=dev-index-drive-key
 DRIVE_KEY_INDEX=dev-drive-index-key

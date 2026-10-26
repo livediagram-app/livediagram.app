@@ -1,4 +1,4 @@
-// liveworkspace telemetry (liveworkspace/docs/telemetry.md): one Worker for every app's anonymous
+// liveworkspace telemetry (liveworkspace/docs/specs/008-telemetry/telemetry.md): one Worker for every app's anonymous
 // events. Its API, on liveworkspace.app/api/telemetry, takes batches in and serves the numbers the
 // dashboard shows; the dashboard itself is a page of the static site (liveworkspace/apps/site), at
 // liveworkspace.app/telemetry. A daily cron keeps 60 days.

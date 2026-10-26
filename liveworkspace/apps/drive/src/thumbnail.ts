@@ -1,4 +1,4 @@
-// A file's thumbnail (liveworkspace/docs/drive.md "The file"): the app's `svg` export of the item's first tab, drawn
+// A file's thumbnail (liveworkspace/docs/specs/005-drive/drive.md "The file"): the app's `svg` export of the item's first tab, drawn
 // as a PNG DRIVE_THUMBNAIL_PX on its long side by the shared resvg renderer, sent as contentHints.thumbnail. The
 // renderer (about 3 MB of wasm and fonts) is imported on first use, so the many suites and requests that never draw
 // don't load it, as the media service's share card does.

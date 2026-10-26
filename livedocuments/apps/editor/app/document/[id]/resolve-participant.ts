@@ -20,7 +20,7 @@ export async function resolveParticipant(opts: {
   const storedSelf = await apiLoadSelf(selfId).catch(() => null);
   // The profile is liveworkspace's, one per person across every app: an account with no name of
   // its own already answers with its account name, and a name set here, in Settings › Profile or in
-  // another app wins over it (liveworkspace/docs/accounts.md "Profiles"). So a stored profile is used
+  // another app wins over it (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"). So a stored profile is used
   // as it is, never overwritten with the account name; only a first visit with none seeds one, with
   // the account name when signed in and a random placeholder for a guest.
   if (storedSelf) return { ...storedSelf, status: 'online' };

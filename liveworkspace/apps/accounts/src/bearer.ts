@@ -1,4 +1,4 @@
-// The Explorer served under an app's own address (liveworkspace/docs/one-explorer.md "The Explorer on each app's
+// The Explorer served under an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's
 // address") has no liveworkspace.app session: it is the app's page, signed in by the app's own session. It makes its
 // account calls (people's names, their settings, and running their teams) with the bearer the app's session gives
 // it, as the editors' Explorer panels do, which the app's router forwards here from `/api/workspace/account/*`: an access

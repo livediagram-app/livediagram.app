@@ -1,4 +1,4 @@
--- liveworkspace's Community (liveworkspace/docs/community.md): every app's listings in one database, apart
+-- liveworkspace's Community (liveworkspace/docs/specs/007-community/community.md): every app's listings in one database, apart
 -- from accounts, telemetry and every app's own data. A post lists a document that stays in its app's own
 -- database: the app keeps the document and its community link, and tells this service where the
 -- document stands (`document_state`). Nothing here is ever an app's document content.

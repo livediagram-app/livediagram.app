@@ -1,4 +1,4 @@
-// The read API (liveworkspace/docs/status.md "The read API"): GET /api/status and /api/status/history?days=, public,
+// The read API (liveworkspace/docs/specs/009-status/status.md "The read API"): GET /api/status and /api/status/history?days=, public,
 // anonymous and cacheable. Each is one stored row, built by the last run; before any run, an empty answer.
 
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';

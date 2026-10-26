@@ -6,7 +6,7 @@ vi.mock('../server-telemetry', () => ({ reportServerEvent: vi.fn(async () => {})
 import { reportServerEvent } from '../server-telemetry';
 import { appBaseUrl, emailEnabled, sendEmail } from './client';
 
-// A stand-in for Cloudflare Email Service's `send_email` binding (liveworkspace/docs/email.md).
+// A stand-in for Cloudflare Email Service's `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md).
 const fakeBinding = (send = vi.fn(async (_message: unknown) => ({ messageId: 'm' }))) => ({ send });
 const withBinding = (binding = fakeBinding(), vars: Partial<Env> = {}) =>
   ({ EMAIL: binding, ...vars }) as unknown as Env;

@@ -1,6 +1,6 @@
 'use client';
 
-// /drive/open: the Drive UI integration's Open URL for every app's files (liveworkspace/docs/drive.md "Open with").
+// /drive/open: the Drive UI integration's Open URL for every app's files (liveworkspace/docs/specs/005-drive/drive.md "Open with").
 // Google passes `state={"ids":[…],"action":"open",…}`; the service reads the file and answers: open the item in its
 // app, offer Import as a copy (a copy made in Drive, a file shared with them, one from another environment), say it
 // isn't ours, or offer Allow access, which connects and comes back to this same file. Signed out, they sign in first.

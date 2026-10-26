@@ -1,4 +1,4 @@
-// The All view's one set of categories (liveworkspace/docs/site.md "Settings", "All"): Common's and every app's
+// The All view's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): Common's and every app's
 // categories merged by their place, the category's name under its parent's ("Editor", "Editor › Draw",
 // "Panels › Layers"), so two apps' Editor are one Editor. Inside a merged category the shared rows come first (Common's,
 // which every app that has them reads from `all`, and any row two apps keep under the same key with the same

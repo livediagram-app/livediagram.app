@@ -20,7 +20,7 @@ vi.mock('@/lib/api-client', () => ({
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
 }));
 
-// The person's star on a design is the index's (liveworkspace/docs/one-explorer-contracts.md).
+// The person's star on a design is the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: {
     getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),

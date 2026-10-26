@@ -1,4 +1,4 @@
-// How the apps' Workers talk to liveworkspace's media service (liveworkspace/docs/media.md "The API"):
+// How the apps' Workers talk to liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md "The API"):
 // where it lives, the headers it reads, and the shapes it takes and gives. Every route is for an app's
 // own Worker, never a browser: a browser asks its app, which checks who may see what and fetches the
 // bytes from here.
@@ -19,7 +19,7 @@ export const IMAGE_HEIGHT_HEADER = 'X-Image-Height';
 export const IMAGE_NAME_HEADER = 'X-Image-Original-Name';
 // The hex SHA-256 of the file as picked. When the owner already has those bytes, the service answers
 // with that image without reading the body. An app sends it only for the owner's own editor: a bare
-// hash would otherwise let anyone acting for the owner probe their gallery (liveworkspace/docs/media.md
+// hash would otherwise let anyone acting for the owner probe their gallery (liveworkspace/docs/specs/006-media/media.md
 // "Uploads").
 export const IMAGE_SHA256_HEADER = 'X-Image-Sha256';
 

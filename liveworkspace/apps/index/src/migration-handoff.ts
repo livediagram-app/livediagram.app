@@ -1,4 +1,4 @@
-// The migration's handoff (liveworkspace/docs/one-explorer-contracts.md "The migration's handoff", docs/migration.md
+// The migration's handoff (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The migration's handoff", docs/migration.md
 // step 6): livediagram's api splits a browser's Local only document from the old livediagram.app and hands each
 // part that belongs to another app here, for the person it names. The index makes the item for them, as
 // `POST /items` would, then has that app write it through its migration door; if the app can't, the item goes

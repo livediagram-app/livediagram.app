@@ -6,7 +6,7 @@ import { COMMUNITY_API_PATH } from '@liveworkspace/community';
 // The path of liveworkspace.app this Worker owns: its API, under /api like every liveworkspace API.
 export const API_PATH = COMMUNITY_API_PATH;
 
-// How long a public answer may be kept, by a browser and at Cloudflare's edge (liveworkspace/docs/community.md
+// How long a public answer may be kept, by a browser and at Cloudflare's edge (liveworkspace/docs/specs/007-community/community.md
 // "Public routes"). A post hidden after reports lingers no longer than this.
 export const LIST_MAX_AGE_S = 30;
 // Every home page visit asks for the featured six, so the edge answers them for a minute.

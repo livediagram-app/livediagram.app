@@ -110,7 +110,7 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          {/* The Google picture when there is one, always on our own screen (liveworkspace/docs/accounts.md
+          {/* The Google picture when there is one, always on our own screen (liveworkspace/docs/specs/003-accounts/accounts.md
               "Profile pictures"). */}
           <PictureDisc
             pictureUrl={user?.picture}

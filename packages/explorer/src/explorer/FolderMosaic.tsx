@@ -5,7 +5,7 @@
 // cards show, so nothing new is drawn), then its subfolders, and a "+N" tile when there is more inside than fits.
 // An empty folder shows the empty state's art, so an empty card reads as waiting rather than broken. Filtered to one
 // app, a folder holding only other apps' items shows those, faded, under "N in other apps"
-// (liveworkspace/docs/one-explorer.md "A place that is empty here but not elsewhere"), so it never reads as empty.
+// (liveworkspace/docs/specs/004-index/one-explorer.md "A place that is empty here but not elsewhere"), so it never reads as empty.
 
 import {
   FOLDER_PREVIEW_COUNT_CAP,

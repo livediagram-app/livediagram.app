@@ -7,7 +7,7 @@ import { tabWith } from '../db/test-image-fixtures';
 import { upsertTab } from '../db/tabs';
 import type { Env } from '../types';
 
-// handleImages over the real media service (liveworkspace/docs/media.md), in this process: the gallery,
+// handleImages over the real media service (liveworkspace/docs/specs/006-media/media.md), in this process: the gallery,
 // uploads and deletes go to it, and the byte read keeps this api's own policy (docs/specs/009-elements/images.md):
 // the image's owner, OR a reader of a design (the index's grant) that places the image and may serve it, as the
 // design's own store answers.

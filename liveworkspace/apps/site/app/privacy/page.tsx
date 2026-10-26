@@ -58,7 +58,7 @@ const HIGHLIGHTS: LegalHighlight[] = [
   },
 ];
 
-// The one privacy policy for liveworkspace.app and every app in it (liveworkspace/docs/site.md
+// The one privacy policy for liveworkspace.app and every app in it (liveworkspace/docs/specs/010-site/site.md
 // "Privacy and terms"). Built from the apps' own policies, which said the same things app by app.
 // What every app does is said once; what only one app does is in that app's section.
 const SECTIONS: LegalSection[] = [

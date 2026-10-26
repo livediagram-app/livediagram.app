@@ -5,7 +5,7 @@ import { ACCOUNT_GROUP, panelModel, type AccountHost } from './CatalogueSettings
 import type { SettingsCategory, SettingsRow } from './model';
 import { loadAppCatalogue, SETTINGS_APP_IDS, type SettingsAppId } from './store';
 
-// The panel shows the account once (liveworkspace/docs/site.md "Settings", "The Account section shows once"): every
+// The panel shows the account once (liveworkspace/docs/specs/010-site/site.md "Settings", "The Account section shows once"): every
 // category id is unique, no heading lists two categories of one name, and no category name the Account section uses
 // appears again under an app. Checked for every app's catalogue (All on liveworkspace.app and an app's Explorer, and
 // each app's own side), and for an editor's own Settings, which carries an Account, Notifications, API Tokens, Privacy

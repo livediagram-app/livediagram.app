@@ -1,4 +1,4 @@
-// One person's workbench (liveworkspace/docs/workbench.md "The store"): their pairing requests, pairings, tickets,
+// One person's workbench (liveworkspace/docs/specs/011-workbench/workbench.md "The store"): their pairing requests, pairings, tickets,
 // sessions, the rooms a workspace session joined, and their notification email allowance, in one Durable Object's
 // SQLite. Every app's workbench lives here; a row names its app.
 //

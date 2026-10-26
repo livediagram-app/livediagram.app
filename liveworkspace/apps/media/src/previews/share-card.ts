@@ -1,4 +1,4 @@
-// The share card (liveworkspace/docs/previews.md): a link's live-image drawing fitted onto the 1200 x 630 frame every
+// The share card (liveworkspace/docs/specs/006-media/previews.md): a link's live-image drawing fitted onto the 1200 x 630 frame every
 // link preview (Slack, Teams, Discord, iMessage, X, LinkedIn) draws at full width, for every app. Pure, so the fit is
 // tested without the rasteriser; share-card-png.ts turns the result into a PNG.
 

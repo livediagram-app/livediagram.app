@@ -11,7 +11,7 @@ import { TeamAvatar } from './Avatars';
 
 const noChange = () => () => {};
 
-// A team's join link, /join?token=… (liveworkspace/docs/accounts.md "The join link"). It shows the
+// A team's join link, /join?token=… (liveworkspace/docs/specs/003-accounts/accounts.md "The join link"). It shows the
 // team before anything else: signed in, Join adds them as a member and opens the team in the Explorer; signed out,
 // they sign in (or make an account) and come back to this same link; already in it, they go straight
 // to the team. An off, expired or unknown link says so.

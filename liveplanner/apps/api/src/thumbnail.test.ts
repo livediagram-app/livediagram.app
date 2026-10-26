@@ -3,7 +3,7 @@ import { PEN_INK, penColourHex } from '@liveplanner/project';
 import { defaultCatalogue, presetSetup, type Item } from '@liveplanner/items';
 import type { PlanEnv, ProjectDTO } from './types';
 
-// A plan drawn for liveworkspace's previews (liveworkspace/docs/previews.md): the platform stores and serves it, so
+// A plan drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it, so
 // these pin only the drawing. The tab body, cards, sheets and count stamp come through the db layer, mocked here;
 // renderElementsToSvg stays real, it's pure.
 const db = vi.hoisted(() => ({

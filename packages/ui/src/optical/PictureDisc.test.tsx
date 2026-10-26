@@ -3,7 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PictureDisc, resetPictureFailures } from './index';
 
-// The shared avatar (liveworkspace/docs/accounts.md "Profile pictures"): the picture over the initials, sized, lazy,
+// The shared avatar (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): the picture over the initials, sized, lazy,
 // sent with no referrer, never moving anything, and the initials again when there is no picture or it fails.
 
 const PICTURE = 'https://lh3.googleusercontent.com/a/ACg8ocAda=s1000-c';

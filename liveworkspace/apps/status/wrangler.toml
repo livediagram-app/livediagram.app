@@ -4,7 +4,7 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: its checks of liveworkspace.app go out and come back in through the zone's routes
-# (docs/status.md "Where the checks go"); without it a fetch to a route on its own zone isn't routed to that Worker.
+# (docs/specs/009-status/status.md "Where the checks go"); without it a fetch to a route on its own zone isn't routed to that Worker.
 compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/status, on liveworkspace.app: the page at /status is the static site's (apps/site).
 routes = [
@@ -13,7 +13,7 @@ routes = [
 ]
 workers_dev = false
 
-# No secrets. Every check is a public address (docs/status.md).
+# No secrets. Every check is a public address (docs/specs/009-status/status.md).
 [vars]
 ENVIRONMENT = "production"
 # liveworkspace.app's origin, where its own services are checked.

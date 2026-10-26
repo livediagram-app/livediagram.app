@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { type Incident, stepIncidents } from './incidents';
 import { percentile, rollupDay, uptimeTenths } from './rollup';
 
-// liveworkspace/docs/status.md "The hourly run": a day's rollup, and incidents from consecutive checks.
+// liveworkspace/docs/specs/009-status/status.md "The hourly run": a day's rollup, and incidents from consecutive checks.
 
 describe('rollupDay', () => {
   it('counts each state, takes percentiles over the answers, and keeps the worst', () => {

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TELEMETRY_FLUSH_DELAY_MS } from '@liveworkspace/telemetry/emitter';
 
 // A guest's own telemetry choice, kept by the app's editor in the app's storage, holds for the Explorer on the app's
-// address (liveworkspace/docs/telemetry.md "The person's choice").
+// address (liveworkspace/docs/specs/008-telemetry/telemetry.md "The person's choice").
 const PREFS = 'liveplanner:user-preferences:v1';
 const host = vi.hoisted(() => ({ app: 'liveplanner' as string | null }));
 vi.mock('./page-app', () => ({

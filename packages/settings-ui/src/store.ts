@@ -1,4 +1,4 @@
-// Reading and writing the account's settings for the Settings panel (liveworkspace/docs/accounts.md "Settings",
+// Reading and writing the account's settings for the Settings panel (liveworkspace/docs/specs/003-accounts/accounts.md "Settings",
 // "Who calls what"), over the accounts API wherever the panel is opened: liveworkspace.app's own `/api/account`
 // with its session, or an app's address's `/api/workspace/account` with the app's access token (the bearer the
 // app's Explorer already uses). The host hands over how to send a request; this keeps what has been read for the

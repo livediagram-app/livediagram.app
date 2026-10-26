@@ -1,4 +1,4 @@
-// The All view's Common group (liveworkspace/docs/site.md "Settings"): every editor setting two or more apps have,
+// The All view's Common group (liveworkspace/docs/specs/010-site/site.md "Settings"): every editor setting two or more apps have,
 // once (@liveworkspace/settings/common), as the Settings view's model. A row reads `all`, else the copy an app kept
 // from before the setting was shared (the app the panel was opened for first), and writes `all` through that app's
 // row, so the change is counted as that app's. In an editor, the rows the editor has are its own rows, bound to its

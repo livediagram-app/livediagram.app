@@ -1,5 +1,5 @@
 // What the liveworkspace accounts Worker keeps of an account for livedocuments
-// (liveworkspace/docs/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app" and "Onboarding emails"): whether
 // livedocuments has seen it (a sign-up), its one-time milestone emails, its verified address, and when
 // it last saved something. livedocuments keeps none of these. Each call is for an account only; a
 // guest has no address, sign-up or milestone. None of these throw: without the accounts Worker, or

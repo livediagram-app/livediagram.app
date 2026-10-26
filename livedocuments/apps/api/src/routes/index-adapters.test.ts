@@ -280,7 +280,7 @@ describe('the Trash, folders, teams and links', () => {
   });
 
   // A link's previews (image.svg, image.png, card) are liveworkspace's: the router sends them there
-  // (liveworkspace/docs/previews.md), so here they are paths like any other.
+  // (liveworkspace/docs/specs/006-media/previews.md), so here they are paths like any other.
   it('404s every share path but the resolve, the previews included, and passes the index refusal on', async () => {
     for (const [method, path] of [
       ['POST', '/api/share/CODE2345'],

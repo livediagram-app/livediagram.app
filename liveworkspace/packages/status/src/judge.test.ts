@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { type CheckResult, deriveResults, judgeAnswer, SLOW_MS, stateOf, worse } from './judge';
 import { allServices, type Probe, statusGroups } from './services';
 
-// liveworkspace/docs/status.md "The hourly run": one set of rules for the browser and the Worker.
+// liveworkspace/docs/specs/009-status/status.md "The hourly run": one set of rules for the browser and the Worker.
 
 const read = (ok: number[], json = false): Probe => ({
   kind: 'read',

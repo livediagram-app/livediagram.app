@@ -8,7 +8,7 @@ compatibility_date = "2026-05-29"
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 # The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents, on www. (its
-# address, BASE_URL) and on the bare domain for clients from before the move (liveworkspace/docs/accounts.md "The move
+# address, BASE_URL) and on the bare domain for clients from before the move (liveworkspace/docs/specs/003-accounts/accounts.md "The move
 # to www."). The other /api/* paths are the other platform Workers', and everything else the static site's
 # (apps/site). Each route is more specific than the bare domain's redirect (apps/redirect, liveworkspace.app/*), so
 # it wins.
@@ -52,7 +52,7 @@ BASE_URL = "https://www.liveworkspace.app"
 # Worker's route on its own zone isn't routed to it. Unset, or without INDEX_MERGE_KEY, the merge is
 # skipped and a closed account's purge waits in pending_purges until it is set.
 INDEX_URL = "https://www.liveworkspace.app/api/index"
-# On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/email.md).
+# On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/specs/003-accounts/email.md).
 EMAIL_FROM = "sign-in@liveplanner.app"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 # The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
@@ -61,10 +61,10 @@ TELEMETRY_URL = "https://www.liveworkspace.app/api/telemetry"
 # a one-time hop brings the session here. Every app's router must serve them before this is "true".
 SIGN_IN_ON_APP_ORIGINS = "true"
 # "true" once each app origin's /api/workspace/auth/callback/google is an authorised redirect URI of the Google client
-# (liveworkspace/docs/accounts.md "Before deploy"). Until then Google signs in on this site's own page, as before.
+# (liveworkspace/docs/specs/003-accounts/accounts.md "Before deploy"). Until then Google signs in on this site's own page, as before.
 GOOGLE_ON_APP_ORIGINS = "false"
 
-# Every email goes out through Cloudflare Email Service (docs/email.md).
+# Every email goes out through Cloudflare Email Service (docs/specs/003-accounts/email.md).
 [[send_email]]
 name = "EMAIL"
 
@@ -107,7 +107,7 @@ namespace_id = "1003"
 simple = { limit = 60, period = 60 }
 
 # The doors that need no session: a team join link's preview and an invitation's Decline link
-# (liveworkspace/docs/accounts.md), per network.
+# (liveworkspace/docs/specs/003-accounts/accounts.md), per network.
 [[ratelimits]]
 name = "TEAM_LINK_LIMITER"
 namespace_id = "1004"
@@ -129,7 +129,7 @@ namespace_id = "1105"
 simple = { limit = 10, period = 60 }
 
 # Workbench pairings, tickets and sessions, one SQLite-backed store per person
-# (liveworkspace/docs/workbench.md). Its alarm runs only while something will lapse.
+# (liveworkspace/docs/specs/011-workbench/workbench.md). Its alarm runs only while something will lapse.
 [[durable_objects.bindings]]
 name = "WORKBENCH"
 class_name = "WorkbenchStore"
@@ -158,7 +158,7 @@ workers_dev = false
 ENVIRONMENT = "staging"
 BASE_URL = "https://staging.liveworkspace.app"
 INDEX_URL = "https://staging.liveworkspace.app/api/index"
-# On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/email.md).
+# On liveplanner.app until liveworkspace.app is on this account and onboarded to Email Service (docs/specs/003-accounts/email.md).
 EMAIL_FROM = "sign-in@liveplanner.app"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFlfZFYIdJsaQor8"
 TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
@@ -176,7 +176,7 @@ service = "liveworkspace-index-staging"
 binding = "TELEMETRY"
 service = "liveworkspace-telemetry-staging"
 
-# The Google Drive mirror on staging (liveworkspace/docs/drive.md).
+# The Google Drive mirror on staging (liveworkspace/docs/specs/005-drive/drive.md).
 [[env.staging.services]]
 binding = "DRIVE"
 service = "liveworkspace-drive-staging"

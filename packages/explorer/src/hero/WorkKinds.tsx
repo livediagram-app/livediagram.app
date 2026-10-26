@@ -1,4 +1,4 @@
-// What the app makes, on Home's hero (liveworkspace/docs/one-explorer.md "What you can make, on Home's hero"): a
+// What the app makes, on Home's hero (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's hero"): a
 // tile per kind of work (WORK_KINDS), each its picture over its name, in its own app's brand colours whatever the
 // host's, so every app's set looks alike and All shows each app's in that app's colour. A tile starts its kind
 // through the app's New route with its template. Static SVG; nothing is fetched.

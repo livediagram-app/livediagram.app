@@ -1,5 +1,5 @@
 // /api/documents/<id>/room-ticket + /ws: joining a document's realtime room (docs/specs/015-api/api.md "Realtime
-// model"). The index's grant is the whole admission (liveworkspace/docs/one-explorer-contracts.md "Grants"): the
+// model"). The index's grant is the whole admission (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the
 // upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps what it says on the
 // headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 

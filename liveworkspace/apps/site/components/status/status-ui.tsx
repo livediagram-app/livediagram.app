@@ -27,7 +27,7 @@ import type { CheckResult, Overall, ServiceState } from '@/lib/status/probe';
 import { HISTORY_MAX } from '@/lib/status/probe';
 import type { IconName } from '@liveworkspace/status';
 
-// The status page's pieces (liveworkspace/docs/site.md "Status"): every state as an icon and a word, never colour
+// The status page's pieces (liveworkspace/docs/specs/010-site/site.md "Status"): every state as an icon and a word, never colour
 // alone, the service icons, the strip of this visit's checks and the legend.
 
 const ICONS: Record<IconName, ReturnType<typeof lucideGlyph>> = {

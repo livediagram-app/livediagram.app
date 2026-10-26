@@ -1,4 +1,4 @@
-// The push channel's token (liveworkspace/docs/drive.md "Cadence"): Google echoes it on every notification as
+// The push channel's token (liveworkspace/docs/specs/005-drive/drive.md "Cadence"): Google echoes it on every notification as
 // X-Goog-Channel-Token, and it names the person and proves the service made it, so /api/drive/push maps a
 // notification to a mirror without a lookup table. `<person id>.<HMAC-SHA256 of it>`, signed with a key derived from
 // DRIVE_TOKEN_KEY by HKDF (the sealing key itself never signs). Google caps a token at 256 characters.

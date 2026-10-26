@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's bottom bar (liveworkspace/docs/site.md "The Explorer", The bottom bar): stuck to the foot of the
+// The Explorer's bottom bar (liveworkspace/docs/specs/010-site/site.md "The Explorer", The bottom bar): stuck to the foot of the
 // page, as the apps' own Explorers had it, its controls on the right: Search, Settings (a guest's too, on an app's
 // address) and Appearance, each with its name beside its icon on a wide screen, icons alone on a narrow one. Its
 // hints are portalled and open upward.

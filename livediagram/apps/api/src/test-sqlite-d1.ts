@@ -16,7 +16,7 @@ import type { Env, DocumentEnv } from './types';
 // room's relays) to the DOCUMENT_ROOM the test passed, if any. `flush` drains what the canvases owe the index and the
 // media service (document-outbox.ts), for a test that asserts on those pushes. Each person's stores are in memory.
 //
-// What the index holds in production (liveworkspace/docs/one-explorer.md) is test scaffolding here: `test_documents`
+// What the index holds in production (liveworkspace/docs/specs/004-index/one-explorer.md) is test scaffolding here: `test_documents`
 // writes a started canvas's own row (what a create writes), `test_share_links` holds the links the index would grant
 // through and `test_folders` the folders it would list. `testGrantFor` (below) reads them, as the index's access rule
 // does. Not a `.test.ts` file, so vitest doesn't collect it as a suite.

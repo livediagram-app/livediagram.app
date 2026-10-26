@@ -1,5 +1,5 @@
 // The service's calls to Google's OAuth endpoint: redeem a consent code, mint an access token from the stored
-// refresh token, revoke the grant, and learn which Google account a consent is for (liveworkspace/docs/drive.md
+// refresh token, revoke the grant, and learn which Google account a consent is for (liveworkspace/docs/specs/005-drive/drive.md
 // "Tokens"). Server-to-server, with the client secret that never leaves the service.
 
 import { googleApiBase, googleOAuthBase, timedFetch, type GoogleConfig } from './google';

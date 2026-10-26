@@ -1,5 +1,5 @@
 // Says which app each OAuth client is, for clients registered before register-client.ts took --app
-// (liveworkspace/docs/accounts.md "Which app a client is"). Without --client, every client not yet
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Which app a client is"). Without --client, every client not yet
 // mapped whose name is an app's (`livediagram`) or its local one (`livediagram-dev`) gets that app;
 // with --client and --app, that one client does. Runs SQL through wrangler, so it needs no secret.
 //

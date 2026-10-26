@@ -1,4 +1,4 @@
-// The owner's own access to an item or a folder, for a ticket's mint and redemption (liveworkspace/docs/workbench.md
+// The owner's own access to an item or a folder, for a ticket's mint and redemption (liveworkspace/docs/specs/011-workbench/workbench.md
 // "The handoff"): never a share code, whatever the request carries. Asked of the index as the person, with accounts'
 // key and the app named (the index's delegated caller): only that app's items answer. Through the INDEX service
 // binding, so it never leaves Cloudflare.

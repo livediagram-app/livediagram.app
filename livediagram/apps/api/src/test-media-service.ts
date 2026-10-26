@@ -1,4 +1,4 @@
-// The real liveworkspace media service (liveworkspace/docs/media.md) for tests, in this process: its Worker over
+// The real liveworkspace media service (liveworkspace/docs/specs/006-media/media.md) for tests, in this process: its Worker over
 // an in-memory database and bucket, answering this api's calls to it through a stubbed `fetch`. So a test of an
 // upload, a byte read or the reference sync runs both sides for real. Not a `.test.ts` file, so vitest doesn't
 // collect it.

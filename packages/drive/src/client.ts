@@ -1,4 +1,4 @@
-// The browser's side of the Drive service (liveworkspace/docs/drive.md "The service"): one typed method per browser
+// The browser's side of the Drive service (liveworkspace/docs/specs/005-drive/drive.md "The service"): one typed method per browser
 // route, for Cloud Sync's row (@liveworkspace/settings-ui), the site's /drive pages and the Explorer's marks. A page
 // calls its own origin's `/api/drive` (liveworkspace.app, or an app's router, which forwards it), with the
 // person's account access token. Nothing here throws: every answer is a result, so a row can say what went wrong.
@@ -115,7 +115,7 @@ export type DriveClient = ReturnType<typeof createDriveClient>;
 
 // ---------- Connecting ------------------------------------------------------------------------------------------
 
-/** The page every Connect leaves for (liveworkspace/docs/drive.md "Connecting"). */
+/** The page every Connect leaves for (liveworkspace/docs/specs/005-drive/drive.md "Connecting"). */
 export const DRIVE_CONNECT_PATH = '/drive/connect';
 export const DRIVE_CONNECTED_PATH = '/drive/connected';
 export const DRIVE_OPEN_PATH = '/drive/open';

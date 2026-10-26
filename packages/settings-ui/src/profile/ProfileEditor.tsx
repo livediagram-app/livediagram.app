@@ -23,7 +23,7 @@ import { useSavedFlash } from '../useSavedFlash';
 import { colourLabel } from './ProfileHeader';
 import type { Profile, ProfileHost } from './profile-host';
 
-// Settings › Profile › Name and Colour (liveworkspace/docs/site.md "Settings", "Profile"), the one editor every host
+// Settings › Profile › Name and Colour (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), the one editor every host
 // draws in place: a preview of what collaborators see, the display name (saved once typing pauses, when the field is
 // left, or as the page goes; typing the stored name back clears its refusal) and the presence colour and Show My
 // Google Picture (saved at once; a refused newest write puts back what the server last took, as the settings saver
@@ -429,7 +429,7 @@ function ColourPicker({
   );
 }
 
-// Show My Google Picture (liveworkspace/docs/accounts.md "Profile pictures"): whether others see the account's Google
+// Show My Google Picture (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): whether others see the account's Google
 // picture or its initials. Their own screen shows it either way.
 function PictureSwitch({
   checked,

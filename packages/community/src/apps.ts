@@ -1,4 +1,4 @@
-// The apps with a Community (liveworkspace/docs/community.md). One service holds every app's listings,
+// The apps with a Community (liveworkspace/docs/specs/007-community/community.md). One service holds every app's listings,
 // and each app's pages show only their own, so every read and write names its app. An app is named by
 // its public site, the way people know it.
 

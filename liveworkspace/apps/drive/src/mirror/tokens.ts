@@ -1,4 +1,4 @@
-// The service's Google access tokens (liveworkspace/docs/drive.md "Tokens"): minted from the sealed refresh token,
+// The service's Google access tokens (liveworkspace/docs/specs/005-drive/drive.md "Tokens"): minted from the sealed refresh token,
 // kept in the object's memory (never stored), refreshed a minute before they lapse. A refused grant (`invalid_grant`)
 // or a sealed token the key no longer opens turns the connection Needs reconnecting; nothing is deleted.
 

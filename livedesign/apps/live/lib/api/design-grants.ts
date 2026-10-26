@@ -1,4 +1,4 @@
-// The index's grant on a design (liveworkspace/docs/one-explorer-contracts.md "Grants"): a ten-minute token naming
+// The index's grant on a design (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): a ten-minute token naming
 // the design, the level and the tab, which the api and the design's room check offline. The shared holder
 // (`@liveworkspace/index-client/browser` createItemGrants) asks for it while the design's code loads, keeps it until
 // a minute before it lapses, and apiFetch sends it with every request about the design as `X-Index-Grant`. The

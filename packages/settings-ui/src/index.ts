@@ -1,6 +1,6 @@
 // The one Settings panel every liveworkspace app's Settings and liveworkspace.app open (SettingsPanel: this app's
 // settings or All, each app's docs/specs/007-editor/user-preferences.md "This app or All"), and the Settings view it
-// draws (SettingsView, "One Settings view for every app"; liveworkspace/docs/site.md "Settings").
+// draws (SettingsView, "One Settings view for every app"; liveworkspace/docs/specs/010-site/site.md "Settings").
 export * from './model';
 export {
   bindRow,

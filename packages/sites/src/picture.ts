@@ -1,4 +1,4 @@
-// A profile picture URL as it may be stored, sent to other people and drawn (liveworkspace/docs/accounts.md "Profile
+// A profile picture URL as it may be stored, sent to other people and drawn (liveworkspace/docs/specs/003-accounts/accounts.md "Profile
 // pictures"): Google's own `picture` claim, an https URL on Google's profile image host, short enough to ride in an
 // ID token, a cookie and a room's presence. One rule for the accounts Worker's readers, every app's API and room, and
 // the shared avatar (`PictureDisc` in @liveworkspace/ui), so a URL that passes in one place passes in all of them.

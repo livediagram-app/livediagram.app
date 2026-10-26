@@ -1,7 +1,7 @@
 // MANUAL preview harness (docs/specs/014-identity/transactional-email.md). Renders one email per template and
 // hands it to the real client, as the daily cron would, with a stand-in for the `send_email` binding that writes
 // each message's HTML to a file instead of sending it, so you can eyeball them in a browser before turning email
-// on for a deployment. Email Service sends only from inside a Worker (liveworkspace/docs/email.md), so a real
+// on for a deployment. Email Service sends only from inside a Worker (liveworkspace/docs/specs/003-accounts/email.md), so a real
 // send to an inbox is `wrangler dev` (which simulates the binding the same way) or a deployed staging Worker.
 // Gated so it never runs during a normal test run / CI: it only runs when EMAIL_PREVIEW=1 is passed.
 //

@@ -5,7 +5,7 @@ import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/accou
 import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
 import { useAccountData } from './useAccountData';
 
-// The Settings panel's API Tokens (liveworkspace/docs/site.md "Settings"): making a token, seeing it once,
+// The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
 // and revoking it. A token is the account's, so it works on every app's API and MCP server; the AI
 // tools connected in an app show up here too.
 export function TokensPanel() {

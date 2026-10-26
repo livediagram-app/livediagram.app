@@ -6,7 +6,7 @@ compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
-# Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/community.md). liveworkspace.app
+# Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/specs/007-community/community.md). liveworkspace.app
 # hosts no Community pages: each app serves its own, which read from here.
 routes = [
   { pattern = "www.liveworkspace.app/api/community*", zone_name = "liveworkspace.app" },

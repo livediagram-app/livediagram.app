@@ -1,4 +1,4 @@
-// A plan drawn as an SVG, for its preview (liveworkspace/docs/previews.md): the first tab, or one tab, with the shared
+// A plan drawn as an SVG, for its preview (liveworkspace/docs/specs/006-media/previews.md): the first tab, or one tab, with the shared
 // DOM-free renderer, its icons drawn as their glyphs, its boards, sheets and dashboards from the plan's own cards.
 // Drawn in the plan's Durable Object, where the content is, when liveworkspace's previews service asks the export
 // door (plan-room.ts `exportImage`); the platform stores it, decides when it is stale and serves it, so nothing here

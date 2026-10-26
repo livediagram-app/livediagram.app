@@ -1,4 +1,4 @@
-// Inbound: what one Drive change means for liveworkspace (liveworkspace/docs/drive.md "Inbound"). Pure: the service
+// Inbound: what one Drive change means for liveworkspace (liveworkspace/docs/specs/005-drive/drive.md "Inbound"). Pure: the service
 // applies the decision through the index, acting as the person.
 //
 // A row is the last Drive state the service knows. A change is an echo of the service's own write when nothing it

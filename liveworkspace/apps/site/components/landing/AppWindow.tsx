@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Cursor } from './Cursor';
 
-// A browser window around an app's work, for the apps section (liveworkspace/docs/site.md "The
+// A browser window around an app's work, for the apps section (liveworkspace/docs/specs/010-site/site.md "The
 // front door"): what someone sees when a link opens, with another person already in it. Decorative.
 export function AppWindow({ address, children }: { address: string; children: ReactNode }) {
   return (

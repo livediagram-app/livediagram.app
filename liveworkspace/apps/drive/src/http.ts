@@ -1,5 +1,5 @@
 // Responses and request bodies. Every refusal is `{ "error": "<code>" }` (`DriveErrorCode`) with a 4xx/5xx status
-// (liveworkspace/docs/drive.md "The service").
+// (liveworkspace/docs/specs/005-drive/drive.md "The service").
 
 import type { DriveErrorCode } from '@liveworkspace/drive';
 import { json as plainJson } from '@liveworkspace/index-app/worker-http';

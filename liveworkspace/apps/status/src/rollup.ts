@@ -1,4 +1,4 @@
-// A service's day, from its checks (liveworkspace/docs/status.md "The hourly run"): how many, how many up, slow and
+// A service's day, from its checks (liveworkspace/docs/specs/009-status/status.md "The hourly run"): how many, how many up, slow and
 // down, the median and 95th percentile answer time, and the worst state. Pure, so the seed script uses it too.
 
 import { type CheckState, worse } from '@liveworkspace/status';

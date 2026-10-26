@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// The teams pages moved into the Explorer (liveworkspace/docs/site.md "Your account"). Every old address
+// The teams pages moved into the Explorer (liveworkspace/docs/specs/010-site/site.md "Your account"). Every old address
 // redirects permanently, so the links in invitation emails already sent keep landing.
 const rules = readFileSync(fileURLToPath(new URL('../public/_redirects', import.meta.url)), 'utf8')
   .split('\n')

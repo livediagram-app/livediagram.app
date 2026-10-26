@@ -18,7 +18,7 @@ const {
   withDocumentGrant,
 } = await import('./document-grants');
 
-// The index's grant on a document (liveworkspace/docs/one-explorer-contracts.md "Grants"), as the editor holds it: one
+// The index's grant on a document (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as the editor holds it: one
 // request per document per ten minutes however many ask, renewed a minute before it lapses, and sent as X-Index-Grant.
 
 const TEN_MIN = 10 * 60_000;

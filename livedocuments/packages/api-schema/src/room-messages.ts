@@ -218,7 +218,7 @@ export type ClientMessage =
   | { kind: 'identity'; participant: ParticipantPresence }
   | GrantMessage;
 
-// The session's grant is about to lapse (liveworkspace/docs/one-explorer-contracts.md "Grants"): the room asks
+// The session's grant is about to lapse (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the room asks
 // for a fresh one ROOM_GRANT_ASK_BEFORE_MS before it does, and drops the socket (GRANT_LAPSED_CLOSE) when none
 // came by then. `expiresAt`: when the session's grant runs out, epoch ms.
 export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };
@@ -461,7 +461,7 @@ export {
   roomIsFull,
 } from '@liveworkspace/api-schema/room-capacity';
 
-// A request about one document carries the index's grant for it here (liveworkspace/docs/one-explorer-contracts.md
+// A request about one document carries the index's grant for it here (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Grants"), so `Authorization` keeps the person's own token. The api checks it offline against the index's keys.
 // A caller with no grant (an API token, a workbench session) has one fetched for it by the api.
 export const INDEX_GRANT_HEADER = 'X-Index-Grant';

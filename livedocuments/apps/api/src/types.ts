@@ -29,7 +29,7 @@ export type Env = {
   // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
-  // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every document is and who
+  // liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md, src/index-service.ts): where every document is and who
   // may open it. INDEX_ORIGIN is its origin (`https://www.liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
@@ -59,14 +59,14 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
+  // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livedocuments' secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY);
   // unset, this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
-  // livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/drive.md "Contracts > The apps"), the
+  // livedocuments' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEDOCUMENTS: it opens the internal export door (its `file` format) and
   // the import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
@@ -100,14 +100,14 @@ export type Env = {
   // Absent/anything-else keeps telemetry fully off — the
   // default, so forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
+  // liveworkspace's central telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means
   // production's, TELEMETRY_URL in @liveworkspace/telemetry.
   TELEMETRY_URL?: string;
   // livedocuments' Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's `send_email` binding for transactional email
-  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/email.md). The binding is the
+  // (docs/specs/014-identity/transactional-email.md, liveworkspace/docs/specs/003-accounts/email.md). The binding is the
   // credential, so there's no key. Absent, the whole email feature is inert: no sends.
   EMAIL?: SendEmail;
   // From identity for outbound email (optional). Defaults to

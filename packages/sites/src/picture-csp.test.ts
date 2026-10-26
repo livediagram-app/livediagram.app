@@ -1,5 +1,5 @@
 // Every page that can draw a person's avatar must let Google's profile pictures load
-// (liveworkspace/docs/accounts.md "Profile pictures", "The Content-Security-Policy"). Today the pages send Trusted
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures", "The Content-Security-Policy"). Today the pages send Trusted
 // Types alone, with no `img-src` or `default-src`, so every image origin is allowed. Should either arrive, in a
 // static site's `_headers` or a Worker that serves pages, it must name Google's image host, or every avatar would
 // quietly fall back to initials.

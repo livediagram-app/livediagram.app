@@ -1,6 +1,6 @@
 // docs/specs/014-identity/transactional-email.md: the bodies of the emails liveplanner sends itself, the
 // notifications about other people's activity and the account-deleted notice. The onboarding series and the team
-// emails are the liveworkspace accounts Worker's (liveworkspace/docs/accounts.md). Plain, inline-styled,
+// emails are the liveworkspace accounts Worker's (liveworkspace/docs/specs/003-accounts/accounts.md). Plain, inline-styled,
 // email-client-safe HTML (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
 // Content only: never a project's contents, only names the recipient already knows.

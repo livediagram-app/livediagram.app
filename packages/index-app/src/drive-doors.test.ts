@@ -1,4 +1,4 @@
-// The Drive mirror's two doors (liveworkspace/docs/drive.md "Contracts > The apps"), answered by handleInternalItems:
+// The Drive mirror's two doors (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), answered by handleInternalItems:
 // the file export and the import, and the Drive key that opens those two and nothing else.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {

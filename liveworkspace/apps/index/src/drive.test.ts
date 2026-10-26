@@ -1,4 +1,4 @@
-// The Google Drive mirror's side of the index (liveworkspace/docs/drive.md "Contracts > The index"): its key acting
+// The Google Drive mirror's side of the index (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"): its key acting
 // for a person on their personal items only, in every app; the drive_mirrored flag; and the change signal.
 import type { Folder, Item, ShareLink } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';

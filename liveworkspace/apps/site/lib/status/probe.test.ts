@@ -10,7 +10,7 @@ import {
 } from './probe';
 import { allServices, statusGroups, type Probe } from '@liveworkspace/status';
 
-// liveworkspace/docs/site.md "Status": what each answer means.
+// liveworkspace/docs/specs/010-site/site.md "Status": what each answer means.
 
 const READ: Probe = { kind: 'read', url: '/x', method: 'GET', ok: [200], json: true };
 const REACH: Probe = {

@@ -1,4 +1,4 @@
-// Every timing and size the Drive mirror runs on, in one place (liveworkspace/docs/drive.md "Cadence"). Tune here,
+// Every timing and size the Drive mirror runs on, in one place (liveworkspace/docs/specs/005-drive/drive.md "Cadence"). Tune here,
 // never in the service.
 
 const SECOND = 1000;

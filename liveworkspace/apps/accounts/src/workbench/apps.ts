@@ -1,4 +1,4 @@
-// Each app's workbench dialect (liveworkspace/docs/workbench.md "Addresses"): the app a request is for, its word for
+// Each app's workbench dialect (liveworkspace/docs/specs/011-workbench/workbench.md "Addresses"): the app a request is for, its word for
 // an item as the item scope (`project`, `document`, `design`) with `<word>Id` for the item, and where its frame opens.
 // The store keeps the scope as `item` or `workspace`; only the wire speaks the app's words.
 

@@ -8,7 +8,7 @@ import { ProfileHeaderCard, type AccountGuest } from './ProfileHeader';
 import { ProfileSection } from './ProfileEditor';
 import { SessionsRows, SignInMethodsRows } from './SecurityRows';
 
-// The Profile category's rows (liveworkspace/docs/site.md "Settings", "Profile"), grouped as the old livediagram
+// The Profile category's rows (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), grouped as the old livediagram
 // Profile page was: the header card, Name and Colour, Sign-in and Security, then Your Account. Name and Colour is
 // edited in place wherever the panel opens (the host's ProfileHost); only sign-in and devices, which are
 // liveworkspace.app's session's, link there from elsewhere.

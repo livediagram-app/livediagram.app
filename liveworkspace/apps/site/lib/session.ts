@@ -18,7 +18,7 @@ export type Session =
       fullName: string | null;
       colour: string | null;
       // The account's own Google picture (Better Auth's `user.image`), null with none
-      // (liveworkspace/docs/accounts.md "Profile pictures").
+      // (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
       picture: string | null;
       // For Settings' Profile header: the account's address and when it was made (ISO), where the answer had them.
       email?: string | null;

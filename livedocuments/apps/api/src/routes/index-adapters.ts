@@ -1,5 +1,5 @@
 // What the routes an API client (the MCP server, the CLI, any script with an `lwt_` token) still calls on this
-// api share, answering from the index (liveworkspace/docs/one-explorer.md): the index as the caller reaches it, its
+// api share, answering from the index (liveworkspace/docs/specs/004-index/one-explorer.md): the index as the caller reaches it, its
 // refusals as this api answers them, its pages read in full, and its shapes as the clients have always read them
 // (@livedocuments/api-schema). Where a document is filed, its Trash and its sharing are the index's; the doors are:
 //

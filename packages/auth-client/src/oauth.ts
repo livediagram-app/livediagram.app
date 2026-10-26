@@ -85,7 +85,7 @@ export function authorizeUrl(options: AuthorizeUrlOptions): string {
   return url.toString();
 }
 
-// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// A guest's identity is liveworkspace's (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"): the browser goes to the accounts
 // site with the app's client and comes back to `redirectUri` with a year-long guest token in the fragment
 // (`#guest_token=…&state=…`). The editor makes and checks `state` itself (@liveworkspace/index-client/browser
 // createGuestTokens); the app's Worker only names its client, so a state it forwards must look like one.

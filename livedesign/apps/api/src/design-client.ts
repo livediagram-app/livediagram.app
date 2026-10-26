@@ -25,10 +25,10 @@ export type DesignRoomClient = {
   // One API request about this design, answered inside its Durable Object by the same handlers as before
   // (design-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
-  // The design drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
+  // The design drawn for liveworkspace's previews (the export door, liveworkspace/docs/specs/006-media/previews.md), where the
   // content is.
   exportImage(query: ExportQuery): Promise<ExportResult>;
-  // The design as its Drive file (the export door's `file` format, liveworkspace/docs/drive.md), and a new design
+  // The design as its Drive file (the export door's `file` format, liveworkspace/docs/specs/005-drive/drive.md), and a new design
   // made from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: DesignFileImport): Promise<void>;

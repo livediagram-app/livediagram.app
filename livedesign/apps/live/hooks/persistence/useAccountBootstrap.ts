@@ -22,7 +22,7 @@ import { inboxSnapshot } from '@/lib/offline/inbox-snapshot';
 //      / unmount so the guest path resumes cleanly.
 //
 //   2. Drop the guest token once signed in. The guest's things became the account's when it signed in on
-//      liveworkspace.app, which tells the index before the session exists (liveworkspace/docs/accounts.md
+//      liveworkspace.app, which tells the index before the session exists (liveworkspace/docs/specs/003-accounts/accounts.md
 //      "Signing in keeps a guest's things"), so there is nothing left to move from here.
 //
 // Returns the relevant `useAuth` fields so callers don't need to also

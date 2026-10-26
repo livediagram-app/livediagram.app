@@ -1,6 +1,6 @@
 'use client';
 
-// The Explorer's telemetry on liveworkspace.app (liveworkspace/docs/telemetry.md "The Explorer on
+// The Explorer's telemetry on liveworkspace.app (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on
 // liveworkspace.app"): the reports @liveworkspace/explorer hands its host, sent to the telemetry service the way
 // every app sends its own (@liveworkspace/telemetry's batching engine: one batch per app every 10 seconds and on
 // page hide, never a request per event). Each event counts for the app the page is filtered to, or for

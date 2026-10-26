@@ -11,7 +11,7 @@ import { searchSettings } from './settings-search';
 import { SettingsView } from './SettingsView';
 import { renderWithKit } from './test/kit';
 
-// All's one set of categories (liveworkspace/docs/site.md "Settings", "All"): Common's and every app's merged by
+// All's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): Common's and every app's merged by
 // their place, a setting the apps share shown once and written to each, each app's own rows under its logo and name.
 
 const toggle = (key: string, label: string, extra: Partial<SettingsRow> = {}): SettingsRow =>

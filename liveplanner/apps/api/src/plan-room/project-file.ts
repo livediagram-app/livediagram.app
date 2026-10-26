@@ -1,4 +1,4 @@
-// The plan as its Google Drive file (liveworkspace/docs/drive.md "The file", "Contracts > The apps";
+// The plan as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
 // docs/specs/015-api/api.md "Internal"): the `liveplanner.project` envelope, every tab with its per-project folder,
 // the cards, the card types and the Sheets. The export runs inside the plan's Durable Object, from the same tab read a
 // copy makes (plan-content.ts readContentTabRows) and the item and sheet stores' own reads, stamped with the plan's

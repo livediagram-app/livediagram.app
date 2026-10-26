@@ -1,4 +1,4 @@
-// What an app sends the central ingest (liveworkspace/docs/telemetry.md "Sending events").
+// What an app sends the central ingest (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events").
 
 import type { TelemetrySender } from './apps';
 

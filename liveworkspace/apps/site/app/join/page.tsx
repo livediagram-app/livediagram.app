@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { JoinPage } from '@/components/teams/JoinPage';
 
-// Where a team's join link lands: /join?token=… (liveworkspace/docs/accounts.md "The join link").
+// Where a team's join link lands: /join?token=… (liveworkspace/docs/specs/003-accounts/accounts.md "The join link").
 // Static, so the page reads the token from the address. No Referer, since the address carries it.
 export const metadata: Metadata = {
   title: 'Join a team · liveworkspace',

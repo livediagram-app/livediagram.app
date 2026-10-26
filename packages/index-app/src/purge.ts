@@ -1,4 +1,4 @@
-// Dropping items' content for good (liveworkspace/docs/one-explorer-contracts.md "Purging"): the index has already
+// Dropping items' content for good (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): the index has already
 // removed the rows (a permanent delete, the Trash's sweep, a closed account) and asks the app to drop what each
 // item's Durable Object stores. A room that can't be reached is logged rather than failing the batch; the index
 // keeps a tombstone for it and asks again.

@@ -2,7 +2,7 @@
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the three-process stack the Playwright smoke suite
 // runs against — the real static `apps/editor/out` build served with the
 // production router/worker rewrites, the api worker (its Durable Objects local), and liveworkspace's index
-// (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
+// (liveworkspace/apps/index, liveworkspace/docs/specs/004-index/one-explorer.md) on its own local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
 // Boots:
@@ -115,7 +115,7 @@ const WORKSPACE_SITE_DIR = path.resolve(
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
 // router mounts it; marketing owns "/" in production, so it gets its own port. (The telemetry
-// dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+// dashboard is liveworkspace's now, liveworkspace/docs/specs/008-telemetry/telemetry.md.)
 const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3203);
@@ -125,7 +125,7 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3203);
 const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
 // The stack always acts as the liveworkspace accounts Worker (docs/specs/003-system-architecture/e2e-smoke.md):
 // a key made at boot, its JWKS on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker and the
-// index to verify against, the guest handoff (/e2e/accounts/api/auth/guest, liveworkspace/docs/accounts.md
+// index to verify against, the guest handoff (/e2e/accounts/api/auth/guest, liveworkspace/docs/specs/003-accounts/accounts.md
 // "Guests") answering every visitor a guest token, /e2e/token?sub=<id> minting an access token for any test
 // account and /e2e/guest-token minting a guest token, all with the issuer and audience the api expects.
 // Test-only: nothing outside this stack trusts the key.

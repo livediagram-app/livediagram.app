@@ -1,4 +1,4 @@
-// The media service's shared contract (liveworkspace/docs/media.md): the apps, what an upload may be,
+// The media service's shared contract (liveworkspace/docs/specs/006-media/media.md): the apps, what an upload may be,
 // whose an image is, the wire shapes, a typed client for the apps' Workers, the previews' addresses, and the share
 // page head every app's share page carries.
 export * from './apps';

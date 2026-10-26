@@ -1,4 +1,4 @@
-// The import door (liveworkspace/docs/drive.md "Contracts > The apps"; docs/specs/015-api/api.md "Internal"): a new
+// The import door (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"; docs/specs/015-api/api.md "Internal"): a new
 // document for `owner` from a `.livedocuments` file, the Drive mirror's Import as a copy. The file is read here
 // (document-room/document-file.ts readDocumentFile: another kind or a malformed tab refused, fresh tab ids with
 // their links and the deck's slides re-pointed, the tab and deck caps), the index makes the item as the owner's

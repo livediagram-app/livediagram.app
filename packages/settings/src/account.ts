@@ -1,4 +1,4 @@
-// The account's own settings, as plain data (liveworkspace/docs/site.md "Settings", accounts.md "Settings"): the
+// The account's own settings, as plain data (liveworkspace/docs/specs/010-site/site.md "Settings", accounts.md "Settings"): the
 // switches in the `all` scope that mean something without an editor, worded as the apps' own Settings word them,
 // so a switch reads the same in the Settings panel's Account section as in any app. The editors' chrome (UI scale,
 // panel opacity and the rest) is left out: it means nothing without an editor, and each app shows it in its own

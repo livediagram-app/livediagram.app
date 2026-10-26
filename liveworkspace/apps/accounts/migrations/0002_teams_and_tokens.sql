@@ -1,4 +1,4 @@
--- Teams and API tokens belong to the liveworkspace account (liveworkspace/docs/accounts.md "Teams" and
+-- Teams and API tokens belong to the liveworkspace account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and
 -- "API tokens"), so a team made once is the same team in every app, and one token works on every app's
 -- API and MCP server. Written by hand: these are liveworkspace's own tables, not Better Auth's.
 
@@ -38,7 +38,7 @@ CREATE TABLE team_member (
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL,
   rev       INTEGER NOT NULL,
-  -- An invitation's email lifecycle (liveworkspace/docs/accounts.md "Reminders and expiry"). The
+  -- An invitation's email lifecycle (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"). The
   -- SHA-256 hashes of the decline tokens its emails carry, space-separated (the invitation and its
   -- three reminders, at most four); when its reminder and expiry clock started; each reminder's stamp
   -- (0 = skipped); failed reminder sends in a row; and when it expired unanswered (status 'declined').
@@ -78,7 +78,7 @@ CREATE TABLE api_token (
   lastUsedAt INTEGER,
   expiresAt  INTEGER NOT NULL,
   revokedAt  INTEGER,
-  -- When its owner was warned it expires soon (liveworkspace/docs/accounts.md "API tokens"): once per
+  -- When its owner was warned it expires soon (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): once per
   -- token, so the daily run never warns twice.
   expiryWarnedAt INTEGER,
   -- When its expiry went on its owner's Timeline (dated at the expiry, in Upcoming): once per token.

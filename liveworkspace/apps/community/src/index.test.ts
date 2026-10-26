@@ -1,4 +1,4 @@
-// The Worker over HTTP (liveworkspace/docs/community.md "The API"): the public routes one app at a time
+// The Worker over HTTP (liveworkspace/docs/specs/007-community/community.md "The API"): the public routes one app at a time
 // with their CORS, likes and reports; the app routes behind each app's key; the rules publishing keeps.
 import {
   COMMUNITY_POSTS_PER_AUTHOR,

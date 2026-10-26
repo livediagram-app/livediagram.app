@@ -1,4 +1,4 @@
-// This Browser in the Inbox (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"): the Inbox's
+// This Browser in the Inbox (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"): the Inbox's
 // rows from an app's offline items (actions, cards and threads the index never holds), for the Explorer page on the
 // app's own address. Only the app's code can read its offline store and work the rows out; the page is liveworkspace's
 // build. So the app keeps one snapshot of them in localStorage under `liveworkspace:this-browser-inbox:<app>`, beside

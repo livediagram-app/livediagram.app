@@ -1,4 +1,4 @@
-// The Explorer's events (liveworkspace/docs/telemetry.md "The Explorer on liveworkspace.app"): what the one
+// The Explorer's events (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"): what the one
 // Explorer page on liveworkspace.app may report, in the name of the app it is filtered to or, filtered to All
 // Apps, of liveworkspace.app. Each is `Category·Action` with its closed set of type tokens, the fixed tokens
 // @liveworkspace/explorer hands its host. The same names the apps' own Explorers always sent, so each app's

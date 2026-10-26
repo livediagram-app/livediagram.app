@@ -1,4 +1,4 @@
-// The media service as an app's Worker calls it (liveworkspace/docs/media.md "Using it from an app"):
+// The media service as an app's Worker calls it (liveworkspace/docs/specs/006-media/media.md "Using it from an app"):
 // one typed method per route, each carrying the app's name and key. Answers that aren't a success come
 // back as `{ ok: false, status, body }` rather than throwing, because most of them (a full gallery, an
 // unsupported file) are answers the app passes on to its editor as they are.
@@ -127,7 +127,7 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
     mergeOwner: async (from: string, to: string) =>
       json<MediaMergeResponse>(await call('/owners/merge', send('POST', { from, to }))),
 
-    /** An item purged: delete every preview the service keeps of it (liveworkspace/docs/previews.md "Purging").
+    /** An item purged: delete every preview the service keeps of it (liveworkspace/docs/specs/006-media/previews.md "Purging").
      *  Only this app's items. Answers how many objects went. */
     deletePreviews: async (itemId: string) =>
       json<{ deleted: number }>(
