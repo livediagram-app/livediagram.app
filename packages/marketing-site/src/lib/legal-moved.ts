@@ -24,7 +24,7 @@ export interface LegalMovedPage {
 }
 
 // The policies live on liveworkspace.app.
-const LIVEWORKSPACE_URL = 'https://liveworkspace.app';
+const LIVEWORKSPACE_URL = 'https://www.liveworkspace.app';
 
 function moved(
   title: string,

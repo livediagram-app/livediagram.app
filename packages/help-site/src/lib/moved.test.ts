@@ -10,7 +10,7 @@ describe('moved policy stubs', () => {
       "The terms of use for livedesign are liveworkspace's, on liveworkspace.app.",
     );
     expect(help.label).toBe('terms of use');
-    expect(help.href).toBe('https://liveworkspace.app/terms');
+    expect(help.href).toBe('https://www.liveworkspace.app/terms');
   });
 
   it('keeps the privacy policy singular', () => {

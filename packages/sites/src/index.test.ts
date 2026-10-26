@@ -24,7 +24,7 @@ describe('sites', () => {
       // (livediagram/docs/specs/016-platform/stand-in-addresses.md).
       const origin =
         site.id === 'liveworkspace.app'
-          ? 'https://liveworkspace.app'
+          ? 'https://www.liveworkspace.app'
           : site.id === 'livediagram.app'
             ? 'https://livediagram-router.liveworkspace-easing509.workers.dev'
             : `https://www.${site.id}`;

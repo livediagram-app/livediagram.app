@@ -9,7 +9,7 @@ import type { Metadata, Viewport } from 'next';
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
 // ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
-export const SITE_URL = 'https://liveplanner.app';
+export const SITE_URL = 'https://www.liveplanner.app';
 
 // This site in liveworkspace's list of sites (@liveworkspace/sites), marked in the logo's switcher.
 export const SITE_ID = 'liveplanner.app' as const;

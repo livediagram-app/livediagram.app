@@ -8,7 +8,7 @@ import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parseConfig, type ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { configDir } from './paths';
 
-export const DEFAULT_HOST = 'https://liveplanner.app';
+export const DEFAULT_HOST = 'https://www.liveplanner.app';
 export const DEFAULT_PROFILE = 'default';
 
 export type ProfileSource = 'flag' | 'env' | 'config' | 'default';

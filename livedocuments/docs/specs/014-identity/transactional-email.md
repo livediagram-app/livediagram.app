@@ -88,7 +88,7 @@ help article.
   staging, and the default when unset. Its domain must be onboarded to Email Service on the liveworkspace
   account.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
-  Default `https://livedocuments.app`.
+  Default `https://www.livedocuments.app`.
 
 Local dev: `wrangler dev` simulates the binding, printing each email and saving its text and HTML to files, so
 nothing is really sent. Production and staging: the binding in `wrangler.toml`, nothing to provision. A fork

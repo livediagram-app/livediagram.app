@@ -442,7 +442,7 @@ nothing changes.
    session (401), `bind` is a nonce hash, and `return` is one of that same app's registered
    redirect URIs (400 `invalid_return`). It stores only the SHA-256 of a fresh 32-byte token, with
    the session, the bind and the address, for 60 seconds, clears the session cookie on the app's
-   address in the same answer, and gives back `{ url }`: `https://liveworkspace.app/api/auth/handoff?token=…`.
+   address in the same answer, and gives back `{ url }`: `https://www.liveworkspace.app/api/auth/handoff?token=…`.
 5. **The hop.** One top-level visit to that URL (`GET /api/auth/handoff`) spends the token
    (single use, by one `UPDATE … WHERE usedAt IS NULL`), checks it hasn't expired, that the
    browser's `lw_handoff` nonce hashes to the stored bind, and the return address again; then sets
@@ -501,6 +501,60 @@ the accounts Worker's code. Outside the deploy, set once:
 
 Locally, an app client registered before the guest hand-off also needs its `/auth/guest` redirect
 URI to sign a guest in.
+
+## The move to www.
+
+liveworkspace.app's address is `https://www.liveworkspace.app` ([site.md](../010-site/site.md) "www. is the address"), so the accounts
+Worker's `BASE_URL` is that, and with it the OAuth issuer (`https://www.liveworkspace.app/api/auth`), the discovery
+documents, the key set and every link in an email. Moving must sign nobody out and break no client, so for a
+transition window the old bare names keep working beside the new ones.
+
+**Both hosts answer.** Every API Worker (accounts, the index, media, the Community, telemetry, status, Drive) has the
+same routes on `www.liveworkspace.app` as on `liveworkspace.app`. The bare routes stay for old clients.
+
+**Tokens.** A token minted before the move names the bare issuer: access tokens for an hour, guest tokens for a year.
+Every check of a liveworkspace token (`@liveworkspace/auth-client` `createVerifier` and `createPersonVerifier`, in
+each app's API, the index, Drive and this Worker's own bearer check) accepts the issuer it is configured with and its
+twin on the other host, and the same for each audience. The twins are one named constant,
+`BARE_WWW_TRANSITION` in `@liveworkspace/sites/www`, with the date before which they must not be dropped. The key
+set is the same on both hosts, so a check fetches it from wherever its `ACCOUNTS_URL` points. Two places check tokens
+inside Better Auth, which only knows its own issuer: the account API's `vouchedPerson` and closing an account both
+introspect an app's access token, and an inactive answer for a token on the bare issuer is checked again here,
+against this Worker's own keys, the bare issuer, an app audience, the asking client (`azp`) and a live session
+(`legacy-issuer.ts`). Refresh tokens and API tokens (`lwt_`, `lvd_` and the like) are opaque rows, so they never
+named a host; CLI logins and MCP connectors, which hold those, keep working untouched.
+
+**Audiences stay as registered.** An audience is a name, not an address: each app's client is bound to its resource
+(`https://liveplanner.app/api`, and livediagram's stand-in), and every refresh token to the resources it was
+granted for. Asking for a `www.` resource with one of those refresh tokens is refused, which would sign everyone
+out, so `RESOURCES` and each app's `API_RESOURCE` stay as they are. Verification already accepts the `www.` twin, so
+a later move needs only the clients' resources re-bound.
+
+**The session.** In production every cookie this Worker sets (Better Auth's session and `dont_remember`, the
+`lw_guest` guest cookie and the hand-off nonce) is scoped to `Domain=liveworkspace.app`, so one session is valid on
+both hosts. A session made before the move is a host-only cookie on the bare domain: the bare domain's redirect
+moves it to the domain in the same hop it sends the page to `www.` ([site.md](../010-site/site.md) "www. is the address"). Better Auth
+trusts both origins (`trustedOrigins`), and the account API's and the workbench's same-origin checks take either.
+Staging and local development keep host-only cookies.
+
+A production cookie on `Domain=liveworkspace.app` also reaches `staging.liveworkspace.app`, under the same name as
+staging's own, and Better Auth reads the first of two cookies with one name. So before Better Auth reads a request,
+this Worker drops any copy of its signed cookies whose signature isn't its own (`own-cookies.ts`), only when a
+name comes more than once; and a guest cookie is read from whichever copy is signed with this Worker's secret.
+
+**Redirect URIs.** Every app's client already has its `www.` callbacks registered beside the bare ones
+(`/api/auth/callback` and `/auth/guest` on both hosts; checked read-only on production on 2026-10-26).
+`scripts/register-client.ts` takes both, and new clients are registered with both. Google's callback moves with
+`BASE_URL`, so `https://www.liveworkspace.app/api/auth/callback/google` must be an authorised redirect URI of the
+Google client before the accounts Worker deploys (the bare one stays).
+
+**Deploy order.** The Workers that check tokens deploy before accounts starts minting them on the new issuer, and
+the bare domain's redirect last, once `www.` answers every API (`.github/scripts/ci-plan.mjs`: accounts deploys with
+the sites, the redirect with the routers).
+
+**When the twins go.** Not before `BARE_WWW_TRANSITION.keepUntil`: a guest token minted on the last day before the
+move lives a year. Then drop the bare twins from the constant and the bare API routes, and leave the bare domain's
+redirect.
 
 ## Settings
 

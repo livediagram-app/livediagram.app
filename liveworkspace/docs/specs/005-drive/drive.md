@@ -58,7 +58,7 @@ is a var on drive (wrangler.toml) and a secret on accounts. What the operator se
 | Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                             |
 | Drive UI MIME types | the four in [The file](#the-file), each with its extension                                     |
 
-The origins are `https://liveworkspace.app` and `https://staging.liveworkspace.app`, and each app's own domain. The Picker's origins (every app's) and its API key come with Show folder.
+The origins are `https://www.liveworkspace.app`, `https://liveworkspace.app` (for the move to www.) and `https://staging.liveworkspace.app`, and each app's own domain. The Picker's origins (every app's) and its API key come with Show folder.
 
 ## The file
 

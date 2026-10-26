@@ -7,7 +7,7 @@ import type { MediaApp } from './apps';
 
 // The service's API on liveworkspace.app.
 export const MEDIA_API_PATH = '/api/media';
-export const MEDIA_API_URL = `https://liveworkspace.app${MEDIA_API_PATH}`;
+export const MEDIA_API_URL = `https://www.liveworkspace.app${MEDIA_API_PATH}`;
 
 // Each request names its app here and carries that app's key as `Authorization: Bearer <key>`.
 export const MEDIA_APP_HEADER = 'X-Media-App';

@@ -12,11 +12,21 @@
 // prism every row's mark is drawn in, tinted with that row's accent.
 
 import { BrandMark, type BrandApp } from '@liveworkspace/brand';
-import { APP_SITES, PLATFORM_SITE, type Site, type SiteId } from '@liveworkspace/sites';
-import { useRef, type CSSProperties, type ReactNode } from 'react';
+import {
+  APP_SITES,
+  PLATFORM_SITE,
+  siteHrefFrom,
+  type Site,
+  type SiteId,
+} from '@liveworkspace/sites';
+import { useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { ChevronDownIcon } from './icons/navigation';
 import { useMenu, useMenuButton } from './menu';
 import { useClickOutside } from './useClickOutside';
+
+const subscribeNever = () => () => {};
+const pageHost = () => window.location.host;
+const noHost = () => '';
 
 // The open menu's name. Given to useMenu: an aria-label on the surface itself is overwritten by its trigger's name.
 const MENU_LABEL = 'liveworkspace sites';
@@ -49,6 +59,10 @@ export function SiteSwitcher({
     label: MENU_LABEL,
   });
   useClickOutside(ref, close, open);
+  // The page's host, in the browser only: a staging page links each site's staging origin (siteHrefFrom). The server's
+  // markup has none, since the static pages are built once for production and staging.
+  const host = useSyncExternalStore(subscribeNever, pageHost, noHost);
+  const hrefOf = (site: Site) => siteHrefFrom(site, hrefFor ? hrefFor(site) : site.url, host);
 
   return (
     <div ref={ref} className={`group/sites relative flex items-center ${className}`}>
@@ -91,7 +105,7 @@ export function SiteSwitcher({
           <SiteRow
             app={app}
             site={PLATFORM_SITE}
-            href={hrefFor ? hrefFor(PLATFORM_SITE) : PLATFORM_SITE.url}
+            href={hrefOf(PLATFORM_SITE)}
             current={current}
             onPick={close}
           />
@@ -104,7 +118,7 @@ export function SiteSwitcher({
               key={site.id}
               app={app}
               site={site}
-              href={hrefFor ? hrefFor(site) : site.url}
+              href={hrefOf(site)}
               current={current}
               onPick={close}
             />

@@ -223,7 +223,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
       license: { name: 'MIT' },
     },
     servers: [
-      { url: '/api', description: 'Same-origin API (e.g. https://livedocuments.app/api).' },
+      { url: '/api', description: 'Same-origin API (e.g. https://www.livedocuments.app/api).' },
     ],
     tags: TAGS,
     paths,

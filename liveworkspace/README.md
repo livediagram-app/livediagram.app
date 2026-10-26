@@ -9,7 +9,7 @@ category per service, each with blueprints that hold the implementation detail. 
 spec first, then its blueprint, then the code ([AGENTS.md](AGENTS.md)).
 
 ```
-apps/site              liveworkspace.app: every page, the Explorer, Settings, the telemetry dashboard, status (a Next static export)
+apps/site              www.liveworkspace.app: every page, the Explorer, Settings, the telemetry dashboard, status (a Next static export)
 apps/accounts          /api/auth and /api/account: sign-in, sessions, teams, API tokens, guests, settings, profiles, email
 apps/index             /api/index: the One Explorer's index (items, folders, sharing, Inbox, Timeline, Trash, grants)
 apps/drive             /api/drive: the Google Drive mirror, for every app
@@ -17,6 +17,7 @@ apps/media             /api/media and /api/previews: every app's images, and its
 apps/community         /api/community: every app's Community listings
 apps/telemetry         /api/telemetry: every app's anonymous events
 apps/status            /api/status: hourly checks of every service, 90 days kept
+apps/redirect          the bare liveworkspace.app: a page load's one 301 to www. (docs/specs/010-site/site.md)
 apps/migrate           the one-off move from the historical livediagram.app, run from a laptop, never deployed
 packages/status        @liveworkspace/status: the one list of services and how an answer is judged
 docs/specs             the specs and blueprints

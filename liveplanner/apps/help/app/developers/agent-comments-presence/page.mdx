@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 Comments are how people and agents talk in a plan when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
-The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://liveplanner.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
+The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://www.liveplanner.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
 ## Who Can Do What
 
@@ -39,7 +39,7 @@ liveplanner comment ls "Budget 2027" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://liveplanner.app/api/projects/$DOC/comments?status=open" \
+curl "https://www.liveplanner.app/api/projects/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -89,19 +89,19 @@ Over the API, a thread is named by **any comment in it**, so take a comment id f
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "elementId": "1e17c0d2-…", "text": "Is hosting monthly or yearly?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Yearly, so divide by twelve" }'
 
 # Resolve it, or reopen it
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -118,13 +118,13 @@ A Plan card (an **item**) has one thread of its own, so its endpoints name the i
 
 ```bash
 # Add to the card's thread (a resolved thread reopens)
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Blocked on the payments review" }'
 
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments/resolve \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM/comments/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments/reopen \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM/comments/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -141,7 +141,7 @@ liveplanner presence clear "Sprint 14"
 ```
 
 ```bash
-curl -X PUT https://liveplanner.app/api/projects/$DOC/tabs/$TAB/presence \
+curl -X PUT https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "Triaging new requests", "focus": ["0933"], "ttl": 60000 }'
 ```

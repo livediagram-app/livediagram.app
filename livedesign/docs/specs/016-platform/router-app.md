@@ -6,6 +6,18 @@ A small Cloudflare Worker that fronts the apex domain (`livedesign.app`) and rou
 - **Runtime:** Cloudflare Workers.
 - **Production hostname:** `livedesign.app` and `www.livedesign.app`; staging's is `staging.livedesign.app`. Each is a custom domain declared in `apps/router/wrangler.toml`, attached by `wrangler deploy` ([Deployment](deployment.md#custom-domain)). Default Workers URL also remains reachable.
 
+## The bare domain
+
+Pages live on `www.livedesign.app`. A page load on the bare `livedesign.app` (a GET or HEAD, not under `/api` or
+`/.well-known`, and not a WebSocket upgrade) answers one `301` to the same path and query on
+`https://www.livedesign.app`, with `Cache-Control: public, max-age=86400` (`wwwRedirect`,
+`@liveworkspace/sites/workspace-proxy`). Everything else answers on the bare domain as before: API calls, the sign-in
+callback and live rooms from an older page, a CLI or an MCP client keep working, and no `Authorization` header is
+lost to a cross-origin redirect. It is always one hop: `/status` and `/telemetry` go straight to liveworkspace, and a
+help path missing its `/help` goes straight to `www.livedesign.app/help/…`. Only production's router does it (no
+`DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never
+redirect, so there is no loop and neither staging nor local development leads to production.
+
 ## Routing table
 
 In order; the first match wins.

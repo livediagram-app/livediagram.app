@@ -30,7 +30,7 @@ jobs:
       # the production D1 / R2 / KV.
       wrangler_env: ''
       environment_name: production
-      environment_url: https://livedocuments.app
+      environment_url: https://www.livedocuments.app
       # Empty: the editor app's own default, https://mcp.livedocuments.app.
       mcp_origin: ''
     secrets:

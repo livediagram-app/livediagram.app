@@ -64,7 +64,7 @@ The terminal waits up to ten minutes for you. If the browser cannot reach it (on
 livedocuments auth login --device
 ```
 
-The terminal prints a page address, `https://livedocuments.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livedocuments CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+The terminal prints a page address, `https://www.livedocuments.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livedocuments CLI** card with the same **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
 
 <Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
   <CliDeviceSignIn product="livedocuments" />
@@ -74,7 +74,7 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 
 ### With an API Token
 
-For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), and either set it for the commands you run:
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), and either set it for the commands you run:
 
 ```bash
 export LIVEDOCUMENTS_TOKEN=lwt_your_token_here

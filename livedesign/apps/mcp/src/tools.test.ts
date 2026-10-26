@@ -489,7 +489,7 @@ describe('the Trash tools', () => {
       restored: 'design',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://livedesign.app/design/d_1',
+      url: 'https://www.livedesign.app/design/d_1',
     });
   });
 

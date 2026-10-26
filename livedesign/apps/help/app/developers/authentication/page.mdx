@@ -19,7 +19,7 @@ External API calls authenticate with an **API token**: a long-lived, revocable c
 
 ## Get a token
 
-Tokens are made on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), not through the API. In livedesign, **Settings**, **Account**, **API Tokens** has a **Manage API Tokens** link there. The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the six-month lifetime and the 20-token limit.
+Tokens are made on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), not through the API. In livedesign, **Settings**, **Account**, **API Tokens** has a **Manage API Tokens** link there. The secret is shown **once** at creation; copy it then, because it is never displayed again. See [API Tokens](/help/account-and-data/api-tokens/) for the full walkthrough, including the six-month lifetime and the 20-token limit.
 
 Tokens have the form `lwt_` followed by a random string, so they are easy to spot in logs and secret scanners.
 
@@ -30,7 +30,7 @@ Tokens have the form `lwt_` followed by a random string, so they are easy to spo
 Pass the token in the `Authorization` header as a bearer credential on **every** request. There is no separate login or session step.
 
 ```bash
-curl https://livedesign.app/api/designs \
+curl https://www.livedesign.app/api/designs \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
@@ -41,7 +41,7 @@ Every request authenticated this way acts as your account, with the same access 
 `GET /tokens/current` describes the token the request presented: its account, name, whether it is read-only, and when it expires. It is a cheap way for a script to confirm its credential works. `DELETE /tokens/current` revokes that same token, so a script can clean up after itself without you opening Settings.
 
 ```bash
-curl https://livedesign.app/api/tokens/current \
+curl https://www.livedesign.app/api/tokens/current \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 

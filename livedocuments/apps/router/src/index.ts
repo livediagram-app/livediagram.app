@@ -15,6 +15,7 @@ import {
   PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   statusRedirect,
+  wwwRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
@@ -208,6 +209,20 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/site.md "Status"): an old link
+  // lands on it at livedocuments's group.
+  const status = statusRedirect(url, 'livedocuments', env.WORKSPACE_ORIGIN);
+  if (status) return status;
+  if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
+    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+    // for every app: an old link lands on it with livedocuments picked.
+    return telemetryRedirect(env);
+  }
+  // The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain"): one 301, to
+  // where this router's own redirects below would land. Only the redirects that leave the site come first. Production
+  // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
+  const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
+  if (www) return www;
   // liveworkspace's Explorer under this address, while livedocuments's switch is on (@liveworkspace/sites/workspace-proxy):
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, {
@@ -239,15 +254,6 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, LIVE_PATH)) {
     return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, LIVE_PATH);
   }
-  // The status page is liveworkspace's now, one for every app (liveworkspace/docs/site.md "Status"): an old link
-  // lands on it at livedocuments's group.
-  const status = statusRedirect(url, 'livedocuments', env.WORKSPACE_ORIGIN);
-  if (status) return status;
-  if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-    // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
-    // for every app: an old link lands on it with livedocuments picked.
-    return telemetryRedirect(env);
-  }
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as the editor app's assets.
@@ -262,11 +268,26 @@ async function route(request: Request, env: Env): Promise<Response> {
   // A help article URL that lost its `/help` prefix. Sent on with a
   // permanent redirect rather than dropped into marketing's 404: the path
   // is unambiguous, and these are links people have already shared.
-  if (HELP_CATEGORY_SEGMENTS.has(url.pathname.split('/')[1] ?? '')) {
-    url.pathname = `${HELP_PATH}${url.pathname}`;
+  const helpPath = helpCategoryPath(url.pathname);
+  if (helpPath) {
+    url.pathname = helpPath;
     return Response.redirect(url.toString(), 308);
   }
   return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}
+
+// Where this router's own redirects send `url`'s path, or null where none would: the bare domain's one hop lands
+// there (wwwRedirect), so it is never followed by a second.
+function redirectedPath(url: URL): string | null {
+  return helpCategoryPath(url.pathname);
+}
+
+// A help article's path that lost its `/help` prefix, with the prefix put back; null for any other path, a live
+// page route's included.
+function helpCategoryPath(pathname: string): string | null {
+  if (isLivePageRoute(pathname) || !HELP_CATEGORY_SEGMENTS.has(pathname.split('/')[1] ?? ''))
+    return null;
+  return `${HELP_PATH}${pathname}`;
 }
 
 // Where /telemetry and everything under it now lives: the central dashboard, filtered to livedocuments.

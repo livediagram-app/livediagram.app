@@ -15,6 +15,7 @@ apps/telemetry     the telemetry API, /api/telemetry/* (telemetry.md)
 apps/community     the Community API, /api/community/* (community.md)
 apps/status        the hourly status checks and their history, /api/status* (status.md)
 apps/drive         Google Drive sync for every app, /api/drive* (drive.md)
+apps/redirect      the bare liveworkspace.app's page loads, one 301 to www. ("Hosting")
 ```
 
 The APIs are Workers on more specific routes of the same origin, so the pages call them as
@@ -40,7 +41,7 @@ Appearance toggle is never in the header: it is on the rail.
 
 As on the apps' sites, a rail is pinned to the page's right edge (`components/SiteRail.tsx`). On the
 home page it starts with a **Share** card: X, LinkedIn, Facebook, WhatsApp and Email, as plain
-share-intent links with no SDKs or tracking, and Copy link, all for `https://liveworkspace.app`.
+share-intent links with no SDKs or tracking, and Copy link, all for `https://www.liveworkspace.app`.
 Under it, on every page, is the **Appearance** card (Light, Dark, System, as on the apps' sites; the
 boot script applies the choice before paint). The content runs `max-w-7xl` (1280px), so the rail
 shows from 1400px, where there is a gutter for it. Below that it is left out: the address is
@@ -648,12 +649,13 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 
 ## Hosting
 
-One Worker, `liveworkspace-site`, static assets only, on the custom domain `liveworkspace.app` (and `www.`;
-`staging.` for staging), so a deploy creates their DNS records and certificates. The APIs are path routes on the same
-hosts, which win over a custom domain, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
+One Worker, `liveworkspace-site`, static assets only, on the custom domains `www.liveworkspace.app` and
+`liveworkspace.app` (`staging.` for staging), so a deploy creates their DNS records and certificates. The APIs are
+path routes on the same hosts, which win over a custom domain, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
 `/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
-the status Worker, `/api/drive*` to Drive, and everything else here. Security headers come from `public/_headers`.
+the status Worker, `/api/drive*` to Drive, and everything else here. Every API has the same routes on both hosts.
+Security headers come from `public/_headers`.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
@@ -661,6 +663,33 @@ Explorer and the sign-in pages, so they hold on every app's address too. The boo
 under its asset prefix, `/_liveworkspace/_next/`. `trusted-types-guard.test.ts` holds every sink, the header and the
 boot to this, and `pnpm test:e2e` (after `pnpm build`) opens every Explorer view and the main pages in Chromium under
 the real header, failing on any Trusted Types refusal.
+
+### www. is the address
+
+Every product and the platform live on their `www.` host, APIs included: `https://www.liveworkspace.app/api/auth`,
+`https://www.liveplanner.app/api`. Every URL we generate (the OAuth issuer, discovery documents, emails, links, the
+clients' and CLIs' defaults) names `www.`. The bare domains only redirect page loads, and keep answering everything
+else for clients that still use them.
+
+On `liveworkspace.app` that redirect is its own small Worker, `liveworkspace-redirect` (`apps/redirect`), on the
+route `liveworkspace.app/*`. The APIs' more specific routes still win, so it only sees what the site would have:
+
+- A `GET` or `HEAD` page load answers one `301` to the same path and query on `https://www.liveworkspace.app`,
+  cached for a day (`public, max-age=86400`), as each app's router does for its own bare domain.
+- Never redirected: `/api/*`, `/.well-known/*`, any other method, a WebSocket upgrade, and a request an app's router
+  forwarded (it carries `X-Liveworkspace-Proxy`; the router fetches with `redirect: 'manual'`, so a 301 would take
+  the visitor off the app's address). Those go to the site Worker as before, through a service binding. A redirect
+  never carries `Authorization` across, because nothing that sends one is redirected.
+- A visit that still carries the old host-only cookies (the session, `dont_remember` and the `lw_guest` guest
+  cookie) moves them in the same hop: each is set again on `Domain=liveworkspace.app`, same value, so `www.` reads it.
+  Nothing is cleared: where a browser keeps both copies, they hold the same value, and accounts reads the one it
+  signed (own-cookies.ts). That answer is `Cache-Control: no-store`, so a browser asks again until it has moved.
+  Nobody is signed out and no guest loses their things ([accounts.md](../003-accounts/accounts.md) "The move to www.").
+- Staging and local development have one host each, so nothing there redirects; the Worker answers only
+  `liveworkspace.app` itself.
+
+It deploys after accounts and the site (`.github/scripts/ci-plan.mjs` puts it with the routers), so `www.` already
+answers every API when the first page load is sent there.
 
 ## Running it locally
 

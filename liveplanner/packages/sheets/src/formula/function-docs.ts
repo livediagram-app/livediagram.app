@@ -292,7 +292,7 @@ export const FUNCTION_DOCS: Readonly<Record<string, FunctionDoc>> = {
   HYPERLINK: D(
     'url, [label]',
     'A link to a web page or email address; Ctrl/⌘-click opens it',
-    '=HYPERLINK("https://liveplanner.app", "liveplanner")',
+    '=HYPERLINK("https://www.liveplanner.app", "liveplanner")',
   ),
   // Date and time
   TODAY: D('', "Today's date", '=TODAY()'),

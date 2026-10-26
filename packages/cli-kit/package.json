@@ -12,6 +12,7 @@
     "./did-you-mean": "./src/did-you-mean.ts",
     "./exit-codes": "./src/exit-codes.ts",
     "./fields": "./src/fields.ts",
+    "./hosts": "./src/hosts.ts",
     "./input": "./src/input.ts",
     "./io": "./src/io.ts",
     "./keychain": "./src/keychain.ts",

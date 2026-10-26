@@ -51,7 +51,7 @@ The editor app's worker fills in the shell's `<head>` for `/project/shared?s=<co
 (`@liveworkspace/media` `createSharePage`, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "The share page's head"); liveplanner's
 `apps/editor/src/share-page.ts` gives only its words: the share page's addresses, the share pitch and "Untitled plan".
 It asks liveworkspace's previews for the link's name with `GET /api/previews/share/<code>/card` (at
-`https://liveworkspace.app`, or the editor's `PREVIEWS_ORIGIN`: staging's own), which answers `{ name }` for a link
+`https://www.liveworkspace.app`, or the editor's `PREVIEWS_ORIGIN`: staging's own), which answers `{ name }` for a link
 whose preview names its project and 404 for every other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.

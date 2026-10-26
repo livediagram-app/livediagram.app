@@ -139,7 +139,7 @@ document in any app**. It keeps bytes whenever in doubt:
 
 | Where      | Setting                                                                                               |
 | ---------- | ----------------------------------------------------------------------------------------------------- |
-| api Worker | `MEDIA_URL` var (default `https://liveworkspace.app/api/media`), `MEDIA_KEY` secret                   |
+| api Worker | `MEDIA_URL` var (default `https://www.liveworkspace.app/api/media`), `MEDIA_KEY` secret               |
 | Service    | `MEDIA_KEY_<APP>` secret, the same value: `LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN` |
 
 An app without a key can't use the service, and the sweep doesn't wait for it. The same key lets the service ask

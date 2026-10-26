@@ -80,7 +80,7 @@ export type TelemetryEmitter<C extends string = string, A extends string = strin
 };
 
 export function createTelemetryEmitter<C extends string = string, A extends string = string>(opts: {
-  // The telemetry service, e.g. 'https://liveworkspace.app/api/telemetry': events go to
+  // The telemetry service, e.g. 'https://www.liveworkspace.app/api/telemetry': events go to
   // `${url}/events`.
   url: string;
   // Which app the batch counts for on the shared dashboard.

@@ -110,9 +110,9 @@ describe('run', () => {
         ? Response.json({ design: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
-    expect((await cli(['tab', 'ls', 'https://livedesign.app/design/shared?s=abc'], io)).code).toBe(
-      0,
-    );
+    expect(
+      (await cli(['tab', 'ls', 'https://www.livedesign.app/design/shared?s=abc'], io)).code,
+    ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
@@ -137,7 +137,7 @@ describe('run', () => {
     const none = await cli(['design', 'ls'], fakeIo({ routes: [capabilities] }));
     expect(none).toMatchObject({
       code: 4,
-      err: expect.stringContaining('not signed in to https://livedesign.app'),
+      err: expect.stringContaining('not signed in to https://www.livedesign.app'),
     });
     const guestOnly = fakeIo({
       env: { LIVEDESIGN_TOKEN: TOKEN },
@@ -187,7 +187,7 @@ describe('run', () => {
     await cli(['tab', 'ls', 'Auth flow'], io);
     expect(io.err().split('\n').filter(Boolean)).toEqual([
       '[cli] command tab.ls',
-      '[cli] profile default host https://livedesign.app source default',
+      '[cli] profile default host https://www.livedesign.app source default',
       '[cli] capabilities miss',
       '[cli] credential env',
       '[cli] request GET /api/designs 200 0',
@@ -213,7 +213,7 @@ describe('a profile for another host', () => {
       if (path === '/api/capabilities')
         return Response.json({ apiBase: `${SELF}/api`, authEnabled: true });
       return (
-        library(request, new URL(`https://livedesign.app${path}${url.search}`)) ??
+        library(request, new URL(`https://www.livedesign.app${path}${url.search}`)) ??
         tokens(request, url)
       );
     };
@@ -304,7 +304,7 @@ const storedAs = (token: string, tokenId: string) =>
     version: 1,
     profiles: {
       default: {
-        host: 'https://livedesign.app',
+        host: 'https://www.livedesign.app',
         token,
         tokenId,
         accountName: null,
@@ -370,7 +370,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'login', '--with-token'], io)).toMatchObject({
       code: 0,
-      out: 'signed in to https://livedesign.app as Ada\n',
+      out: 'signed in to https://www.livedesign.app as Ada\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty(
       'profiles.default',
@@ -423,7 +423,7 @@ describe('auth', () => {
           fakeIo({ routes: [capabilities, nameless], stdin: TOKEN }),
         )
       ).out,
-    ).toBe('signed in to https://livedesign.app as u1\n');
+    ).toBe('signed in to https://www.livedesign.app as u1\n');
   });
 
   it('refuses browser sign-in on a host without one, and a token from a terminal or that is not a token', async () => {
@@ -490,7 +490,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'logout'], io)).toMatchObject({
       code: 0,
-      out: 'signed out of https://livedesign.app\n',
+      out: 'signed out of https://www.livedesign.app\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles', {});
     expect((await cli(['auth', 'logout'])).code).toBe(2);

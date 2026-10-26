@@ -46,7 +46,7 @@ function makeEnv(api?: (path: string, init?: RequestInit) => Promise<Response> |
   vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(input instanceof Request ? input.url : input);
     if (!api) throw new Error('unreachable');
-    expect(url.origin).toBe('https://liveworkspace.app');
+    expect(url.origin).toBe('https://www.liveworkspace.app');
     expect(url.searchParams.get('app')).toBe('livediagram.app');
     return api(url.pathname, init);
   });

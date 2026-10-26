@@ -6,7 +6,7 @@ Derived from [architecture.md](../architecture.md) and [integrating-an-app.md](.
 
 | Term             | Identifier                             | Meaning                                                                   |
 | ---------------- | -------------------------------------- | ------------------------------------------------------------------------- |
-| Origin           | `https://liveworkspace.app`            | Production; staging is `https://staging.liveworkspace.app`                |
+| Origin           | `https://www.liveworkspace.app`        | Production; staging is `https://staging.liveworkspace.app`                |
 | Path route       | `routes` in `wrangler.toml`            | A Worker on a path of the zone; wins over the site's custom domain        |
 | Router           | `<app>/apps/router`                    | An app's front Worker; forwards the platform's paths on the app's address |
 | Workspace proxy  | `@liveworkspace/sites/workspace-proxy` | The routers' one shared forwarding table                                  |

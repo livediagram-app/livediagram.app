@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 Documentation for livedocuments, the open-source real-time editor for documents made of pages.
 
-livedocuments is a multiplayer page editor in the browser: teams write articles, build slide decks and lay out infographics together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [livedocuments.app](https://livedocuments.app), and the codebase is MIT-licensed. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+livedocuments is a multiplayer page editor in the browser: teams write articles, build slide decks and lay out infographics together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [livedocuments.app](https://www.livedocuments.app), and the codebase is MIT-licensed. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 
 These docs are the practical guide: what the app does, how to run it locally, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
 
@@ -26,4 +26,4 @@ If a doc disagrees with a spec, the spec wins (and the doc is the bug). Docs lin
 
 ## License
 
-[MIT](../LICENSE). Fork, embed, modify, commercial or otherwise. The hosted version at [livedocuments.app](https://livedocuments.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.
+[MIT](../LICENSE). Fork, embed, modify, commercial or otherwise. The hosted version at [livedocuments.app](https://www.livedocuments.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.

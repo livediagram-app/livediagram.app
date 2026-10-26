@@ -5,7 +5,7 @@ demo recordings.
 
 ## Screenshots
 
-Product screenshots of the editor app at [liveplanner.app](https://liveplanner.app),
+Product screenshots of the editor app at [liveplanner.app](https://www.liveplanner.app),
 split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).

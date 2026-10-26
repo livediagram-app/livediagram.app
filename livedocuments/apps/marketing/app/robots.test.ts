@@ -4,8 +4,8 @@ import robots from './robots';
 describe('robots.txt', () => {
   it('points crawlers at every sitemap on the origin', () => {
     expect(robots().sitemap).toEqual([
-      'https://livedocuments.app/sitemap.xml',
-      'https://livedocuments.app/help/sitemap.xml',
+      'https://www.livedocuments.app/sitemap.xml',
+      'https://www.livedocuments.app/help/sitemap.xml',
     ]);
   });
 

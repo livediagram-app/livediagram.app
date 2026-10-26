@@ -4,6 +4,7 @@
 // travel: changed settings and a tab gone from the file are named, never applied. The file's revisions and hashes
 // follow the tabs that landed.
 
+import { sameHost } from '@liveworkspace/cli-kit/hosts';
 import {
   submitChangeset,
   VerbRefusal,
@@ -64,7 +65,7 @@ export async function pushFile(
   input: PushInput,
 ): Promise<{ lines: string[]; exit: number }> {
   const file = await readPullFile(io, input.file);
-  if (file.livedesignSync.host !== host)
+  if (!sameHost(file.livedesignSync.host, host))
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
@@ -72,9 +73,7 @@ export async function pushFile(
       hint: `livedesign push ${input.file} --host ${file.livedesignSync.host}`,
     });
   const designId = file.design.id;
-  const { design } = await ctx.api.json<DesignResponse>(
-    `/designs/${encodeURIComponent(designId)}`,
-  );
+  const { design } = await ctx.api.json<DesignResponse>(`/designs/${encodeURIComponent(designId)}`);
   const plans = await planOf(ctx, file, new Set(design.tabs.map((t) => t.id)));
   ctx.log(`push ${designId} ${plans.length} changed tabs`);
   if (plans.length === 0) return { lines: ['nothing to push'], exit: EXIT.done };

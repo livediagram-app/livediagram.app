@@ -4,7 +4,7 @@
   "title": "livedocuments",
   "description": "Create, edit, share and render articles, slide decks and infographics on livedocuments.app.",
   "version": "0.1.0",
-  "websiteUrl": "https://livedocuments.app",
+  "websiteUrl": "https://www.livedocuments.app",
   "repository": {
     "url": "https://github.com/livedocuments-app/livedocuments.app",
     "source": "github",

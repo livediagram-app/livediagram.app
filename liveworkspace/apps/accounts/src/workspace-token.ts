@@ -12,6 +12,7 @@ import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Env } from './env.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { readCookie } from '@liveworkspace/auth-client/silent';
+import { cookieDomain, domainAttribute } from './cookie-scope.ts';
 import { GUEST_COOKIE, readGuestCookie, signGuestCookie } from './guests.ts';
 import { networkOf } from './rate-limit.ts';
 import { RESOURCES } from './resources.ts';
@@ -96,7 +97,7 @@ export async function workspaceToken(
     'set-cookie',
     `${GUEST_COOKIE}=${await signGuestCookie(guestId, secret)}; Max-Age=${COOKIE_MAX_AGE_SECONDS}; Path=/; HttpOnly; SameSite=Lax${
       env.ENVIRONMENT !== 'development' ? '; Secure' : ''
-    }`,
+    }${domainAttribute(cookieDomain(env.ENVIRONMENT))}`,
   );
   return Response.json(body, { headers });
 }

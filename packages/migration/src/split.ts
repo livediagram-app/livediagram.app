@@ -98,9 +98,9 @@ export function hasRetiredContent(tab: unknown): boolean {
  *  migration lands at the switch, after which the stand-in addresses go). */
 export const PART_ORIGINS: Readonly<Record<MigrationApp, string>> = {
   livediagram: 'https://www.livediagram.app',
-  liveplanner: 'https://liveplanner.app',
-  livedocuments: 'https://livedocuments.app',
-  livedesign: 'https://livedesign.app',
+  liveplanner: 'https://www.liveplanner.app',
+  livedocuments: 'https://www.livedocuments.app',
+  livedesign: 'https://www.livedesign.app',
 };
 
 // Where each app opens one item (@liveworkspace/sites APP_ITEMS itemPath); `#t=<tab id>` opens a tab.

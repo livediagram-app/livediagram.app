@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { appOfAnyOrigin, appOfOrigin, appOrigins } from './app-origins';
+import {
+  appOfAnyOrigin,
+  appOfOrigin,
+  appOrigins,
+  siteHrefFrom,
+  stagingOrigin,
+} from './app-origins';
+import { APP_SITES, PLATFORM_SITE, SITES } from './index';
 
 describe("each app's origins", () => {
   it('are its bare and www hosts in production, staging. on staging, its router port locally', () => {
@@ -45,5 +52,46 @@ describe("each app's origins", () => {
     expect(appOfOrigin('not a url', 'production')).toBeNull();
     expect(appOfAnyOrigin('http://localhost:3200')).toBe('liveplanner.app');
     expect(appOfAnyOrigin('http://localhost:3000')).toBeNull();
+  });
+});
+
+describe('a link to a site from a staging page', () => {
+  const planner = APP_SITES.find((s) => s.id === 'liveplanner.app')!;
+  const diagram = APP_SITES.find((s) => s.id === 'livediagram.app')!;
+
+  it("goes to that site's staging origin, the stand-in's while it has one", () => {
+    expect(stagingOrigin('liveworkspace.app')).toBe('https://staging.liveworkspace.app');
+    expect(stagingOrigin('liveplanner.app')).toBe('https://staging.liveplanner.app');
+    expect(stagingOrigin('livediagram.app')).toBe(
+      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
+    );
+    for (const host of [
+      'staging.liveworkspace.app',
+      'staging.livedesign.app',
+      'livediagram-router-staging.liveworkspace-easing509.workers.dev',
+    ]) {
+      expect(siteHrefFrom(planner, planner.url, host)).toBe('https://staging.liveplanner.app');
+      expect(siteHrefFrom(PLATFORM_SITE, PLATFORM_SITE.url, host)).toBe(
+        'https://staging.liveworkspace.app',
+      );
+    }
+  });
+
+  it("keeps the path and query of a link (the Explorer's)", () => {
+    expect(
+      siteHrefFrom(diagram, `${diagram.url}/explorer/timeline?id=t1`, 'staging.liveplanner.app'),
+    ).toBe(
+      'https://livediagram-router-staging.liveworkspace-easing509.workers.dev/explorer/timeline?id=t1',
+    );
+  });
+
+  it('leaves every link alone off staging, and before the host is known', () => {
+    for (const host of ['liveworkspace.app', 'www.liveplanner.app', 'localhost:3000', '']) {
+      for (const site of SITES) expect(siteHrefFrom(site, site.url, host)).toBe(site.url);
+    }
+    // A link that isn't on the site's own origin is left as it is.
+    expect(siteHrefFrom(planner, 'https://example.com/x', 'staging.liveplanner.app')).toBe(
+      'https://example.com/x',
+    );
   });
 });

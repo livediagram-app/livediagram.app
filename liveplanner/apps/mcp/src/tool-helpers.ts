@@ -25,7 +25,7 @@ export {
 // The editor app this MCP server belongs to: its own host on staging and on any other deployment
 // (CONSENT_BASE_URL, as the consent and device pages use), liveplanner.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
-  env.CONSENT_BASE_URL ?? 'https://liveplanner.app';
+  env.CONSENT_BASE_URL ?? 'https://www.liveplanner.app';
 
 export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
   `${appBase(env)}/project/${id}`;

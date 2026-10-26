@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a design: images, pages, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-designs" parentArticle={{ title: "Working with Designs", slug: "working-with-designs" }} subArticles={getSubArticles("working-with-designs").filter((a) => a.slug !== "images-and-pages")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-designs/edit-operations/), but a design holds more than elements: the images it shows and its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a design id in `$DOC`; paths are relative to `https://livedesign.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-designs/edit-operations/), but a design holds more than elements: the images it shows and its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a design id in `$DOC`; paths are relative to `https://www.livedesign.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the design open straight away, credited to you.
 
@@ -20,7 +20,7 @@ Every write here reaches anyone with the design open straight away, credited to 
 Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB, with its pixel size in two headers:
 
 ```bash
-curl -X POST https://livedesign.app/api/images \
+curl -X POST https://www.livedesign.app/api/images \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: image/png" \
   -H "X-Image-Width: 1200" -H "X-Image-Height: 800" \
@@ -46,7 +46,7 @@ curl -X POST https://livedesign.app/api/images \
 Uploading the same bytes again answers the image you already have, with `"deduped": true`. Then put it on a tab with a changeset that adds a whole image element:
 
 ```bash
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/changesets \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
 ```
@@ -59,7 +59,7 @@ curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/changesets \
 
 ```bash
 # Add a logo page and a phone wireframe, then rename the first page
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/pages \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/pages \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "pages": [
     { "op": "add", "kind": "logo", "name": "Mark" },
@@ -73,7 +73,7 @@ A page change is `add` (a `kind` of `logo`, `wireframe` or `photo`, with an opti
 ## A Tab as a Picture
 
 ```bash
-curl https://livedesign.app/api/designs/$DOC/tabs/$TAB/render.svg \
+curl https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/render.svg \
   -H "Authorization: Bearer $TOKEN" -o overview.svg
 ```
 
@@ -82,7 +82,7 @@ The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, 
 ## Copy a Design
 
 ```bash
-curl -X POST https://livedesign.app/api/designs/$DOC/copy \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/copy \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "name": "Service map (2027 draft)" }'
 ```

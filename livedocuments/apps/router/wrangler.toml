@@ -41,7 +41,7 @@ service = "livedocuments-help"
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
-# switch is on (liveworkspace/docs/one-explorer.md); production's (https://liveworkspace.app) needs no var.
+# switch is on (liveworkspace/docs/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
 MARKETING_ORIGIN = "http://127.0.0.1:3301"
 EDITOR_ORIGIN = "http://127.0.0.1:3302"
@@ -51,7 +51,7 @@ API_ORIGIN = "http://127.0.0.1:8987"
 TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3304"
 # The central index `/api/index/*` forwards to (liveworkspace/docs/one-explorer.md), run locally by
-# liveworkspace/apps/index; production's (https://liveworkspace.app) needs no var.
+# liveworkspace/apps/index; production's (https://www.liveworkspace.app) needs no var.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
 # liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
 DRIVE_ORIGIN = "http://127.0.0.1:3011"

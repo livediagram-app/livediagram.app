@@ -26,8 +26,8 @@ describe('SiteFooter', () => {
       'Licences',
       'Contact',
     ]);
-    expect(footerNav).toContain('href="https://liveworkspace.app/terms"');
-    expect(footerNav).toContain('href="https://liveworkspace.app/privacy"');
+    expect(footerNav).toContain('href="https://www.liveworkspace.app/terms"');
+    expect(footerNav).toContain('href="https://www.liveworkspace.app/privacy"');
     expect(footerNav).toContain('href="/help/policies/report-a-vulnerability/"');
     expect(footerNav).toContain('href="/licences"');
   });

@@ -126,7 +126,7 @@ await writeFile(
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://livedesign.app',
+      homepage: 'https://www.livedesign.app',
       repository: {
         type: 'git',
         url: 'git+https://github.com/livedesign-app/livedesign.app.git',

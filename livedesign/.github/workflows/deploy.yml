@@ -30,7 +30,7 @@ jobs:
       # the production R2 / KV and Durable Objects.
       wrangler_env: ''
       environment_name: production
-      environment_url: https://livedesign.app
+      environment_url: https://www.livedesign.app
       # Empty: the live app's own default, https://mcp.livedesign.app.
       mcp_origin: ''
     secrets:

@@ -7,7 +7,7 @@ import { deepLink, loadTab, shareUrl } from './tool-helpers';
 
 describe('deepLink', () => {
   it('points at the project route on the production host', () => {
-    expect(deepLink({}, 'abc-123')).toBe('https://liveplanner.app/project/abc-123');
+    expect(deepLink({}, 'abc-123')).toBe('https://www.liveplanner.app/project/abc-123');
   });
 
   it("points at this server's own app on staging or another deployment", () => {
@@ -19,15 +19,15 @@ describe('deepLink', () => {
 
 describe('shareUrl', () => {
   it('points at the shared route with the code as a query param', () => {
-    expect(shareUrl({}, 'AB12CD')).toBe('https://liveplanner.app/project/shared?s=AB12CD');
+    expect(shareUrl({}, 'AB12CD')).toBe('https://www.liveplanner.app/project/shared?s=AB12CD');
   });
 
   it('escapes the code rather than pasting it into the query raw', () => {
     // Share codes are minted server-side, so this is defence rather than a
     // live bug — but the value lands in a URL a model may hand to a user, and
     // an unescaped `&` would silently truncate the code.
-    expect(shareUrl({}, 'a&b=c')).toBe('https://liveplanner.app/project/shared?s=a%26b%3Dc');
-    expect(shareUrl({}, 'a b')).toBe('https://liveplanner.app/project/shared?s=a%20b');
+    expect(shareUrl({}, 'a&b=c')).toBe('https://www.liveplanner.app/project/shared?s=a%26b%3Dc');
+    expect(shareUrl({}, 'a b')).toBe('https://www.liveplanner.app/project/shared?s=a%20b');
   });
 });
 

@@ -153,7 +153,7 @@ In order of precedence:
 ## Profiles and hosts
 
 - `~/.config/liveplanner/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPLANNER_HOST` and
-  `LIVEPLANNER_PROFILE` choose one. The default is `https://liveplanner.app`.
+  `LIVEPLANNER_PROFILE` choose one. The default is `https://www.liveplanner.app`.
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   project format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer project format than it reads, the CLI

@@ -36,7 +36,7 @@ function moved(href: string, label: string, title: string, description: string):
 }
 
 // The policies cover every liveworkspace app, so they live on liveworkspace.app.
-const LIVEWORKSPACE_URL = 'https://liveworkspace.app';
+const LIVEWORKSPACE_URL = 'https://www.liveworkspace.app';
 
 /** /help/policies/privacy-policy and /help/privacy-and-security/privacy-policy: liveworkspace.app's privacy policy. */
 export function privacyPolicyMoved(product: string): MovedPage {

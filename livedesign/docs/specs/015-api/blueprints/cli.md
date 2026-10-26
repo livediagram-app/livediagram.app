@@ -100,7 +100,7 @@ Scope, by file:
 | Behaviour           | `VerbBehaviour`: `read`, `write`, `destructive`                         | As the MCP's `ToolBehaviour`, which becomes an alias of it               |
 | Local verb          | `Verb.local: true`                                                      | A verb whose handler needs Node and lives in `apps/cli/src/commands`     |
 | Profile             | `Profile { name, host }`                                                | A named host in `config.toml`                                            |
-| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://livedesign.app`)                 |
+| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://www.livedesign.app`)             |
 | Api base            | `Capabilities.apiBase`                                                  | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                              | What a host offers, from `GET /api/capabilities`                         |
 | Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)      | The `lwt_` token the CLI presents, and where it came from                |

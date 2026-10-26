@@ -24,7 +24,7 @@ not_found_handling = "404-page"
 run_worker_first = ["/*", "!/_next/*"]
 
 # A share link's preview names its document from liveworkspace's previews (liveworkspace/docs/previews.md), at
-# https://liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
+# https://www.liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
 # as `livediagram-editor-staging`. `main` is inheritable; the assets binding is

@@ -43,7 +43,7 @@ The dashboard surfaces three fixed windows that top out at **30 days**, and comp
 
 ## Sending events
 
-- **Browsers** (editor, help centre, marketing, Community) post straight to the service, `POST <TELEMETRY_URL>/events` (`https://liveworkspace.app/api/telemetry/events`), with `{ app: 'livediagram.app', events }`, as `text/plain` JSON with no credentials, so the cross-site send is a CORS simple request: no preflight, no cookies. The service takes a browser batch only from one of livediagram.app's own origins. `NEXT_PUBLIC_TELEMETRY_URL` names the service at build time; unset means production's, `https://liveworkspace.app/telemetry`.
+- **Browsers** (editor, help centre, marketing, Community) post straight to the service, `POST <TELEMETRY_URL>/events` (`https://www.liveworkspace.app/api/telemetry/events`), with `{ app: 'livediagram.app', events }`, as `text/plain` JSON with no credentials, so the cross-site send is a CORS simple request: no preflight, no cookies. The service takes a browser batch only from one of livediagram.app's own origins. `NEXT_PUBLIC_TELEMETRY_URL` names the service at build time; unset means production's, `https://www.liveworkspace.app/telemetry`.
 - **The api and mcp workers** post the events only they can count (`reportServerEvent` / `reportServerEvents` in `apps/api/src/server-telemetry.ts`, `postTelemetry` in `apps/mcp/src/api.ts`) with the `X-Telemetry-Key: <TELEMETRY_KEY>` header, which proves a batch with no Origin is livediagram's own. Fire-and-forget, off the response's critical path.
 
 ### The relay

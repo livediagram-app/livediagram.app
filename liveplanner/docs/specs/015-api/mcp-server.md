@@ -569,10 +569,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                              |
-| ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://liveplanner.app`, so another deployment's OAuth callers land on the hosted consent screen unless it sets its own. Also the host of every tool's `url` and share link |
-| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                               |
+| Name               | Where                          | Absent means                                                                                                                                                                                  |
+| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://www.liveplanner.app`, so another deployment's OAuth callers land on the hosted consent screen unless it sets its own. Also the host of every tool's `url` and share link |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                                   |
 
 `TELEMETRY_KEY` is liveplanner's Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
@@ -662,7 +662,7 @@ them) ingest from, so one listing reaches several catalogues.
   publishing needs no DNS record and no secret. One `remotes` entry,
   `streamable-http` at `https://mcp.liveplanner.app/mcp`, with no `headers`:
   OAuth (§3) is discovered from the server's metadata, not configured by the
-  client. The icon is the 512px mark served at `https://liveplanner.app/liveplanner-icon-512.png`. It carries no `repository` field: the source is not public.
+  client. The icon is the 512px mark served at `https://www.liveplanner.app/liveplanner-icon-512.png`. It carries no `repository` field: the source is not public.
 - **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
 login github-oidc` then `mcp-publisher publish` when `server.json` changes on
   `main`, or on manual dispatch. The registry rejects a version it already

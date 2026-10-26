@@ -206,7 +206,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', elements: [] }],
     });
     expect(result.out).toBe(
-      `+ project ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://liveplanner.app/project/${body!.id}\n`,
+      `+ project ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://www.liveplanner.app/project/${body!.id}\n`,
     );
   });
 });

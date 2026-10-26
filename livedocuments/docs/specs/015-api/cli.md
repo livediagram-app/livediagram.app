@@ -149,7 +149,7 @@ In order of precedence:
 ## Profiles
 
 - `~/.config/livedocuments/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEDOCUMENTS_HOST` and
-  `LIVEDOCUMENTS_PROFILE` choose one. The default is `https://livedocuments.app`.
+  `LIVEDOCUMENTS_PROFILE` choose one. The default is `https://www.livedocuments.app`.
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI

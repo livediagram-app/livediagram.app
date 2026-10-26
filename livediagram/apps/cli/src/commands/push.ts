@@ -4,6 +4,7 @@
 // travel: changed settings and a tab gone from the file are named, never applied. The file's revisions and hashes
 // follow the tabs that landed.
 
+import { sameHost } from '@liveworkspace/cli-kit/hosts';
 import {
   submitChangeset,
   VerbRefusal,
@@ -65,7 +66,7 @@ export async function pushFile(
   input: PushInput,
 ): Promise<{ lines: string[]; exit: number }> {
   const file = await readPullFile(io, input.file);
-  if (file.livediagramSync.host !== host)
+  if (!sameHost(file.livediagramSync.host, host))
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',

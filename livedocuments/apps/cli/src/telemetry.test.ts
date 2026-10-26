@@ -42,7 +42,7 @@ describe('the usage count', () => {
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
       { category: 'Cli', action: 'Used', type: 'DocumentLs' },
     ]);
-    expect(io.err()).toBe(`${telemetryNotice('https://livedocuments.app')}\n`);
+    expect(io.err()).toBe(`${telemetryNotice('https://www.livedocuments.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 

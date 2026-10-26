@@ -30,7 +30,7 @@ export type Env = {
   // realtime room. Reached through design-client.ts `designRoom(env, designId)`.
   DESIGN_ROOM: DurableObjectNamespace<DesignRoom>;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every design is and who
-  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
+  // may open it. INDEX_ORIGIN is its origin (`https://www.liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
   // and this app presents it to push a design's summary and to act for an API token's account. Unset, the design
@@ -60,7 +60,7 @@ export type Env = {
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
-  // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
+  // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livedesign's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
@@ -118,7 +118,7 @@ export type Env = {
   // "livedesign <hello@livedesign.app>". The domain must be onboarded to Email Service on this account.
   EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
-  // "https://livedesign.app".
+  // "https://www.livedesign.app".
   APP_BASE_URL?: string;
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the

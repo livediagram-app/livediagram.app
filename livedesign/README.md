@@ -2,7 +2,7 @@
 
 A collaborative editor for logos, wireframes and photos that works without signing in. What you make is a **design**: tabs of pages, each page a logo artboard, a wireframe of a screen, or a photo edited in layers. Open a link, design, share, export the pages (PDF, PNG, SVG, JSON, a Logo Kit, or a photo as PNG, JPEG, WebP or PSD). Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start designing."
 
-**Live at [livedesign.app](https://livedesign.app).** MIT-licensed and publicly viewable.
+**Live at [livedesign.app](https://www.livedesign.app).** MIT-licensed and publicly viewable.
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
@@ -45,10 +45,10 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 ## Security
 
-Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livedesign-app/livedesign.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livedesign.app/help/policies/report-a-vulnerability/).
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livedesign-app/livedesign.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livedesign.app/help/policies/report-a-vulnerability/).
 
 ## License
 
-[MIT](LICENSE). It runs free at [livedesign.app](https://livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own configuration — and the editor runs fully without any of them.
+[MIT](LICENSE). It runs free at [livedesign.app](https://www.livedesign.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Cloudflare Email Service (transactional email), each gated on its own configuration — and the editor runs fully without any of them.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedesign.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://www.livedesign.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

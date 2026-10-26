@@ -77,5 +77,5 @@ merges edits by element; two edits to the same element are last-writer-wins.
 
 ## Links
 
-- Hosted: https://livedocuments.app
-- Editor: https://livedocuments.app/new
+- Hosted: https://www.livedocuments.app
+- Editor: https://www.livedocuments.app/new

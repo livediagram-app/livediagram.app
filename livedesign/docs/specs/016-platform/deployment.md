@@ -115,7 +115,7 @@ targets exist before the router does. Later deploys are idempotent updates.
 
 ## Custom domain
 
-Production lives at **`https://livedesign.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
+Production lives at **`https://www.livedesign.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
 
 | Worker                      | Hostnames                              |
 | --------------------------- | -------------------------------------- |
@@ -126,9 +126,9 @@ Production lives at **`https://livedesign.app`**. Only two workers have a hostna
 
 `wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.livedesign.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `livedesign.app` for the deploy token; a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. From the router:
 
-- `https://livedesign.app/api/*` → api worker (REST + WebSocket).
-- `https://livedesign.app/live` and `https://livedesign.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
-- `https://livedesign.app/help` → help centre (prefix-stripped); `https://livedesign.app/telemetry` redirects to liveworkspace's telemetry dashboard ([Router app](router-app.md)).
+- `https://www.livedesign.app/api/*` → api worker (REST + WebSocket).
+- `https://www.livedesign.app/live` and `https://www.livedesign.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
+- `https://www.livedesign.app/help` → help centre (prefix-stripped); `https://www.livedesign.app/telemetry` redirects to liveworkspace's telemetry dashboard ([Router app](router-app.md)).
 - Everything else → marketing.
 
 The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.

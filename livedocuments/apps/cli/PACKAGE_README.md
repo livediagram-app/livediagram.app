@@ -1,6 +1,6 @@
 # livedocuments
 
-The command line for [livedocuments](https://livedocuments.app): read, build, edit and discuss documents (articles, slide
+The command line for [livedocuments](https://www.livedocuments.app): read, build, edit and discuss documents (articles, slide
 decks and infographics) from a terminal, built first for coding agents and second for scripts.
 
 ```bash

@@ -3,7 +3,7 @@
 // the address is one of the app's registered OAuth redirect URIs; the sign-in pages read them to know when they are
 // being served under an app's address. Kept Worker-safe: no Node, no DOM.
 
-import { APP_SITES, LOCAL_PORTS, type SiteId } from './index';
+import { APP_SITES, isStagingHost, LOCAL_PORTS, type Site, type SiteId } from './index';
 
 export type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
@@ -37,6 +37,19 @@ export const STAND_INS: Partial<
     mcp: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
   },
 };
+
+/** `site`'s staging origin: `staging.<site>`, or its staging stand-in while it has one. */
+export function stagingOrigin(site: SiteId): string {
+  if (site === 'liveworkspace.app') return 'https://staging.liveworkspace.app';
+  return STAND_INS[site]?.staging ?? `https://staging.${site}`;
+}
+
+/** A link to `site` (`href`, on its live origin `site.url`) as a page on `host` gives it: moved to the site's staging
+ *  origin from a staging page (liveworkspace/docs/site-switcher.md), unchanged anywhere else. */
+export function siteHrefFrom(site: Site, href: string, host: string): string {
+  if (!isStagingHost(host) || !href.startsWith(site.url)) return href;
+  return `${stagingOrigin(site.id)}${href.slice(site.url.length)}`;
+}
 
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
  *  origin matches: no other port, scheme or subdomain. */

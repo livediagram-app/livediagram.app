@@ -2,14 +2,14 @@
 
 First-party, anonymous product analytics, surfaced on a **public** dashboard so anyone can see what we measure. The goal: understand which features get used so we know what works, while staying honest about the product's "no creepy tracking" stance.
 
-Ingest, storage, retention and the dashboard are a platform service: every liveworkspace app sends its events to liveworkspace's telemetry service, whose API is `https://liveworkspace.app/api/telemetry` and dashboard `https://liveworkspace.app/telemetry`, which stores them tagged with the app (`liveplanner.app`) and serves one dashboard with an **All apps** view and a filter per app ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). liveplanner owns its closed vocabulary (`packages/api-schema`), its emitters, and its dashboard catalogue (`liveworkspace/apps/site/app/telemetry/liveplanner/`). `/telemetry` on liveplanner.app redirects to the central dashboard filtered to liveplanner. This spec describes the vocabulary and the counting rules; for the service, the liveworkspace spec is the source of truth.
+Ingest, storage, retention and the dashboard are a platform service: every liveworkspace app sends its events to liveworkspace's telemetry service, whose API is `https://www.liveworkspace.app/api/telemetry` and dashboard `https://www.liveworkspace.app/telemetry`, which stores them tagged with the app (`liveplanner.app`) and serves one dashboard with an **All apps** view and a filter per app ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). liveplanner owns its closed vocabulary (`packages/api-schema`), its emitters, and its dashboard catalogue (`liveworkspace/apps/site/app/telemetry/liveplanner/`). `/telemetry` on liveplanner.app redirects to the central dashboard filtered to liveplanner. This spec describes the vocabulary and the counting rules; for the service, the liveworkspace spec is the source of truth.
 
 ## Principles
 
 - **Anonymous, aggregate, first-party.** Events carry no user id, no IP, no user-generated content (never a project name, tab name, participant name, element text, share code, or project id). Only a fixed, app-defined vocabulary of enum values is ever stored.
 - **No external vendors.** Ingestion, storage (a D1 database) and the dashboard are liveworkspace's own telemetry service, run by us. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
 - **Off by default.** A single env var gates the whole system, so any deployment (local development, previews) emits/serves nothing unless it opts in. No committed config turns it on: liveplanner.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which no other deploy applies. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/business-model-and-licence.md)) intact.
-- **Transparent.** The dashboard is public (`https://liveworkspace.app/telemetry`, and `/telemetry` here redirects to it), and the privacy policy + landing page say plainly what we capture and why, and link to it.
+- **Transparent.** The dashboard is public (`https://www.liveworkspace.app/telemetry`, and `/telemetry` here redirects to it), and the privacy policy + landing page say plainly what we capture and why, and link to it.
 
 ## Event schema
 
@@ -47,7 +47,7 @@ The central service keeps 60 days (twice the dashboard's longest window, Last 30
 
 ## API
 
-The ingest (`POST https://liveworkspace.app/api/telemetry/events`, body `{ app: 'liveplanner.app', events: TelemetryEvent[] }`) and the summary (`GET https://liveworkspace.app/api/telemetry/summary?app=liveplanner.app`, or every app) are the central service's, specified in [liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md). The ingest validates each batch against **this app's** closed vocabulary (`isValidTelemetryEvent` in `@liveplanner/api-schema`) and drops this app's server-emitted pairs from browser batches (`SERVER_EMITTED_EVENT_PAIRS`). The summary's windows are fixed UTC days (`TELEMETRY_WINDOW_DAYS`, in `@liveworkspace/telemetry` and re-exported from `@liveplanner/api-schema`), and it adds each app's share of every window and day (`byApp`).
+The ingest (`POST https://www.liveworkspace.app/api/telemetry/events`, body `{ app: 'liveplanner.app', events: TelemetryEvent[] }`) and the summary (`GET https://www.liveworkspace.app/api/telemetry/summary?app=liveplanner.app`, or every app) are the central service's, specified in [liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md). The ingest validates each batch against **this app's** closed vocabulary (`isValidTelemetryEvent` in `@liveplanner/api-schema`) and drops this app's server-emitted pairs from browser batches (`SERVER_EMITTED_EVENT_PAIRS`). The summary's windows are fixed UTC days (`TELEMETRY_WINDOW_DAYS`, in `@liveworkspace/telemetry` and re-exported from `@liveplanner/api-schema`), and it adds each app's share of every window and day (`byApp`).
 
 ## On/off env var
 
@@ -167,7 +167,7 @@ Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if n
 
 ## Dashboard (liveworkspace's, liveplanner's view)
 
-The dashboard is a platform page, one for every app, at `https://liveworkspace.app/telemetry`
+The dashboard is a platform page, one for every app, at `https://www.liveworkspace.app/telemetry`
 ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md) covers its layout: the timeframe panel, the
 Dashboard, Detail and Search tabs, chart stacks, rankings and trend arrows). liveplanner owns its catalogue there,
 under `liveworkspace/apps/site/app/telemetry/liveplanner/`: the charts (`catalogue/<area>.ts`, re-exported from
@@ -204,4 +204,4 @@ The catalogue keeps these rules, each pinned by a test there:
 
 ## Privacy posture
 
-The privacy policy + landing page state: we record anonymous, first-party product events (the three-field schema, examples), to learn which features help; no external analytics vendors; data is never sold or shared beyond the public dashboard (liveworkspace's, `https://liveworkspace.app/telemetry`), and events go to liveworkspace's own telemetry service, not a vendor. This is consistent with the "no tracking pixels / no third-party analytics" claims, which hold (first-party, anonymous, no third parties, no ad tracking).
+The privacy policy + landing page state: we record anonymous, first-party product events (the three-field schema, examples), to learn which features help; no external analytics vendors; data is never sold or shared beyond the public dashboard (liveworkspace's, `https://www.liveworkspace.app/telemetry`), and events go to liveworkspace's own telemetry service, not a vendor. This is consistent with the "no tracking pixels / no third-party analytics" claims, which hold (first-party, anonymous, no third parties, no ad tracking).

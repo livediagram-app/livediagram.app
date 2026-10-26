@@ -6,6 +6,8 @@ export {
   type GuestClaims,
   type PersonClaims,
   type VerifierOptions,
+  remoteKeySet,
+  remoteKeySetAt,
 } from './verify';
 export {
   authorizeUrl,

@@ -11,7 +11,7 @@ import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
 const DEFAULT_FROM = 'livedocuments <hello@livedocuments.app>';
-const DEFAULT_BASE_URL = 'https://livedocuments.app';
+const DEFAULT_BASE_URL = 'https://www.livedocuments.app';
 
 export function emailEnabled(env: Env): boolean {
   return env.EMAIL !== undefined;

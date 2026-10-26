@@ -91,7 +91,7 @@ describe('run', () => {
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
     expect(
-      (await cli(['tab', 'ls', 'https://liveplanner.app/project/shared?s=abc'], io)).code,
+      (await cli(['tab', 'ls', 'https://www.liveplanner.app/project/shared?s=abc'], io)).code,
     ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
@@ -117,7 +117,7 @@ describe('run', () => {
     const none = await cli(['project', 'ls'], fakeIo({ routes: [capabilities] }));
     expect(none).toMatchObject({
       code: 4,
-      err: expect.stringContaining('not signed in to https://liveplanner.app'),
+      err: expect.stringContaining('not signed in to https://www.liveplanner.app'),
     });
     const guestOnly = fakeIo({
       env: { LIVEPLANNER_TOKEN: TOKEN },
@@ -171,7 +171,7 @@ describe('run', () => {
     await cli(['tab', 'ls', 'Auth flow'], io);
     expect(io.err().split('\n').filter(Boolean)).toEqual([
       '[cli] command tab.ls',
-      '[cli] profile default host https://liveplanner.app source default',
+      '[cli] profile default host https://www.liveplanner.app source default',
       '[cli] capabilities miss',
       '[cli] credential env',
       '[cli] request GET /api/projects 200 0',
@@ -197,7 +197,7 @@ describe('a profile on another host', () => {
       if (path === '/api/capabilities')
         return Response.json({ aiEnabled: false, apiBase: `${OTHER}/api`, authEnabled: true });
       return (
-        library(request, new URL(`https://liveplanner.app${path}${url.search}`)) ??
+        library(request, new URL(`https://www.liveplanner.app${path}${url.search}`)) ??
         tokens(request, url)
       );
     };
@@ -288,7 +288,7 @@ const storedAs = (token: string, tokenId: string) =>
     version: 1,
     profiles: {
       default: {
-        host: 'https://liveplanner.app',
+        host: 'https://www.liveplanner.app',
         token,
         tokenId,
         accountName: null,
@@ -354,7 +354,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'login', '--with-token'], io)).toMatchObject({
       code: 0,
-      out: 'signed in to https://liveplanner.app as Ada\n',
+      out: 'signed in to https://www.liveplanner.app as Ada\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty(
       'profiles.default',
@@ -407,7 +407,7 @@ describe('auth', () => {
           fakeIo({ routes: [capabilities, nameless], stdin: TOKEN }),
         )
       ).out,
-    ).toBe('signed in to https://liveplanner.app as u1\n');
+    ).toBe('signed in to https://www.liveplanner.app as u1\n');
   });
 
   it('refuses browser sign-in on a host without one, and a token from a terminal or that is not a token', async () => {
@@ -474,7 +474,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'logout'], io)).toMatchObject({
       code: 0,
-      out: 'signed out of https://liveplanner.app\n',
+      out: 'signed out of https://www.liveplanner.app\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles', {});
     expect((await cli(['auth', 'logout'])).code).toBe(2);

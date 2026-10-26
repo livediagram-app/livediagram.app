@@ -8,7 +8,7 @@ guests, settings, profiles and the rest of the account are in [accounts.md](acco
 
 The accounts Worker is an API only, on liveworkspace.app's origin: it is routed `/api/auth/*`, `/api/account/*`
 and the two discovery documents under `/.well-known/` (`apps/accounts/wrangler.toml`), and the site
-([site.md](../010-site/site.md)) keeps every other path. The issuer is `https://liveworkspace.app/api/auth`.
+([site.md](../010-site/site.md)) keeps every other path. The issuer is `https://www.liveworkspace.app/api/auth`.
 
 ## How signing in works
 
@@ -98,7 +98,7 @@ What a deploy never writes, set once per environment and kept across deploys:
 
    ```sh
    ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
-     --accounts https://liveworkspace.app \
+     --accounts https://www.liveworkspace.app \
      --name livediagram \
      --app livediagram.app \
      --redirect https://www.livediagram.app/auth/callback \

@@ -162,7 +162,7 @@ Production lives at **`https://livediagram.app`**. The apex routes to the router
 - `https://livediagram.app/api/*` → api worker (REST + WebSocket).
 - `https://livediagram.app/live` and `https://livediagram.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
 - `https://livediagram.app/help` → help centre; `https://livediagram.app/community` → Community (both prefix-stripped).
-- `https://livediagram.app/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://liveworkspace.app/telemetry?app=livediagram.app`.
+- `https://livediagram.app/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://www.liveworkspace.app/telemetry?app=livediagram.app`.
 - Everything else → marketing.
 
 The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.

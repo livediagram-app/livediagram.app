@@ -94,7 +94,7 @@ The wire shapes and a reader for them are in `@liveworkspace/status` (`wire.ts`)
 
 ## Where the checks go
 
-From the Worker, liveworkspace's own services are fetched at `PLATFORM_ORIGIN`, `https://liveworkspace.app` (or
+From the Worker, liveworkspace's own services are fetched at `PLATFORM_ORIGIN`, `https://www.liveworkspace.app` (or
 `staging.`), as a visitor's browser does. A Worker on a route can't fetch another Worker on the same zone unless it
 has the `global_fetch_strictly_public` compatibility flag, which sends the request out to the internet and back in
 through the zone's routes, so the status Worker has that flag. Each app is fetched at its live address

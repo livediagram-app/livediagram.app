@@ -283,11 +283,11 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Email `EMAIL`                     | `send_email`                                                |
 | Crons                             | `17 9 * * *`, `*/15 * * * *`                                |
 | Var `ENVIRONMENT`                 | `production`                                                |
-| Var `BASE_URL`                    | `https://liveworkspace.app`                                 |
-| Var `INDEX_URL`                   | `https://liveworkspace.app/api/index`                       |
+| Var `BASE_URL`                    | `https://www.liveworkspace.app`                             |
+| Var `INDEX_URL`                   | `https://www.liveworkspace.app/api/index`                   |
 | Var `EMAIL_FROM`                  | `sign-in@liveplanner.app`                                   |
 | Var `TURNSTILE_SITE_KEY`          | `0x4AAAAAAFlfZFYIdJsaQor8`                                  |
-| Var `TELEMETRY_URL`               | `https://liveworkspace.app/api/telemetry`                   |
+| Var `TELEMETRY_URL`               | `https://www.liveworkspace.app/api/telemetry`               |
 | Var `SIGN_IN_ON_APP_ORIGINS`      | `true`                                                      |
 | Var `GOOGLE_ON_APP_ORIGINS`       | `false`                                                     |
 

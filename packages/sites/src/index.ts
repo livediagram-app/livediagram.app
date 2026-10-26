@@ -46,7 +46,7 @@ export function siteUrl(id: SiteId, live: string, local = LOCAL): string {
 export const PLATFORM_SITE: Site = {
   id: 'liveworkspace.app',
   name: 'liveworkspace',
-  url: siteUrl('liveworkspace.app', 'https://liveworkspace.app'),
+  url: siteUrl('liveworkspace.app', 'https://www.liveworkspace.app'),
   pitch: 'One account across every app',
   accent: '#64748b',
   deep: '#334155',
@@ -55,10 +55,13 @@ export const PLATFORM_SITE: Site = {
 /** liveworkspace.app's origin as seen from a page on `host`: staging's from a staging app (`staging.<app>`), else
  *  PLATFORM_SITE's (the local site on a dev server). For links from an app's pages to the account pages. */
 export function workspaceOriginFor(host: string): string {
-  // `staging.<app>`, or a staging stand-in on workers.dev (`livediagram-router-staging.….workers.dev`).
-  return /^staging\.|^[^.]+-staging\.[^.]+\.workers\.dev$/i.test(host)
-    ? 'https://staging.liveworkspace.app'
-    : PLATFORM_SITE.url;
+  return isStagingHost(host) ? 'https://staging.liveworkspace.app' : PLATFORM_SITE.url;
+}
+
+/** Whether `host` is a staging deployment's: `staging.<site>`, or a staging stand-in on workers.dev
+ *  (`livediagram-router-staging.….workers.dev`). */
+export function isStagingHost(host: string): boolean {
+  return /^staging\.|^[^.]+-staging\.[^.]+\.workers\.dev$/i.test(host);
 }
 
 export const APP_SITES: readonly Site[] = [
@@ -342,7 +345,9 @@ export {
   appOfAnyOrigin,
   appOfOrigin,
   appOrigins,
+  siteHrefFrom,
   STAND_INS,
+  stagingOrigin,
   type AppEnvironment,
   type AppSiteId,
 } from './app-origins';

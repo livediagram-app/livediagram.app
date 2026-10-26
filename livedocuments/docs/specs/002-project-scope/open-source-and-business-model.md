@@ -10,7 +10,7 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-People use livedocuments at the official deployment, [livedocuments.app](https://livedocuments.app). It is free for everyone, with no tiers, and it is not a commercial product. We don't publish guidance for running other copies of it.
+People use livedocuments at the official deployment, [livedocuments.app](https://www.livedocuments.app). It is free for everyone, with no tiers, and it is not a commercial product. We don't publish guidance for running other copies of it.
 
 ## Implications for how we build
 

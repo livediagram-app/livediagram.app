@@ -1,6 +1,6 @@
 # liveplanner
 
-The command line for [liveplanner](https://liveplanner.app): read, build, edit and discuss plans from a terminal,
+The command line for [liveplanner](https://www.liveplanner.app): read, build, edit and discuss plans from a terminal,
 built first for coding agents and second for scripts.
 
 ```bash

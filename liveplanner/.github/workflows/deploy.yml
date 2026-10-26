@@ -30,7 +30,7 @@ jobs:
       # the production R2 / KV.
       wrangler_env: ''
       environment_name: production
-      environment_url: https://liveplanner.app
+      environment_url: https://www.liveplanner.app
       # Empty: the editor app's own default, https://mcp.liveplanner.app.
       mcp_origin: ''
     secrets:

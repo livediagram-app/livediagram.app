@@ -591,7 +591,7 @@ describe('the Trash tools', () => {
       restored: 'project',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://liveplanner.app/project/d_1',
+      url: 'https://www.liveplanner.app/project/d_1',
     });
   });
 

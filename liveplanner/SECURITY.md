@@ -9,7 +9,7 @@ Do not disclose a security problem publicly before we have had a chance to fix i
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is the help centre's
 Report a Vulnerability page (`apps/help/app/policies/report-a-vulnerability/page.mdx`), published at
-[liveplanner.app/help/policies/report-a-vulnerability](https://liveplanner.app/help/policies/report-a-vulnerability/).
+[liveplanner.app/help/policies/report-a-vulnerability](https://www.liveplanner.app/help/policies/report-a-vulnerability/).
 
 In short:
 

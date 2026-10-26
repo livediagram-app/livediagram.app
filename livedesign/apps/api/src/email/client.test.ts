@@ -21,7 +21,7 @@ describe('emailEnabled', () => {
 
 describe('appBaseUrl', () => {
   it('defaults to livedesign.app', () =>
-    expect(appBaseUrl(noBinding)).toBe('https://livedesign.app'));
+    expect(appBaseUrl(noBinding)).toBe('https://www.livedesign.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
     expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
       'https://example.com',

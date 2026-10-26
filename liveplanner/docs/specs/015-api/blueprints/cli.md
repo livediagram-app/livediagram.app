@@ -98,7 +98,7 @@ Scope, by file:
 | Behaviour           | `VerbBehaviour`: `read`, `write`, `destructive`                         | As the MCP's `ToolBehaviour`, which becomes an alias of it               |
 | Local verb          | `Verb.local: true`                                                      | A verb whose handler needs Node and lives in `apps/cli/src/commands`     |
 | Profile             | `Profile { name, host }`                                                | A named host in `config.toml`                                            |
-| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://liveplanner.app`)                |
+| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://www.liveplanner.app`)            |
 | Api base            | `Capabilities.apiBase`                                                  | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                              | What a host offers, from `GET /api/capabilities`                         |
 | Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)      | The `lwt_` token the CLI presents, and where it came from                |
@@ -798,7 +798,7 @@ nothing else.
 - **E26** A render of a tab whose SVG fails to rasterise: exit 7 for the CLI's own failure, with the SVG still
   writable by `--svg`.
 - **E27** An unexpected exception: stderr `error: internal error (<ErrorName>)` and `hint: run again with
-LIVEPLANNER_DEBUG=1 and report it at https://liveplanner.app/help/contact/`, exit 7 (CLI16).
+LIVEPLANNER_DEBUG=1 and report it at https://www.liveplanner.app/help/contact/`, exit 7 (CLI16).
 - **E28** Unknown keys in `config.toml`: ignored, logged under debug.
 - **E29** A read copy evicted between `wait` printing a revision and `tab diff`: E21.
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).

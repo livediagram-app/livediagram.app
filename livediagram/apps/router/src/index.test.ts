@@ -100,7 +100,9 @@ describe('production dispatch (service bindings)', () => {
       expect(req.headers.get('Cookie')).toBeNull();
       // Production's when no origin is named, and never the api worker.
       await dispatch('/api/drive/config', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/drive/config');
+      expect(fetchMock.mock.calls[1]![0].url).toBe(
+        'https://www.liveworkspace.app/api/drive/config',
+      );
       expect(api.urls).toEqual([]);
     } finally {
       vi.unstubAllGlobals();
@@ -174,7 +176,7 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://liveworkspace.app/telemetry?app=livediagram.app',
+        'https://www.liveworkspace.app/telemetry?app=livediagram.app',
       );
     }
     expect(marketing.urls).toEqual([]);
@@ -483,7 +485,7 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
         },
       );
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
-        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'https://www.liveworkspace.app/api/previews/items/d1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
@@ -527,7 +529,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://www.liveworkspace.app${path}`);
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -603,7 +605,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         new Response(null, {
           status: 307,
           headers: {
-            Location: 'https://liveworkspace.app/explorer/recent',
+            Location: 'https://www.liveworkspace.app/explorer/recent',
           },
         }),
       ),
@@ -641,6 +643,106 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
+});
+
+// The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain").
+describe('the bare domain', () => {
+  const REDIRECTS = new Set([301, 302, 303, 307, 308]);
+  const on = (host: string, path: string, env: Env, init?: RequestInit) =>
+    router.fetch(new Request(`https://${host}${path}`, init), env);
+
+  it('sends every page to www. in one cacheable 301, path and query kept', async () => {
+    const { env, marketing, api } = makeEnv();
+    for (const path of [
+      '/',
+      '/new',
+      '/new?template=kanban',
+      '/s/abc123?view=present',
+      '/join/t0k3n?team=1',
+      '/sign-in?client_id=a&sig=b',
+      '/explorer/recent?x=1',
+      '/help/user-interface/',
+      '/live/_next/static/chunks/app.js',
+      '/pricing',
+    ]) {
+      for (const method of ['GET', 'HEAD']) {
+        const res = await on('livediagram.app', path, env, { method });
+        expect(res.status, path).toBe(301);
+        expect(res.headers.get('Location'), path).toBe(`https://www.livediagram.app${path}`);
+        expect(res.headers.get('Cache-Control'), path).toBe('public, max-age=86400');
+      }
+    }
+    // Answered before anything is fetched.
+    expect(marketing.urls).toEqual([]);
+    expect(api.urls).toEqual([]);
+  });
+
+  it('is one hop: where it lands never redirects again', async () => {
+    const { env } = makeEnv();
+    for (const path of [
+      '/',
+      '/new',
+      '/getting-started',
+      '/getting-started/first-steps?x=1',
+      '/tools',
+      '/troubleshooting/',
+      '/diagram/abc?tab=2',
+      '/help/tabs/add-to-diagram',
+      '/getting-started/',
+      '/status',
+      '/telemetry',
+      '/form/AbC123?embed=1',
+    ]) {
+      const first = await on('livediagram.app', path, env);
+      expect(REDIRECTS.has(first.status), path).toBe(true);
+      const next = new URL(first.headers.get('Location')!);
+      if (next.hostname !== 'www.livediagram.app') continue; // Left the site (status, telemetry): its own one hop.
+      const second = await router.fetch(new Request(next), env);
+      expect(REDIRECTS.has(second.status), `${path} -> ${next.href}`).toBe(false);
+    }
+  });
+
+  it('sends an old form link straight to liveplanner, not through www. first', async () => {
+    const { env } = makeEnv();
+    const res = await on('livediagram.app', '/form/AbC123?embed=1', env);
+    expect(res.headers.get('Location')).toBe('https://www.liveplanner.app/form/AbC123?embed=1');
+  });
+
+  it('leaves the api, the sign-in callback, WebSockets and other methods on the bare domain', async () => {
+    const { env, api } = makeEnv();
+    await on('livediagram.app', '/api/auth/callback?code=1&state=2', env);
+    await on('livediagram.app', '/api/things', env, { method: 'POST', body: '{}' });
+    await on('livediagram.app', '/api/things/x/ws', env, { headers: { Upgrade: 'websocket' } });
+    expect(api.urls).toEqual([
+      'https://livediagram.app/api/auth/callback?code=1&state=2',
+      'https://livediagram.app/api/things',
+      'https://livediagram.app/api/things/x/ws',
+    ]);
+    for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+      expect((await on('livediagram.app', '/new', env, { method })).status, method).not.toBe(301);
+    }
+    expect((await on('livediagram.app', '/.well-known/security.txt', env)).status).not.toBe(301);
+  });
+
+  it('never redirects www., staging or the router’s own address, so it cannot loop or leave staging', async () => {
+    const { env } = makeEnv();
+    const staging: Env = { ...env, DEPLOY_ENV: 'staging' };
+    // `wrangler dev` hands a local router its production host, so local never redirects either.
+    for (const DEPLOY_ENV of ['local', 'staging']) {
+      expect(
+        REDIRECTS.has((await on('livediagram.app', '/new', { ...env, DEPLOY_ENV })).status),
+      ).toBe(false);
+    }
+    for (const host of [
+      'www.livediagram.app',
+      'staging.livediagram.app',
+      'livediagram-router.liveworkspace-easing509.workers.dev',
+    ]) {
+      for (const e of [env, staging]) {
+        expect(REDIRECTS.has((await on(host, '/new', e)).status), host).toBe(false);
+      }
     }
   });
 });

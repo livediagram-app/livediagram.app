@@ -29,7 +29,7 @@ export type Env = {
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
-  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
+  // may open it. INDEX_ORIGIN is its origin (`https://www.liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
   // and this app presents it to push a plan's summary and to act for an API token's account. Unset, the plan
@@ -59,7 +59,7 @@ export type Env = {
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which serves every plan's previews
-  // (liveworkspace/docs/previews.md): its API's base URL (`https://liveworkspace.app/api/media`; locally
+  // (liveworkspace/docs/previews.md): its API's base URL (`https://www.liveworkspace.app/api/media`; locally
   // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
   // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
   // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge
@@ -112,7 +112,7 @@ export type Env = {
   // "liveplanner <hello@liveplanner.app>". The domain must be onboarded to Email Service on this account.
   EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
-  // "https://liveplanner.app".
+  // "https://www.liveplanner.app".
   APP_BASE_URL?: string;
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the

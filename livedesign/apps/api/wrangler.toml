@@ -21,14 +21,14 @@ port = 8989
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
-# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# unset means production's (https://www.liveworkspace.app/api/telemetry). Locally,
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
 # The central index (liveworkspace/docs/one-explorer.md): where every design is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the design rooms push their summaries
 # there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
-INDEX_ORIGIN = "https://liveworkspace.app"
+INDEX_ORIGIN = "https://www.liveworkspace.app"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -140,14 +140,14 @@ simple = { limit = 120, period = 60 }
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
 # APP_BASE_URL (optional, from hosted-vars.json) is the public origin for links in emails. Defaults to
-# "https://livedesign.app".
+# "https://www.livedesign.app".
 
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
 # lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   ACCOUNTS_URL            the accounts Worker's origin
-#                           (https://liveworkspace.app)
+#                           (https://www.liveworkspace.app)
 #   API_RESOURCE            this API's registered resource, the access
 #                           token's audience (https://livedesign.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id

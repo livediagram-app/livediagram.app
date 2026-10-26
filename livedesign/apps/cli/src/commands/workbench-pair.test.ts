@@ -12,7 +12,7 @@ import { capabilities, fakeIo, NOW, TOKEN, type FakeIo } from '../testing/fake-i
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const CODE = 'c'.repeat(22);
-const PAIRING_URL = `https://liveworkspace.app/workbench/pair?code=${CODE}`;
+const PAIRING_URL = `https://www.liveworkspace.app/workbench/pair?code=${CODE}`;
 const EXPIRES = NOW + 600_000;
 const STATUS_PATH = `/api/workbench/pairing-requests/${CODE}/status`;
 
@@ -191,13 +191,13 @@ describe('workbench pair', () => {
     expect(await pair(recovers.io)).toBe(0);
     const fails = host({ polls: ['network', 'network', 'network'] });
     expect(await pair(fails.io)).toBe(7);
-    expect(fails.io.err()).toContain('could not reach https://livedesign.app (fetch failed)');
+    expect(fails.io.err()).toContain('could not reach https://www.livedesign.app (fetch failed)');
   });
 
   it('reports any other failure of the poll as the CLI reports the api', async () => {
     const { io } = host({ polls: [{ http: 503 }] });
     expect(await pair(io)).toBe(7);
-    expect(io.err()).toContain('https://livedesign.app failed (HTTP 503)');
+    expect(io.err()).toContain('https://www.livedesign.app failed (HTTP 503)');
   });
 
   it('refuses a bad origin or name with exit 1, before asking', async () => {

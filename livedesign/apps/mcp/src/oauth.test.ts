@@ -12,7 +12,7 @@ describe('the authorization server', () => {
   });
 
   it('sends people to the hosted editor unless CONSENT_BASE_URL names another', () => {
-    expect(OAUTH.appBase({} as Env)).toBe('https://livedesign.app');
+    expect(OAUTH.appBase({} as Env)).toBe('https://www.livedesign.app');
     expect(OAUTH.appBase({ CONSENT_BASE_URL: 'https://live.test' } as Env)).toBe(
       'https://live.test',
     );

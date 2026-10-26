@@ -8,7 +8,7 @@ import type { CommunityMineResponse, CommunityOwnPost, CommunityPostInput } from
 
 // The service's API on liveworkspace.app. Every app's pages and Workers call it here.
 export const COMMUNITY_API_PATH = '/api/community';
-export const COMMUNITY_API_URL = `https://liveworkspace.app${COMMUNITY_API_PATH}`;
+export const COMMUNITY_API_URL = `https://www.liveworkspace.app${COMMUNITY_API_PATH}`;
 
 // Every public read names its app in this query parameter; a post of another app answers as missing.
 export const COMMUNITY_APP_PARAM = 'app';

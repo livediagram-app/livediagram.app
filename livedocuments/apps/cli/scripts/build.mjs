@@ -126,7 +126,7 @@ await writeFile(
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://livedocuments.app',
+      homepage: 'https://www.livedocuments.app',
       repository: {
         type: 'git',
         url: 'git+https://github.com/livedocuments-app/livedocuments.app.git',

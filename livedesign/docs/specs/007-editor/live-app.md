@@ -3,7 +3,7 @@
 The Pages editor: where people design logos and wireframes and edit photos on pages, and export them.
 
 - **Workspace:** `apps/live` (`@livedesign/live`).
-- **Public URL:** `https://livedesign.app` — the app serves at **clean routes** (`/design/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
+- **Public URL:** `https://www.livedesign.app` — the app serves at **clean routes** (`/design/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
 - **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [08-router-app.md](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
 
 ## Always available without sign-in

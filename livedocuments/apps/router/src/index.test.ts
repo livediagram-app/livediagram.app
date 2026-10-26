@@ -38,25 +38,25 @@ function makeEnv() {
 }
 
 const dispatch = (path: string, env: Env) =>
-  router.fetch(new Request(`https://livedocuments.app${path}`), env);
+  router.fetch(new Request(`https://www.livedocuments.app${path}`), env);
 
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
     await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://livedocuments.app/api/documents/abc']);
+    expect(api.urls).toEqual(['https://www.livedocuments.app/api/documents/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
-    expect(live.urls).toEqual(['https://livedocuments.app/_next/static/chunk.js']);
+    expect(live.urls).toEqual(['https://www.livedocuments.app/_next/static/chunk.js']);
   });
 
   it('strips the basePath for help, keeping the query', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://livedocuments.app/canvas/themes/']);
+    expect(help.urls).toEqual(['https://www.livedocuments.app/canvas/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -82,7 +82,7 @@ describe('production dispatch (service bindings)', () => {
   it('a bare stripped prefix forwards as the root path', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help', env);
-    expect(help.urls).toEqual(['https://livedocuments.app/']);
+    expect(help.urls).toEqual(['https://www.livedocuments.app/']);
   });
 
   it('sends /telemetry and below to the central dashboard, filtered to livedocuments', async () => {
@@ -91,7 +91,7 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://liveworkspace.app/telemetry?app=livedocuments.app',
+        'https://www.liveworkspace.app/telemetry?app=livedocuments.app',
       );
     }
     const staging = await dispatch('/telemetry', {
@@ -108,15 +108,15 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/document/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://livedocuments.app/document/abc123',
-      'https://livedocuments.app/new?blank=1',
+      'https://www.livedocuments.app/document/abc123',
+      'https://www.livedocuments.app/new?blank=1',
     ]);
   });
 
   it("routes the editor app's root-served icon to the editor worker", async () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
-    expect(live.urls).toEqual(['https://livedocuments.app/icon.svg']);
+    expect(live.urls).toEqual(['https://www.livedocuments.app/icon.svg']);
   });
 
   it('serves the licences page and its texts from marketing', async () => {
@@ -125,8 +125,8 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/licences', env);
     await dispatch('/licences/texts/0123456789abcdef.txt', env);
     expect(marketing.urls).toEqual([
-      'https://livedocuments.app/licences',
-      'https://livedocuments.app/licences/texts/0123456789abcdef.txt',
+      'https://www.livedocuments.app/licences',
+      'https://www.livedocuments.app/licences/texts/0123456789abcdef.txt',
     ]);
   });
 
@@ -160,7 +160,7 @@ describe('local-dev dispatch (origin proxy)', () => {
     try {
       const { env, api } = makeEnv();
       await router.fetch(
-        new Request('https://livedocuments.app/api/index/items/p1/grant?x=1', {
+        new Request('https://www.livedocuments.app/api/index/items/p1/grant?x=1', {
           method: 'POST',
           headers: { Authorization: 'Bearer g', 'X-Share-Code': 'C', Cookie: 'a=b' },
           body: '{"tab":null}',
@@ -177,10 +177,10 @@ describe('local-dev dispatch (origin proxy)', () => {
       // Never the api worker, and production's index when no origin is named.
       expect(api.urls).toEqual([]);
       await dispatch('/api/index/items', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/index/items');
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://www.liveworkspace.app/api/index/items');
       // `/api/indexes` is not the index.
       await dispatch('/api/indexes', env);
-      expect(api.urls).toEqual(['https://livedocuments.app/api/indexes']);
+      expect(api.urls).toEqual(['https://www.livedocuments.app/api/indexes']);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -192,7 +192,7 @@ describe('local-dev dispatch (origin proxy)', () => {
     try {
       const { env, api } = makeEnv();
       await router.fetch(
-        new Request('https://livedocuments.app/api/drive/marks', {
+        new Request('https://www.livedocuments.app/api/drive/marks', {
           headers: { Authorization: 'Bearer t', Cookie: 'a=b' },
         }),
         { ...env, DRIVE_ORIGIN: 'http://127.0.0.1:3011' },
@@ -203,7 +203,9 @@ describe('local-dev dispatch (origin proxy)', () => {
       expect(req.headers.get('Cookie')).toBeNull();
       // Production's when no origin is named, and never the api worker.
       await dispatch('/api/drive/config', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/drive/config');
+      expect(fetchMock.mock.calls[1]![0].url).toBe(
+        'https://www.liveworkspace.app/api/drive/config',
+      );
       expect(api.urls).toEqual([]);
     } finally {
       vi.unstubAllGlobals();
@@ -249,7 +251,7 @@ describe('bare help-article paths', () => {
     const res = await dispatch('/privacy-and-security/data-privacy/', env);
     expect(res.status).toBe(308);
     expect(res.headers.get('location')).toBe(
-      'https://livedocuments.app/help/privacy-and-security/data-privacy/',
+      'https://www.livedocuments.app/help/privacy-and-security/data-privacy/',
     );
     // Never reached marketing's 404, which is what it used to do.
     expect(marketing.urls).toEqual([]);
@@ -421,18 +423,21 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env, api } = makeEnv();
-      await router.fetch(new Request('https://livedocuments.app/api/previews/items/d1?v=5'), env);
-      await router.fetch(new Request('https://livedocuments.app/api/share/ABC/image.png'), {
+      await router.fetch(
+        new Request('https://www.livedocuments.app/api/previews/items/d1?v=5'),
+        env,
+      );
+      await router.fetch(new Request('https://www.livedocuments.app/api/share/ABC/image.png'), {
         ...env,
         PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
       });
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
-        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'https://www.liveworkspace.app/api/previews/items/d1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
-      await router.fetch(new Request('https://livedocuments.app/api/share/ABC'), env);
-      expect(api.urls).toEqual(['https://livedocuments.app/api/share/ABC']);
+      await router.fetch(new Request('https://www.livedocuments.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://www.livedocuments.app/api/share/ABC']);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -459,12 +464,12 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         '/explorer/offline',
       ]) {
         const res = await router.fetch(
-          new Request(`https://livedocuments.app${path}#ignored`),
+          new Request(`https://www.livedocuments.app${path}#ignored`),
           env,
         );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://www.liveworkspace.app${path}`);
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -480,14 +485,14 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       const { env, api } = makeEnv();
       const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
       await router.fetch(
-        new Request('https://livedocuments.app/explorer/recent.txt?_rsc=x'),
+        new Request('https://www.livedocuments.app/explorer/recent.txt?_rsc=x'),
         local,
       );
       expect(fetchMock.mock.calls[0]![0].url).toBe(
         'http://localhost:3000/explorer/recent.txt?_rsc=x',
       );
       await router.fetch(
-        new Request('https://livedocuments.app/api/workspace/account/people?ids=u1', {
+        new Request('https://www.livedocuments.app/api/workspace/account/people?ids=u1', {
           headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
         }),
         local,
@@ -513,14 +518,14 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       await dispatch('/api/account', env);
       await dispatch('/new', env);
       expect(live.urls).toEqual([
-        'https://livedocuments.app/_next/static/chunk.js',
-        'https://livedocuments.app/new',
+        'https://www.livedocuments.app/_next/static/chunk.js',
+        'https://www.livedocuments.app/new',
       ]);
       expect(marketing.urls).toEqual([
-        'https://livedocuments.app/_next/static/chunk.js',
-        'https://livedocuments.app/explorers',
+        'https://www.livedocuments.app/_next/static/chunk.js',
+        'https://www.livedocuments.app/explorers',
       ]);
-      expect(api.urls).toEqual(['https://livedocuments.app/api/account']);
+      expect(api.urls).toEqual(['https://www.livedocuments.app/api/account']);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
@@ -532,7 +537,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       Promise.resolve(
         new Response(null, {
           status: 307,
-          headers: { Location: 'https://liveworkspace.app/explorer/recent' },
+          headers: { Location: 'https://www.liveworkspace.app/explorer/recent' },
         }),
       ),
     );
@@ -551,13 +556,13 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env } = makeEnv();
-      const self = await router.fetch(new Request('https://livedocuments.app/explorer'), {
+      const self = await router.fetch(new Request('https://www.livedocuments.app/explorer'), {
         ...env,
-        WORKSPACE_ORIGIN: 'https://livedocuments.app',
+        WORKSPACE_ORIGIN: 'https://www.livedocuments.app',
       });
       expect(self.status).toBe(508);
       const again = await router.fetch(
-        new Request('https://livedocuments.app/explorer', {
+        new Request('https://www.livedocuments.app/explorer', {
           headers: { 'X-Liveworkspace-Proxy': 'livedocuments' },
         }),
         env,
@@ -566,6 +571,97 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
+});
+
+// The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain").
+describe('the bare domain', () => {
+  const REDIRECTS = new Set([301, 302, 303, 307, 308]);
+  const on = (host: string, path: string, env: Env, init?: RequestInit) =>
+    router.fetch(new Request(`https://${host}${path}`, init), env);
+
+  it('sends every page to www. in one cacheable 301, path and query kept', async () => {
+    const { env, marketing, api } = makeEnv();
+    for (const path of [
+      '/',
+      '/new',
+      '/new?template=kanban',
+      '/s/abc123?view=present',
+      '/join/t0k3n?team=1',
+      '/sign-in?client_id=a&sig=b',
+      '/explorer/recent?x=1',
+      '/help/user-interface/',
+      '/live/_next/static/chunks/app.js',
+      '/pricing',
+    ]) {
+      for (const method of ['GET', 'HEAD']) {
+        const res = await on('livedocuments.app', path, env, { method });
+        expect(res.status, path).toBe(301);
+        expect(res.headers.get('Location'), path).toBe(`https://www.livedocuments.app${path}`);
+        expect(res.headers.get('Cache-Control'), path).toBe('public, max-age=86400');
+      }
+    }
+    // Answered before anything is fetched.
+    expect(marketing.urls).toEqual([]);
+    expect(api.urls).toEqual([]);
+  });
+
+  it('is one hop: where it lands never redirects again', async () => {
+    const { env } = makeEnv();
+    for (const path of [
+      '/',
+      '/new',
+      '/getting-started',
+      '/getting-started/first-steps?x=1',
+      '/tools',
+      '/troubleshooting/',
+      '/getting-started/',
+      '/status',
+      '/telemetry',
+    ]) {
+      const first = await on('livedocuments.app', path, env);
+      expect(REDIRECTS.has(first.status), path).toBe(true);
+      const next = new URL(first.headers.get('Location')!);
+      if (next.hostname !== 'www.livedocuments.app') continue; // Left the site (status, telemetry): its own one hop.
+      const second = await router.fetch(new Request(next), env);
+      expect(REDIRECTS.has(second.status), `${path} -> ${next.href}`).toBe(false);
+    }
+  });
+
+  it('leaves the api, the sign-in callback, WebSockets and other methods on the bare domain', async () => {
+    const { env, api } = makeEnv();
+    await on('livedocuments.app', '/api/auth/callback?code=1&state=2', env);
+    await on('livedocuments.app', '/api/things', env, { method: 'POST', body: '{}' });
+    await on('livedocuments.app', '/api/things/x/ws', env, { headers: { Upgrade: 'websocket' } });
+    expect(api.urls).toEqual([
+      'https://livedocuments.app/api/auth/callback?code=1&state=2',
+      'https://livedocuments.app/api/things',
+      'https://livedocuments.app/api/things/x/ws',
+    ]);
+    for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+      expect((await on('livedocuments.app', '/new', env, { method })).status, method).not.toBe(301);
+    }
+    expect((await on('livedocuments.app', '/.well-known/security.txt', env)).status).not.toBe(301);
+  });
+
+  it('never redirects www., staging or the router’s own address, so it cannot loop or leave staging', async () => {
+    const { env } = makeEnv();
+    const staging: Env = { ...env, DEPLOY_ENV: 'staging' };
+    // `wrangler dev` hands a local router its production host, so local never redirects either.
+    for (const DEPLOY_ENV of ['local', 'staging']) {
+      expect(
+        REDIRECTS.has((await on('livedocuments.app', '/new', { ...env, DEPLOY_ENV })).status),
+      ).toBe(false);
+    }
+    for (const host of [
+      'www.livedocuments.app',
+      'staging.livedocuments.app',
+      'livedocuments-router.liveworkspace-easing509.workers.dev',
+    ]) {
+      for (const e of [env, staging]) {
+        expect(REDIRECTS.has((await on(host, '/new', e)).status), host).toBe(false);
+      }
     }
   });
 });

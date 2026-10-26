@@ -267,12 +267,12 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `SHARE_GUESS_ITEM_LIMITER`    | 30 per 60 s                                                                                |
 | Crons                                    | `23 4 * * *`, `*/15 * * * *`                                                               |
 | Var `ENVIRONMENT`                        | `production`                                                                               |
-| Var `ACCOUNTS_URL`                       | `https://liveworkspace.app`                                                                |
+| Var `ACCOUNTS_URL`                       | `https://www.liveworkspace.app`                                                            |
 | Var `INDEX_AUDIENCES`                    | `https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.…` |
 | Var `APP_ORIGIN_LIVEDIAGRAM`             | `https://livediagram-router.liveworkspace-easing509.workers.dev`                           |
-| Var `APP_ORIGIN_LIVEPLANNER`             | `https://liveplanner.app`                                                                  |
-| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://livedocuments.app`                                                                |
-| Var `APP_ORIGIN_LIVEDESIGN`              | `https://livedesign.app`                                                                   |
+| Var `APP_ORIGIN_LIVEPLANNER`             | `https://www.liveplanner.app`                                                              |
+| Var `APP_ORIGIN_LIVEDOCUMENTS`           | `https://www.livedocuments.app`                                                            |
+| Var `APP_ORIGIN_LIVEDESIGN`              | `https://www.livedesign.app`                                                               |
 
 **`env.staging`**
 
@@ -391,7 +391,7 @@ Migrations, in order:
 | `FOLDER_PREVIEW_ITEMS`          | `4`                                                                      | `constants.ts`       |
 | `FOLDER_PREVIEW_COUNT_CAP`      | `1000`                                                                   | `constants.ts`       |
 | `INDEX_API_PATH`                | `'/api/index'`                                                           | `constants.ts`       |
-| `INDEX_API_URL`                 | `https://liveworkspace.app${INDEX_API_PATH}`                             | `constants.ts`       |
+| `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}`                         | `constants.ts`       |
 | `INDEX_APP_HEADER`              | `'X-Index-App'`                                                          | `constants.ts`       |
 | `INDEX_PERSON_HEADER`           | `'X-Index-Person'`                                                       | `constants.ts`       |
 | `INDEX_TEAMS_HEADER`            | `'X-Index-Teams'`                                                        | `constants.ts`       |

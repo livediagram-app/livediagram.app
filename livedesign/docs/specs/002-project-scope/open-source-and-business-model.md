@@ -10,7 +10,7 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-People use livedesign at the official deployment, [livedesign.app](https://livedesign.app). It is free for everyone, with no tiers, and it is not a commercial product.
+People use livedesign at the official deployment, [livedesign.app](https://www.livedesign.app). It is free for everyone, with no tiers, and it is not a commercial product.
 
 ## Implications for how we build
 

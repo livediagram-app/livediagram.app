@@ -287,7 +287,7 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
 
 ```json
 {
-  "iss": "https://liveworkspace.app/api/index",
+  "iss": "https://www.liveworkspace.app/api/index",
   "aud": "liveplanner",
   "sub": "user_… | guest_… | link:<code>",
   "item": "<id>",

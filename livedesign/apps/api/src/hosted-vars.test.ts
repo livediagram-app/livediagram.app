@@ -63,7 +63,7 @@ describe('hosted profile', () => {
   it('turns telemetry on and points each environment at its media service', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     expect(shared.TELEMETRY_ENABLED).toBe('true');
-    expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
+    expect(environments.production.MEDIA_URL).toBe('https://www.liveworkspace.app/api/media');
     expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
     expect(parsePositiveCap(shared.PHOTO_MAX_BYTES_PER_TAB)).toBe(512 * 1024 * 1024);
   });

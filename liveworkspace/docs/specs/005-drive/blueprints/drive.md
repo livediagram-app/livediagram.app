@@ -151,12 +151,12 @@ Every route logs one line through `logRoute`, and every pass step through `log.t
 | Var `ENVIRONMENT`              | `production`                                                                               |
 | Var `GOOGLE_CLIENT_ID`         | `75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com`                  |
 | Var `DRIVE_PUBLIC_URL`         | `https://liveworkspace.app`                                                                |
-| Var `ACCOUNTS_URL`             | `https://liveworkspace.app`                                                                |
+| Var `ACCOUNTS_URL`             | `https://www.liveworkspace.app`                                                            |
 | Var `INDEX_AUDIENCES`          | `https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.…` |
 | Var `APP_ORIGIN_LIVEDIAGRAM`   | `https://livediagram-router.liveworkspace-easing509.workers.dev`                           |
-| Var `APP_ORIGIN_LIVEPLANNER`   | `https://liveplanner.app`                                                                  |
-| Var `APP_ORIGIN_LIVEDOCUMENTS` | `https://livedocuments.app`                                                                |
-| Var `APP_ORIGIN_LIVEDESIGN`    | `https://livedesign.app`                                                                   |
+| Var `APP_ORIGIN_LIVEPLANNER`   | `https://www.liveplanner.app`                                                              |
+| Var `APP_ORIGIN_LIVEDOCUMENTS` | `https://www.livedocuments.app`                                                            |
+| Var `APP_ORIGIN_LIVEDESIGN`    | `https://www.livedesign.app`                                                               |
 
 **`env.staging`**
 

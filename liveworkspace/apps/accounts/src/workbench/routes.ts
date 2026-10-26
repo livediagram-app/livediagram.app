@@ -17,6 +17,7 @@
 // the apps. A token, a session or a guest never answers a pairing or unpairs.
 
 import type { App } from '@liveworkspace/index-client';
+import { sameSiteOrigin } from '@liveworkspace/sites/www';
 import type { Auth } from '../auth.ts';
 import { bearerOf, bearerPerson } from '../bearer.ts';
 import type { Env } from '../env.ts';
@@ -157,8 +158,12 @@ async function signedInAccount(ctx: WorkbenchContext): Promise<string | null> {
     const person = await bearerPerson(bearer, ctx.env, ctx.auth, ctx.now);
     return person?.kind === 'account' ? person.userId : null;
   }
-  const site = new URL(ctx.env.BASE_URL).origin;
-  if (ctx.request.method !== 'GET' && ctx.request.headers.get('origin') !== site) return null;
+  // A write from the site itself, on either of its hosts while the move to www. lasts.
+  if (
+    ctx.request.method !== 'GET' &&
+    !sameSiteOrigin(ctx.request.headers.get('origin') ?? '', ctx.env.BASE_URL)
+  )
+    return null;
   const session = await ctx.auth.api.getSession({ headers: ctx.request.headers }).catch(() => null);
   return session?.user.id ?? null;
 }

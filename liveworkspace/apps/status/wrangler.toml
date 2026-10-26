@@ -7,14 +7,17 @@ compatibility_date = "2026-05-29"
 # (docs/status.md "Where the checks go"); without it a fetch to a route on its own zone isn't routed to that Worker.
 compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/status, on liveworkspace.app: the page at /status is the static site's (apps/site).
-routes = [{ pattern = "liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
+routes = [
+  { pattern = "www.liveworkspace.app/api/status*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/api/status*", zone_name = "liveworkspace.app" },
+]
 workers_dev = false
 
 # No secrets. Every check is a public address (docs/status.md).
 [vars]
 ENVIRONMENT = "production"
 # liveworkspace.app's origin, where its own services are checked.
-PLATFORM_ORIGIN = "https://liveworkspace.app"
+PLATFORM_ORIGIN = "https://www.liveworkspace.app"
 
 # Its own database: every check for 90 days, the daily rollups, the incidents and the two answers it serves.
 [[d1_databases]]

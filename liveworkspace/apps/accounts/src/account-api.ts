@@ -10,6 +10,8 @@
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
 import { AUTH_BASE_PATH } from './auth-options.ts';
+import { sameSiteOrigin } from '@liveworkspace/sites/www';
+import { introspectWithLegacy } from './legacy-issuer.ts';
 import { bearerOf, bearerPerson } from './bearer.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { guestOfRequest } from './guests.ts';
@@ -163,9 +165,9 @@ async function sessionActor(
 }
 
 // The session cookie is SameSite=Lax, which already keeps it off another site's requests; a write
-// must also come from the site itself.
+// must also come from the site itself, on either of its hosts while the move to www. lasts.
 function sameOrigin(request: Request, env: Env): boolean {
-  return request.headers.get('origin') === new URL(env.BASE_URL).origin;
+  return sameSiteOrigin(request.headers.get('origin') ?? '', env.BASE_URL);
 }
 
 // The doors that need no session, each limited per network (TEAM_LINK_LIMITER; absent, allowed): a
@@ -687,35 +689,40 @@ async function verifiedClient(
   return { clientId, app };
 }
 
-interface Introspection {
-  active?: boolean;
-  sub?: unknown;
-  client_id?: unknown;
-}
-
 // The account an access token belongs to, when it was minted for this very client and is still
 // live (the provider's introspection checks both): how an app vouches for the person it acts for.
 async function vouchedPerson(
   request: Request,
+  env: Env,
   auth: Auth,
   clientId: string,
   accessToken: unknown,
 ): Promise<string | Response> {
   if (typeof accessToken !== 'string') return error(400, 'access_token_required');
-  const checked = await auth.handler(
-    new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
-      method: 'POST',
-      headers: {
-        authorization: request.headers.get('authorization') ?? '',
-        accept: 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({ token: accessToken, token_type_hint: 'access_token' }).toString(),
-    }),
+  // A token minted under the bare issuer before the move to www. is checked again here (legacy-issuer.ts).
+  const { status, result } = await introspectWithLegacy(
+    () =>
+      auth.handler(
+        new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
+          method: 'POST',
+          headers: {
+            authorization: request.headers.get('authorization') ?? '',
+            accept: 'application/json',
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            token: accessToken,
+            token_type_hint: 'access_token',
+          }).toString(),
+        }),
+      ),
+    accessToken,
+    clientId,
+    env,
+    auth,
   );
-  const result = (await checked.json().catch(() => ({}))) as Introspection;
   if (
-    !checked.ok ||
+    status !== 200 ||
     result.active !== true ||
     typeof result.sub !== 'string' ||
     result.client_id !== clientId
@@ -754,7 +761,7 @@ async function handleInternal(
   // access token it holds for them, so it can only make tokens for someone signed in to it.
   if (route === 'POST tokens') {
     const body = await readBody(request);
-    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
+    const person = await vouchedPerson(request, env, auth, clientId, body.accessToken);
     if (person instanceof Response) return person;
     const token = await mintApiToken(db, person, {
       name: cleanTokenName(body.name, 'MCP client'),
@@ -768,7 +775,7 @@ async function handleInternal(
   // person becomes its admin.
   if (route === 'POST teams') {
     const body = await readBody(request);
-    const person = await vouchedPerson(request, auth, clientId, body.accessToken);
+    const person = await vouchedPerson(request, env, auth, clientId, body.accessToken);
     if (person instanceof Response) return person;
     const user = await db
       .prepare('SELECT email, emailVerified FROM "user" WHERE id = ?')

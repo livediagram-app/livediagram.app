@@ -18,7 +18,7 @@ What is livediagram's: the canvas's `community_post` row (one per canvas: `share
 /api/community/mine`, the community link's doors, copy counting (`countCommunityCopy`), and the sync (the canvas's
 alarm asks the index every `COMMUNITY_CHECK_MS` and sends the service what changed). Then the editor's Share dialog
 section and publish dialog, the Public badge and Community bar, and the Community pages (`apps/community`). Vars:
-`COMMUNITY_URL` (default `COMMUNITY_API_URL`, `https://liveworkspace.app/api/community`), secret `COMMUNITY_KEY`;
+`COMMUNITY_URL` (default `COMMUNITY_API_URL`, `https://www.liveworkspace.app/api/community`), secret `COMMUNITY_KEY`;
 the pages' `NEXT_PUBLIC_COMMUNITY_API` and their Worker's `COMMUNITY_URL`. Without `COMMUNITY_KEY`
 (`communityServiceConfigured`), the Community is off.
 

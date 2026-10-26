@@ -9,7 +9,7 @@ import { unfurl } from '@liveworkspace/api-kit/unfurl-fetch';
 import { badRequest, json, notFound, rateLimited } from '../responses';
 import type { RouteContext } from './context';
 
-const USER_AGENT = 'livedesign-unfurl/1.0 (+https://livedesign.app)';
+const USER_AGENT = 'livedesign-unfurl/1.0 (+https://www.livedesign.app)';
 
 export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments } = ctx;

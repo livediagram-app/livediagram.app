@@ -3,6 +3,7 @@
 
 import { DRIVE_SCOPES } from '@liveworkspace/drive';
 import { appOfOrigin, EXPLORER_PATH } from '@liveworkspace/sites';
+import { sameSiteOrigin } from '@liveworkspace/sites/www';
 import { environmentOf, publicOrigin, type Env } from './env';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -29,8 +30,9 @@ export function safeReturnTo(env: Env, returnTo: unknown): string {
   }
   if (url.protocol !== 'https:' && url.protocol !== 'http:') return fallback;
   if (url.username || url.password) return fallback;
+  // liveworkspace on either of its hosts while the move to www. lasts, or an app.
   const ours =
-    url.origin === new URL(home).origin || appOfOrigin(url.origin, environmentOf(env)) !== null;
+    sameSiteOrigin(url.origin, home) || appOfOrigin(url.origin, environmentOf(env)) !== null;
   return ours ? url.toString() : fallback;
 }
 

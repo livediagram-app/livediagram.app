@@ -319,8 +319,8 @@ all three.
 
 ## Stored tabs from other products' modes
 
-Boards of cards, Sheets, dashboards and forms are liveplanner's (https://liveplanner.app); slides, articles,
-infographics and other page layouts are livedocuments' (https://livedocuments.app), and logos, wireframes and photo
+Boards of cards, Sheets, dashboards and forms are liveplanner's (https://www.liveplanner.app); slides, articles,
+infographics and other page layouts are livedocuments' (https://www.livedocuments.app), and logos, wireframes and photo
 pages livedesign's. livediagram has neither mode, and reads a stored tab that carries one as a Diagram tab:
 
 - A tab whose mode is `'plan'`, or whose kind is Board, Sheet, Dashboard or Form, reads as an ordinary Diagram tab

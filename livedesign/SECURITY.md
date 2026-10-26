@@ -9,7 +9,7 @@ Please report security vulnerabilities **privately** through GitHub:
 Do not open a public issue, discussion or pull request for a security problem.
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is at
-[livedesign.app/help/policies/report-a-vulnerability](https://livedesign.app/help/policies/report-a-vulnerability/).
+[livedesign.app/help/policies/report-a-vulnerability](https://www.livedesign.app/help/policies/report-a-vulnerability/).
 
 In short:
 

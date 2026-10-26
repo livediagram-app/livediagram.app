@@ -119,12 +119,12 @@ app, from its documents and `community_links`, so a trashed document's link clos
 
 ## Configuring an app
 
-| Where          | Setting                                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------------- |
-| api Worker     | `COMMUNITY_URL` var (default `https://liveworkspace.app/api/community`), `COMMUNITY_KEY` secret |
-| Browser builds | `NEXT_PUBLIC_COMMUNITY_API` (same default)                                                      |
-| Pages Worker   | `COMMUNITY_URL` var, for the post page's head and the sitemap                                   |
-| Both           | The app's own `COMMUNITY_ENABLED` still switches its Community off                              |
+| Where          | Setting                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| api Worker     | `COMMUNITY_URL` var (default `https://www.liveworkspace.app/api/community`), `COMMUNITY_KEY` secret |
+| Browser builds | `NEXT_PUBLIC_COMMUNITY_API` (same default)                                                          |
+| Pages Worker   | `COMMUNITY_URL` var, for the post page's head and the sitemap                                       |
+| Both           | The app's own `COMMUNITY_ENABLED` still switches its Community off                                  |
 
 Without `COMMUNITY_KEY`, an app has no Community: it reports `communityEnabled: false`, and publishing
 answers 404. The service's own `COMMUNITY_ENABLED` (`false`, `0` or `off`) answers every route 404.

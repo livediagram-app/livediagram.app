@@ -309,11 +309,11 @@ describe('splitOldDocument: a Pages tab with both kinds of page', () => {
     const d = els(body(part(r.parts, 'livediagram'), 'd1'));
     expect(d[0]!.link).toEqual({
       kind: 'url',
-      url: 'https://livedesign.app/design/new%3Adoc1%3Alivedesign#t=new%3Adoc1%3Apg%3Alivedesign',
+      url: 'https://www.livedesign.app/design/new%3Adoc1%3Alivedesign#t=new%3Adoc1%3Apg%3Alivedesign',
     });
     expect(d[1]!.link).toEqual({
       kind: 'url',
-      url: 'https://livedocuments.app/document/new%3Adoc1%3Alivedocuments#t=pg',
+      url: 'https://www.livedocuments.app/document/new%3Adoc1%3Alivedocuments#t=pg',
     });
     expect(r.crossReferences.filter((c) => c.kind === 'link').map((c) => c.to)).toEqual([
       { app: 'livedesign', id: 'new:doc1:livedesign', tabId: 'new:doc1:pg:livedesign' },
@@ -414,7 +414,7 @@ describe('splitOldDocument: references that cross products', () => {
     expect(c.data).toEqual([1]);
     expect(c.link).toEqual({
       kind: 'url',
-      url: 'https://liveplanner.app/project/new%3Adoc1%3Aliveplanner#t=sh',
+      url: 'https://www.liveplanner.app/project/new%3Adoc1%3Aliveplanner#t=sh',
     });
     expect(r.crossReferences[0]).toMatchObject({
       kind: 'chart-source',
@@ -481,7 +481,7 @@ describe('splitOldDocument: references that cross products', () => {
     const d = els(body(part(r.parts, 'livediagram'), 'd1'));
     expect(d[0]!.link).toEqual({
       kind: 'url',
-      url: 'https://livedocuments.app/document/new%3Adoc1%3Alivedocuments#t=s1',
+      url: 'https://www.livedocuments.app/document/new%3Adoc1%3Alivedocuments#t=s1',
     });
     expect(d[1]!.link).toEqual({ kind: 'tab', tabId: 'd2' });
     expect(((d[2]!.cellStyles as Rec[][])[0]![0] as Rec).link).toMatchObject({ kind: 'url' });
@@ -666,7 +666,7 @@ describe('splitLocalDocument', () => {
       imageId: null,
       link: {
         kind: 'url',
-        url: 'https://livedocuments.app/document/new%3Alocal1%3Alivedocuments#t=s1',
+        url: 'https://www.livedocuments.app/document/new%3Alocal1%3Alivedocuments#t=s1',
       },
     });
     expect(r.parts.map((p) => [p.app, p.id])).toEqual([

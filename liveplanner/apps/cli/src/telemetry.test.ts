@@ -42,7 +42,7 @@ describe('the usage count', () => {
       { category: 'Cli', action: 'Used', type: 'ProjectLs' },
       { category: 'Cli', action: 'Used', type: 'ProjectLs' },
     ]);
-    expect(io.err()).toBe(`${telemetryNotice('https://liveplanner.app')}\n`);
+    expect(io.err()).toBe(`${telemetryNotice('https://www.liveplanner.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 

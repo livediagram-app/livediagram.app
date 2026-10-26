@@ -24,17 +24,17 @@ If you want to connect an AI assistant rather than write code, you usually want 
 The API lives under `/api` on your livedesign host. On the hosted service that is:
 
 ```
-https://livedesign.app/api
+https://www.livedesign.app/api
 ```
 
-Every path in these docs is relative to that base, so `GET /designs` means `GET https://livedesign.app/api/designs`.
+Every path in these docs is relative to that base, so `GET /designs` means `GET https://www.livedesign.app/api/designs`.
 
 ## Authenticating in one line
 
 Send an API token as a bearer header on each request:
 
 ```bash
-curl https://livedesign.app/api/designs \
+curl https://www.livedesign.app/api/designs \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
@@ -59,7 +59,7 @@ The token-callable surface mirrors the app:
 The complete, machine-readable description of every endpoint, request shape, and response shape is published as an **OpenAPI 3.1** design, with no authentication required:
 
 ```bash
-curl https://livedesign.app/api/openapi.json
+curl https://www.livedesign.app/api/openapi.json
 ```
 
 Point Postman, an OpenAPI viewer, or a client generator at that URL to explore the whole surface or scaffold a client. Endpoints an external token can use are tagged `x-token-usable`.

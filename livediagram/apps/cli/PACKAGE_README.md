@@ -24,7 +24,7 @@ livediagram auth login --device   # prints a page and a code to enter on any dev
 ```
 
 Either creates an API token named **livediagram CLI**, with an optional **Read-only access** switch. For CI and agents,
-create a token on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens) (up to 20 at a time, each
+create a token on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens) (up to 20 at a time, each
 optionally read-only), then either set it for a command:
 
 ```bash

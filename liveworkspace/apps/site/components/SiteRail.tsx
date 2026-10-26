@@ -11,7 +11,7 @@ import { useCopiedFlash } from '@liveworkspace/ui';
 // System). Rendered as the header's sibling, so the header's backdrop-filter doesn't trap its
 // `fixed` positioning.
 
-const SHARE_URL = 'https://liveworkspace.app';
+const SHARE_URL = 'https://www.liveworkspace.app';
 const SHARE_TEXT =
   'liveworkspace: free real-time apps for diagrams, plans, documents and designs. No sign-up needed.';
 

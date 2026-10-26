@@ -127,11 +127,11 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Crons                           | `41 3 * * *`                                                     |
 | Var `IMAGE_MAX_PER_OWNER`       | `100`                                                            |
 | Var `IMAGE_MAX_BYTES_PER_OWNER` | `104857600`                                                      |
-| Var `INDEX_URL`                 | `https://liveworkspace.app/api/index`                            |
+| Var `INDEX_URL`                 | `https://www.liveworkspace.app/api/index`                        |
 | Var `APP_ORIGIN_LIVEDIAGRAM`    | `https://livediagram-router.liveworkspace-easing509.workers.dev` |
-| Var `APP_ORIGIN_LIVEPLANNER`    | `https://liveplanner.app`                                        |
-| Var `APP_ORIGIN_LIVEDOCUMENTS`  | `https://livedocuments.app`                                      |
-| Var `APP_ORIGIN_LIVEDESIGN`     | `https://livedesign.app`                                         |
+| Var `APP_ORIGIN_LIVEPLANNER`    | `https://www.liveplanner.app`                                    |
+| Var `APP_ORIGIN_LIVEDOCUMENTS`  | `https://www.livedocuments.app`                                  |
+| Var `APP_ORIGIN_LIVEDESIGN`     | `https://www.livedesign.app`                                     |
 
 **`env.staging`**
 
@@ -206,7 +206,7 @@ Migrations, in order:
 | `GALLERY_USAGE_DOCUMENTS_MAX`   | `200`                                                             | `usage.ts`      |
 | `GALLERY_USAGE_READS_IN_FLIGHT` | `8`                                                               | `usage.ts`      |
 | `MEDIA_API_PATH`                | `'/api/media'`                                                    | `wire.ts`       |
-| `MEDIA_API_URL`                 | `https://liveworkspace.app${MEDIA_API_PATH}`                      | `wire.ts`       |
+| `MEDIA_API_URL`                 | `https://www.liveworkspace.app${MEDIA_API_PATH}`                  | `wire.ts`       |
 | `MEDIA_APP_HEADER`              | `'X-Media-App'`                                                   | `wire.ts`       |
 | `IMAGE_WIDTH_HEADER`            | `'X-Image-Width'`                                                 | `wire.ts`       |
 | `IMAGE_HEIGHT_HEADER`           | `'X-Image-Height'`                                                | `wire.ts`       |

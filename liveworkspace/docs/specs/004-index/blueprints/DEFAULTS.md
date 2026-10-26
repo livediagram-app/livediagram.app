@@ -39,7 +39,7 @@ One row per default applied where a spec is silent or qualitative. Rows that nam
 | D33 | index     | No value given for `LEVELS`                        | `['view', 'participate', 'edit'] as const` (`constants.ts`)                               |
 | D34 | index     | No value given for `FOLDER_PREVIEW_IDS_MAX`        | `60` (`constants.ts`)                                                                     |
 | D35 | index     | No value given for `FOLDER_PREVIEW_ITEMS`          | `4` (`constants.ts`)                                                                      |
-| D36 | index     | No value given for `INDEX_API_URL`                 | `https://liveworkspace.app${INDEX_API_PATH}` (`constants.ts`)                             |
+| D36 | index     | No value given for `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}` (`constants.ts`)                         |
 | D37 | index     | No value given for `DELEGATED_TEAMS_MAX`           | `50` (`constants.ts`)                                                                     |
 | D38 | index     | No value given for `GRANT_LIFETIME_S`              | `600` (`constants.ts`)                                                                    |
 | D39 | index     | No value given for `GRANT_RENEW_BEFORE_S`          | `60` (`constants.ts`)                                                                     |

@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { authOptions } from './auth-options.ts';
+import { cookieDomain } from './cookie-scope.ts';
 import { clientApp } from './clients.ts';
 import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
@@ -36,6 +37,7 @@ function build(env: Env, googleRedirectURI?: string) {
               }
             : null,
         appOrigins: allAppOrigins(env.ENVIRONMENT),
+        cookieDomain: cookieDomain(env.ENVIRONMENT),
         handoff: {
           environment: env.ENVIRONMENT,
           db: env.AUTH_DB,

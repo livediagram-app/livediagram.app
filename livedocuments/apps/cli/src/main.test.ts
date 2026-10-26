@@ -119,7 +119,7 @@ describe('run', () => {
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
     expect(
-      (await cli(['tab', 'ls', 'https://livedocuments.app/document/shared?s=abc'], io)).code,
+      (await cli(['tab', 'ls', 'https://www.livedocuments.app/document/shared?s=abc'], io)).code,
     ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
@@ -145,7 +145,7 @@ describe('run', () => {
     const none = await cli(['document', 'ls'], fakeIo({ routes: [capabilities] }));
     expect(none).toMatchObject({
       code: 4,
-      err: expect.stringContaining('not signed in to https://livedocuments.app'),
+      err: expect.stringContaining('not signed in to https://www.livedocuments.app'),
     });
     const guestOnly = fakeIo({
       env: { LIVEDOCUMENTS_TOKEN: TOKEN },
@@ -199,7 +199,7 @@ describe('run', () => {
     await cli(['tab', 'ls', 'Auth flow'], io);
     expect(io.err().split('\n').filter(Boolean)).toEqual([
       '[cli] command tab.ls',
-      '[cli] profile default host https://livedocuments.app source default',
+      '[cli] profile default host https://www.livedocuments.app source default',
       '[cli] capabilities miss',
       '[cli] credential env',
       '[cli] request GET /api/documents 200 0',
@@ -225,7 +225,7 @@ describe('a profile on another host', () => {
       if (path === '/api/capabilities')
         return Response.json({ apiBase: `${SELF}/api`, authEnabled: true });
       return (
-        library(request, new URL(`https://livedocuments.app${path}${url.search}`)) ??
+        library(request, new URL(`https://www.livedocuments.app${path}${url.search}`)) ??
         tokens(request, url)
       );
     };
@@ -318,7 +318,7 @@ const storedAs = (token: string, tokenId: string) =>
     version: 1,
     profiles: {
       default: {
-        host: 'https://livedocuments.app',
+        host: 'https://www.livedocuments.app',
         token,
         tokenId,
         accountName: null,
@@ -384,7 +384,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'login', '--with-token'], io)).toMatchObject({
       code: 0,
-      out: 'signed in to https://livedocuments.app as Ada\n',
+      out: 'signed in to https://www.livedocuments.app as Ada\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty(
       'profiles.default',
@@ -437,7 +437,7 @@ describe('auth', () => {
           fakeIo({ routes: [capabilities, nameless], stdin: TOKEN }),
         )
       ).out,
-    ).toBe('signed in to https://livedocuments.app as u1\n');
+    ).toBe('signed in to https://www.livedocuments.app as u1\n');
   });
 
   it('refuses browser sign-in on a host without one, and a token from a terminal or that is not a token', async () => {
@@ -504,7 +504,7 @@ describe('auth', () => {
     });
     expect(await cli(['auth', 'logout'], io)).toMatchObject({
       code: 0,
-      out: 'signed out of https://livedocuments.app\n',
+      out: 'signed out of https://www.livedocuments.app\n',
     });
     expect(JSON.parse(io.fileMap.get(CREDENTIALS)!.data)).toHaveProperty('profiles', {});
     expect((await cli(['auth', 'logout'])).code).toBe(2);

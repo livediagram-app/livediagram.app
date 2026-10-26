@@ -515,20 +515,20 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 
 ## Constants and configuration
 
-| Name                          | Value                                 | Provenance / safe range                                      |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------------ |
-| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                    | Spec per-file cap; below the 100 MB Workers body limit       |
-| `MAX_IMAGE_MB`                | `10`                                  | Derived, for copy                                            |
-| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                  | Spec whitelist; SVG must never join                          |
-| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                     | Non-image write cap in `limits.ts`                           |
-| `MEDIA_URL`                   | `https://liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`)  |
-| `MEDIA_KEY`                   | secret                                | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off |
-| `MEDIA_APP`                   | `'livedocuments.app'`                 | The service's app name for this api                          |
-| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                  | `@liveworkspace/media`; ten times the gallery cap            |
-| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                     | Spec; 1 to 8 MiB keeps snapshots streamable                  |
-| Read `Cache-Control`          | `private, max-age=86400`              | Spec; `private` is load-bearing                              |
-| Sniff window                  | first 16 bytes, minimum 12            | Longest signature (WebP) needs 12                            |
-| Gallery placement size        | `240` px on the longer side           | D40; literal `max` in `addImageFromGallery`                  |
-| `createImage` size            | 200 × 150                             | D49                                                          |
-| `WRITE_RATE_LIMITER`          | 300 per 60 s                          | `wrangler.toml`, namespace `1001`                            |
-| Buckets                       | none                                  | Previews are liveworkspace's                                 |
+| Name                          | Value                                     | Provenance / safe range                                      |
+| ----------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                        | Spec per-file cap; below the 100 MB Workers body limit       |
+| `MAX_IMAGE_MB`                | `10`                                      | Derived, for copy                                            |
+| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                      | Spec whitelist; SVG must never join                          |
+| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                         | Non-image write cap in `limits.ts`                           |
+| `MEDIA_URL`                   | `https://www.liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`)  |
+| `MEDIA_KEY`                   | secret                                    | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off |
+| `MEDIA_APP`                   | `'livedocuments.app'`                     | The service's app name for this api                          |
+| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap            |
+| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                  |
+| Read `Cache-Control`          | `private, max-age=86400`                  | Spec; `private` is load-bearing                              |
+| Sniff window                  | first 16 bytes, minimum 12                | Longest signature (WebP) needs 12                            |
+| Gallery placement size        | `240` px on the longer side               | D40; literal `max` in `addImageFromGallery`                  |
+| `createImage` size            | 200 × 150                                 | D49                                                          |
+| `WRITE_RATE_LIMITER`          | 300 per 60 s                              | `wrangler.toml`, namespace `1001`                            |
+| Buckets                       | none                                      | Previews are liveworkspace's                                 |

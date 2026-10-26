@@ -7,9 +7,10 @@
 // Kept dependency-free and Worker-safe (fetch, URL, Headers only): it runs inside each app's router.
 
 import type { AppName } from './index';
+import { sameSiteOrigin } from './www';
 
 /** Where liveworkspace.app lives when the router names no other (`WORKSPACE_ORIGIN`). */
-export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace.app';
+export const PRODUCTION_WORKSPACE_ORIGIN = 'https://www.liveworkspace.app';
 
 // Set on every request a router forwards, naming the app. A request that already carries it was forwarded once,
 // so a router that finds it refuses rather than forward again: a misconfigured origin can never loop.
@@ -37,6 +38,70 @@ export function statusRedirect(url: URL, app: AppName, workspaceOrigin?: string)
   const { pathname } = url;
   if (pathname !== STATUS_PATH && !pathname.startsWith(`${STATUS_PATH}/`)) return null;
   return Response.redirect(statusPageUrl(app, workspaceOrigin), 301);
+}
+
+// ---------- The bare domain -----------------------------------------------------------------------------------------
+// Each app's pages live on its www. host (docs/specs/016-platform/router-app.md "The bare domain" in each app), and so
+// do liveworkspace.app's (liveworkspace/docs/specs/010-site/site.md "www. is the address"). A page load on a bare domain is sent
+// there; everything else (the APIs, sign-in callbacks, WebSockets, discovery documents) answers on the bare domain as
+// before. An app's router redirects its own bare domain; liveworkspace.app's is redirected by liveworkspace/apps/redirect.
+
+/** The bare domain of every app. */
+export const APP_BARE_HOSTS: ReadonlySet<string> = new Set([
+  'livediagram.app',
+  'liveplanner.app',
+  'livedocuments.app',
+  'livedesign.app',
+] satisfies `${AppName}.app`[]);
+
+/** How long a browser or cache may keep the bare domain's redirect: a day, so a change can still be undone. */
+export const WWW_REDIRECT_CACHE_CONTROL = 'public, max-age=86400';
+
+const NOT_REDIRECTED = ['/api', '/.well-known'];
+
+/** A page load on an app's bare domain (a GET or HEAD, not under /api or /.well-known, not a WebSocket upgrade): one
+ *  301 to the same path and query on `https://www.<domain>`. `landsAt` names the path the router's own redirects would
+ *  send this one to next (null when none would), so a bare-domain visit is still one hop; it runs only when redirecting.
+ *  Null for any other request or host, www., staging. and local ones included. */
+export function wwwRedirect(
+  request: Request,
+  url: URL,
+  landsAt?: (url: URL) => string | null,
+): Response | null {
+  if (!APP_BARE_HOSTS.has(url.hostname)) return null;
+  return pageLoadToWww(request, url, landsAt);
+}
+
+/** liveworkspace.app's bare domain. */
+export const WORKSPACE_BARE_HOST = 'liveworkspace.app';
+
+/** The same for liveworkspace.app's bare domain, and never for a request an app's router forwarded (it carries
+ *  WORKSPACE_PROXY_HEADER and fetches with `redirect: 'manual'`, so a 301 would take the visitor off the app's address,
+ *  whatever origin that router was deployed with). */
+export function workspaceWwwRedirect(request: Request, url: URL): Response | null {
+  if (url.hostname !== WORKSPACE_BARE_HOST) return null;
+  if (request.headers.has(WORKSPACE_PROXY_HEADER)) return null;
+  return pageLoadToWww(request, url);
+}
+
+function pageLoadToWww(
+  request: Request,
+  url: URL,
+  landsAt?: (url: URL) => string | null,
+): Response | null {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  if (request.headers.has('Upgrade')) return null;
+  if (NOT_REDIRECTED.some((prefix) => underPrefix(url.pathname, prefix))) return null;
+  const to = new URL(url);
+  to.protocol = 'https:';
+  to.hostname = `www.${url.hostname}`;
+  to.port = '';
+  to.pathname = landsAt?.(url) ?? url.pathname;
+  // Built by hand: Response.redirect's headers are immutable.
+  return new Response(null, {
+    status: 301,
+    headers: { Location: to.toString(), 'Cache-Control': WWW_REDIRECT_CACHE_CONTROL },
+  });
 }
 
 // ---------- The Explorer on the app's address ---------------------------------------------------------------------
@@ -252,7 +317,9 @@ export function locationOnApp(
     return location;
   }
   const relative = location.startsWith('/') && !location.startsWith('//');
-  if (!relative && target.origin !== new URL(workspaceOrigin).origin) return location;
+  // liveworkspace on either of its hosts while the move to www. lasts: a router still on the bare origin hears
+  // Better Auth name www., its BASE_URL, and the other way round.
+  if (!relative && !sameSiteOrigin(target.origin, workspaceOrigin)) return location;
   const back = routes.find((r) => underPrefix(target.pathname, r.target));
   if (!back) return location;
   return `${swapPrefix(target.pathname, back.target, back.prefix)}${target.search}${target.hash}`;
@@ -328,7 +395,7 @@ async function forwardToWorkspace(
 // ---------- The index, on the app's address -------------------------------------------------------------------------
 
 /** Where liveworkspace's index lives when the router names no other (`INDEX_ORIGIN`). */
-export const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
+export const PRODUCTION_INDEX_ORIGIN = 'https://www.liveworkspace.app';
 
 /**
  * `/api/index/*` on an app's address: the same request (method, body, Authorization, the share headers) at the
@@ -353,7 +420,7 @@ export function forwardToIndex(
 // ---------- Google Drive, on the app's address -----------------------------------------------------------------------
 
 /** Where liveworkspace's Google Drive mirror lives when the router names no other (`DRIVE_ORIGIN`). */
-export const PRODUCTION_DRIVE_ORIGIN = 'https://liveworkspace.app';
+export const PRODUCTION_DRIVE_ORIGIN = 'https://www.liveworkspace.app';
 export const DRIVE_PATH = '/api/drive';
 
 /** Whether `pathname` is the Drive mirror's (`/api/drive` or under it). */
@@ -395,7 +462,7 @@ function carryVisitorAddress(request: Request, headers: Headers): void {
 // dependency-free, so they are written out here, and media's tests hold the two together.
 
 /** Where previews live when the router names no other (`PREVIEWS_ORIGIN`). */
-export const PRODUCTION_PREVIEWS_ORIGIN = 'https://liveworkspace.app';
+export const PRODUCTION_PREVIEWS_ORIGIN = 'https://www.liveworkspace.app';
 export const PREVIEWS_PATH = '/api/previews';
 const SHARE_DOOR = /^\/api\/share\/([^/]+)\/(image\.svg|image\.png|card)$/;
 

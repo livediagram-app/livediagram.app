@@ -23,7 +23,7 @@ port = 8687
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. TELEMETRY_URL
 # names that service per environment (hosted-vars.json); unset means
-# production's, https://liveworkspace.app/api/telemetry. Local dev sets
+# production's, https://www.liveworkspace.app/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 # The sender for this app's email (see EMAIL below). liveplanner.app until livediagram.app moves to this
@@ -203,7 +203,7 @@ name = "EMAIL"
 # lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
 #   ACCOUNTS_URL            the accounts Worker's origin
-#                           (https://liveworkspace.app)
+#                           (https://www.liveworkspace.app)
 #   API_RESOURCE            this API's registered resource, the access
 #                           token's audience (https://livediagram-router.liveworkspace-easing509.workers.dev/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id

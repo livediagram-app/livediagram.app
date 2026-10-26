@@ -112,7 +112,7 @@ not "is this good?" but "does a team running this plan need it in the project?".
 
 liveplanner is **MIT licensed** and runs as one **hosted product**, free for
 everyone, no paid tier, with no trackers and no ads. It is hosted at
-[liveplanner.app](https://liveplanner.app) ([Deployment](../016-platform/deployment.md)); see
+[liveplanner.app](https://www.liveplanner.app) ([Deployment](../016-platform/deployment.md)); see
 [Business model + licence](../002-project-scope/business-model-and-licence.md).
 
 The planner is **always available without signing in**: a visitor can build a

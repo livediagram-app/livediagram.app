@@ -210,7 +210,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', elements }],
     });
     expect(result.out).toBe(
-      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livedocuments.app/document/${body!.id}\n`,
+      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://www.livedocuments.app/document/${body!.id}\n`,
     );
   });
 });

@@ -7,7 +7,7 @@ element sync): a Board or a Sheet is a canvas element that fills its tab, so the
 one draws on it.
 
 - **Workspace:** `apps/editor` (`@liveplanner/editor`).
-- **Public URL:** `https://liveplanner.app` — the app serves at **clean routes** (`/project/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
+- **Public URL:** `https://www.liveplanner.app` — the app serves at **clean routes** (`/project/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
 - **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [Router app](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
 
 ## Always available without sign-in

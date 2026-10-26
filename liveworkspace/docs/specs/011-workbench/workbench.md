@@ -116,7 +116,7 @@ wb_meta             (key, value)        -- whose store it is
 1. **Mint** (`POST tickets`). The token is checked in accounts' D1 (one indexed read), limited to
    `WORKBENCH_TICKETS_PER_MINUTE` (the `WORKBENCH_LIMITER` binding, keyed by token). The store finds the pairing for
    the app, token and origin; without one covering the scope it opens (or reuses) a pairing request and answers 428
-   with `pairingUrl`, `https://liveworkspace.app/workbench/pair?code=<code>`. With one, the index is asked for the
+   with `pairingUrl`, `https://www.liveworkspace.app/workbench/pair?code=<code>`. With one, the index is asked for the
    owner's access as the person (delegated, with accounts' key: the item's grant, or the folder's preview), the
    level is capped by the token (a read-only token gives `view`), and the ticket is written. The frame's URL is the
    app's canonical origin (`appOrigins` in `@liveworkspace/sites`).

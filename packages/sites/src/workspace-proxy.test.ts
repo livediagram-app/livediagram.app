@@ -181,8 +181,40 @@ describe('redirects stay on the app', () => {
     ['https://liveworkspace.app/account/teams', 'https://liveworkspace.app/account/teams'],
     ['https://www.liveplanner.app/project/p1', 'https://www.liveplanner.app/project/p1'],
     ['/sign-in?return=%2Fexplorer', '/sign-in?return=%2Fexplorer'],
+    // liveworkspace's own address, www. since the move, is the same site as the bare one.
+    ['https://www.liveworkspace.app/explorer/recent?x=1', '/explorer/recent?x=1'],
+    ['https://www.liveworkspace.app/account/teams', 'https://www.liveworkspace.app/account/teams'],
   ])('%s → %s', (location, expected) => {
     expect(locationOnApp(location, PRODUCTION_WORKSPACE_ORIGIN, ROUTES)).toBe(expected);
+  });
+
+  // A router deployed before the move still forwards to the bare origin; Better Auth names www. (its BASE_URL).
+  it('keeps a www. Location on the app for a router still on the bare origin, and the other way round', () => {
+    expect(
+      locationOnApp(
+        'https://www.liveworkspace.app/explorer/recent',
+        'https://liveworkspace.app',
+        ROUTES,
+      ),
+    ).toBe('/explorer/recent');
+    expect(
+      locationOnApp(
+        'https://liveworkspace.app/explorer/recent',
+        PRODUCTION_WORKSPACE_ORIGIN,
+        ROUTES,
+      ),
+    ).toBe('/explorer/recent');
+    expect(
+      locationOnApp(
+        'https://staging.liveworkspace.app/explorer/recent',
+        PRODUCTION_WORKSPACE_ORIGIN,
+        ROUTES,
+      ),
+    ).toBe('https://staging.liveworkspace.app/explorer/recent');
+  });
+
+  it('forwards to www.liveworkspace.app by default', () => {
+    expect(PRODUCTION_WORKSPACE_ORIGIN).toBe('https://www.liveworkspace.app');
   });
 
   it('rewrites the Location of a forwarded redirect', async () => {
@@ -285,7 +317,7 @@ describe("signing in on the app's own address", () => {
       { app: 'livediagram', fetch: doFetch },
     );
     const sent = doFetch.mock.calls[0]![0] as Request;
-    expect(sent.url).toBe('https://liveworkspace.app/api/auth/get-session');
+    expect(sent.url).toBe('https://www.liveworkspace.app/api/auth/get-session');
     expect(sent.headers.get('Cookie')).toBe('__Secure-better-auth.session_token=tok.sig');
 
     await routeToWorkspace(
@@ -407,7 +439,7 @@ describe('forwardToIndex', () => {
       },
     );
     await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, doFetch);
-    expect(seen[0]!.url).toBe('https://liveworkspace.app/api/index/items?app=livediagram');
+    expect(seen[0]!.url).toBe('https://www.liveworkspace.app/api/index/items?app=livediagram');
     expect(seen[0]!.method).toBe('POST');
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
     expect(seen[0]!.headers.has('Cookie')).toBe(false);

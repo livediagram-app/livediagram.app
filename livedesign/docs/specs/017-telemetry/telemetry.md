@@ -2,14 +2,14 @@
 
 First-party, anonymous product analytics, surfaced on a **public** dashboard so anyone can see what we measure. The goal: understand which features get used so we know what works, while staying honest about the product's "no creepy tracking" stance.
 
-livedesign sends its events to liveworkspace's telemetry service, a platform service every liveworkspace app uses ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). The service (`liveworkspace/apps/telemetry`, API `https://liveworkspace.app/api/telemetry`) owns ingest, storage, retention and the public dashboard (`https://liveworkspace.app/telemetry`, one view per app); its spec is the source of truth for all of that. livedesign owns its closed vocabulary (`packages/api-schema`), its emitters, the CLI's relay (`POST /api/events`, below), and its dashboard data (`liveworkspace/apps/site/app/telemetry/livedesign/`). `/telemetry` on livedesign.app redirects to the dashboard filtered to livedesign. This spec defines the vocabulary and the counting rules.
+livedesign sends its events to liveworkspace's telemetry service, a platform service every liveworkspace app uses ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). The service (`liveworkspace/apps/telemetry`, API `https://www.liveworkspace.app/api/telemetry`) owns ingest, storage, retention and the public dashboard (`https://www.liveworkspace.app/telemetry`, one view per app); its spec is the source of truth for all of that. livedesign owns its closed vocabulary (`packages/api-schema`), its emitters, the CLI's relay (`POST /api/events`, below), and its dashboard data (`liveworkspace/apps/site/app/telemetry/livedesign/`). `/telemetry` on livedesign.app redirects to the dashboard filtered to livedesign. This spec defines the vocabulary and the counting rules.
 
 ## Principles
 
 - **Anonymous, aggregate, first-party.** Events carry no user id, no IP, no user-generated content (never a design name, tab name, participant name, element text, share code, or design id). Only a fixed, app-defined vocabulary of enum values is ever stored.
 - **No external vendors.** Ingestion, storage and the dashboard are liveworkspace's own telemetry service, run by us. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
 - **Off by default.** A single env var gates the whole system, so a deployment emits/serves nothing unless it opts in. No committed config turns it on: livedesign.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
-- **Transparent.** The dashboard is public (`https://liveworkspace.app/telemetry`, and `/telemetry` here redirects to it), and the privacy policy + landing page say plainly what we capture and why, and link to it.
+- **Transparent.** The dashboard is public (`https://www.liveworkspace.app/telemetry`, and `/telemetry` here redirects to it), and the privacy policy + landing page say plainly what we capture and why, and link to it.
 
 ## Event schema
 
@@ -41,7 +41,7 @@ The telemetry service stores and ages out the events, one row per event tagged w
 
 ## API
 
-The ingest (`POST https://liveworkspace.app/api/telemetry/events`, body `{ app: 'livedesign.app', events: TelemetryEvent[] }`) and the summary (`GET https://liveworkspace.app/api/telemetry/summary?app=livedesign.app`, or every app) are the central service's, specified in [liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md). The ingest validates each batch against **this app's** closed vocabulary (`isValidTelemetryEvent` in `@livedesign/api-schema`) and drops this app's server-emitted pairs from browser batches (`SERVER_EMITTED_EVENT_PAIRS`). The summary's windows are fixed UTC days (`TELEMETRY_WINDOW_DAYS`, from `@liveworkspace/telemetry`, re-exported by `@livedesign/api-schema`), with each app's share of every window and day (`byApp`).
+The ingest (`POST https://www.liveworkspace.app/api/telemetry/events`, body `{ app: 'livedesign.app', events: TelemetryEvent[] }`) and the summary (`GET https://www.liveworkspace.app/api/telemetry/summary?app=livedesign.app`, or every app) are the central service's, specified in [liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md). The ingest validates each batch against **this app's** closed vocabulary (`isValidTelemetryEvent` in `@livedesign/api-schema`) and drops this app's server-emitted pairs from browser batches (`SERVER_EMITTED_EVENT_PAIRS`). The summary's windows are fixed UTC days (`TELEMETRY_WINDOW_DAYS`, from `@liveworkspace/telemetry`, re-exported by `@livedesign/api-schema`), with each app's share of every window and day (`byApp`).
 
 ## On/off env var
 
@@ -143,7 +143,7 @@ Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if n
 
 ## Dashboard
 
-The dashboard is liveworkspace's: one set of views for every app (`liveworkspace/apps/site/app/telemetry/_shared/`), at `https://liveworkspace.app/telemetry?app=livedesign.app`, and its timeframe panel, tabs, stacks, rankings, trend arrows and loading states are specified there ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md) "The dashboard"). livedesign's part is its data folder, `liveworkspace/apps/site/app/telemetry/livedesign/`:
+The dashboard is liveworkspace's: one set of views for every app (`liveworkspace/apps/site/app/telemetry/_shared/`), at `https://www.liveworkspace.app/telemetry?app=livedesign.app`, and its timeframe panel, tabs, stacks, rankings, trend arrows and loading states are specified there ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md) "The dashboard"). livedesign's part is its data folder, `liveworkspace/apps/site/app/telemetry/livedesign/`:
 
 - `config.ts`: the name, the noun (design), the accent and category colours, the call-to-action vocabulary and the charts on each tab and section.
 - `catalogue/<area>.ts` (visitors, content, features, collaboration, settings, connections, health, email, timings, cli-commands), re-exported from `metric-catalogue.ts`: every chart and stack. A stack references charts by name, so one chart can sit in several stacks. The Dashboard opens with At a Glance (New Visitors, Returning Visitors, Sign-Ups, Designs Created, Multiplayer Sessions, Failed Requests), then the curated stacks by group: Visitors, Content, Features, Collaboration, Connections and Health & support. The Detail tabs are **Features** (Editing, Palette, Modes, Look & Feel, Settings, Collaboration, Connections), **Pages & Help** (Pages, Help, Tours & Prompts) and **Health** (Exceptions, Timings).
@@ -175,4 +175,4 @@ When a feature is removed, the dashboard drops its events from the summary the m
 
 ## Privacy posture
 
-The privacy policy + landing page state: we record anonymous, first-party product events (the three-field schema, examples), to learn which features help; no external analytics vendors; data is never sold or shared beyond the public dashboard (liveworkspace's, `https://liveworkspace.app/telemetry`), and events go to liveworkspace's own telemetry service, not a vendor. This is consistent with the "no tracking pixels / no third-party analytics" claims: first-party, anonymous, no third parties, no ad tracking.
+The privacy policy + landing page state: we record anonymous, first-party product events (the three-field schema, examples), to learn which features help; no external analytics vendors; data is never sold or shared beyond the public dashboard (liveworkspace's, `https://www.liveworkspace.app/telemetry`), and events go to liveworkspace's own telemetry service, not a vendor. This is consistent with the "no tracking pixels / no third-party analytics" claims: first-party, anonymous, no third parties, no ad tracking.

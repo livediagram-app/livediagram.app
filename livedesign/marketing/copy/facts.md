@@ -80,5 +80,5 @@ No Node-hosted backend, no SSR.
 
 ## Links
 
-- Hosted: https://livedesign.app
-- Editor: https://livedesign.app/new
+- Hosted: https://www.livedesign.app
+- Editor: https://www.livedesign.app/new

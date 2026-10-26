@@ -13,18 +13,14 @@
 // Drive (liveworkspace/docs/drive.md). The account is closed either way.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
+import type { Env } from './env.ts';
+import { introspectWithLegacy, type Introspected } from './legacy-issuer.ts';
 import { purgeFromIndex, recordPendingPurge, type IndexPurgeConfig } from './index-purge.ts';
 import { deleteProfile } from './profiles.ts';
 import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
-
-interface Introspection {
-  active?: boolean;
-  sub?: unknown;
-  client_id?: unknown;
-}
 
 function basicClientId(header: string | null): string | null {
   const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
@@ -47,6 +43,9 @@ export async function deleteAccount(
   closeWorkbench: (userId: string) => Promise<void> = async () => {},
   // The account's Google Drive mirror: disconnected by the Drive service (drive-disconnect.ts). Never fails the close.
   disconnectDrive: (userId: string) => void = () => {},
+  // Where this Worker is, so an access token minted under the bare issuer before the move to www. is still taken
+  // (legacy-issuer.ts). Left out, only the provider's own introspection decides.
+  issuerEnv?: Pick<Env, 'BASE_URL' | 'ENVIRONMENT'>,
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
@@ -61,21 +60,27 @@ export async function deleteAccount(
   }
 
   const url = new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url);
-  const checked = await auth.handler(
-    new Request(url, {
-      method: 'POST',
-      headers: {
-        authorization,
-        accept: 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({ token, token_type_hint: 'access_token' }).toString(),
-    }),
-  );
-  if (checked.status === 401) return Response.json({ error: 'invalid_client' }, { status: 401 });
-  const result = (await checked.json().catch(() => ({}))) as Introspection;
+  const introspect = () =>
+    auth.handler(
+      new Request(url, {
+        method: 'POST',
+        headers: {
+          authorization,
+          accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ token, token_type_hint: 'access_token' }).toString(),
+      }),
+    );
+  const { status, result } = issuerEnv
+    ? await introspectWithLegacy(introspect, token, clientId, issuerEnv, auth)
+    : await introspect().then(async (checked) => ({
+        status: checked.status,
+        result: (await checked.json().catch(() => ({}))) as Introspected,
+      }));
+  if (status === 401) return Response.json({ error: 'invalid_client' }, { status: 401 });
   if (
-    !checked.ok ||
+    status !== 200 ||
     result.active !== true ||
     typeof result.sub !== 'string' ||
     result.client_id !== clientId

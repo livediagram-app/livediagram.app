@@ -1,6 +1,6 @@
 # livedesign
 
-The command line for [livedesign](https://livedesign.app): read, build, edit and discuss designs (logos, wireframes, photos) from a terminal,
+The command line for [livedesign](https://www.livedesign.app): read, build, edit and discuss designs (logos, wireframes, photos) from a terminal,
 built first for coding agents and second for scripts.
 
 ```bash
@@ -21,7 +21,7 @@ livedesign auth login            # approve the CLI in your browser
 livedesign auth login --device   # on a machine without a browser: enter a code on another device
 ```
 
-For CI and agents, create an API token on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens)
+For CI and agents, create an API token on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)
 (livedesign's Settings › Account › API Tokens › Manage API Tokens takes you there), then either set it for a command:
 
 ```bash

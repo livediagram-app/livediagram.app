@@ -148,7 +148,7 @@ In order of precedence:
 ## Profiles and hosts
 
 - `~/.config/livedesign/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEDESIGN_HOST` and
-  `LIVEDESIGN_PROFILE` choose one. The default is `https://livedesign.app`.
+  `LIVEDESIGN_PROFILE` choose one. The default is `https://www.livedesign.app`.
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   design format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer design format than it reads, the CLI

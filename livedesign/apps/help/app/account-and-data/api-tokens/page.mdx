@@ -25,7 +25,7 @@ API tokens are a **signed-in-only** feature. The editor, sharing, and real-time 
 
 ## Creating a token
 
-Tokens are made on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens). In livedesign, open **Settings** (the sliders button near the end of the bottom bar), choose **Account**, then **API Tokens**, and choose **Manage API Tokens** to get there.
+Tokens are made on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens). In livedesign, open **Settings** (the sliders button near the end of the bottom bar), choose **Account**, then **API Tokens**, and choose **Manage API Tokens** to get there.
 
 Name the token, switch on **Read-only** if it only needs to look, and create it. Its secret is shown **once**, right after you create it: copy it then, because it is never displayed again. If you lose the secret, revoke the token and create a new one.
 
@@ -37,11 +37,11 @@ Name the token, switch on **Read-only** if it only needs to look, and create it.
 
 ## Using a token
 
-Send the token as a **bearer header** to the API, which lives under `/api` on your livedesign host (`https://livedesign.app/api` on the hosted service):
+Send the token as a **bearer header** to the API, which lives under `/api` on your livedesign host (`https://www.livedesign.app/api` on the hosted service):
 
 ```bash
 # List your designs
-curl https://livedesign.app/api/designs \
+curl https://www.livedesign.app/api/designs \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
@@ -51,7 +51,7 @@ For what you can call and how, see the [Developers](/help/developers/api-overvie
 
 ## Viewing and revoking tokens
 
-Your tokens are listed on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livedesign stops accepting it within a minute, and ends any workbench pairing made with it within a few minutes. Deleting your account also removes all of your tokens, along with the rest of your data.
+Your tokens are listed on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livedesign stops accepting it within a minute, and ends any workbench pairing made with it within a few minutes. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

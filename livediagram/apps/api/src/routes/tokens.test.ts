@@ -49,7 +49,7 @@ describe('token management is on liveworkspace.app', () => {
       expect(res.status, `${method} ${path}`).toBe(410);
       expect(await res.json()).toEqual({
         error: 'tokens_moved',
-        manageAt: 'https://liveworkspace.app/explorer?settings=tokens',
+        manageAt: 'https://www.liveworkspace.app/explorer?settings=tokens',
       });
     }
     expect(db.revokePresentedToken).not.toHaveBeenCalled();

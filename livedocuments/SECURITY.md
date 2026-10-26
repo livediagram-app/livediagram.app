@@ -9,7 +9,7 @@ Please report security vulnerabilities **privately** through GitHub:
 Do not open a public issue, discussion or pull request for a security problem.
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is at
-[livedocuments.app/help/policies/report-a-vulnerability](https://livedocuments.app/help/policies/report-a-vulnerability/).
+[livedocuments.app/help/policies/report-a-vulnerability](https://www.livedocuments.app/help/policies/report-a-vulnerability/).
 
 In short:
 

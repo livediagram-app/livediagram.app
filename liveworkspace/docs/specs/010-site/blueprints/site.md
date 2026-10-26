@@ -272,7 +272,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `PROFILE_PICTURE_ORIGIN`      | `https://${PROFILE_PICTURE_HOST}`                               | `picture.ts`                |
 | `MAX_PICTURE_URL_LEN`         | `512`                                                           | `picture.ts`                |
 | `DEFAULT_PICTURE_PX`          | `96`                                                            | `picture.ts`                |
-| `PRODUCTION_WORKSPACE_ORIGIN` | `'https://liveworkspace.app'`                                   | `workspace-proxy.ts`        |
+| `PRODUCTION_WORKSPACE_ORIGIN` | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
 | `WORKSPACE_PROXY_HEADER`      | `'X-Liveworkspace-Proxy'`                                       | `workspace-proxy.ts`        |
 | `WORKSPACE_CLIENT_IP_HEADER`  | `'X-Liveworkspace-Client-IP'`                                   | `workspace-proxy.ts`        |
 | `STATUS_PATH`                 | `'/status'`                                                     | `workspace-proxy.ts`        |
@@ -286,10 +286,10 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `SITE_ASSET_PREFIX`           | `'/_liveworkspace'`                                             | `workspace-proxy.ts`        |
 | `SITE_ASSETS_ROUTE`           | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
 | `WORKBENCH_ROUTE`             | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `PRODUCTION_INDEX_ORIGIN`     | `'https://liveworkspace.app'`                                   | `workspace-proxy.ts`        |
-| `PRODUCTION_DRIVE_ORIGIN`     | `'https://liveworkspace.app'`                                   | `workspace-proxy.ts`        |
+| `PRODUCTION_INDEX_ORIGIN`     | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
+| `PRODUCTION_DRIVE_ORIGIN`     | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
 | `DRIVE_PATH`                  | `'/api/drive'`                                                  | `workspace-proxy.ts`        |
-| `PRODUCTION_PREVIEWS_ORIGIN`  | `'https://liveworkspace.app'`                                   | `workspace-proxy.ts`        |
+| `PRODUCTION_PREVIEWS_ORIGIN`  | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
 | `PREVIEWS_PATH`               | `'/api/previews'`                                               | `workspace-proxy.ts`        |
 | `SETTINGS_HREF`               | `'/explorer?settings=all'`                                      | `AccountMenu.tsx`           |
 | `ACCOUNT_TRIGGER_CLASS`       | `'relative touch-target-y inline-flex max-w-56 cursor-pointer…` | `face.tsx`                  |

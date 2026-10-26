@@ -483,19 +483,19 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 
 ## Constants and configuration
 
-| Name                       | Value                                         | Provenance / safe range                                     |
-| -------------------------- | --------------------------------------------- | ----------------------------------------------------------- |
-| `MAX_IMAGE_BYTES`          | `10 * 1024 * 1024`                            | Spec per-file cap; below the 100 MB Workers body limit      |
-| `MAX_IMAGE_MB`             | `10`                                          | Derived, for copy                                           |
-| `ACCEPTED_IMAGE_TYPES`     | png, jpeg, webp, gif                          | Spec whitelist; SVG must never join                         |
-| `MAX_BODY_BYTES`           | `8 * 1024 * 1024`                             | Non-image write cap in `limits.ts`                          |
-| `MEDIA_KEY`                | secret; unset = no images                     | `wrangler secret put`; the service's `MEDIA_KEY_LIVEDESIGN` |
-| `MEDIA_URL`                | unset = `https://liveworkspace.app/api/media` | `hosted-vars.json` per environment                          |
-| Gallery caps               | 100 images, 100 MB per person                 | The media service's, across every app                       |
-| Reference announce cron    | `0 3 * * *`                                   | `wrangler.toml`, production and staging                     |
-| `IMAGE_EMBED_BUDGET_BYTES` | `3 * 1024 * 1024`                             | Spec; 1 to 8 MiB keeps snapshots streamable                 |
-| Read `Cache-Control`       | `private, max-age=86400`                      | Spec; `private` is load-bearing                             |
-| Sniff window               | first 16 bytes, minimum 12                    | Longest signature (WebP) needs 12                           |
-| Gallery placement size     | `240` px on the longer side                   | D40; literal `max` in `addImageFromGallery`                 |
-| `createImage` size         | 200 × 150                                     | D49                                                         |
-| `WRITE_RATE_LIMITER`       | 300 per 60 s                                  | `wrangler.toml`, namespace `1001`                           |
+| Name                       | Value                                             | Provenance / safe range                                     |
+| -------------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| `MAX_IMAGE_BYTES`          | `10 * 1024 * 1024`                                | Spec per-file cap; below the 100 MB Workers body limit      |
+| `MAX_IMAGE_MB`             | `10`                                              | Derived, for copy                                           |
+| `ACCEPTED_IMAGE_TYPES`     | png, jpeg, webp, gif                              | Spec whitelist; SVG must never join                         |
+| `MAX_BODY_BYTES`           | `8 * 1024 * 1024`                                 | Non-image write cap in `limits.ts`                          |
+| `MEDIA_KEY`                | secret; unset = no images                         | `wrangler secret put`; the service's `MEDIA_KEY_LIVEDESIGN` |
+| `MEDIA_URL`                | unset = `https://www.liveworkspace.app/api/media` | `hosted-vars.json` per environment                          |
+| Gallery caps               | 100 images, 100 MB per person                     | The media service's, across every app                       |
+| Reference announce cron    | `0 3 * * *`                                       | `wrangler.toml`, production and staging                     |
+| `IMAGE_EMBED_BUDGET_BYTES` | `3 * 1024 * 1024`                                 | Spec; 1 to 8 MiB keeps snapshots streamable                 |
+| Read `Cache-Control`       | `private, max-age=86400`                          | Spec; `private` is load-bearing                             |
+| Sniff window               | first 16 bytes, minimum 12                        | Longest signature (WebP) needs 12                           |
+| Gallery placement size     | `240` px on the longer side                       | D40; literal `max` in `addImageFromGallery`                 |
+| `createImage` size         | 200 × 150                                         | D49                                                         |
+| `WRITE_RATE_LIMITER`       | 300 per 60 s                                      | `wrangler.toml`, namespace `1001`                           |

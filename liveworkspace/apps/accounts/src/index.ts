@@ -22,6 +22,7 @@ import {
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { withSessionColour } from './profiles.ts';
 import { networkOf, overCodeLimit } from './rate-limit.ts';
+import { withOwnCookies } from './own-cookies.ts';
 
 const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
@@ -46,8 +47,8 @@ export { WorkbenchStore } from './workbench/durable-object.ts';
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
 // (liveworkspace/apps/site), on the same origin.
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
+  async fetch(incoming: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(incoming.url);
     const { pathname } = url;
     // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
     // once the real one is set (auth.ts getAuth).
@@ -55,6 +56,9 @@ export default {
       console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
       return Response.json({ error: 'not_configured' }, { status: 503 });
     }
+    // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
+    // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
+    const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
 
     if (request.method === 'GET') {
       if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
@@ -106,6 +110,7 @@ export default {
         (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
         // After the answer: Google's revoke never holds the close up.
         (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
+        env,
       );
     }
 

@@ -7,7 +7,7 @@ import { LOGIN_TIMEOUT_MS } from './oauth';
 // Browser and device sign-in through `auth login` (docs/specs/015-api/blueprints/cli.md "The CLI's OAuth client",
 // "Credentials", CLI34 to CLI36), on a fake host with an authorization server.
 
-const HOST = 'https://liveplanner.app';
+const HOST = 'https://www.liveplanner.app';
 const ISSUER = 'https://mcp.liveplanner.app';
 const NEW = `lwt_${'b'.repeat(43)}`;
 
@@ -45,8 +45,8 @@ function host(script: Script = {}) {
         return Response.json({
           device_code: 'dev-1',
           user_code: 'BCDF-GHJK',
-          verification_uri: 'https://liveplanner.app/oauth/device',
-          verification_uri_complete: 'https://liveplanner.app/oauth/device?code=BCDF-GHJK',
+          verification_uri: 'https://www.liveplanner.app/oauth/device',
+          verification_uri_complete: 'https://www.liveplanner.app/oauth/device?code=BCDF-GHJK',
           interval: 5,
           ...script.device,
         });
@@ -103,7 +103,7 @@ describe('auth login through the browser', () => {
     const page = await io.visit(`http://127.0.0.1:4321/callback?state=${q.get('state')}&code=c1`);
     expect([page.status, page.html]).toEqual([200, expect.stringContaining("You're signed in")]);
     expect(await exit).toBe(0);
-    expect(io.out()).toBe('signed in to https://liveplanner.app as Webber\n');
+    expect(io.out()).toBe('signed in to https://www.liveplanner.app as Webber\n');
     expect(forms[0]).toMatchObject({
       grant_type: 'authorization_code',
       code: 'c1',
@@ -168,7 +168,7 @@ describe('auth login --device', () => {
     });
     expect(await exit).toBe(0);
     expect(io.err()).toContain(
-      'Open https://liveplanner.app/oauth/device and enter BCDF-GHJK. Waiting for approval…',
+      'Open https://www.liveplanner.app/oauth/device and enter BCDF-GHJK. Waiting for approval…',
     );
     expect(io.slept).toEqual([5000, 5000, 10000, 10000]);
     expect(
@@ -176,7 +176,7 @@ describe('auth login --device', () => {
         .filter((f) => f.path === '/oauth/token')
         .every((f) => f.grant_type === DEVICE_CODE_GRANT && f.device_code === 'dev-1'),
     ).toBe(true);
-    expect(io.out()).toBe('signed in to https://liveplanner.app as Webber\n');
+    expect(io.out()).toBe('signed in to https://www.liveplanner.app as Webber\n');
   });
 
   it('ends on a refusal, an expired code and any other error, each with its words', async () => {

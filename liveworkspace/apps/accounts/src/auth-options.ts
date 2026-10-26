@@ -10,6 +10,7 @@ import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
+import { wwwTwin } from '@liveworkspace/sites/www';
 
 export const AUTH_BASE_PATH = '/api/auth';
 export const SEND_CODE_PATH = '/email-otp/send-verification-otp';
@@ -42,6 +43,9 @@ export interface AuthConfig {
   // The apps' own origins, whose sign-in pages call this Worker through their routers (handoff.ts). Left out where
   // there are none, as when generating the schema.
   appOrigins?: string[];
+  // Production's cookie domain (cookie-scope.ts), so one session is valid on www. and the bare domain alike; left out
+  // for host-only cookies (staging, local development, the schema).
+  cookieDomain?: string;
   // The hand-off that brings a session made on an app's address here (handoff.ts).
   handoff?: HandoffPluginConfig;
   // `request` is the send's own, when there is one: whose address it came through picks the email's brand.
@@ -79,8 +83,10 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     // their tokens from /oauth2/token instead, so this one stays off. So do the code routes
     // other than sending one and signing in with it (UNUSED_CODE_PATHS).
     disabledPaths: ['/token', ...UNUSED_CODE_PATHS],
-    // The sign-in pages on each app's own address (handoff.ts) post here through the app's router.
-    trustedOrigins: config.appOrigins ?? [],
+    // The sign-in pages on each app's own address (handoff.ts) post here through the app's router. This Worker's own
+    // origin is trusted already; its twin on the other host is too, while the move to www. lasts (pages cached on the
+    // bare domain before it still post from there).
+    trustedOrigins: [...(config.appOrigins ?? []), ...twinOrigin(config.baseUrl)],
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's
     // limiter keeps its counts in isolate memory here, which an attacker spreads across.
     rateLimit: { enabled: false },
@@ -152,6 +158,9 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     },
     advanced: {
       ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
+      ...(config.cookieDomain && {
+        crossSubDomainCookies: { enabled: true, domain: config.cookieDomain },
+      }),
       database: {
         generateId: ({ model }) => (model === 'user' ? newUserId() : crypto.randomUUID()),
       },
@@ -227,6 +236,18 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       }),
     ],
   } satisfies BetterAuthOptions;
+}
+
+// The other host's origin of this Worker's own, when it has one (@liveworkspace/sites/www).
+function twinOrigin(baseUrl: string): string[] {
+  let origin: string;
+  try {
+    origin = new URL(baseUrl).origin;
+  } catch {
+    return [];
+  }
+  const twin = wwwTwin(origin);
+  return twin ? [twin] : [];
 }
 
 type AccountRow = { userId?: unknown; providerId?: unknown; idToken?: unknown };

@@ -10,7 +10,7 @@ import { EXIT, exitCodeForStatus } from '@liveworkspace/cli-kit/exit-codes';
 export const isNetworkFailure = (err: unknown): err is Error =>
   err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name);
 
-export const SUPPORT_URL = 'https://liveplanner.app/help/contact/';
+export const SUPPORT_URL = 'https://www.liveplanner.app/help/contact/';
 
 function addressFailure(err: AddressError): CliFailure {
   const { kind, candidates, message, hint } = err.failure;

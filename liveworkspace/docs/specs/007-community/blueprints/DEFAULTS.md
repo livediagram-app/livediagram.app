@@ -32,5 +32,5 @@ One row per default applied where a spec is silent or qualitative. Rows that nam
 | D26 | community | No value given for `COMMUNITY_SEARCH_TERM_MAX`     | `40` (`post.ts`)                                                               |
 | D27 | community | No value given for `COMMUNITY_INPUT_FIELDS`        | `['title', 'description', 'category', 'tags'] as const` (`post.ts`)            |
 | D28 | community | No value given for `COMMUNITY_SITEMAP_MAX`         | `5000` (`post.ts`)                                                             |
-| D29 | community | No value given for `COMMUNITY_API_URL`             | `https://liveworkspace.app${COMMUNITY_API_PATH}` (`service.ts`)                |
+| D29 | community | No value given for `COMMUNITY_API_URL`             | `https://www.liveworkspace.app${COMMUNITY_API_PATH}` (`service.ts`)            |
 | D30 | community | No value given for `COMMUNITY_DOCUMENT_STATES`     | `['public', 'closed', 'away'] as const` (`service.ts`)                         |

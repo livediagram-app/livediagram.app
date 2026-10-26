@@ -31,14 +31,14 @@ globs = ["**/*.ttf", "**/*.otf"]
 [vars]
 # Where the OAuth consent page lives (apps/editor). Staging sets its own
 # editor origin; the authorize endpoint redirects the signed-in user here.
-CONSENT_BASE_URL = "https://livedocuments.app"
+CONSENT_BASE_URL = "https://www.livedocuments.app"
 
 # TELEMETRY_KEY is deliberately NOT here — it's secret material, so it goes
 # through `wrangler secret put TELEMETRY_KEY` (docs/specs/002-project-scope/secrets-policy.md), the SAME
 # value as the api worker's. It is livedocuments' Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md): unset, this
 # worker sends no telemetry. TELEMETRY_URL (a var, unset meaning production's
-# https://liveworkspace.app/api/telemetry) names the service. See apps/api/wrangler.toml.
+# https://www.liveworkspace.app/api/telemetry) names the service. See apps/api/wrangler.toml.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`

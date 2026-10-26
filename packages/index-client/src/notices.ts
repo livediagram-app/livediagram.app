@@ -42,7 +42,7 @@ export async function countOwnedItems(
   personId: string,
   limit: number,
 ): Promise<number> {
-  const base = (baseUrl || `https://liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const base = (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
   const capped = Math.max(1, Math.min(OWNED_COUNT_MAX, Math.floor(limit)));
   const res = await (doFetch ?? fetch)(
     `${base}/app/people/${encodeURIComponent(personId)}/count?limit=${capped}`,

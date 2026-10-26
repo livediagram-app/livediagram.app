@@ -66,7 +66,7 @@ describe('readProject', () => {
     expect(result.content).toEqual([
       {
         type: 'text',
-        text: `${OUTLINE}\n{"id":"d1","name":"Roadmap","tab":{"id":"t1","name":"Plan","rev":41},"tabs":[{"id":"t1","name":"Plan"},{"id":"t2","name":"Risks"}],"url":"https://liveplanner.app/project/d1"}`,
+        text: `${OUTLINE}\n{"id":"d1","name":"Roadmap","tab":{"id":"t1","name":"Plan","rev":41},"tabs":[{"id":"t1","name":"Plan"},{"id":"t2","name":"Risks"}],"url":"https://www.liveplanner.app/project/d1"}`,
       },
     ]);
     expect(result.structuredContent).toEqual({
@@ -74,7 +74,7 @@ describe('readProject', () => {
       name: 'Roadmap',
       tab: { id: 't1', name: 'Plan', rev: 41, view: 'outline', text: OUTLINE },
       tabs: LIVE_DOC.tabs,
-      url: 'https://liveplanner.app/project/d1',
+      url: 'https://www.liveplanner.app/project/d1',
     });
     expect(
       requests.some((r) => /\/tabs\/t1$/.test(r.pathname) && !r.searchParams.has('view')),
@@ -124,7 +124,7 @@ describe('readProject', () => {
       name: 'Roadmap',
       tab: { id: 't1', name: 'Plan', rev: 41, elements: TAB.elements },
       tabs: LIVE_DOC.tabs,
-      url: 'https://liveplanner.app/project/d1',
+      url: 'https://www.liveplanner.app/project/d1',
     });
     expect(requests.some((r) => r.searchParams.has('view'))).toBe(false);
     const withImage = await readProject(env, 'tok', {

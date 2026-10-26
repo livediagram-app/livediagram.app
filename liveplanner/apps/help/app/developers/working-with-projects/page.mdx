@@ -23,14 +23,14 @@ These examples use `curl` against the hosted service. Each request carries your 
 export TOKEN=lwt_your_token_here
 ```
 
-Paths are relative to `https://liveplanner.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
+Paths are relative to `https://www.liveplanner.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
 
 ## List your plans
 
 A plan **list** returns the plans in your personal library (plans in a team library are not included), as metadata only, not the tab contents:
 
 ```bash
-curl https://liveplanner.app/api/projects \
+curl https://www.liveplanner.app/api/projects \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -45,14 +45,14 @@ curl https://liveplanner.app/api/projects \
 Fetching one plan returns its metadata and a list of **tab summaries**, but not what each tab holds:
 
 ```bash
-curl https://liveplanner.app/api/projects/$DOC \
+curl https://www.liveplanner.app/api/projects/$DOC \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 To see every tab of a plan at a glance, ask for its overview:
 
 ```bash
-curl "https://liveplanner.app/api/projects/$DOC?view=overview" \
+curl "https://www.liveplanner.app/api/projects/$DOC?view=overview" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -66,7 +66,7 @@ doc 4cd7082b-… "Sprint 14" · 3 tabs · edited just now
 To get the contents of one tab, request it by id. This keeps listing a big plan cheap:
 
 ```bash
-curl https://liveplanner.app/api/projects/$DOC/tabs/$TAB \
+curl https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -89,7 +89,7 @@ A tab's **elements** are what fill it: the board on a Board tab, the sheet on a 
 The element JSON carries every setting. When you want what a tab **means**, which is usually what a script or an AI model needs, ask for a **view** instead. The outline gives one line per element:
 
 ```bash
-curl "https://liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
+curl "https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -115,7 +115,7 @@ Add `budget=2000` to fit any view to about 2,000 tokens. The view then leaves ou
 ```bash
 DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
 
-curl -X POST https://liveplanner.app/api/projects \
+curl -X POST https://www.liveplanner.app/api/projects \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -132,7 +132,7 @@ A template that builds several tabs (the Kanban template makes a Board, a Reques
 Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the plan open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept. This one changes the Kanban template's **Flow** dashboard (its tab id in `$FLOW`), using the refs its outline printed:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -157,7 +157,7 @@ rev 1→2 · cs_tbrfqcvm1w · revert: liveplanner changeset revert 4cd7082b-… 
 The same operations read well as text, one a line, which is easier for a script or an agent to write. Send them as a string:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{ "operations": "set 0a78 planView={\"view\":\"workload\"}\nrm 82d4" }'
@@ -185,11 +185,11 @@ Cards, Sheet cells and forms have endpoints of their own: see [Plan Items, Sheet
 Create a folder (add `"parentId"` to make it inside another, or `"teamId"` for a team's), then create a plan straight into it by naming its id as `folderId`. Renaming and moving folders, and moving a plan you already have, happens in the Explorer.
 
 ```bash
-curl -X POST https://liveplanner.app/api/folders \
+curl -X POST https://www.liveplanner.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$FOLDER"'", "name": "Sprints" }'
 
-curl -X POST https://liveplanner.app/api/projects \
+curl -X POST https://www.liveplanner.app/api/projects \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$(uuidgen)"'", "name": "Sprint 12", "folderId": "'"$FOLDER"'" }'
 ```
@@ -201,14 +201,14 @@ curl -X POST https://liveplanner.app/api/projects \
 `DELETE /projects/$DOC` moves the plan to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 project_trashed`. Add `?permanent=true` to delete it for good straight away.
 
 ```bash
-curl -X DELETE https://liveplanner.app/api/projects/$DOC \
+curl -X DELETE https://www.liveplanner.app/api/projects/$DOC \
   -H "Authorization: Bearer $TOKEN"
 
 # What you can restore: your own Trash and every team's you belong to
-curl https://liveplanner.app/api/trash \
+curl https://www.liveplanner.app/api/trash \
   -H "Authorization: Bearer $TOKEN"
 
-curl -X POST https://liveplanner.app/api/trash/$DOC/restore \
+curl -X POST https://www.liveplanner.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -219,7 +219,7 @@ curl -X POST https://liveplanner.app/api/trash/$DOC/restore \
 Create a share link with a role of `view`, `participate` or `edit`:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/share \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/share \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "role": "view" }'
 ```

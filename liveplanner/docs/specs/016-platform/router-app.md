@@ -6,6 +6,18 @@ A small Cloudflare Worker that fronts the apex domain (`liveplanner.app`) and ro
 - **Runtime:** Cloudflare Workers.
 - **Production hostname:** `liveplanner.app` and `www.liveplanner.app`; staging's is `staging.liveplanner.app`. Each is a custom domain declared in `apps/router/wrangler.toml`, attached by `wrangler deploy` ([Deployment](deployment.md#custom-domain)). Default Workers URL also remains reachable.
 
+## The bare domain
+
+Pages live on `www.liveplanner.app`. A page load on the bare `liveplanner.app` (a GET or HEAD, not under `/api` or
+`/.well-known`, and not a WebSocket upgrade) answers one `301` to the same path and query on
+`https://www.liveplanner.app`, with `Cache-Control: public, max-age=86400` (`wwwRedirect`,
+`@liveworkspace/sites/workspace-proxy`). Everything else answers on the bare domain as before: API calls, the sign-in
+callback and live rooms from an older page, a CLI or an MCP client keep working, and no `Authorization` header is
+lost to a cross-origin redirect. It is always one hop: `/status` and `/telemetry` go straight to liveworkspace, and a
+help path missing its `/help` goes straight to `www.liveplanner.app/help/…`. Only production's router does it (no
+`DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never
+redirect, so there is no loop and neither staging nor local development leads to production.
+
 ## Routing table
 
 The router answers each request from the first row that matches, top to bottom:
@@ -14,7 +26,7 @@ The router answers each request from the first row that matches, top to bottom:
 | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | liveworkspace's pages and APIs on this address: `/explorer/*`, the signed sign-in pages, `/api/workspace/*`, `/api/workbench/*`, `/_liveworkspace/*` | liveworkspace.app (`WORKSPACE_ORIGIN`), below                                                                                            |
 | `/api/previews/*`, and a share link's `image.svg`, `image.png` and `card`                                                                            | liveworkspace's previews (`PREVIEWS_ORIGIN`, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md))                  |
-| `/api/index`, `/api/index/*`                                                                                                                         | liveworkspace's index (`INDEX_ORIGIN`, `https://liveworkspace.app` when unset), as-is                                                    |
+| `/api/index`, `/api/index/*`                                                                                                                         | liveworkspace's index (`INDEX_ORIGIN`, `https://www.liveworkspace.app` when unset), as-is                                                |
 | `/api/drive`, `/api/drive/*`                                                                                                                         | liveworkspace's Drive mirror (`DRIVE_ORIGIN`, [drive.md](../../../../liveworkspace/docs/specs/005-drive/drive.md)), cookies dropped      |
 | `/api`, `/api/*`                                                                                                                                     | api worker (`apps/api`), as-is                                                                                                           |
 | `/live/*` (the editor app's `_next` assets only)                                                                                                     | editor app (`apps/editor`), stripped                                                                                                     |
@@ -29,7 +41,7 @@ The editor app serves at **clean URLs** — there's no `/live` prefix in the add
 
 The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` assets** (its `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the editor app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (the `forward()` helper's `stripPrefix`, as for `/help/*`) so the worker serves them from `out/_next`. Pages carry no prefix: the editor has an `assetPrefix` and no `basePath`.
 
-`/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. The one exception is `/api/index/*`, liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)): the Explorer and the editor call it on liveplanner's own origin, and the router passes it, path unchanged, to `INDEX_ORIGIN` (production's `https://liveworkspace.app` when unset; staging and local development name their own), so the browser needs no CORS and no liveworkspace.app cookie. Marketing sees `/`, `/faq`, etc. as-is.
+`/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. The one exception is `/api/index/*`, liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)): the Explorer and the editor call it on liveplanner's own origin, and the router passes it, path unchanged, to `INDEX_ORIGIN` (production's `https://www.liveworkspace.app` when unset; staging and local development name their own), so the browser needs no CORS and no liveworkspace.app cookie. Marketing sees `/`, `/faq`, etc. as-is.
 
 **Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) is an unambiguous address: every help article lives under one of the registry's category slugs (`HELP_CATEGORY_SEGMENTS`: about, account-and-data, collaboration, contact, developers, getting-started, plan, policies, privacy-and-security, search-panel, supported-devices, tabs, tips-and-tricks, tools, troubleshooting, user-interface), and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
 

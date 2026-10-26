@@ -90,5 +90,5 @@ Node-hosted backend, no SSR.
 
 ## Links
 
-- Hosted: https://liveplanner.app
-- Start a plan: https://liveplanner.app/new
+- Hosted: https://www.liveplanner.app
+- Start a plan: https://www.liveplanner.app/new

@@ -75,7 +75,7 @@ describe('editor worker: the share page', () => {
     const { env, assets } = makeEnv();
     const res = await get('/project/shared?s=CODE1234', env);
     expect(assets).toEqual(['/project/placeholder']);
-    expect(asked).toEqual(['https://liveworkspace.app/api/previews/share/CODE1234/card']);
+    expect(asked).toEqual(['https://www.liveworkspace.app/api/previews/share/CODE1234/card']);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     const edits = (await res.json()) as Record<string, string>;
     expect(edits.title).toBe('Payments flow');

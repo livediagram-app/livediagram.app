@@ -42,7 +42,7 @@ describe('the usage count', () => {
       { category: 'Cli', action: 'Used', type: 'DesignLs' },
       { category: 'Cli', action: 'Used', type: 'DesignLs' },
     ]);
-    expect(io.err()).toBe(`${telemetryNotice('https://livedesign.app')}\n`);
+    expect(io.err()).toBe(`${telemetryNotice('https://www.livedesign.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 
@@ -84,9 +84,7 @@ describe('the usage count', () => {
       7,
     );
     const missing = host((url) =>
-      url.pathname === '/api/designs'
-        ? Response.json({ error: 'x' }, { status: 404 })
-        : undefined,
+      url.pathname === '/api/designs' ? Response.json({ error: 'x' }, { status: 404 }) : undefined,
     );
     await run(['design', 'ls'], fakeIo({ env: on(), routes: [capabilities, missing.route] }));
     const refused = new Error('no');

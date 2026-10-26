@@ -2,7 +2,7 @@
 // Store the secret in the app as a Worker secret; it can't be read back later.
 //
 //   ADMIN_TOKEN=… node scripts/register-client.ts \
-//     --accounts https://liveworkspace.app \
+//     --accounts https://www.liveworkspace.app \
 //     --name livediagram \
 //     --app livediagram.app \
 //     --redirect https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback \

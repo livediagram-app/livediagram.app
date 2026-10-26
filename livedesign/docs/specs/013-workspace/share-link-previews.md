@@ -50,7 +50,7 @@ The live app's worker fills in the shell's `<head>` for `/design/shared?s=<code>
 `twitter:description` and `twitter:image`. The head is liveworkspace's too (`@liveworkspace/media`
 `createSharePage`): livedesign gives it only its share page's address and its words. It asks liveworkspace's
 previews for the link's name with `GET /api/previews/share/<code>/card` (at `PREVIEWS_ORIGIN`, production's
-https://liveworkspace.app unless set), which answers `{ name }` for a link whose preview names its design and 404
+https://www.liveworkspace.app unless set), which answers `{ name }` for a link whose preview names its design and 404
 for every other row of the table above.
 
 - **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.

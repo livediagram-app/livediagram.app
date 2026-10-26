@@ -153,7 +153,7 @@ the full table. Email needs no secret: its `send_email` binding is the credentia
 
 ## Custom domain
 
-Production lives at **`https://liveplanner.app`**. Only two workers have a hostname, and each declares its own in
+Production lives at **`https://www.liveplanner.app`**. Only two workers have a hostname, and each declares its own in
 its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`):
 
 | Worker                       | Hostnames                                |

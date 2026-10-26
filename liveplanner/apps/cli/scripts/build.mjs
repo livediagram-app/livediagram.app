@@ -126,7 +126,7 @@ await writeFile(
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://liveplanner.app',
+      homepage: 'https://www.liveplanner.app',
       keywords: ['diagram', 'cli', 'agents', 'liveplanner'],
     },
     null,

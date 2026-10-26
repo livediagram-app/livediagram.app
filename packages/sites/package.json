@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./workspace-proxy": "./src/workspace-proxy.ts",
     "./network": "./src/network.ts",
-    "./picture": "./src/picture.ts"
+    "./picture": "./src/picture.ts",
+    "./www": "./src/www.ts"
   },
   "scripts": {
     "lint": "oxlint",

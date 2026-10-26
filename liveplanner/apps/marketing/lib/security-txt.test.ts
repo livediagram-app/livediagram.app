@@ -25,9 +25,9 @@ describe('securityTxt', () => {
   });
 
   it('links the policy, language and canonical URL', () => {
-    expect(fields.Policy).toBe('https://liveplanner.app/help/policies/report-a-vulnerability/');
+    expect(fields.Policy).toBe('https://www.liveplanner.app/help/policies/report-a-vulnerability/');
     expect(fields['Preferred-Languages']).toBe('en');
-    expect(fields.Canonical).toBe('https://liveplanner.app/.well-known/security.txt');
+    expect(fields.Canonical).toBe('https://www.liveplanner.app/.well-known/security.txt');
   });
 
   it('carries exactly the specified fields and ends with a newline', () => {

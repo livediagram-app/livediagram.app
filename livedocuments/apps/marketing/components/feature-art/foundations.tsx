@@ -59,7 +59,7 @@ export function ApiArt() {
         <text x="32" y="33" {...mono}>
           <tspan fill={EMERALD}>$ </tspan>
           <tspan fill={TERM.text}>curl </tspan>
-          <tspan fill={TERM.string}>https://livedocuments.app/api/documents</tspan>
+          <tspan fill={TERM.string}>https://www.livedocuments.app/api/documents</tspan>
           <tspan fill={TERM.dim}> \</tspan>
         </text>
         <text x="42" y="43" {...mono}>

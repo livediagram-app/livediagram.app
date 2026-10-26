@@ -13,4 +13,4 @@ export const PROBE_CONCURRENCY = 6;
 export const CACHE_SECONDS = 120;
 
 // Who is asking, for anyone reading their logs.
-export const USER_AGENT = 'liveworkspace-status/1 (+https://liveworkspace.app/status)';
+export const USER_AGENT = 'liveworkspace-status/1 (+https://www.liveworkspace.app/status)';

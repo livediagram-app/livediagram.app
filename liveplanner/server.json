@@ -4,10 +4,10 @@
   "title": "liveplanner",
   "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on liveplanner.app.",
   "version": "0.1.0",
-  "websiteUrl": "https://liveplanner.app",
+  "websiteUrl": "https://www.liveplanner.app",
   "icons": [
     {
-      "src": "https://liveplanner.app/liveplanner-icon-512.png",
+      "src": "https://www.liveplanner.app/liveplanner-icon-512.png",
       "mimeType": "image/png",
       "sizes": ["512x512"]
     }

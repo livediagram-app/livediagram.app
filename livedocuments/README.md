@@ -2,7 +2,7 @@
 
 A collaborative editor for documents made of pages (articles, slide decks and infographics) that works without signing in. Open a link, make pages, share, present. Real-time presence, cursors, comments, undo and redo. The editor never sits behind an auth wall, so the friction to start is "open the link, start writing."
 
-**Live at [livedocuments.app](https://livedocuments.app).** MIT-licensed.
+**Live at [livedocuments.app](https://www.livedocuments.app).** MIT-licensed.
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
@@ -44,10 +44,10 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 ## Security
 
-Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livedocuments-app/livedocuments.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livedocuments.app/help/policies/report-a-vulnerability/).
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livedocuments-app/livedocuments.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livedocuments.app/help/policies/report-a-vulnerability/).
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livedocuments.app](https://livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in, gated on its client key) and Cloudflare Email Service (transactional email, gated on its `EMAIL` binding) — and the editor runs fully without either of them.
+[MIT](LICENSE). A free hosted version runs at [livedocuments.app](https://www.livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in, gated on its client key) and Cloudflare Email Service (transactional email, gated on its `EMAIL` binding) — and the editor runs fully without either of them.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedocuments.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://www.livedocuments.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

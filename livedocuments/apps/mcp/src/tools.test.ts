@@ -499,7 +499,7 @@ describe('the Trash tools', () => {
       restored: 'document',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://livedocuments.app/document/d_1',
+      url: 'https://www.livedocuments.app/document/d_1',
     });
   });
 

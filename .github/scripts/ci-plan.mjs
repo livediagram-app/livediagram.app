@@ -174,8 +174,14 @@ for (const spec of GROUPS) {
 }
 
 // The Workers among the affected workspaces. Tier 0: the services and apis everything else calls
-// (and the only ones with D1, whose migrations apply before their code); tier 2: the routers in front
-// of the rest; tier 1: the sites between.
+// (D1 migrations apply before each Worker's code, in any tier); tier 2: the routers in front of the
+// rest; tier 1: the sites between. Two exceptions (liveworkspace/docs/specs/003-accounts/accounts.md "The move to www."):
+// accounts goes in tier 1, after every Worker that checks its tokens has learned to accept the issuer
+// it is about to sign with, and liveworkspace's bare-domain redirect in tier 2, once www. answers.
+const TIER_OF = new Map([
+  ['liveworkspace/apps/accounts', 1],
+  ['liveworkspace/apps/redirect', 2],
+]);
 function deployOf(p) {
   const toml = `${p.path}/wrangler.toml`;
   if (!existsSync(toml)) return null;
@@ -186,7 +192,12 @@ function deployOf(p) {
     ? (config.match(/^\[\[d1_databases\]\][^[]*?^binding\s*=\s*"([^"]+)"/ms)?.[1] ?? '')
     : '';
   const tier =
-    app === 'router' ? 2 : app === 'api' || (product === 'liveworkspace' && app !== 'site') ? 0 : 1;
+    TIER_OF.get(p.path) ??
+    (app === 'router'
+      ? 2
+      : app === 'api' || (product === 'liveworkspace' && app !== 'site')
+        ? 0
+        : 1);
   const hosted = existsSync(`${p.path}/scripts/hosted-vars.mjs`) ? product : '';
   return {
     name: p.name,

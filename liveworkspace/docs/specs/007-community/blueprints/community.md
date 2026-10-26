@@ -169,7 +169,7 @@ Migrations, in order:
 | `COMMUNITY_SORTS`               | `(object or list, see file)`                                       | `query.ts`   |
 | `EMPTY_COMMUNITY_QUERY`         | `(object or list, see file)`                                       | `query.ts`   |
 | `COMMUNITY_API_PATH`            | `'/api/community'`                                                 | `service.ts` |
-| `COMMUNITY_API_URL`             | `https://liveworkspace.app${COMMUNITY_API_PATH}`                   | `service.ts` |
+| `COMMUNITY_API_URL`             | `https://www.liveworkspace.app${COMMUNITY_API_PATH}`               | `service.ts` |
 | `COMMUNITY_APP_PARAM`           | `'app'`                                                            | `service.ts` |
 | `COMMUNITY_APP_HEADER`          | `'X-Community-App'`                                                | `service.ts` |
 | `COMMUNITY_DOCUMENT_STATES`     | `['public', 'closed', 'away'] as const`                            | `service.ts` |

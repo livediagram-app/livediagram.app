@@ -18,4 +18,4 @@ One row per default applied where a spec is silent or qualitative. Rows that nam
 | D12 | media     | No value given for `SHARE_PREVIEW_DOORS`           | `['image.svg', 'image.png', 'card'] as const` (`previews.ts`) |
 | D13 | media     | No value given for `SHARE_CARD_TIMEOUT_MS`         | `1500` (`share-page.ts`)                                      |
 | D14 | media     | No value given for `GALLERY_USAGE_READS_IN_FLIGHT` | `8` (`usage.ts`)                                              |
-| D15 | media     | No value given for `MEDIA_API_URL`                 | `https://liveworkspace.app${MEDIA_API_PATH}` (`wire.ts`)      |
+| D15 | media     | No value given for `MEDIA_API_URL`                 | `https://www.liveworkspace.app${MEDIA_API_PATH}` (`wire.ts`)  |

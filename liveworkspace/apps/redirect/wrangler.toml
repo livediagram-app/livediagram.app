@@ -1,0 +1,38 @@
+name = "liveworkspace-redirect"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# liveworkspace.app's bare domain (liveworkspace/docs/specs/010-site/site.md "www. is the address"): a page load answers one 301 to
+# www.liveworkspace.app, everything else goes to the site Worker. A zone route rather than a custom domain, so the site
+# keeps its custom domain (and certificate) on the bare host and nothing is detached while this deploys; the APIs'
+# routes on liveworkspace.app (/api/auth/*, /api/index* and the rest) are more specific, so they still win.
+routes = [{ pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+[[services]]
+binding = "SITE"
+service = "liveworkspace-site"
+
+# Staging has one host (staging.liveworkspace.app), so there is nothing to redirect: no route, and DEPLOY_ENV passes
+# anything that reaches it through.
+[env.staging]
+name = "liveworkspace-redirect-staging"
+workers_dev = false
+routes = []
+
+[env.staging.vars]
+DEPLOY_ENV = "staging"
+
+[[env.staging.services]]
+binding = "SITE"
+service = "liveworkspace-site-staging"
+
+# `wrangler dev --env local` (corepack pnpm --filter @liveworkspace/redirect dev): passes everything to the local site.
+[env.local]
+workers_dev = false
+routes = []
+
+[env.local.vars]
+DEPLOY_ENV = "local"
+SITE_ORIGIN = "http://localhost:3000"

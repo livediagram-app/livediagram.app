@@ -75,7 +75,7 @@ help article.
   `livedesign <hello@livedesign.app>` in production and staging, which is also the default. Its domain must be
   onboarded to Email Service on the liveworkspace account ([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
-  Default `https://livedesign.app`.
+  Default `https://www.livedesign.app`.
 
 Email off means no binding: a fork turns it off by dropping the `[[send_email]]` blocks. Locally,
 `wrangler dev` simulates the binding, printing each email and saving it to files, so nothing is sent.

@@ -35,7 +35,7 @@ The same vocabulary reaches a tab three ways:
 Every element has a short **ref**, printed by the tab's outline view:
 
 ```bash
-curl "https://liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
+curl "https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -158,7 +158,7 @@ To rebuild a tab rather than change it, send `"replace"` instead of `"operations
 A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the plan does not have yet creates that tab, which is how a new tab is added in one write:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "replace": {

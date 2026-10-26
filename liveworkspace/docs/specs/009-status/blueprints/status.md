@@ -83,7 +83,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `READ_RATE_LIMITER` | 60 per 60 s                                     |
 | Crons                          | `7 * * * *`                                     |
 | Var `ENVIRONMENT`              | `production`                                    |
-| Var `PLATFORM_ORIGIN`          | `https://liveworkspace.app`                     |
+| Var `PLATFORM_ORIGIN`          | `https://www.liveworkspace.app`                 |
 
 **`env.staging`**
 
@@ -115,22 +115,22 @@ Migrations, in order:
 
 ## Constants and configuration: named constants
 
-| Constant              | Value                                                          | File        |
-| --------------------- | -------------------------------------------------------------- | ----------- |
-| `DAY_MS`              | `86_400_000`                                                   | `config.ts` |
-| `RETENTION_DAYS`      | `90`                                                           | `config.ts` |
-| `RETENTION_MS`        | `RETENTION_DAYS * DAY_MS`                                      | `config.ts` |
-| `PROBE_CONCURRENCY`   | `6`                                                            | `config.ts` |
-| `CACHE_SECONDS`       | `120`                                                          | `config.ts` |
-| `USER_AGENT`          | `'liveworkspace-status/1 (+https://liveworkspace.app/status)'` | `config.ts` |
-| `SLOW_MS`             | `1500`                                                         | `judge.ts`  |
-| `TIMEOUT_MS`          | `10_000`                                                       | `judge.ts`  |
-| `STATUS_API_PATH`     | `'/api/status'`                                                | `wire.ts`   |
-| `STATUS_HISTORY_PATH` | `'/history'`                                                   | `wire.ts`   |
-| `HISTORY_DAYS`        | `90`                                                           | `wire.ts`   |
-| `INCIDENTS_MAX`       | `50`                                                           | `wire.ts`   |
-| `LETTER`              | `{ up: 'u', slow: 's', down: 'd' }`                            | `wire.ts`   |
-| `STATE_OF_LETTER`     | `(object or list, see file)`                                   | `wire.ts`   |
+| Constant              | Value                                                              | File        |
+| --------------------- | ------------------------------------------------------------------ | ----------- |
+| `DAY_MS`              | `86_400_000`                                                       | `config.ts` |
+| `RETENTION_DAYS`      | `90`                                                               | `config.ts` |
+| `RETENTION_MS`        | `RETENTION_DAYS * DAY_MS`                                          | `config.ts` |
+| `PROBE_CONCURRENCY`   | `6`                                                                | `config.ts` |
+| `CACHE_SECONDS`       | `120`                                                              | `config.ts` |
+| `USER_AGENT`          | `'liveworkspace-status/1 (+https://www.liveworkspace.app/status)'` | `config.ts` |
+| `SLOW_MS`             | `1500`                                                             | `judge.ts`  |
+| `TIMEOUT_MS`          | `10_000`                                                           | `judge.ts`  |
+| `STATUS_API_PATH`     | `'/api/status'`                                                    | `wire.ts`   |
+| `STATUS_HISTORY_PATH` | `'/history'`                                                       | `wire.ts`   |
+| `HISTORY_DAYS`        | `90`                                                               | `wire.ts`   |
+| `INCIDENTS_MAX`       | `50`                                                               | `wire.ts`   |
+| `LETTER`              | `{ up: 'u', slow: 's', down: 'd' }`                                | `wire.ts`   |
+| `STATE_OF_LETTER`     | `(object or list, see file)`                                       | `wire.ts`   |
 
 ## Testing
 

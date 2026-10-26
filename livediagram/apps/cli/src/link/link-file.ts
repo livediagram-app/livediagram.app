@@ -248,5 +248,4 @@ export function linkFileText(link: {
 }
 
 // Two hosts as one site: their origins, a leading `www.` ignored, as `parseDocumentUrl` compares (RL5).
-export const sameHost = (a: string, b: string) =>
-  new URL(a).origin.replace('://www.', '://') === new URL(b).origin.replace('://www.', '://');
+export { sameHost } from '@liveworkspace/cli-kit/hosts';

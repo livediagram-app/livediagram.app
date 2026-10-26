@@ -91,7 +91,7 @@ help article.
   and staging (and the default when unset). Its domain must be onboarded to Email Service on the
   liveworkspace account, which adds the SPF and DKIM records itself.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
-  Default `https://liveplanner.app`.
+  Default `https://www.liveplanner.app`.
 
 Local dev: nothing to set. `wrangler dev` simulates the binding, printing each email and saving its
 text and HTML to files instead of sending it, which is also the way to look over a template.

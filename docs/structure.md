@@ -53,7 +53,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
-│  ├─ apps/site                liveworkspace.app, one static site: the front door, /explorer, /telemetry, /status, /sign-in
+│  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
@@ -61,6 +61,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
 │  ├─ apps/drive               liveworkspace.app/api/drive: the Google Drive mirror for every app, one Durable Object per person
+│  ├─ apps/redirect            the bare liveworkspace.app: a page load's one 301 to www., everything else to the site
 │  ├─ apps/migrate             the one-off move from the historical livediagram.app, run from a laptop, never deployed
 │  ├─ docs/specs               the platform's specs and blueprints, one category per service
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes

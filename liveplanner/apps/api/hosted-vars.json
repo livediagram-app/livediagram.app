@@ -3,7 +3,7 @@
   "environments": {
     "production": {
       "APP_BASE_URL": "https://www.liveplanner.app",
-      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry"
+      "TELEMETRY_URL": "https://www.liveworkspace.app/api/telemetry"
     },
     "staging": {
       "APP_BASE_URL": "https://staging.liveplanner.app",

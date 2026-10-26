@@ -27,6 +27,7 @@ import { readCookie } from '@liveworkspace/auth-client/silent';
 import { WORKSPACE_PROXY_HEADER } from '@liveworkspace/sites/workspace-proxy';
 import { createAuthEndpoint, getSessionFromCtx } from 'better-auth/api';
 import { deleteSessionCookie, setSessionCookie } from 'better-auth/cookies';
+import { cookieDomain, domainAttribute } from './cookie-scope.ts';
 import { GUEST_COOKIE } from './guests.ts';
 import { sameSecret } from './secrets.ts';
 
@@ -165,9 +166,11 @@ export async function signInOnAppAddress(
 }
 
 function nonceCookie(value: string, maxAge: number, environment: AppEnvironment): string {
+  // On the domain in production (cookie-scope.ts): the authorize that sets it and the hand-off that reads it may be
+  // on either host while the move to www. lasts.
   return `${HANDOFF_NONCE_COOKIE}=${value}; Path=/api/auth${HANDOFF_PATH}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${
     environment === 'development' ? '' : '; Secure'
-  }`;
+  }${domainAttribute(cookieDomain(environment))}`;
 }
 
 // ---------- 2 and 3: the hand-off itself, as Better Auth endpoints ------------------------------------------------------
@@ -294,21 +297,22 @@ export function handoffPlugin(config: HandoffPluginConfig): BetterAuthPlugin {
             return refusal('This sign-in has ended.', back);
           }
           await setSessionCookie(ctx, session);
-          ctx.setCookie(HANDOFF_NONCE_COOKIE, '', {
-            path: `/api/auth${HANDOFF_PATH}`,
-            maxAge: 0,
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: config.environment !== 'development',
-          });
-          if (await config.mergeGuest?.(request, row.userId).catch(() => false)) {
-            ctx.setCookie(GUEST_COOKIE, '', {
-              path: '/',
+          // Each cleared on the domain where there is one, and host-only for a copy from before the move.
+          const domain = cookieDomain(config.environment);
+          const clear = (name: string, path: string) => {
+            const cleared = {
+              path,
               maxAge: 0,
               httpOnly: true,
               sameSite: 'lax',
               secure: config.environment !== 'development',
-            });
+            } as const;
+            if (domain) ctx.setCookie(name, '', { ...cleared, domain });
+            ctx.setCookie(name, '', cleared);
+          };
+          clear(HANDOFF_NONCE_COOKIE, `/api/auth${HANDOFF_PATH}`);
+          if (await config.mergeGuest?.(request, row.userId).catch(() => false)) {
+            clear(GUEST_COOKIE, '/');
           }
           ctx.setHeader('cache-control', 'no-store');
           ctx.setHeader('referrer-policy', 'no-referrer');

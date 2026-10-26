@@ -94,7 +94,7 @@ second, explicit approval, never an existing pairing widened in silence.
 2. **Ask.** `livedesign workbench pair --origin <origin> [--name <workbench>]` opens `pairingUrl` in the browser
    (or prints it when it cannot) and waits for the answer, as `auth login --device` waits. `workbench open` refused
    for pairing prints that command and exits 4. A workbench shows the URL as one button, "Approve in livedesign".
-3. **Approve.** `https://liveworkspace.app/workbench/pair?code=<code>` is liveworkspace.app's page for every app (never
+3. **Approve.** `https://www.liveworkspace.app/workbench/pair?code=<code>` is liveworkspace.app's page for every app (never
    framed), for a signed-in person only, and only the token's owner may answer. It reads: "Allow **Acme Editor** at `https://127.0.0.1:5175` to
    open your designs with the token **livedesign CLI**?", with **Allow** and **Don't allow**. The workbench name
    is the one the CLI sent, shown beside the origin, which is what is enforced. A workspace request reads: "Allow

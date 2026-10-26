@@ -9,10 +9,12 @@ import {
   type JWTPayload,
   type JWTVerifyGetKey,
 } from 'jose';
+import { withWwwTwin } from '@liveworkspace/sites/www';
 import { readTeamsClaim, type TeamClaim } from './account';
 
 export interface VerifierOptions {
-  // The accounts Worker's issuer, e.g. `https://liveworkspace.app/api/auth`.
+  // The accounts Worker's issuer, e.g. `https://www.liveworkspace.app/api/auth`. Its bare or www. twin is accepted
+  // too while the move to www. lasts (@liveworkspace/sites/www BARE_WWW_TRANSITION), and so is each audience's.
   issuer: string;
   // The resource this app's API was registered as, e.g. `https://livediagram-router.liveworkspace-easing509.workers.dev/api`.
   // A token minted for another app carries that app's audience and is refused here. A service
@@ -57,14 +59,39 @@ function readAccount(payload: JWTPayload): AccountClaims | null {
 
 const isGuestPayload = (payload: JWTPayload) => payload.kind === 'guest';
 
+// The accounts key set, from the issuer's host, else from its twin's: the same keys on both while the move to www.
+// lasts, so a check pointed at www. works before www. routes to accounts, and the other way round. The twin is asked
+// only when the first fails (an unknown key is retried after jose's own cooldown, so a forged `kid` stays cheap).
+export function remoteKeySet(issuer: string): JWTVerifyGetKey {
+  return remoteKeySetAt(`${issuer}/jwks`);
+}
+
+/** As remoteKeySet, for a key set's own URL (the index's grant keys, say). */
+export function remoteKeySetAt(jwksUrl: string): JWTVerifyGetKey {
+  const [first, second] = withWwwTwin(jwksUrl).map((at) => createRemoteJWKSet(new URL(at)));
+  if (!second) return first!;
+  return async (header, token) => {
+    try {
+      return await first!(header, token);
+    } catch (error) {
+      try {
+        return await second(header, token);
+      } catch {
+        throw error;
+      }
+    }
+  };
+}
+
 function payloadVerifier(options: VerifierOptions) {
-  const keys = options.keys ?? createRemoteJWKSet(new URL(`${options.issuer}/jwks`));
+  const keys = options.keys ?? remoteKeySet(options.issuer);
+  // Worked out once per verifier, not per token: a token minted before the move names the bare host
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "The move to www.").
+  const issuer = withWwwTwin(options.issuer);
+  const audience = [options.audience].flat().flatMap(withWwwTwin);
   return async (token: string): Promise<JWTPayload | null> => {
     try {
-      const { payload } = await jwtVerify(token, keys, {
-        issuer: options.issuer,
-        audience: options.audience,
-      });
+      const { payload } = await jwtVerify(token, keys, { issuer, audience });
       return payload;
     } catch {
       return null;

@@ -129,3 +129,67 @@ describe('guest tokens and several audiences', () => {
     await expect(verifyPerson(bad)).resolves.toBeNull();
   });
 });
+
+// The move to www. (liveworkspace/docs/specs/003-accounts/accounts.md "The move to www."): a token minted under the bare issuer before the
+// move keeps validating once a check is configured with the www. one, and the other way round, for the transition.
+describe('the move to www.', () => {
+  const BARE_ISSUER = 'https://liveworkspace.app/api/auth';
+  const WWW_ISSUER = 'https://www.liveworkspace.app/api/auth';
+  const PLANNER = 'https://liveplanner.app/api';
+  const account = { sub: 'user_2abc', email: 'ada@example.com', email_verified: true };
+
+  it('a check on the www. issuer accepts an access token minted under the bare one', async () => {
+    const onWww = createVerifier({ issuer: WWW_ISSUER, audience: PLANNER, keys });
+    const old = await token(account, { iss: BARE_ISSUER, aud: PLANNER });
+    await expect(onWww(old)).resolves.toMatchObject({ userId: 'user_2abc' });
+    const fresh = await token(account, { iss: WWW_ISSUER, aud: PLANNER });
+    await expect(onWww(fresh)).resolves.toMatchObject({ userId: 'user_2abc' });
+  });
+
+  it('a check still on the bare issuer accepts a token minted under www., so deploy order signs nobody out', async () => {
+    const onBare = createVerifier({ issuer: BARE_ISSUER, audience: PLANNER, keys });
+    const fresh = await token(account, { iss: WWW_ISSUER, aud: PLANNER });
+    await expect(onBare(fresh)).resolves.toMatchObject({ userId: 'user_2abc' });
+  });
+
+  it('a year-long guest token minted under the bare issuer still names its guest', async () => {
+    const people = createPersonVerifier({ issuer: WWW_ISSUER, audience: [PLANNER], keys });
+    const guest = await token(
+      { sub: 'guest_0f8c1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b', kind: 'guest' },
+      { iss: BARE_ISSUER, aud: PLANNER, exp: '365d' },
+    );
+    await expect(people(guest)).resolves.toEqual({
+      kind: 'guest',
+      guestId: 'guest_0f8c1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b',
+    });
+  });
+
+  it('accepts the www. twin of an audience, and still refuses another app or a stranger issuer', async () => {
+    const onBare = createVerifier({ issuer: BARE_ISSUER, audience: PLANNER, keys });
+    await expect(
+      onBare(await token(account, { aud: 'https://www.liveplanner.app/api' })),
+    ).resolves.toMatchObject({ userId: 'user_2abc' });
+    await expect(
+      onBare(await token(account, { aud: 'https://www.livedesign.app/api' })),
+    ).resolves.toBeNull();
+    for (const iss of [
+      'https://staging.liveworkspace.app/api/auth',
+      'https://www.liveworkspace.app/api/index',
+      'https://evil.example/api/auth',
+    ]) {
+      await expect(onBare(await token(account, { iss, aud: PLANNER })), iss).resolves.toBeNull();
+    }
+  });
+
+  it('staging and stand-in names get no twin', async () => {
+    const staging = createVerifier({
+      issuer: 'https://staging.liveworkspace.app/api/auth',
+      audience: AUDIENCE,
+      keys,
+    });
+    await expect(staging(await token(account, { iss: BARE_ISSUER }))).resolves.toBeNull();
+    await expect(
+      staging(await token(account, { iss: 'https://staging.liveworkspace.app/api/auth' })),
+    ).resolves.toMatchObject({ userId: 'user_2abc' });
+  });
+});

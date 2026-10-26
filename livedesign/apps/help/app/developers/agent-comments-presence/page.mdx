@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 Comments are how people and agents talk in a design when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
-The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livedesign.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
+The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://www.livedesign.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
 ## Who Can Do What
 
@@ -39,7 +39,7 @@ livedesign comment ls "Shop" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://livedesign.app/api/designs/$DOC/comments?status=open" \
+curl "https://www.livedesign.app/api/designs/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -88,19 +88,19 @@ Over the API, a thread is named by **any comment in it**, so take a comment id f
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Yes, keyed by order id" }'
 
 # Resolve it, or reopen it
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -122,7 +122,7 @@ livedesign presence clear "Shop"
 ```
 
 ```bash
-curl -X PUT https://livedesign.app/api/designs/$DOC/tabs/$TAB/presence \
+curl -X PUT https://www.livedesign.app/api/designs/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
 ```

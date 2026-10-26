@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Plan Items, Sheets and More" description="Worked examples for the rest of a plan: Plan cards, Sheets, forms, pictures, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Plans", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "plan-sheets-images")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-projects/edit-operations/), but most of a plan lives elsewhere: the cards on its boards, the cells of its Sheets, the questions of its forms. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a plan id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-projects/edit-operations/), but most of a plan lives elsewhere: the cards on its boards, the cells of its Sheets, the questions of its forms. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a plan id in `$DOC`; paths are relative to `https://www.liveplanner.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the plan open straight away, credited to you.
 
@@ -20,7 +20,7 @@ Every write here reaches anyone with the plan open straight away, credited to yo
 A card on a [Plan board](/help/plan/boards/) is an **item**, kept in the plan's item store rather than on a tab, so one card can show on several boards. A board files its cards by **status**: each column has one, such as `in-progress~k3f2`. Read the boards, their statuses and the card types first:
 
 ```bash
-curl https://liveplanner.app/api/projects/$DOC/plan \
+curl https://www.liveplanner.app/api/projects/$DOC/plan \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -58,7 +58,7 @@ curl https://liveplanner.app/api/projects/$DOC/plan \
 `POST /projects/$DOC/items` makes one card: a `type`, its `fields` (a `title` at least, up to 500 characters) and an optional `place`, the status to file it under and the card to sit after or before:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/items \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "type": "task",
@@ -75,17 +75,17 @@ The fields every card understands are `title`, `description`, `status`, `assigne
 
 ```bash
 # Change one card: set some fields, clear others, optionally change its type
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "set": { "priority": "urgent" }, "clear": ["due"] }'
 
 # Move it to another column, after another card, and assign it in the same write
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/move \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/$ITEM/move \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "doing~c3d4", "after": "'"$OTHER"'", "set": { "assignee": { "id": "u1", "name": "Sam", "color": "#2563eb" } } }'
 
 # Change up to 200 cards at once: each is checked first, so one refusal changes nothing
-curl -X POST https://liveplanner.app/api/projects/$DOC/items/patches \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/items/patches \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "items": [ { "id": "'"$A"'", "set": { "flagged": true } }, { "id": "'"$B"'", "clear": ["labels"] } ] }'
 ```
@@ -101,7 +101,7 @@ Refusals are `400` with a code such as `title_required`, `field_value_invalid`, 
 A plan's [card types](/help/plan/card-types/) are stored whole. To change them, send the full catalogue back with the revision you read (`itemTypesRev` from `/plan`):
 
 ```bash
-curl -X PUT https://liveplanner.app/api/projects/$DOC/item-types \
+curl -X PUT https://www.liveplanner.app/api/projects/$DOC/item-types \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "expectedRev": 3,
@@ -145,7 +145,7 @@ The [CLI](/help/developers/cli/) (`item add`, `item set`, `item move`, `type ls`
 Change cells with a **write**. Each cell change names its row and column ids and an input: `{ "n": 1200 }` for a number, `{ "s": "Hosting" }` for text, `{ "b": true }` for a checkbox value, or `null` to clear it. An `f` patch formats it (`"b": true` for bold, `"nf": "currency"`, `"bg"` and `"fc"` for colours):
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/sheets/$SHEET/writes \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/sheets/$SHEET/writes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{
     "write": {
@@ -174,7 +174,7 @@ A Sheet shows on a tab through a Sheet element, as a board does; start one on a 
 A Form tab's [form](/help/plan/forms/) is written whole. Read it from the tab (`GET /projects/$DOC/tabs/$TAB`, its `form`), change it, and send it back with the revision you read:
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/form \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/form \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "form": { … }, "rev": 7 }'
 ```
@@ -184,7 +184,7 @@ This needs edit access to the tab. To publish the form, `POST /projects/$DOC/tab
 ## A Tab as a Picture
 
 ```bash
-curl https://liveplanner.app/api/projects/$DOC/tabs/$TAB/render.svg \
+curl https://www.liveplanner.app/api/projects/$DOC/tabs/$TAB/render.svg \
   -H "Authorization: Bearer $TOKEN" -o overview.svg
 ```
 
@@ -193,7 +193,7 @@ The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, 
 ## Copy a Plan
 
 ```bash
-curl -X POST https://liveplanner.app/api/projects/$DOC/copy \
+curl -X POST https://www.liveplanner.app/api/projects/$DOC/copy \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "name": "Sprint 14 (copy)" }'
 ```

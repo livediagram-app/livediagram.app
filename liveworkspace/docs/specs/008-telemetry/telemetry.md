@@ -36,7 +36,7 @@ livedocuments' and livedesign's), and only stores an event that its app could ha
 
 ## Sending events
 
-`POST https://liveworkspace.app/api/telemetry/events` with a JSON body:
+`POST https://www.liveworkspace.app/api/telemetry/events` with a JSON body:
 
 ```json
 { "app": "livediagram.app", "events": [{ "category": "Document", "action": "Created" }] }
@@ -86,7 +86,7 @@ Each app configures where to send:
 
 | Where               | Setting                                                                               |
 | ------------------- | ------------------------------------------------------------------------------------- |
-| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://liveworkspace.app/api/telemetry`)       |
+| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://www.liveworkspace.app/api/telemetry`)   |
 | api and mcp Workers | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
 | Both                | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
 
@@ -154,7 +154,7 @@ the app's to report, so each change is counted once.
 
 ## The dashboard
 
-`https://liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
+`https://www.liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
 `?app=liveplanner.app`, `?app=livedocuments.app` or `?app=livedesign.app` opens one app's own dashboard, with all of
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
@@ -252,7 +252,7 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
    `AppDashboard`, which the page loads when the app is picked. Add the config to
    `_shared/test-apps.ts` so the shared views' tests run against it, and its brand scale to
    `telemetry.css`.
-4. In the app, send batches as above, and allow `https://liveworkspace.app` in its CSP
+4. In the app, send batches as above, and allow `https://www.liveworkspace.app` in its CSP
    `connect-src`.
 
 ## Performance

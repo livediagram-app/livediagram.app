@@ -230,7 +230,9 @@ export function buildOpenApiProject(): OpenApiDocument {
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
         'WebSocket protocol is internal and not covered here.',
     },
-    servers: [{ url: '/api', description: 'Same-origin API (e.g. https://liveplanner.app/api).' }],
+    servers: [
+      { url: '/api', description: 'Same-origin API (e.g. https://www.liveplanner.app/api).' },
+    ],
     tags: TAGS,
     paths,
     components: {

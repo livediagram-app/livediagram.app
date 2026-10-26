@@ -5,6 +5,7 @@
 // index is told to move the guest's things too.
 import type { GenericEndpointContext } from 'better-auth';
 import { readCookie } from '@liveworkspace/auth-client/silent';
+import { clearedCookies, cookieDomain, domainAttribute } from './cookie-scope.ts';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
@@ -85,9 +86,13 @@ export function guestOfRequest(request: Request, secret: string): Promise<string
   return readGuestCookie(readCookie(request.headers.get('cookie'), GUEST_COOKIE), secret);
 }
 
-function guestCookie(value: string, maxAge: number, secure: boolean): string {
-  return `${GUEST_COOKIE}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`;
+// On `domain` in production (cookie-scope.ts), so www. and the bare domain share one guest.
+function guestCookie(value: string, maxAge: number, secure: boolean, domain?: string): string {
+  return `${GUEST_COOKIE}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}${domainAttribute(domain)}`;
 }
+
+const GUEST_COOKIE_ATTRIBUTES = (secure: boolean) =>
+  `; Path=/; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`;
 
 type Client = { redirectUris: string[]; resources: string[] };
 
@@ -201,6 +206,7 @@ async function handOff(
       await signGuestCookie(guestId, secret),
       COOKIE_MAX_AGE_SECONDS,
       env.ENVIRONMENT !== 'development',
+      cookieDomain(env.ENVIRONMENT),
     ),
   );
   return new Response(null, { status: 302, headers });
@@ -209,6 +215,8 @@ async function handOff(
 export interface MergeConfig {
   secret: string;
   secure: boolean;
+  // Where the guest cookie lives (cookie-scope.ts): undefined for host-only.
+  cookieDomain?: string;
   indexUrl?: string;
   // The index Worker's service binding; plain fetch to indexUrl without one (tests, other hosts).
   indexService?: Fetcher;
@@ -226,6 +234,7 @@ export function guestMergeConfig(env: Env): MergeConfig {
   return {
     secret: env.BETTER_AUTH_SECRET,
     secure: env.ENVIRONMENT !== 'development',
+    cookieDomain: cookieDomain(env.ENVIRONMENT),
     indexUrl: env.INDEX_URL,
     indexService: env.INDEX,
     indexMergeKey: env.INDEX_MERGE_KEY,
@@ -299,14 +308,17 @@ export async function mergeGuestOnSignIn(
   const guestId = await readGuestCookie(readCookie(header, GUEST_COOKIE), config.secret);
   if (!ctx || !guestId) return;
   if (!(await mergeGuestInto(config, guestId, userId))) return;
-  // Appended beside the session cookie, not in place of it.
-  ctx.setCookie(GUEST_COOKIE, '', {
+  // Appended beside the session cookie, not in place of it: on the domain, and host-only for a copy from before the move.
+  const cleared = {
     maxAge: 0,
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
     secure: config.secure,
-  });
+  } as const;
+  if (config.cookieDomain)
+    ctx.setCookie(GUEST_COOKIE, '', { ...cleared, domain: config.cookieDomain });
+  ctx.setCookie(GUEST_COOKIE, '', cleared);
 }
 
 // A sign-in finished on an app's own address makes its session there, where this browser's guest cookie isn't, so
@@ -354,6 +366,12 @@ export async function mergeGuestOnAuthorize(
   const userId = await userIdOf(request.headers).catch(() => null);
   if (!userId || !(await mergeGuestInto(config, guestId, userId))) return response;
   const merged = new Response(response.body, response);
-  merged.headers.append('set-cookie', guestCookie('', 0, config.secure));
+  for (const cleared of clearedCookies(
+    GUEST_COOKIE,
+    GUEST_COOKIE_ATTRIBUTES(config.secure),
+    config.cookieDomain,
+  )) {
+    merged.headers.append('set-cookie', cleared);
+  }
   return merged;
 }

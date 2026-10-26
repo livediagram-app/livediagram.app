@@ -133,8 +133,8 @@ Migrations, in order:
 | `EXPLORER_TELEMETRY_EVENTS`  | `(object or list, see file)`                                 | `explorer-events.ts` |
 | `TELEMETRY_WINDOW_DAYS`      | `(object or list, see file)`                                 | `summary.ts`         |
 | `TELEMETRY_ON`               | `{ TELEMETRY_ENABLED: 'true', TELEMETRY_KEY: 'k' } as const` | `testing.ts`         |
-| `TELEMETRY_URL`              | `'https://liveworkspace.app/api/telemetry'`                  | `wire.ts`            |
-| `TELEMETRY_DASHBOARD_URL`    | `'https://liveworkspace.app/telemetry'`                      | `wire.ts`            |
+| `TELEMETRY_URL`              | `'https://www.liveworkspace.app/api/telemetry'`              | `wire.ts`            |
+| `TELEMETRY_DASHBOARD_URL`    | `'https://www.liveworkspace.app/telemetry'`                  | `wire.ts`            |
 | `TELEMETRY_EVENTS_PATH`      | `'/events'`                                                  | `wire.ts`            |
 | `TELEMETRY_SUMMARY_PATH`     | `'/summary'`                                                 | `wire.ts`            |
 | `TELEMETRY_BATCH_MAX`        | `100`                                                        | `wire.ts`            |

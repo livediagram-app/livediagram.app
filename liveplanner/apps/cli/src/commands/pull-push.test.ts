@@ -9,7 +9,7 @@ import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io'
 // E18 to E20), on a fake host whose tabs move on with each write.
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const HOST = 'https://liveplanner.app';
+const HOST = 'https://www.liveplanner.app';
 const square = (id: string, label: string, x = 0): ShapeElement => ({
   id,
   type: 'shape',
@@ -356,6 +356,15 @@ describe('push', () => {
     const { code, err } = await cli(['push', path], h.route, io);
     expect(code).toBe(5);
     expect(err).toContain('error:');
+  });
+
+  // The move to www. (liveworkspace/docs/specs/010-site/site.md "www. is the address"): a file pulled before it names the bare host.
+  it('pushes a file pulled from the bare domain to the www. default host', async () => {
+    const { h, io, path } = await pulled();
+    edit(io, path, (f) => (f.liveplannerSync.host = 'https://liveplanner.app'));
+    const { code, err } = await cli(['push', path], h.route, io);
+    expect(err).not.toContain('was pulled from');
+    expect(code).toBe(0);
   });
 
   it('refuses another host’s file, a missing file, and a file that is not a pull file', async () => {
