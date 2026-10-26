@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   JOIN_NOTIFY_THROTTLE_MS,
@@ -15,6 +16,7 @@ function claimsDb() {
     'CREATE TABLE notify_claims (key TEXT PRIMARY KEY, sender TEXT NOT NULL, at INTEGER NOT NULL)',
   );
   const prepare = (query: string) => {
+    assertD1Compound(query);
     const statement = (bindings: unknown[]) => ({
       bind: (...more: unknown[]) => statement([...bindings, ...more]),
       run: async () => {

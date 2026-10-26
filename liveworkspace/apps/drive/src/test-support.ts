@@ -3,6 +3,7 @@
 // real ones. Not a `.test.ts` file, so vitest doesn't collect it.
 
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import {
   APP_FILE_FORMATS,
   bytesToBase64Url,
@@ -29,6 +30,7 @@ export const REDIRECT_URI = `${ORIGIN}/drive/connected`;
 export function nodeSql(db = new DatabaseSync(':memory:')): Sql {
   return {
     exec(query, ...bindings) {
+      assertD1Compound(query);
       const statement = db.prepare(query);
       const args = bindings.map((b) => (typeof b === 'boolean' ? Number(b) : b) as SQLInputValue);
       if (statement.columns().length === 0) {

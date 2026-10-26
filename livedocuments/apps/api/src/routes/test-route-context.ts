@@ -1,3 +1,4 @@
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { DocumentGrant } from '../index-service';
 import { TEST_GRANT_HOOK, type TestGrantCaller } from '../test-sqlite-d1';
@@ -135,7 +136,8 @@ function emptyDocumentDb(): D1Database {
     raw: async () => [],
   };
   return {
-    prepare: () => statement,
+    // D1 refuses a compound SELECT of more than five terms; this stand-in runs no SQL, so it checks the text.
+    prepare: (query: string) => (assertD1Compound(query), statement),
     batch: async (statements: unknown[]) =>
       statements.map(() => ({ results: [], success: true, meta: { changes: 0 } })),
   } as unknown as D1Database;

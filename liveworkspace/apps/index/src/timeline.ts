@@ -39,9 +39,9 @@ import {
   type TimelineEvent,
   type TimelineEventType,
 } from '@liveworkspace/index-client';
+import { unionAll } from '@liveworkspace/api-kit/d1-compound';
 import { isMergeCaller, scopesOf, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId } from './codec';
-import { unionAll } from './compound';
 import type { PersonContext } from './context';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject, unauthorized } from './http';

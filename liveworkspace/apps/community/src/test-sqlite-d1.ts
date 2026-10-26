@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { Env } from './env';
 
 // A REAL D1 for tests: an in-memory SQLite database with every migration applied, behind the D1
@@ -28,10 +29,14 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
   for (const file of readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith('.sql'))
     .sort()) {
-    sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
+    const migration = readFileSync(MIGRATIONS_DIR + file, 'utf8');
+    assertD1Compound(migration);
+    sql.exec(migration);
   }
 
+  // D1 refuses a compound SELECT of more than five terms, where node:sqlite allows 500.
   const statement = (query: string, args: SQLInputValue[]) => {
+    assertD1Compound(query);
     const rows = () =>
       sql
         .prepare(query)
