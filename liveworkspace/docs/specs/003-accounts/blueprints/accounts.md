@@ -1,124 +1,151 @@
 # Accounts: blueprint
 
-Derived from [sign-in.md](../sign-in.md), [accounts.md](../accounts.md) and [email.md](../email.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [sign-in.md](../sign-in.md), [accounts.md](../accounts.md) and [email.md](../email.md). The spec
+decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are
+ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `ACCn`. Paths are relative to the repository root.
+
+This file holds the Worker as a whole: routing, its doors and who may use each, the crons, closing an account, the
+outboxes to the index and telemetry, configuration, logs and tests. Each feature has its own file:
+
+| Feature                                                     | Blueprint                                            |
+| ----------------------------------------------------------- | ---------------------------------------------------- |
+| Email codes, Google, Turnstile, the app-address hand-off    | [sign-in.md](sign-in.md)                             |
+| Sessions, guests, the workspace token, bearers, guest merge | [sessions-and-guests.md](sessions-and-guests.md)     |
+| Teams, invitations, the join link, the change feed          | [teams.md](teams.md)                                 |
+| API tokens and their expiry                                 | [tokens.md](tokens.md)                               |
+| The OAuth provider, clients, ID token claims, device grant  | [oauth.md](oauth.md)                                 |
+| Settings and profiles                                       | [settings-and-profiles.md](settings-and-profiles.md) |
+| Every email, the onboarding series, notification support    | [email.md](email.md)                                 |
+
+Workbench pairings, tickets and sessions run in this Worker too; they are blueprinted in
+[011-workbench](../../011-workbench/blueprints/workbench.md).
 
 ## Domain and naming
 
-| Term         | Identifier                                     | Meaning                                             |
-| ------------ | ---------------------------------------------- | --------------------------------------------------- |
-| Account      | `user` row, id `user_…` (`USER_ID`)            | A person; the prefix is kept from Clerk             |
-| Guest        | `guest_<uuid>` (`GUEST_ID`), cookie `lw_guest` | One guest identity across every app                 |
-| Session      | Better Auth `session`                          | Signed in on liveworkspace.app                      |
-| Access token | a JWT, checked against `/api/auth/jwks`        | What an app's server and the services check offline |
-| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`   | One per integration, on every app's API and MCP     |
-| Team         | `team`, `team_member`                          | Made on liveworkspace.app, the same in every app    |
-| Handoff      | `/handoff`, cookie `lw_handoff`                | Signing in on an app's own address                  |
-| Client       | an OAuth client per app                        | Registered with `clients.ts`                        |
+| Term         | Identifier                                                                                 | Meaning                                                          |
+| ------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| Account      | `user` row, id `user_<32 hex>` (`newUserId`); any `^user_[A-Za-z0-9]{1,64}$` (`USER_ID`)   | A person; the prefix kept from Clerk, so imported ids never move |
+| Guest        | `guest_<v4 uuid>` (`GUEST_ID`), cookie `lw_guest`                                          | One guest identity across every app                              |
+| Session      | Better Auth `session`                                                                      | Signed in on liveworkspace.app                                   |
+| Access token | a JWT from `/api/auth/oauth2/token`, keys at `/api/auth/jwks`                              | What an app's server and the services check offline              |
+| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`                                               | One per integration, on every app's API and MCP                  |
+| Team         | `team`, `team_member`                                                                      | Made on liveworkspace.app, the same in every app                 |
+| Client       | an OAuth client, one per app (`oauth_client_app`)                                          | Registered with `POST /api/auth/internal/clients`                |
+| App          | `SettingsApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` | The site id the account data is keyed by                         |
 
 ## Behaviour and state
 
-Every run of either cron (`src/index.ts` `scheduled`), each step logged and isolated so one failure never
-starves the rest: index purges are retried, the Timeline outbox is trimmed to `TIMELINE_OUTBOX_MAX` and flushed, and
-failed welcome emails go again. The daily run (`17 9 * * *`; the other is `*/15 * * * *`, `PURGE_RETRY_CRON`) also
-sends the whole onboarding series, sweeps team invitations (reminders at `REMINDER_AGES_MS`), warns owners of tokens
-expiring within the week and notes them on their Timelines, flushes the server events, and sweeps guests idle past
-`GUEST_IDLE_MS`. Closing an account deletes it here, then empties the index and disconnects Drive; the index purge is
-retried until it succeeds.
+### Routing (`index.ts`), in order
+
+1. No `BETTER_AUTH_SECRET`: every request `503 { error: 'not_configured' }` (logged). Shorter than 32 characters,
+   `getAuth` throws.
+2. `GET`: `/api/auth/sign-in-options`; `/api/auth/guest` (first `GUEST_LIMITER` keyed `ip:<network>`, `429 {
+error: 'rate_limited' }`); `/api/auth/workspace-token`; the two discovery documents at the root.
+3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
+   flushed in `waitUntil`.
+4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`.
+5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
+   Google on an app's address, an instance built for that origin), then three rewrites of the answer: `GET
+/get-session` gains the presence colour; `GET /oauth2/authorize` may move the sign-in page to the app's address,
+   and may merge a guest into a session already there. Welcomes queued by a sign-up go after the answer.
+6. Else `404 Not found`.
+
+Better Auth is built once per isolate (`getAuth`, keyed by the `env` object), and once per app origin for Google on
+app addresses (`getGoogleAuthFor`, at most a dozen).
+
+### The account API's doors (`account-api.ts`), in order
+
+| Path                                  | Door                                                                                                   | Blueprint                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| `/api/account/internal/*`             | an app's client credentials (`Basic`), checked by introspection, cached 5 min per isolate (≤ 100 keys) | by route                                                     |
+| `/api/account/workbench/*`            | an API token, a ticket, a workbench session or the owner                                               | [011-workbench](../../011-workbench/blueprints/workbench.md) |
+| `POST /api/account/index/teams`       | `Bearer INDEX_MERGE_KEY`                                                                               | [teams.md](teams.md)                                         |
+| anything with `Authorization: Bearer` | an access or guest token for an app API (`bearer.ts`)                                                  | [sessions-and-guests.md](sessions-and-guests.md)             |
+| the rest                              | the session cookie; writes must carry `Origin` equal to `BASE_URL` (`403 cross_origin`)                | by route                                                     |
+
+Every account API answer is JSON with `cache-control: no-store`; a refusal is `{ error: <code> }`. A body that won't
+parse is read as `{}`.
+
+### The crons (`scheduled`)
+
+Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` and the run goes on.
+
+| Cron           | Steps, in order                                                                                                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                   |
+| `17 9 * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then the token Timeline notes (and a flush), then `server events`; 6. `idle guests`. |
+
+Details: [teams.md](teams.md), [tokens.md](tokens.md), [email.md](email.md),
+[sessions-and-guests.md](sessions-and-guests.md).
+
+### Closing an account (`POST /api/auth/delete-account`), in order
+
+1. Client credentials (`Basic`) and `{ token }`, the person's access token: missing either is `400
+invalid_request`.
+2. Introspection with those credentials: a wrong secret `401 invalid_client`; a token inactive, without a `sub`, or
+   minted for another client `401 invalid_token`.
+3. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
+   member; their address comes off every row.
+4. Settings, then the profile, deleted.
+5. `recordPendingPurge(userId, closedTeams)`, before the user goes.
+6. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,
+   `email_lifecycle` cascade.
+7. `purgeFromIndex`: `POST ${INDEX_URL}/internal/purge-person { personId, teamIds }` with `INDEX_MERGE_KEY`, 15 s;
+   taken clears the row, else `attempts + 1` and the cron retries (logged as an error from the third try).
+8. `closeAccountWorkbench`, then `DELETE https://drive/app/people/<id>` with `DRIVE_KEY_ACCOUNTS` in `waitUntil` (10
+   s; `404` is done; nothing retried).
+9. `200 { deleted: true }`.
+
+### Telemetry (`telemetry.ts`)
+
+`reportServerEvent(env, category, action, type, app)` holds up to 1,000 events per isolate (none without
+`TELEMETRY_URL`); a flush resolves each event's app (a function is looked up only then), groups by app, and posts
+`POST ${TELEMETRY_URL}/events { app, events (≤ 100) }` with `X-Telemetry-Key: TELEMETRY_KEY_<APP>`, 2 s, through the
+`TELEMETRY` binding. An app with no key, or an event with no app, is dropped. Events: `Team·Created|Changed|Deleted|
+Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined|Declined(Invite|Email)`,
+`Token·Created(Manual)|Removed`, `Email·Sent·<kind>`.
 
 ## Interfaces and contracts
 
-Better Auth answers under `/api/auth` (`AUTH_BASE_PATH`); the account API under `/api/account`
-(`ACCOUNT_API_PATH`). App servers call the internal routes with their client credentials or `ADMIN_TOKEN` in the
-`x-liveworkspace-admin` header (`ADMIN_HEADER`).
+| Path                                                                                                                                                                                                                                    | Blueprint                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `GET /api/auth/sign-in-options`, `POST /api/auth/email-otp/send-verification-otp`, `POST /api/auth/sign-in/email-otp`, `/api/auth/sign-in/social`, `/api/auth/callback/google`, `POST /api/auth/handoff/start`, `GET /api/auth/handoff` | [sign-in.md](sign-in.md)                                     |
+| `GET /api/auth/get-session`, `GET /api/auth/guest`, `GET /api/auth/workspace-token`, `POST /api/account/internal/legacy-guests/claim`, `GET /api/account/people`                                                                        | [sessions-and-guests.md](sessions-and-guests.md)             |
+| `/api/account/teams…`, `/api/account/invitations…`, `/api/account/join/:token`, `/api/account/internal/{teams,teams/of,teams/members,teams/changes,invitations}`, `POST /api/account/index/teams`                                       | [teams.md](teams.md)                                         |
+| `/api/account/tokens…`, `/api/account/internal/tokens{,/verify,/revoke,/live}`, `POST /api/auth/internal/bench-accounts`                                                                                                                | [tokens.md](tokens.md)                                       |
+| `/api/auth/oauth2/*`, `/api/auth/jwks`, `/.well-known/*`, `POST /api/auth/internal/clients`, an app's `/oauth/device*`                                                                                                                  | [oauth.md](oauth.md)                                         |
+| `/api/account/settings…`, `/api/account/profile`, `/api/account/internal/{settings/read,settings/write,profiles/read,profiles/write}`                                                                                                   | [settings-and-profiles.md](settings-and-profiles.md)         |
+| `/api/account/internal/{sightings,milestones/claim,activity,emails,settings/notify}`                                                                                                                                                    | [email.md](email.md)                                         |
+| `POST /api/auth/delete-account`                                                                                                                                                                                                         | this file                                                    |
+| `/api/account/workbench/*`, `/api/account/internal/workbench/*`, `/api/account/internal/allowance`                                                                                                                                      | [011-workbench](../../011-workbench/blueprints/workbench.md) |
 
-Every route the specs name, with the section that defines it (each checked to have its path's literal in the code):
+## Errors and edge cases
 
-| Route                                                 | Specified in                                                                                                                           |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/auth/sign-in-options`                       | [sign-in.md "The sign-in and registration pages"](../../003-accounts/sign-in.md#the-sign-in-and-registration-pages)                    |
-| `POST /oauth2/continue`                               | [sign-in.md "The sign-in and registration pages"](../../003-accounts/sign-in.md#the-sign-in-and-registration-pages)                    |
-| `POST /api/auth/delete-account`                       | [sign-in.md "Closing an account"](../../003-accounts/sign-in.md#closing-an-account)                                                    |
-| `POST /api/auth/internal/clients`                     | [sign-in.md "Security notes"](../../003-accounts/sign-in.md#security-notes)                                                            |
-| `POST /api/account/teams`                             | [accounts.md "Teams"](../../003-accounts/accounts.md#teams)                                                                            |
-| `POST /api/account/internal/teams`                    | [accounts.md "Teams"](../../003-accounts/accounts.md#teams)                                                                            |
-| `POST /api/account/internal/teams/of {userId}`        | [accounts.md "Teams"](../../003-accounts/accounts.md#teams)                                                                            |
-| `POST /api/account/index/teams`                       | [accounts.md "Teams"](../../003-accounts/accounts.md#teams)                                                                            |
-| `GET /api/account/teams`                              | [accounts.md "Invitations"](../../003-accounts/accounts.md#invitations)                                                                |
-| `POST /api/account/invitations/:member/accept`        | [accounts.md "Invitations"](../../003-accounts/accounts.md#invitations)                                                                |
-| `POST /api/account/internal/invitations`              | [accounts.md "Invitations"](../../003-accounts/accounts.md#invitations)                                                                |
-| `POST /teams/:id/invite-link`                         | [accounts.md "The join link"](../../003-accounts/accounts.md#the-join-link)                                                            |
-| `GET /join/:token`                                    | [accounts.md "The join link"](../../003-accounts/accounts.md#the-join-link)                                                            |
-| `POST /join/:token`                                   | [accounts.md "The join link"](../../003-accounts/accounts.md#the-join-link)                                                            |
-| `GET /api/account/internal/teams/changes?cursor=…`    | [accounts.md "The join link"](../../003-accounts/accounts.md#the-join-link)                                                            |
-| `POST /api/account/internal/tokens`                   | [accounts.md "API tokens"](../../003-accounts/accounts.md#api-tokens)                                                                  |
-| `POST /api/account/internal/tokens/verify`            | [accounts.md "API tokens"](../../003-accounts/accounts.md#api-tokens)                                                                  |
-| `POST /api/auth/internal/bench-accounts`              | [accounts.md "Workbench pairings"](../../003-accounts/accounts.md#workbench-pairings)                                                  |
-| `POST /internal/timeline`                             | [accounts.md "On the Timeline"](../../003-accounts/accounts.md#on-the-timeline)                                                        |
-| `GET /api/auth/guest?client_id=&redirect_uri=&state=` | [accounts.md "Guests"](../../003-accounts/accounts.md#guests)                                                                          |
-| `POST /api/account/internal/legacy-guests/claim`      | [accounts.md "Returning guests of the old livediagram.app"](../../003-accounts/accounts.md#returning-guests-of-the-old-livediagramapp) |
-| `GET /api/auth/workspace-token`                       | [accounts.md "liveworkspace.app's own token"](../../003-accounts/accounts.md#liveworkspaceapps-own-token)                              |
-| `GET /api/<items>/<id>/tabs`                          | [accounts.md "liveworkspace.app's own token"](../../003-accounts/accounts.md#liveworkspaceapps-own-token)                              |
-| `GET /api/auth/silent?return=<path?query#hash>`       | [accounts.md "Signing in without a click"](../../003-accounts/accounts.md#signing-in-without-a-click)                                  |
-| `POST /api/auth/token`                                | [accounts.md "An app's signed-in cookies"](../../003-accounts/accounts.md#an-apps-signed-in-cookies)                                   |
-| `POST /api/auth/handoff/start`                        | [accounts.md "Signing in on the app's own address"](../../003-accounts/accounts.md#signing-in-on-the-apps-own-address)                 |
-| `GET /api/auth/handoff`                               | [accounts.md "Signing in on the app's own address"](../../003-accounts/accounts.md#signing-in-on-the-apps-own-address)                 |
-| `POST /api/account/internal/settings/read`            | [accounts.md "Who calls what"](../../003-accounts/accounts.md#who-calls-what)                                                          |
-| `PATCH /api/account/settings`                         | [accounts.md "Who calls what"](../../003-accounts/accounts.md#who-calls-what)                                                          |
-| `GET /api/account/settings/:app`                      | [accounts.md "Who calls what"](../../003-accounts/accounts.md#who-calls-what)                                                          |
-| `PATCH /api/account/settings/:app`                    | [accounts.md "Who calls what"](../../003-accounts/accounts.md#who-calls-what)                                                          |
-| `PATCH /api/account/profile`                          | [accounts.md "Who calls what"](../../003-accounts/accounts.md#who-calls-what)                                                          |
-| `GET /api/auth/get-session`                           | [accounts.md "Profiles"](../../003-accounts/accounts.md#profiles)                                                                      |
-| `POST /api/account/internal/profiles/read`            | [accounts.md "Profile pictures"](../../003-accounts/accounts.md#profile-pictures)                                                      |
-| `GET /api/account/people`                             | [accounts.md "Profile pictures"](../../003-accounts/accounts.md#profile-pictures)                                                      |
-| `POST /api/account/internal/sightings`                | [accounts.md "Sign-ups and milestones per app"](../../003-accounts/accounts.md#sign-ups-and-milestones-per-app)                        |
-| `POST /api/account/internal/milestones/claim`         | [accounts.md "Sign-ups and milestones per app"](../../003-accounts/accounts.md#sign-ups-and-milestones-per-app)                        |
-| `POST /api/account/internal/emails`                   | [accounts.md "Sign-ups and milestones per app"](../../003-accounts/accounts.md#sign-ups-and-milestones-per-app)                        |
-| `POST /api/auth/sign-in/email-otp`                    | [accounts.md "Emails"](../../003-accounts/accounts.md#emails)                                                                          |
-| `POST /api/account/internal/settings/notify`          | [accounts.md "Notification emails"](../../003-accounts/accounts.md#notification-emails)                                                |
-| `POST /api/account/internal/teams/members`            | [accounts.md "Notification emails"](../../003-accounts/accounts.md#notification-emails)                                                |
-| `POST /api/account/internal/allowance`                | [accounts.md "Notification emails"](../../003-accounts/accounts.md#notification-emails)                                                |
-| `POST /api/account/internal/activity`                 | [accounts.md "Onboarding emails"](../../003-accounts/accounts.md#onboarding-emails)                                                    |
-| `DELETE /app/people/<id>`                             | [accounts.md "Closing an account"](../../003-accounts/accounts.md#closing-an-account)                                                  |
-| `PUT /api/participants/:id`                           | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `DELETE /api/account/teams/:id`                       | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/teams/:id/members`                  | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `DELETE /api/account/teams/:id/invite-link`           | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/join/:token`                        | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/join/:token`                       | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/invitations/decline/:token`        | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/teams/:id/members`                 | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `PATCH /api/account/teams/:id/members/:member`        | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `DELETE /api/account/teams/:id/members/:member`       | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/invitations/:member/decline`       | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/tokens`                            | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `DELETE /api/account/tokens/:id`                      | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/profile`                            | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/people?ids=a,b`                     | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/settings`                           | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/teams/of`                 | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `GET /api/account/internal/teams/changes`             | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/tokens/revoke`            | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/tokens/live`              | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/settings/write`           | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/profiles/write`           | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/workbench/session`        | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
-| `POST /api/account/internal/workbench/rooms`          | [accounts.md "The API"](../../003-accounts/accounts.md#the-api)                                                                        |
+| Case                        | Answer                                                  |
+| --------------------------- | ------------------------------------------------------- |
+| No secret                   | `503 not_configured` on every route                     |
+| A write from another origin | `403 cross_origin`                                      |
+| No session                  | `401 signed_out`                                        |
+| Wrong client credentials    | `401 invalid_client`                                    |
+| The index down when closing | the account closes; the purge waits in `pending_purges` |
+| Drive down when closing     | logged, not retried                                     |
+| A cron step throws          | logged; later steps run                                 |
 
 ## Security and trust
 
-Email codes are 6 digits, live 600 seconds and allow 3 attempts (`auth-options.ts`). Sending a code is limited per
-network (`CODE_IP_LIMITER`, 10 a minute) and per address (`CODE_EMAIL_LIMITER`, 3 a minute), behind Turnstile
-(`TURNSTILE_SECRET_KEY`). Guest, team-link, workbench and legacy-guest calls have their own limiters (below).
-Secrets compare in constant time (`secrets.ts`). Secrets are set once per Worker and environment with `wrangler secret put` and survive every deploy; the
-`Env fields` line under the Worker's configuration below lists every name the Worker reads, vars and secrets
-together (a name not in a `[vars]` table is a secret). App keys are compared in constant time, and each key speaks
-only for its own app.
+- Sessions are SameSite=Lax cookies; every session write also checks `Origin`.
+- Every key and secret is compared with `sameSecret` (both SHA-256 hashed, then `timingSafeEqual`).
+- An app's client credentials reach only its own app's data where the data is per app (settings, sightings,
+  milestones, notify switches, legacy guests); the client's app comes from `oauth_client_app`, never the request.
+- Secrets (not in `[vars]`): `BETTER_AUTH_SECRET`, `TURNSTILE_SECRET_KEY`, `ADMIN_TOKEN`, `GOOGLE_CLIENT_ID`,
+  `GOOGLE_CLIENT_SECRET`, `INDEX_MERGE_KEY`, `DRIVE_KEY_ACCOUNTS`, `TELEMETRY_KEY_<APP>`, `LEGACY_GUEST_ID_HMAC_SECRET`.
 
 ## Performance and limits
 
-Lists are bounded by the `MAX_…` constants below: 50 teams an account, 200 members a team, 20 API tokens, 100 ids
-a profile or email read, 16,384 bytes of settings. Cron sweeps take at most `SWEEP_LIMIT`, `GUEST_SWEEP_LIMIT` and
-`PURGES_PER_RUN` rows a run.
+Lists are bounded: 50 teams an account, 200 members a team, 20 live API tokens, 100 ids a profile, email or notify
+read, 16,384 bytes of settings a row, 500 rows a change-feed page. Every cron sweep takes a bounded batch (25 purges,
+10 x 100 Timeline events, 100 accounts a lifecycle stage, 500 expiries and 100 reminders a stage, 100 token
+warnings and 500 notes, 500 idle guests). Measured numbers are in [sign-in.md "Performance"](../sign-in.md#performance).
 
 ## Observability
 
@@ -326,6 +353,13 @@ Env fields (`env.ts`): `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_K
 
 ## Data and persistence
 
+One D1 database (`AUTH_DB`). Each table's indexes, and what writes and reads it, are in the feature file that
+owns it: Better Auth's own tables and `sign_in_handoff` in [sign-in.md](sign-in.md) and [oauth.md](oauth.md); `guest_seen`,
+`legacy_guest` in [sessions-and-guests.md](sessions-and-guests.md); `team`, `team_member`, `team_seq` in [teams.md](teams.md);
+`api_token` in [tokens.md](tokens.md); `settings`, `profile` in [settings-and-profiles.md](settings-and-profiles.md);
+`email_lifecycle`, `account_app` in [email.md](email.md). `pending_purges` (`pending_purges_due (lastAttemptAt)`) and
+`index_timeline_outbox` (`index_timeline_outbox_order (createdAt)`) are written and read as above.
+
 Migrations, in order:
 
 - `0001_better_auth.sql`
@@ -512,52 +546,24 @@ Migrations, in order:
 
 ## Testing
 
-47 test files:
+Suites run against an in-memory D1 (`test-d1.ts`). Each feature file names the suites that pin it; these pin the
+Worker as a whole:
 
-- `liveworkspace/apps/accounts/src/account-api.test.ts`
-- `liveworkspace/apps/accounts/src/account-apps.test.ts`
-- `liveworkspace/apps/accounts/src/auth-options.test.ts`
-- `liveworkspace/apps/accounts/src/bench-accounts.test.ts`
-- `liveworkspace/apps/accounts/src/clients.test.ts`
-- `liveworkspace/apps/accounts/src/drive-disconnect.test.ts`
-- `liveworkspace/apps/accounts/src/email.test.ts`
-- `liveworkspace/apps/accounts/src/guest-sweep.test.ts`
-- `liveworkspace/apps/accounts/src/guests.test.ts`
-- `liveworkspace/apps/accounts/src/handoff.test.ts`
-- `liveworkspace/apps/accounts/src/ids.test.ts`
-- `liveworkspace/apps/accounts/src/index-purge.test.ts`
-- `liveworkspace/apps/accounts/src/index-timeline.test.ts`
-- `liveworkspace/apps/accounts/src/internal-invitations.test.ts`
-- `liveworkspace/apps/accounts/src/legacy-guests.test.ts`
-- `liveworkspace/apps/accounts/src/lifecycle.test.ts`
-- `liveworkspace/apps/accounts/src/notify.test.ts`
-- `liveworkspace/apps/accounts/src/otp-routes.test.ts`
-- `liveworkspace/apps/accounts/src/profiles.test.ts`
-- `liveworkspace/apps/accounts/src/rate-limit.test.ts`
-- `liveworkspace/apps/accounts/src/settings.test.ts`
-- `liveworkspace/apps/accounts/src/sign-in-options.test.ts`
-- `liveworkspace/apps/accounts/src/signup-app.test.ts`
-- `liveworkspace/apps/accounts/src/team-invites.test.ts`
-- `liveworkspace/apps/accounts/src/teams.test.ts`
-- `liveworkspace/apps/accounts/src/telemetry.test.ts`
-- `liveworkspace/apps/accounts/src/token-expiry.test.ts`
-- `liveworkspace/apps/accounts/src/tokens.test.ts`
-- `liveworkspace/apps/accounts/src/workbench/workbench.test.ts`
-- `liveworkspace/apps/accounts/src/workspace-token.test.ts`
-- `liveworkspace/apps/accounts/scripts/import-clerk-users.test.ts`
-- `packages/auth-client/src/account-name.test.ts`
-- `packages/auth-client/src/account.test.ts`
-- `packages/auth-client/src/e2e-token-stand-in.test.ts`
-- `packages/auth-client/src/explorer-reads.test.ts`
-- `packages/auth-client/src/invitations.test.ts`
-- `packages/auth-client/src/notify.test.ts`
-- `packages/auth-client/src/oauth.test.ts`
-- `packages/auth-client/src/return-path.test.ts`
-- `packages/auth-client/src/silent.test.ts`
-- `packages/auth-client/src/verify.test.ts`
-- `packages/auth-client/src/workbench.test.ts`
-- `packages/email/src/index.test.ts`
-- `packages/settings/src/catalogue.test.ts`
-- `packages/settings/src/common.test.ts`
-- `packages/settings/src/index.test.ts`
-- `packages/settings/src/presence.test.ts`
+| Test                                                                  | Pins                                                                                                                                                                         |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/account-api.test.ts` (33)            | the account API's doors: signed in, by bearer, for the apps                                                                                                                  |
+| `liveworkspace/apps/accounts/src/index-purge.test.ts` (8)             | `purgeFromIndex`, `retryPendingPurges`, `deleteAccount`                                                                                                                      |
+| `liveworkspace/apps/accounts/src/drive-disconnect.test.ts` (4)        | `disconnectDrive`: done, skipped, failed, a `404`                                                                                                                            |
+| `liveworkspace/apps/accounts/src/telemetry.test.ts` (7)               | server events: held, bounded, one batch per app, keys                                                                                                                        |
+| `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)         | API token and team events; sending to the index; the outbox's bound                                                                                                          |
+| `liveworkspace/apps/accounts/src/ids.test.ts` (1)                     | account ids keep the `user_` shape                                                                                                                                           |
+| `liveworkspace/apps/accounts/scripts/import-clerk-users.test.ts`      | the Clerk import ([012-migrate](../../012-migrate/blueprints/migrate.md))                                                                                                    |
+| `packages/auth-client/src/*.test.ts`                                  | each app's side: OAuth, silent sign-in, return paths, verification, the account API client, invitations, notify rules, account names, the workbench client, the e2e stand-in |
+| `packages/settings/src/*.test.ts`, `packages/email/src/index.test.ts` | the settings catalogue and common keys; the email binding wrapper                                                                                                            |
+
+## Defaults ledger
+
+- `ACC1`: the spec names no cron minute; the daily run is `17 9 * * *` and the frequent one `*/15 * * * *`.
+- `ACC2`: closing an account answers `200` once the account is gone, whether or not the index, the workbench or
+  Drive took their part; the index's is retried, Drive's is not.
+- `ACC3`: a telemetry event with no app (someone who signed up on liveworkspace.app) is not counted.

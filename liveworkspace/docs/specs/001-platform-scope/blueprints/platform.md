@@ -1,17 +1,17 @@
 # The platform: blueprint
 
-Derived from [platform.md](../platform.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [platform.md](../platform.md). The spec decides; this file only adds engineering precision, read from the code. Defaults are cited as `PLTn`. Paths are relative to the repository root.
 
 ## Domain and naming
 
-| Term     | Identifier                                                  | Meaning                                                                            |
-| -------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Platform | liveworkspace                                               | The services and packages every app shares, under `liveworkspace/` and `packages/` |
-| App      | `livediagram`, `liveplanner`, `livedocuments`, `livedesign` | A product, by its folder; its site is `<app>.app`                                  |
-| Service  | `liveworkspace/apps/<service>`                              | A platform Worker on a path of liveworkspace.app                                   |
-| Account  | `user_…`                                                    | A person, the same id in every app                                                 |
-| Guest    | `guest_<uuid>`                                              | Someone without an account, the same id in every app                               |
-| Item     | an index row                                                | A document, project or design, whose content stays in its app                      |
+| Term     | Identifier                                                  | Meaning                                                                                      |
+| -------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Platform | liveworkspace                                               | The services and packages every app shares, under `liveworkspace/` and `packages/`           |
+| App      | `livediagram`, `liveplanner`, `livedocuments`, `livedesign` | A product, by its folder; its site is `<app>.app`                                            |
+| Service  | `liveworkspace/apps/<service>`                              | A platform Worker on a path of liveworkspace.app                                             |
+| Account  | `user_[A-Za-z0-9]{1,64}` (`USER_ID`)                        | A person, the same id in every app; new ones `user_` and a UUID's hex, imported ones Clerk's |
+| Guest    | `guest_` and a lower-case v4 UUID (`GUEST_ID`)              | Someone without an account, the same id in every app                                         |
+| Item     | an index row                                                | A document, project or design, whose content stays in its app                                |
 
 ## Behaviour and state
 
@@ -24,10 +24,30 @@ services hold names, ids, placements and pictures, and call the app back when th
 Each service's contract is its own category's spec and blueprint. The shared contracts an app links are the root
 `packages/@liveworkspace/*` in the table under Files.
 
+### Who presents what
+
+| Caller                         | Credential                                                                  | Checked by                                                 |
+| ------------------------------ | --------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| A browser on liveworkspace.app | the accounts session cookie (writes same-origin only)                       | accounts; the index, Drive and community through it        |
+| A browser on an app            | an access token (ES256 JWT, `aud` the app's API) or a year-long guest token | the app's API offline against `/api/auth/jwks`; the index  |
+| A CLI or MCP client            | an API token (`lwt_`, or a carried-over `lvd_`)                             | accounts' `internal/tokens/verify`, cached by the app 60 s |
+| A workbench frame              | a workbench session (`lvw_…`)                                               | accounts' `internal/workbench/session`, per request        |
+| An app's server to accounts    | its OAuth client id and secret (HTTP Basic)                                 | accounts, by introspection, cached 5 min                   |
+| An app's server to the index   | its `INDEX_KEY`, with `X-Index-Person` for a delegated call                 | the index                                                  |
+| The index to an app            | the app's `INDEX_KEY` on `/api/internal/*`                                  | the app                                                    |
+| accounts and the index         | `INDEX_MERGE_KEY`                                                           | each other                                                 |
+| An operator                    | `ADMIN_TOKEN` (clients, bench accounts), `MIGRATION_KEY` (the move)         | accounts; each app's migration door                        |
+
+The details are in [sessions-and-guests.md](../../003-accounts/blueprints/sessions-and-guests.md),
+[oauth.md](../../003-accounts/blueprints/oauth.md), [tokens.md](../../003-accounts/blueprints/tokens.md) and
+[index.md](../../004-index/blueprints/index.md).
+
 ## Security and trust
 
 One account, one guest id and one set of keys per app per service. No service trusts a browser's word for who it
-is: a browser presents an accounts token or a guest token, an app's server its key.
+is: a browser presents an accounts token or a guest token, an app's server its key. The apps tell an account from a guest by the
+`user_` prefix (each app's `media.ts` names a guest's media owner through `mediaGuestOwner`, an account's as itself),
+which is why new accounts keep it.
 
 ## Performance and limits
 
@@ -68,3 +88,12 @@ in the root `packages/` (so the products can depend on it) or, when only the pla
 | `packages/account-menu`         | `@liveworkspace/account-menu`      | The account control, signed in or as Guest                                                           |
 | `packages/sites`                | `@liveworkspace/sites`             | Every site's address, app origins, the network helpers and the routers' workspace proxy              |
 | `packages/migration`            | `@liveworkspace/migration`         | The migration's contract and the old-document splitter                                               |
+
+## Testing
+
+Each service and package carries its own suite, listed in its blueprint. `liveworkspace/apps/accounts/src/ids.test.ts`
+pins the id shapes.
+
+## Defaults ledger
+
+- `PLT1`: new account ids keep Clerk's `user_` prefix, so imported and new accounts share one shape.

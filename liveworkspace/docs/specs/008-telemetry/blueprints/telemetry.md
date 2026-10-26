@@ -1,161 +1,264 @@
 # Telemetry: blueprint
 
-Derived from [telemetry.md](../telemetry.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [telemetry.md](../telemetry.md). The spec decides; this file only adds engineering precision, read from
+the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `TELn`.
+Paths are relative to the repository root.
+
+Scope, by file:
+
+| File                                                      | Role                                                                                                                                            |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/telemetry/src/index.ts`               | The Worker: `fetch` routes `/api/telemetry/events` and `/api/telemetry/summary`, 404 for every other path; `scheduled` sweeps                   |
+| `liveworkspace/apps/telemetry/src/config.ts`              | `API_PATH`, `RETENTION_MS`, `CORS` (kept out of the entry, which may export only its handler)                                                   |
+| `liveworkspace/apps/telemetry/src/env.ts`                 | `Env`; `appKey(env, app)` maps each app to its own `TELEMETRY_KEY_<APP>` secret                                                                 |
+| `liveworkspace/apps/telemetry/src/ingest.ts`              | `handleIngest`: body bounds, `senderOf`, the rate limit, the vocabulary filters, the insert; always `204`                                       |
+| `liveworkspace/apps/telemetry/src/vocabularies.ts`        | `VOCABULARIES` (each sender's `isValid` and `isServerOnly`), `isSiteSettingsEvent`                                                              |
+| `liveworkspace/apps/telemetry/src/summary.ts`             | `handleSummary`: the app filter, the edge cache, the one query, `buildTelemetrySummary`                                                         |
+| `liveworkspace/apps/telemetry/src/db.ts`                  | `insertEvents`, `dailyCountsSince`, `deleteEventsBefore`: the only three statements                                                             |
+| `liveworkspace/apps/telemetry/src/test-env.ts`            | An in-memory `TELEMETRY_DB` for the tests (`env.rows`)                                                                                          |
+| `liveworkspace/apps/telemetry/migrations/0001_events.sql` | The `events` table and its two indexes                                                                                                          |
+| `liveworkspace/apps/telemetry/wrangler.toml`              | Routes, D1, the rate limiter, the cron, vars, per environment                                                                                   |
+| `liveworkspace/apps/telemetry/.dev.vars.example`          | Local `ENVIRONMENT=development` and four dev keys                                                                                               |
+| `packages/telemetry/src/apps.ts`                          | `TELEMETRY_APPS`, `TELEMETRY_APP_ORIGINS`, `PLATFORM_TELEMETRY_APP`, `PLATFORM_TELEMETRY_ORIGINS`, the guards                                   |
+| `packages/telemetry/src/wire.ts`                          | `TELEMETRY_URL`, the two paths, `TelemetryWireEvent`, `TelemetryBatch`, `TELEMETRY_BATCH_MAX`, `TELEMETRY_KEY_HEADER`, `TELEMETRY_TYPE_PATTERN` |
+| `packages/telemetry/src/summary.ts`                       | `TelemetrySummary` and friends, `TELEMETRY_WINDOW_DAYS`, `metricKey`, `telemetrySeriesStart`, `telemetryQueryStart`, `buildTelemetrySummary`    |
+| `packages/telemetry/src/emitter.ts`                       | `createTelemetryEngine`: the browser's buffer, timer, one retry, per-app batches, page-hide beacon                                              |
+| `packages/telemetry/src/server.ts`                        | `postServerEvents`: an app Worker's keyed send                                                                                                  |
+| `packages/telemetry/src/explorer-events.ts`               | `EXPLORER_TELEMETRY_EVENTS`, `isExplorerTelemetryEvent`, `TEAM_ITEM_TYPES`                                                                      |
+| `packages/telemetry/src/error-tokens.ts`                  | `pascalToken`, `errorTypeToken`, `errorNameToken`, `errorPageToken`, `createApiRouteLabel`: error events' `type` tokens                         |
+| `packages/telemetry-client/src/*`                         | The browser side every app binds: opt-out, errors, timings, daily return, page hide                                                             |
 
 ## Domain and naming
 
-| Term  | Identifier                   | Meaning                                           |
-| ----- | ---------------------------- | ------------------------------------------------- |
-| Event | `events` row                 | A category, an action and a count, never a person |
-| Batch | `POST /api/telemetry/events` | At most 100 events, answered `204` always         |
-| App   | `TELEMETRY_KEY_<APP>`        | Who may send server-side events                   |
+| Term            | Identifier                                                     | Meaning                                                                           |
+| --------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Event           | `TelemetryWireEvent` `{ category, action, type? }`             | Three short fields from a closed vocabulary; never user content                   |
+| Batch           | `TelemetryBatch` `{ app, events }`                             | What one `POST /events` carries                                                   |
+| App             | `TelemetryApp`, one of `TELEMETRY_APPS`                        | `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`       |
+| Platform sender | `PLATFORM_TELEMETRY_APP` = `'liveworkspace.app'`               | The Explorer and Settings on liveworkspace.app, speaking for an app or for itself |
+| Sender          | `TelemetrySender` = app or platform; `TELEMETRY_SENDERS`       | What a batch may name in `app`                                                    |
+| Sender kind     | `'server' \| 'browser' \| 'platform'` (`senderOf`)             | How the batch proved who it is                                                    |
+| Filter          | `TelemetryAppFilter` = app or `ALL_TELEMETRY_APPS` (`'all'`)   | What the summary is asked for                                                     |
+| Window          | `TelemetryWindowKey` `today` / `last7` / `last30`              | 1, 7 or 30 UTC calendar days ending today (`TELEMETRY_WINDOW_DAYS`)               |
+| Metric key      | `metricKey(category, action, type)` = `category\|action\|type` | One event's series key; `type` null is `''`                                       |
+| Server-only     | `isServerEmittedEvent` (each app's `api-schema`)               | Events only the app's Workers may count (a sign-up, an email sent)                |
 
 ## Behaviour and state
 
-One cron, `17 3 * * *`, deletes events older than `RETENTION_MS` and logs `{ sweep: 'events', rows }`.
+### Ingest, in order (`handleIngest`)
+
+Every exit answers `204` with `Access-Control-Allow-Origin: *`, stored or not.
+
+1. `TELEMETRY_ENABLED !== 'true'`: stop.
+2. `Content-Length` over `MAX_BODY_BYTES` (64 KiB): stop. Read the body as text; over 64 KiB, or not JSON: stop.
+3. `app` must pass `isTelemetrySender` and `events` must be an array: else stop.
+4. `senderOf(request, env, app)`:
+   1. `X-Telemetry-Key` present: `app` must be an app (never `liveworkspace.app`), its `appKey` set, and the key equal
+      it by `timingSafeEqual`; then `'server'`, else refused.
+   2. No `Origin`: refused.
+   3. `Origin` in `PLATFORM_TELEMETRY_ORIGINS`: `'platform'`.
+   4. `app` an app and `telemetryAppOfOrigin(Origin) === app`: `'browser'`.
+   5. `ENVIRONMENT === 'development'` and a localhost origin (`isLocalhostOrigin`): `'platform'` when `app` is
+      `liveworkspace.app`, else `'browser'`.
+   6. Otherwise refused. Refused stops.
+5. Not `'server'` and `EVENTS_RATE_LIMITER` bound: `limit({ key: clientRateKey(request) })` (the IPv4 address or
+   the IPv6 /64); over the limit stops.
+6. Filter, in order: `VOCABULARIES[app].isValid`; for a non-server sender, drop `isServerOnly`; for `'platform'`, keep
+   only `isExplorerTelemetryEvent` or `isSiteSettingsEvent(app, e)`; then the first `TELEMETRY_BATCH_MAX` (100).
+7. `insertEvents(env, app, valid, Date.now())`: one prepared `INSERT` per event in one `batch`. A thrown D1 error is
+   swallowed (TEL1).
+
+### Vocabularies (`vocabularies.ts`)
+
+| Sender              | `isValid`                                                                                                                                               | `isServerOnly`                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `liveworkspace.app` | `isPlatformEvent`: string `category` and `action`, `type` absent or matching `TELEMETRY_TYPE_PATTERN`, and an Explorer event or a shared settings event | never                                      |
+| each app            | `@<app>/api-schema` `isValidTelemetryEvent`                                                                                                             | `@<app>/api-schema` `isServerEmittedEvent` |
+
+`isSiteSettingsEvent(sender, e)` matches `category·action·type` against a set built once per isolate from
+`@liveworkspace/settings` `catalogueEvents(<app catalogue>)`; for `liveworkspace.app` the set is
+`sharedCatalogueEvents` of all four catalogues.
+
+### Summary (`handleSummary`)
+
+1. `TELEMETRY_ENABLED !== 'true'`: `200 { enabled: false }`.
+2. `app` query param, default `all`; not a filter: `400 { error: 'unknown_app' }`.
+3. Cache key `<origin><path>?app=<filter>` (other params ignored). Outside development, a `caches.default` hit is
+   returned as is.
+4. One query: `dailyCountsSince(env, telemetryQueryStart(now), app)` (null for `all`).
+5. `buildTelemetrySummary(now, filter, app ? [app] : TELEMETRY_SENDERS, rows)`.
+6. Outside development: `Cache-Control: public, max-age=300` (`CACHE_SECONDS`), and the cache put in `waitUntil`
+   (a failure logs `summary cache put failed`).
+7. `index.ts` copies the response (cached headers are immutable) and adds `Access-Control-Allow-Origin: *`.
+
+### Building the summary (`buildTelemetrySummary`)
+
+- The series is 30 UTC days from `telemetrySeriesStart(now)` = today's UTC midnight minus 29 days; the query starts
+  30 days earlier (`telemetryQueryStart`), 59 days back, inside the 60-day retention.
+- Each row's day offset from the series start: inside the series it adds to `totals`, `byCategory[category]`,
+  `byMetric[metricKey]` and `byApp[app]` at that day, and to every window whose last N days hold it; rows in the N
+  days before a window add to `previousWindows[k]` (for `today` and `last7` those days are inside the series).
+- The same event from several apps merges into one row; each window keeps `byApp` with every counted sender, zero
+  when silent. Rows sort by count, descending.
+- Answer: `{ enabled: true, generatedAt, app, windows, previousWindows, daily: { days, totals, byCategory, byMetric, byApp } }`.
+
+### Retention (`scheduled`)
+
+The one cron (`17 3 * * *`, both environments) runs, in `waitUntil`, `DELETE FROM events WHERE ts < now - RETENTION_MS`
+(60 days) and logs `{"sweep":"events","rows":<n>}`; a failure logs `events sweep failed`.
+
+### The browser engine (`createTelemetryEngine`)
+
+| From         | Event                                      | To       | Effect                                                                                                           |
+| ------------ | ------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| any          | `track()` while disabled or opted out      | same     | nothing                                                                                                          |
+| empty        | `track()`                                  | buffered | held as `{ app, event }`; timer armed for `TELEMETRY_FLUSH_DELAY_MS` (10 s); listeners attached                  |
+| buffered     | buffer reaches `TELEMETRY_MAX_BUFFER` (25) | empty    | flush now                                                                                                        |
+| buffered     | timer fires                                | empty    | flush: one batch per app, in first-seen order, `fetch` `text/plain`, `keepalive`, `credentials: 'omit'`          |
+| buffered     | page hidden or unloaded                    | empty    | flush with `navigator.sendBeacon` (a `text/plain` Blob); a false or throwing beacon falls to the keepalive fetch |
+| sent (fetch) | the fetch rejects (not on unload)          | retry    | the fresh events (never ones already retried) go to `retryBuffer`, capped at 25, oldest dropped; timer armed     |
+| sent         | any HTTP answer                            | done     | never retried, so nothing counts twice                                                                           |
+
+### The server send (`postServerEvents`)
+
+No-op unless `TELEMETRY_ENABLED === 'true'`, `TELEMETRY_KEY` set and events non-empty. `POST
+<TELEMETRY_URL || TELEMETRY_URL>/events`, JSON, `X-Telemetry-Key: <key>`; a thrown fetch is swallowed.
 
 ## Interfaces and contracts
 
-Browsers post `text/plain` batches with no cookies, accepted only from the app's own origins; Workers post with
-`TELEMETRY_KEY_<APP>`. The dashboard reads the summary.
+| Route                             | Auth                                                                  | Request                                                  | Answers                                                                                                                                |
+| --------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPTIONS /api/telemetry/events`   | none                                                                  |                                                          | `204`, `Access-Control-Allow-Origin: *`                                                                                                |
+| `POST /api/telemetry/events`      | an app's `Origin`, liveworkspace.app's `Origin`, or `X-Telemetry-Key` | `TelemetryBatch` as `text/plain` or JSON, at most 64 KiB | `204` always, with `Access-Control-Allow-Origin: *`                                                                                    |
+| other methods on `/events`        |                                                                       |                                                          | `405`, `Allow: POST`                                                                                                                   |
+| `GET /api/telemetry/summary?app=` | none                                                                  | `app` = `all` (default) or an app                        | `200 TelemetrySummary`, or `200 { enabled: false }`, or `400 { error: 'unknown_app' }`; `Access-Control-Allow-Origin: *`; cached 300 s |
+| other methods on `/summary`       |                                                                       |                                                          | `405`, `Allow: GET`                                                                                                                    |
+| any other path                    |                                                                       |                                                          | `404 Not found` (the old `/telemetry/api/events` too)                                                                                  |
 
-Every route the specs name, with the section that defines it (each checked to have its path's literal in the code):
-
-| Route                                                            | Specified in                                                                     |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `POST /api/events`                                               | [telemetry.md "Sending events"](../../008-telemetry/telemetry.md#sending-events) |
-| `GET /api/telemetry/summary?app=all\|<an app in TELEMETRY_APPS>` | [telemetry.md "The dashboard"](../../008-telemetry/telemetry.md#the-dashboard)   |
-
-## Security and trust
-
-No address or person is stored. Browser batches are limited per network (120 a minute, `clientRateKey`). Secrets are set once per Worker and environment with `wrangler secret put` and survive every deploy; the
-`Env fields` line under the Worker's configuration below lists every name the Worker reads, vars and secrets
-together (a name not in a `[vars]` table is a secret). App keys are compared in constant time, and each key speaks
-only for its own app.
-
-## Performance and limits
-
-The figures are in [telemetry.md "Performance"](../telemetry.md#performance).
-
-## Observability
-
-Every log line the service writes, by its fingerprint (the first literal of the call; `…` marks an interpolation):
-
-| Level   | Fingerprint                | Where        |
-| ------- | -------------------------- | ------------ |
-| `error` | `events sweep failed`      | `index.ts`   |
-| `error` | `summary cache put failed` | `summary.ts` |
-| `log`   | `sweep:`                   | `index.ts`   |
-
-## Files
-
-| File                                               | Role                                                                                                                                                                                            |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/telemetry/src/config.ts`       | The Worker's settings                                                                                                                                                                           |
-| `liveworkspace/apps/telemetry/src/db.ts`           |                                                                                                                                                                                                 |
-| `liveworkspace/apps/telemetry/src/env.ts`          |                                                                                                                                                                                                 |
-| `liveworkspace/apps/telemetry/src/index.ts`        | liveworkspace telemetry (liveworkspace/docs/specs/008-telemetry/telemetry.md): one Worker for every app's anonymous events                                                                      |
-| `liveworkspace/apps/telemetry/src/ingest.ts`       | POST /api/telemetry/events: every app's anonymous events (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events")                                                                 |
-| `liveworkspace/apps/telemetry/src/summary.ts`      | GET /api/telemetry/summary?app=…: the dashboard's numbers (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"), for one app or, with app=all or no app, for every app          |
-| `liveworkspace/apps/telemetry/src/vocabularies.ts` | Each app's closed event vocabulary, as that app defines it (its own api-schema): the service stores only events its app could have sent                                                         |
-| `packages/telemetry/src/apps.ts`                   | The apps that send telemetry to liveworkspace (liveworkspace/docs/specs/008-telemetry/telemetry.md)                                                                                             |
-| `packages/telemetry/src/emitter.ts`                | The browser's batching emitter (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events"), one engine for every sender: each app's `@<app>/telemetry-client` wraps it with its own… |
-| `packages/telemetry/src/error-tokens.ts`           | Error telemetry tokens (docs/specs/017-telemetry/telemetry.md 'Error' category): how every error source says WHERE it failed inside the one `type` token it has, for every…                     |
-| `packages/telemetry/src/explorer-events.ts`        | The Explorer's events (liveworkspace/docs/specs/008-telemetry/telemetry.md "The Explorer on liveworkspace.app"): what the one Explorer page on liveworkspace.app may report, in the name of th… |
-| `packages/telemetry/src/index.ts`                  | The liveworkspace telemetry contract (liveworkspace/docs/specs/008-telemetry/telemetry.md): which apps send events, what a batch looks like, the dashboard's summary, and the Explorer's event… |
-| `packages/telemetry/src/server.ts`                 | What an app's api Worker sends the central ingest itself (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events").                                                                |
-| `packages/telemetry/src/summary.ts`                | The dashboard's data (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): grouped counts for three FIXED windows and a 30-day daily series, for one app or for every app      |
-| `packages/telemetry/src/testing.ts`                | Tests' view of the central telemetry service: stubs the global fetch, keeps the events of every batch posted to its events path and answers 204. Pair with TELEMETRY_ON in…                     |
-| `packages/telemetry/src/wire.ts`                   | What an app sends the central ingest (liveworkspace/docs/specs/008-telemetry/telemetry.md "Sending events").                                                                                    |
-| `packages/telemetry-client/src/daily-return.ts`    | The once-per-UTC-day "returning visitor" gate (a product's docs/specs/017-telemetry/telemetry.md, `Participant·Returned`), shared by every editor and by liveworkspace's E…                     |
-| `packages/telemetry-client/src/errors.ts`          | Client error tracking (a product's docs/specs/017-telemetry/telemetry.md 'Error' category).                                                                                                     |
-| `packages/telemetry-client/src/index.ts`           | The browser side of every product's telemetry (a product's docs/specs/017-telemetry/telemetry.md): three-field {category, action, type} events, batched to the liveworkspa…                     |
-| `packages/telemetry-client/src/page-hide.ts`       | Run a callback when the page is being hidden or unloaded (docs/specs/017-telemetry/telemetry.md), BEFORE the telemetry engine's own page-hide flush sends its last batch.                       |
-| `packages/telemetry-client/src/timing.ts`          | Timing telemetry (a product's docs/specs/017-telemetry/timing-telemetry.md): time a key moment of the experience and report it as `Timing·Measured·<Metric>.<Bucket>`                           |
-
-## Constants and configuration: the Worker
-
-`liveworkspace/apps/telemetry/wrangler.toml`, account `851be7d244b76a6557bcbe6c4ded80f5`, main `src/index.ts`, compatibility date `2026-05-29`.
-
-**Production**
-
-| Setting                          | Value                                              |
-| -------------------------------- | -------------------------------------------------- |
-| Worker name                      | `liveworkspace-telemetry`                          |
-| Route                            | `liveworkspace.app/api/telemetry*`                 |
-| D1 `TELEMETRY_DB`                | `liveworkspace-telemetry`, migrations `migrations` |
-| Rate limit `EVENTS_RATE_LIMITER` | 120 per 60 s                                       |
-| Crons                            | `17 3 * * *`                                       |
-| Var `ENVIRONMENT`                | `production`                                       |
-| Var `TELEMETRY_ENABLED`          | `true`                                             |
-
-**`env.staging`**
-
-| Setting                          | Value                                                      |
-| -------------------------------- | ---------------------------------------------------------- |
-| Worker name                      | `liveworkspace-telemetry-staging`                          |
-| Route                            | `staging.liveworkspace.app/api/telemetry*`                 |
-| D1 `TELEMETRY_DB`                | `liveworkspace-telemetry-staging`, migrations `migrations` |
-| Rate limit `EVENTS_RATE_LIMITER` | 120 per 60 s                                               |
-| Crons                            | `17 3 * * *`                                               |
-| Var `ENVIRONMENT`                | `staging`                                                  |
-| Var `TELEMETRY_ENABLED`          | `true`                                                     |
-
-Env fields (`env.ts`): `ENVIRONMENT`, `TELEMETRY_ENABLED`, `TELEMETRY_KEY_LIVEDESIGN`, `TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEDOCUMENTS`, `TELEMETRY_KEY_LIVEPLANNER`.
+The browser origins per app are `TELEMETRY_APP_ORIGINS` (production, `www.` and staging for liveplanner,
+livedocuments and livedesign). livediagram's entry lists its router's `workers.dev` address twice and its staging
+router's once, not `livediagram.app` (see [Errors and edge cases](#errors-and-edge-cases)).
 
 ## Data and persistence
 
-Migrations, in order:
+`events` (`0001_events.sql`), the only table. No identity, no address, no owner.
 
-- `0001_events.sql`
+| Column     | Type                                       | Written by                                   | Read by                                                                              |
+| ---------- | ------------------------------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `app`      | `TEXT NOT NULL`                            | `insertEvents` (the batch's sender)          | `dailyCountsSince` (`WHERE app = ?`, group)                                          |
+| `category` | `TEXT NOT NULL`                            | `insertEvents`                               | `dailyCountsSince` (group)                                                           |
+| `action`   | `TEXT NOT NULL`                            | `insertEvents`                               | `dailyCountsSince` (group)                                                           |
+| `type`     | `TEXT` (null)                              | `insertEvents` (`e.type ?? null`)            | `dailyCountsSince` (group)                                                           |
+| `ts`       | `INTEGER NOT NULL` (epoch ms, server time) | `insertEvents` (`Date.now()`, one per batch) | `dailyCountsSince` (`ts >= ?`, `date(ts / 1000, 'unixepoch')`), `deleteEventsBefore` |
 
-| Table    | Columns                                   | Created in        |
-| -------- | ----------------------------------------- | ----------------- |
-| `events` | `app`, `category`, `action`, `type`, `ts` | `0001_events.sql` |
+Indexes: `events_app_ts_idx (app, ts)` for one app's range, `events_ts_idx (ts)` for every app's range and the sweep.
 
-## Constants and configuration: named constants
+The summary query:
 
-| Constant                     | Value                                                        | File                 |
-| ---------------------------- | ------------------------------------------------------------ | -------------------- |
-| `API_PATH`                   | `'/api/telemetry'`                                           | `config.ts`          |
-| `RETENTION_MS`               | `60 * DAY_MS`                                                | `config.ts`          |
-| `CORS`                       | `{ 'Access-Control-Allow-Origin': '*' }`                     | `config.ts`          |
-| `VOCABULARIES`               | `(object or list, see file)`                                 | `vocabularies.ts`    |
-| `TELEMETRY_APPS`             | `(object or list, see file)`                                 | `apps.ts`            |
-| `ALL_TELEMETRY_APPS`         | `'all'`                                                      | `apps.ts`            |
-| `TELEMETRY_APP_ORIGINS`      | `(object or list, see file)`                                 | `apps.ts`            |
-| `PLATFORM_TELEMETRY_APP`     | `'liveworkspace.app'`                                        | `apps.ts`            |
-| `TELEMETRY_SENDERS`          | `(object or list, see file)`                                 | `apps.ts`            |
-| `PLATFORM_TELEMETRY_ORIGINS` | `(object or list, see file)`                                 | `apps.ts`            |
-| `TELEMETRY_FLUSH_DELAY_MS`   | `10_000`                                                     | `emitter.ts`         |
-| `TELEMETRY_MAX_BUFFER`       | `25`                                                         | `emitter.ts`         |
-| `TEAM_ITEM_TYPES`            | `['Project', 'Design', 'Document'] as const`                 | `explorer-events.ts` |
-| `EXPLORER_TELEMETRY_EVENTS`  | `(object or list, see file)`                                 | `explorer-events.ts` |
-| `TELEMETRY_WINDOW_DAYS`      | `(object or list, see file)`                                 | `summary.ts`         |
-| `TELEMETRY_ON`               | `{ TELEMETRY_ENABLED: 'true', TELEMETRY_KEY: 'k' } as const` | `testing.ts`         |
-| `TELEMETRY_URL`              | `'https://liveworkspace.app/api/telemetry'`                  | `wire.ts`            |
-| `TELEMETRY_DASHBOARD_URL`    | `'https://liveworkspace.app/telemetry'`                      | `wire.ts`            |
-| `TELEMETRY_EVENTS_PATH`      | `'/events'`                                                  | `wire.ts`            |
-| `TELEMETRY_SUMMARY_PATH`     | `'/summary'`                                                 | `wire.ts`            |
-| `TELEMETRY_BATCH_MAX`        | `100`                                                        | `wire.ts`            |
-| `TELEMETRY_KEY_HEADER`       | `'X-Telemetry-Key'`                                          | `wire.ts`            |
-| `TELEMETRY_TYPE_PATTERN`     | `/^[A-Za-z0-9 ._-]{1,40}$/`                                  | `wire.ts`            |
-| `ERROR_EMIT_CAP_PER_TYPE`    | `10`                                                         | `errors.ts`          |
+```sql
+SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*) AS count
+  FROM events WHERE [app = ? AND] ts >= ?
+ GROUP BY day, app, category, action, type
+```
+
+## Errors and edge cases
+
+| Case                                                                                                         | Answer                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Telemetry off                                                                                                | ingest `204`, nothing stored; summary `{ enabled: false }`                                                                                                                                                                                  |
+| Body over 64 KiB (header or text), not JSON, wrong shape                                                     | `204`, nothing stored                                                                                                                                                                                                                       |
+| A key for `liveworkspace.app`, a wrong key, an unset key                                                     | `204`, nothing stored                                                                                                                                                                                                                       |
+| An app page naming another app; a foreign origin                                                             | `204`, nothing stored                                                                                                                                                                                                                       |
+| A localhost page outside development                                                                         | `204`, nothing stored                                                                                                                                                                                                                       |
+| Over the per-network limit                                                                                   | `204`, nothing stored (Workers are never limited)                                                                                                                                                                                           |
+| Events outside the vocabulary; server-only from a browser; non-Explorer, non-settings from liveworkspace.app | dropped, the rest stored                                                                                                                                                                                                                    |
+| More than 100 valid events                                                                                   | the first 100 stored                                                                                                                                                                                                                        |
+| D1 throws on insert                                                                                          | `204`, the batch lost                                                                                                                                                                                                                       |
+| Edge-cached summary (immutable headers)                                                                      | copied before the CORS header is set                                                                                                                                                                                                        |
+| livediagram's origins (`TELEMETRY_APP_ORIGINS`)                                                              | the list repeats `https://livediagram-router.liveworkspace-easing509.workers.dev` and has no `https://livediagram.app`; a page on `livediagram.app` is refused unless that is its router's origin. The spec does not say which is intended. |
+
+## Security and trust
+
+- No identity: no cookies are read, no address stored; the rate-limit key lives only in the limiter.
+- The `Origin` check is spoofable by any non-browser client; the bound is the per-network limit (120 a minute, both
+  environments) and the closed vocabulary, so a forger adds only plausible counts.
+- Keys: one secret per app (`TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`), compared
+  with `@liveworkspace/index-app/timing-safe` `timingSafeEqual`; a key never speaks for `liveworkspace.app`.
+- `compatibility_flags = ["global_fetch_strictly_public"]`; `workers_dev = false` in both environments.
+
+## Performance and limits
+
+- Ingest: one D1 batch per accepted request, at most 100 rows; nothing on the request path waits for anything else.
+- Summary: one grouped query over at most 59 days, then the edge for 300 s per filter (five cache keys: `all` and four
+  apps). The fold is linear in rows; `summary.test.ts` "folds a worst-case 59 days of rows quickly" pins it.
+- Browser: at most one request per app every 10 s, or at 25 buffered events; one retry, never a growing queue.
+
+## Observability
+
+| Level   | Line                            | Where        |
+| ------- | ------------------------------- | ------------ |
+| `log`   | `{"sweep":"events","rows":<n>}` | `index.ts`   |
+| `error` | `events sweep failed`           | `index.ts`   |
+| `error` | `summary cache put failed`      | `summary.ts` |
+
+Ingest logs nothing, by design: every refusal is silent.
 
 ## Testing
 
-13 test files:
+| Test                                             | Pins                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/telemetry/src/index.test.ts`               | ingest then summary by app (`byApp` with liveworkspace.app); `unknown_app` 400; disabled answer; an edge hit with immutable headers; 404 outside the API and on the old `/telemetry/api` path; the 60-day sweep                                                                                                                                                                                                                                                                         |
+| `apps/telemetry/src/ingest.test.ts`              | server time; each app's own vocabulary; a page speaking for another app refused; liveworkspace.app takes only Explorer events, and an app's settings events, and the shared ones in its own name; no page or key speaks for liveworkspace.app; localhost only in development; a Worker batch only with its own key; vocabulary and server-only drops; the 100 cap and malformed bodies; off stores nothing; pages limited by network, Workers never; the limiter key is `clientRateKey` |
+| `apps/telemetry/src/env.test.ts`                 | each app its own key, none when unset                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `packages/telemetry/src/summary.test.ts`         | series start; today from UTC midnight; last 7 and last 30 spans; each window equals its trend span; query start; previous windows (inside and before the series); merged rows with per-app shares; the filter named; the worst-case fold                                                                                                                                                                                                                                                |
+| `packages/telemetry/src/emitter.test.ts`         | one batch per app per flush; early flush at 25; nothing when off or opted out                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `packages/telemetry/src/server.test.ts`          | the keyed post; nothing when off, keyless or empty                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `packages/telemetry/src/apps.test.ts`            | apps by site; origin to app; the platform sender and its origins                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `packages/telemetry/src/explorer-events.test.ts` | known pairs with their own tokens only; every token fits the wire                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `packages/telemetry/src/error-tokens.test.ts`    | PascalCase tokens, no path or id shapes, the 40-character cap, known error names only, page and route labels without ids or share codes                                                                                                                                                                                                                                                                                                                                                 |
 
-- `liveworkspace/apps/telemetry/src/env.test.ts`
-- `liveworkspace/apps/telemetry/src/index.test.ts`
-- `liveworkspace/apps/telemetry/src/ingest.test.ts`
-- `packages/telemetry/src/apps.test.ts`
-- `packages/telemetry/src/emitter.test.ts`
-- `packages/telemetry/src/error-tokens.test.ts`
-- `packages/telemetry/src/explorer-events.test.ts`
-- `packages/telemetry/src/server.test.ts`
-- `packages/telemetry/src/summary.test.ts`
-- `packages/telemetry-client/src/daily-return.test.ts`
-- `packages/telemetry-client/src/index.test.ts`
-- `packages/telemetry-client/src/page-hide.test.ts`
-- `packages/telemetry-client/src/timing.test.ts`
+## Constants and configuration
+
+| Constant                   | Value                                       | Where                            | Used by                                      |
+| -------------------------- | ------------------------------------------- | -------------------------------- | -------------------------------------------- |
+| `API_PATH`                 | `'/api/telemetry'`                          | `apps/telemetry/src/config.ts`   | `index.ts` routing                           |
+| `RETENTION_MS`             | `60 * DAY_MS`                               | `config.ts`                      | the sweep                                    |
+| `CORS`                     | `{ 'Access-Control-Allow-Origin': '*' }`    | `config.ts`                      | every events answer                          |
+| `MAX_BODY_BYTES`           | `64 * 1024`                                 | `ingest.ts`                      | the body bound                               |
+| `CACHE_SECONDS`            | `300`                                       | `summary.ts`                     | `Cache-Control`                              |
+| `TELEMETRY_URL`            | `'https://liveworkspace.app/api/telemetry'` | `packages/telemetry/src/wire.ts` | the server send's default; the apps' default |
+| `TELEMETRY_DASHBOARD_URL`  | `'https://liveworkspace.app/telemetry'`     | `wire.ts`                        | the apps' `/telemetry` redirects             |
+| `TELEMETRY_EVENTS_PATH`    | `'/events'`                                 | `wire.ts`                        | Worker, engine, server send                  |
+| `TELEMETRY_SUMMARY_PATH`   | `'/summary'`                                | `wire.ts`                        | Worker, dashboards                           |
+| `TELEMETRY_BATCH_MAX`      | `100`                                       | `wire.ts`                        | ingest cap                                   |
+| `TELEMETRY_KEY_HEADER`     | `'X-Telemetry-Key'`                         | `wire.ts`                        | `senderOf`, the server send                  |
+| `TELEMETRY_TYPE_PATTERN`   | `/^[A-Za-z0-9 ._-]{1,40}$/`                 | `wire.ts`                        | every vocabulary's `type` check              |
+| `TELEMETRY_WINDOW_DAYS`    | `{ today: 1, last7: 7, last30: 30 }`        | `summary.ts` (package)           | the windows                                  |
+| `TELEMETRY_FLUSH_DELAY_MS` | `10_000`                                    | `emitter.ts`                     | the timer                                    |
+| `TELEMETRY_MAX_BUFFER`     | `25`                                        | `emitter.ts`                     | early flush, retry cap                       |
+| `MAX_TYPE_LENGTH`          | `40`                                        | `error-tokens.ts`                | error tokens                                 |
+
+Worker configuration (`wrangler.toml`):
+
+| Setting               | Production                                                                   | Staging                                    |
+| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| Name                  | `liveworkspace-telemetry`                                                    | `liveworkspace-telemetry-staging`          |
+| Route                 | `liveworkspace.app/api/telemetry*`                                           | `staging.liveworkspace.app/api/telemetry*` |
+| D1 `TELEMETRY_DB`     | `liveworkspace-telemetry`                                                    | `liveworkspace-telemetry-staging`          |
+| `EVENTS_RATE_LIMITER` | namespace `1101`, 120 per 60 s                                               | namespace `2101`, 120 per 60 s             |
+| Cron                  | `17 3 * * *`                                                                 | `17 3 * * *`                               |
+| `ENVIRONMENT`         | `production`                                                                 | `staging`                                  |
+| `TELEMETRY_ENABLED`   | `true`                                                                       | `true`                                     |
+| Secrets               | `TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN` | the same                                   |
+
+Locally (`.dev.vars.example`): `ENVIRONMENT=development` and `dev-<app>-key` for each key; `wrangler dev --port 8790`.
+
+## Assets and external resources
+
+None beyond D1, the rate-limit binding and `caches.default`.
+
+## Defaults ledger
+
+- `TEL1`: a D1 error on insert is swallowed and the batch lost; ingest still answers `204`.
+- `TEL2`: every refusal answers `204` with nothing stored, so a sender learns nothing from the answer.
+- `TEL3`: of more than 100 valid events in one batch, the first 100 are stored.

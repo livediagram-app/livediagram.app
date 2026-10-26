@@ -1,4 +1,4 @@
-# Platform scope blueprint completeness
+# Platform blueprint completeness
 
 ## platform
 
@@ -13,7 +13,7 @@
 - [ ] Accessibility
 - [ ] Web Experience
 - [ ] Observability
-- [ ] Testing
+- [x] Testing
 - [ ] Constants and configuration
 - [ ] Assets and external resources
 - [x] Defaults ledger

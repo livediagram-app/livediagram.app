@@ -1,6 +1,6 @@
 # liveworkspace.app: blueprint
 
-Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). The spec decides; this file only adds engineering precision, read from the code. Defaults are cited as `SITEn`. Paths are relative to the repository root.
 
 ## Domain and naming
 
@@ -10,6 +10,45 @@ Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). 
 | Explorer page | `/explorer/*`                      | The One Explorer, also served on each app's address |
 | Sign-in pages | `/sign-in`, `/sign-up`, `/consent` | Accounts' pages, drawn by the site                  |
 | Site switcher | `@liveworkspace/sites`             | The list of every site, in every header             |
+
+## Behaviour and state
+
+### Who is signed in (`lib/session.ts`)
+
+One `GET /api/auth/get-session` per page load, however many parts ask (`useSession`): `checking`, then `out` or `in
+{ name, fullName, colour, picture, email, joined }`. The Explorer on an app's own address skips it: there the app's
+session is the one that counts (`components/explorer/AppAccountControl.tsx`). A colour picked in Settings repaints the
+avatar at once (`setSessionColour`). `signOut` resolves false when the API refused.
+
+### Signing in (`components/account/SignInFlow.tsx`, `lib/accounts.ts`)
+
+Steps `email` → `code` → `name` (only when the account has no name) → `done`:
+
+1. `GET /sign-in-options` says whether Google is on and Turnstile's site key.
+2. `POST /email-otp/send-verification-otp { email, type: 'sign-in' }` with the Turnstile answer in
+   `x-captcha-response`; `POST /sign-in/email-otp` with the 6 digits.
+3. `GET /get-session`; with no name, `POST /update-user` with the first and last name.
+4. With an app's OAuth request on the URL (`signedOAuthQuery`), `POST /oauth2/continue` (`created: true` when
+   registering) and the browser goes where it answers; without one, back to the `return` path, kept only when it is a
+   path on this site (`returnPath`).
+5. Google: `POST /sign-in/social`; a mark in the tab's `sessionStorage` (`liveworkspace:google`) tells the return trip.
+
+The API is `/api/auth` on liveworkspace.app and `/api/workspace/auth` on an app's address (`accountsApi`). There, the
+last step asks `POST /handoff/start { return, bind }` and goes top level to liveworkspace.app, which sends the browser
+on to the app's callback; `bind` is the nonce hash from `?handoff=` (43 base64url characters), kept for the tab so a
+consent step after signing in still has it ([sign-in.md](../../003-accounts/blueprints/sign-in.md)).
+
+### The Explorer's host (`lib/explorer/host.ts`)
+
+The app the person came from: `?from=<app>`, else the referrer's site, else none (every app's work). The last app is
+kept in `localStorage` (`liveworkspace:explorer-app`): what New makes and whose welcome Home shows in no app; it never
+filters the lists. On an app's address the app is the host's. Settings opens through `?settings=<section>`.
+
+### Old addresses
+
+`/account`, `/account/settings…` and `/account/tokens` send the browser to `/explorer?settings=<section>`, the anchor
+(`#profile`, `#notifications`, `#privacy`, `#accessibility`, `#tokens`) choosing it (`lib/account-redirect.ts`). The
+retired Explorer addresses in the table below render the Explorer from the address.
 
 ## Interfaces and contracts
 
@@ -201,6 +240,36 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `teams`       | 3     |
 | `workbench`   | 1     |
 
+## Data and persistence
+
+The site keeps nothing on a server. In the browser:
+
+| Key                                 | Storage          | Written by                                   | Holds                                                 |
+| ----------------------------------- | ---------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `liveworkspace:explorer-app`        | `localStorage`   | `lib/explorer/host.ts`                       | the last app the person came from                     |
+| `liveworkspace:settings-scope:v1`   | `localStorage`   | `components/settings/SiteSettingsDialog.tsx` | the Settings panel's last scope                       |
+| the device preferences key per host | `localStorage`   | `@liveworkspace/settings-ui`                 | device settings (read by `lib/explorer/telemetry.ts`) |
+| `liveworkspace:handoff`             | `sessionStorage` | `lib/accounts.ts`                            | the hand-off bind for this tab                        |
+| `liveworkspace:google`              | `sessionStorage` | `SignInFlow.tsx`                             | the Google return-trip mark                           |
+| `liveworkspace:drive-consent`       | `sessionStorage` | `lib/drive/pages.ts`                         | the Drive consent's state and return path             |
+
+Every access is wrapped so a blocked storage reads as empty.
+
+## Errors and edge cases
+
+| Case                                       | What the page shows                                           |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| An address that isn't one                  | "Please enter a valid email address."                         |
+| Too many code requests (429)               | "Too many codes requested. Wait a minute and try again."      |
+| A send that fails otherwise                | "We could not send a code. Check the address and try again."  |
+| A wrong or expired code                    | "That code is wrong or has expired."; the boxes cleared       |
+| Too many wrong codes (`TOO_MANY_ATTEMPTS`) | "Too many wrong codes. Request a new one."                    |
+| Too many attempts (429)                    | "Too many attempts. Wait a minute and try again."             |
+| The name not saved                         | "We could not save your name. Please try again."              |
+| An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again." |
+| A `return` that leaves the site            | ignored; the page goes home                                   |
+| No hand-off possible on an app's address   | straight to `next`; the app still signs in                    |
+
 ## Constants and configuration: the Worker
 
 `liveworkspace/apps/site/wrangler.toml`, account `851be7d244b76a6557bcbe6c4ded80f5`, main ``, compatibility date `2026-05-29`.
@@ -319,7 +388,22 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `SETTINGS_APP_IDS`            | `Object.keys(CATALOGUES) as SettingsAppId[]`                    | `store.ts`                  |
 | `TEST_KIT`                    | `(object or list, see file)`                                    | `kit.tsx`                   |
 
+## Observability
+
+The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib/explorer/telemetry.ts`,
+`lib/settings-telemetry.ts`), honouring the device's opt-out. Its Worker serves assets only and logs nothing of its own.
+
 ## Testing
+
+| Area                                                                                                                                                            | Files    | Pins                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `app/telemetry/**`                                                                                                                                              | 50       | the telemetry dashboard: each app's emitters, series, funnels, rankings, retired events, shared views |
+| `lib/explorer/**`                                                                                                                                               | 15       | the Explorer's host: arrival, addresses, app sessions, telemetry                                      |
+| `lib/*.test.ts`                                                                                                                                                 | 10       | sign-in helpers, session, redirects, settings, teams, apps                                            |
+| `lib/status`, `components/status`                                                                                                                               | 4        | the status page                                                                                       |
+| `lib/drive`, `components/drive`                                                                                                                                 | 2        | Drive connect pages and switch dialog                                                                 |
+| root guards (`appearance-guard`, `optical-guard`, `touch-target-guard`, `trusted-types-guard`, `motion-budget`, `asset-prefix`) and `e2e/trusted-types.spec.ts` | 7        | site-wide rules: themes, optics, touch targets, Trusted Types, motion, the asset prefix               |
+| `packages/sites`, `packages/account-menu`, `packages/settings-ui`                                                                                               | the rest | the shared pieces the site renders                                                                    |
 
 123 test files:
 
@@ -446,3 +530,9 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 - `packages/settings-ui/src/settings-scroll-anchor.test.ts`
 - `packages/settings-ui/src/settings-search.test.ts`
 - `packages/settings-ui/src/settings-view-memory.test.ts`
+
+## Defaults ledger
+
+- `SITE1`: a sign-in's `return` path is honoured only when it is a path on this site; anything else goes home.
+- `SITE2`: the site asks who is signed in once per page load.
+- `SITE3`: the last app a browser came from picks what New makes, never what the lists show.

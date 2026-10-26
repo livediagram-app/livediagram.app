@@ -1,6 +1,6 @@
 # Architecture: blueprint
 
-Derived from [architecture.md](../architecture.md) and [integrating-an-app.md](../integrating-an-app.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [architecture.md](../architecture.md) and [integrating-an-app.md](../integrating-an-app.md). The spec decides; this file only adds engineering precision, read from the code. Defaults are cited as `ARCn`. Paths are relative to the repository root.
 
 ## Domain and naming
 
@@ -12,6 +12,46 @@ Derived from [architecture.md](../architecture.md) and [integrating-an-app.md](.
 | Workspace proxy  | `@liveworkspace/sites/workspace-proxy` | The routers' one shared forwarding table                                  |
 | Workspace origin | `WORKSPACE_ORIGIN`                     | Which platform a router forwards to                                       |
 | Service binding  | `[[services]]`                         | A direct Worker-to-Worker call, inside the account                        |
+
+## Behaviour and state
+
+### How a request reaches a service
+
+1. On `liveworkspace.app` (and `staging.`), a Worker's `routes` path pattern wins over the site's custom domain, so
+   `/api/auth/*` reaches accounts, `/api/index*` the index, and so on (the table under "The services"); every other
+   path is the site.
+2. Between services, a call goes over a service binding (`[[services]]`, never leaving the account) where one is
+   declared, else over the public route.
+3. On an app's address, its router first answers its platform paths through `routeToWorkspace`
+   (`packages/sites/src/workspace-proxy.ts`), and everything else goes to the app's own Workers.
+
+### A router's forward (`routeToWorkspace`, in order)
+
+1. The first route whose `prefix` matches the path (as itself, anything under it, or a file beside it); none: `null`,
+   and the router carries on.
+2. The target is the path with `prefix` swapped for `target`, the query kept, on `WORKSPACE_ORIGIN` (unset is
+   production's). The fragment never leaves the browser.
+3. A request already carrying `X-Liveworkspace-Proxy`, or a target on this same host, is answered `508` (`router:
+already forwarded once` or `router: WORKSPACE_ORIGIN is this site`), so a misconfigured origin can't loop.
+4. Cookies by the route's mode: `drop` removes them; `flow` sends only the sign-in's own `lw_flow.`-prefixed cookies,
+   under their own names; `pass` sends them as they are.
+5. Headers set: `X-Liveworkspace-Proxy: <app>`, `X-Liveworkspace-Client-IP` from `CF-Connecting-IP`, and
+   `X-Forwarded-Host`. Method, body and `Authorization` come along; redirects are not followed.
+6. The answer: a `Location` inside a forwarded route is turned back to the app's address (`locationOnApp`); a
+   `Set-Cookie` is removed, except on a `flow` route, where each is renamed `lw_flow.<name>`, scoped to the route's
+   path, `HttpOnly`, `Secure`, `SameSite=Lax`, and capped at 900 s (a cleared cookie stays cleared).
+
+| Route         | Prefix → target                                            | Cookies |
+| ------------- | ---------------------------------------------------------- | ------- |
+| Explorer      | `/explorer` → `/explorer`                                  | drop    |
+| Site assets   | `/_liveworkspace` → `/_liveworkspace`                      | drop    |
+| Sign-in pages | `/sign-in`, `/sign-up`, `/consent` (with an OAuth request) | drop    |
+| Accounts API  | `/api/workspace/auth` → `/api/auth`                        | flow    |
+| Account API   | `/api/workspace/account` → `/api/account`                  | drop    |
+| Workbench     | `/api/workbench` → `/api/account/workbench`                | drop    |
+
+The index (`forwardToIndex`, `INDEX_ORIGIN`), Drive (`forwardToDrive`) and previews (`previewsTargetFor`) have their
+own forwards in the same file, each dropping the app's cookies and carrying the visitor's address.
 
 ## Interfaces and contracts
 
@@ -103,3 +143,35 @@ env var:
 
 The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_IP_HEADER`), set from
 `CF-Connecting-IP`, never from what the caller sent. `workspace-proxy.test.ts` holds all four routers to this.
+
+## Errors and edge cases
+
+| Case                                          | Answer                                      |
+| --------------------------------------------- | ------------------------------------------- |
+| A forward that arrives at a router again      | `508 router: already forwarded once`        |
+| `WORKSPACE_ORIGIN` naming the app itself      | `508 router: WORKSPACE_ORIGIN is this site` |
+| A redirect leaving the forwarded routes       | passed through as it is                     |
+| A malformed `Set-Cookie` name on a flow route | dropped                                     |
+
+## Testing
+
+| Test                                              | Pins                                                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `packages/sites/src/workspace-proxy.test.ts` (22) | every router's forwards: routes, cookies, loop guard, visitor address, redirects, the status page |
+| `packages/sites/src/previews-proxy.test.ts` (3)   | the previews forward and the share link's picture doors                                           |
+
+Each service's own tests are in its blueprint.
+
+## Constants and configuration
+
+`PRODUCTION_WORKSPACE_ORIGIN`, `PRODUCTION_INDEX_ORIGIN`, `PRODUCTION_DRIVE_ORIGIN`, `PRODUCTION_PREVIEWS_ORIGIN`
+`https://liveworkspace.app`; `WORKSPACE_PROXY_HEADER` `X-Liveworkspace-Proxy`; `WORKSPACE_CLIENT_IP_HEADER`
+`X-Liveworkspace-Client-IP`; `ACCOUNTS_ON_APP_PATH` `/api/workspace/auth`; `FLOW_COOKIE_PREFIX` `lw_flow.`;
+`FLOW_COOKIE_MAX_AGE_SECONDS` 900; `SITE_ASSET_PREFIX` `/_liveworkspace`; `DRIVE_PATH` `/api/drive`; `PREVIEWS_PATH`
+`/api/previews`; `STATUS_PATH` `/status`; `LOOP_DETECTED` 508 (`packages/sites/src/workspace-proxy.ts`). Each router's
+`WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars.
+
+## Defaults ledger
+
+- `ARC1`: a forward loop is answered `508 Loop Detected` as plain text, never retried.
+- `ARC2`: a sign-in's cookies live on an app's address for at most 15 minutes, whatever liveworkspace set.
