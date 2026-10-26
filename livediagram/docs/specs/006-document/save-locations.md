@@ -121,7 +121,7 @@ holds a copy that liveworkspace keeps in sync, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
 **livediagram** is synced like any other. Canvases in This Browser have no
 server copy and are not synced. The sync itself (connection, folder tree,
-rename, move, delete to Trash, "Open with") is liveworkspace's, specified in [Google Drive sync](../../../../liveworkspace/docs/drive.md), not
+rename, move, delete to Trash, "Open with") is liveworkspace's, specified in [Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md), not
 here.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))

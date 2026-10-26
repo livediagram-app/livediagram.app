@@ -36,7 +36,7 @@ the app's `brand-*` Tailwind ramp, so the accent is the app's; each app's `globa
 
 liveworkspace.app keeps none. Its old `/alternatives/<slug>` addresses redirect permanently (301) to the
 same slug on the app that answers it, and its `/alternatives` to `/compare`, a small page that points at
-each app's comparisons ([site.md](../../liveworkspace/docs/site.md)).
+each app's comparisons ([site.md](../../liveworkspace/docs/specs/010-site/site.md)).
 
 In the rules below, "us" is the app, and "document" is whatever that app calls the thing a person
 makes: a document (livediagram, livedocuments), a plan (liveplanner) or a design (livedesign).

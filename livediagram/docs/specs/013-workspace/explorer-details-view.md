@@ -7,6 +7,6 @@ livediagram keeps per-tab stats (`tab_stats`, `apps/api/src/db/tab-stats.ts`): e
 counts, the mode it was last written in and its stored size, kept by the canvas's own writes. It folds them into the
 summary a canvas pushes to the index (`PUT /app/items/:id/summary`, `apps/api/src/document-room/document-outbox.ts`),
 on idle and at most once a minute, so the Details view reads them with no request of its own. A canvas's preview
-image is liveworkspace's, `GET /api/previews/items/:id` (`liveworkspace/docs/previews.md`).
+image is liveworkspace's, `GET /api/previews/items/:id` (`liveworkspace/docs/specs/006-media/previews.md`).
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "What an item pushes". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "What an item pushes". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

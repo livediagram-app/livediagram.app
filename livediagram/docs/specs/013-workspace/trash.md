@@ -86,7 +86,7 @@ canvas but never destroys one; `list_trash` and `restore_document` are the way b
 
 ## Google Drive sync
 
-liveworkspace's [Google Drive sync](../../../../liveworkspace/docs/drive.md) maps Drive's bin onto this Trash: binning a canvas's
+liveworkspace's [Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md) maps Drive's bin onto this Trash: binning a canvas's
 file in Drive sends the canvas to the Trash, restoring it in Drive restores it, and emptying Drive's bin purges it,
 each through the index's own calls, which keep their guards (only a live canvas is trashed, only a trashed one
 restored or purged).
@@ -95,7 +95,7 @@ restored or purged).
 
 `Trash` · `Opened` · `Settings` from Settings' Trash row, and `Trash` · `Restored` from a trashed canvas's own card
 ([Telemetry](../017-telemetry/telemetry.md)). The delete itself is `Document` · `Deleted`. The Explorer's own Trash
-events are liveworkspace's ([telemetry.md](../../../../liveworkspace/docs/telemetry.md)).
+events are liveworkspace's ([telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).
 
 ## Decided trade-offs
 
@@ -107,6 +107,6 @@ events are liveworkspace's ([telemetry.md](../../../../liveworkspace/docs/teleme
 - **The image gallery still counts a trashed canvas as using its images.** It references them until the purge, and
   deleting such an image would break the canvas the moment it is restored.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows
 it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

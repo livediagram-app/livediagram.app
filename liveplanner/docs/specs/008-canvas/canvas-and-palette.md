@@ -37,7 +37,7 @@ the Explorer never shows docked or open on its own, and the status screens (dele
 Explorer and no menu button at all, only their card, whose own links reach the Explorer page.
 
 The panel is the platform's: `ExplorerPanel` from `@liveworkspace/explorer`, with the same lists, menus and dialogs as
-the `/explorer` page, read from liveworkspace's index ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).
+the `/explorer` page, read from liveworkspace's index ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 `components/panels/Explorer.tsx` hosts it in the editor's movable panel and hands it this app's parts: the open plan
 on top (read once from the index when the panel opens, with Rename and Trash), the header menu, the plan
 thumbnails, the share, Inbox and teams hosts, and the sign-in prompt as its notice

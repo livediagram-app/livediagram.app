@@ -35,7 +35,7 @@ retired and its three parts redistributed:
 
 Every avatar of a person in livedesign is the one shared `PictureDisc` (`@liveworkspace/ui`, through
 `@livedesign/ui`): their Google picture over their initials on their colour, the initials alone when there is no
-picture or it fails to load. The rules are liveworkspace's, the same in every app (liveworkspace/docs/accounts.md
+picture or it fails to load. The rules are liveworkspace's, the same in every app (liveworkspace/docs/specs/003-accounts/accounts.md
 "Profile pictures"):
 
 - **Source.** The picture is the one Google gave the account at its last Google sign-in; an account made with an
@@ -91,7 +91,7 @@ in their [Trash](../013-workspace/trash.md)**, which the dialog and the Danger Z
 run, so a person with more is told to try again. Team designs stay with the team.
 
 **Teams on deletion** are liveworkspace's: the accounts Worker removes the memberships and hands a team's designs on
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). When the index reports the
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams"). When the index reports the
 closed account (`personClosed`, `apps/api/src/routes/internal-items.ts`), livedesign removes what it keeps for them
 beside their designs (their images) and their name from each design of someone else's that names them.
 
@@ -187,7 +187,7 @@ Object are deliberately **not** wired (they'd be far too chatty).
 Sent by liveworkspace, not livedesign: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker
 tells each joined admin when an invitee accepts or declines, unless they have
-turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+turned `notifyInviteResponse` off ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
 the app the inviter signed up through. The switch stays in livedesign's
 Settings because it is a setting every app shares.

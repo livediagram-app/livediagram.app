@@ -153,7 +153,7 @@ A pass is a card headed by a solid role-coloured band (a stub down the left edge
   2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab document; on a single-tab document every pass opens every tab, so the term is left off), **Valid** for how long ("Forever" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the document has a share password.
   3. The other ways to hand it over, **Embed** ([Read-only embeds](../013-workspace/embeds.md)) and **Live image** ([Live image](../013-workspace/live-image-share.md), hidden while a password is set), with **Revoke** at the far edge.
 
-Passes are listed newest first. The dialog is the platform's: `ShareDialog` in `@liveworkspace/explorer` (`../packages/explorer/src/dialogs/ShareDialog.tsx`, its pieces under `dialogs/share/`), which the editor wraps with its Community tab in `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx` ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).
+Passes are listed newest first. The dialog is the platform's: `ShareDialog` in `@liveworkspace/explorer` (`../packages/explorer/src/dialogs/ShareDialog.tsx`, its pieces under `dialogs/share/`), which the editor wraps with its Community tab in `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx` ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 
 An **expired** pass keeps the same card, greyed: a muted header band, the URL struck through, a rose `Expired` stamp, and **Extend** + **Delete** in place of the hand-over actions.
 

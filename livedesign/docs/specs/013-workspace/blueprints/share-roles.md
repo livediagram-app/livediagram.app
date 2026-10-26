@@ -1,7 +1,7 @@
 # Share roles: blueprint
 
 Share links, their levels and who may reach a design are liveworkspace's index's
-([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the
+([One Explorer: contracts](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access)), and the
 Share dialog is the shared one from `@liveworkspace/explorer`. This blueprint covers what livedesign builds on them:
 the level on a session, the room's op gate and the participant content rule.
 
@@ -225,7 +225,7 @@ export function writeParticipantOp(
 ): Promise<ParticipantWriteResult>;
 ```
 
-REST: links are made on the index ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access));
+REST: links are made on the index ([One Explorer: contracts](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access));
 the api reads the session's level from the grant. `POST .../room-ticket` answers `RoomTicketResponse { ticket,
 adderKey? }`, the key only for a Participant.
 

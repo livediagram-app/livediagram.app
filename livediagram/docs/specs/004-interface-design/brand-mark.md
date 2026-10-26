@@ -97,4 +97,4 @@ Every copy of the mark (the React component, the favicons, the logo files in `ma
 email mark, the Apple icon and the social card) is drawn from one geometry and palette module, `@liveworkspace/brand`, which draws every app's logo in that app's
 colours; `@livediagram/ui` binds it to livediagram (`packages/ui/src/brand-app.ts`, `Brand.tsx`). Static files are regenerated from it
 and a test fails if one drifts. The One Explorer's rows show the same prism at rest in livediagram's accent as this app's
-mark ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).
+mark ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).

@@ -3,7 +3,7 @@
 **Status: built** for both scopes: the api, the pages, the pairing page and the CLI commands.
 
 **Where it runs.** Pairing, tickets and sessions are liveworkspace's, one service for every app in the accounts
-Worker ([Workbenches](../../../../liveworkspace/docs/workbench.md)). `/api/workbench/*` on livedesign's address is
+Worker ([Workbenches](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)). `/api/workbench/*` on livedesign's address is
 forwarded there with the same requests and answers, and the pairing page is liveworkspace.app's. livedesign keeps
 what is its own: the frame (`/embed/workbench`), the confinement of its API to a session's scope, checking a
 presented session with liveworkspace, and closing its rooms when a pairing ends.

@@ -35,4 +35,4 @@ control a tour would point at.
 
 None. There is no Tours section in Settings, and the tour events are listed in liveworkspace's
 `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts`
-([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)).
+([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).

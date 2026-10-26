@@ -1,6 +1,6 @@
 # Inbox
 
-The Inbox is liveworkspace's: one view in the shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)), over liveworkspace's index, listing what is outstanding for the reader across every liveworkspace app. It lists open actions assigned to the reader (My Actions) and by them (Assigned by Me), and unresolved threads they are in (Comments), each saying why it is there. The sidebar badge counts My Actions. The calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Inbox" and "What an item pushes"; the plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md).
+The Inbox is liveworkspace's: one view in the shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)), over liveworkspace's index, listing what is outstanding for the reader across every liveworkspace app. It lists open actions assigned to the reader (My Actions) and by them (Assigned by Me), and unresolved threads they are in (Comments), each saying why it is there. The sidebar badge counts My Actions. The calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox" and "What an item pushes"; the plan is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md).
 
 What livedesign does is feed it and open its rows:
 
@@ -11,7 +11,7 @@ What livedesign does is feed it and open its rows:
 
 ## How it reads, and what it can do
 
-The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Inbox"):
+The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox"):
 
 - **The list**: every row newest first under Today, Earlier This Week and Older, three lines each: who (semibold when it asks something of you) and its age; what it is; why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your design**, **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism and the item, and the teal **This Browser** pill for a design only this browser holds.
 - **The filter bar** over it: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device, beside the header's app filter.

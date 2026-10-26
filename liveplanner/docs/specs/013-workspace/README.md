@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) is the plan and [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what liveplanner still does.
+The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) is the plan and [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what liveplanner still does.
 
 - ./explorer-structure.md - when working on the Explorer page or the editor's Explorer panel: the shared `@liveworkspace/explorer` on liveworkspace.app, the `/explorer` redirect, This Browser, and the panel (moved)
 - ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers

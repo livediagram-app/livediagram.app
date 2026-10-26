@@ -3,7 +3,7 @@
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
 surfaces that use the rule own their own blueprints (the [Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)'s
 shape slots in livediagram; the shared Explorer's Home is liveworkspace's,
-[one-explorer.md](../../../../../liveworkspace/docs/one-explorer.md)); this one is the allocation they share.
+[one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); this one is the allocation they share.
 
 Scope, by file:
 

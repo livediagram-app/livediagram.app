@@ -262,7 +262,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
   - **Guest**: a year-long guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`liveplanner:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
   - **Account**: an account access token from signing in.
   - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
-- **Access is the index's.** Where a plan is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
+- **Access is the index's.** Where a plan is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/specs/004-index/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
 - Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). Signing in moves a guest's items to the account; the index does that, not liveplanner.
 
 ## Core principle: reuse over duplication

@@ -48,7 +48,7 @@ Out of this blueprint, cited where they touch images: the reference index
 import pipeline (`apps/live/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
 (`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
-the media service itself ([liveworkspace/docs/media.md](../../../../../liveworkspace/docs/media.md): the gallery, dedupe, caps, sniff, JPEG strip and its own sweep), account deletion and guest migration (`apps/api/src/db/account.ts`,
+the media service itself ([liveworkspace/docs/specs/006-media/media.md](../../../../../liveworkspace/docs/specs/006-media/media.md): the gallery, dedupe, caps, sniff, JPEG strip and its own sweep), account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
 
@@ -125,7 +125,7 @@ Guards run in this order; the first failure answers.
 originalName: originalNameOf(X-Image-Original-Name), sha256 })`. The service answers the hash
    dedupe, checks the caps, sniffs the bytes against the declared type, strips a JPEG's metadata,
    hashes, dedupes and stores, with the caps inside the row's insert so racing uploads cannot
-   together pass one ([media.md](../../../../../liveworkspace/docs/media.md) "Uploads"). Its
+   together pass one ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md) "Uploads"). Its
    refusals pass on as sent (403 `gallery_full` `{ reason, limit, current }`, 409
    `upload_conflict`, 415 `unsupported_type` / `malformed_jpeg`, 400), except a 401 (this api's key
    refused) or a 5xx, which log `[images] media service answered` and answer 503
@@ -175,7 +175,7 @@ Invariants:
 ### Retention
 
 Images in the media service are swept by the service once every app has told it which images
-its designs place ([media.md](../../../../../liveworkspace/docs/media.md) "Retention"). The
+its designs place ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md) "Retention"). The
 reference index's writers change `image_refs` in the design's own SQLite, whose triggers queue a
 media key in the design's `outbox` in the same transaction (a tab linked in or out too); the
 design's alarm sends its whole set (`pushDesignMediaRefs`, `complete: true`), and keeps the key to
@@ -311,7 +311,7 @@ read a 503 as `null` and `{}`.
 
 - **The media service** keeps each image (bytes, type, size, dimensions, `sha256`, original name,
   owner, app) and the gallery, across every app
-  ([media.md](../../../../../liveworkspace/docs/media.md)).
+  ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md)).
 - **`image_owners`**, in the design's own SQLite (`design-room/design-schema.ts`): `image_id`
   TEXT PK, `owner_id` TEXT (as the service names the owner, or `''` for an id it does not know),
   `WITHOUT ROWID`. Learned once per image when the design first judges it; read by the placement

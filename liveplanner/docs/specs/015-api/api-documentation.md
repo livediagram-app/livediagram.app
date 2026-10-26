@@ -124,7 +124,7 @@ path-template)` parity described under "Drift test", run in the api worker's
   unique.
 - **Media types** — a success body is `application/json` unless the entry sets
   `responseMediaType`; the tab render (`GET /projects/{id}/tabs/{tabId}/render.svg`) declares `image/svg+xml`. A
-  project's previews are liveworkspace's ([previews.md](../../../../liveworkspace/docs/previews.md)), not this api's.
+  project's previews are liveworkspace's ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)), not this api's.
 
 The served project validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;

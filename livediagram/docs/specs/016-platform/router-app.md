@@ -45,7 +45,7 @@ Two properties keep it safe. It sits **after** the live-route check, and `/explo
 Signing in and creating an account stay on livediagram.app's address: the router serves liveworkspace's
 sign-in pages ahead of everything above, through the shared helper
 (`routeToWorkspace` and `workspaceRoutes` in `@liveworkspace/sites/workspace-proxy`;
-[liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#signing-in-on-the-apps-own-address)):
+[liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#signing-in-on-the-apps-own-address)):
 
 | Path                                                                   | Forwards to                                                                    |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -63,7 +63,7 @@ session (so the other apps sign in without a click) and comes straight back to `
 ## The Explorer on livediagram.app
 
 The router asks liveworkspace's shared helper first (`routeToWorkspace`,
-[liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+[liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)).
 `/explorer/*`, `/api/workspace/account/*`, the signed sign-in pages, `/api/workspace/auth/*`, the site's assets
 (`/_liveworkspace/*`) and `/api/workbench/*` are liveworkspace's, served at this address from `WORKSPACE_ORIGIN`
 (production's when unset; staging and local development name their own). The Explorer is liveworkspace's one

@@ -8,7 +8,7 @@
 A **repository link** binds a directory in a code repository to documents in livediagram, so the people and agents
 working in that repository find, read and change its diagrams without leaving it. livediagram is the **single source
 of truth**: what a repository holds of a document is a **snapshot** of it at a known revision, never its home, as
-[Google Drive sync](../../../../liveworkspace/docs/drive.md) is a copy and never a location.
+[Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md) is a copy and never a location.
 
 ## Why
 

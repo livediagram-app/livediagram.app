@@ -4,4 +4,4 @@
 
 Deleting the plan open in the editor leaves for the Explorer on liveworkspace.app (`?trashed=<id>&title=`), which says so once and offers Undo. An editor left open on a plan that was trashed has its saves refused (410 `project_trashed`) and shows the deleted state. API clients can still list, restore and delete trashed plans at `/api/trash` ([API](../015-api/api.md)), which reads and writes the index.
 
-The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The plan is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

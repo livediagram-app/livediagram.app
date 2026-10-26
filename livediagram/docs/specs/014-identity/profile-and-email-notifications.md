@@ -21,7 +21,7 @@ preference, so the email switches are found where every other setting is.
   (which shows when there is none or it fails to load); a person who turns **Show My Google Picture** off in
   Settings › Profile still sees their own picture here and in the header, but presence, cursors and everything others
   see show the initial. A guest sees a card explaining that they are working as a guest. The picture's rules are
-  liveworkspace's (liveworkspace/docs/accounts.md "Profile pictures"): only account sessions are sent anyone's
+  liveworkspace's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"): only account sessions are sent anyone's
   picture, never a guest or a link visitor.
 - **Email notifications** are the seven switches in **Notifications > Email** (§3). Absent unless email is
   configured AND the reader is signed in, since a guest has no address to send to; a guest sees one row saying to

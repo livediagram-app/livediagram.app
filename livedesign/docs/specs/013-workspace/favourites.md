@@ -4,7 +4,7 @@ Status: shipped, on liveworkspace's index and the shared Explorer ([`@liveworksp
 
 A **Favourite** / **Unfavourite** toggle on every item's menu, and a **Favourites** view at
 `/explorer/favourites` that collects every starred design, personal or team, in one place. A star is personal: one
-row per person and item in liveworkspace's index (`GET /favourites`, `PUT` / `DELETE /favourites/:itemId`; [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
+row per person and item in liveworkspace's index (`GET /favourites`, `PUT` / `DELETE /favourites/:itemId`; [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "Folders, favourites, defaults"), unlimited, granting no access, and listed only while the person can still reach
 the item. The view, the star beside a starred name, the location chip and the optimistic toggle are the shared
 Explorer's. The view is a row in the sidebar's More group and in the editor's Explorer panel.

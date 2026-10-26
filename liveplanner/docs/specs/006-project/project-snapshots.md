@@ -5,13 +5,13 @@ opening it; the **live image** a share link embeds in a README or wiki
 ([Live image share link](../013-workspace/live-image-share.md)); and the **share card** a pasted link previews with
 ([Share-link previews](../013-workspace/share-link-previews.md)).
 
-All three are liveworkspace's previews ([previews.md](../../../../liveworkspace/docs/previews.md)): one service, built once for every app, stores them,
+All three are liveworkspace's previews ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)): one service, built once for every app, stores them,
 decides when they are stale, checks who may see them against the index and serves them. liveplanner only **renders
 for the platform**: it draws a project when the service asks, through its export door, and keeps nothing.
 
 ## What liveplanner draws
 
-The export door (`GET /api/internal/items/:id/export?format=svg[&tab=<id>]`, [previews.md](../../../../liveworkspace/docs/previews.md) "The export door")
+The export door (`GET /api/internal/items/:id/export?format=svg[&tab=<id>]`, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "The export door")
 is answered by the plan's Durable Object, where the content is (`plan-room.ts` `exportImage`):
 
 - The **first tab**, or the tab asked for, drawn with `renderElementsToSvg` (`@liveplanner/project`, the same DOM-free

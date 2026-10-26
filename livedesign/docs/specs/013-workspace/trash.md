@@ -168,7 +168,7 @@ Object drops its storage, tabs, changesets and collaboration ledger included
 ([API](../015-api/api.md) "Purging a room"), and the api deletes its snapshot
 from R2. The index keeps a tombstone until the api confirms, and retries a
 missed one, so a purge that fails once still lands
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Purging").
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Purging").
 
 A purge is therefore due 30 days after deletion and happens at the index's next
 daily run after that; a design can sit in the Trash for up to a day beyond its 30.
@@ -216,7 +216,7 @@ permanent delete stays with the person and the REST API.
 
 Trashing, restoring and purging are the index's operations, each with its own guard (only a live design is
 trashed, only a trashed one restored or purged), so a caller uses them directly without re-checking state
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items"). The api reaches
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items"). The api reaches
 them for API clients in `apps/api/src/routes/trash.ts`, and a purge tells the design's Durable Object to drop its
 content.
 

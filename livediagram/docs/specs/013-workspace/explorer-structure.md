@@ -4,7 +4,7 @@ The Explorer is liveworkspace's: the shared package [`@liveworkspace/explorer`](
 built once by liveworkspace.app and shown at livediagram's own address. livediagram's router answers `/explorer/*` by
 fetching the same page from liveworkspace.app, with the address bar unchanged (`livediagram.app/explorer/recent`), so
 the person's session, This Browser's canvases and livediagram's colours come along
-([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "The Explorer on each app's address"). The editor
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "The Explorer on each app's address"). The editor
 serves no `/explorer` page of its own; its links to it go through `explorerHref` (`../packages/workbench/src/lib/explorer-href.ts`).
 
 ## Views
@@ -32,7 +32,7 @@ hosts, named below.
   ([Share-link previews](share-link-previews.md)). `itemHref` and `shareUrl` in `apps/editor/lib/explorer-host.ts`.
 - **New.** The `/new` flow, filed where it was pressed (`?folder=`, `?team=`) ([Default folders](default-folders.md)).
 - **What it makes.** Home's hero pictures livediagram's kinds (Flowchart, Mind Map, Whiteboard, Workshop), each
-  starting its template through `/new?template=` (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
+  starting its template through `/new?template=` (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
 - **The Library.** The person's **Image Gallery** and **Shape Libraries**, read through this site's API, and
   **Import from**, whose buttons open this site's `/import` page for the source, which imports where New was pressed
   and comes back (`apps/editor/lib/explorer-library-host.tsx`). Shape Libraries' tiles are drawn by
@@ -69,7 +69,7 @@ view says so.
   Browser** row with their count, shown while there are some, opening the Explorer's own This Browser view
   (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened, each a card
   like the rest with the This Browser badge, its menu (Open, Sync Canvas) and its drag (the Trash or a folder,
-  [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "This Browser in Jump Back In"). On
+  [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In"). On
   liveworkspace.app, which cannot read this browser's storage for livediagram, the row links to `/explorer/offline` here.
 - **The editor's Explorer panel** has This Browser as a view of its own: a rail entry under More with the count,
   shown only while there are some, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
@@ -81,6 +81,6 @@ view says so.
   over `apps/editor/hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and
   asks them to confirm.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows
 it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

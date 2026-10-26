@@ -609,7 +609,7 @@ The MCP worker reads three bindings and two out-of-band values. Bindings
 | `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                   |
 
 `TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
-(liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
+(liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
 lets them speak for livedesign.app. It **must match** the api worker's and the service's
 `TELEMETRY_KEY_LIVEDESIGN`; a mismatch is silent (the posts are simply not stored), so the deploy workflow
 drives both workers from one GitHub secret. `TELEMETRY_URL` names the service (unset is production's).

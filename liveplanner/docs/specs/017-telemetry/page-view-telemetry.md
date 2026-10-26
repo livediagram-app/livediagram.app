@@ -131,7 +131,7 @@ article say so.
 
 ## Dashboard
 
-The dashboard is liveworkspace's ([liveworkspace telemetry](../../../../liveworkspace/docs/telemetry.md)). Its Pages
+The dashboard is liveworkspace's ([liveworkspace telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). Its Pages
 view reads page views **by app**: Marketing, Live (the editor app), Help and Dashboard. The app is derived from the
 path's first segment using the same live route-segment list the router routes by (shared from
 `@liveplanner/api-schema`, so the dashboard and router can't disagree about which app serves a path).

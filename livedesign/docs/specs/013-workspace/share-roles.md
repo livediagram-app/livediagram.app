@@ -81,12 +81,12 @@ Ownership is a set of powers, held by the design's **owner**: its creator, or wh
 library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner (and, on a team
 design, every joined member); delete, Trash and moves stay with the owner and joined team members. No level grants
 any of them. Who owns an item and who may reach it is liveworkspace's index's
-([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 
 ## Share links
 
 - Links are liveworkspace's index's: one link carries a level, `view`, `participate` or `edit`, and optionally one
-  tab ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access").
+  tab ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Sharing and access").
   The shared Share dialog (`LEVEL_PASS` in `packages/explorer/src/dialogs/share/parts.tsx`) offers the three in this
   order: **Editor** ("Works with you in real time."), **Participant** ("Comments, votes and works items. Can't
   reshape it.") and **Viewer** ("Watches along. Can't comment or change a thing."), a new pass starting as an

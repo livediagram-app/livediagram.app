@@ -24,7 +24,7 @@ canvas. A project in This Browser says what it is on the project itself: the edi
 
 Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
 A project in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
-browser's projects beside the index's ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md),
+browser's projects beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
 [Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
@@ -83,7 +83,7 @@ person (liveplanner).
 
 Where a plan goes within liveplanner is chosen with the shared Explorer's `PlacementBrowser`
 (in `@liveworkspace/explorer`), in its Move dialog
-([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 It renders in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New

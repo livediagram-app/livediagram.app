@@ -139,4 +139,4 @@ never sees it (the editor is read-only for the tours' purposes: `isReadOnly`).
 
 Each tour's funnel is its own (its spec says which). The generic tour tokens (`UI`·`Opened`/`Closed`·`TourOffer`,
 `UI`·`Started`·`Tour`, `UI`·`View`·`TourStep<Id>`, `UI`·`Ended`·`TourCompleted`/`TourSkipped`,
-`UI`·`Toggled`·`TourSeenOn`/`TourSeenOff`) are not sent; they are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)).
+`UI`·`Toggled`·`TourSeenOn`/`TourSeenOff`) are not sent; they are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).

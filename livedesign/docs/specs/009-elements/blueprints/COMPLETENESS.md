@@ -4,7 +4,7 @@
 
 - [x] Domain and naming
 - [x] Behaviour and state
-- [ ] Interfaces and contracts: the media service's (liveworkspace/docs/media.md)
+- [ ] Interfaces and contracts: the media service's (liveworkspace/docs/specs/006-media/media.md)
 - [x] Data and persistence (in Scope and Writers)
 - [x] Errors and edge cases
 - [ ] Security and trust: in the images blueprint (placement grants)

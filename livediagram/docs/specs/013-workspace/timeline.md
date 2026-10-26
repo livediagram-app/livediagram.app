@@ -3,7 +3,7 @@
 The record of what happened to the canvases a person can reach, and their teams' canvases, shown in the shared Explorer at
 `/explorer/timeline`. liveworkspace's index keeps it for every app; livediagram reports who edited which canvas, and the
 view is rendered through [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The calls and types are
-in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Timeline"; the help article
+in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Timeline"; the help article
 is `apps/help/app/explorer/timeline`.
 
 ## 1. What is recorded
@@ -117,4 +117,4 @@ liveworkspace.app Explorer and the editors' Explorer panel open the same one.
   loaded events group in well under a frame (a test keeps a budget).
 
 A team's events are on every member's Timeline. An API token's expiry warning is the liveworkspace account's,
-sent by email ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), and is no Timeline row.
+sent by email ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)), and is no Timeline row.

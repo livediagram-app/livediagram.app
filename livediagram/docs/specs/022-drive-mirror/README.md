@@ -6,4 +6,4 @@ livediagram has no Drive mirror of its own: Google Drive sync is a liveworkspace
 covers every app, livediagram included; livediagram keeps only the shared Cloud Sync row in Settings and the
 Explorer's marks, both from shared packages.
 
-- [liveworkspace/docs/drive.md](../../../../liveworkspace/docs/drive.md) - when working on Google Drive sync in any way
+- [liveworkspace/docs/specs/005-drive/drive.md](../../../../liveworkspace/docs/specs/005-drive/drive.md) - when working on Google Drive sync in any way

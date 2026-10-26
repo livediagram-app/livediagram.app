@@ -3,7 +3,7 @@
 API tokens (§3) let external, programmatic callers use the REST API, and every input is validated (§5). There is no
 guest header (§4): a guest is a liveworkspace guest token, checked like an account's
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)). API tokens themselves are minted, stored and
-revoked by liveworkspace's accounts service ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md));
+revoked by liveworkspace's accounts service ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md));
 this app resolves them and enforces what they allow.
 
 ## 1. Goal
@@ -39,7 +39,7 @@ or the degrade-never-break rule ([Business model + licence](../002-project-scope
 
 ## 3. Design: API tokens
 
-**API tokens belong to the liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+**API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
 MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how liveplanner uses them; where it describes liveplanner minting, listing or
@@ -52,7 +52,7 @@ storing tokens itself, the account-level design below supersedes it.
   with `Retry-After: 5`.
 - **No copy.** liveplanner keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
-  it when it is revoked ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
+  it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
@@ -82,7 +82,7 @@ storing tokens itself, the account-level design below supersedes it.
 ### 3.2 Storage (liveworkspace accounts)
 
 liveplanner stores no tokens and has no D1. The table is the liveworkspace accounts service's
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)); as first designed, its shape was:
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)); as first designed, its shape was:
 
 ```
 api_tokens(

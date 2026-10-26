@@ -56,7 +56,7 @@ Ids a collaborator can see are not credentials:
 
 ## 3. Design: API tokens
 
-**API tokens belong to the liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+**API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
 MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how livedesign uses them; where it describes livedesign minting, listing or
@@ -69,7 +69,7 @@ storing tokens itself, the account-level design below supersedes it.
   with `Retry-After: 5`.
 - **No copy.** livedesign keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
-  it when it is revoked ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
+  it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
@@ -307,7 +307,7 @@ dependency beyond the optional sign-in that teams already need.
 ## 4. Guests and grants
 
 **A guest is a liveworkspace guest** ([Auth + guest access](../014-identity/auth-and-guest-access.md)
-"Hybrid identity"; liveworkspace/docs/accounts.md "Guests"). The editor fetches
+"Hybrid identity"; liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). The editor fetches
 a year-long guest token from the accounts site through the api's
 `GET /api/auth/guest` handoff, keeps it in `localStorage` under
 `livedesign:v2:guest-token`, and sends it as `Authorization: Bearer`, exactly
@@ -320,7 +320,7 @@ is as hard to forge as an account's, and nothing a collaborator can read (a
 on the liveworkspace index (place, sharing, Trash), with each design's content in
 its own Durable Object ([API app](api.md)). The index answers who may do what to
 a design as a ten-minute grant naming the design, the level and the tab
-(liveworkspace/docs/one-explorer-contracts.md "Grants"). The editor holds it,
+(liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"). The editor holds it,
 renews it a minute before it lapses, and sends it as `X-Index-Grant`
 (`apps/live/lib/api/design-grants.ts`); the api checks it offline, or fetches one
 for the caller when none was sent (`apps/api/src/routes/design-grant.ts`). The

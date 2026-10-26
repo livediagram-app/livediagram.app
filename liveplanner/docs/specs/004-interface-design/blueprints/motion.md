@@ -159,7 +159,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   `FeatureCategoryHero` sets `--enter-delay` to `min(index × ENTER_BEAT_MS, 130)`, where
   `ENTER_BEAT_MS` is 35.
 - The telemetry dashboard is liveworkspace's and keeps its motion there
-  ([liveworkspace/docs/telemetry.md](../../../../../liveworkspace/docs/telemetry.md)).
+  ([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).
 
 Canvas and content durations above the ceiling live in their own stylesheets, which the guard does not read as
 chrome:

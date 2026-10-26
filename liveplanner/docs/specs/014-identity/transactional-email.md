@@ -1,7 +1,7 @@
 # Transactional email
 
 **Status: in progress.** Optional. The api worker sends a small set of account emails through
-Cloudflare Email Service, as every liveworkspace app does ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+Cloudflare Email Service, as every liveworkspace app does ([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
 There is no third-party provider and no API key: the worker's `send_email` binding, `EMAIL`, is the
 credential. The feature is **entirely gated on that binding**: a deployment without it is inert —
 no sends, no new request work — and everything else behaves exactly as before. Guests and the editor stay
@@ -11,7 +11,7 @@ account-free and never receive email.
 
 **Onboarding — sent by liveworkspace, not here.** The welcome, activation nudge,
 week 1, week 2 and win-back series is one per liveworkspace account, sent by the
-accounts Worker for every app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+accounts Worker for every app ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Onboarding emails"), which also counts those sends. liveplanner keeps no
 lifecycle table and runs no sweep; it reports when someone's plan is saved
 (`reportActivity`, the newest save of a plan they own, pushed from the plan's
@@ -39,10 +39,10 @@ room at most once a minute) so the series knows who is active.
 5. **API-token expiry** — not sent by liveplanner: API tokens belong to the
    liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
    and liveworkspace warns the owner a week before one expires, for every app
-   ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Expiry warnings").
+   ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Expiry warnings").
 6. **Someone joined my plan** (opt-out `notifyProjectJoin`) — a signed-in person
    opened one of the owner's plans through a share link for the first time. The
-   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
    "Notices"), and the plan's room emails the owner, at most once a plan per 15
    minutes. Never for a guest or the owner.
 7. **Milestones** (opt-out `notifyMilestones`) — the owner's **tenth plan** (the

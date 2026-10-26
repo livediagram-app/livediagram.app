@@ -39,7 +39,7 @@ every caller, so a window and its export never ask again on a timer.
 A window added by a paste or duplicate counts as `Element·Added·TabWindow` (`lib/element-telemetry.ts`). It sends
 no events of its own, and `UI·Used·TabWindowOpen` is listed in liveworkspace's
 `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts`
-([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)).
+([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)).
 
 ## Testing
 

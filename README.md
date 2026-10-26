@@ -5,16 +5,21 @@ livedesign, plus what they share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
-liveworkspace/   the platform's own apps: the liveworkspace.app site, accounts (sign-in), telemetry and Community
+liveworkspace/   the platform: the liveworkspace.app site, its services (accounts, index, drive, media,
+                 community, telemetry, status), the migrate tool, and its specs (liveworkspace/docs/specs)
 livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
-docs/            how this repo is laid out and where it's heading
+docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 ```
 
-Read [docs/structure.md](docs/structure.md) first: it covers what's shared, what isn't yet, and
-the order things are moving in.
+Read [docs/structure.md](docs/structure.md) first: it covers what's shared, what each product keeps, and
+the order the sharing was done in.
+
+Every product and the platform keeps its specs and blueprints in its own `docs/specs/`
+(liveworkspace's are [liveworkspace/docs/specs](liveworkspace/docs/specs/README.md)). A change updates the
+spec first, then the blueprint, then the code.
 
 ## Working in it
 
@@ -26,13 +31,15 @@ corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
 corepack pnpm dev:documents      # livedocuments' apps, on the 33xx ports
 corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
-corepack pnpm dev:workspace      # liveworkspace.app on :3000, with its five APIs behind it
+corepack pnpm dev:workspace      # liveworkspace.app on :3000, with its seven services behind it
 corepack pnpm dev:site           # liveworkspace.app's pages alone on :3000
 corepack pnpm dev:accounts       # the accounts API alone on :8787
 corepack pnpm dev:telemetry      # the telemetry API alone on :8790
 corepack pnpm dev:community      # the Community API alone on :8791
 corepack pnpm dev:media          # the media API alone on :8792
 corepack pnpm dev:index          # the index API (One Explorer) alone on :8793
+corepack pnpm dev:status         # the status Worker alone on :3010
+corepack pnpm dev:drive          # the Google Drive mirror alone on :3011
 corepack pnpm typecheck          # everything; or inside a product folder, just that product
 ```
 

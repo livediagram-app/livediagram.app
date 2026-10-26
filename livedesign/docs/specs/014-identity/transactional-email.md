@@ -2,7 +2,7 @@
 
 Status: shipped. Optional: on wherever the `EMAIL` binding is declared. The api worker sends a small set of account and
 notification emails through Cloudflare Email Service, the platform's one email path
-([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)),
+([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)),
 it is **entirely gated on configuration**: when the `EMAIL` binding is absent the whole feature is inert — no
 sends, no new request work — and everything else behaves the same. Guests and the canvas stay
 account-free and never receive email.
@@ -12,7 +12,7 @@ account-free and never receive email.
 The **onboarding series** (welcome, week-1 and week-2 tips, the activation
 nudge and win-back) is not livedesign's: liveworkspace's accounts Worker
 sends one series per account, whichever app it signed up through
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Sign-ups and milestones per app"), and reads the shared `notifyTips` setting
 before each. livedesign reports what it takes to schedule it: a sign-up
 sighting (§4) and the owner's activity (§5).
@@ -21,7 +21,7 @@ Teams and API tokens belong to the liveworkspace account
 ([Teams](../013-workspace/teams.md), [Public API + tokens](../015-api/public-api-and-tokens.md)), and so
 do their emails: team invitations, their reminders and Decline links, the answer an invitation's
 admins are told, and the warning a week before an API token expires all come from the accounts Worker
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams", "API tokens").
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams", "API tokens").
 
 livedesign sends the rest, two kinds:
 
@@ -73,7 +73,7 @@ help article.
   binding is the credential.
 - `EMAIL_FROM` (plain var) — the From identity, a bare address or `Name <address>`. Set to
   `livedesign <hello@livedesign.app>` in production and staging, which is also the default. Its domain must be
-  onboarded to Email Service on the liveworkspace account ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+  onboarded to Email Service on the liveworkspace account ([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
   Default `https://livedesign.app`.
 

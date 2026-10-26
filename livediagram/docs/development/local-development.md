@@ -71,7 +71,7 @@ The editor opens without any auth setup: run `corepack pnpm dev:diagram` and ope
 ## The Community locally
 
 The Community's listings live in liveworkspace's Community service, not this api
-([liveworkspace/docs/community.md](../../../liveworkspace/docs/community.md)). Run it with
+([liveworkspace/docs/specs/007-community/community.md](../../../liveworkspace/docs/specs/007-community/community.md)). Run it with
 `corepack pnpm dev:community` from the monorepo root (`:8791`, after its `db:migrate:local`), then:
 
 ```sh
@@ -161,7 +161,7 @@ Without these set: nobody can sign in, and there are no guests either, because a
 
 ### The index
 
-The Explorer, sharing, access, the Trash and the Timeline are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livediagram-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server.
+The Explorer, sharing, access, the Trash and the Timeline are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/specs/004-index/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livediagram-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server.
 
 ## Running the CLI from source (optional)
 
@@ -202,11 +202,11 @@ pnpm --filter @livediagram/editor exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveworkspace/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/workbench.md](../../../liveworkspace/docs/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../liveworkspace/docs/specs/011-workbench/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
 
 ## Google Drive sync locally (optional)
 
-Google Drive sync is liveworkspace's service, not livediagram's ([liveworkspace/docs/drive.md](../../../liveworkspace/docs/drive.md)):
+Google Drive sync is liveworkspace's service, not livediagram's ([liveworkspace/docs/specs/005-drive/drive.md](../../../liveworkspace/docs/specs/005-drive/drive.md)):
 run it from `liveworkspace/apps/drive` as that page says. The router sends `/api/drive/*` to it (`DRIVE_ORIGIN` in
 `apps/router/wrangler.toml`), and the api needs only `DRIVE_KEY` in `apps/api/.dev.vars` for the service's export and
 import doors.

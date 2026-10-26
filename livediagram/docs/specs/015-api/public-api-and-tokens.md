@@ -85,7 +85,7 @@ closed the escalation. The fix is [§4](#4-guest-identity-a-verified-guest-token
 
 ## 3. Design: API tokens
 
-**API tokens belong to the liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+**API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
 MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how livediagram uses them; where it describes livediagram minting, listing or
@@ -98,7 +98,7 @@ storing tokens itself, the account-level design below supersedes it.
   with `Retry-After: 5`.
 - **No copy.** livediagram keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
   liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
-  it when it is revoked ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
+  it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
@@ -124,7 +124,7 @@ storing tokens itself, the account-level design below supersedes it.
 ### 3.2 Storage
 
 livediagram stores no token and has no database to store one in. liveworkspace keeps each token (its hash, owner,
-name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "API tokens"). What hangs off a token, a workbench pairing or session, is liveworkspace's too, which ends it with the token
 ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 

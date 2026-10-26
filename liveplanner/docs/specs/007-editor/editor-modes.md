@@ -92,7 +92,7 @@ A stored tab with `kind: 'whiteboard'` reads as a general tab; its elements, bac
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 There is no mode switch, so `Editor` · `Changed` · `Mode<Mode>`, `Tab` · `Changed` · `PageFitToContent` and
-`UI` · `Used` · `StartOtherMode` are not sent; the retired ones are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)). Default folders report the one remaining mode key as
+`UI` · `Used` · `StartOtherMode` are not sent; the retired ones are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)). Default folders report the one remaining mode key as
 `DefaultModePlan`.
 
 ## Non-goals

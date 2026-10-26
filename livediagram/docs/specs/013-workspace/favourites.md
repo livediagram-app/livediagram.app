@@ -5,7 +5,7 @@ across every app, unlimited. The shared Explorer's **Favourite** and **Unfavouri
 view (`/explorer/favourites`, personal and team stars together) read and write the index. A star is personal: starring
 a document in a team's library stars it for nobody else. livediagram keeps no stars of its own.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites,
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Folders, favourites,
 defaults". The Explorer that shows it is the shared package,
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

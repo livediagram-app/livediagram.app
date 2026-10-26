@@ -7,8 +7,8 @@ Document or Design). It looks and behaves like livediagram's Explorer, in the ho
 liveplanner's. Its data comes from the index
 through `@liveworkspace/index-client`.
 
-The plan is [one-explorer.md](../../liveworkspace/docs/one-explorer.md). The calls it makes are in
-[one-explorer-contracts.md](../../liveworkspace/docs/one-explorer-contracts.md).
+The plan is [one-explorer.md](../../liveworkspace/docs/specs/004-index/one-explorer.md). The calls it makes are in
+[one-explorer-contracts.md](../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md).
 
 ## Use
 
@@ -218,7 +218,7 @@ the team's name, or Shared with you (the index keeps no names, so a sharer is no
 
 ### `<SearchPanel>` (`@liveworkspace/explorer/search-panel`)
 
-The Search panel a host's Search button and Cmd/Ctrl+K open (liveworkspace/docs/site.md "The Explorer"): one field
+The Search panel a host's Search button and Cmd/Ctrl+K open (liveworkspace/docs/specs/010-site/site.md "The Explorer"): one field
 over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`).
 Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
 
@@ -232,7 +232,7 @@ Props: `client`, `app?`, `itemHref`, `teams?`, `entries?`, `basePath?`, `renderA
 ## Teams
 
 A team is the account's, the same in every app, and it is made and run here, wherever the Explorer shows: the page
-and the editor's panel ([one-explorer.md](../../liveworkspace/docs/one-explorer.md#teams-are-run-in-the-explorer)
+and the editor's panel ([one-explorer.md](../../liveworkspace/docs/specs/004-index/one-explorer.md#teams-are-run-in-the-explorer)
 has the journeys). The host hands over the operations as a `TeamsHost`, as it does `share` and `inbox`:
 
 ```ts
@@ -290,7 +290,7 @@ link, nor one being renamed) drags from its row, card or Details row.
   own folders, which also drags, goes through Delete Folder and its confirmation. Never red: the Trash is undoable.
   A live region reads the Trash's words as they change.
 - **An item kept only in this browser.** Its Jump Back In card drags too, through This Browser's own verbs
-  (liveworkspace/docs/one-explorer.md "This Browser in Jump Back In"). On the Trash it is deleted for good after a
+  (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser in Jump Back In"). On the Trash it is deleted for good after a
   confirmation where the host has `remove`; elsewhere a toast says to open it to delete it. On a folder, My Work or
   a team it asks to sync it to the account first: in place with `sync` (then moved there), or the page's hand-over
   with `syncHref`; with neither, a toast says to sign in and sync it first. Its menu (`ThisBrowserItemMenu`) has
@@ -307,13 +307,13 @@ Also exported: `explorerPath`, `viewFromLocation`, `kindWords`, and the types ab
 ## What you can make, on Home's hero
 
 Home's hero pictures the kinds of work the filtered app makes (`WorkKinds`, `src/hero/WorkKinds.tsx`), from one table,
-`WORK_KINDS` (`src/hero/work-kinds.ts`): four per app, each a name, the template that starts it and its picture from
+`WORK_KINDS` (`src/hero/work-kinds.tsx`): four per app, each a name, the template that starts it and its picture from
 `@liveworkspace/ui/work-art`. Under All, one per app (its first). Each tile wears its own app's brand ramp
 (`BRAND_APPS[app].ramp` from `@liveworkspace/brand`, set as `--wk-*` on the tile and mapped onto `--color-brand-*` by
 `.lw-work-art` in `explorer.css`, which also turns the pictures' paper and ink for dark), so the colours are right on
 any host and under All. The layout is the same for every app: two by two in the hero's right column from `lg`, four
 across under the search field below that, a phone included. The rules are in
-[one-explorer.md](../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero".
+[one-explorer.md](../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero".
 
 ## The sidebar
 

@@ -5,7 +5,7 @@
 > now superseded by [Design SVG snapshots](../006-design/design-snapshots.md) — read it for the authoritative behaviour:
 >
 > - **liveworkspace's, not the api's.** The image is one of liveworkspace's previews
->   ([Previews](../../../../liveworkspace/docs/previews.md)): the router sends the address to the media service,
+>   ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): the router sends the address to the media service,
 >   which stores the picture, keeps it fresh against the design's last save and checks the link with the index.
 >   livedesign only draws it, through its export door. One picture, shared with the Explorer thumbnail.
 > - **Renderer already shared.** The "main work" below (extracting the renderer

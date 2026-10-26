@@ -1,6 +1,6 @@
-# How the monorepo is laid out, and where it's heading
+# How the monorepo is laid out
 
-## Today
+## The layout
 
 ```
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
@@ -53,18 +53,21 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
-│  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /status, /sign-in
-│  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
+│  ├─ apps/site                liveworkspace.app, one static site: the front door, /explorer, /telemetry, /status, /sign-in
+│  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
+│  ├─ apps/drive               liveworkspace.app/api/drive: the Google Drive mirror for every app, one Durable Object per person
+│  ├─ apps/migrate             the one-off move from the historical livediagram.app, run from a laptop, never deployed
+│  ├─ docs/specs               the platform's specs and blueprints, one category per service
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
-├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
+├─ livediagram/                imported with full history; Diagram, Draw, Workshop
 │  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livediagram/*
-├─ liveplanner/                imported with full history (main at d5c8bed2); Plan
+├─ liveplanner/                imported with full history; Plan
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @liveplanner/*
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
@@ -86,9 +89,9 @@ livedesign was forked from livepages (`livepages-phase-2` at `1eb2877a5`) on 202
 logo and wireframe pages, plus the photo pages ported from livediagram. What it makes is a design, never
 a document. Logos and wireframes then left livedocuments, which keeps articles, slides and infographics.
 
-liveplanner was forked from livediagram on 2026-10-21, so today most of it is a renamed copy.
-I compared each file with the product name ignored, and these counts are from that (taken before Plan left
-livediagram, so `packages/items` and `packages/sheets` are liveplanner's alone now):
+liveplanner was forked from livediagram on 2026-10-21. At the fork, comparing each file with the product name
+ignored gave these counts (taken before Plan left livediagram, so `packages/items` and `packages/sheets` are
+liveplanner's alone now). They are why the sharing below was done:
 
 |                                                                                                  | identical | changed | only in one |
 | ------------------------------------------------------------------------------------------------ | --------- | ------- | ----------- |
@@ -100,12 +103,12 @@ livediagram, so `packages/items` and `packages/sheets` are liveplanner's alone n
 | `packages/sheets`                                                                                | 108       | 20      | 5           |
 | `api-client`, `oxlint-config`, `prettier-config`, `render-png`, `source-ast`, `telemetry-client` | all       | 0       | 0           |
 
-Every day both products change separately, so these numbers get worse. That's the case for
-sharing now rather than later. The last row has since moved to `packages/` (step 1, below).
+Copies drift as each product changes on its own, which is the case for sharing early. The last row moved to
+`packages/` in step 1, below.
 
-## Where it's heading
+## The design
 
-One platform with thin products. Everything both products use lives once, in `packages/`. A
+One platform with thin products. Everything two or more products use lives once, in `packages/`. A
 product folder holds only what makes that product different.
 
 ```
@@ -126,12 +129,14 @@ liveworkspace/
 │  └─ api-core                     NEW: the shared API routes (documents, sharing,
 │                                  teams, tokens, trash) that each product's API Worker mounts
 ├─ liveworkspace/apps/
-│  ├─ accounts                     sign-in
-│  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
-│  ├─ community                    every product's Community listings (docs/community.md there)
-│  ├─ media                        every product's uploaded images and previews (docs/media.md, docs/previews.md there)
-│  ├─ status                       hourly checks of every service and 90 days of history (docs/status.md there)
-│  └─ home (later)                 one place for all your documents across products
+│  ├─ accounts                     sign-in, teams, tokens, settings
+│  ├─ telemetry                    every product's anonymous events; the dashboard is the site's /telemetry
+│  ├─ community                    every product's Community listings (liveworkspace/docs/specs/007-community)
+│  ├─ media                        every product's uploaded images and previews (liveworkspace/docs/specs/006-media)
+│  ├─ status                       hourly checks of every service and 90 days of history (liveworkspace/docs/specs/009-status)
+│  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
+│  ├─ drive                        the Google Drive mirror, for every product
+│  └─ site                         liveworkspace.app: the front door, the Explorer, Settings, the telemetry dashboard
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
 │  ├─ apps/api                     api-core + the diagram-only routes
@@ -150,7 +155,7 @@ live in `workbench`. What's _inside_ a tab is a tab kind that a mode registers: 
 `mode-draw`, a board or sheet from `mode-plan`. livediagram registers only `mode-draw`, and liveplanner
 only Plan's.
 
-Each product keeps its own deployables, Cloudflare account, databases and branding. Shared
+Each product keeps its own deployables, databases and branding, on the one liveworkspace Cloudflare account. Shared
 packages take the product's name, URLs and feature flags as configuration rather than
 hard-coding them.
 
@@ -169,8 +174,8 @@ Each step is its own PR, and both products build and pass their tests after ever
    - `telemetry-client` is one copy of the code. Each product keeps a binding of about 60 lines
      as `@<product>/telemetry-client`: its app on the telemetry service, its preferences key
      (unchanged, so nobody's saved preferences or opt-out reset), its vocabulary's types and its
-     error and timing tokens from its own `api-schema`. Those stay per product until `api-schema`
-     moves in step 3.
+     error and timing tokens from its own `api-schema`. Those are product vocabulary, so they stay per
+     product (the shared part of `api-schema` moved in step 3).
    - `tailwind-config` differed per product, so it moved in step 2.
 2. **Small-drift packages** (`diagram-lint`, `document-views`, `icons`; `items`, `forms`, `plan-art` and
    `sheets` are liveplanner's alone now, so they stay in liveplanner): settle each diff. For each one, decide whether it's real product
@@ -447,25 +452,10 @@ Each step is its own PR, and both products build and pass their tests after ever
      - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
 
-## Before step 1: deciding when to switch over
+## One home
 
-liveplanner has switched over: its work happens here, and the old `~/Code/liveplanner` repo is
-gone (removed on 2026-10-22, after pulling its `main` at `34cc18d0`). livediagram's original repo
-(`~/Code/livediagram`) is still where its work happens. Until it's cut over:
-
-- the copy here goes stale. Refresh it with
-  `git subtree pull --prefix=livediagram ../livediagram main` (from its `origin/main`);
-- that only stays painless while files keep their places. Once step 1 starts moving files,
-  pulls start to conflict.
-
-So the sharing work should start just after the switch. The switch needs:
-
-- **A home on GitHub.** Either a new `liveworkspace` repo, or turn
-  `livediagram-app/livediagram.app` into this monorepo. The second keeps livediagram's PRs,
-  issues, Actions secrets and history links. livediagram's open branches and worktrees would
-  need merging or rebasing onto the new layout first.
-- **CI and deploys in the root `.github/`** ([ci.md](ci.md)), running only what a change reaches.
-  The `.github/` folders under each product are inert here, and livediagram.app keeps deploying from
-  its current repo until the switch.
-- **The pre-push hook** rewritten for the new paths: done, at the root, driven by CI's planner
-  ([ci.md](ci.md#before-a-push)). The products' own `.githooks/` are no longer installed.
+This monorepo is the one home of every product. Their work, CI and deploys happen here; the old
+per-product repositories are history. The products came in with `git subtree add` and keep their
+history; the `.github/` folders under each product are inert, since GitHub reads workflows only from
+the root ([ci.md](ci.md)). The pre-push hook is the root's, driven by CI's planner
+([ci.md](ci.md#before-a-push)); the products' own `.githooks/` are not installed.

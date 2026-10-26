@@ -34,7 +34,7 @@ retired and its three parts redistributed:
 ### Profile pictures
 
 An account that signed in with Google wears its Google picture wherever liveplanner draws that person's avatar,
-over the initials it always had (liveworkspace/docs/accounts.md "Profile pictures" is the platform's rule; this is
+over the initials it always had (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures" is the platform's rule; this is
 liveplanner's half). One avatar does it, `PictureDisc` from `@liveworkspace/ui`: fixed size so nothing moves, lazy,
 sent with no referrer, sized with Google's `=s<px>-c`, and the initials again while it loads or if it fails. Only a
 Google picture URL is ever drawn (`isProfilePictureUrl`, `@liveworkspace/sites/picture`).
@@ -93,7 +93,7 @@ dialog and the Danger Zone row both say.
 
 **Teams on deletion.** Teams are the liveworkspace account's: closing the account leaves every team there
 first, a team it ran alone goes, and one where it was the only admin passes to the longest-standing member
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Plans filed in a team's
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams"). Plans filed in a team's
 library stay with the team. liveplanner itself holds no team rows to clean up.
 
 ## 2. Capabilities gains `emailEnabled`
@@ -150,7 +150,7 @@ read the switch together with the address, for everyone in one go: `notifyRecipi
 (`apps/api/src/person/notify.ts`, on `notificationRecipients` from `@liveworkspace/auth-client`) asks the
 accounts Worker for the verified addresses and for that one key in the scope it lives in (`all`, or
 `liveplanner.app` for `notifyProjectJoin`), two requests whatever the number of people
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Notification emails"). A switch read
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails"). A switch read
 that fails counts as on; an address read that fails reaches nobody.
 
 ## 4. The two notifications
@@ -170,7 +170,7 @@ The signal is **a new person opening one of my shared plans for the first
 time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
 the link's code or by opening the plan with it, and when that row is new it tells liveplanner, after the write and
 off its own request's path: `POST /api/internal/items/<id>/notices` with `{ type: 'joined', personId, level }`
-and liveplanner's index key ([One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+and liveplanner's index key ([One Explorer contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "Notices"). liveplanner answers `202` at once and hands it to the plan's room, which runs
 `notifyProjectJoin(env, plan, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
 one would be another first visit), and neither is the owner. `notifyProjectJoin`:
@@ -203,7 +203,7 @@ Object are deliberately **not** wired (they'd be far too chatty).
 Sent by liveworkspace, not liveplanner: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker
 tells each joined admin when an invitee accepts or declines, unless they have
-turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+turned `notifyInviteResponse` off ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
 the app the inviter signed up through. The switch stays in liveplanner's
 Settings because it is a setting every app shares.

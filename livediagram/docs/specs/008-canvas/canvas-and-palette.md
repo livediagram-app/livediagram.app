@@ -27,7 +27,7 @@ The picker also holds the **Zen mode** button (a fullscreen / expand icon, short
 Opens as a popover from the **menu button** at the top left of the canvas ([Toolbar layout](../007-editor/toolbar-layout.md)), on a desktop and a phone alike. That button is the only way in: the Explorer never shows docked or open on its own (not when a document opens, not from a remembered state), and the status screens (deleted, couldn't load, not found) show no Explorer and no menu button at all, only their card, whose own links reach the Explorer page. Title: `EXPLORER`.
 
 The panel is the platform's: `ExplorerPanel` from `@liveworkspace/explorer`, the same lists, menus and dialogs as the
-Explorer at `/explorer`, answered by the index ([One Explorer](../../../../liveworkspace/docs/one-explorer.md)).
+Explorer at `/explorer`, answered by the index ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 livediagram's part (`apps/editor/components/panels/Explorer.tsx`) is the host around it:
 
 - The open canvas shows on top, read once from the index when the panel opens; every list is one request a page,

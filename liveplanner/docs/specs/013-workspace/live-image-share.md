@@ -5,7 +5,7 @@ wiki or site and stay up to date, with no editor chrome, just the content (like 
 fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app
 ([Share-link previews](share-link-previews.md)).
 
-The image is liveworkspace's, built once for every app ([previews.md](../../../../liveworkspace/docs/previews.md)): the service resolves the
+The image is liveworkspace's, built once for every app ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)): the service resolves the
 link with the index, stores the drawing and serves it. liveplanner renders for the platform: the plan draws the tab
 when the service asks through its export door ([Project previews](../006-project/project-snapshots.md)).
 
@@ -26,7 +26,7 @@ when the service asks through its export door ([Project previews](../006-project
 ## Endpoint
 
 `GET /api/share/<code>/image.svg[?tab=<id>]` on liveplanner.app, which the router forwards to liveworkspace's previews
-(`/api/previews/share/<code>/image.svg`, [previews.md](../../../../liveworkspace/docs/previews.md) "The addresses"):
+(`/api/previews/share/<code>/image.svg`, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "The addresses"):
 
 1. The service resolves `<code>` with the index, the single authority for expiry, level, tab and password: a missing,
    revoked or expired link, or one behind a share password, is a 404.
@@ -65,7 +65,7 @@ does. Rendering is pure and bounded by the layout's own limits (12 rows of 4 slo
 | 12 rows of 4 charts and metrics                                    | 2,000 | about 37 ms              |
 
 `thumbnail-dashboard.perf.test.ts` holds the budget. liveworkspace's previews keep each drawing until the plan is
-saved again ([previews.md](../../../../liveworkspace/docs/previews.md) "Staleness"), so a Dashboard's render is paid at most once per save and
+saved again ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "Staleness"), so a Dashboard's render is paid at most once per save and
 tab, not per view. The labelled boxes drawn before cost about 0.2 ms.
 
 ## Share dialog

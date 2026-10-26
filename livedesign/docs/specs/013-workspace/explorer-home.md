@@ -58,7 +58,7 @@ Top to bottom, left column:
 
 Beside the field (from `lg` up) or under it, the hero shows **what livedesign makes**: a **Logo**, an **App
 Wireframe**, a **Web Wireframe** and a **Photo**, each a small picture in livedesign's rose with its name, laid out
-as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-logo`, `blank-wireframe-phone`,
+as every app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-logo`, `blank-wireframe-phone`,
 `blank-wireframe-browser`, `photo-edit`). **Nothing is fetched** to draw them.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as

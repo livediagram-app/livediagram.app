@@ -11,6 +11,9 @@ the mark; this package is its one source.
   One Explorer's rows under All Apps).
 - `@liveworkspace/brand/svg`: the same drawing as strings, with no React (`brandMarkSvg`, `brandLogoSvg`,
   `prismPalette`), for favicons, the logo files, the Apple icon and the social card.
+- `WorkspaceWordmark`: liveworkspace's logo, the prism in the platform's slate beside its name, for liveworkspace.app's header and every app's footer.
+- `@liveworkspace/brand/colour`: the colour helpers the palettes are checked with (`hexToRgb`, `rgbToHex`,
+  `contrastRatio`).
 
 Its classes are Tailwind utilities: an app that renders it adds `@source '…/packages/brand/src';` to its stylesheet.
 

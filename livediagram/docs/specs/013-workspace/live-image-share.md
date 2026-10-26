@@ -1,7 +1,7 @@
 # Live image share link
 
 > **Status: implemented.** The image is liveworkspace's now, built once for every app
-> ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)): this app's router forwards
+> ([liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)): this app's router forwards
 > `/api/share/<code>/image.svg` to liveworkspace's previews, which ask the index whether the link is open, keep the
 > picture, and ask livediagram to draw it again after a save ([Document SVG snapshots](../006-document/document-snapshots.md),
 > "the export door"). The renderer is `renderElementsToSvg` in `@livediagram/document`; no `@livediagram/render`

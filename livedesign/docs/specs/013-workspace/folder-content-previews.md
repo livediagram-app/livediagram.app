@@ -10,4 +10,4 @@ list view keeps its count badge. It is the shared Explorer's `FolderMosaic`
 
 livedesign's part is the snapshots: each tile is the design's own preview, served by liveworkspace's previews
 service from the design's tabs ([Design SVG snapshots](../006-design/design-snapshots.md),
-[previews.md](../../../../liveworkspace/docs/previews.md)), so a folder tile and a design card show the same image.
+[previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)), so a folder tile and a design card show the same image.

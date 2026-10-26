@@ -1,7 +1,7 @@
 # Design SVG snapshots
 
 A design's preview is **liveworkspace's**, built once for every app
-([Previews](../../../../liveworkspace/docs/previews.md)): the media service stores it, decides when it is stale,
+([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): the media service stores it, decides when it is stale,
 checks who may see it against the index, and serves it. livedesign only **renders for the platform**: its export
 door draws a design when the service asks. The same picture serves:
 
@@ -113,7 +113,7 @@ media service; `?v=` only keys the browser's cache.
 `GET /api/share/:code/image.png` ([Share-link previews](../013-workspace/share-link-previews.md)) are the media
 service's too, forwarded by the router. The share code is the only credential; a revoked, expired or
 password-protected link has no image. Their caching is the service's
-([Previews](../../../../liveworkspace/docs/previews.md)).
+([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)).
 
 ### Share dialog
 

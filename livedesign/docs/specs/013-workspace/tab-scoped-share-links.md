@@ -16,7 +16,7 @@ Owners sometimes want to show one tab of a design, not the whole thing: the road
 
 ## Data model
 
-Share links are liveworkspace's index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access"):
+Share links are liveworkspace's index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Sharing and access"):
 
 - A link's `tabId`: the tab it is scoped to; null = All tabs.
 - The Shared with me row keeps the scope the visitor was last granted, as it keeps their level (last visit wins).

@@ -10,7 +10,7 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 **The platform's part.** Pairing, tickets, sessions, revocation, the sweep, the pairing page and every
 `/api/workbench/*` route are liveworkspace's, in its accounts Worker
-([Workbenches](../../../../../liveworkspace/docs/workbench.md)). The router sends `/api/workbench/*` there, and this
+([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)). The router sends `/api/workbench/*` there, and this
 api forwards a request that reaches it directly (the CLI against `wrangler dev`) unchanged, as livediagram, before
 identity (`index.ts`, `routeToWorkspace`). This file holds what livediagram does with what the platform hands it: a
 `lvw_` bearer checked with liveworkspace and confined here, the frameable page that binds and hosts the editor or the
@@ -223,7 +223,7 @@ are called without credentials by the editor and never see `lvw_`.
 ### When access ends
 
 Unpair, a token revoked and an account closed are liveworkspace's to decide
-([Workbenches](../../../../../liveworkspace/docs/workbench.md) "Ending access"). Its answer reaches livediagram two
+([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). Its answer reaches livediagram two
 ways: the next `lvw_` request resolves `revoked` (401 `invalid_session`, within the checker's minute), and the room's
 `/close-sessions` with `{ match: 'workbench', pairingId }` closes every socket whose attachment `workbenchPairing`
 equals the id with `WORKBENCH_ENDED_CLOSE`, reason `workbench-ended`. The page's own
@@ -427,7 +427,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | DELETE                 | `workbench/sessions/current`                                                                                                                                |
 
 The Explorer's lists are the index's, which the frame reaches through `/api/index` with the person's identity
-([one-explorer.md](../../../../../liveworkspace/docs/one-explorer.md)); the folder, team and trash shapes above stay
+([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); the folder, team and trash shapes above stay
 on the list so an older caller is confined the same way. Everything else is `confined`, among it (never the account):
 `account`, `tokens/**`, `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`,
 `oauth/**`, team writes and invitations, `community/**` and `documents/:p/community/**` (Community publishing needs a
@@ -561,7 +561,7 @@ before asking the index anything ("Opening your Explorer…").
 
 `POST /api/workbench/tickets`, `POST /api/workbench/sessions`, `DELETE /api/workbench/sessions/current`,
 `/api/workbench/pairing-requests*` and `/api/workbench/pairings*` are liveworkspace's; their behaviour, rejections
-and limits are in [Workbenches](../../../../../liveworkspace/docs/workbench.md). livediagram calls four of them: the
+and limits are in [Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md). livediagram calls four of them: the
 page redeems (`apiRedeemWorkbenchTicket`, credential-free) and ends its own session (`apiEndWorkbenchSession`);
 Settings lists pairings and unpairs (`apiListWorkbenchPairings`, `apiUnpairWorkbench`). The CLI mints and pairs. The
 OpenAPI manifest lists them under segment `workbench`, tag `Workbench`, as the routes a token reaches through this
@@ -733,7 +733,7 @@ matches `session.workbenchPairing === pairingId`. `WORKBENCH_ENDED_CLOSE = 4006`
 ## Data and persistence
 
 livediagram stores nothing of a workbench. Pairings, tickets, sessions and their rooms are liveworkspace's
-([Workbenches](../../../../../liveworkspace/docs/workbench.md)).
+([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)).
 
 | Field                              | Class     | Notes                                                                                 |
 | ---------------------------------- | --------- | ------------------------------------------------------------------------------------- |

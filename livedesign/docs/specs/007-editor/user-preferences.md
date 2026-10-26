@@ -15,7 +15,7 @@ once per account / device and apply everywhere.
 ## Where preferences live
 
 livedesign keeps no preferences of its own. They are kept with the person's
-**liveworkspace account** ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+**liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Settings"), with `localStorage` as a fast warm cache so the editor never
 blocks on a network round-trip at boot.
 
@@ -90,7 +90,7 @@ blocks on a network round-trip at boot.
   rather than over the network. Each change also sets the unsynced mark
   for the guest's `guest_<uuid>`, so this editor's next load keeps the
   cache over the server's copy and sends it on, as for a save of its own
-  that never landed ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md#settings)
+  that never landed ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md#settings)
   "A guest"). Renaming the key or the mark means changing
   `DEVICE_PREFERENCES` in `@liveworkspace/settings/device` with it; the
   settings-site-catalogue test fails until both agree.
@@ -728,7 +728,7 @@ and the dialog stays as the one complete, browsable index of them.
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
   liveworkspace.app renders the same view over this app's derived catalogue
-  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md) "Settings"), so the app's
+  ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
   settings look the same there as here.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
@@ -738,9 +738,9 @@ and the dialog stays as the one complete, browsable index of them.
   at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
   for nothing. All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
-  merged across every app (liveworkspace/docs/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
+  merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
   on, with no group per app. In each, the shared rows come first: every editor setting two or more apps have
-  (`COMMON_SETTING_KEYS`, liveworkspace/docs/accounts.md "Common settings"), once, and any row two apps keep under the
+  (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row two apps keep under the
   same key and wording, once, written to each; then each app's own rows under a small sub-heading with its logo and
   name. This app's rows are its own Settings minus the shared switches the Account section already
   holds (a row marked "All apps" whose key is one of the Account section's), and its common rows are this editor's

@@ -136,7 +136,7 @@ The account menu's **Account** item opens the host page's own Settings dialog on
 
 ## Share dialog
 
-The Share dialog is a platform component: the shared `@liveworkspace/explorer` `ShareDialog` ([`packages/explorer/README.md`](../../../../packages/explorer/README.md) "`<ShareDialog>`"; share links, passwords and expiry are liveworkspace's index's, [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)). Its passes, role picker, lifetimes, password section, guest identity row, Show Me tour and motion are specified there and are the same in every app. The editor lazy-loads it (`apps/live/components/dialogs/EditorTabDialogs.tsx`) from the header Share button, for the owner and, on a team design, every joined member ([Team shared designs](../013-workspace/team-shared-designs.md)); the Explorer opens the same dialog from an item's menu.
+The Share dialog is a platform component: the shared `@liveworkspace/explorer` `ShareDialog` ([`packages/explorer/README.md`](../../../../packages/explorer/README.md) "`<ShareDialog>`"; share links, passwords and expiry are liveworkspace's index's, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Its passes, role picker, lifetimes, password section, guest identity row, Show Me tour and motion are specified there and are the same in every app. The editor lazy-loads it (`apps/live/components/dialogs/EditorTabDialogs.tsx`) from the header Share button, for the owner and, on a team design, every joined member ([Team shared designs](../013-workspace/team-shared-designs.md)); the Explorer opens the same dialog from an item's menu.
 
 What livedesign gives it is its `ShareHost` (`apps/live/lib/explorer-share-host.ts`, the editor's and the Explorer's alike):
 

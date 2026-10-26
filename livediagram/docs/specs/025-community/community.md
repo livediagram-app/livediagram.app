@@ -9,7 +9,7 @@ post's document read-only, like it, and make their own copy of it. It lives in i
 
 The **listings** (posts, tags, likes, copies, reports, hidden) are kept by liveworkspace, in its Community service at
 `liveworkspace.app/api/community` with its own database, shared by every liveworkspace app with a Community and
-described in [liveworkspace's Community](../../../../liveworkspace/docs/community.md). livediagram keeps the
+described in [liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md). livediagram keeps the
 **documents**: who owns one, whether it may be published, its community link, and the link's doors (the read-only
 view, the card image and copying). Its pages read the gallery, posts, likes and reports straight from the service,
 for `livediagram.app` posts only; its api publishes, edits and removes a post on the owner's behalf, answers My

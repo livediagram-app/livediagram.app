@@ -26,7 +26,7 @@ Top to bottom, left column:
 
 Beside the field (from `lg` up) or under it, the hero shows **what a plan can hold**: a **Board**, a **Sheet**, a
 **Dashboard** and a **Form**, each a small picture in liveplanner's violet with its name, laid out as every app's are
-([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one: the Board a Kanban board (`/new?template=kanban`), the Sheet a blank spreadsheet
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero"). Each starts one: the Board a Kanban board (`/new?template=kanban`), the Sheet a blank spreadsheet
 (`blank-spreadsheet`), the Dashboard the Project Planner, whose Overview tab is a dashboard (`project-planner`), and the
 Form a blank form (`blank-form`). **Nothing is fetched** to draw them.
 
@@ -75,4 +75,4 @@ Telemetry, through the Explorer's `onHome` prop: `Home·Selected` (`WhatHappened
 
 What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
 
-The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The plan is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

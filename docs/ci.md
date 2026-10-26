@@ -2,8 +2,7 @@
 
 The monorepo's checks live in the root `.github/`. GitHub reads workflows only from there, so the
 `.github/` folders the products brought with them (`livediagram/.github/` and the others) are inert
-here and kept only as a reference until the switch-over. Each product's own spec still describes what
-its suites check (`docs/specs/016-platform/deployment.md` "CI" in each product).
+here. Each product's own spec describes what its suites check (`docs/specs/016-platform/deployment.md` "CI" in each product).
 
 ## Only what changed
 
@@ -58,10 +57,13 @@ result.
   comes on its own. It carries the products' own rules, such as livediagram's hold on the
   `@huggingface/transformers` major.
 
-Not carried over yet: CodeQL, which needs GitHub Advanced Security on this private repository (until then
-GitHub refuses its upload; the workflow is in git history, removed in the commit "CI: CodeQL out until
-Advanced Security is on"), and the CLIs' npm publishing and MCP Registry listing, which the owner is
-setting up. Each product's CLI still builds and packs on every run that reaches it (Build).
+- **Deploys** (`deploy-staging.yml` and `deploy-production.yml`, both calling `deploy.yml`, which calls
+  `deploy-worker.yml` per Worker): see [Deploys](#deploys).
+
+CI runs no CodeQL scan, which needs GitHub Advanced Security on this private repository (the workflow is
+in git history, removed in the commit "CI: CodeQL out until Advanced Security is on"), and publishes no
+CLI: the CLIs' npm publishing and MCP Registry listing happen outside CI. Each product's CLI builds and
+packs on every run that reaches it (Build).
 
 ## Coverage report
 

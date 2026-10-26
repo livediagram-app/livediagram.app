@@ -3,7 +3,7 @@
 The record of what happened to the plans a person can reach, and their teams' plans, shown in the shared Explorer at
 `/explorer/timeline`. liveworkspace's index keeps it for every app; liveplanner reports who edited which plan and
 renders the view through [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The calls and types are
-in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Timeline"; the help article
+in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Timeline"; the help article
 is `apps/help/app/explorer/timeline`.
 
 ## 1. What is recorded

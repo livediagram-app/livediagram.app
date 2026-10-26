@@ -14,14 +14,14 @@ Canvases kept only in this browser never reach the index; the editor reads their
 offline store (`apps/editor/lib/offline/offline-activity.ts`) and hands them to the Explorer's `inbox` prop
 (`apps/editor/lib/explorer-inbox-host.tsx`), which lists them among the index's rows with the This Browser pill. The Explorer page on livediagram's own address (liveworkspace's build) can't read the offline store, so the editor also keeps a snapshot of these rows in localStorage under `liveworkspace:this-browser-inbox:livediagram` (`apps/editor/lib/offline/inbox-snapshot.ts`, over `@liveworkspace/explorer/this-browser`'s `inboxSnapshotKeeper`): whose rows they are (the account id, and this browser's guest id), at most 100 actions and 100 threads, newest first, long text cut short. It is worked out again about 1.5 s after the offline store last writes (a card assigned, an action added), once a page load, and as the panel's Inbox reads; it is dropped when this browser holds no canvases. The page lists it only to the person it names, so another account in the same browser never sees it, and hears it change. liveworkspace.app, on its own origin, can't read it, as it can't read the This Browser list.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Inbox" and "What an item
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox" and "What an item
 pushes". The Explorer that shows it is the shared package,
 [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
 
 ## How it reads, and what it can do
 
-The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Inbox"):
+The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox"):
 
 - **The list**: every row newest first under Today, Earlier This Week and Older, three lines each: who (semibold when it asks something of you) and its age; what it is; why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your canvas**, **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism and the item, and the teal **This Browser** pill for a canvas only this browser holds.
 - **The filter bar** over it: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device, beside the header's app filter.

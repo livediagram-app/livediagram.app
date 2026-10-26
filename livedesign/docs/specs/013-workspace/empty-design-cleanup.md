@@ -4,7 +4,7 @@ Status: shipped, on liveworkspace's index
 
 A design that has held nothing for 30 days moves to the [Trash](trash.md) on its own, marked `empty`, and waits
 the Trash's usual 30 days there. The sweep is liveworkspace's index's, once for every app, in its daily run
-(`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`; [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items"). livedesign runs no sweep of its own.
+(`sweepEmpty` in `liveworkspace/apps/index/src/purge.ts`; [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items"). livedesign runs no sweep of its own.
 
 ## What livedesign does
 

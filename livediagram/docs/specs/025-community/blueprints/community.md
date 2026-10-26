@@ -6,7 +6,7 @@ Derived from [Community](../community.md). Implementation detail only; design de
 
 The posts, their tags, likes, copies and reports, the counts, the gallery's reads (list, search, facets, featured,
 sitemap), likes, reports and auto-hide are liveworkspace's Community service, one store for every app keyed by
-`app` ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)). This file does not
+`app` ([liveworkspace/docs/specs/007-community/community.md](../../../../../liveworkspace/docs/specs/007-community/community.md)). This file does not
 re-document them; where it names the service's limits or rules, the service's doc is the authority. The pages read
 the service straight (`communityServiceUrl('livediagram.app', path, ...)` against `NEXT_PUBLIC_COMMUNITY_API`); the
 shared vocabulary is `@liveworkspace/community` (`packages/community/src/post.ts`, `query.ts`, `network.ts`),
@@ -94,7 +94,7 @@ the plain `ShareDialog`; `EditorView` drops the Public badge (it asks only while
 ## 3. Data and persistence
 
 The posts, tags, likes, copies and reports are the service's
-([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
+([liveworkspace/docs/specs/007-community/community.md](../../../../../liveworkspace/docs/specs/007-community/community.md)).
 
 What the canvas keeps is its own post's link, in its Durable Object's SQLite (`community_post` in
 `apps/api/src/document-room/document-schema.ts`; `apps/api/src/document-room/community-post.ts`): at most one row with
@@ -115,7 +115,7 @@ content-only pass (`apps/api/src/routes/context.ts`).
   (`forgetCommunityCopier`), and a guest's copies become the account's (`mergeCommunityCopier`), both in
   `apps/api/src/community-service.ts`; a copier is sent as a one-way hash (`copierHash`).
 - Pictures: the card image (`communityImagePath`, `/api/share/:code/image.svg`) is liveworkspace's previews, drawn
-  through the export door from the redacted board ([liveworkspace/docs/previews.md](../../../../../liveworkspace/docs/previews.md)).
+  through the export door from the redacted board ([liveworkspace/docs/specs/006-media/previews.md](../../../../../liveworkspace/docs/specs/006-media/previews.md)).
 - Snapshot/restore and Google Drive sync carry no Community state; a copy is never published.
 
 ## 4. Interfaces and contracts
@@ -210,7 +210,7 @@ Guards (`apps/api/src/routes/community-owner-routes.ts` unless named):
   library) reads as none; `PUT` publishes afresh and the canvas's row is replaced, the previous link revoked;
   `DELETE` answers 404.
 - Auto-hide after reports is the service's
-  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)); the canvas hears it on its next
+  ([liveworkspace/docs/specs/007-community/community.md](../../../../../liveworkspace/docs/specs/007-community/community.md)); the canvas hears it on its next
   check and records `hidden_at`.
 
 Community link behaviour (keyed off the canvas's `community_post.share_code`):
@@ -240,7 +240,7 @@ each an article href and its telemetry id, sent as `UI·Opened·<id>`).
 
 Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
-liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/previews.md`);
+liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/specs/006-media/previews.md`);
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
 document a community grant reads. `clientRateKey(request)` is the copier's network the api passes with a copy;
 the service maps it (`communityNetwork`, `../packages/community/src/network.ts`).
@@ -356,14 +356,14 @@ Community app (`apps/community`):
 - Abuse: likes, reports and reads are rate limited by the service, per network; the owner routes stay on the api's
   per-owner limiter; every call to the service's app routes carries `COMMUNITY_KEY`. Auto-hide, the per-network count
   caps (`COMMUNITY_COUNTED_PER_NETWORK`) and report hashing are the service's
-  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
+  ([liveworkspace/docs/specs/007-community/community.md](../../../../../liveworkspace/docs/specs/007-community/community.md)).
 
 ## 8. Performance and limits
 
 - List, search, facets, featured and their indexes are the service's
-  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
+  ([liveworkspace/docs/specs/007-community/community.md](../../../../../liveworkspace/docs/specs/007-community/community.md)).
 - Card images are liveworkspace's previews of `/api/share/:code/image.svg`
-  ([liveworkspace/docs/previews.md](../../../../../liveworkspace/docs/previews.md)); the canvas draws through the
+  ([liveworkspace/docs/specs/006-media/previews.md](../../../../../liveworkspace/docs/specs/006-media/previews.md)); the canvas draws through the
   export door only when asked.
 - Bodies are capped by the worker's existing `MAX_BODY_BYTES`; inputs by the constants above.
 - Sync: a canvas with a post asks the index from its own alarm, every `COMMUNITY_CHECK_MS`, and sends the service

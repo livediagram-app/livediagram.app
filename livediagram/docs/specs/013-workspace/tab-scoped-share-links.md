@@ -102,6 +102,6 @@ the visitor into every tab.
 - Hiding that other tabs exist. The pills are deliberately visible, so the visitor knows there's more.
 - Assigning an action on another tab to a scoped visitor does not widen their scope; the deep link is a 404 for them.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Grants". The Explorer that shows
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Grants". The Explorer that shows
 it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-The Explorer, and everything it lists, is liveworkspace's index and its shared Explorer package, served at livediagram's own `/explorer`: [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) is the document and [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) the calls. The specs below marked "index" are short pages saying what the index does and what livediagram supplies.
+The Explorer, and everything it lists, is liveworkspace's index and its shared Explorer package, served at livediagram's own `/explorer`: [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) is the document and [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) the calls. The specs below marked "index" are short pages saying what the index does and what livediagram supplies.
 
 - ./explorer-structure.md - when working on the Explorer at `/explorer` or the editor's Explorer panel: the shared `@liveworkspace/explorer` served at livediagram's address, its views, what livediagram lends it (addresses, New, the Library, Take Offline and Sync Canvas, Share, Help), and This Browser at `/offline` (index)
 - ./folders.md - when working on folders (index)

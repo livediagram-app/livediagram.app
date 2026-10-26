@@ -3,7 +3,7 @@
 Status: shipped
 
 The Explorer page is liveworkspace's shared Explorer ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)),
-served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)
+served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)
 "The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
 session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
 (`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
@@ -35,7 +35,7 @@ The sidebar holds navigation only. It carries no greeting, no search field, no N
   [hero](explorer-home.md#the-hero) instead. The bottom bar's Search opens the app-wide search panel.
 - **New folder** and **New Design** live in the page header of the view they create in (Home's hero on Home). Home's
   hero also pictures what livedesign makes (Logo, App Wireframe, Web Wireframe, Photo), each starting its template
-  ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
+  ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
 - The account is reached from the header's account menu.
 
 ## Look
@@ -381,7 +381,7 @@ The editor header names such a design with the matching **This Browser** badge. 
 same pill (`ThisBrowserPill`) on the design's card, which is the same size and shape as the rest of its group, with
 the same ⋯ menu and right-click (Open, Sync Design) and the same drag: to the Trash, deleted for good after a
 confirmation where the host can; to a folder, synced to the account first
-([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "This Browser in Jump Back In",
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In",
 [Explorer Home](explorer-home.md)).
 
 ## Telemetry

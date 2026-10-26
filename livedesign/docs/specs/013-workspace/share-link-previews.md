@@ -32,7 +32,7 @@ gave nobody a reason to tell them apart or click.
 ## The share card
 
 `GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
-liveworkspace's, built once for every app ([Previews](../../../../liveworkspace/docs/previews.md)): the router sends
+liveworkspace's, built once for every app ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): the router sends
 the address to the media service, which draws the card from the design's preview and caches it. livedesign only
 renders for the platform: its export door draws the design's SVG
 ([Design SVG snapshots](../006-design/design-snapshots.md) "What livedesign draws").
@@ -67,6 +67,6 @@ of that link sees, so it needs no gate beyond the link's own.
 ## Limits and abuse
 
 The card, the share card and the live image are the media service's to limit and cache
-([Previews](../../../../liveworkspace/docs/previews.md)); each answers only what the live image already answers for
+([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)); each answers only what the live image already answers for
 the same code, so none adds a way to learn more from a guessed code. The live worker passes the visitor's address on,
 so a limit applies per visitor, not to the live worker as one caller.

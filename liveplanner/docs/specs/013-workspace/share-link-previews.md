@@ -36,7 +36,7 @@ gave nobody a reason to tell them apart or click.
 ## The share card
 
 `GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
-liveworkspace's, built once for every app ([previews.md](../../../../liveworkspace/docs/previews.md) "The addresses"): liveplanner's router
+liveworkspace's, built once for every app ([previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "The addresses"): liveplanner's router
 forwards the address to the previews service, which draws the card from the plan's drawing (the live image's: the
 same tab, the same rules, [Live image share link](live-image-share.md)), stores it until the plan is saved again, and
 redirects (302) to the brand card when there is nothing to draw. A password-protected project, an unknown, revoked or
@@ -48,7 +48,7 @@ asked ([Project previews](../006-project/project-snapshots.md)).
 The editor app's worker fills in the shell's `<head>` for `/project/shared?s=<code>` before it is sent: the
 `<title>`, `description`, `og:title`, `og:description`, `og:image` (with its alt text), `twitter:title`,
 `twitter:description` and `twitter:image`. The rewrite is liveworkspace's, the same in every app
-(`@liveworkspace/media` `createSharePage`, [previews.md](../../../../liveworkspace/docs/previews.md) "The share page's head"); liveplanner's
+(`@liveworkspace/media` `createSharePage`, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md) "The share page's head"); liveplanner's
 `apps/editor/src/share-page.ts` gives only its words: the share page's addresses, the share pitch and "Untitled plan".
 It asks liveworkspace's previews for the link's name with `GET /api/previews/share/<code>/card` (at
 `https://liveworkspace.app`, or the editor's `PREVIEWS_ORIGIN`: staging's own), which answers `{ name }` for a link

@@ -109,7 +109,7 @@ change (D46).
 ### Upload (`POST /api/images`)
 
 Guards run in this order; the first failure answers. Steps 1 to 6 are this api's; 7 is the media
-service's ([media.md](../../../../../liveworkspace/docs/media.md) "Uploads"), whose refusals are passed
+service's ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md) "Uploads"), whose refusals are passed
 on as sent (`serviceAnswer`).
 
 1. No media service → 503 `images_unavailable`.
@@ -310,7 +310,7 @@ read a 503 as `null` and `{}`.
 
 ## Data and persistence
 
-- **Media service** ([media.md](../../../../../liveworkspace/docs/media.md)): one row per image
+- **Media service** ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md)): one row per image
   (`id`, owner, `app`, type, size, dimensions, hash, name, time) and its bytes in R2, keyed by id.
 - **This api keeps no image rows of its own.** Whose an image is lives per isolate in
   `mediaImageOwner`'s memo, and per document in its `image_owners` (an account id, a media guest
@@ -459,7 +459,7 @@ read a 503 as `null` and `{}`.
 | O8  | Reference sync failed          | thrown          | `media refs sync failed: <status>`, kept for the next drain                            |
 | O9  | Document over one sync's limit | `console.error` | `[media] a document places more images than one sync carries` + `{ document, images }` |
 
-O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md](../../../../../liveworkspace/docs/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands.
+O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands.
 
 ## Testing
 

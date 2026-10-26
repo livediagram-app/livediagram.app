@@ -11,7 +11,7 @@ So this is a move out of Clerk and the old account, not into Clerk. It copies pe
 each mixed document by product, tells everyone, then switches livediagram.app over. livediagram is the only source:
 liveplanner, livedocuments and livedesign have no data from before accounts moved.
 
-Related: [migrating-from-clerk.md](../liveworkspace/docs/migrating-from-clerk.md),
+Related: [migrating-from-clerk.md](../liveworkspace/docs/specs/012-migrate/migrating-from-clerk.md),
 [livediagram/plans/0002-liveworkspace-accounts.md](../livediagram/plans/0002-liveworkspace-accounts.md),
 [stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md).
 
@@ -33,8 +33,8 @@ Related: [migrating-from-clerk.md](../liveworkspace/docs/migrating-from-clerk.md
 - **Every step can re-run.** Each writes by id, and only over rows an earlier run of the migration wrote (each
   such row is marked as imported, with the old row's `updated_at`), so step 0's rehearsal, the full copy and the
   final catch-up are the same scripts.
-- **Old livediagram is frozen** for code from step 0 (no more features on `~/Code/livediagram`), so the schema the
-  scripts read doesn't move under them.
+- **Old livediagram is frozen** for code from step 0 (no more features in the old livediagram.app repository), so
+  the schema the scripts read doesn't move under them.
 
 ## 0. Inventory, backups and a rehearsal environment
 
@@ -71,7 +71,7 @@ the copy takes).
      too (into the accounts Worker's `email_lifecycle`, with `signup_app` livediagram), so nobody gets the welcome
      series again;
    - `shape_libraries`, `custom_themes` and `placement_defaults` into each person's `PersonStore`.
-4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/accounts.md`, Teams) from `teams` and
+4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/specs/003-accounts/accounts.md`, Teams) from `teams` and
    `team_members`: each team with its name, organisation, members and roles through the owner map, **keeping the
    old team id** (both sides use a plain UUID as the key, `team.id` here and `teams.id` there, so documents keep
    their team with no team map). Roles map one to one (`admin`, `member` on both). An old member row with a
@@ -83,7 +83,7 @@ the copy takes).
 5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old
    tokens are revoked at the switch"). Checked against both codebases:
    - The old tokens are `lvd_<base64url(32 random bytes)>`, stored as the lowercase SHA-256 hex of the whole
-     token (`apps/api/src/auth/api-token.ts`). The accounts Worker stores `lwt_` tokens in exactly that form
+     token (the old site's `apps/api/src/auth/api-token.ts`). The accounts Worker stores `lwt_` tokens in exactly that form
      (`hashApiToken`, `src/tokens.ts`), so an old row's hash can be copied as it is and the secret is never
      needed.
    - Copy every live row of `api_tokens` (not revoked, not expired) into `api_token`: owner through the owner map,
@@ -104,7 +104,7 @@ the copy takes).
      Some tools may still ask to be reconnected, which step 8's email says.
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
    tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
-   Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/drive.md), so a
+   Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/specs/005-drive/drive.md), so a
    person connects there once; step 8's email says Drive sync is paused, not that it needs reconnecting.
 
 ## 2. Copy documents into livediagram
@@ -189,8 +189,9 @@ Each product needs the same migration import door as step 2, and its own writes 
 ## 5. Community
 
 Copy `community_posts`, their tags, likes, copies and open reports into the Community service
-(`liveworkspace/docs/community.md`), pointing each post at the livediagram document, or at the part that now
-holds what was posted. `apps/community` is the last livediagram app on Clerk; it moves with this.
+(`liveworkspace/docs/specs/007-community/community.md`), pointing each post at the livediagram document, or at the part that now
+holds what was posted. The old site's `apps/community` signs in with Clerk; the new one reads the Community
+service and signs in with liveworkspace accounts.
 
 ## 6. Guests
 
@@ -249,7 +250,7 @@ are none to carry.) The rehearsal should include a browser with a real old local
    then the checks in step 9.
 4. **Move the `livediagram.app` zone** to the liveworkspace account and run "When livediagram.app moves" in
    [stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md), and the email domain
-   move in [email.md](../liveworkspace/docs/email.md).
+   move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
 5. Point the Google clients' redirect URIs at the real hosts, and the MCP server's OAuth at liveworkspace sign-in.
 6. **Rollback** until step 10: point the zone back at the old account and lift the freeze. Nothing there changed.
 
@@ -291,17 +292,16 @@ is a service message, so it goes to everyone, unsubscribed or not.
 After a set quiet period (30 days is a starting point):
 
 - delete the users from Clerk and close the Clerk application;
-- remove Clerk from the codebase (`@clerk/react`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_JWKS_URL`) and the
-  "still uses Clerk" passages from liveworkspace's privacy page;
+- remove the Clerk passages from the old livediagram.app's privacy page (this repository has no Clerk code or
+  copy: no `@clerk/react`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` or `CLERK_JWKS_URL`);
 - export the old D1 and R2 one last time to cold storage for an agreed time, then delete them and the old
   account's Workers;
-- archive `~/Code/livediagram` and finish the switch-over in [structure.md](structure.md);
+- archive the old livediagram.app repository;
 - a later migration may drop livediagram's unread Plan tables.
 
 ## Tooling
 
-Built ahead of the switch (2026-10-25), so every step above is a command that can be rehearsed. Nothing below has
-run against Cloudflare yet; the first run is a staging rehearsal (step 0). Four parts, one contract
+Every step above is a command that can be rehearsed; the first run is a staging rehearsal (step 0). Four parts, one contract
 (`packages/migration/src/contract.ts`):
 
 **`@liveworkspace/migration`** (`packages/migration`): the contract, and the splitter, `splitOldDocument` and
@@ -315,10 +315,11 @@ A liveplanner part may have no tabs (a plan with only cards and sheets).
 **`@liveworkspace/migrate`** (`liveworkspace/apps/migrate`, runbook in its README): the Node command that runs
 from a laptop. Nothing in it is deployed.
 
-- `snapshot <export.sql>`: loads a `wrangler d1 export` of the old database into a local SQLite file
+- `snapshot <export.sql> <snapshot.sqlite>`: loads a `wrangler d1 export` of the old database into a local SQLite file
   (`node:sqlite`) and refuses one whose last `d1_migrations` row isn't `OLD_SCHEMA_LEVEL`. Read-only toward the
   old account.
-- `plan <snapshot> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>]`: the whole migration as a
+- `plan <snapshot> --clerk <users.csv> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>]
+[--oauth-kv <oauth-kv.json>] [--no-pictures] --out <bundle-dir>`: the whole migration as a
   bundle on disk: `manifest.json` (steps in apply order, the bundle id, the ledger generation it was planned
   against), `owner-map.json`, `sql/<db>/NNNN.sql` with `ledger/<db>/NNNN.jsonl` beside each chunk (accounts,
   index, media, community), `r2/images.json` (and `r2/pictures/` for drawn pictures), `rooms/rooms.jsonl`,
@@ -327,12 +328,12 @@ from a laptop. Nothing in it is deployed.
   `migrateStoredTabKeepingRetired` (every upgrade but the Pages and Plan drops). Each `CrossReference.picture` is
   drawn with liveplanner's renderer into a PNG and lands as a media image in the person's library. Export
   `existing-accounts.json` right before `plan`: a stale one can let a Clerk row clash with an account made since.
-- `apply <bundle> --env staging|production [--dry-run]`: runs the steps in order (accounts, index, media and R2,
+- `apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]`: runs the steps in order (accounts, index, media and R2,
   the rooms through each app's migration door, community, the MCP's KV), each command with only that side's
   credentials (it never passes the shell's `CLOUDFLARE_*` through), then records what it wrote in the ledger. A
   bundle planned against an older ledger generation is refused.
-- `verify <bundle> --env …`: step 9's row counts, read back from each database (one wrangler call per 500 keys).
-  It doesn't read the rooms back yet.
+- `verify <bundle> --env … [--out <verify.json>]`: step 9's row counts, read back from each database (one
+  wrangler call per 500 keys). It reads databases only, not the rooms.
 
 What `plan` decides for you (all reported in `report.json`):
 
@@ -428,7 +429,9 @@ in each app's `.env.example`, set for the migration and removed after it; it ope
 - **Workshop Q&A voter hashes** aren't remapped; **an arrow pinned across a split tab** is left dangling.
 - **An old-editor tab left open** during the editor's version 3 upgrade blocks the upgrade until it closes.
 - **The handoff**: if the app's door times out after writing, the index deletes the item and the room is orphaned.
-  Two claims of one guest at once both merge; the second answers `claimed`.
+  Two claims of one guest at once can't both merge: the first holds the row while it merges
+  (`claimingBy`, `claimingUntil`, accounts migration `0013_legacy_guest_claiming.sql`), and the second answers
+  `claimed`.
 - **Check on the first staging dry run**: wrangler's `--yes` and the shape of its `--json` output.
 
 ## Checked against the code (2026-10-25)

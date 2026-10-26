@@ -215,7 +215,7 @@ The server, not the client, establishes every fact that matters:
 
 - verifies the **caller** can open the plan (the index's grant) and is a joined member of `teamId`: their
   token names the team, and the team as liveworkspace keeps it now (`POST /api/account/internal/teams/members`,
-  [liveworkspace accounts](../../../../liveworkspace/docs/accounts.md) "Notification emails") still holds them;
+  [liveworkspace accounts](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails") still holds them;
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `teamId`, and not the caller (404
   otherwise, so there is no probing which users exist);

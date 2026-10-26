@@ -9,7 +9,7 @@ A document's picture, used three ways:
 3. **Share card**: the picture a pasted share link previews with ([Share-link previews](../013-workspace/share-link-previews.md)).
 
 **livediagram renders; liveworkspace stores and serves.** Previews are a liveworkspace platform feature, built
-once for every app ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)): its media service
+once for every app ([liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)): its media service
 keeps every app's pictures in one bucket, decides when one is stale from the index's `updatedAt`, asks the index
 who may see it, and serves the Explorer's preview, the live image and the share card. The only part that is
 livediagram's is drawing a canvas, which happens where the canvas is.
@@ -157,7 +157,7 @@ choice is document-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 Every Explorer surface the editor draws (its in-editor panel and the workspace frame) is the shared Explorer,
-[`@liveworkspace/explorer`](../../../../packages/explorer/README.md) (liveworkspace/docs/one-explorer.md); its list,
+[`@liveworkspace/explorer`](../../../../packages/explorer/README.md) (liveworkspace/docs/specs/004-index/one-explorer.md); its list,
 card and details views, its phone layout, its view toggle and its actions menu are the platform's. livediagram
 supplies the picture: `renderDocumentThumbnail` (`apps/editor/lib/explorer-thumbnail.tsx`) draws each box with the
 shared `DocumentThumbnail` component (`components/panels/DocumentThumbnail.tsx`), which also backs the tab-organise
@@ -174,7 +174,7 @@ cut-out. The client also strips the snapshot's fixed `width`/`height` (keeping t
 ## Scope
 
 - **SVG from the app, PNG from the platform.** livediagram draws SVG only; the share card's PNG is liveworkspace's
-  ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)).
+  ([liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)).
 - The List/Card toggle covers the main browse views and the team
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).

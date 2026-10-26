@@ -4,7 +4,7 @@ Status: shipped on the shared Explorer, [`@liveworkspace/explorer`](../../../../
 grammar, matching, suggestion engine and view models live in its `src/lens/` (pure, no DOM or React); the field, the
 chips and the states are its SearchField and Lens components. The index narrows the lists
 themselves: the filters are `GET /items` and `GET /shared` query parameters
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "The lens's filters").
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "The lens's filters").
 
 ## What
 

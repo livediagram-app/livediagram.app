@@ -2,7 +2,7 @@
 
 Derived from [Explorer Home](../explorer-home.md) "Opens" and [Offline Mode](../../006-design/offline-mode.md). Home
 itself is the shared Explorer's view over liveworkspace's index
-([one-explorer.md](../../../../../liveworkspace/docs/one-explorer.md)); the index counts a cloud design's opens. This
+([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); the index counts a cloud design's opens. This
 blueprint covers the one part livedesign keeps: the opens of a design stored only in this browser. The spec
 decides; this file only adds engineering precision.
 

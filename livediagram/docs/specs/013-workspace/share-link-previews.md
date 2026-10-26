@@ -33,7 +33,7 @@ gave nobody a reason to tell them apart or click.
 ## The share card
 
 `GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width. It is
-liveworkspace's, built once for every app ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)
+liveworkspace's, built once for every app ([liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)
 "The share card"): this app's router forwards the address to liveworkspace's previews, and livediagram only draws
 the picture on it, through its export door ([Document SVG snapshots](../006-document/document-snapshots.md)).
 
@@ -70,7 +70,7 @@ of that link sees, so it needs no gate beyond the link's own.
 ## Limits and abuse
 
 - Both doors answer only what the live image already answers for the same code, so they add no way to learn more
-  from a guessed code. Their limits are the platform's ([liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)
+  from a guessed code. Their limits are the platform's ([liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)
   "Cost and performance").
 - The editor worker passes the visitor's address on, so the service sees visitors, not the editor worker as one
   caller.

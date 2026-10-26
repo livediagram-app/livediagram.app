@@ -4,7 +4,7 @@ Status: shipped, on liveworkspace's index and the shared Explorer ([`@liveworksp
 
 Every [team](teams.md) has a shared library, a folder tree plus designs, that every **joined** member can see and
 manage. A team folder is an index folder with a `teamId`, and a team design an index item with one; a design is in
-exactly one place, a person's own tree or one team's library ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, favourites, defaults").
+exactly one place, a person's own tree or one team's library ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Folders, favourites, defaults").
 
 ## Access
 

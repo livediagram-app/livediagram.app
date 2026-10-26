@@ -88,7 +88,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 
 Ownership is a set of powers, held by the plan's **owner** (its creator) and every joined member of the team it is
 filed in. Who holds them is the index's to say: it issues the owner and team members an `edit` grant, and keeps
-sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
+sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "Sharing and access"). No level grants any of them. The full ownership model is [Later](#later).
 
 ## Share links

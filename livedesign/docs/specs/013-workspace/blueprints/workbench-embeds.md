@@ -1,6 +1,6 @@
 # Workbench embeds: blueprint
 
-> Pairing, tickets, sessions, ending access and the sweep are liveworkspace's [Workbenches](../../../../../liveworkspace/docs/workbench.md), in the accounts Worker
+> Pairing, tickets, sessions, ending access and the sweep are liveworkspace's [Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md), in the accounts Worker
 > (`liveworkspace/apps/accounts/src/workbench/`), with the site's pairing page; `/api/workbench/*` is forwarded there
 > unchanged ([Router app](../../016-platform/router-app.md)). This blueprint covers livedesign's side: a `lvw_` bearer
 > checked with liveworkspace (`auth/workbench-session.ts`, `@liveworkspace/auth-client`
@@ -217,7 +217,7 @@ Don't allow).
 
 ### Pairing
 
-liveworkspace's ([Workbenches](../../../../../liveworkspace/docs/workbench.md) "Pairing"): a mint or `workbench pair` for an origin the token has not paired asks the person
+liveworkspace's ([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Pairing"): a mint or `workbench pair` for an origin the token has not paired asks the person
 on the pairing page, answering a mint `428 pairing_required { pairingUrl, expiresAt }`; the CLI polls the request's
 status every `interval` seconds. Unpairing, or the token's revocation, ends access (below).
 
@@ -304,7 +304,7 @@ Everything else is `confined`, among it: `designs/:doc` `DELETE`, `copy`, `folde
 ### Ending access
 
 liveworkspace's store ends a pairing's access when it is unpaired, its token is revoked or the account closes
-([Workbenches](../../../../../liveworkspace/docs/workbench.md)), and asks each design a session named or joined to close its sockets:
+([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), and asks each design a session named or joined to close its sockets:
 `POST /api/internal/items/:id/workbench-close` (`routes/internal-items.ts`) runs the room's close. The room closes
 every socket whose attachment `workbenchPairing` equals the pairing id with `WORKBENCH_ENDED_CLOSE`, reason
 `workbench-ended`. The page's own `DELETE /api/workbench/sessions/current` closes nothing (renewal keeps the socket,
@@ -660,7 +660,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 ### Routes
 
-`/api/workbench/*` (tickets, sessions, pairing requests and pairings) is liveworkspace's ([Workbenches](../../../../../liveworkspace/docs/workbench.md)), forwarded by the
+`/api/workbench/*` (tickets, sessions, pairing requests and pairings) is liveworkspace's ([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), forwarded by the
 router. livedesign's own: `POST /api/internal/items/:id/workbench-close` (the index's key only), and every design
 route under a `lvw_` bearer, through the choke point.
 
@@ -869,7 +869,7 @@ covers them by dispatch probe.
 
 ## Data and persistence
 
-The pairings, tickets and sessions live in each person's workbench store on liveworkspace ([Workbenches](../../../../../liveworkspace/docs/workbench.md)); a secret is kept
+The pairings, tickets and sessions live in each person's workbench store on liveworkspace ([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)); a secret is kept
 only as its hash. livedesign keeps none of it:
 
 | Field                              | Class     | Notes                            |
@@ -1023,7 +1023,7 @@ offers no Appearance control (WB15). The Reconnect line is `WorkbenchReconnectLi
 
 ### The pairing page (`/workbench/pair?code=`)
 
-liveworkspace.app's page (`PairWorkbench`, [Workbenches](../../../../../liveworkspace/docs/workbench.md)): it asks the signed-in owner to **Allow** or **Don't allow** the
+liveworkspace.app's page (`PairWorkbench`, [Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)): it asks the signed-in owner to **Allow** or **Don't allow** the
 workbench at its origin with the named token.
 
 ### The workspace frame
@@ -1120,7 +1120,7 @@ and the two CLI rows.
 ## Testing
 
 Pairing, the mint, redemption, the store, ending access and the pairing page are tested on liveworkspace
-([Workbenches](../../../../../liveworkspace/docs/workbench.md)). livedesign's:
+([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)). livedesign's:
 
 | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Test                                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |

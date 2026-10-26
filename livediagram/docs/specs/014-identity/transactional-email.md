@@ -2,7 +2,7 @@
 
 **Status: in progress.** Optional, off without its binding. The api worker sends a small set of account
 emails through Cloudflare Email Service, the way every app on the platform does
-([Email](../../../../liveworkspace/docs/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)) and the photo reader
+([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)) and the photo reader
 ([Note reader](../021-event-storming/note-reader.md)), it is **entirely gated on configuration**, here the
 `send_email` binding `EMAIL`: when it is absent the whole feature is inert — no sends, no new request
 work — and everything else behaves exactly as before. Guests and the canvas stay
@@ -14,7 +14,7 @@ livediagram sends the emails about what happens in livediagram. The account's ow
 emails come from liveworkspace, once for every app: the welcome, the onboarding
 series (week 1, week 2, the activation nudge, win-back, all opt-out `notifyTips`),
 team invitations, their reminders and answers, and API-token notices
-(liveworkspace/docs/accounts.md "Onboarding emails"). livediagram tells
+(liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). livediagram tells
 liveworkspace what it needs for them: each signed-in account it sees (a sighting,
 which also counts sign-ups) and each save of a document someone owns (activity,
 once a minute a document, `apps/api/src/liveworkspace/activity.ts`).
@@ -78,7 +78,7 @@ help article.
 - `EMAIL_FROM` (plain var) — the From identity, a bare address or `Name <address>`. Its domain must be
   onboarded to Email Service on this account. livediagram.app isn't on it yet, so production and staging
   both send as `livediagram <hello@liveplanner.app>` until it moves
-  ([Email](../../../../liveworkspace/docs/email.md) "Senders until the domains move"). Unset, it defaults to
+  ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md) "Senders until the domains move"). Unset, it defaults to
   `livediagram <hello@livediagram.app>`.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
   Default `https://livediagram.app`.

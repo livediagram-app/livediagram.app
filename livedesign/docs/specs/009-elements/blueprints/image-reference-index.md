@@ -3,7 +3,7 @@
 Derived from [Images](../images.md), sections [Reference index](../images.md#reference-index),
 [Retention](../images.md#retention-unused-image-cleanup) and the `GET /api/images/:id` and `GET /api/images/usage`
 rows of [API endpoints](../images.md#api-endpoints). Images themselves, their gallery and the sweep of unplaced ones
-are liveworkspace's media service's ([media.md](../../../../../liveworkspace/docs/media.md) "References",
+are liveworkspace's media service's ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md) "References",
 "Retention"); this blueprint covers what livedesign keeps so the service knows which images each design places. The
 spec decides; this file only adds engineering precision.
 

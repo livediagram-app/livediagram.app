@@ -193,7 +193,7 @@ Side effects, all in `waitUntil` (PR24, PR25):
 | delete  | none                                                                                                         |
 
 The Timeline entry is the platform's: the plan's outbox reports the write to the index
-([liveworkspace/docs/one-explorer-contracts.md](../../../../../liveworkspace/docs/one-explorer-contracts.md) "Timeline").
+([liveworkspace/docs/specs/004-index/one-explorer-contracts.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Timeline").
 
 `ProjectCommentThread`:
 

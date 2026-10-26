@@ -316,7 +316,7 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 ### Elsewhere
 
 - The Inbox: liveplanner's own Inbox once listed live links with unseen responses (a read since removed). The
-  Inbox is now the index's ([One Explorer](../../../../../liveworkspace/docs/one-explorer.md)), which carries no form responses yet.
+  Inbox is now the index's ([One Explorer](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)), which carries no form responses yet.
 - Settings (`person/settings.ts`): `notifyFormResponses` (default on), liveplanner's own scope at the accounts Worker.
 - `LIVE_ROUTE_SEGMENTS` += `form`; `pageViewPath('/form/…')` is `/form`; `API_ROUTE_RESOURCES` += `forms`.
 

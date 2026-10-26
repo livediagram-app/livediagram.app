@@ -49,7 +49,7 @@ Prose follows the context:
 
 - **livediagram** stays the product and brand name.
 - A document synced to Google Drive is a `.livediagram` file of MIME type
-  `application/vnd.livediagram+json` ([Google Drive sync](../../../../liveworkspace/docs/drive.md)):
+  `application/vnd.livediagram+json` ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)):
   both name the app that opens the file, not what is inside it.
 
 <!-- legacy-names -->

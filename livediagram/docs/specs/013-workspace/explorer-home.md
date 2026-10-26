@@ -15,7 +15,7 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
   is **New Canvas**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livediagram-lends-it)).
 - **What it makes.** The hero shows livediagram's four kinds of work, a **Flowchart**, a **Mind Map**, a
   **Whiteboard** and a **Workshop**, each a small picture in livediagram's blue that starts one (`/new?template=`
-  `flowchart`, `mindmap`, `whiteboard`, `blank-session`), laid out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero").
+  `flowchart`, `mindmap`, `whiteboard`, `blank-session`), laid out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
 - **The first run.** When Home finds nothing yet, the shared Explorer shows its welcome in place of empty lists, from
   livediagram's welcome manifest (`packages/templates/welcome.json`, the package's `./welcome.json` export: the blanks and Popular templates it offers
   to start from), loaded once, only then. The manifest is written beside the template catalogue by
@@ -39,6 +39,6 @@ Most Used, and Jump Back In reads both in one request. A canvas opened from This
 only (`apps/editor/lib/offline/offline-opens.ts`), in the This Browser list the Explorer reads, so Jump Back In can
 show it too ([Offline Mode](../006-document/offline-mode.md)).
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
-[one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in
+[one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows
 it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

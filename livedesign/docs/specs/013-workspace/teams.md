@@ -1,6 +1,6 @@
 # Teams
 
-Groups of signed-in people. Teams belong to the liveworkspace account, not to livedesign: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livedesign.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livedesign keeps no copy of them: it shows the teams its people are in and gives each a shared library of designs ([Team Shared Designs](team-shared-designs.md)).
+Groups of signed-in people. Teams belong to the liveworkspace account, not to livedesign: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livedesign.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livedesign keeps no copy of them: it shows the teams its people are in and gives each a shared library of designs ([Team Shared Designs](team-shared-designs.md)).
 
 ## Why
 
@@ -51,7 +51,7 @@ API clients make a team with `POST /api/teams` (`apps/api/src/routes/team-create
 
 ## Invitations
 
-Invitations are made, reminded and expired by liveworkspace ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Invitations"), and answered in the Explorer, so people hear of an invitation where they work.
+Invitations are made, reminded and expired by liveworkspace ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Invitations"), and answered in the Explorer, so people hear of an invitation where they work.
 
 - `GET /api/teams/invites` (`apps/api/src/routes/team-invites.ts`) reads them from liveworkspace (`pendingInvitationsFor` in `@liveworkspace/auth-client`, `POST /api/account/internal/invitations`): each with the team's name, organisation and joined-member count, the role offered, who invited them and when (`TeamInvite` in `@livedesign/api-schema`). An account with no verified address has none.
 - The answer is remembered per isolate for 30 seconds, and calls for the same account at once share one request, so the Explorer's load (one `GET /api/teams/invites`, beside `GET /api/teams`) costs at most one call to liveworkspace. An invitation answered in the Explorer leaves this list within that.

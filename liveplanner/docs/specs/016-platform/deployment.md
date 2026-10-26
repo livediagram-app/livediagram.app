@@ -29,8 +29,8 @@ own host, `mcp.liveplanner.app`, and binds to the api worker directly, not throu
 liveworkspace ([Router app](router-app.md)).
 
 Telemetry, its dashboard, the status page, the Explorer, previews, Drive sync and the index are liveworkspace's
-services and deploy with the platform ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md),
-[liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)).
+services and deploy with the platform ([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md),
+[liveworkspace/docs/specs/006-media/previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)).
 
 Each app's `wrangler.toml` sits at the app root and is the source of truth for the worker's name, compatibility
 date, `[assets]`, `[[services]]`, Durable Object bindings, the account it deploys to (`account_id`, the liveworkspace
@@ -149,7 +149,7 @@ A deploy writes code and plain vars only. Each Worker's secrets (the accounts cl
 `MEDIA_KEY`, `TELEMETRY_KEY`, `GUEST_ID_HMAC_SECRET` and the rest) are set on it with `wrangler secret put` (with
 `--env staging` for staging) and survive every deploy. [Secrets policy](../002-project-scope/secrets-policy.md) holds
 the full table. Email needs no secret: its `send_email` binding is the credential
-([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
 
 ## Custom domain
 

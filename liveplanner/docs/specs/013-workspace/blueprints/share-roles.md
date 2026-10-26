@@ -1,7 +1,7 @@
 # Share roles: blueprint
 
 > **Platform parts.** Share links, their levels and who may reach a plan are liveworkspace's index's
-> ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
+> ([One Explorer: contracts](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
 > shared one from `@liveworkspace/explorer`. This blueprint covers how liveplanner enforces a level once it holds one.
 
 Derived from [Share roles](../share-roles.md), with the room of
