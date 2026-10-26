@@ -149,16 +149,27 @@ jobs:
           flags: ${{ matrix.group }}
           fail_ci_if_error: false
 
+      # Listed by find, which prunes node_modules: upload-artifact's own `**` glob follows pnpm's symlinks
+      # through every node_modules (tens of millions of paths; an exclusion filters but never prunes), and
+      # ran past the job's timeout.
+      - name: List the coverage files
+        id: lcov
+        if: matrix.coverage != ''
+        run: |
+          {
+            echo 'paths<<LCOV_PATHS'
+            find . -name node_modules -prune -o -path '*/coverage/lcov.info' -print
+            echo 'LCOV_PATHS'
+          } >> "$GITHUB_OUTPUT"
+
       # The lcov files the coverage report reads (docs/ci.md "Coverage report"): a pull request's for its
       # report, main's as the base the next pull requests compare with, so kept 30 days.
       - name: Keep the coverage for the report
-        if: matrix.coverage != ''
+        if: matrix.coverage != '' && steps.lcov.outputs.paths != ''
         uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ matrix.group }}-tests
-          path: |
-            **/coverage/lcov.info
-            !**/node_modules/**
+          path: ${{ steps.lcov.outputs.paths }}
           if-no-files-found: ignore
           retention-days: 30
 
