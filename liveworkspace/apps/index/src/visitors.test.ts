@@ -10,16 +10,31 @@ const feed = async (auth: string) =>
     e.type.endsWith('_by_visitor'),
   );
 
-async function link(auth: string, itemId: string) {
+async function link(auth: string, itemId: string, extra: Record<string, unknown> = {}) {
   const res = await call(`/items/${itemId}/share`, {
     method: 'POST',
     auth,
-    body: { level: 'view' },
+    body: { level: 'view', ...extra },
   });
   return (await body<{ link: ShareLink }>(res)).link;
 }
 
 describe('visitors on the Timeline', () => {
+  it("records no visit through a public link (a Community post's)", async () => {
+    const ada = await person('user_p1');
+    const eve = await person('user_p2');
+    const item = await makeItem(ada.auth, { title: 'Post' });
+    const { code } = await link(ada.auth, item.id, { public: true });
+    const res = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      auth: eve.auth,
+      headers: { 'X-Share-Code': code },
+    });
+    expect(res.status).toBe(200);
+    await settle();
+    expect(await feed(ada.auth)).toEqual([]);
+  });
+
   it("records a link visitor's open once a day, and their copy once, for the owner only", async () => {
     const team = [{ id: 'team_v' }];
     const ada = await person('user_v1', { teams: team });

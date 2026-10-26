@@ -73,6 +73,10 @@ describe('createGrantVerifier', () => {
     expect(await verify(await grant({ trashed: true }))).toMatchObject({ trashed: true });
     expect(await verify(await grant({ trashed: 'yes' }))).not.toHaveProperty('trashed');
     expect(await verify(await grant())).not.toHaveProperty('trashed');
+    expect(await verify(await grant({ link: 'CODE' }))).toMatchObject({ link: 'CODE' });
+    expect(await verify(await grant())).not.toHaveProperty('link');
+    expect(await verify(await grant({ link: '' }))).toBeNull();
+    expect(await verify(await grant({ link: 7 }))).toBeNull();
   });
 
   it("refuses another app's grant", async () => {

@@ -739,11 +739,13 @@ async function recordOpen(ctx: RouteContext, id: string): Promise<Response> {
     // Most Used: today counts once, however many opens.
     ...useDayStatements(env, person.id, id, now),
   ];
-  // Through a link: kept for Shared with me, and a first time in tells the app (notices.ts).
-  const visitAt = loaded.access.via === 'link' && loaded.access.code ? statements.length : -1;
+  // Through a link: kept for Shared with me, and a first time in tells the app (notices.ts). Not a public link's (a
+  // Community post's): its visitors are not added to Shared, and its author is not told.
+  const { access } = loaded;
+  const visitAt = access.via === 'link' && access.code && !access.public ? statements.length : -1;
   if (visitAt >= 0) {
     statements.push(firstVisitStatement(env, person.id, id));
-    statements.push(sharedWithUpsert(env, person.id, id, loaded.access.code!, now));
+    statements.push(sharedWithUpsert(env, person.id, id, access.code!, now));
   }
   const results = await db.batch(statements);
   if (visitAt >= 0 && wasFirstVisit(results[visitAt])) {
@@ -771,6 +773,7 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
     ownerId: row.owner_id,
     teamId: row.team_id,
     trashed: row.trashed_at !== null,
+    link: access.via === 'link' ? access.code : null,
   });
   if (!grant) return fail(503, 'grants_unavailable');
   // Through a link: Opened by a Visitor, on the owner's Timeline.

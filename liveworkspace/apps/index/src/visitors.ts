@@ -32,7 +32,8 @@ export function recordVisitorOpen(
   access: Access,
   at = Date.now(),
 ): void {
-  if (access.via !== 'link' || !access.code) return;
+  // A public link's (a Community post's) visits are not recorded: the post's copy count stands in for them.
+  if (access.via !== 'link' || !access.code || access.public) return;
   const id = visitorOpenedId(row.id, visitorOf(person, access), at);
   if (written.has(id)) return;
   written.add(id);

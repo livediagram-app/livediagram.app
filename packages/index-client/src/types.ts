@@ -255,6 +255,9 @@ export type GrantClaims = {
   // Set on a grant for an item in the Trash (only its owner and team are granted one): the app answers it as
   // trashed (410 `document_trashed` on livediagram), not as missing.
   trashed?: true;
+  // The share code the access came through, whoever holds the grant (a person who opened the link before
+  // included), so an app never has to take the caller's word for it. Absent for the owner and the team.
+  link?: string;
   iat: number;
   exp: number;
   jti: string;

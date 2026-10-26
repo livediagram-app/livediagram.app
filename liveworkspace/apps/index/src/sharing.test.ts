@@ -1,6 +1,7 @@
 // Sharing over HTTP: links and their levels, tabs, expiry and passwords; what a link opens; Shared with
 // me; revoking.
 import type { Item, ShareLink, SharedWithItem } from '@liveworkspace/index-client';
+import { decodeJwt } from 'jose';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
@@ -345,6 +346,63 @@ describe('what a link opens, and Shared with me', () => {
     expect(
       (await body<{ shared: unknown[] }>(await call('/shared', { auth: bob.auth }))).shared,
     ).toEqual([]);
+  });
+
+  it('names the link in the grant, whether or not the caller sends its code', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'edit' });
+    await call(`/share/${link.code}`, { auth: bob.auth });
+    const claimsOf = async (auth: string, headers: Record<string, string> = {}) => {
+      const res = await call(`/items/${item.id}/grant`, { method: 'POST', auth, headers });
+      expect(res.status).toBe(200);
+      return decodeJwt((await body<{ grant: string }>(res)).grant);
+    };
+    // Through Shared, with no code sent: still the link's access, and the grant says so.
+    expect(await claimsOf(bob.auth)).toMatchObject({
+      sub: 'user_b',
+      level: 'edit',
+      link: link.code,
+    });
+    expect(await claimsOf(bob.auth, { 'X-Share-Code': link.code })).toMatchObject({
+      link: link.code,
+    });
+    // The owner's own access names no link, even sent one.
+    expect(await claimsOf(ada.auth)).not.toHaveProperty('link');
+    expect(await claimsOf(ada.auth, { 'X-Share-Code': link.code })).not.toHaveProperty('link');
+  });
+
+  it('keeps no Shared entry, notice or visit for a public link', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view', public: true });
+    expect((await call(`/share/${link.code}`, { auth: bob.auth })).status).toBe(200);
+    const grant = await call(`/items/${item.id}/grant`, {
+      method: 'POST',
+      auth: bob.auth,
+      headers: { 'X-Share-Code': link.code },
+    });
+    expect(decodeJwt((await body<{ grant: string }>(grant)).grant)).toMatchObject({
+      link: link.code,
+    });
+    expect(
+      (
+        await call(`/items/${item.id}/open`, {
+          method: 'POST',
+          auth: bob.auth,
+          headers: { 'X-Share-Code': link.code },
+        })
+      ).status,
+    ).toBe(204);
+    await settle();
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
+    expect(h.appCalls.filter((c) => c.url.endsWith('/notices'))).toEqual([]);
+    // Without the code, Bob reaches nothing: the public link was never kept for him.
+    expect((await call(`/items/${item.id}/grant`, { method: 'POST', auth: bob.auth })).status).toBe(
+      404,
+    );
   });
 
   it('forgets a shared item on request', async () => {

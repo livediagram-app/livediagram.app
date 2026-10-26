@@ -76,6 +76,9 @@ export type GrantSubject = {
   teamId: string | null;
   // The item is in the Trash: its owner's and team's grant says so, so the app answers it as trashed.
   trashed?: boolean;
+  // The share code the access came through, or null for the owner and the team: signed in, so an app reads link
+  // access from the grant and never from a header the caller may leave off.
+  link?: string | null;
 };
 
 export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantResponse | null> {
@@ -90,6 +93,7 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     team: subject.teamId,
     owner: subject.ownerId,
     ...(subject.trashed ? { trashed: true } : {}),
+    ...(subject.link ? { link: subject.link } : {}),
   })
     .setProtectedHeader({ alg: GRANT_ALG, kid: key.kid, typ: 'JWT' })
     .setIssuer(grantIssuer(env))

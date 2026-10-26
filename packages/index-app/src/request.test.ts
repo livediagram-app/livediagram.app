@@ -54,6 +54,35 @@ describe('resolveItemGrant', () => {
     expect(calls).toHaveLength(0);
   });
 
+  it('takes the link from the grant, whether or not the request names it', async () => {
+    const linked = grantOf({ link: 'CODE' });
+    const bare = await resolveItemGrant(
+      service,
+      ENV,
+      req({ [ITEM_GRANT_HEADER]: linked }),
+      { kind: 'bearer', token: 't' },
+      'I',
+    );
+    expect(bare).toMatchObject({ shareCode: 'CODE' });
+    // Neither the header nor its absence overrides the grant's word; a grant naming none keeps the header's.
+    const sent = await resolveItemGrant(
+      service,
+      ENV,
+      req({ [ITEM_GRANT_HEADER]: linked, 'X-Share-Code': 'OTHER' }),
+      { kind: 'bearer', token: 't' },
+      'I',
+    );
+    expect(sent).toMatchObject({ shareCode: 'CODE' });
+    const own = await resolveItemGrant(
+      service,
+      ENV,
+      req({ [ITEM_GRANT_HEADER]: grantOf({}), 'X-Share-Code': 'OTHER' }),
+      { kind: 'bearer', token: 't' },
+      'I',
+    );
+    expect(own).toMatchObject({ shareCode: 'OTHER' });
+  });
+
   it('refuses a grant for another item, then asks for its own', async () => {
     const grant = await resolveItemGrant(
       service,

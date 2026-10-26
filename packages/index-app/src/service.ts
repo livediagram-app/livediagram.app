@@ -46,6 +46,8 @@ export type ItemGrant = {
   owner?: string | null;
   // Epoch seconds.
   exp: number;
+  // The share code the access came through: the grant's `link` claim, else a link visitor's subject, else the
+  // request's share header.
   shareCode: string | null;
   // The grant as the index signed it, for the room's ticket.
   token: string;
@@ -83,7 +85,8 @@ export function itemGrantOf(
     team: claims.team,
     owner: claims.owner ?? null,
     exp: claims.exp,
-    shareCode: linkCodeOf(claims.sub) ?? shareCode,
+    // The grant's own word first: a caller who leaves the share header off still came through the link.
+    shareCode: claims.link ?? linkCodeOf(claims.sub) ?? shareCode,
     ...(claims.trashed ? { trashed: true } : {}),
   };
 }

@@ -341,7 +341,8 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;
     access = await linkAccess(link, password);
     if (access instanceof Response) return access;
-    if (person) {
+    // A public link (a Community post's) is not kept under Shared, and its author is not told of the visit.
+    if (person && !link.public) {
       const [visit] = await env.INDEX_DB.batch([
         firstVisitStatement(env, person.id, row.id),
         sharedWithUpsert(env, person.id, row.id, code, Date.now()),

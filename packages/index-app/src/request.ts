@@ -33,8 +33,8 @@ export { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER };
 
 const PASSWORD_REFUSALS = new Set(['password_required', 'password_invalid']);
 
-// The share code a link visitor's request carries. Its PRESENCE is the only honest signal that a caller arrived
-// through a share link: a joined team member reads every team item without one.
+// The share code a link visitor's request carries. The grant's `link` claim is the signal an app relies on (a person
+// who opened the link before may send no header); the header only adds to it, for a grant signed without the claim.
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get(SHARE_CODE_HEADER);
 }

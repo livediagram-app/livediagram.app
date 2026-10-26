@@ -249,7 +249,7 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
 - `GET /share/:code` — public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
-  opens it; 401 `password_required`, 403 `password_invalid` (a public link: 404).
+  opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401 `password_required`, 403 `password_invalid` (a public link: 404).
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 
 Who gets what, the rule the grant applies: the owner, and every joined member of the item's team, edit
@@ -271,6 +271,7 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
   "team": null,
   "owner": "user_…",
   "trashed": true,
+  "link": "<code>",
   "iat": 0,
   "exp": 0,
   "jti": "…"
@@ -280,7 +281,11 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
 `team` and `owner` are the item's team and owner as the index has them when it signs. `trashed` is there only for an
 item in the Trash (granted to its owner and team alone; a link reaches nothing), so the app answers it as trashed
 rather than missing (livediagram: 410 `document_trashed`); `POST /items/:id/grant` says `trashed: true` beside it.
-An app never keeps such a grant in its cache, so a restore is seen on the next request. The item's Durable Object
+An app never keeps such a grant in its cache, so a restore is seen on the next request. `link` is the share code the
+access came through, on every grant a link gave, a signed-in person's included (one who opened the link before reaches
+the item again through Shared with no code sent). An app reads link access from it, never from whether the request
+carried `X-Share-Code`: the caller can leave a header off, so a link's limits (a Community post's content-only pass,
+the owner-only "Add to <Item>") would fall away with it. The header only adds to a grant signed without the claim. The item's Durable Object
 keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
 (`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
 reaches the item the next time anyone opens it.
