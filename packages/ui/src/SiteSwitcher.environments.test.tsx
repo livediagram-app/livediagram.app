@@ -22,7 +22,7 @@ function linksOn(pageUrl: string, hrefFor?: Parameters<typeof SiteSwitcher>[0]['
 }
 
 const PRODUCTION = [
-  'https://liveworkspace.app',
+  'https://www.liveworkspace.app',
   'https://livediagram-router.liveworkspace-easing509.workers.dev',
   'https://www.liveplanner.app',
   'https://www.livedocuments.app',
