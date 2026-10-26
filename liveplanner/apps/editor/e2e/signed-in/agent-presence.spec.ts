@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
-import { arrange, open, type Setup, WEBBER } from './agent-session';
+import { arrange, open, PERSON_BOX, type Setup, WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
 // Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared project open
@@ -73,9 +73,11 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
   });
   await expect(page.locator('[data-agent-focus-id]')).toHaveCount(0);
 
-  // Comments through the REST verbs land live: the add, a reply, then the resolve takes the badge away.
+  // Comments through the REST verbs land live: the add, a reply, then the resolve takes the badge away. They go on
+  // Webber's box: a Plan item (the API view) takes no comments and shows no badge (docs/specs/026-plan/plan-mode.md
+  // "Nothing attached to Plan items").
   const added = await comments(page, s, '', {
-    elementId: 'api',
+    elementId: PERSON_BOX.id,
     text: 'Should this be idempotent?',
   });
   expect(added.status()).toBe(201);
