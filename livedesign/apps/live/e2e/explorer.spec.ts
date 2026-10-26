@@ -60,10 +60,12 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await expect.poll(() => thisBrowserList(page), { timeout: 15_000 }).not.toContain(id);
   await page.keyboard.press('Escape');
 
-  // It is listed in My Work, under the name the editor gave it.
+  // It is listed in My Work, under the name the editor gave it. Its links are the item's address in its app (an
+  // absolute URL on the app's origin); the card's preview is a second link, "Open <title>", so the title is read from
+  // the one without that label.
   await page.goto('/explorer');
   await showView(page, 'My Work');
-  const made = page.locator(`main a[href^="/design/${id}"]`);
+  const made = page.locator(`main a[href$="/design/${id}"]:not([aria-label])`);
   await expect(made).toBeVisible();
   const firstTitle = (await made.innerText()).trim();
 
