@@ -1,5 +1,8 @@
 # Architecture blueprint defaults
 
-One row per default applied where a spec is silent or qualitative. Rows that name a constant are read from the code: the spec gives no value, the code's is the default.
+One row per default applied where a spec is silent. Each code is cited in its blueprint's "Defaults ledger".
 
-None: every value in this category's blueprint is read from configuration the spec names.
+| #    | Blueprint    | Default applied                                                                                  |
+| ---- | ------------ | ------------------------------------------------------------------------------------------------ |
+| ARC1 | architecture | a forward loop is answered `508 Loop Detected` as plain text, never retried.                     |
+| ARC2 | architecture | a sign-in's cookies live on an app's address for at most 15 minutes, whatever liveworkspace set. |

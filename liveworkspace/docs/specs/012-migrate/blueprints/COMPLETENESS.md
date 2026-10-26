@@ -3,10 +3,10 @@
 ## migrate
 
 - [x] Domain and naming
-- [ ] Behaviour and state
-- [x] Interfaces and contracts
-- [ ] Data and persistence
-- [ ] Errors and edge cases
+- [x] Behaviour and state
+- [ ] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
 - [x] Security and trust
 - [x] Performance and limits
 - [ ] Presentation and UX

@@ -1,108 +1,183 @@
-# The index: blueprint
+# The index service: blueprint
 
-Derived from [index-service.md](../index-service.md), [one-explorer.md](../one-explorer.md) and [one-explorer-contracts.md](../one-explorer-contracts.md). The spec decides; this file only adds engineering precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md). Paths are relative to the repository root.
+Derived from [index-service.md](../index-service.md), [one-explorer.md](../one-explorer.md) and
+[one-explorer-contracts.md](../one-explorer-contracts.md). The spec decides; this file only adds engineering
+precision, read from the code. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md)
+and cited as `IDXn`. Paths are relative to the repository root.
+
+This file holds the Worker as a whole: routing, who may call, the access rule, grants, the Drive flag, the crons,
+the tables, configuration, logs and tests. Each feature has its own file:
+
+| Feature                      | Blueprint                                |
+| ---------------------------- | ---------------------------------------- |
+| Items, folders, lists, opens | [items.md](items.md)                     |
+| Share links and passwords    | [sharing.md](sharing.md)                 |
+| What items push; the Inbox   | [inbox.md](inbox.md)                     |
+| The Timeline                 | [timeline.md](timeline.md)               |
+| The Trash, purges, closing   | [trash.md](trash.md)                     |
+| Default folders              | [default-folders.md](default-folders.md) |
+| Guest merge and the handoff  | [guest-merge.md](guest-merge.md)         |
 
 ## Domain and naming
 
-| Term           | Identifier                           | Meaning                                                                     |
-| -------------- | ------------------------------------ | --------------------------------------------------------------------------- |
-| Item           | `items` row                          | One document, project or design in an app                                   |
-| Folder         | `folders` row                        | A person's or team's folder, across every app                               |
-| Share link     | `share_links`, `share_passwords`     | A link to an item, at a role, with an optional password and expiry          |
-| Grant          | a signed token (`GRANT_SIGNING_KEY`) | The index's word that a person may open an item, checked offline by the app |
-| Timeline event | `timeline_events`                    | What happened, shown on the Timeline and the Inbox                          |
-| Purge          | `person_purges`, `purge_tombstones`  | Emptying a closed account's rows                                            |
-| Merge          | `person_app_merges`                  | A guest's items moved to their account on sign-up                           |
+| Term       | Identifier                                                         | Meaning                                                                       |
+| ---------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| App        | `App`: `livediagram`, `liveplanner`, `livedocuments`, `livedesign` | Each makes one `Kind`: `canvas`, `plan`, `document`, `design`                 |
+| Item       | `items` row, id a UUID (or one the client minted)                  | One Canvas, Plan, Document or Design; its content stays in its app            |
+| Scope      | `p:<owner id>` or `t:<team id>`                                    | The space an item or folder lives in; every list walks an index starting here |
+| Person     | `Person { id, kind, teams, app?, drive? }`                         | Who a request acts for                                                        |
+| Access     | `Access { level, tabId, via, code, public? }`                      | `via`: `owner`, `team` or `link`                                              |
+| Level      | `view` < `participate` < `edit`                                    | `levelAtLeast(have, need)`                                                    |
+| Grant      | ES256 JWT, 10 minutes                                              | The index's word that someone may open an item                                |
+| Share code | 14 characters of `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`                | A link; any `[A-Za-z0-9]{4,64}` is read, upper-cased                          |
+| Id         | `^[A-Za-z0-9_-]{1,128}$` (`isId`)                                  | Items, folders, teams, people; a part id (`isPartId`) is any 1 to 128 chars   |
+| Cursor     | base64url of `[at, id]`, at most 400 chars                         | Keyset paging                                                                 |
 
 ## Behaviour and state
 
-Every 15 minutes (`*/15 * * * *`): closed accounts' purges carry on, and the apps hear what was purged and
-which guests became accounts. Once a day (`23 4 * * *`): empty, unchanged items go to the Trash, items 30 days in it
-are purged, apps that missed a purge are retried, and owners of share links lapsing within the week are warned
-(`share-expiry.ts`). With `INDEX_ENABLED` off the crons do nothing. A write that changes a Drive-mirrored person's
-items signals Drive after the response (`DRIVE` binding).
+### Routing (`index.ts`), in order
+
+1. Outside `/api/index` is a bare `404 Not found`; `INDEX_ENABLED` `false`/`0`/`off` answers `404 not_found`;
+   a path segment that won't percent-decode is `404`.
+2. `app/…` goes to `handleApp` (an app's key, or the Drive key for `/app/people/:id/drive`).
+3. `internal/merge`, `internal/timeline`, `internal/purge-person`, `internal/workbench-close`: accounts' `MERGE_KEY`.
+4. `callerOf`: a delegate header refused is `401`; the Drive mirror naming a guest is `403 forbidden`; no caller is
+   `401 unauthorized`.
+5. An app acting for a person: on `items`, `trash`, `shared`, `inbox`, `timeline` (one segment) the query's `app` is
+   forced to that app.
+6. The Drive mirror reaches only `items`, `trash` and `folders`, never `items/:id/share*` (`404`).
+7. `jwks`, `share/:code…`, `items…`, then the person routes (`folders`, `favourites`, `recent-hidden`,
+   `placement-defaults`, `shared`, `inbox`, `trash`, `timeline`), each `401` without a person.
+8. After the answer, the people whose personal items or folders changed are signalled to Drive (`waitUntil`).
+
+### Who may call (`auth.ts`)
+
+| Caller                  | Proof                                                                                                                  | Person                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| A person                | `Bearer` access or guest token, verified offline against `${ACCOUNTS_URL}/api/auth`, audience any of `INDEX_AUDIENCES` | account: `{ id, teams }` from the claim; guest: `{ id, teams: [] }`      |
+| An app for an account   | `Bearer INDEX_KEY_<APP>`, `X-Index-App`, `X-Index-Person`, optional `X-Index-Teams` (≤ 50 ids)                         | `{ id, kind: 'account', teams, app }`; a guest, `:` or bad id is refused |
+| Accounts for an account | `Bearer MERGE_KEY`, `X-Index-App`, `X-Index-Person` (a workbench token's)                                              | as an app's                                                              |
+| The Drive mirror        | `Bearer INDEX_KEY_DRIVE`, `X-Index-App: drive`, `X-Index-Person`                                                       | `{ id, teams: [], drive: true }`; a guest is `403`                       |
+| A link visitor          | `X-Share-Code` (and `X-Share-Password`), with or without a person                                                      | `share: { code, password, visitor }`                                     |
+| An app's server         | `Bearer INDEX_KEY_<APP>` and `X-Index-App` (`callerApp`)                                                               | none                                                                     |
+| Accounts                | `Bearer MERGE_KEY` (`isMergeCaller`)                                                                                   | none                                                                     |
+
+Every key comparison is `timingSafeEqual` (both sides hashed). A verifier is kept per issuer and audience list for
+the isolate.
+
+### The access rule (`access.ts`, `rows.ts`)
+
+1. `directAccess`: the owner of a personal item (`team_id IS NULL`) or a member of its team (from the claim): `edit`,
+   no tab. A team item's maker reaches it only as a member.
+2. A team the claim lacks: `inTeamNow` asks accounts (`POST ${ACCOUNTS_URL}/api/account/index/teams { userId }`,
+   `MERGE_KEY`, 3 s), remembered by `@liveworkspace/index-app` `createTeamAccess` (an answer lacking the team reused for
+   2 s, one holding it for 30 s); accounts unreachable leaves the claim standing. Only for accounts, never a delegate or the mirror.
+3. No person and no share: `401`. A trashed item: `404` to anyone else.
+4. A live link (`expires_at IS NULL OR expires_at > now`): the code sent, else the one the person opened it through
+   (`shared_with`). None: `404`.
+5. `linkAccess`: a public link behind a password is `404`; a password needed and none sent is `401
+password_required`; a guess this isolate hasn't seen right is counted (`429 rate_limited`, `Retry-After: 60`); a
+   wrong one is `403 password_invalid`; else the link's level and tab.
+6. `loadItem(need, { manage })`: an app delegate reaches its own app's items only, the mirror its own personal
+   items only (`404` otherwise); `manage` refuses a link (`403`); a level below `need` is `403 forbidden`.
+
+### Grants (`grants.ts`)
+
+`mintGrant` signs `{ item, level, tab, team, owner, trashed?, link? }` with `iss = ${ACCOUNTS_URL}/api/index`, `aud =
+<app>`, `sub = <person id>` or `link:<code>`, `iat`, `exp = iat + 600`, `jti` a UUID, header `{ alg: ES256, kid, typ:
+JWT }`; answers `{ grant, level, tabId, expiresAt (ms), trashed? }`. The key is `GRANT_SIGNING_KEY` (a private P-256
+JWK with `kid`), cached by its text, a bad one retried next request. Development with no key signs with an ephemeral
+`dev-<8 hex>` key per isolate. Production without one: `503 grants_unavailable` on create and grant, and `GET /jwks`
+answers `503`. `GET /jwks` answers `{ keys: [publicJwk] }`, `Cache-Control: public, max-age=300`.
+
+### The Drive flag and signal (`drive.ts`)
+
+`touchItem` collects the owner of any personal item or folder a request changed. After the answer, one read of
+`drive_people` for those ids (guests skipped), then `POST https://drive/app/changes { personId, at }` with
+`DRIVE_KEY_INDEX` through the `DRIVE` binding, 6 at a time; failures are logged, never thrown. Without the binding
+nothing is read. A summary push signals the owner when `updated_at` moved on. `/app/people/:id/drive` with
+`INDEX_KEY_DRIVE`: `PUT` sets the flag (`ON CONFLICT DO NOTHING`, keeping `since`), `DELETE` clears, `GET` answers `{
+mirrored }`; a guest is `403`, a bad id `400`.
+
+### The crons (`scheduled`)
+
+Each step runs in `step()`: a throw is logged `[index] cron step failed: <name>` and the next step runs. Off: nothing.
+
+| Cron           | Steps, in order                                                                                                                                                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). |
+| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).                       |
+
+Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [timeline.md](timeline.md).
 
 ## Interfaces and contracts
 
-A browser calls `/api/index/…` with an accounts or guest token; an app's server with `INDEX_KEY_<APP>`,
-naming the app in `X-Index-App` and the person in `X-Index-Person`; Drive with `INDEX_KEY_DRIVE`; accounts' merges
-with `MERGE_KEY`. `@liveworkspace/index-client` wraps the routes; `@liveworkspace/index-app` is each app's side.
+Every answer is JSON with `Cache-Control: private, no-store` (but `GET /jwks`); a refusal is `{ "error": <code> }`
+from `INDEX_ERRORS`. A body over 512 KiB, cut off mid-read, or not a JSON object is `400 invalid_body` (an empty body
+is `{}`).
 
-Every route the specs name, with the section that defines it (each checked to have its path's literal in the code):
+| Path (under `/api/index`)                                                                                                              | Methods                       | Blueprint                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------ |
+| `/jwks`                                                                                                                                | GET                           | this file                                        |
+| `/items`, `/items/:id`, `/items/:id/{restore,copy,open,grant}`                                                                         | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
+| `/folders`, `/folders/:id`, `/folders/previews`                                                                                        | GET, POST, PATCH, DELETE      | [items.md](items.md)                             |
+| `/favourites`, `/favourites/:itemId`, `/recent-hidden/:itemId`                                                                         | GET, PUT, DELETE              | [items.md](items.md)                             |
+| `/items/:id/share`, `/items/:id/share-password`, `/share/:code`, `/share/:code/extend`, `/shared`, `/shared/:itemId`                   | GET, POST, PUT, PATCH, DELETE | [sharing.md](sharing.md)                         |
+| `/inbox`                                                                                                                               | GET                           | [inbox.md](inbox.md)                             |
+| `/timeline` (`?team=` for a team's Team Activity), `/timeline/seen`, `/timeline/dismiss`                                               | GET, POST                     | [timeline.md](timeline.md)                       |
+| `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                             |
+| `/placement-defaults`, `/placement-defaults/:key`                                                                                      | GET, PUT, DELETE              | [default-folders.md](default-folders.md)         |
+| `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [timeline.md](timeline.md) |
+| `/app/people/events`                                                                                                                   | PUT                           | [timeline.md](timeline.md)                       |
+| `/app/people/:id/count`                                                                                                                | GET                           | [sharing.md](sharing.md) (notices)               |
+| `/app/people/:id/drive`                                                                                                                | GET, PUT, DELETE              | this file                                        |
+| `/app/migration/handoff`                                                                                                               | POST                          | [guest-merge.md](guest-merge.md)                 |
+| `/internal/merge`                                                                                                                      | POST                          | [guest-merge.md](guest-merge.md)                 |
+| `/internal/purge-person`                                                                                                               | POST                          | [trash.md](trash.md)                             |
+| `/internal/timeline`                                                                                                                   | POST                          | [timeline.md](timeline.md)                       |
+| `/internal/workbench-close`                                                                                                            | POST                          | this file                                        |
 
-| Route                                                         | Specified in                                                                                                                       |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /api/internal/people/:guest/merge`                      | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /api/index/app/migration/handoff`                       | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `GET /items/:id`                                              | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `GET /share/:code`                                            | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /api/index/internal/merge`                              | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /api/index/internal/purge-person`                       | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /api/index/internal/workbench-close`                    | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `DELETE /app/people/:id/drive`                                | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /app/changes`                                           | [index-service.md "Who calls it"](../../004-index/index-service.md#who-calls-it)                                                   |
-| `POST /folders`                                               | [index-service.md "Decisions the contract left open"](../../004-index/index-service.md#decisions-the-contract-left-open)           |
-| `GET /folders`                                                | [index-service.md "Decisions the contract left open"](../../004-index/index-service.md#decisions-the-contract-left-open)           |
-| `DELETE /items/:id?reason=empty`                              | [index-service.md "Decisions the contract left open"](../../004-index/index-service.md#decisions-the-contract-left-open)           |
-| `DELETE /trash`                                               | [one-explorer-contracts.md "Reaching the index"](../../004-index/one-explorer-contracts.md#reaching-the-index)                     |
-| `POST /items`                                                 | [one-explorer-contracts.md "Reaching the index"](../../004-index/one-explorer-contracts.md#reaching-the-index)                     |
-| `POST /internal/merge`                                        | [one-explorer-contracts.md "Guests"](../../004-index/one-explorer-contracts.md#guests)                                             |
-| `POST /api/internal/people/:guest/merge {into}`               | [one-explorer-contracts.md "Guests"](../../004-index/one-explorer-contracts.md#guests)                                             |
-| `POST /api/internal/people/:guest/merge {into, legacy: true}` | [one-explorer-contracts.md "Guests"](../../004-index/one-explorer-contracts.md#guests)                                             |
-| `GET /items`                                                  | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `PATCH /items/:id`                                            | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `DELETE /items/:id`                                           | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `POST /items/:id/restore`                                     | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `POST /items/:id/copy`                                        | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `POST /items/:id/open`                                        | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `POST /items/:id/grant`                                       | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `GET /trash`                                                  | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `GET /shared`                                                 | [one-explorer-contracts.md "Items"](../../004-index/one-explorer-contracts.md#items)                                               |
-| `POST /internal/purge-person`                                 | [one-explorer-contracts.md "Closing an account"](../../004-index/one-explorer-contracts.md#closing-an-account)                     |
-| `POST /api/internal/people/:id/purge {items}`                 | [one-explorer-contracts.md "Closing an account"](../../004-index/one-explorer-contracts.md#closing-an-account)                     |
-| `GET /folders/previews?ids=a,b,…&app=`                        | [one-explorer-contracts.md "Folders, favourites, defaults"](../../004-index/one-explorer-contracts.md#folders-favourites-defaults) |
-| `GET /favourites`                                             | [one-explorer-contracts.md "Folders, favourites, defaults"](../../004-index/one-explorer-contracts.md#folders-favourites-defaults) |
-| `GET /placement-defaults`                                     | [one-explorer-contracts.md "Folders, favourites, defaults"](../../004-index/one-explorer-contracts.md#folders-favourites-defaults) |
-| `POST /share/:code/extend`                                    | [one-explorer-contracts.md "Sharing and access"](../../004-index/one-explorer-contracts.md#sharing-and-access)                     |
-| `PUT /items/:id/share-password`                               | [one-explorer-contracts.md "Sharing and access"](../../004-index/one-explorer-contracts.md#sharing-and-access)                     |
-| `POST /items/:id/share {public: true}`                        | [one-explorer-contracts.md "Sharing and access"](../../004-index/one-explorer-contracts.md#sharing-and-access)                     |
-| `PUT /items/:id/share-password {password}`                    | [one-explorer-contracts.md "Sharing and access"](../../004-index/one-explorer-contracts.md#sharing-and-access)                     |
-| `DELETE /shared/:itemId`                                      | [one-explorer-contracts.md "Sharing and access"](../../004-index/one-explorer-contracts.md#sharing-and-access)                     |
-| `GET /jwks`                                                   | [one-explorer-contracts.md "Grants"](../../004-index/one-explorer-contracts.md#grants)                                             |
-| `GET /api/<items>/:id/tabs`                                   | [one-explorer-contracts.md "An item's tabs"](../../004-index/one-explorer-contracts.md#an-items-tabs)                              |
-| `PUT /app/items/:id/summary`                                  | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `PUT /app/items/:id/collab/:tabId`                            | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `PUT /app/items/:id/forms/:tabId`                             | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `PUT /app/items/:id/forms/:tabId/seen`                        | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `GET /app/forms/:code`                                        | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `PUT /app/items/:id/events`                                   | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `PUT /app/people/events`                                      | [one-explorer-contracts.md "What an item pushes"](../../004-index/one-explorer-contracts.md#what-an-item-pushes)                   |
-| `POST /app/migration/handoff`                                 | [one-explorer-contracts.md "The migration's handoff"](../../004-index/one-explorer-contracts.md#the-migrations-handoff)            |
-| `PUT /app/people/:id/drive`                                   | [one-explorer-contracts.md "The Google Drive mirror"](../../004-index/one-explorer-contracts.md#the-google-drive-mirror)           |
-| `GET /app/people/:id/count?limit=`                            | [one-explorer-contracts.md "Notices"](../../004-index/one-explorer-contracts.md#notices)                                           |
-| `POST /internal/timeline {events}`                            | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `GET /timeline?app=&limit=&cursor=`                           | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `GET /timeline?team=<id>&app=&limit=&cursor=`                 | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `GET /timeline?item=<id>&limit=&cursor=`                      | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `POST /timeline/seen`                                         | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `POST /timeline/dismiss {ids}`                                | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
-| `GET /inbox?app=`                                             | [one-explorer-contracts.md "Inbox"](../../004-index/one-explorer-contracts.md#inbox)                                               |
-| `POST /api/<items>/:id/tabs/:tabId/comments`                  | [one-explorer-contracts.md "Inbox"](../../004-index/one-explorer-contracts.md#inbox)                                               |
-| `GET /api/<items>/:id/comments?status=all`                    | [one-explorer-contracts.md "Inbox"](../../004-index/one-explorer-contracts.md#inbox)                                               |
-| `POST /api/projects/:id/items/:cardId/comments`               | [one-explorer-contracts.md "Inbox"](../../004-index/one-explorer-contracts.md#inbox)                                               |
+`POST /internal/workbench-close { app, pairingId (^[A-Za-z0-9_-]{1,64}$), itemIds (≤ 500 ids) }` with `MERGE_KEY`:
+each distinct item gets `POST <app>/api/internal/items/:id/workbench-close { pairingId }`, 10 at a time; `200 {
+closed, unreached }`.
+
+### Calls out to the apps (`callApp`)
+
+`<APP_ORIGIN_<APP>>/api/internal<path>` with `Authorization: Bearer INDEX_KEY_<APP>` and `X-Index-App`, 10 s (the
+handoff 30 s). A `DELETE` answered `404` counts as done. Unconfigured is `app_not_configured`; else `status_<n>` or
+the error's name. Doors (`@liveworkspace/index-app` `internal.ts`): `DELETE /items/:id`, `POST /items/purge {ids}`,
+`POST /items/:id/revoke {codes, reason?}`, `POST /items/:id/notices`, `POST /items/:id/workbench-close`, `POST
+/items/:from/copy-to/:to`, `POST /people/:id/purge {items}`, `POST /people/:guest/merge {into, legacy?}`, `PUT
+/items/:id/migration`; and for previews and Drive, `GET /items/:id/export` and `POST /items/import`.
+
+## Errors and edge cases
+
+| Case                              | Answer                                                 |
+| --------------------------------- | ------------------------------------------------------ |
+| Off                               | every route `404`, crons idle                          |
+| No audiences configured           | no token verifies: `401`                               |
+| A delegate header without the key | `401` (never read as nobody)                           |
+| An item the caller can't reach    | `404`, as if missing                                   |
+| A team made since the token       | accounts asked once; unreachable, the claim stands     |
+| No signing key in production      | `503 grants_unavailable` before any row is made        |
+| An app unreachable                | logged; tombstones, notices and merges retried by cron |
+| A cron step throws                | logged; later steps still run                          |
 
 ## Security and trust
 
-Access is decided here once and handed to the app as a grant signed with `GRANT_SIGNING_KEY`, for the
-audiences in `INDEX_AUDIENCES`. Share passwords are stored hashed (`password-hash.ts`), and a malformed stored hash is
-refused, never matched. Secrets are set once per Worker and environment with `wrangler secret put` and survive every deploy; the
-`Env fields` line under the Worker's configuration below lists every name the Worker reads, vars and secrets
-together (a name not in a `[vars]` table is a secret). App keys are compared in constant time, and each key speaks
-only for its own app.
+- Access is decided here once and handed to the app as a grant; apps check it offline against `/jwks`.
+- Every delegate is narrowed: an app to its own items, the Drive mirror to the person's personal items and folders,
+  never a link or a team.
+- Ids are a fixed charset, so nothing a caller sends reaches a path, a scope or a key unescaped; search patterns
+  escape `%`, `_` and `\`.
+- Share passwords are PBKDF2-SHA256 hashes (see [sharing.md](sharing.md)); guesses are limited at the edge.
+- Secrets: `GRANT_SIGNING_KEY`, `MERGE_KEY`, `INDEX_KEY_<APP>`, `INDEX_KEY_DRIVE`, `DRIVE_KEY_INDEX`.
 
 ## Performance and limits
 
-Every list is paged (`limit`, `cursor`) and bounded by the constants below; the measured numbers are in
+Every list is keyset-paged and walks an index that starts with the person, a scope or a folder; the query plans are
+pinned by `lists.test.ts` "query plans". Decorating a page is one batch of four statements. Opens are debounced in
+memory (5,000 keys) and in SQL (once a minute). Measured numbers are in
 [index-service.md "Performance"](../index-service.md#performance).
 
 ## Observability
@@ -179,7 +254,6 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/auth.ts`              | Who is asking (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"): - a person, by an accounts access token or a guest token, checked offline against accou…     |
 | `liveworkspace/apps/index/src/codec.ts`             | Small encodings: list cursors, share codes, search patterns, page sizes, base64url.                                                                                                             |
 | `liveworkspace/apps/index/src/collab-push.ts`       | What an item pushes for the Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"), from its app's server with the app's key: each tab's comment threads and actions…     |
-| `liveworkspace/apps/index/src/compound.ts`          | D1 refuses a compound SELECT of more than five terms ("too many terms in compound SELECT"), where SQLite's own default, and so the tests' node:sqlite, allows 500. Measure…                     |
 | `liveworkspace/apps/index/src/config.ts`            | The Worker's settings                                                                                                                                                                           |
 | `liveworkspace/apps/index/src/context.ts`           |                                                                                                                                                                                                 |
 | `liveworkspace/apps/index/src/default-placement.ts` | Filing on create: where a new item lands when it is made without a place                                                                                                                        |
@@ -259,7 +333,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Setting                                  | Value                                                                                      |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
 | Worker name                              | `liveworkspace-index`                                                                      |
-| Route                                    | `liveworkspace.app/api/index*`                                                             |
+| Route                                    | `www.liveworkspace.app/api/index*`, `liveworkspace.app/api/index*`                         |
 | D1 `INDEX_DB`                            | `liveworkspace-index`, migrations `migrations`                                             |
 | Service `DRIVE`                          | `liveworkspace-drive`                                                                      |
 | Rate limit `MIGRATION_LIMITER`           | 60 per 60 s                                                                                |
@@ -298,6 +372,13 @@ Env fields (`env.ts`): `ACCOUNTS_URL`, `APP_ORIGIN_LIVEDESIGN`, `APP_ORIGIN_LIVE
 
 ## Data and persistence
 
+One D1 database (`INDEX_DB`). Each table's indexes, and what writes and reads it, are in the feature file that owns
+it: items, folders, favourites, opens and use days in [items.md](items.md); links, passwords and Shared with me in
+[sharing.md](sharing.md); the collab tables in [inbox.md](inbox.md); the Timeline's four in [timeline.md](timeline.md);
+tombstones, purges and notices in [trash.md](trash.md); placement defaults in [default-folders.md](default-folders.md);
+person merges in [guest-merge.md](guest-merge.md); `drive_people` above. Foreign keys to `items` cascade, so a purged
+item takes every row about it.
+
 Migrations, in order:
 
 - `0001_index.sql`
@@ -335,203 +416,171 @@ Migrations, in order:
 
 ## Constants and configuration: named constants
 
-| Constant                        | Value                                                                    | File                 |
-| ------------------------------- | ------------------------------------------------------------------------ | -------------------- |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `account-purge.ts`   |
-| `CHUNK`                         | `500`                                                                    | `account-purge.ts`   |
-| `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                     | `account-purge.ts`   |
-| `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                         | `account-purge.ts`   |
-| `TOMBSTONES_PER_FREQUENT_RUN`   | `300`                                                                    | `account-purge.ts`   |
-| `TOMBSTONE_RETRY_AFTER_MS`      | `60 * 60 * 1000`                                                         | `account-purge.ts`   |
-| `CALL_BUDGET`                   | `{ ms: 5_000, calls: 300 }`                                              | `account-purge.ts`   |
-| `CRON_BUDGET`                   | `{ ms: 30_000, calls: 300 }`                                             | `account-purge.ts`   |
-| `DRIVE_DELEGATE`                | `'drive'`                                                                | `auth.ts`            |
-| `SHARE_CODE_LENGTH`             | `14`                                                                     | `codec.ts`           |
-| `D1_COMPOUND_MAX`               | `5`                                                                      | `compound.ts`        |
-| `API_PATH`                      | `INDEX_API_PATH`                                                         | `config.ts`          |
-| `MAX_BODY_BYTES`                | `512 * 1024`                                                             | `config.ts`          |
-| `ID_MAX`                        | `128`                                                                    | `config.ts`          |
-| `INTENT_MAX`                    | `100`                                                                    | `config.ts`          |
-| `DEFAULT_KEY_MAX`               | `100`                                                                    | `config.ts`          |
-| `JWKS_MAX_AGE_S`                | `300`                                                                    | `config.ts`          |
-| `SWEEP_ITEMS_MAX`               | `500`                                                                    | `config.ts`          |
-| `TOMBSTONES_PER_RUN`            | `200`                                                                    | `config.ts`          |
-| `EMPTY_SWEEP_MAX`               | `1000`                                                                   | `config.ts`          |
-| `PURGE_NOW_MAX`                 | `25`                                                                     | `config.ts`          |
-| `APP_CALL_CONCURRENCY`          | `6`                                                                      | `config.ts`          |
-| `APP_CALL_TIMEOUT_MS`           | `10_000`                                                                 | `config.ts`          |
-| `HANDOFF_MAX_BYTES`             | `32 * 1024 * 1024`                                                       | `config.ts`          |
-| `HANDOFF_APP_TIMEOUT_MS`        | `30_000`                                                                 | `config.ts`          |
-| `INBOX_LIMIT_DEFAULT`           | `100`                                                                    | `config.ts`          |
-| `OPEN_MEMORY_MAX`               | `5_000`                                                                  | `config.ts`          |
-| `PASSWORD_MEMORY_MAX`           | `1_000`                                                                  | `config.ts`          |
-| `SHARE_GUESS_RETRY_AFTER_S`     | `60`                                                                     | `config.ts`          |
-| `SHARE_PASSWORD_ITERATIONS`     | `100_000`                                                                | `password-hash.ts`   |
-| `PERSON_ITEMS_PER_CALL`         | `100`                                                                    | `person-notices.ts`  |
-| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                         | `person-notices.ts`  |
-| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                | `person-notices.ts`  |
-| `LOOSE_EVENTS_SWEEP_MAX`        | `1000`                                                                   | `purge.ts`           |
-| `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`          | `rows.ts`            |
-| `LIVE_LINK`                     | `(alias: string) =>`                                                     | `rows.ts`            |
-| `EXPIRY_SWEEP_MAX`              | `2_000`                                                                  | `share-expiry.ts`    |
-| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                          | `timeline.ts`        |
-| `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                    | `workbench-close.ts` |
-| `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                     | `workbench-close.ts` |
-| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                  | `guest-token.ts`     |
-| `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                             | `guest-token.ts`     |
-| `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                 | `item-grants.ts`     |
-| `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                 | `item-grants.ts`     |
-| `GRANT_RETRY_MS`                | `15_000`                                                                 | `item-grants.ts`     |
-| `GRANTS_HELD_MAX`               | `32`                                                                     | `item-grants.ts`     |
-| `APPS`                          | `['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const` | `constants.ts`       |
-| `KINDS`                         | `['canvas', 'plan', 'document', 'design'] as const`                      | `constants.ts`       |
-| `APP_KINDS`                     | `(object or list, see file)`                                             | `constants.ts`       |
-| `LEVELS`                        | `['view', 'participate', 'edit'] as const`                               | `constants.ts`       |
-| `FOLDER_PREVIEW_IDS_MAX`        | `60`                                                                     | `constants.ts`       |
-| `FOLDER_PREVIEW_ITEMS`          | `4`                                                                      | `constants.ts`       |
-| `FOLDER_PREVIEW_COUNT_CAP`      | `1000`                                                                   | `constants.ts`       |
-| `INDEX_API_PATH`                | `'/api/index'`                                                           | `constants.ts`       |
-| `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}`                         | `constants.ts`       |
-| `INDEX_APP_HEADER`              | `'X-Index-App'`                                                          | `constants.ts`       |
-| `INDEX_PERSON_HEADER`           | `'X-Index-Person'`                                                       | `constants.ts`       |
-| `INDEX_TEAMS_HEADER`            | `'X-Index-Teams'`                                                        | `constants.ts`       |
-| `DELEGATED_TEAMS_MAX`           | `50`                                                                     | `constants.ts`       |
-| `ITEM_GRANT_HEADER`             | `'X-Index-Grant'`                                                        | `constants.ts`       |
-| `SHARE_CODE_HEADER`             | `'X-Share-Code'`                                                         | `constants.ts`       |
-| `SHARE_PASSWORD_HEADER`         | `'X-Share-Password'`                                                     | `constants.ts`       |
-| `GRANT_LIFETIME_S`              | `600`                                                                    | `constants.ts`       |
-| `GRANT_RENEW_BEFORE_S`          | `60`                                                                     | `constants.ts`       |
-| `GRANT_ALG`                     | `'ES256'`                                                                | `constants.ts`       |
-| `GRANT_ISSUER`                  | `INDEX_API_URL`                                                          | `constants.ts`       |
-| `GRANT_JWKS_URL`                | `${INDEX_API_URL}/jwks`                                                  | `constants.ts`       |
-| `LIST_LIMIT_DEFAULT`            | `50`                                                                     | `constants.ts`       |
-| `LIST_LIMIT_MAX`                | `200`                                                                    | `constants.ts`       |
-| `SUMMARY_MAX_BYTES`             | `2048`                                                                   | `constants.ts`       |
-| `COLLAB_MAX_THREADS`            | `500`                                                                    | `constants.ts`       |
-| `COLLAB_MAX_ACTIONS`            | `500`                                                                    | `constants.ts`       |
-| `COLLAB_CARDS_TAB`              | `'~cards'`                                                               | `constants.ts`       |
-| `TITLE_MAX`                     | `500`                                                                    | `constants.ts`       |
-| `FOLDER_NAME_MAX`               | `500`                                                                    | `constants.ts`       |
-| `SHARE_PASSWORD_MAX`            | `256`                                                                    | `constants.ts`       |
-| `SHARE_PASSWORD_MIN`            | `6`                                                                      | `constants.ts`       |
-| `SHARE_LINKS_PER_ITEM`          | `100`                                                                    | `constants.ts`       |
-| `SEARCH_MAX`                    | `200`                                                                    | `constants.ts`       |
-| `SEARCH_WORDS_MAX`              | `16`                                                                     | `constants.ts`       |
-| `FILTER_VALUES_MAX`             | `8`                                                                      | `constants.ts`       |
-| `INTENT_WORD`                   | `/^[a-z0-9-]{1,32}$/`                                                    | `constants.ts`       |
-| `ITEM_OWNERS`                   | `['me', 'others'] as const`                                              | `constants.ts`       |
-| `TRASH_RETENTION_MS`            | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`       |
-| `EMPTY_ITEM_STALE_MS`           | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`       |
-| `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                              | `constants.ts`       |
-| `USE_WINDOW_DAYS`               | `90`                                                                     | `constants.ts`       |
-| `MOST_USED_MAX`                 | `8`                                                                      | `constants.ts`       |
-| `ITEM_TIMELINE_EVENT_TYPES`     | `(object or list, see file)`                                             | `constants.ts`       |
-| `PERSON_TIMELINE_EVENT_TYPES`   | `['image_uploaded', 'taken_offline'] as const`                           | `constants.ts`       |
-| `ACCOUNT_TIMELINE_EVENT_TYPES`  | `(object or list, see file)`                                             | `constants.ts`       |
-| `TIMELINE_EVENT_TYPES`          | `(object or list, see file)`                                             | `constants.ts`       |
-| `APP_TIMELINE_EVENT_TYPES`      | `['edited'] as const`                                                    | `constants.ts`       |
-| `APP_PERSON_EVENT_TYPES`        | `['image_uploaded'] as const`                                            | `constants.ts`       |
-| `TIMELINE_PLATFORM`             | `'liveworkspace' as const`                                               | `constants.ts`       |
-| `ACCOUNT_EVENT_SCOPES_MAX`      | `250`                                                                    | `constants.ts`       |
-| `SHARE_EXPIRY_WARNING_MS`       | `7 * 24 * 60 * 60 * 1000`                                                | `constants.ts`       |
-| `ACCOUNT_EVENT_AHEAD_MS`        | `8 * 24 * 60 * 60 * 1000`                                                | `constants.ts`       |
-| `COLLAB_EVENTS_MAX`             | `100`                                                                    | `constants.ts`       |
-| `TIMELINE_PAGE`                 | `30`                                                                     | `constants.ts`       |
-| `TIMELINE_LIMIT_MAX`            | `100`                                                                    | `constants.ts`       |
-| `APP_EVENTS_MAX`                | `100`                                                                    | `constants.ts`       |
-| `TIMELINE_DISMISS_MAX`          | `100`                                                                    | `constants.ts`       |
-| `TIMELINE_NEW_CAP`              | `99`                                                                     | `constants.ts`       |
-| `SHARE_LINK_EXPIRIES`           | `['never', 'week', 'month', 'sixMonths'] as const`                       | `constants.ts`       |
-| `SHARE_LINK_EXPIRY_MS`          | `(object or list, see file)`                                             | `constants.ts`       |
-| `DEFAULT_LINK_LEVEL`            | `'edit'`                                                                 | `constants.ts`       |
-| `ITEM_SOURCES`                  | `['person', 'ai', 'import', 'template'] as const`                        | `constants.ts`       |
-| `ITEM_VIEWS`                    | `(object or list, see file)`                                             | `constants.ts`       |
-| `INDEX_ERRORS`                  | `(object or list, see file)`                                             | `constants.ts`       |
-| `OWNED_COUNT_MAX`               | `1000`                                                                   | `notices.ts`         |
-| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `anonymise.ts`       |
-| `ANONYMISED_NAME`               | `'Deleted account'`                                                      | `anonymise.ts`       |
-| `FORM_PLACE_TTL_MS`             | `60_000`                                                                 | `forms.ts`           |
-| `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                  | `forms.ts`           |
-| `IMAGE_GRANT_SCHEMA`            | `(object or list, see file)`                                             | `image-grants.ts`    |
-| `JOINED_TELEMETRY_TYPE`         | `(object or list, see file)`                                             | `internal.ts`        |
-| `EXPORT_FORMATS`                | `['svg', 'file'] as const`                                               | `internal.ts`        |
-| `IMPORT_MAX_BYTES`              | `32 * 1024 * 1024`                                                       | `internal.ts`        |
-| `IMPORT_NAME_MAX`               | `1000`                                                                   | `internal.ts`        |
-| `PERSON_ITEMS_MAX`              | `100`                                                                    | `internal.ts`        |
-| `MIGRATION_MAX_BYTES`           | `IMPORT_MAX_BYTES`                                                       | `internal.ts`        |
-| `LIST_PAGES`                    | `5`                                                                      | `lists.ts`           |
-| `NOTIFY_QUOTA_KIND`             | `'notify-email'`                                                         | `notify-claims.ts`   |
-| `FLUSH_IDLE_MS`                 | `2_000`                                                                  | `outbox.ts`          |
-| `FLUSH_MIN_GAP_MS`              | `60_000`                                                                 | `outbox.ts`          |
-| `FLUSH_RETRY_MS`                | `60_000`                                                                 | `outbox.ts`          |
-| `DRAIN_TABS`                    | `50`                                                                     | `outbox.ts`          |
-| `PUSH_CONCURRENCY`              | `6`                                                                      | `outbox.ts`          |
-| `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                  | `purge.ts`           |
-| `ROOM_PURGE_CONCURRENCY`        | `10`                                                                     | `purge.ts`           |
-| `BULK_PURGE_MAX`                | `100`                                                                    | `purge.ts`           |
-| `ROOM_GRANT_MAX_LENGTH`         | `8192`                                                                   | `room-ticket.ts`     |
-| `GRANT_CACHE_MAX`               | `1000`                                                                   | `service.ts`         |
-| `MAX_TAB_HOLDERS`               | `20`                                                                     | `tab-shares.ts`      |
-| `DRAIN_SHARES`                  | `50`                                                                     | `tab-shares.ts`      |
-| `ITEM_TABS_SEGMENT`             | `'tabs'`                                                                 | `tabs.ts`            |
-| `MISS_RECHECK_MS`               | `2_000`                                                                  | `teams.ts`           |
-| `FRESH_TEAMS_MS`                | `30_000`                                                                 | `teams.ts`           |
-| `TEAM_NAME_MAX`                 | `80`                                                                     | `teams.ts`           |
-| `TEAM_ORGANISATION_MAX`         | `80`                                                                     | `teams.ts`           |
+| Constant                        | Value                                                                    | File                                  |
+| ------------------------------- | ------------------------------------------------------------------------ | ------------------------------------- |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `account-purge.ts`                    |
+| `CHUNK`                         | `500`                                                                    | `account-purge.ts`                    |
+| `LINGER_MS`                     | `2 * 60 * 60 * 1000`                                                     | `account-purge.ts`                    |
+| `FREQUENT_CRON`                 | `'*/15 * * * *'`                                                         | `account-purge.ts`                    |
+| `TOMBSTONES_PER_FREQUENT_RUN`   | `300`                                                                    | `account-purge.ts`                    |
+| `TOMBSTONE_RETRY_AFTER_MS`      | `60 * 60 * 1000`                                                         | `account-purge.ts`                    |
+| `CALL_BUDGET`                   | `{ ms: 5_000, calls: 300 }`                                              | `account-purge.ts`                    |
+| `CRON_BUDGET`                   | `{ ms: 30_000, calls: 300 }`                                             | `account-purge.ts`                    |
+| `DRIVE_DELEGATE`                | `'drive'`                                                                | `auth.ts`                             |
+| `SHARE_CODE_LENGTH`             | `14`                                                                     | `codec.ts`                            |
+| `D1_COMPOUND_MAX`               | `5`                                                                      | `packages/api-kit/src/d1-compound.ts` |
+| `API_PATH`                      | `INDEX_API_PATH`                                                         | `config.ts`                           |
+| `MAX_BODY_BYTES`                | `512 * 1024`                                                             | `config.ts`                           |
+| `ID_MAX`                        | `128`                                                                    | `config.ts`                           |
+| `INTENT_MAX`                    | `100`                                                                    | `config.ts`                           |
+| `DEFAULT_KEY_MAX`               | `100`                                                                    | `config.ts`                           |
+| `JWKS_MAX_AGE_S`                | `300`                                                                    | `config.ts`                           |
+| `SWEEP_ITEMS_MAX`               | `500`                                                                    | `config.ts`                           |
+| `TOMBSTONES_PER_RUN`            | `200`                                                                    | `config.ts`                           |
+| `EMPTY_SWEEP_MAX`               | `1000`                                                                   | `config.ts`                           |
+| `PURGE_NOW_MAX`                 | `25`                                                                     | `config.ts`                           |
+| `APP_CALL_CONCURRENCY`          | `6`                                                                      | `config.ts`                           |
+| `APP_CALL_TIMEOUT_MS`           | `10_000`                                                                 | `config.ts`                           |
+| `HANDOFF_MAX_BYTES`             | `32 * 1024 * 1024`                                                       | `config.ts`                           |
+| `HANDOFF_APP_TIMEOUT_MS`        | `30_000`                                                                 | `config.ts`                           |
+| `INBOX_LIMIT_DEFAULT`           | `100`                                                                    | `config.ts`                           |
+| `OPEN_MEMORY_MAX`               | `5_000`                                                                  | `config.ts`                           |
+| `PASSWORD_MEMORY_MAX`           | `1_000`                                                                  | `config.ts`                           |
+| `SHARE_GUESS_RETRY_AFTER_S`     | `60`                                                                     | `config.ts`                           |
+| `SHARE_PASSWORD_ITERATIONS`     | `100_000`                                                                | `password-hash.ts`                    |
+| `PERSON_ITEMS_PER_CALL`         | `100`                                                                    | `person-notices.ts`                   |
+| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                         | `person-notices.ts`                   |
+| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                | `person-notices.ts`                   |
+| `LOOSE_EVENTS_SWEEP_MAX`        | `1000`                                                                   | `purge.ts`                            |
+| `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`          | `rows.ts`                             |
+| `LIVE_LINK`                     | `(alias: string) =>`                                                     | `rows.ts`                             |
+| `EXPIRY_SWEEP_MAX`              | `2_000`                                                                  | `share-expiry.ts`                     |
+| `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                          | `timeline.ts`                         |
+| `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                    | `workbench-close.ts`                  |
+| `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                     | `workbench-close.ts`                  |
+| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                  | `guest-token.ts`                      |
+| `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                             | `guest-token.ts`                      |
+| `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                 | `item-grants.ts`                      |
+| `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                 | `item-grants.ts`                      |
+| `GRANT_RETRY_MS`                | `15_000`                                                                 | `item-grants.ts`                      |
+| `GRANTS_HELD_MAX`               | `32`                                                                     | `item-grants.ts`                      |
+| `APPS`                          | `['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const` | `constants.ts`                        |
+| `KINDS`                         | `['canvas', 'plan', 'document', 'design'] as const`                      | `constants.ts`                        |
+| `APP_KINDS`                     | `(object or list, see file)`                                             | `constants.ts`                        |
+| `LEVELS`                        | `['view', 'participate', 'edit'] as const`                               | `constants.ts`                        |
+| `FOLDER_PREVIEW_IDS_MAX`        | `60`                                                                     | `constants.ts`                        |
+| `FOLDER_PREVIEW_ITEMS`          | `4`                                                                      | `constants.ts`                        |
+| `FOLDER_PREVIEW_COUNT_CAP`      | `1000`                                                                   | `constants.ts`                        |
+| `INDEX_API_PATH`                | `'/api/index'`                                                           | `constants.ts`                        |
+| `INDEX_API_URL`                 | `https://www.liveworkspace.app${INDEX_API_PATH}`                         | `constants.ts`                        |
+| `INDEX_APP_HEADER`              | `'X-Index-App'`                                                          | `constants.ts`                        |
+| `INDEX_PERSON_HEADER`           | `'X-Index-Person'`                                                       | `constants.ts`                        |
+| `INDEX_TEAMS_HEADER`            | `'X-Index-Teams'`                                                        | `constants.ts`                        |
+| `DELEGATED_TEAMS_MAX`           | `50`                                                                     | `constants.ts`                        |
+| `ITEM_GRANT_HEADER`             | `'X-Index-Grant'`                                                        | `constants.ts`                        |
+| `SHARE_CODE_HEADER`             | `'X-Share-Code'`                                                         | `constants.ts`                        |
+| `SHARE_PASSWORD_HEADER`         | `'X-Share-Password'`                                                     | `constants.ts`                        |
+| `GRANT_LIFETIME_S`              | `600`                                                                    | `constants.ts`                        |
+| `GRANT_RENEW_BEFORE_S`          | `60`                                                                     | `constants.ts`                        |
+| `GRANT_ALG`                     | `'ES256'`                                                                | `constants.ts`                        |
+| `GRANT_ISSUER`                  | `INDEX_API_URL`                                                          | `constants.ts`                        |
+| `GRANT_JWKS_URL`                | `${INDEX_API_URL}/jwks`                                                  | `constants.ts`                        |
+| `LIST_LIMIT_DEFAULT`            | `50`                                                                     | `constants.ts`                        |
+| `LIST_LIMIT_MAX`                | `200`                                                                    | `constants.ts`                        |
+| `SUMMARY_MAX_BYTES`             | `2048`                                                                   | `constants.ts`                        |
+| `COLLAB_MAX_THREADS`            | `500`                                                                    | `constants.ts`                        |
+| `COLLAB_MAX_ACTIONS`            | `500`                                                                    | `constants.ts`                        |
+| `COLLAB_CARDS_TAB`              | `'~cards'`                                                               | `constants.ts`                        |
+| `TITLE_MAX`                     | `500`                                                                    | `constants.ts`                        |
+| `FOLDER_NAME_MAX`               | `500`                                                                    | `constants.ts`                        |
+| `SHARE_PASSWORD_MAX`            | `256`                                                                    | `constants.ts`                        |
+| `SHARE_PASSWORD_MIN`            | `6`                                                                      | `constants.ts`                        |
+| `SHARE_LINKS_PER_ITEM`          | `100`                                                                    | `constants.ts`                        |
+| `SEARCH_MAX`                    | `200`                                                                    | `constants.ts`                        |
+| `SEARCH_WORDS_MAX`              | `16`                                                                     | `constants.ts`                        |
+| `FILTER_VALUES_MAX`             | `8`                                                                      | `constants.ts`                        |
+| `INTENT_WORD`                   | `/^[a-z0-9-]{1,32}$/`                                                    | `constants.ts`                        |
+| `ITEM_OWNERS`                   | `['me', 'others'] as const`                                              | `constants.ts`                        |
+| `TRASH_RETENTION_MS`            | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`                        |
+| `EMPTY_ITEM_STALE_MS`           | `30 * 24 * 60 * 60 * 1000`                                               | `constants.ts`                        |
+| `OPEN_DEBOUNCE_MS`              | `60 * 1000`                                                              | `constants.ts`                        |
+| `USE_WINDOW_DAYS`               | `90`                                                                     | `constants.ts`                        |
+| `MOST_USED_MAX`                 | `8`                                                                      | `constants.ts`                        |
+| `ITEM_TIMELINE_EVENT_TYPES`     | `(object or list, see file)`                                             | `constants.ts`                        |
+| `PERSON_TIMELINE_EVENT_TYPES`   | `['image_uploaded', 'taken_offline'] as const`                           | `constants.ts`                        |
+| `ACCOUNT_TIMELINE_EVENT_TYPES`  | `(object or list, see file)`                                             | `constants.ts`                        |
+| `TIMELINE_EVENT_TYPES`          | `(object or list, see file)`                                             | `constants.ts`                        |
+| `APP_TIMELINE_EVENT_TYPES`      | `['edited'] as const`                                                    | `constants.ts`                        |
+| `APP_PERSON_EVENT_TYPES`        | `['image_uploaded'] as const`                                            | `constants.ts`                        |
+| `TIMELINE_PLATFORM`             | `'liveworkspace' as const`                                               | `constants.ts`                        |
+| `ACCOUNT_EVENT_SCOPES_MAX`      | `250`                                                                    | `constants.ts`                        |
+| `SHARE_EXPIRY_WARNING_MS`       | `7 * 24 * 60 * 60 * 1000`                                                | `constants.ts`                        |
+| `ACCOUNT_EVENT_AHEAD_MS`        | `8 * 24 * 60 * 60 * 1000`                                                | `constants.ts`                        |
+| `COLLAB_EVENTS_MAX`             | `100`                                                                    | `constants.ts`                        |
+| `TIMELINE_PAGE`                 | `30`                                                                     | `constants.ts`                        |
+| `TIMELINE_LIMIT_MAX`            | `100`                                                                    | `constants.ts`                        |
+| `APP_EVENTS_MAX`                | `100`                                                                    | `constants.ts`                        |
+| `TIMELINE_DISMISS_MAX`          | `100`                                                                    | `constants.ts`                        |
+| `TIMELINE_NEW_CAP`              | `99`                                                                     | `constants.ts`                        |
+| `SHARE_LINK_EXPIRIES`           | `['never', 'week', 'month', 'sixMonths'] as const`                       | `constants.ts`                        |
+| `SHARE_LINK_EXPIRY_MS`          | `(object or list, see file)`                                             | `constants.ts`                        |
+| `DEFAULT_LINK_LEVEL`            | `'edit'`                                                                 | `constants.ts`                        |
+| `ITEM_SOURCES`                  | `['person', 'ai', 'import', 'template'] as const`                        | `constants.ts`                        |
+| `ITEM_VIEWS`                    | `(object or list, see file)`                                             | `constants.ts`                        |
+| `INDEX_ERRORS`                  | `(object or list, see file)`                                             | `constants.ts`                        |
+| `OWNED_COUNT_MAX`               | `1000`                                                                   | `notices.ts`                          |
+| `ANONYMISED_PERSON`             | `'deleted'`                                                              | `anonymise.ts`                        |
+| `ANONYMISED_NAME`               | `'Deleted account'`                                                      | `anonymise.ts`                        |
+| `FORM_PLACE_TTL_MS`             | `60_000`                                                                 | `forms.ts`                            |
+| `FORM_PLACE_CACHE_MAX`          | `1_000`                                                                  | `forms.ts`                            |
+| `IMAGE_GRANT_SCHEMA`            | `(object or list, see file)`                                             | `image-grants.ts`                     |
+| `JOINED_TELEMETRY_TYPE`         | `(object or list, see file)`                                             | `internal.ts`                         |
+| `EXPORT_FORMATS`                | `['svg', 'file'] as const`                                               | `internal.ts`                         |
+| `IMPORT_MAX_BYTES`              | `32 * 1024 * 1024`                                                       | `internal.ts`                         |
+| `IMPORT_NAME_MAX`               | `1000`                                                                   | `internal.ts`                         |
+| `PERSON_ITEMS_MAX`              | `100`                                                                    | `internal.ts`                         |
+| `MIGRATION_MAX_BYTES`           | `IMPORT_MAX_BYTES`                                                       | `internal.ts`                         |
+| `LIST_PAGES`                    | `5`                                                                      | `lists.ts`                            |
+| `NOTIFY_QUOTA_KIND`             | `'notify-email'`                                                         | `notify-claims.ts`                    |
+| `FLUSH_IDLE_MS`                 | `2_000`                                                                  | `outbox.ts`                           |
+| `FLUSH_MIN_GAP_MS`              | `60_000`                                                                 | `outbox.ts`                           |
+| `FLUSH_RETRY_MS`                | `60_000`                                                                 | `outbox.ts`                           |
+| `DRAIN_TABS`                    | `50`                                                                     | `outbox.ts`                           |
+| `PUSH_CONCURRENCY`              | `6`                                                                      | `outbox.ts`                           |
+| `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                  | `purge.ts`                            |
+| `ROOM_PURGE_CONCURRENCY`        | `10`                                                                     | `purge.ts`                            |
+| `BULK_PURGE_MAX`                | `100`                                                                    | `purge.ts`                            |
+| `ROOM_GRANT_MAX_LENGTH`         | `8192`                                                                   | `room-ticket.ts`                      |
+| `GRANT_CACHE_MAX`               | `1000`                                                                   | `service.ts`                          |
+| `MAX_TAB_HOLDERS`               | `20`                                                                     | `tab-shares.ts`                       |
+| `DRAIN_SHARES`                  | `50`                                                                     | `tab-shares.ts`                       |
+| `ITEM_TABS_SEGMENT`             | `'tabs'`                                                                 | `tabs.ts`                             |
+| `MISS_RECHECK_MS`               | `2_000`                                                                  | `teams.ts`                            |
+| `FRESH_TEAMS_MS`                | `30_000`                                                                 | `teams.ts`                            |
+| `TEAM_NAME_MAX`                 | `80`                                                                     | `teams.ts`                            |
+| `TEAM_ORGANISATION_MAX`         | `80`                                                                     | `teams.ts`                            |
 
 ## Testing
 
-52 test files:
+The Worker's suites run against an in-memory SQLite that refuses what D1 refuses (`compound.test.ts`). Each
+feature file names the suites that pin it; these pin the Worker as a whole:
 
-- `liveworkspace/apps/index/src/account-purge.test.ts`
-- `liveworkspace/apps/index/src/app.test.ts`
-- `liveworkspace/apps/index/src/codec.test.ts`
-- `liveworkspace/apps/index/src/compound.test.ts`
-- `liveworkspace/apps/index/src/default-placement.test.ts`
-- `liveworkspace/apps/index/src/delegate.test.ts`
-- `liveworkspace/apps/index/src/drive.test.ts`
-- `liveworkspace/apps/index/src/folder-previews.test.ts`
-- `liveworkspace/apps/index/src/fresh-teams.test.ts`
-- `liveworkspace/apps/index/src/home-reads.test.ts`
-- `liveworkspace/apps/index/src/http.test.ts`
-- `liveworkspace/apps/index/src/inbox.test.ts`
-- `liveworkspace/apps/index/src/items.test.ts`
-- `liveworkspace/apps/index/src/lists.test.ts`
-- `liveworkspace/apps/index/src/migration.test.ts`
-- `liveworkspace/apps/index/src/most-used.test.ts`
-- `liveworkspace/apps/index/src/notices.test.ts`
-- `liveworkspace/apps/index/src/personal.test.ts`
-- `liveworkspace/apps/index/src/share-expiry.test.ts`
-- `liveworkspace/apps/index/src/sharing.test.ts`
-- `liveworkspace/apps/index/src/timeline.test.ts`
-- `liveworkspace/apps/index/src/visitors.test.ts`
-- `liveworkspace/apps/index/src/workbench.test.ts`
-- `packages/index-client/src/browser/guest-token.test.ts`
-- `packages/index-client/src/browser/item-grants.test.ts`
-- `packages/index-client/src/browser/token-teams.test.ts`
-- `packages/index-client/src/client.test.ts`
-- `packages/index-client/src/constants.test.ts`
-- `packages/index-client/src/grant.test.ts`
-- `packages/index-app/src/anonymise.test.ts`
-- `packages/index-app/src/cards.test.ts`
-- `packages/index-app/src/drive-doors.test.ts`
-- `packages/index-app/src/export.test.ts`
-- `packages/index-app/src/forms.test.ts`
-- `packages/index-app/src/image-grants.test.ts`
-- `packages/index-app/src/import-item.test.ts`
-- `packages/index-app/src/internal.test.ts`
-- `packages/index-app/src/item-db.test.ts`
-- `packages/index-app/src/item-head.test.ts`
-- `packages/index-app/src/lists.test.ts`
-- `packages/index-app/src/migration-door.test.ts`
-- `packages/index-app/src/notifier.test.ts`
-- `packages/index-app/src/notify-claims.test.ts`
-- `packages/index-app/src/outbox.test.ts`
-- `packages/index-app/src/person-events.test.ts`
-- `packages/index-app/src/purge.test.ts`
-- `packages/index-app/src/request.test.ts`
-- `packages/index-app/src/room-ticket.test.ts`
-- `packages/index-app/src/tab-shares.test.ts`
-- `packages/index-app/src/tabs.test.ts`
-- `packages/index-app/src/teams.test.ts`
-- `packages/index-app/src/timing-safe.test.ts`
+| Test                                                   | Pins                                                                                                                                                            |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/delegate.test.ts` (5)    | an app acting for a person: its own items only, refused without the key or for a guest                                                                          |
+| `liveworkspace/apps/index/src/drive.test.ts` (11)      | the Drive mirror's reach, the `drive_mirrored` flag, the change signal                                                                                          |
+| `liveworkspace/apps/index/src/fresh-teams.test.ts` (2) | a team made or joined since the token was minted                                                                                                                |
+| `liveworkspace/apps/index/src/workbench.test.ts` (5)   | accounts acting for a workbench token's account; `POST /internal/workbench-close`                                                                               |
+| `liveworkspace/apps/index/src/http.test.ts` (3)        | `readObject`: oversized, cut off, not an object                                                                                                                 |
+| `liveworkspace/apps/index/src/codec.test.ts` (5)       | `isId`, `isPartId`, ids on the wire                                                                                                                             |
+| `liveworkspace/apps/index/src/compound.test.ts` (2)    | the test database refuses what D1 refuses, and runs a nested union of any length (`unionAll` itself: `packages/api-kit/src/d1-compound.test.ts`)                |
+| `liveworkspace/apps/index/src/app.test.ts` (15)        | app pushes, the Inbox, the guest merge, the daily purge, the empty clean-up, merges told to apps                                                                |
+| `packages/index-client/src/*.test.ts`                  | the client's routes and errors, the constants, grant verification, browser guest tokens, held grants, token teams                                               |
+| `packages/index-app/src/*.test.ts`                     | each app's side: doors, outbox, grants on requests, room tickets, teams, purges, tabs, tab shares, forms, notifier, migration door, import, export, timing-safe |
+
+## Defaults ledger
+
+- `IDX1`: the spec names no isolate memory for opens or checked passwords; the code bounds them at 5,000 and 1,000
+  keys, oldest out first.
+- `IDX2`: the spec leaves the cron minutes open; the daily run is `23 4 * * *` and the frequent one `*/15 * * * *`.
+- `IDX3`: a cron step that throws is logged and the run goes on to the next step.

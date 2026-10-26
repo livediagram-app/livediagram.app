@@ -86,7 +86,7 @@ What a deploy never writes, set once per environment and kept across deploys:
 - **The Turnstile widget** for `liveworkspace.app` and every app's hostnames ([accounts.md](accounts.md#before-deploy)),
   its site key in `TURNSTILE_SITE_KEY`.
 - **The Google OAuth client** (Web application) in Google Cloud, with
-  `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one), and the apps' own
+  `https://www.liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one), and the apps' own
   addresses ([accounts.md](accounts.md#before-deploy)).
 - **Each app's OAuth client**, registered once per environment (below).
 
