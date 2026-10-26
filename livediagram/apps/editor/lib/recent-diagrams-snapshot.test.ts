@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
-// Sign-out clears what the retired returning-visitor note left in the browser
-// (docs/specs/019-marketing/returning-visitor.md).
+// Sign-out clears what the retired returning-visitor note left in the browser.
 
 import {
   RECENT_DIAGRAMS_KEY,

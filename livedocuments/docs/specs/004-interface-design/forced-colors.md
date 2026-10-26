@@ -1,7 +1,5 @@
 # Forced colours
 
-Status: shipped
-
 ## What
 
 Every app (editor, help centre, telemetry dashboard, marketing site) stays usable when the operating system
@@ -21,8 +19,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - Every colour swatch was an empty square, so a colour could not be picked.
 - Every template preview (the editor's template step, the Explorer, the marketing gallery) was a flat blank box: the
   dark re-lighting veil (`preview-art-tile`) was repainted black and blended the art away.
-- The tour and sign-in banners, painted only with a gradient, turned see-through over the canvas (the tour's banners
-  are gone since 25 October 2026; the sign-in banner keeps the fix).
+- The tour and sign-in banners, painted only with a gradient, turned see-through over the canvas (the sign-in banner keeps the fix).
 
 ## The rule
 
@@ -50,8 +47,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/editor/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
   `../packages/workbench/src/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
-- `apps/editor/components/chrome/SignInBanner.tsx`: a solid background under the gradient (`TourBanner.tsx` had
-  the same until it was deleted).
+- `apps/editor/components/chrome/SignInBanner.tsx`: a solid background under the gradient.
 
 ## Testing
 

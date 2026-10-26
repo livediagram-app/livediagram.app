@@ -1,5 +1,5 @@
 // This browser's own opens of the documents stored only here (docs/specs/013-workspace/explorer-home.md
-// "Opens"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens").
+// "Opens").
 //
 // The server never sees an Offline Mode document, so it cannot count its opens. This Browser does,
 // by the server's own rule: the UTC days with an open, inside the 90-day use window, and the last

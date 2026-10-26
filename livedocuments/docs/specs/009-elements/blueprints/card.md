@@ -4,22 +4,21 @@ Derived from [The card](../card.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `
 components family ([web-components.md](web-components.md)): it reuses their face routing, `InlineTextLine`, `WebRows`
 and the rows menu, and only what differs is written here.
 
-| File                                                                         | Role                                                                                                          |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/card.ts`                                              | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`, `migrateLegacyCallouts` |
-| `packages/document/src/shape-kind.ts`                                        | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                                                       |
-| `packages/document/src/web-components.ts`                                    | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                                          |
-| `packages/document/src/element-types.ts`, `element-fields.ts`                | `cardMedia`, `cardHeader`, `tags`                                                                             |
-| `packages/document/src/validate-shape.ts`                                    | Bounds for the three fields                                                                                   |
-| `packages/document/src/shape-factory.ts`, `component-factories.ts`           | Default size, starting content, the Callout preset                                                            |
-| `packages/document/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                                           |
-| `packages/document/src/svg-render-card.ts`                                   | `svgCard`: the headless body                                                                                  |
-| `packages/document/src/stored-elements.ts`                                   | `migrateLegacyCallouts` joins `migrateStoredElements`                                                         |
-| `packages/document/src/element-normalise.ts`                                 | An agent's `callout` becomes a card on write                                                                  |
-| `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face (`card`, and `callout` before migration)                                                      |
-| `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                                           |
-| `apps/editor/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                                         |
-| `apps/editor/lib/element-telemetry.ts`                                       | `Card` tokens                                                                                                 |
+| File                                                                         | Role                                                                                  |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `packages/document/src/card.ts`                                              | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`  |
+| `packages/document/src/shape-kind.ts`                                        | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                               |
+| `packages/document/src/web-components.ts`                                    | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                  |
+| `packages/document/src/element-types.ts`, `element-fields.ts`                | `cardMedia`, `cardHeader`, `tags`                                                     |
+| `packages/document/src/validate-shape.ts`                                    | Bounds for the three fields                                                           |
+| `packages/document/src/shape-factory.ts`, `component-factories.ts`           | Default size, starting content, `createCalloutCard`                                   |
+| `packages/document/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                   |
+| `packages/document/src/svg-render-card.ts`                                   | `svgCard`: the headless body                                                          |
+| `packages/document/src/shape-variants.ts`                                    | `CARD_PRESET_VARIANTS`, `applyShapeVariant`: the card presets, the Callout among them |
+| `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face                                                                       |
+| `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                   |
+| `apps/editor/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                 |
+| `apps/editor/lib/element-telemetry.ts`                                       | `Card` tokens                                                                         |
 
 ## Domain and naming
 
@@ -32,7 +31,7 @@ and the rows menu, and only what differs is written here.
 | Title          | `pageTitle`                                  | Shared masthead field                            |
 | Meta line      | `pageSubtitle`                               | Shared masthead field                            |
 | Tag            | `tags[i]`                                    | One chip                                         |
-| Callout preset | `CALLOUT_PRESET`                             | `cardMedia: 'badge'`, title, body                |
+| Callout preset | `applyShapeVariant(el, 'callout')`           | `cardMedia: 'badge'`, title, body, 380 x 116     |
 
 ## Behaviour and state
 
@@ -74,16 +73,17 @@ and the rows menu, and only what differs is written here.
   `CardSlots`.
 - Icon drop on a card with no media sets `cardMedia: 'tile'` alongside `iconId` (`applyInlineIconToEl`).
 
-### Callout migration
+### The Callout preset
 
-`migrateLegacyCallouts(elements)`: for each `shape: 'callout'` return `{ ...el, shape: 'card', cardMedia: 'badge' }`;
-the same array when there is none (I2). Runs inside `migrateStoredElements` (every stored-tab read path) and in
-`element-normalise` (agent writes).
+The palette's Callout tile (`components:callout`, `action: { type: 'component', kind: 'callout' }`) and
+`createCalloutCard(x, y)` (templates, agents) both place a `card` through `applyShapeVariant(el, 'callout')`:
+380 x 116, `cardMedia: 'badge'`, `pageTitle` "Heads up", the body "A short note with some supporting detail.", and
+no meta line, tags or icon. The result is an ordinary card; there is no `callout` shape kind.
 
 ### Invariants
 
 - I1: `tags` has at most 6 entries, each at most 32 characters, after any write.
-- I2: after `migrateStoredElements`, no element is a `callout`.
+- I2: no element is a `callout`: the Callout is a card.
 - I3: canvas and export place every slot from the same `cardLayout` call.
 
 ## Interfaces and contracts
@@ -115,7 +115,6 @@ export function cardLayout(width: number, height: number, slots: CardSlots): Car
 export function cardSlotsOf(el: ShapeElement): CardSlots;
 export function withCardMedia<T extends Element>(el: T, media: CardMedia | null): T;
 export function withCardHeader<T extends Element>(el: T, on: boolean): T;
-export function migrateLegacyCallouts(elements: Element[]): Element[];
 export function svgCard(
   el: ShapeElement,
   o: { stroke; fill; labelColor; label; fontFamily? },
@@ -123,7 +122,7 @@ export function svgCard(
 ```
 
 Validation: `cardMedia` one of `CARD_MEDIA`; `cardHeader` boolean; `tags` array of at most 6 strings of at most 32.
-`callout` stays a valid `shape` value.
+`callout` is not a `shape` value.
 
 ## Data and persistence
 
@@ -132,8 +131,6 @@ Validation: `cardMedia` one of `CARD_MEDIA`; `cardHeader` boolean; `tags` array 
 | `cardMedia`  | persisted | Absent = none                       |
 | `cardHeader` | persisted | Stored only when true               |
 | `tags`       | persisted | Absent when empty; order is meaning |
-
-Migration: callout → card on every read; idempotent; no write-back until the next save.
 
 ## Errors and edge cases
 
@@ -144,12 +141,10 @@ Migration: callout → card on every read; idempotent; no write-back until the n
 | E3  | `cardMedia: 'tile'` with no `iconId` | Draws the tile with the "image" placeholder glyph |
 | E4  | Unknown `iconId`                     | The placeholder glyph, as every icon does         |
 | E5  | Header band on a light `headerFill`  | Band text `labelOn(headerFill)`                   |
-| E6  | A stale client saves a `callout`     | Accepted; migrated on the next read               |
 
 ## Security and trust
 
-Strings are bounded by validation, rendered as React text and `xmlEscape`d in export. The migration runs server side
-on every read, so no reader sees a legacy kind.
+Strings are bounded by validation, rendered as React text and `xmlEscape`d in export.
 
 ## Performance and limits
 
@@ -179,7 +174,7 @@ In-place edits touch the DOM until blur, then one commit (INP); no layout reads.
 ## Observability
 
 Telemetry only: `Element·Added·Card` on create, `Element·Changed·CardSlots` (band, media), `Element·Changed·Card`
-(tags from the menu or ring). The migration emits nothing (as the group migration).
+(tags from the menu or ring).
 
 ## Testing
 
@@ -187,7 +182,7 @@ Telemetry only: `Element·Added·Card` on create, `Element·Changed·CardSlots` 
 | ------------------------------------------------------- | ----------------------------------------------------------- |
 | Layout per slot combination, dropping, tags overflow    | `packages/document/src/card.test.ts`                        |
 | Writes: media, header, tags bounds (I1)                 | same                                                        |
-| Callout migration (I2), idempotent, untouched array     | same + `stored-elements.test.ts`                            |
+| Callout preset is a badge card (I2)                     | `packages/document/src/shape-variants.test.ts`              |
 | Validation bounds                                       | same                                                        |
 | Export draws each slot (I3)                             | same (`svgCard`)                                            |
 | Face: slots render, lines inert until selected, commits | `apps/editor/components/canvas/web/CardFace.test.tsx`       |

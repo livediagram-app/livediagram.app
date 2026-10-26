@@ -320,7 +320,7 @@ export * from './document-views';
 export * from './lint';
 export * from '@liveworkspace/api-schema/ref-errors';
 // The retired returning-visitor note's storage names, and the snapshot SVG helpers
-// (docs/specs/019-marketing/returning-visitor.md, docs/specs/006-document/document-snapshots.md).
+// (docs/specs/006-document/document-snapshots.md).
 export * from './recent-diagrams';
 
 export * from '@liveworkspace/api-kit/api-token';

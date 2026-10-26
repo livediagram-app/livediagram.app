@@ -1,75 +1,28 @@
 # Dedicated route for new-document creation
 
-Split the welcome / template-picker flow off the editor into its own
-route at `/new`. The editor route is editor-only; `/new` handles "I
-want to create a document" end-to-end.
+Creating a document has its own route, `/new`; the editor route, `/document/<id>`, only edits. `/new` handles "I want
+to create a document" end to end, so the editor's load never has to ask "do I mint an id?".
 
-> **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
-> removed — the editor app serves at clean routes. So today the editor is
-> `/document/<id>` (not `/live/document/<id>`), `/new` is `/new`, and
-> there is no bare `/live` entry point (`/` is the marketing home). The
-> historical `/live...` URLs below describe the pre-cleanup scheme; map
-> each to its `/live`-stripped form. The placeholder-rewrite mechanism
-> and the `/new` split itself are unchanged.
+## Scope
 
-## Motivation
-
-> **History:** this section and "State changes in `/live`" record why the route was split, in livediagram. The welcome
-> state and template picker they name are gone; what `/new` does today is in [What `/new` makes](#what-new-makes).
-
-`/live` served two distinct experiences from one component:
-
-1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
-   State: load document, autosave, room broadcast, etc.
-2. **Welcome / Create new** — `/live` with no params. State:
-   `templatePickerMode`, `welcomeOpen`, `loadedExistingDocument`,
-   `nameConfirmed`, and the `commitDocumentId()` flow that mints a
-   UUID + rewrites the URL via `history.replaceState`.
-
-The overlap is the source of recurring state bugs:
-
-- The "Empty Canvas" flash on `New Document` clicks (multiple
-  iterations to land cleanly).
-- `templatePickerMode = 'welcome'` showing on existing-document tabs.
-- Hydration spinner hangs because the no-params path raced with the
-  identity-API roundtrip.
-- The `effectiveTemplatePickerMode` derived patch papering over
-  conflicts between welcome and per-tab template states.
-
-Each fix touched a different gate. Splitting the two surfaces lets
-each one own a clean state model without conditional gates.
-
-## Goals
-
-- A dedicated `/new` route that owns creating a document end-to-end.
-- `/live` becomes editor-only. Hydration only handles `?d=` /
-  `?s=` URLs and never has to consider "do I mint an id?".
-- Visiting `/live` with no params redirects to `/new` instead
-  of trying to be both surfaces at once.
-- "New Document" buttons (Explorer + NotFound CTA) navigate to
-  `/new`. Existing share / open flows stay on `/live`.
-
-## Non-goals
-
-- Changing the visitor `?s=<code>` flow. Visitors still land on
-  `/document/shared?s=<code>` and confirm their name there —
-  the `identityOnlyScreenOpen` mini-flow stays in the editor route
-  because it's about the visitor's session, not about creating a
-  new document.
-- Moving what an empty tab on an existing document shows (its start, Start Making Pages). That stays in the editor
-  because the document is already loaded.
-- Changing what gets persisted at "Submit" time. The new route
-  still POSTs `/api/documents` with the chosen template tab seeded,
-  same as the current `commitDocumentId()` path.
+- `/new` owns creating a document: identity, where it is stored and filed, the create request, and the handoff to
+  the editor.
+- The editor route hydrates only `/document/<id>` and `/document/shared?s=<code>` URLs. The editor's own empty route
+  (`/document`, `/document/placeholder`) hands off to `/new`.
+- Every **New Document** button (the Explorer, the not-found card) navigates to `/new`. Opening and share flows stay
+  on the editor route.
+- The editor route keeps the visitor's name confirmation on a share link (the `identityOnlyScreenOpen` mini-flow): it
+  is about the visitor's session, not about creating a document. An empty tab on an existing document shows its start
+  (Start Making Pages) in the editor, because the document is already loaded.
+- The router serves the editor at clean paths; a legacy `/live` prefix is stripped ([Router app](../016-platform/router-app.md)).
 
 ## Route map
 
 | Route                   | Purpose                               | State                                                                                                                   |
 | ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `/live`                 | Bare entry point                      | Redirect → `/new` (or `/document/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.          |
 | `/document/<id>`        | Editor for an existing owned document | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/document/shared?s=<>` | Visitor view of a shared document     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
-| `/new`                  | Welcome / create-new flow             | Asks nothing: makes the document (from `?template=` or blank), POSTs it and hands it to the editor at `/document/<id>`. |
+| `/new`                  | Create a document                     | Asks nothing: makes the document (from `?template=` or blank), POSTs it and hands it to the editor at `/document/<id>`. |
 
 ## Path scheme
 
@@ -88,8 +41,7 @@ Editor URLs use a path segment rather than a query string. `output:
 4. In `next dev`, Next.js resolves the dynamic segment natively so the
    same URL works without going through the worker.
 
-The hard cutover dropped the legacy `?d=<id>` query scheme — old
-bookmarks pointing at `/live?d=<id>` no longer work.
+There is no `?d=<id>` query scheme.
 
 ### Not-found slot renders the editor
 
@@ -100,27 +52,19 @@ enumerated in `generateStaticParams`. `placeholder` is the only
 enumerated id, so every real document URL triggers `notFound()` the
 instant the JS hydrates.
 
-Earlier attempts tried to _prevent_ the trigger — a route-level
-`not-found.tsx`, a pre-hydration URL swap to `placeholder`, then
-the same swap using the captured native `replaceState` so Next's
-patched version wouldn't re-notify the router. None of them held
-up: Next.js's static export bakes the framework default 404 into
-the `notFound` slot of the layout's flight payload and the client
-router reaches it before any of those interventions can finish.
-
-Working approach: **embrace the trigger**. `apps/editor/app/not-found.tsx`
+The trigger cannot be prevented: Next.js's static export bakes the framework default 404 into the `notFound` slot
+of the layout's flight payload, and the client router reaches it before any URL swap could finish. So the editor
+**embraces the trigger**: `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
-`children` to the `notFound` slot — which is now the editor. The
+`children` to the `notFound` slot, which is the editor. The
 editor mounts, reads the real id from `window.location.pathname`
-(unchanged throughout — no URL swap means no restoration to fight
-about), and loads the document via the API. The address bar stays
+(unchanged throughout: there is no URL swap to restore), and loads the document via the API. The address bar stays
 on `/document/<uuid>`; nothing about the URL needs to lie.
 
 ### Unknown addresses
 
-A genuinely unknown address (a mistyped page, `/explorer/mine`, or a page an
-older build had) reaches the editor through the same slot. It names no
+A genuinely unknown address (a mistyped page, or a page another build had) reaches the editor through the same slot. It names no
 document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
 `<NotFound>` card at once, titled **Page not found**
@@ -131,14 +75,12 @@ titled **Document not found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 `/explorer`, New Document to `/new`). An embed shows the card with New Document
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
-`/document/placeholder`) hands off to `/new`. Before, every address without a
-document id went to `/new`, so a mistyped or retired page made a new
-document with no word of what went wrong.
+`/document/placeholder`) hands off to `/new`., so a mistyped page never makes a document with no word of what went wrong.
 
 ### A failed load is not a missing document
 
 NotFound means "this document doesn't exist, or isn't yours". A load
-that FAILS — network down, 5xx, share link unresolvable — means
+that fails (network down, 5xx, share link unresolvable) means
 nothing of the sort, and showing NotFound for it tells someone their
 work is gone when the server is merely unreachable. So the two are
 kept apart: only a clean 404 reaches NotFound, and a thrown request
@@ -155,16 +97,15 @@ ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
 document.
 
-The distinction is made at every call site that can fail this way —
-the document load and the share-link resolve in `useIdentityBootstrap`,
-and the create in `/new` — rather than in one place, so it is worth
+The distinction is made at every call site that can fail this way (the document load and the share-link resolve in `useIdentityBootstrap`,
+and the create in `/new`) rather than in one place, so it is worth
 knowing about when adding another.
 
 ## Navigation flows
 
 ### Owner creates a new document
 
-1. User clicks **New Document** in the Explorer (or lands on `/live`).
+1. User clicks **New Document** in the Explorer.
 2. Browser navigates to `/new`.
 3. `/new` asks nothing: it shows the opening screen at its "Creating your document" stage and makes the
    document at once, where new documents go by default ([What `/new` makes](#what-new-makes)).
@@ -177,14 +118,14 @@ knowing about when adding another.
 ### Owner opens an existing document
 
 1. Explorer list row click → `window.location.assign('/document/<id>')`.
-2. Editor route hydrates as today. The create flow and identity modes never load.
+2. The editor route hydrates. The create flow and identity modes never load.
 
 ### Visitor follows a share link
 
 1. URL is `/document/shared?s=<code>`.
 2. Editor route hydrates via the existing `apiLoadShared` branch.
 3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
-   stays on the editor route — it's about the visitor, not the document.
+   runs on the editor route: it is about the visitor, not the document.
 
 ### Empty tab on an existing document
 
@@ -196,30 +137,16 @@ knowing about when adding another.
 ### Document not found
 
 1. URL is `/document/<id>` but the API returns 404.
-2. NotFound surface renders as today, but its "Create new document"
-   CTA now navigates to `/new`.
+2. The NotFound card renders; its **New Document** button navigates to `/new`.
 
-## State changes in the editor route
+## The editor route's state
 
-Removed from the editor route at the split (history, see Motivation):
-
-- `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
-  derivation.
-- `welcomeOpen` (the chrome-hide trigger for the New Document modal).
-- `commitDocumentId()` and every call site (`createShareLink`,
-  `skipTemplatePicker`, `chooseTemplate`).
-- The "no URL params" branch of hydration. If the pathname's id
-  segment resolves to the build-time placeholder and no `?s=` code
-  is set, the editor route redirects to `/new` (via
-  `window.location.assign`) and renders the spinner until the
-  navigation completes.
-
-Kept on the editor route:
-
+- No welcome or template-picker state: an empty tab's templates are on its start.
+- If the pathname's id segment is the build-time placeholder and no `?s=` code is set, the editor route goes to
+  `/new` (via `window.location.assign`) and shows the opening screen until the navigation completes.
 - The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
-  `identityOnlyScreenOpen`). There is no template picker over the editor: an empty tab's templates are on its start.
-- Everything else: autosave, room, tab management,
-  document metadata, share dialog, etc.
+  `identityOnlyScreenOpen`).
+- Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
 ## `/new` state
 
@@ -263,7 +190,7 @@ page), logging `[new] restored, back out <target>`.
 
 ### The empty-canvas hint
 
-Removed with the Pages-only cut (October 2026): there is no empty-canvas card or backdrop any more. An Editor gets the
+There is no empty-canvas card or backdrop. An Editor gets the
 tab's start ([Template start](start-diagramming.md)), and an empty page offers its layouts ([Pages
 mode](pages-mode.md) "An empty page offers its layouts"); a Viewer or Participant sees the empty page.
 
@@ -272,14 +199,12 @@ mode](pages-mode.md) "An empty page offers its layouts"); a Viewer or Participan
 **Start Blank** is the name of the `?blank=1` link (Explorer Home's first-run blanks) and of the public sites'
 `/new?start=blank` ([Marketing site](../019-marketing/marketing-site.md#start-blank)). Both make a blank document
 whose start is already closed (`newDocumentStartsBlank`, `closeStartForBlank`), so whoever asked for a blank is not
-shown templates. Its telemetry token is `JustDraw` (`UI / Used / JustDraw`), kept so the funnel's history reads on
-unbroken.
+shown templates. Its telemetry token is `JustDraw` (`UI / Used / JustDraw`).
 
 - The placement context params compose with it (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a
   caller can Start Blank straight into a folder or team library.
-- Nothing about tours is queued on this path, or on any other: no tour offers itself, and the
-  [Pages tour](pages-tour.md) waits on the footer's Start Pages Tour button (until 25 October 2026 a welcome
-  offer was queued on the other paths and left out here).
+- No tour is queued on this path or any other: no tour offers itself, and the
+  [Pages tour](pages-tour.md) waits on the footer's Start Pages Tour button.
 
 ### The other parameters
 
@@ -295,7 +220,7 @@ unbroken.
   `history.replaceState` (keeping the other params), so a reload or Back
   can't count the arrival twice. The create then sends `Cta / Created / <source>`, once. An unknown
   source is stripped and ignored.
-- **`?mode=`** is not read: there is one mode. A `?mode=` from an old link is ignored.
+- **`?mode=`** is not read: there is one mode.
 
 ### In-place handoff to the editor
 
@@ -306,7 +231,7 @@ same component `/document/<id>` and the not-found slot render) in its own
 place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
-- **Why:** a hard navigation paid for a second full page load: the editor's
+- **Why:** a hard navigation would pay for a second full page load: the editor's
   document, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
   swap keeps the one signed-in session, the one document, and one continuous
@@ -320,14 +245,13 @@ it cannot tell the difference from a direct visit.
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
   in the editor app passes `ssr: false` (or a `loading` component), which gives
   it a boundary of its own; without one, the first open of Settings or Search
-  swapped the whole editor for the opening screen until the dialog's chunk
+  would swap the whole editor for the opening screen until the dialog's chunk
   landed. `lib/dynamic-has-boundary.test.ts` guards it.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
   do after a direct `/document/<id>` visit.
-- **Nothing crosses the handoff but the URL and `sessionStorage`.** The
-  tour's pending flag (`markTourPending`) is written before the swap and
-  read by the editor on mount, as it was across the hard navigation.
+- **Nothing crosses the handoff but the URL.** No tour is queued (the [Pages tour](pages-tour.md) waits on its
+  button).
 - A failed create never hands off: the retryable error card shows instead.
 
 ### The opening screen
@@ -349,8 +273,7 @@ infographics), never a canvas, so the copy says page.
   while a collaborator cursor labelled "You" drags a picture in between them;
   then the work fans out into its other shapes, an infographic to one side
   and a slide to the other, a sheen runs across the page, and it all
-  dissolves before the loop restarts. livediagram keeps its diagram loader;
-  each app's loader shows that app's own work.
+  dissolves before the loop restarts. Each product's loader shows that product's own work.
 - **Continuity:** the loop's phase is measured from the first time the
   animation mounts in the document, so a remount (the creating stage giving
   way to the editor's load) continues the drawing where it was instead of
@@ -362,9 +285,8 @@ infographics), never a canvas, so the copy says page.
   screen with its recovery card ([Load recovery](load-recovery.md)).
 - **Reduced motion:** the page, infographic and slide sit finished; the
   cursor, caret, glows and bar are still.
-- `PageBuildAnimation` stays a bare illustration (no surface of its own),
-  so a card can compose it inside its own (the Clerk-era sso-callback card
-  did).
+- `PageBuildAnimation` is a bare illustration (no surface of its own),
+  so a card can compose it inside its own.
 - The bar is the shared `LoadingSweep`.
 
 Every create from `/new` honours the URL placement context (the `?folder` /
@@ -408,14 +330,13 @@ carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `s
 ## API impact
 
 - No new endpoints. `POST /api/documents` already accepts an
-  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md) — the route uses it,
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md); the route uses it,
   and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 
-- `/live` with no params → redirects to `/new`, no flash.
 - `/new` → the opening screen, then the editor on `/document/<id>`, on Start Making Pages.
-- `/document/<id>` (existing) → editor hydrates as before.
+- `/document/<id>` (existing) → the editor hydrates.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Document" from Explorer → goes to `/new`.
@@ -426,8 +347,6 @@ carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `s
 - `/new?template=not-a-kind` → a document that opens on its start.
 - `/new?q=article` → on the new document Start Making Pages opens with its search reading "article".
 
-## Out of scope for V1
+## Out of scope
 
-- Animations for the route transition. A spinner is fine.
-- A dedicated `/new` landing-page mode for unauthenticated
-  users. Auth lands in a future spec.
+- An animated transition between `/new` and the editor: the opening screen covers the wait.

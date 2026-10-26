@@ -6,9 +6,8 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 **Nobody is asked.** `/new` ([Dedicated route for new-document creation](../007-editor/new-document-route.md))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Document** and **Take Offline**.
-(The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser
-data-loss warning and a folder browser; it was removed, as most people answered it with the default before they had
-anything on the canvas. A document in This Browser still says what it is on the document itself: the editor header's
+(There is no Location step: most people would answer it with the default before they had anything on the canvas.
+A document in This Browser says what it is on the document itself: the editor header's
 **This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
 
 | Location          | What it means                                                                                                |
@@ -25,7 +24,7 @@ anything on the canvas. A document in This Browser still says what it is on the 
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 A document in This Browser is still in the shared Explorer: its This Browser row and view, and Jump Back In, list this
-browser's documents beside the index's ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md),
+browser's documents beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
 [Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
@@ -38,11 +37,10 @@ browser's documents beside the index's ([liveworkspace/docs/one-explorer.md](../
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
   signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer: a slow session used to make the document This Browser,
-  and the move prompt then offered the document just made. Only a known account saves on livedocuments; a session that
+  sign-in (it then carries on as a guest) is not that answer: a slow session would otherwise make the document This Browser,
+  and the move prompt would then offer the document just made. Only a known account saves on livedocuments; a session that
   still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
-- There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
-  is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
+- There is no per-person override: no setting chooses the store.
 
 ## On the start screen
 
@@ -85,7 +83,7 @@ person (livedocuments).
 
 Where a document goes within livedocuments is chosen with the shared Explorer's `PlacementBrowser`
 (in `@liveworkspace/explorer`), in its Move dialog
-([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)).
 It renders in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New

@@ -1,7 +1,5 @@
 # Next.js
 
-Status: shipped
-
 How the four Next.js apps (live, marketing, help, telemetry) are built: which Next.js they run, the one
 shared configuration, and which Next.js features they use or decline, with the reason.
 
@@ -36,10 +34,9 @@ shared configuration, and which Next.js features they use or decline, with the r
 - **The React Compiler needs Turbopack.** Under the webpack escape hatch (`dev:webpack`) it is left off.
 - **An experimental flag stays only while it measures a gain.** Each row above records what it was adopted for;
   one that stops paying is removed.
-- **No `turbopackLazyDynamicImports`.** It was on to compile a dynamic import only when the browser asked for it, but
-  under Next 16.4.2 dev it left some dynamic imports without their chunk: creating a document asked for a
-  `template-builders` lazy-compilation chunk the server never wrote (`ChunkLoadError`, 2026-10-23), and a clean
-  `.next-dev` did not cure it. It stays off until a Next release fixes that.
+- **No `turbopackLazyDynamicImports`.** Under Next 16.4.2 dev it leaves some dynamic imports without their chunk:
+  creating a document asks for a `template-builders` lazy-compilation chunk the server never writes
+  (`ChunkLoadError`), and a clean `.next-dev` does not cure it. It stays off while a Next release has not fixed that.
 
 ## The Turbopack cache
 
@@ -54,7 +51,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 | --------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<ViewTransition>`, `addTransitionType`, `transitionTypes` on `next/link`               | Used     | [Motion](../004-interface-design/motion.md) "View Transitions"                                                                                    |
 | `reactBrowserBailout` (client-rendering bailouts through `browser()`)                   | Used     | On by default since 16.4                                                                                                                          |
-| Turbopack file-system cache, `turbopackGc`, lazy dynamic imports                        | Used     | Above                                                                                                                                             |
+| Turbopack file-system cache, `turbopackGc`                                              | Used     | Above                                                                                                                                             |
 | Bundle analyzer (`next analyze`, `next analyze export` for JSON)                        | Used     | [Web performance](web-performance.md) "Measuring"                                                                                                 |
 | Cache Components, `partialPrefetching`, `ensureStatic`, `cachedNavigations`             | Declined | `output: 'export'` cannot enable them ("PPR cannot be enabled in export mode")                                                                    |
 | Server Actions, ISR, `proxy.ts`, rewrites, headers, root params, adapters               | Declined | No Next.js server: a static export on Cloudflare                                                                                                  |

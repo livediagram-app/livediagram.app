@@ -1,7 +1,7 @@
 # Agent presence
 
-**Status: built.** The comment endpoints and their listing, comment token ids, agent presence in the api, the room
-and the editor, and the CLI's `comment`, `presence`, `wait` and `watch`.
+Covers the comment endpoints and their listing, comment token ids, agent presence in the api, the room and the
+editor, and the CLI's `comment`, `presence`, `wait` and `watch`.
 
 An agent acts as the person whose token it holds. People see its work, its presence and its comments as that
 person's, and comments are how people and agents talk on the canvas when nobody is chatting.

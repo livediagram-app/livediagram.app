@@ -1,6 +1,6 @@
 # Fact sheet
 
-The canonical, true-today facts all marketing copy is built from. If something
+The canonical facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
 descriptions. Mirrors [Build phase](../../docs/specs/005-project-roadmap/prototype-scope.md)
 and [Purpose](../../docs/specs/001-project-vision/purpose.md).
@@ -25,7 +25,7 @@ managers with a pipeline, small businesses with a budget, an invoice or an
 inventory, and anyone gathering answers with a form. The unit of value is the
 team, not the individual.
 
-## Shipped today
+## What it does
 
 - Plans with tabs: Board, Sheet, Dashboard and Form tabs, side by side.
 - Boards: kanban columns of cards with WIP limits, swimlanes by assignee, type,
@@ -48,11 +48,11 @@ team, not the individual.
   chart, a figure, or a note.
 - Forms: build a form in place, share one public link, and each response lands
   as a card on a board or a row in a sheet. No account needed to answer.
-- Templates: Project Planner, Kanban, Bug Triage, Team Retro, Weekly Planner,
+- Templates: Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner,
   Content Calendar, Hiring Pipeline, OKRs, Product Launch, Feedback Board and
   Task Tracker; spreadsheets such as Budget Planner, Timesheet, Invoice,
   Expense Report, Sales Pipeline and Inventory; forms such as Bug Report,
-  Feedback, Feature Request, RSVP, Job Application and Contact; or a blank
+  Feedback, Feature Request, Event RSVP, Job Application and Contact; or a blank
   board, sheet or form.
 - Real-time collaboration: live presence, edits that land for everyone at once,
   each person's selection in their own colour, comments, and undo and redo
@@ -70,20 +70,22 @@ team, not the individual.
 
 ## Licence and price
 
-- MIT licensed. The source is not public yet.
+- MIT licensed. The source is not public.
 - Free at liveplanner.app. No paid tier and no plan to introduce one.
 - No ads and no third-party trackers. Boards and sheets export (CSV, image,
   PDF, Markdown outline), so work is never locked in.
 
 ## Stack
 
-Runs entirely on Cloudflare: Workers for the API and routing, D1 for storage,
-Durable Objects for realtime, Static Assets for the Next.js frontends. No
+Runs entirely on Cloudflare: Workers for the API and routing, a SQLite-backed
+Durable Object per plan for its content and realtime room, Static Assets for
+the Next.js frontends. No
 Node-hosted backend, no SSR.
 
-## Not yet shipped (do not imply these exist)
+## Not part of liveplanner (do not imply these exist)
 
-- Operational transform / CRDT (realtime is last-writer-wins today).
+- Operational transform / CRDT. Edits to different cards, cells and elements
+  merge; two people changing the same thing at once is last-writer-wins.
 - Native mobile or desktop apps (it runs in the browser).
 
 ## Links

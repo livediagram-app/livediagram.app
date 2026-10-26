@@ -217,7 +217,7 @@ curl -X POST https://livedocuments.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/$DOC` deletes one trashed document for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed document for good; emptying the whole Trash happens in the Explorer. A read-only token can list the Trash but not restore or purge.
 
 ## Share a document
 

@@ -1,7 +1,5 @@
 # Toolbar layout
 
-Status: shipped
-
 ## What
 
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
@@ -41,8 +39,7 @@ under the pointer as a category is switched.
   (`palette-layouts.ts`), a hairline divider between the bands (Common, Structure,
   Decorate, Dynamic, Collaborate). No hover card: resting on a button opens its flyout, which names it.
 - **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`).
-- **No Popular.** With every category one press away, a pick from across them adds nothing, so no layout has one
-  (the category and its glyph are gone).
+- **No Popular.** With every category one press away, a pick from across them adds nothing, so no layout has one.
 - **No Build.** The bar has no Build category: the
   Stack sits in Components and the Timeline and Table in Data and Concepts.
 - **The bars**, by page kind (`palette-layouts.ts`):
@@ -177,8 +174,8 @@ A strip shows one category at a time, so finding an element means knowing which 
 
 ## A flyout's order and groups
 
-A flyout shows its category **in its own order**, always. **Using a tile never reorders it** (an earlier version brought each used tile to the front,
-which moved things under the pointer after every add; it is gone, its stored list with it).
+A flyout shows its category **in its own order**, always. **Using a tile never reorders it**: bringing a used tile to the front would move things under the pointer
+after every add.
 
 **Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`, or a layout's own
 `DIVIDE`), which the flyout heads by name ("The flyout"):
@@ -242,10 +239,10 @@ minimising into its cluster button. It was retired
 because every new feature had to be built and kept working twice, and the strip had become the
 better layout. Its parts went with it:
 
-- The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
+- There is no `panelLayout` preference ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
 - Settings has no Panel Layout row.
-- The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
+- The Palette, the Explorer and Layers are not corner panels, so a stored panel placement
   that names them is ignored ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
   types, so the history still reads ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
@@ -338,9 +335,8 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     rounds the whole card to whole pixels (matching the canvas's parity so centring stays whole).
   - Thirteen-pixel glyphs (the selection mode icons) centred on a half
     pixel in an even tile. They are 14px.
-    Separately, the corner panels are no longer promoted to their own
-    compositing layer (it was a fix for the retired isometric view's flicker,
-    and cost sub-pixel text anti-aliasing on a 1x display). Tile captions went from 9px to 10px.
+    The corner panels are not promoted to their own compositing layer, which would cost sub-pixel text
+    anti-aliasing on a 1x display. Tile captions are 10px.
 
 - The dropdown-style control (the selection mode) sits on a
   faint tint so

@@ -1,11 +1,10 @@
 # Presentation mode
 
-> **Status: implemented.** The deck model and its pure helpers live in
-> `packages/document/src/slide-deck.ts`, persistence in the baseline migration
-> (`documents.presentation`), and the editor surface in `useSlideDeck.ts`,
+> The deck model and its pure helpers live in
+> `packages/document/src/slide-deck.ts`, persistence in the document's store (the `presentation` column of the
+> room's `document` table), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
-> `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
-> questions at the end are follow-ups, not blockers.
+> `PresentationHud.tsx` and `PresentationElementPopover.tsx`.
 
 Present a document as a **slide deck**: full-screen, one slide at a time, each slide showing a set of elements you picked. Built for the "walk someone through this on a call or a projector" moment.
 
@@ -298,7 +297,7 @@ The deck itself IS shared: a teammate opening the document sees your slides and 
 
 ## Implementation shape
 
-Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (a tool panel, built like `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
+Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (a tool panel, built like `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentThreadList` (`comment-thread-parts.tsx`) takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 

@@ -1,7 +1,5 @@
 # Shift-drag duplicate
 
-Status: shipped
-
 ## What
 
 Holding **Shift** while dragging a selected element (or multi-selection /

@@ -1,7 +1,5 @@
 # Build with AI
 
-Status: shipped
-
 `/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a deck in livedocuments" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points

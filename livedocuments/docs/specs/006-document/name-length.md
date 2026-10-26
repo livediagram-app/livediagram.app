@@ -1,7 +1,5 @@
 # Tab and document name length
 
-Status: shipped
-
 ## What
 
 Tab and document names are capped at **`NAME_MAX_LENGTH` = 60 characters**, and
@@ -84,14 +82,13 @@ states the cap on each name field.
 The editor shortens at its own mutation points, so what the author sees is
 already the stored name without waiting on a round trip:
 
-- `useSelectionEditing` — the auto-name path (the case that prompted this).
+- `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- `useDocumentListActions.renameDocument` and `useTeamLibrary.renameDocument`.
 - `EditorView`'s header rename.
-- The `/new` wizard's document-name field.
+- Every inline name field (`InlineRenameInput`, `NameEditor`) takes `maxLength={NAME_MAX_LENGTH}`.
 
 An Offline Mode document never reaches the server until it syncs, so for it
-these editor points are the enforcement until it does; the sync is a create,
+these editor points are its enforcement; the sync is a create,
 so the server cap applies to it like any other.
 
 The text inputs (`NameEditor`, `InlineRenameInput`, the wizard field) also

@@ -1,7 +1,5 @@
 # Optical alignment
 
-Status: in review
-
 ## What
 
 A glyph sits at the **centre of the shape that holds it**, and glyphs that stand side by side share

@@ -15,7 +15,7 @@ Scope, by file:
 | `../packages/ui/src/hint/trigger-text.ts`              | `hasVisibleText` (touch gate) and `accessibleNameOf` (the name check)          |
 | `../packages/ui/src/hint/useHint.ts`                   | The state machine: pointer, focus, press, long press, Escape, grace            |
 | `../packages/ui/src/hint/HintSurface.tsx`              | The portal, the measured layout, the pointer triangle, the two looks           |
-| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 1 s, on a `display: contents` wrapper                     |
+| `../packages/ui/src/Tooltip.tsx`                       | `Tooltip`: the name, 500 ms, on a `display: contents` wrapper                  |
 | `../packages/ui/src/HoverCard.tsx`                     | `HoverCard`: title + description, instant, on the layout wrapper it always had |
 | `packages/ui/src/index.ts`                             | Exports `Tooltip`, `HoverCard` and their prop types                            |
 | `packages/oxlint-config/native-title.ts`               | `liveworkspace/no-native-title`: native `title` outside the exceptions         |
@@ -41,9 +41,8 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Chart readout | `ChartReadout`                                             | The label: value box over a chart mark; canvas content, not a hint |
 
 Props: a Tooltip's text is `label` (it is the name, and matches `aria-label`); a hover card's is `title` +
-`description`. Renamed with this change, no aliases kept: `Tooltip` (rich) to `HoverCard`; `tooltipTitle` /
-`tooltipDescription` to `hoverCardTitle` / `hoverCardDescription`; `withTooltip` to `withHoverCard`; `ChartTooltip` to
-`ChartReadout`; `IconButton`'s `hideTooltip` to `hint="tooltip"`; `SizeButton`'s `title` to `label`.
+`description`. A rich hint is a `HoverCard` (`hoverCardTitle` / `hoverCardDescription`, `withHoverCard`); `IconButton`'s
+hint is chosen by `hint="tooltip"`; `SizeButton`'s text is `label`.
 
 Banned: "tooltip" for anything with a description, "hover tooltip", "info popover" for a hint, `title=` as a hint.
 
@@ -64,7 +63,7 @@ pointer events from bubbling, and the hint must still see them.
 
 | #   | Event (on the wrapper unless noted)        | Guard                                 | Effect                                                                                     |
 | --- | ------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`                       | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
+| T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`                       | `overTrigger`; cancel close; open after `OPEN_DELAY_MS[kind]` (none when warm)             |
 | T2  | `pointerleave`, `pointerType !== 'touch'`  |                                       | clear `overTrigger`; cancel open; `settle()`                                               |
 | T3  | surface `pointerenter`                     |                                       | `overSurface`; cancel close                                                                |
 | T4  | surface `pointerleave`                     |                                       | clear `overSurface`; `settle()`                                                            |
@@ -168,7 +167,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 | Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                                                                                                                                           |
 | A press on the hint surface itself                 | The surface stops `pointerdown`, `mousedown`, `click`, `dblclick` and `contextmenu`, so a portal event never reaches the trigger's React ancestors                                                                                                                                                                       |
 | Trigger unmounts while open                        | T15: timers cleared, registry released, portal removed                                                                                                                                                                                                                                                                   |
-| Pointer enters, leaves within 1 s                  | T2 cancels the timer; nothing opens                                                                                                                                                                                                                                                                                      |
+| Pointer enters, leaves within 500 ms               | T2 cancels the timer; nothing opens                                                                                                                                                                                                                                                                                      |
 | Press before the tooltip opened                    | T7 cancels it and sets `dismissed`; it stays shut until the pointer leaves                                                                                                                                                                                                                                               |
 | Long press and the browser then sends no `click`   | `suppressClick` is cleared on the next touch `pointerdown` (T8), so it cannot eat a later tap                                                                                                                                                                                                                            |
 | Trigger has visible text on touch                  | T8 guard: no long press, no suppressed click                                                                                                                                                                                                                                                                             |
@@ -264,8 +263,12 @@ surface.
 | `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                                        | 6–16       |
 | `HINT_TOUCH_LINGER_MS`    | 1500  | Spec                                                                       | 1000–3000  |
 | `TOOLTIP_GAP_PX`          | 6     | D29                                                                        | 4–10       |
-| `HOVER_CARD_GAP_PX`       | 10    | Unchanged from the old `Tooltip` `GAP`                                     | 6–14       |
-| `POPOVER_VIEWPORT_MARGIN` | 8     | Existing, `../packages/ui/src/popover.ts`                                  | 4–16       |
+| `HOVER_CARD_GAP_PX`       | 10    | Spec                                                                       | 6–14       |
+| `TOOLTIP_ARROW_PX`        | 8     | Spec                                                                       | 6–12       |
+| `HOVER_CARD_ARROW_PX`     | 10    | Spec                                                                       | 6–14       |
+| `PREVIEW_OPEN_DELAY_MS`   | 600   | The platform's row previews (`'preview'` kind); no livedocuments surface   | 400–1000   |
+| `PREVIEW_WARMUP_MS`       | 500   | As `TOOLTIP_WARMUP_MS`                                                     | 300–1000   |
+| `POPOVER_VIEWPORT_MARGIN` | 8     | `../packages/ui/src/popover.ts`                                            | 4–16       |
 
 ## Assets and external resources
 

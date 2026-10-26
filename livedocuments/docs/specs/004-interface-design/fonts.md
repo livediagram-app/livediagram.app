@@ -149,8 +149,7 @@ so the names would all look alike). Picking one letters the whole tab at once.
 ## Exports carry the face
 
 An exported image is the canvas as far as its reader is concerned, so PNG /
-SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
-sans, which quietly rewrote every canvas).
+SVG / PDF paint the same typeface the canvas did, never the UI sans.
 
 - `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
   hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement

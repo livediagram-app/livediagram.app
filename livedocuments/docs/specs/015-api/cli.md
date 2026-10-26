@@ -1,8 +1,8 @@
 # CLI
 
-**Status: published.** `@livedocuments/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
+`@livedocuments/cli` (version 0.3.0) is the npm package. Every command below signs in through the
 browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
-article is `/help/developers/cli/` (Developers). Ahead: the update check.
+article is `/help/developers/cli/` (Developers).
 
 `livedocuments` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a deck while a person talks to it) and second for people (scripts, pulling documents to files).
@@ -98,7 +98,7 @@ an agent through the CLI is designing their own pages.
 
 ## Output
 
-- **stdout carries data only**; hints, warnings and update notices go to stderr.
+- **stdout carries data only**; hints and warnings go to stderr.
 - Compact text by default. `--json` gives the same data as JSON; `--json <fields>` picks fields; `-q` prints only
   refs or ids.
 - Every write prints its result lines ([Edit operations](../024-agents/edit-operations.md#results)): what changed,
@@ -187,10 +187,7 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
 
 - npm package `@livedocuments/cli`, under the `livedocuments` npm organisation, installing the command `livedocuments`: one
   bundled ESM file plus the resvg wasm and font, Node 22 or later, run with `npx @livedocuments/cli@latest` or installed.
-  npm refuses the plain name `livedocuments` as too close to the existing `live-diagram`. Published from CI with provenance, versioned on its own.
-- Standalone binaries and a Homebrew tap may follow; a `curl | sh` installer is never offered.
-- Once a day at most, after a command, it checks npm for a newer version and says so on stderr; never in CI, when
-  stderr is not a terminal, or with `LIVEDOCUMENTS_NO_UPDATE_CHECK=1`.
+  Versioned on its own.
 
 ## Telemetry
 

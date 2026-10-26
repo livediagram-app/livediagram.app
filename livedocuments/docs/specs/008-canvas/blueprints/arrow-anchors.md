@@ -49,8 +49,8 @@ Scope, by file:
 | Considered arrow  | (internal) `considered: ElementId[]`                   | An arrow the run evaluates                                          |
 | Trigger           | `pathPassesThrough`                                    | The drawn path goes inside a pinned end's shape                     |
 | Facing side       | `facingSideTowards(el, aim)`                           | The first side carrying anchors, in exit then alignment order       |
-| Aim point         | `aimPointOf(other, centre, index)`                     | Closest point of the other connector box, or the other position     |
-| Reference point   | `referencePointOf(other, index)`                       | Other connector box centre, or the other position                   |
+| Aim point         | `anchorAimPoint(other, centre)`                        | Closest point of the other connector box, or the other position     |
+| Reference point   | (internal) `reference` in `reanchorEnd`                | Other connector box centre, or the aim point                        |
 | Held              | (internal) `held: Map<ElementId, Map<Anchor, number>>` | Pinned ends per anchor per element                                  |
 | Swap              | `swapCrossingEnds`                                     | Two same-side ends trade anchors                                    |
 
@@ -219,12 +219,12 @@ State lives only inside one call. Steps:
    `path = arrowPolyline(arrow, index)`; `shapes` = the boxed elements of its pinned ends;
    triggered when `pathPassesThrough(path, s)` for some `s` in `shapes`. Not triggered: next arrow.
 4. **Re-evaluate** `from`, then `to` (D7). For an end pinned to boxed element `el` with anchor `a`:
-   1. `aim = aimPointOf(otherEnd)`, `side = facingSideTowards(el, aim)`; `null` → keep.
+   1. `aim = anchorAimPoint(otherEl, centre)` (or the other end's position), `side = facingSideTowards(el, aim)`; `null` → keep.
    2. `anchorLiesOn(a, side)` → keep.
    3. `candidates = offeredOnSide(el, side, anchorClass(a))`. A middle has one candidate:
       take it.
    4. Two candidates: order by distance from `anchorPosition(el, c)` to
-      `referencePointOf(otherEnd)`; when the two distances differ by at most `CLOSENESS_TIE_PX`
+      `reference`; when the two distances differ by at most `CLOSENESS_TIE_PX`
       (D3), order by distance to `anchorPosition(el, a)` instead.
    5. Take the first candidate whose `held` count on `el` is zero, else the first candidate.
    6. Write `{ kind: 'pinned', elementId, anchor }` (a fresh object, D12), move one `held` count
@@ -375,11 +375,10 @@ export function rebindArrowAnchorsAfterMove(
 ): Element[];
 ```
 
-`bestAnchorTowards` loses its `current` and `avoid` parameters: no caller passes them.
+`bestAnchorTowards(element, towards)` takes no `current` or `avoid` parameter.
 
 Validation (`validate.ts`): `ANCHORS = new Set<string>(ALL_ANCHORS)`; a pinned endpoint with an
-anchor outside it fails `isValidEndpoint`, which rejects the element (named rejection of the
-existing validator). The api, the MCP tools and every import path validate through it.
+anchor outside it breaks the pinned-end rule (`endpointRule`), which rejects the element with a named reason. The api, the MCP tools and every import path validate through it.
 
 ## Data and persistence
 

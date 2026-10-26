@@ -1,7 +1,5 @@
 # Tooltips, hover cards and popovers
 
-Status: shipped
-
 ## What
 
 Three kinds of floating content sit beside a control. Each has one name, and the name means one thing

@@ -1,6 +1,6 @@
 # Teams
 
-Groups of signed-in people. Teams belong to the liveworkspace account, not to livedocuments: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livedocuments.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livedocuments keeps no copy of them. An account's teams come from its access token's `teams` claim, and a team made or joined since the token was minted is asked of accounts (`createTeamAccess` in `@liveworkspace/index-app`). The Explorer lists them, each with its shared library on the index ([Team Shared Documents](team-shared-documents.md)).
+Groups of signed-in people. Teams belong to the liveworkspace account, not to livedocuments: a team is the same in every liveworkspace app, and it is made, renamed, deleted and staffed in the Explorer, on `livedocuments.app/explorer`, on liveworkspace.app and in the editor's Explorer panel ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Teams are run in the Explorer", which holds the journeys). livedocuments keeps no copy of them. An account's teams come from its access token's `teams` claim, and a team made or joined since the token was minted is asked of accounts (`createTeamAccess` in `@liveworkspace/index-app`). The Explorer lists them, each with its shared library on the index ([Team Shared Documents](team-shared-documents.md)).
 
 ## Why
 
@@ -39,11 +39,11 @@ API clients make a team with `POST /api/teams` (`apps/api/src/routes/team-create
 
 ## Invitations
 
-Invitations are made, reminded and expired by liveworkspace ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Invitations"), and answered in the Explorer, so people hear of an invitation where they work.
+Invitations are made, reminded and expired by liveworkspace ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Invitations"), and answered in the Explorer, so people hear of an invitation where they work.
 
 - The Explorer's **Invites** view lists them, newest first: the team's name, organisation and joined-member count, the role offered, who invited them and when, each with **Accept** (which opens the team) and **Decline**. The sidebar's Invites row shows while any wait, with their count as its badge.
 - `GET /api/teams/invites` (`apps/api/src/routes/team-invites.ts`) answers the same list for API clients, read from liveworkspace (`pendingInvitationsFor` in `@liveworkspace/auth-client`), remembered per isolate for 30 seconds, so a burst of calls costs at most one call to liveworkspace. Without accounts configured, or with liveworkspace out of reach, the list is empty rather than an error.
-- Old invitation emails' links still land: `/explorer/invites` is the Invites view again, and `/join` and `/join/decline` (livedocuments' own, from before teams moved) say teams are run in the Explorer and link to its Invites.
+- Invitation emails' links land: `/explorer/invites` is the Invites view, and `/join` and `/join/decline` say teams are run in the Explorer and link to its Invites.
 
 ## Explorer UI
 

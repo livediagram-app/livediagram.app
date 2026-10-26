@@ -84,10 +84,9 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 
 ### Third-party origins
 
-None. Every layout calls `trustedTypesBootScript(prefix)` with no origins, so `ORIGINS` is `[]`. Sign-in used to load
-Clerk's script (from the origin in its publishable key) and Cloudflare Turnstile for its sign-up CAPTCHA; it now
-happens on the accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
-`origins` stays as a parameter for a third party that one day needs it.
+None. Every layout calls `trustedTypesBootScript(prefix)` with no origins, so `ORIGINS` is `[]`. Sign-in happens on the
+accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages. `origins` is a
+parameter for a third party that one day needs it.
 
 ## Interfaces and contracts
 

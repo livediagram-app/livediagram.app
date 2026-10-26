@@ -18,7 +18,7 @@ the block's corner where people expect a status mark, and stays there.
 - **Text** is the label, one line, at most 24 characters. Double-click edits it.
 - **Size follows the text.** Height comes from the text size (24px at the default size); width is the text's width
   plus the padding, never narrower than the height, so a single character makes a circle. It re-fits when the text
-  or text size changes. Width is estimated from the character count (`badgeWidth`), the same estimate the export uses,
+  or text size changes. Width is estimated from the character count (`badgeSize`), the same estimate the export uses,
   so the two agree without a DOM. A badge is not resized by hand; it has no resize handles.
 - **Look** (`chipLook`), one of five, all from the element's colours:
 

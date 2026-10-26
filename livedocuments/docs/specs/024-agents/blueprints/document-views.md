@@ -93,7 +93,7 @@ edited without it); the change names the gap.
 | Hidden          | `ViewModel.hidden`                                                       | Elements left out because they sit on a hidden layer                           |
 | Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
 | Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
-| Subtree         | query `only`, `ViewOptions.only`                                         | One element and what nests under it                                            |
+| Subtree         | query `only`, `ViewRequest.only`                                         | One element and what nests under it                                            |
 | Content origin  | `contentOrigin`                                                          | Rounded top-left of the visible boxed content                                  |
 | Revision        | `rev` (from [Agent changesets](../agent-changesets.md#the-tab-revision)) | The tab revision a view was rendered from                                      |
 
@@ -116,7 +116,7 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
    is an arrow with a pinned end on a hidden element or an end riding on a hidden arrow, however long the chain
    (`VW10`), so no printed end names a hidden element's ref. Everything else is **printed**, unknown kinds
    included.
-2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, hidden ones and arrows included (`VW2`),
+2. **Refs.** `computeRefs(tab.elements.map((el) => el.id))` over every element of the tab, hidden ones and arrows included (`VW2`),
    so a ref never changes with layer visibility.
 3. **Kinds.** `kindWordOf` and `isKnownElement` per printed element.
 4. **Tree.** `buildViewTree(printed)`: `deriveContainers` gives each printed non-arrow element one container or the
@@ -361,8 +361,8 @@ with a fixed id). The keys are the edit-operations field keys, so a printed styl
 
 ### Every view
 
-All take a tab (`overview` a document) and `ViewOptions { budget?, json?, only?, coarse?, style?, ref?, q?, all?,
-door?, now? }`. `renderView(request, tab, context)` builds the model once, resolves `ref` and `only` (a hidden-layer
+All take a tab (`overview` a document) and a `ViewRequest { view, budget?, door?, only?, ref?, coarse?, style?, all?,
+q? }` (`render-view.ts`). `renderView(request, tab, context)` builds the model once, resolves `ref` and `only` (a hidden-layer
 element is `target_not_found` "on a hidden layer", I7, `VW62`; `find` without `q` is `invalid_value`, `VW64`) and
 dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elements }` or `{ ok: false, refusal }`.
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
@@ -729,7 +729,7 @@ the tab and its `rev`.
 | ---- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | E1   | Empty tab                                      | Header `0 elements`, nothing else; never an error                                                |
 | E2   | Unlabelled element                             | Kind word and ref only                                                                           |
-| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables and entities                                          |
+| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables                                                       |
 | E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
 | E5   | Element larger than a stack it overlaps        | Not nested (strict area)                                                                         |
 | E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
@@ -857,7 +857,7 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
 | `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
-| `agent-built-tab.ts`    | The Services stack built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
+| `agent-built-tab.ts`    | The Services stack as an agent built it, kept as data (`agent-built-services.json`), with slug node ids                                                                                      | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E28 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
 
@@ -887,7 +887,6 @@ out of Prettier (`.prettierignore`).
 | `REF_MIN_LENGTH`               | 4                             | Spec                                                                         | fixed           |
 | `LABEL_CUT_CHARS`              | 60                            | Spec                                                                         | fixed           |
 | `NOTE_CUT_CHARS`               | 48                            | Spec                                                                         | fixed           |
-| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                         | fixed           |
 | `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                         | fixed           |
 | `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)                | 2,000 to 32,000 |
 | `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                            | 24 to 120       |

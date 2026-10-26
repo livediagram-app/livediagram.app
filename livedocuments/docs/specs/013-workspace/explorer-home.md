@@ -1,6 +1,6 @@
 # Explorer Home
 
-**Moved to liveworkspace's index (October 2026).** livedocuments' own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
+`/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") Shared With You Recently, and What Happened, read from the index.
 
 ## The hero
 
@@ -31,7 +31,7 @@ loaded once, only then, in a chunk of its own (`liveworkspace/apps/site/lib/expl
 
 Beside the field (from `lg` up) or under it, the hero shows **what livedocuments makes**: an **Article**, a
 **Slide Deck**, an **Infographic** and a **Poster**, each a small picture in livedocuments' amber with its name, laid
-out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-article`, `blank-slide-deck`,
+out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero"). Each starts one (`/new?template=` `blank-article`, `blank-slide-deck`,
 `blank-infographic`, `event-poster`). **Nothing is fetched** to draw them.
 
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
@@ -79,6 +79,6 @@ The help centre's [Home](../../../apps/help/app/explorer/timeline/page.mdx) arti
 Telemetry, through the Explorer's `onHome` prop: `Home·Selected` (`WhatHappened`, `SeeTimeline`) and `Home·Opened`
 (`Group`).
 
-What livedocuments still does is say when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
+livedocuments says when a document is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the document. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
 
-The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).
+The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

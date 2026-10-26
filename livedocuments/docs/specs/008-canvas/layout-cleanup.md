@@ -61,11 +61,11 @@ canvas.
 - **Scope:** the whole active tab. Boxed elements that aren't wired to anything
   (loose stickies / text / images) pass through with their positions untouched;
   spacing respects element sizes.
-- **The plain layout** (`autoLayoutElements` with no tidy profile) gets the layout described in the sections up to
-  "Two-way edges bow apart", pinned to the origin the caller gives.
+- **The plain layout** (`autoLayoutElements` with no tidy profile) gets the layout described in the sections before
+  "Tidy Up keeps a flowchart a flowchart", pinned to the origin the caller gives.
 - **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
-  graph does not, and the plain layout trashed it.
+  graph does not, and the plain layout would lose it.
 - One undoable op (`commit` snapshots the pre-layout state), so it can be
   undone in a single step.
 
@@ -141,18 +141,6 @@ span overlaps or meets its own, so two never read as one line. An angled arrow w
 of their boxes (a bottom to a bottom) loops out 24 px past the farther end and back, a U, where its L ran along the
 boxes' own edges. An arrow whose ends
 do not face each other keeps its L, which already meets both ends square.
-
-### Two-way edges bow apart
-
-In the plain layout's output, a
-pair of straight arrows between the same two boxes in opposite directions (a
-state diagram's Private -> Shared and Shared -> Private) is curved apart, each
-bowing to its own side of the line between the boxes (`arrow-reciprocal.ts`):
-at least `RECIPROCAL_BOW` (36), and for a labelled pair running up and down, far
-enough for the two labels to sit side by side (a curve's label moves half its
-bow), capped at 140. Drawn straight they lay on top of each other, only the
-fan-out's few pixels apart, with their labels colliding. Arrows that already
-carry a curve or a routing are left as they are.
 
 ### Tidy Up keeps a flowchart a flowchart
 

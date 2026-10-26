@@ -95,15 +95,15 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
   members of that set, moving off reverts, and a click commits (the existing `useStylePreview` path: no undo
   snapshot or broadcast until the click).
 
-### Values a set no longer offers
+### Values a set does not offer
 
-Before the sets split, every boxed element took the shape set. A saved value that the element's set does not offer
-(a sticky that traces, a text element that traces) **keeps playing exactly as before**. A saved motion (a sticky
+A saved value can be one the element's set does not offer (a sticky that traces, a text element that traces, written
+from the shape set by an import or an agent). It **keeps playing**. A saved motion (a sticky
 that bounces) shows as itself in the element's Shape section. Its section shows it as
-one extra, selected tile after the set's own, labelled with its old name, so it can be seen and replaced. Picking
+one extra, selected tile after the set's own, labelled with its name, so it can be seen and replaced. Picking
 anything else removes the extra tile for good.
 
-A text element's old value lives in `animation`. Picking a Text animation for it writes `textAnimation` and clears
+Such a value on a text element lives in `animation`. Picking a Text animation for it writes `textAnimation` and clears
 `animation`, so a text element never carries both.
 
 ## Shared behaviour

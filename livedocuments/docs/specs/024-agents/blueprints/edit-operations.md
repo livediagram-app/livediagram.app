@@ -66,7 +66,7 @@ Scope, by file:
 | ------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Edit operation     | `EditOperation` (union on `op`)                     | One step of a changeset, in its JSON form                                                                                    |
 | Operation name     | `EditOperationName`, `EDIT_OPERATION_NAMES`         | `add set rm move connect rewire insert unwrap order layout test`                                                             |
-| Line form          | `parseEditOperations`, `formatOperation`            | One operation a line, words and quoted values                                                                                |
+| Line form          | `parseEditOperations`, `parseOperationWords`        | One operation a line, words and quoted values                                                                                |
 | JSON form          | `validateEditOperation`                             | One object a line                                                                                                            |
 | Operation number   | `operation` (1-based) on rejections                 | Position among the operations, comments and blank lines not counted                                                          |
 | Selector           | `Selector` (a string), `parseSelector`              | A ref, a quoted label, or `key:value` terms, all of which must match                                                         |
@@ -98,7 +98,7 @@ Scope, by file:
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a stack
-(groups were removed), "parent" for a container, "section" in code (a stack).
+(there are no groups), "parent" for a container, "section" in code (a stack).
 
 ## Behaviour and state
 
@@ -227,7 +227,7 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   `invalid_value` listing the slot names (or, on a sticky, the preset names).
 - **Labels.** `applyLabel(el, text)`: on a shape, `capLabel(text)`; when cut, `label` is the heading and the
   whole text, whitespace collapsed, is prepended to the note the element ends with (`"<full>\n\n<note>"`), as
-  `conciseGraph` does; warning `label_capped`. On an arrow, `capLabel(text).label`, warning `label_capped`. Other
+  a graph node's label over `GRAPH_LABEL_MAX` does; warning `label_capped`. On an arrow, `capLabel(text).label`, warning `label_capped`. Other
   types keep the text as given (EO18).
 - **Fit to label.** After a `set` that changes a shape's `label` (or `text` / `shape`), when the shape has no
   `fixedSize`, its `textSize` is not `scale`, and `labelBoxSize(label, shape)` exceeds its box, the box grows to
@@ -371,8 +371,8 @@ make room here:
 3. Every arrow with a free end whose free ends all have a holder chain, as points, reaching a container in `ids`
    (EO51). Pinned ends follow their elements.
 
-Returns `ids` unchanged when no id is a container, so a plain drag pays one pass over `ids`. The editor's
-full-containment and backmost-owner rules are gone: an element in overlapping containers belongs to the smallest,
+Returns `ids` unchanged when no id is a container, so a plain drag pays one pass over `ids`. Membership is not
+full containment or the backmost owner: an element in overlapping containers belongs to the smallest,
 the earlier in element order on a tie, as `smallestHolder` decides.
 
 ### Make room
@@ -413,7 +413,7 @@ On the working state, in order:
 1. `normaliseElement` on every touched element (never on the rest: I2), noting `codeLanguage` / `codeTheme`
    coercions as `value_coerced`.
 2. Coerce every touched shape's `shape` with `coerceShapeKind`.
-3. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
+3. `rebindArrowAnchorsAfterMove(landed, moved)` (`finalise.ts`) for every boxed element whose box changed.
 4. Each container moved to directly before its earliest member when it is after it (I6).
 5. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
 
@@ -437,7 +437,6 @@ Public surface of `@livedocuments/edit-operations`:
 ```ts
 export function parseEditOperations(text: string, log?: EditLog): ParseOutcome;
 export function validateEditOperations(input: readonly unknown[]): ParseOutcome;
-export function formatOperation(operation: EditOperation): string;
 export function applyEditOperations(
   tab: Tab,
   operations: readonly EditOperation[],

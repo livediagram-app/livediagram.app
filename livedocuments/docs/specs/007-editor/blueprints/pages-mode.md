@@ -51,7 +51,7 @@ every design decision. An article page's writing is [Article pages](article-page
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `gradientFill` (`apps/editor/lib/page-paint.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | The pages view              | `PagesModeView`, `usePagesMode`, `apps/editor/hooks/editor/usePagesMode.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Page edits                  | `PageEdits`, `pageEdits`, `apps/editor/hooks/editor/page-edits.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Sheets and title bars       | `CanvasPages` (`PageCog`, `LayoutInvite`, `ReorderMarker`), `apps/editor/components/canvas/CanvasPages.tsx`; `AddPageButton` (`AddPageButton.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Sheets and title bars       | `CanvasPages` (`PageCog`, `EmptyPageLayouts`, `EmptyPageInvite`, `ReorderMarker`), `apps/editor/components/canvas/CanvasPages.tsx`; `AddPageButton` (`AddPageButton.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Background beside the cog   | `PageBackgroundButton`, `pageBackgroundRoom` (`components/canvas/PageBackgroundButton.tsx`) over `TitlePopoverButton`, `titleButtonClass` (`TitlePopoverButton.tsx`); body `BackgroundSection`                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Title-bar room              | `titleBarFixedRoom`, `titleBarNamed` (buttons named only while the page on screen holds them named plus `LABEL_MIN`), `components/canvas/page-title-bar-room.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Page Tidy Up                | `PageTidyUpButton`, `pageTidyUpRoom`, `PAGE_TIDY_UP_TOOLTIP` (`components/canvas/PageTidyUpButton.tsx`); edits `tidyPage`, `previewTidy`; transform `tidyPageElements`, `PageTidyInput` (`apps/editor/lib/page-tidy.ts`), its blocks `blocksOf` (`page-tidy-blocks.ts`) and `guard` (`page-tidy-guard.ts`); **block** (an element and what it wholly holds), **twins** (blocks of one size), **frame** (content box or a block's box), **anchor** (a locked, turned or sent-back block)                                                                                                                                                                                    |
@@ -106,7 +106,6 @@ page; "template" stays the whole-tab starting point.
 | `CONTENTS_DRAW_AHEAD_PX`                                                   | 400 px                                                                             | `usePageContents.ts`; rows drawn this far past the list's visible part; safe 0 to 1000                                                   |
 | `CONTENTS_FIND_AFTER`                                                      | 6 pages                                                                            | `page-contents.ts`; spec "Contents" "Header"                                                                                             |
 | `CONTENTS_SIDEBAR_MIN_PAGES`                                               | 2 pages                                                                            | `contents-placement.ts`; spec "Contents": one page keeps the button                                                                      |
-| `ADD_PAGE_CLOSE_MS`                                                        | 150 ms                                                                             | `ContentsAddPage.tsx`; spec "Adding"; safe 50 to 400                                                                                     |
 | Filmstrip picture                                                          | up to 172 x 124 px (`FILM_MAX_W`, `FILM_MAX_H`)                                    | `PageContentsList.tsx`; spec "The list"                                                                                                  |
 | `PAGINATE_MAX_PAGES`                                                       | 20 pages per Split Into Pages                                                      | `paginate.ts`; spec "Into pages"                                                                                                         |
 | `FIT_PAGE_MIN_SIDE`                                                        | 200 px                                                                             | `page-fit.ts`; spec "Sizes"                                                                                                              |
@@ -148,10 +147,9 @@ page; "template" stays the whole-tab starting point.
 | Panel `WIDTH`, `GAP`                                                       | 304 px, 6 px                                                                       | `PagePanel.tsx`; D27                                                                                                                     |
 | `PAGE_EASE_MS`                                                             | 200 ms                                                                             | Editor modes "Turning, adding and deleting animate"                                                                                      |
 | `COG_ROOM`, `LABEL_MIN`                                                    | 32 px, 40 px                                                                       | `page-title-bar-room.ts`; spec "The label fits its page" (40); D28 (32)                                                                  |
-| `INVITE_WIDE`, `INVITE_ICON`                                               | 150 px, 30 px                                                                      | `CanvasPages.tsx`; D28                                                                                                                   |
 | `DECK_ROOM`, `DECK_LABELLED_ROOM`, `NOTES_ROOM`, `NOTES_LABELLED_ROOM`     | 28, 112, 28, 88 px                                                                 | `PageDeckButton.tsx`, `PageNotesButton.tsx`; each button and its gap, icon or named                                                      |
 | `BACKGROUND_ROOM`, `BACKGROUND_LABELLED_ROOM`, `POPOVER_WIDTH`             | 28 px, 104 px, 304 px                                                              | `PageBackgroundButton.tsx`; the button and its gap (icon, or named); panel `WIDTH`                                                       |
-| `TIDY_UP_ROOM`, `TIDY_UP_LABELLED_ROOM`                                    | 28 px, 52 px                                                                       | `PageTidyUpButton.tsx`; the button and its gap                                                                                           |
+| `TIDY_UP_ROOM`                                                             | 28 px                                                                              | `PageTidyUpButton.tsx`; the button and its gap                                                                                           |
 | `PAGE_TIDY_GRID`                                                           | 4 px                                                                               | `page-tidy.ts`; spec "Tidy" (a fine grid); safe 2 to 10                                                                                  |
 | `PAGE_TIDY_ALIGN_FRACTION`, `PAGE_TIDY_ALIGN_MIN`                          | 0.012 of the short side, floor 4 px                                                | `page-tidy.ts`; spec (about 10 px on A4); safe 0.005 to 0.02                                                                             |
 | `PAGE_TIDY_GAP_SPREAD`, `PAGE_TIDY_SIMILAR_RATIO`                          | 0.25, 1.5                                                                          | `page-tidy.ts`; spec "Even gaps" (a quarter); D81 (similar)                                                                              |
@@ -229,7 +227,7 @@ page; "template" stays the whole-tab starting point.
 
 ### The view (`usePagesMode`)
 
-Returns null outside a page look (`hasPageLook(mode)`), else `PagesModeView`:
+Returns `PagesModeView`:
 `pages` (laid out), `rowPages?` (the whole row while a page slide presents, `presentedPages`),
 `focusPage(id)` (frames one page whatever its kind: `computeFitBelow` of
 `pageFitBox(page)` below the Toolbar strip), `readPage(id)` (an article page on a phone:
@@ -477,7 +475,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
 - A field (`field`): only a `#rrggbb` (`isOpaqueHex`) is read. Its base is the recalled `from` when
   the recall's `to` equals it, else itself; `inkToward(base, tones, floor, target)` from
   `INK_ROLE_CONTRAST[role]`; the result `=== base` drops the recall, else records
-  `{ from: base, to: next }`. The memory drops ids not on the tab (`memoryFor`).
+  `{ from: base, to: next }`. The memory is the tab's (`pageInkMemory(tabId)`, `rememberPageInk`) and drops ids not on the tab.
 - No colour of its own (`UNSET`, the empty string, as a recall's `from`): judged (`onCard`) on a
   cover whose `canvasSurface` differs from the page's (`fresh` is the card surface's default), and
   straight on a page with a fill whose ground tones are not all `PAPER_TONE` (`fresh` is the
@@ -607,7 +605,7 @@ themeGradient)`: the page's `fillCss` on its own category's tile, else Solid the
   own-coloured elements re-inked; cleared on leave, on commit and on unmount.
 - Panel tabs (`pagePanelTabs(page)`): **Page** while `pageSizeChoices(page).length > 1 ||
 pageHasOrientation(page)`, then **Background**, then an infographic or slide page's
-  **Layouts**, or an article page's **Style** / **Text** (`articleStyle(part)` renders
+  **Layouts**, or an article page's **Style** / **Text** (`articleSection(flow, part)` renders
   `ArticleStyleSection`); an initial tab the page lacks opens as its first. Leaving Background
   clears the background preview (`onPreview(null)`); leaving Layouts clears the layout preview. The page toolbar's Article style opens the panel on Style
   (`useStylePanelRequest`). Actions read `Duplicate / Move … / Delete article` on an article page.
@@ -631,7 +629,7 @@ pageHasOrientation(page)`, then **Background**, then an infographic or slide pag
 (ADD_PAGE_SIZE / 2 + ADD_PAGE_CLEARANCE) / zoom)`, level with the last page's middle,
   `data-add-page-like`, named `addAnotherLabel(last)`), calling `onAddLike(last.id)`
   (`edit.addPageLike`): another page of the last page's kind, which is the tab's (spec "One kind a
-  tab"). There is no chooser of kinds: `AddPagePopover` is gone.
+  tab"). There is no chooser of kinds.
 - **One kind a tab**: `tabPageKind(pages)` (`packages/document/src/page.ts`) = `pageKindOf(pages[0])`,
   infographic for no pages; `pageAdded` refuses `kind_not_offered` when `kind !== tabPageKind(pages)`
   and the tab has a page, before the room check. `pageAddedLike` and `pageDuplicated` copy a page's
@@ -1176,11 +1174,10 @@ read against the code. Rules no test covers are listed as gaps after the table.
 
 Gaps (no unit test; browser-checked or uncovered):
 
-- The Add a Page popover (opening, focus, outside press, the bottom sheet).
 - The page panel's placement, the bottom sheet, Escape restoring focus to the cog, closing on a
   wheel, following its cog after a move; the name field committing on close.
-- Hover previews on the sheet (backgrounds, layouts), and the layout invite's
-  room in the title bar (`INVITE_WIDE`, `INVITE_ICON`, `LABEL_MIN`).
+- Hover previews on the sheet (backgrounds, layouts), and when the empty page offers its layouts as a button in its
+  middle (`layoutInviteShows`).
 - The in-page card's visibility rules (`showsLayoutCard`: size on screen, Hide, the panel open) and
   its wide form.
 - The page label's press framing the page, its truncation and hiding under `LABEL_MIN`, the page

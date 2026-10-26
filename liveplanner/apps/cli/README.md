@@ -1,14 +1,14 @@
 # liveplanner CLI
 
-`liveplanner` is the command line agents and scripts read and change liveplanner projects with. The
+`liveplanner` is the command line agents and scripts read and change liveplanner plans (projects, in code) with. The
 behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
 [blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@liveplanner/agent-verbs`.
 
 ## Develop
 
 ```bash
-pnpm --filter @liveplanner/cli test        # every suite runs on an in-memory CliIo
-pnpm --filter @liveplanner/cli build       # dist/liveplanner.mjs, one ESM file for Node 22+
+corepack pnpm --filter @liveplanner/cli test   # every suite runs on an in-memory CliIo
+corepack pnpm --filter @liveplanner/cli build  # dist/liveplanner.mjs, one ESM file for Node 22+
 LIVEPLANNER_TOKEN=lwt_... apps/cli/dist/liveplanner.mjs --help
 ```
 

@@ -9,10 +9,8 @@ Product screenshots, split by viewport so the desktop and mobile pitches stay
 independent. Each should be captioned with what it shows so copywriters can
 match it to a claim in [`../copy/facts.md`](../copy/facts.md).
 
-None yet. The ones the fork brought from livediagram showed livediagram (its
-flowcharts, mind maps, wireframes and Explorer), so they were removed. Take new
-ones of livedocuments as it is today (articles, slide decks and infographics)
-into `desktop/` and `mobile/`, and caption each here.
+They go in `desktop/` and `mobile/`, each showing livedocuments' own work
+(articles, slide decks and infographics) and captioned here.
 
 ## Logo (`logo/`)
 
@@ -62,7 +60,7 @@ media/
   logo/          the mark and lockup as SVG, light + dark (see table above)
 ```
 
-Likely additions as the asset set grows:
+Folders for the screenshots and other assets, when they are added:
 
 ```
 media/

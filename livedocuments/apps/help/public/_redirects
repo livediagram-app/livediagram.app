@@ -13,3 +13,10 @@
 # features"); its article's old URL lands on the Selection Modes page. livediagram keeps the view.
 /selection-modes/isometric-mode /selection-modes/ 301
 /selection-modes/isometric-mode/ /selection-modes/ 301
+
+# livedocuments has no Layers panel (a page is laid out by its pages), so the articles about hiding, locking,
+# renaming and merging layers in it are gone; their old URLs land on Layers.
+/canvas/layers-visibility-and-locking /canvas/layers/ 301
+/canvas/layers-visibility-and-locking/ /canvas/layers/ 301
+/canvas/layers-organising /canvas/layers/ 301
+/canvas/layers-organising/ /canvas/layers/ 301

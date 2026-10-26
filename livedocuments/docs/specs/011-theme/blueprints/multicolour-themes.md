@@ -133,19 +133,19 @@ contrast test cannot pass on a malformed colour. `hexToRgb` itself also reads CS
 
 ## Errors and edge cases
 
-| #   | Case                                       | Handling                                                                                       |
-| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| E1  | Arrow with a free endpoint                 | Not an edge                                                                                    |
-| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                                                                    |
-| E3  | Self-loop                                  | Not an edge                                                                                    |
-| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)                                                      |
-| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning                                                     |
-| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field                                          |
-| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                                                                  |
-| E9  | More branches than palette entries         | Index wraps modulo the palette length                                                          |
-| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                                                         |
-| E11 | Shared or diamond descendant               | Keeps the first index that reached it                                                          |
-| E12 | Unknown theme id                           | Out of this blueprint: `getTheme` falls back ([Retired colour schemes](../retired-schemes.md)) |
+| #   | Case                                       | Handling                                                                                              |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| E1  | Arrow with a free endpoint                 | Not an edge                                                                                           |
+| E2  | Arrow pinned to another arrow, or dangling | Not an edge                                                                                           |
+| E3  | Self-loop                                  | Not an edge                                                                                           |
+| E4  | Loop with no root                          | Every node gets the trunk colour (step 7)                                                             |
+| E5  | Empty palette at render                    | Trunk colour for every element, O2 warning                                                            |
+| E7  | Palette theme without `rootColor`          | Element colours, then `TRUNK_FALLBACK` per null field                                                 |
+| E8  | Chain of `MAX_ELEMENTS_PER_TAB` elements   | Iterative walk, no throw (I4)                                                                         |
+| E9  | More branches than palette entries         | Index wraps modulo the palette length                                                                 |
+| E10 | Loose element after a wrap                 | Shares a limb's hue, which is accepted                                                                |
+| E11 | Shared or diamond descendant               | Keeps the first index that reached it                                                                 |
+| E12 | Unknown theme id                           | Out of this blueprint: `getTheme` falls back ([Schemes outside the catalogue](../retired-schemes.md)) |
 
 ## Security and trust
 

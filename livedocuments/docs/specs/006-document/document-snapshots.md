@@ -1,7 +1,7 @@
 # Document previews
 
 A document's picture (its Explorer thumbnail, the live image a share link embeds, the card a pasted link previews
-with) is a liveworkspace platform capability ([Previews](../../../../liveworkspace/docs/previews.md)): liveworkspace's
+with) is a liveworkspace platform capability ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): liveworkspace's
 media service decides who may see it (the index's access rule), when it is stale (the index's `updatedAt`), stores it
 and serves it, and draws the share card from it. livedocuments only **renders for the platform**: it draws a document
 as SVG when the platform asks, and keeps no picture, bucket or route of its own.

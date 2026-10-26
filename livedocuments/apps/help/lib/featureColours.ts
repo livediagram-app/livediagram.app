@@ -164,8 +164,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   technology: '#0ea5e9',
   drawing: '#f97316',
   layers: '#6366f1',
-  'layers-visibility-and-locking': '#64748b',
-  'layers-organising': '#3b82f6',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

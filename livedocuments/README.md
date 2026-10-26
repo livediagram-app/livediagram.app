@@ -6,7 +6,7 @@ A collaborative editor for documents made of pages (articles, slide decks and in
 
 ```
 apps/        marketing site + editor + help centre + api + mcp server + router + cli
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, page backgrounds, the api client and agent verbs, the edit-operations engine, document views, the lint, telemetry client, the licences generator, configs
+packages/    this product's document model, wire-format types, UI, template catalogue + template previews, help-article registry, agent verbs, the edit-operations engine, document views, the lint, telemetry facts, licence tables, brand ramps (the shared @liveworkspace/* packages sit in the monorepo's packages/)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)

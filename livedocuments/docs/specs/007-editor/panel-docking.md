@@ -22,15 +22,14 @@ theirs without adding a settings screen.
   takes focus to its first control (a popover that focuses its own field keeps that), as a control menu does: it renders far
   from its button in the tab order, so Tab from the button never reached it. **Escape closes a popover** (Layers,
   Collaborate, the Trash, the Explorer) while focus is in it or on its button, and focus goes
-  back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
-  then Escape did nothing in them, so a keyboard user in a popover's field could not leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
+  back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas, so a keyboard user in a popover's field can always leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
 - **Participating panels:** Minimap and the tool panels (Laser, Spotlight,
   Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
-  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
-  docked there never overlaps the zoom bar — the snap anchor, the corner guide, and the
+  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, `apps/editor/lib/panel-layout.ts`) so a panel
+  docked there never overlaps the zoom bar: the snap anchor, the corner guide, and the
   dock container all use the raised inset.
 
 ## The four corners
@@ -151,16 +150,15 @@ later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/editor/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_CORNER` (which corner each
+- **`apps/editor/lib/panel-layout.ts`**: types, `DEFAULT_PANEL_CORNER` (which corner each
   panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
-  `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
-  `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
+  `normalizePanelLayout()`, the pure moves `dockPanel`, `freePanel`, `resetPanelPlacement` and `nearestSnapCorner`,
+  and `readPanelLayout()` / `writePanelLayout()` against `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
   corners; reflow ordering; default fallback).
-- **`apps/editor/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
+- **`apps/editor/hooks/ui/usePanelDock.ts`** owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
-  handlers: `dockToCorner(panelId, corner)`, `setFree(panelId, x, y)`,
-  `resetPanel(panelId)`, plus drag lifecycle (`beginDrag`, `updateDrag`, `endDrag`).
+  handlers: `placementOf(panelId)`, `resetPanel(panelId)`, plus the drag lifecycle (`beginDrag`, `updateDrag`, `endDrag`).
   Composed alongside `usePanelLayout` in the editor view-model.
 - **`MovablePanel`** gains an additive **docked** render mode: when the parent places it
   inside a corner stack it renders as a static flex child (no `absolute`, no corner class,

@@ -1,7 +1,5 @@
 # Scrollbars
 
-Status: shipped
-
 ## What
 
 Every scrollbar in every app (editor, help centre, telemetry dashboard, marketing

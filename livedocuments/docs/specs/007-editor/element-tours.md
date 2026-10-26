@@ -6,9 +6,7 @@ how to change it. While an element of a toured kind is selected, the footer's St
 
 It shares the button with the [Pages tour](pages-tour.md), and takes it while its element is selected: the
 selected element's own tour is the most specific on offer ([Pages tour](pages-tour.md) "Where it appears", in
-livediagram). [Show Me](show-me.md) is started from a button on one surface instead. Until 25 October 2026 an
-element tour offered itself from a small toolbar beside the selection, the first time a person selected that kind;
-nothing offers itself now.
+livediagram). [Show Me](show-me.md) is started from a button on one surface instead. No element tour offers itself.
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion,
@@ -45,7 +43,7 @@ Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNa
 ## Remembering who has taken it
 
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
-  follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows only; it no longer
+  follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows only; it never
   hides the button.
 - `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
   while the mode is on, as `pagesTourSeen` does for its kinds.
@@ -301,8 +299,7 @@ never `isReadOnly` alone.
 Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `ChartTour`, `StackTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Start Tour button shows that kind's tour in a
-  page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
-  counted **Cancel**; nothing sends Closed now.
+  page load.
 - **Start**: `UI` · `Started` · `<Kind>Tour` on a press of the button.
 - **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Sankey's `SankeyTourStepBands`,
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,
@@ -322,7 +319,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
 
-The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined until 25 October 2026, started and
+The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, started and
 started per element, steps, completed, skipped), as Show Me's is one stack.
 
 ## Adding an element tour

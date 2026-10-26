@@ -1,8 +1,7 @@
 # Account settings & email notifications
 
-**Status: shipped.** A signed-in user's account surface: their avatar, name,
-email, and join date, plus the two account actions that once had no home of
-their own, **delete my account** and **email notification preferences**.
+A signed-in user's account surface: their avatar, name, email, and join date, plus two account actions,
+**delete my account** and **email notification preferences**.
 Builds on the email integration ([Transactional email](transactional-email.md), over Cloudflare Email Service) and the synced preference store
 ([User preferences](../007-editor/user-preferences.md)).
 
@@ -64,7 +63,7 @@ dialog and the Danger Zone row both say.
 
 **Teams on deletion.** Teams are the liveworkspace account's: closing the account leaves every team there
 first, a team it ran alone goes, and one where it was the only admin passes to the longest-standing member
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Documents filed in a team's
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Teams"). Documents filed in a team's
 library stay with the team. livedocuments itself holds no team rows to clean up.
 
 ## 2. Capabilities gains `emailEnabled`
@@ -118,7 +117,7 @@ read the switch together with the address, for everyone in one go: `notifyRecipi
 (`apps/api/src/person/notify.ts`, on `notificationRecipients` from `@liveworkspace/auth-client`) asks the
 accounts Worker for the verified addresses and for that one key in the scope it lives in (`all`, or
 `livedocuments.app` for `notifyDocumentJoin`), two requests whatever the number of people
-([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Notification emails"). A switch read
+([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails"). A switch read
 that fails counts as on; an address read that fails reaches nobody.
 
 ## 4. The two notifications
@@ -138,7 +137,7 @@ The signal is **a new person opening one of my shared documents for the first
 time**, which the index sees: it records who came in through a link (its `shared_with`), whether by resolving
 the link's code or by opening the document with it, and when that row is new it tells livedocuments, after the write and
 off its own request's path: `POST /api/internal/items/<id>/notices` with `{ type: 'joined', personId, level }`
-and livedocuments's index key ([One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+and livedocuments's index key ([One Explorer contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "Notices"). livedocuments answers `202` at once and hands it to the document's room, which runs
 `notifyDocumentJoin(env, document, personId)`. A guest is no one joining (a guest id is free to mint, so every fresh
 one would be another first visit), and neither is the owner. `notifyDocumentJoin`:
@@ -171,7 +170,7 @@ Object are deliberately **not** wired (they'd be far too chatty).
 Sent by liveworkspace, not livedocuments: teams, their invitations and the
 answer emails belong to the liveworkspace account, and the accounts Worker
 tells each joined admin when an invitee accepts or declines, unless they have
-turned `notifyInviteResponse` off ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+turned `notifyInviteResponse` off ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Invitations"). It also counts those emails (`Email·Sent·InviteResponse`) under
 the app the inviter signed up through. The switch stays in livedocuments'
 Settings because it is a setting every app shares.

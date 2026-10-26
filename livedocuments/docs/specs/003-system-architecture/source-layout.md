@@ -1,79 +1,42 @@
-# Source layout: group `apps/editor` components + hooks by domain
+# Source layout: `apps/editor` components and hooks by domain
 
-Status: **done** — both `apps/editor/hooks/` and `apps/editor/components/` have
-been reorganised into the buckets below.
+`apps/editor`'s components and hooks are grouped by domain, not by type: a file lives in the folder of the concern it
+owns, not the screen that happens to render it first. It complements the no-god-files rule in `AGENTS.md` (cohesion
+over line count). The canvas engine every product's editor shares is `@liveworkspace/workbench`
+(`../packages/workbench/src/`, with the same `components/`, `hooks/` and `lib/` split); `apps/editor` holds
+livedocuments's own code beside it.
 
-## Problem
+## `apps/editor/components/`
 
-`apps/editor` has grown two flat grab-bag directories:
+- `canvas/`: `Canvas*`, element views (`BoxedElementView`, `ArrowView`, `LinkCardView`, ...), web component faces
+  (`web/`), article pages (`article/`), overlays, marquee.
+- `chrome/`: header, toolbars, docks, tab bar, the workbench chrome.
+- `colour/`: the colour picker's surfaces.
+- `dialogs/`: modal surfaces (`ShareDialog`, `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`,
+  `CanvasThemeDialog`, and `settings/` rows).
+- `notes/`, `tags/`, `tour/`, `split/`, `placement/`, `rich-text/`: one feature each.
+- `palette/`: palette and context-menu tiles, rows and menu sections.
+- `panels/`: side and floating panels (the Explorer panel, Layers, the gallery).
+- `primitives/`: local leaves not promoted to `@livedocuments/ui` or `@liveworkspace/ui`.
+- `providers/`: context providers (auth, the workbench session).
+- `start/`: the start panel and its template cards ([Start diagramming](../007-editor/start-diagramming.md)).
+- `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md));
+  `useToast` is in `hooks/ui/`.
 
-- `apps/editor/components/` — ~157 files, alphabetical, mixing 3-line leaves
-  (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
-  (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
-- `apps/editor/hooks/` — ~66 files, canvas state machines
-  (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
-  (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
-  (`useFolders.ts`, `useTeams.ts`).
+## `apps/editor/hooks/`
 
-The blessed counter-example already in the tree is `apps/editor/lib/api/*`,
-which is split by domain (`documents.ts`, `tabs.ts`, `share.ts`, …). A new
-contributor can find the persistence boundary instantly; finding "the
-canvas components" means scrolling 157 alphabetised entries. This is the
-flat-directory half of the consistency review (item #9); it complements
-the no-god-files rule in `AGENTS.md` (cohesion over line count).
+- `canvas/`: drag, marquee, element style, keyboard shortcuts, editor commands.
+- `collab/`: room connection, presence, mentions.
+- `editor/`: the editor's own state slices (the mode, page edits, document visibility).
+- `persistence/`: the account bootstrap, capabilities, preferences, workbench pairings.
+- `ui/`: confirm, toast, panel layout, escape and click-outside.
 
-## Proposed taxonomy
+## Rules
 
-Group by domain, not by type. Target subdirectories (indicative, not
-exhaustive — each file lands in the bucket that owns its concern):
-
-`apps/editor/components/`
-
-- `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
-  `LinkCardView`, …), overlays, marquee, layers.
-- `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
-  `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
-- `panels/` — side/floating panels (`CollaboratePanel`,
-  `GalleryPane`, Explorer surfaces).
-- `palette/` — palette + context-menu tiles/rows.
-- `chrome/` — header, toolbars, docks, tab bar.
-- `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/` — local leaves (`PortalMenu`, `BackBar`, chart leaves) not
-  promoted to `@livedocuments/ui` or `@liveworkspace/ui` (which holds `Portal`).
-
-`apps/editor/hooks/`
-
-- `canvas/` — drag, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, share links.
-- `ui/` — confirm, toast, panel layout, escape/click-outside.
-- `collab/` — room connection, presence.
-
-Rules:
-
-- Import via the `@/components/<domain>/X` / `@/hooks/<domain>/X` path; no
-  per-directory barrels (keeps tree-shaking + matches today's direct-path
-  imports).
-- A file belongs to the domain of its concern, not the screen that happens
-  to render it first.
-- Cross-app primitives keep migrating to `@livedocuments/ui` (see review #4/#5:
-  `Button`, `TextInput`); domain folders are for app-local code.
-
-## Execution
-
-Each directory moves **atomically in its own pass** — never a partial move
-within a directory, which would leave it half-organised (worse than
-consistently-flat). Every move rewrites that directory's `@/<dir>/X` import
-sites across hundreds of files, including hot files (`EditorView`,
-`useEditorState`, `Canvas`) edited continuously by the repo's background
-auto-committer, so each pass runs in an isolated `git worktree` off
-`origin/main`: `git mv` each file into its bucket, a quote-anchored
-project-wide import-path rewrite, then `typecheck && lint && test && format`
-green before a single commit and push.
-
-- **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
-  files had their `@/hooks/*` imports rewritten; full suite green.
-- **`components/` — done.** 158 files → dialogs / panels / palette / chrome /
-  primitives / canvas (`providers/` already existed, left as-is). Two passes:
-  first every inter-component relative import (`./X`, `../X`, `./providers/X`)
-  was resolved to a `@/components/...` alias, then the files moved and the
-  aliases were rewritten to bucketed paths. Full suite green.
+- Import by the `@/components/<domain>/X` / `@/hooks/<domain>/X` path; no per-directory barrels (keeps tree-shaking
+  and direct-path imports).
+- A file belongs to the domain of its concern, not the screen that happens to render it first.
+- Code more than one app needs is a package: cross-app primitives in `@livedocuments/ui` or `@liveworkspace/ui`,
+  editor code every product shares in `@liveworkspace/workbench`. Domain folders are for app-local code.
+- `apps/editor/lib/api/*` is split by domain (`documents.ts`, `tabs.ts`, `share.ts`, ...), behind the one persistence
+  boundary `apps/editor/lib/api-client.ts`.

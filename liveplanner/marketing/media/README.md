@@ -10,13 +10,11 @@ split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 
-**To be re-shot.** Every screenshot below was taken before liveplanner became a
-planner, so it shows diagram canvases, diagram templates or the old sky-blue
-accent. Treat them as placeholders: retake each one in liveplanner (a project
-with Board, Sheet, Dashboard and Form tabs, violet accent) before using it, and
-delete the old file when its replacement lands. The diagram-only shots
-(flowchart, wireframe, isometric, spotlight, animation, article) have already
-been removed.
+**Re-shoot before use.** The files below show diagram canvases, diagram
+templates or a sky-blue accent rather than liveplanner. Retake each one in
+liveplanner (a plan with Board, Sheet, Dashboard and Form tabs, violet accent)
+before using it, and replace the old file. The table says what each shot shows
+once retaken.
 
 ### Desktop (`desktop/`)
 
@@ -91,7 +89,7 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 - **Show, don't tell.** Screenshots should feature a real plan (a board with
   cards that look like a team's actual work) with visible multiplayer
   presence, since "no sign-up, real-time" is the pitch.
-- **Say "project" in captions**, never "document".
+- **Say "plan" in captions**, never "document" or "project".
 - **Keep claims current.** When the UI changes, retake the affected screenshot:
   a stale shot that shows a removed control is worse than none.
 - **Keep large binaries out of git where practical.** Prefer SVG for logos and
@@ -111,7 +109,7 @@ media/
   logo/          the mark and lockup as SVG, light + dark (see table above)
 ```
 
-Likely additions as the asset set grows:
+Room for other asset kinds, when they are made:
 
 ```
 media/

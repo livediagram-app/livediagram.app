@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/cli/src/dispatch/{route,parse-flags,globals,fields,did-you-mean}.ts`                                                                                   | Resource and verb routing, `parseArgs` options from each verb's input (`fieldsOf`, `flagOf`), global flags, suggestions                                                                                                                                                                                                                                                   |
 | `apps/cli/src/help/help.ts`                                                                                                                                  | `topHelp`, `resourceHelp`, `verbHelp` and their token budgets                                                                                                                                                                                                                                                                                                             |
 | `apps/cli/src/output/{exit-codes,cli-error,failure-of,print}.ts`                                                                                             | `EXIT`, `exitCodeForStatus`, `CliError`, `formatError`, `failureOf`, `render` with `--json` fields                                                                                                                                                                                                                                                                        |
-| `apps/cli/src/config/{paths,config-file,profiles,capabilities,version}.ts`                                                                                   | Directories, `config.toml`, profile choice, the capabilities cache, `CLI_VERSION`, the version floor                                                                                                                                                                                                                                                                      |
+| `apps/cli/src/config/{paths,profiles,capabilities,version}.ts` (over `../packages/cli-kit/src/config-file.ts`)                                               | Directories, `config.toml`, profile choice, the capabilities cache, `CLI_VERSION`, the version floor                                                                                                                                                                                                                                                                      |
 | `apps/cli/src/auth/credentials.ts`, over `../packages/cli-kit/src/credentials.ts`                                                                            | The 0600 file store; env before stored (`resolveCredential`, `storedCredential`)                                                                                                                                                                                                                                                                                          |
 | `../packages/cli-kit/src/keychain.ts`; tested through this CLI in `apps/cli/src/auth/keychain.test.ts`                                                       | The platform's store through its own tool: `security`, `secret-tool`, PowerShell DPAPI (CLI4)                                                                                                                                                                                                                                                                             |
 | `apps/cli/src/auth/{oauth-client,loopback-login,device-login,token-login}.ts`                                                                                | The three ways in                                                                                                                                                                                                                                                                                                                                                         |
@@ -71,7 +71,6 @@ Scope, by file:
 | `apps/cli/src/room/{room-stream,room-events}.ts`                                                                                                             | Ticket, socket, reconnect; op classification and lines                                                                                                                                                                                                                                                                                                                    |
 | `apps/cli/src/render/png.ts` (over `../packages/cli-kit/src/png.ts`), `apps/cli/src/commands/render.ts`                                                      | The Node loaders for `@liveworkspace/render-png`                                                                                                                                                                                                                                                                                                                          |
 | `apps/cli/src/telemetry.ts` (+ test)                                                                                                                         | `sendCliUsed`, `reportApiFailure`, `telemetryOffReason`, `setTelemetry`, the notice once (`state.json`)                                                                                                                                                                                                                                                                   |
-| `apps/cli/src/update-check.ts` (planned)                                                                                                                     | The npm check                                                                                                                                                                                                                                                                                                                                                             |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/cli-commands.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/cli-commands.ts` | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                             |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                                                                           | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                          |
 | `apps/api/src/routes/tokens.ts`                                                                                                                              | `GET` and `DELETE /api/tokens/current`, answered from the token liveworkspace checked                                                                                                                                                                                                                                                                                     |
@@ -111,7 +110,7 @@ Scope, by file:
 | Pull file           | `PullFile`, `<slug>.livedocuments.json`                                    | One document on disk, with each tab's revision                           |
 | Preview             | `tab render`                                                               | A PNG or SVG file of a tab                                               |
 | Loopback login      | `loginWithBrowser`                                                         | OAuth with PKCE and a `127.0.0.1` redirect                               |
-| Device login        | `loginWithDevice`, `DeviceGrant`                                           | The RFC 8628 grant; the person approves at `/oauth/device`               |
+| Device login        | `loginWithDevice`                                                          | The RFC 8628 grant; the person approves at `/oauth/device`               |
 | User code           | `userCode`, `formatUserCode`, `normaliseUserCode`                          | The 8-letter code the person types                                       |
 | Built-in CLI client | `CLI_CLIENT_ID` `livedocuments-cli`, `CLI_CLIENT_NAME` `livedocuments CLI` | The public client the server vouches for                                 |
 | Room stream         | `openRoomStream`                                                           | The CLI's listening socket for `wait` and `watch`                        |
@@ -151,7 +150,7 @@ anything the CLI does.
    the api, except the comment verbs' ref (below).
 8. **Run.** The handler calls the api through the client and returns the verb's output object.
 9. **Print.** `print(verb, output, mode)` writes the text, JSON or quiet form to stdout.
-10. **After.** `sendCliUsed` (awaited at most `TELEMETRY_FLUSH_TIMEOUT_MS`) and the update notice, both skipped on a
+10. **After.** `sendCliUsed` (awaited at most `TELEMETRY_FLUSH_TIMEOUT_MS`), skipped on a
     non-zero exit; the process exits with the code.
 
 Invariants:
@@ -165,7 +164,7 @@ Invariants:
   `replace` changeset on a new tab id), a tab's name by `PUT .../tabs/:tabId/name`, a new document by
   `POST /api/documents` compiling its tabs. `api` refuses `PUT /documents/:id/tabs/:tabId` locally (exit 2), and the
   api would answer a token's tab `PUT` `405 use_changesets` regardless.
-- **I5** A profile contacts its own host and nothing else, except the npm update check.
+- **I5** A profile contacts its own host and nothing else.
 - **I6** The exit code is one of `EXIT`'s eight.
 - **I7** `Cli·Used` is sent only after a command that exited 0, never for help.
 
@@ -415,8 +414,8 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 | `changeset revert <doc> <changeset>`                                                                                                    | `changeset.revert` | `POST /documents/:id/changesets/:cs/revert`                                                                            | result lines, then `kept <ref> (<reason>)` lines                                                                                                             |
 | `comment ls <doc> [--tab] [--status open\|resolved\|all]`                                                                               | `comment.ls`       | `GET /documents/:id/comments?status=`                                                                                  | the comments view's thread lines                                                                                                                             |
 | `comment add <doc> [--tab] <ref> <text>`                                                                                                | `comment.add`      | `POST .../tabs/:tabId/comments { elementId, text }` (201)                                                              | `+ comment <id> on <ref>`                                                                                                                                    |
-| `comment reply <doc> [--tab] <ref> <text>`                                                                                              | `comment.reply`    | `POST .../comments/:lastCommentId/reply { text }` (201)                                                                | `+ comment <id> on <ref>`                                                                                                                                    |
-| `comment resolve\|reopen <doc> [--tab] <ref>`                                                                                           | `comment.<verb>`   | `POST .../comments/:lastCommentId/<verb>` (204)                                                                        | `~ thread <ref> resolved\|open`                                                                                                                              |
+| `comment reply <doc> [--tab] <ref> <text>`                                                                                              | `comment.reply`    | `POST .../comments/:commentId/reply { text }` (201)                                                                    | `+ comment <id> on <ref>`                                                                                                                                    |
+| `comment resolve\|reopen <doc> [--tab] <ref>`                                                                                           | `comment.<verb>`   | `POST .../comments/:commentId/<verb>` (204)                                                                            | `~ thread <ref> resolved\|open`                                                                                                                              |
 | `presence set <doc> [--tab] [--status <text>] [--focus <refs>] [--ttl <s>]`                                                             | `presence.set`     | `PUT .../presence` (`--focus` comma-separated, `--ttl` seconds sent as ms); `parseAgentPresenceRequest` first          | `presence on "<tab>" until <HH:MM:SS>`                                                                                                                       |
 | `presence clear <doc> [--tab]`                                                                                                          | `presence.clear`   | `DELETE .../presence`                                                                                                  | `presence cleared on "<tab>"`                                                                                                                                |
 | `wait <doc> --for comment\|change [--tab] [--timeout <s>]`                                                                              | `wait`             | the room stream                                                                                                        | the comment's thread lines, the change line, or the timeout line (CLI33)                                                                                     |
@@ -532,7 +531,7 @@ More: livedocuments <resource> --help, livedocuments guide <topic>
   `More: livedocuments <resource> <verb> --help`.
 - **Verb** (`livedocuments <resource> <verb> --help`), within `HELP_VERB_MAX_TOKENS`: the description; `Usage:` built
   from `cli.positionals` and the flags; `Flags`, one line each with the zod `.describe()` text; `Examples`, the two
-  of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, kept in `WRITE_FLAG_TEXT`.
+  of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, from `writeFlagsOf` (`../packages/agent-verbs/src/write.ts`).
 - **Guide** (`livedocuments guide`) lists the six topics one line each; `guide <topic>` prints the topic, within
   `GUIDE_TOPIC_MAX_TOKENS` (CLI49). The `edit` topic shows `element connect <doc> <a> <b>` and says why `->` is
   never typed unquoted. The `workbench` topic is the
@@ -606,8 +605,8 @@ max-age=300` (CLI72).
 
 ### OAuth server (apps/mcp)
 
-- **Clients.** `lookupClient(env, clientId)` returns `BUILT_IN_CLIENTS[clientId]` first, then the KV registration.
-  `BUILT_IN_CLIENTS = { [CLI_CLIENT_ID]: { clientName: CLI_CLIENT_NAME, redirectUris: CLI_REDIRECT_URIS } }` with
+- **Clients.** `lookupClient(env, clientId)` (`../packages/mcp-kit/src/oauth-clients.ts`) returns the built-in client
+  first, then the KV registration. `apps/mcp/src/oauth.ts` passes `builtInClients: cliClients(CLI_CLIENT_ID, CLI_CLIENT_NAME)`, one client with
   `CLI_REDIRECT_URIS = ['http://127.0.0.1/callback', 'http://[::1]/callback']` (CLI35). Registration mints random
   hex ids, so it can never take `livedocuments-cli`.
 - **Redirects.** `redirectUriAllowed(registered, uri)`: exact match, or, when the registered URI's host passes
@@ -617,7 +616,7 @@ max-age=300` (CLI72).
   public and lets the consent page tell the CLI from an MCP client for telemetry only (CLI77).
 - **Metadata** adds `device_authorization_endpoint` and `grant_types_supported: ['authorization_code',
 DEVICE_CODE_GRANT]`.
-- **Device routes** (`registerDeviceRoutes`), all JSON or form, CORS as the worker's:
+- **Device routes** (`registerDeviceRoutes`, `../packages/mcp-kit/src/oauth-device.ts`), all JSON or form, CORS as the worker's:
 
 | Method | Path                              | Body                                                       | Success                                                                                         | Failures                                                                                     |
 | ------ | --------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -649,8 +648,8 @@ url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never
   s), honouring `slow_down` (never past 60 s), until the code's
   `expires_in` (`DEVICE_CODE_TTL_S` when absent) has passed: a poll that would land after it is not sent, and the
   login ends with the expired-code error, as for `expired_token`.
-- `loginWithToken`: stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else
-  exit 1.
+- `--with-token` (`tokenFromStdin` in `apps/cli/src/commands/local.ts`): stdin must not be a terminal (exit 2
+  otherwise); reads to end, trims, `isApiTokenFormat`, else exit 1.
 - All three end in `GET {apiBase}/tokens/current` with the new token, then `store.put(profile, credential)`, then
   the replaced token's revoke (Credentials).
 
@@ -736,13 +735,6 @@ type PullFile = DocumentEnvelope & { livedocumentsSync: PullSync };
   `CLI_CLIENT_ID` (else `MCP`, as today), and the device page always; charted as `CLI Sign-Ins` in API Token
   Activity.
 
-### Update check
-
-After a command exits 0, when `CI` is unset or empty, stderr is a terminal, `LIVEDOCUMENTS_NO_UPDATE_CHECK` is not
-`1`, and `update.json`'s `checkedAt` is older than `UPDATE_CHECK_INTERVAL_MS`: `GET
-https://registry.npmjs.org/livedocuments/latest` with `UPDATE_CHECK_TIMEOUT_MS`; `checkedAt` and `latest` are stored
-whatever the answer; a newer `version` prints the notice (CLI43).
-
 ## Data and persistence
 
 No server table. Local files (CLI5):
@@ -755,7 +747,6 @@ No server table. Local files (CLI5):
 | `<cache>/capabilities/<profile>.json`                   | derived | `{ fetchedAt, host, capabilities }`; discarded when older than `CAPABILITIES_CACHE_TTL_MS`                                                                                        |
 | `<cache>/copies/index.json`                             | derived | `{ version: 1, entries: { key, rev, bytes, at }[] }`, most recent first                                                                                                           |
 | `<cache>/copies/<key hash>/<rev>.json`                  | content | One read copy, the plain tab as served; files 0600 in 0700 directories (CLI76)                                                                                                    |
-| `<cache>/update.json`                                   | derived | `{ checkedAt, latest }`                                                                                                                                                           |
 | `<cache>/state.json`                                    | state   | `{ telemetryNoticeAt }`                                                                                                                                                           |
 | `<slug>.livedocuments.json`                             | content | The pull file; the person's to keep                                                                                                                                               |
 
@@ -832,19 +823,18 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   anti-phishing line still shows the redirect host the server read. `clientId` on the session lookup is not a
   secret and decides nothing but the telemetry type.
 - **The device grant.** User codes have 20⁸ (2.6 × 10¹⁰) values, live 10 minutes, are single use, and their lookup
-  is rate limited per IP, an IPv6 caller by its /64 (`DEVICE_LOOKUP_RATE_MAX`, keyed by `clientRateKey`); `device_authorization` is limited like registration
-  (`DEVICE_AUTH_RATE_PER_HOUR`). Only the built-in client may start one. The page names the client from the server
+  is rate limited per IP, an IPv6 caller by its /64 (`LOOKUP_LIMIT`, 30 per 600 s, keyed by `clientRateKey`); `device_authorization` is limited like registration
+  (`START_LIMIT`, 20 an hour; both in `../packages/mcp-kit/src/oauth-device.ts`). Only the built-in client may start one. The page names the client from the server
   and warns: "Only enter a code shown by a terminal you are using." The token travels from the page to the trusted
   `MCP_ORIGIN` only, as the consent page's does.
-- **Hosts.** A profile on another host reaches that host only (I5); telemetry goes to that host's api; the update
-  check goes to npm and carries nothing but the request. `api` refuses absolute URLs. `LIVEDOCUMENTS_TOKEN` goes to
+- **Hosts.** A profile on another host reaches that host only (I5); telemetry goes to that host's api. `api` refuses absolute URLs. `LIVEDOCUMENTS_TOKEN` goes to
   whichever host is active; `auth status` shows that host, and the README says to set `LIVEDOCUMENTS_HOST` beside it.
 - **Share links.** A link's code rides only on the command that was given its URL, and only to that host.
 - **Catalogue routes** expose only public catalogue data, need no identity, and are cacheable.
 - **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
   package's `files` allowlist is the bundle, the wasm, the font, the licences and the README; no install scripts;
   no native addon: the keychain is the platform's own tool.
-- **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateComment`,
+- **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateRead`,
   `gateParticipate`, `gateEdit`), mapped to exit 4.
 
 ## Performance and limits
@@ -855,7 +845,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   `render.svg`, `EXPORT_CONCURRENCY` at a time, under the token's 120 reads a minute.
 - **Start-up.** One ESM file; `@liveworkspace/render-png`, the wasm and the font are loaded only by `tab render`,
   `pull --svg` and `export` with `png`. `--help` evaluates no handler module beyond the catalogue.
-- **Package.** At most `CLI_PACKAGE_MAX_BYTES` unpacked (the wasm is 2.5 MB, the font 0.3 MB).
+- **Package.** The wasm is 2.5 MB and the font 0.3 MB; CI's `npm pack --dry-run` checks the package builds.
 - **Room stream.** One socket; no frames sent; reconnect backoff bounded by `ROOM_RECONNECT_MAX_MS`.
 - **Read copies.** At most `READ_COPY_MAX_BYTES` on disk; one tab is at most `MAX_TAB_BYTES` (1.9 MB), so even the
   largest tabs keep several copies.
@@ -884,8 +874,6 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 - **CLI notices** (stderr), final copy:
   - telemetry: `livedocuments counts which commands succeed (the command's name only: never arguments, documents or
 hosts) and sends the count to <host>. Turn it off: livedocuments telemetry off, or LIVEDOCUMENTS_TELEMETRY=0.`
-  - update: `livedocuments <latest> is available (this is <current>): npm install -g @livedocuments/cli@latest, or
-npx @livedocuments/cli@latest`
   - expiry: `this token expires in <n> days: livedocuments auth login to renew`
   - keychain: `no keychain here; the token is stored in <path> (readable only by you)`
   - loopback: `Opening <url> in your browser. If it does not open, open it yourself.`
@@ -939,7 +927,7 @@ CLI lines print to stderr only under `LIVEDOCUMENTS_DEBUG=1` (CLI44); server lin
 
 | Fingerprint                                                                              | Where                 |
 | ---------------------------------------------------------------------------------------- | --------------------- |
-| `[cli] command <verb.id>` / `[cli] exit <code> <errorName?>`                             | cli, start and end    |
+| `[cli] command <verb.id>` / `[cli] exit <code> <error code?>`                            | cli, start and end    |
 | `[cli] profile <name> host <host> source <flag\|env\|config\|default>`                   | cli, profile choice   |
 | `[cli] credential <env\|keychain\|file\|none>`                                           | cli, credential       |
 | `[cli] keychain unavailable <reason>`                                                    | cli, store            |
@@ -953,7 +941,6 @@ CLI lines print to stderr only under `LIVEDOCUMENTS_DEBUG=1` (CLI44); server lin
 | `[cli] held retry <attempt>`                                                             | cli, `--wait-held`    |
 | `[cli] room <connecting\|open\|closed <code>\|reconnecting <ms>>`                        | cli, room stream      |
 | `[cli] telemetry <sent\|skipped <reason>\|timeout>`                                      | cli, telemetry        |
-| `[cli] update-check <skipped <reason>\|latest <v>\|failed>`                              | cli, update check     |
 | `[oauth] loopback redirect matched <host> any port`                                      | mcp, authorize        |
 | `[oauth] device <started\|authorised\|denied\|expired\|slow_down>`                       | mcp, device grant     |
 | `[oauth] device <authorization\|lookup> rate-limited`                                    | mcp, warn             |
@@ -1020,8 +1007,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Any token role mints a room ticket                                                            | `apps/api/src/index.test.ts` (choke point)                                                                                                                                      |
 | One catalogue: parity of verbs and tools                                                      | `packages/agent-verbs/src/catalogue.test.ts`; `apps/mcp/src/verb-parity.test.ts`, `packages/agent-verbs/src/verbs/mcp-tools.test.ts`                                            |
 | Descriptions are facts                                                                        | `packages/agent-verbs/src/catalogue.test.ts` (the MCP's §4.15 checks over every verb)                                                                                           |
-| Bundle: one ESM file, wasm, font, Node 22, size                                               | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                             |
-| Update check: once a day, stderr, skipped in CI, non-TTY, opt-out                             | `apps/cli/src/update-check.test.ts` (planned)                                                                                                                                   |
+| Bundle: one ESM file, wasm, font, Node 22, size                                               | CI `npm pack --dry-run`                                                                                                                                                         |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts`                                                                                                                                                |
 | Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `../liveworkspace/apps/site/app/telemetry/livedocuments` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/editor/lib/mcp-consent-session.test.ts`                  |
 | Port-agnostic loopback; built-in client; `clientId` on the session                            | `../packages/mcp-kit/src/oauth.test.ts`; this product's client in `apps/mcp/src/oauth.test.ts`                                                                                  |
@@ -1053,15 +1039,11 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `WAIT_HELD_MAX_S`                  | 3600                   | `WAIT_MAX_TIMEOUT_S`, CLI25                 | 600 to 86400       |
 | `READ_COPY_REVS_PER_TAB`           | 3                      | CLI76                                       | 1 to 10            |
 | `READ_COPY_MAX_BYTES`              | 33554432               | About 16 of the largest tabs, CLI76         | 8 MiB to 256 MiB   |
-| `WAIT_DEFAULT_TIMEOUT_S`           | 600                    | CLI61                                       | 60 to 3600         |
-| `WAIT_MAX_TIMEOUT_S`               | 3600                   | CLI61                                       | 600 to 86400       |
 | `WAIT_SETTLE_MS`                   | 2000                   | One editor burst, CLI80                     | 500 to 10000       |
 | `ROOM_RECONNECT_MIN_MS`            | 1000                   | CLI32                                       | 500 to 5000        |
 | `ROOM_RECONNECT_MAX_MS`            | 30000                  | CLI32                                       | 10000 to 120000    |
 | `EXPORT_CONCURRENCY`               | 2                      | Token read limit 120 a minute, CLI29        | 1 to 4             |
 | `TELEMETRY_FLUSH_TIMEOUT_MS`       | 300                    | Research §9, CLI41                          | 100 to 1000        |
-| `UPDATE_CHECK_INTERVAL_MS`         | 86400000               | Spec "once a day at most"                   | fixed by spec      |
-| `UPDATE_CHECK_TIMEOUT_MS`          | 1500                   | CLI43                                       | 500 to 3000        |
 | `LOGIN_TIMEOUT_MS`                 | 600000                 | The authorize session's 10-minute TTL       | equal to it        |
 | `CLI_CLIENT_ID`                    | `livedocuments-cli`    | MCP server §3                               | fixed              |
 | `CLI_CLIENT_NAME`                  | `livedocuments CLI`    | Spec (the token's name)                     | fixed              |
@@ -1070,12 +1052,9 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `DEVICE_SLOW_DOWN_S`               | 5                      | RFC 8628 §3.5                               | fixed by RFC       |
 | `USER_CODE_LENGTH`                 | 8                      | RFC 8628 §6.1 example, CLI36                | 8 to 10            |
 | `USER_CODE_ALPHABET`               | `BCDFGHJKLMNPQRSTVWXZ` | RFC 8628 §6.1                               | fixed              |
-| `DEVICE_AUTH_RATE_PER_HOUR`        | 20                     | `/oauth/register`'s per-IP cap              | 5 to 100           |
-| `DEVICE_LOOKUP_RATE_MAX`           | 30 per 600 s per IP    | CLI36                                       | 10 to 100          |
-| `CLI_PACKAGE_MAX_BYTES`            | 8388608                | CLI54                                       | 4 MiB to 16 MiB    |
 
 Environment the CLI reads: `LIVEDOCUMENTS_TOKEN`, `LIVEDOCUMENTS_HOST`, `LIVEDOCUMENTS_PROFILE`, `LIVEDOCUMENTS_TELEMETRY`,
-`DO_NOT_TRACK`, `LIVEDOCUMENTS_NO_UPDATE_CHECK`, `LIVEDOCUMENTS_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
+`DO_NOT_TRACK`, `LIVEDOCUMENTS_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
 Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livedocuments.app`) and `CLI_MIN_VERSION` (unset until a
 release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
 `pnpm staging:check` holds; both documented in `docs/development/local-development.md`. No new secret, binding or migration.

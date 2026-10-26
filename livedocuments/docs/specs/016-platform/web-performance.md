@@ -14,25 +14,18 @@ that could grow it is measured against `main` the same way before it ships.
 Why a page carries what it does is read from the Turbopack bundle analyzer (`next analyze`): its route
 summary, its table of the largest contributors, and its diff against an earlier snapshot.
 
-Measured 2026-10-11 (gzip level 9), before and after the changes that set these rules:
+First loads under these rules, measured that way (gzip level 9):
 
-| Page                                         | Before    | After     |
-| -------------------------------------------- | --------- | --------- |
-| Editor: `/sign-in`, `/get-started`           | 1,546 KiB | 362 KiB   |
-| Editor: `/explorer/home` (and most sections) | 1,780 KiB | 570 KiB   |
-| Editor: `/new`                               | 1,877 KiB | 669 KiB   |
-| Editor: `/join`, `/oauth/*`                  | ~1,500    | 316–354   |
-| Editor: `/document/<id>`                     | 1,493 KiB | 1,489 KiB |
-| Help: an article                             | 238 KiB   | 207 KiB   |
-| Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
-| Marketing: `/` (HTML, gzipped)               | 114 KiB   | 93 KiB    |
-
-Then the document page's own first load (measured 2026-10-11 the same way, on top of the above):
-
-| Page                          | Before    | After     |
-| ----------------------------- | --------- | --------- |
-| Editor: `/document/<id>`      | 1,489 KiB | 1,240 KiB |
-| Marketing: a `/features` page | 221 KiB   | 207 KiB   |
+| Page                                         | First load |
+| -------------------------------------------- | ---------- |
+| Editor: `/sign-in`, `/get-started`           | 362 KiB    |
+| Editor: `/explorer/home` (and most sections) | 570 KiB    |
+| Editor: `/new`                               | 669 KiB    |
+| Editor: `/join`, `/oauth/*`                  | 316 to 354 |
+| Editor: `/document/<id>`                     | 1,240 KiB  |
+| Help: an article                             | 207 KiB    |
+| Marketing: `/` (HTML, gzipped)               | 93 KiB     |
+| Marketing: a `/features` page                | 207 KiB    |
 
 ## Rules
 
@@ -46,15 +39,14 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   `next/dynamic`, never a static import. A document URL already has the editor from
   `/document/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
   tick the import takes.
-- `apps/editor/app/first-load-lazy.test.ts` fails if any of these become static imports again.
+- `apps/editor/app/first-load-lazy.test.ts` fails if any of these become static imports.
 
 ### A surface that is not on screen loads when it is
 
 A dialog, panel or view that renders only behind an open flag or a tab is loaded with
-`next/dynamic` (`ssr: false`), the way the editor's presentation overlay already is.
-The Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
-this way. Where switching to one must stay instant, its code is fetched once the page is idle
-(the telemetry dashboard).
+`next/dynamic` (`ssr: false`), the way the editor's presentation overlay is.
+The Explorer's Settings and move picker load this way. Where switching to one must stay instant, its code is
+fetched once the page is idle.
 
 ### The document page loads what a document may not need on demand
 

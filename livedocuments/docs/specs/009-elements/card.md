@@ -75,8 +75,7 @@ otherwise.
 There is no separate Callout element any more. The palette's **Callout** places a card with `cardMedia: 'badge'`, a
 title "Heads up" and a body, which is what a Callout was.
 
-`callout` is no shape kind (`ShapeKind` and `SHAPE_KINDS` hold none), and nothing migrates one: livedocuments has
-no stored documents from before the change. `callout` lives on only as the palette's component id
+`callout` is no shape kind (`ShapeKind` and `SHAPE_KINDS` hold none). `callout` is only as the palette's component id
 (`ComponentKind`) and the card variant that dresses the card (`applyShapeVariant`, `CARD_PRESET_VARIANTS`).
 
 ## Animation

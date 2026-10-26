@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and lifetimes, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a plan into something other people can open. A share link lets anyone with the URL join your plan in real time, with live cursors and edits flowing between everyone. You can protect your links with a password, give a link a lifetime, or embed the plan in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+Sharing turns a plan into something other people can open. A share link lets anyone with the URL join your plan in real time, with presence and edits flowing between everyone. You can protect your links with a password, give a link a lifetime, or embed the plan in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
 
 ## Opening the Share dialog
 
@@ -21,43 +21,45 @@ The plan's owner, and every member of the [team](/help/collaboration/teams/) who
 
 ## Creating a link
 
-The dialog opens on a new link. Choose what it lets people do from the three levels across the top:
+The dialog, **Share This Plan**, draws each link as a **pass**. It opens on **Issue a pass**, a new one. Choose what it lets people do from the three levels (a new pass starts as an Editor's):
 
 - **Viewer**: watches along. Can't comment or change a thing. They can open cards to read them.
 - **Participant**: comments, votes and works items, but can't reshape the plan. They add cards and edit their fields, move cards between columns, write in Sheet cells, [comment](/help/collaboration/comments/) and cast dots in a [vote](/help/collaboration/session-tools/voting/). They cannot change a board's columns, card types or settings, format a Sheet, or add, rename, reorder or delete tabs. It is the level to hand a team for a retrospective or a planning session.
 - **Editor**: works with you in real time, changing anything you can.
 
-Below the levels, **Opens** chooses whether the link opens **Every tab** or only one ([Sharing One Tab](/help/collaboration/sharing/one-tab/)); it shows when the plan has tabs to choose from. **Lasts** chooses how long the link works: **Forever**, **1 week**, **1 month** or **6 months** ([Share Link Expiry](/help/collaboration/sharing/share-link-expiry/)).
+Below the levels, **Opens** chooses whether the link opens **All tabs** or only one ([Sharing One Tab](/help/collaboration/sharing/one-tab/)); it shows when the plan has more than one tab. **Valid** chooses how long the link works: **Forever**, **1 week**, **1 month** or **6 months** ([Share Link Expiry](/help/collaboration/sharing/share-link-expiry/)).
 
-Press **Create and Copy Link**. The link is made and copied in one go, ready to paste.
+Press **Create Pass**. The link is made and copied in one go, ready to paste.
+
+A pass's level is set when you create it. To hand someone a different level, create another pass.
 
 A plan can have several links at once, so you can hand an Editor link to a co-facilitator, a Participant link to your team and a Viewer link to everyone else. Whoever opens a link joins the same realtime room, and the plan lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
 
 ## Your links
 
-Under **Links**, each link shows its level, its address and how long it has left. On each one you can:
+Under **Passes**, each pass shows its level, its address, which tabs it opens and how long it has left. On each one you can:
 
-- change its level with the level menu, and which tabs it opens with the tab menu, at any time; the address stays the same;
-- press **Extend** on a link with a lifetime to give it more time;
-- press **Copy** to copy its address again;
-- press the bin (**Turn off link**) to stop it working.
+- change which tabs it opens with its tab menu; the address stays the same, and anyone using it reloads into the new choice at once;
+- press **Copy link** to copy its address again;
+- copy it as an embed or a live image from its **Embed** and **Live image** menus;
+- press the bin (**Revoke link**), then **Revoke**, to stop it working.
 
-Turning a link off takes effect at once: anyone in the plan through it is sent out, and the address stops opening it. It can't be turned back on; make a new link if you change your mind, which gives a new address.
+Revoking a pass takes effect at once: anyone in the plan through it is sent out, and the address stops opening it. It can't be turned back on; create a new pass if you change your mind, which gives a new address.
 
-Changes to a link's level, tabs or password reach the people already using it within a few minutes.
+A pass with a lifetime moves to **Expired** when it runs out. There, **Extend** opens it again for another round of the lifetime it was issued with, and the bin deletes it.
 
 ## A password for every link
 
-At the foot of the dialog, **Set Password** puts one password on every link to the plan ([Share Passwords](/help/collaboration/sharing/share-passwords/)). [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
+At the foot of the dialog, **Password Protection** puts one password on every link to the plan ([Share Passwords](/help/collaboration/sharing/share-passwords/)). [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
 
 ## Embedding a plan
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a plan inside another page, like a wiki, a doc or Notion. Where an `<iframe>` isn't allowed, like a GitHub README, a [live image](/help/collaboration/sharing/live-image/) shows a picture of the plan instead. Both are made from a share link's address.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a plan inside another page, like a wiki, a doc or Notion. Where an `<iframe>` isn't allowed, like a GitHub README, a [live image](/help/collaboration/sharing/live-image/) shows a picture of the plan instead. Both are copied from a pass's **Embed** and **Live image** menus.
 
 <Note>
   A [plan in This Browser](/help/privacy-and-security/offline-mode/) lives only in your browser, so
-  there is nothing on the server to share yet. Opening **Share** on one shows a gate instead of the
-  link controls, with a button that uploads it first.
+  there is nothing on the server to share. Opening **Share** on one shows a gate instead of the link
+  controls, with a button that uploads it first.
 </Note>
 
 <FeatureGrid>

@@ -301,8 +301,7 @@ TabStyleTourCompleted` / `TabStyleTourSkipped`.
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
 `track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')` (a Mashup press, `track('Tab', 'Changed', 'Mashup')`);
-the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (the Apply to All actions, and their
-`FinishToAll` and `ResetElements` events, are gone)
+the underlying setters send their own `Canvas` / `Theme` / `Tab` events; there is no Apply to All
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## Reuse notes

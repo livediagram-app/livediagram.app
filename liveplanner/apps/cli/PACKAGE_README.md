@@ -1,6 +1,6 @@
 # liveplanner
 
-The command line for [liveplanner](https://liveplanner.app): read, build, edit and discuss diagrams from a terminal,
+The command line for [liveplanner](https://liveplanner.app): read, build, edit and discuss plans from a terminal,
 built first for coding agents and second for scripts.
 
 ```bash
@@ -16,7 +16,8 @@ liveplanner --help
 
 ## Sign in
 
-Create an API token in liveplanner (Settings › API Tokens), then either set it for a command:
+Sign in through your browser with `liveplanner auth login` (or `--device` on a machine without one). Or make an API token
+on liveworkspace.app (in liveplanner, Settings › Account › API Tokens › Manage API Tokens), then either set it for a command:
 
 ```bash
 export LIVEPLANNER_TOKEN=lwt_...
@@ -28,12 +29,12 @@ or store it for this machine:
 printf %s "$TOKEN" | liveplanner auth login --with-token
 ```
 
-The CLI never prompts. Another liveplanner host (a staging or local stack) is reached with `--host https://…` or `LIVEPLANNER_HOST`.
+The CLI never prompts when its input or output is not a terminal. Another liveplanner host (a staging or local stack) is reached with `--host https://…` or `LIVEPLANNER_HOST`.
 
 ## Start
 
 ```bash
-liveplanner project ls auth            # find a project
+liveplanner project ls auth            # find a plan
 liveplanner tab view "Auth flow"        # its first tab, as an outline
 liveplanner edit "Auth flow" -f ops.txt # change it with edit operations
 liveplanner guide edit                  # how edit operations read
@@ -44,7 +45,7 @@ install --to ~/.claude/skills` gives a coding agent the skill that says when to 
 
 ## Privacy
 
-The CLI counts which commands succeed (the command's name only: never arguments, projects or hosts) and sends the
+The CLI counts which commands succeed (the command's name only: never arguments, plans or hosts) and sends the
 count to the host it talks to. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or
 `DO_NOT_TRACK=1`.
 

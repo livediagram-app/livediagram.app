@@ -150,8 +150,8 @@ layout inlines the real string rather than a client-reference stub.
   its contrast audit covers dark mode.
 - Light mode's brand ramp is settled ([#74](https://github.com/livedocuments-app/livedocuments.app/issues/74)): solid
   brand fills under white text and brand ink on white are both `brand-700` (5.9:1), guarded by
-  `apps/editor/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is not yet in line,
-  so this category is not yet fully covered.
+  `apps/editor/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is below that ratio,
+  so this category is partly covered.
 
 ## Web Experience
 

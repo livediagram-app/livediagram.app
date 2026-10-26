@@ -28,15 +28,14 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | Site                                                                              | Reads                               | Becomes                                                                           |
 | --------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
 | `apps/editor/app/oauth/consent/page.tsx`, `apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
-| `apps/editor/app/new/page.tsx` (`initialPlacement`)                               | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
-| `ShareDialog`, `TeamInviteLinkDialog`                                             | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
+| `apps/editor/app/new/page.tsx` (`createByDefault`)                                | `location.search`                   | read in the handler (`placementParamsFromSearch`), never in render                |
+| `ShareDialog`                                                                     | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
 | `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
 | `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
-| `CardFinderPanel` (`finePointer`)                                                 | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
+| `StartPanel` (focusing its search)                                                | `(pointer: fine)`                   | `matchMedia` in an effect                                                         |
 | `arrow-handles.tsx` (`COARSE_POINTER`)                                            | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
 | `EditorContextMenu` (`anchorBottom`)                                              | `innerHeight`                       | `useViewportHeight()`                                                             |
-| `StartAgainTray` (`pillPlace` default argument)                                   | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
 | `useViewportWidth`, `useViewportHeight`                                           | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
 | `EditorCanvasHost` (`openUp`, in the context-menu handler)                        | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
 | `packages/ui/src/SiteFooter.tsx`                                                  | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
@@ -134,7 +133,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node             |
+| No ref-only wrappers                     | `LayerRowMenu.test.tsx`: focus and anchor with no bare node                                      |
 
 ## Constants and configuration
 

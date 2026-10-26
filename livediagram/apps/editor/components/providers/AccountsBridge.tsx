@@ -118,8 +118,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       pictureHidden: user.pictureHidden === true,
     },
     getToken,
-    // Clears what the retired returning-visitor note left in this browser
-    // (docs/specs/019-marketing/returning-visitor.md). A full load, so nothing keeps the old session.
+    // Clears what the retired returning-visitor note left in this browser. A full load, so nothing keeps the old session.
     signOut: async (opts) => {
       await endSession();
       window.location.assign(opts?.redirectUrl ?? '/');

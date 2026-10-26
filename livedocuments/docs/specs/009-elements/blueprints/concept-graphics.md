@@ -100,8 +100,7 @@ for every row.
 
 ### Writes
 
-`withPyramidVariant(el, variant | null)`; `withHubSpokes(el, on)` (on deletes the field, off stores `false`); `withConceptAnim(el, anim | null)`, `withConceptAnimSpeed`,
-`withConceptAnimRepeat`: through the menu's generic style ops. Telemetry: `PyramidVariant`, `ConceptAnim`; rows
+`withPyramidVariant(el, variant | null)`; `withHubSpokes(el, on)` (on deletes the field, off stores `false`); `withConceptAnim(el, { anim?, speed?, repeat? })`: through the menu's generic style ops. Telemetry: `PyramidVariant`, `ConceptAnim`; rows
 `ConceptRows` (the web rows setter).
 
 ### Animation (CSS, `apps/editor/app/canvas-motion.css`)

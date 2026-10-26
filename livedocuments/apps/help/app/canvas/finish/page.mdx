@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-A **finish** is how a tab's elements are drawn, apart from their colours. Every tab has one, and any shape, arrow, text, sticky note or table can carry its own. Polygons and paths you draw yourself follow their tab's finish too. Switching a finish never changes an element's size, colour or text, so switching back puts everything exactly as it was.
+A **finish** is how a tab's elements are drawn, apart from their colours. Every tab has one, and any shape, arrow, text, sticky note or table can carry its own. Freehand strokes and polygons, which an AI assistant or the API can add, follow their tab's finish too. Switching a finish never changes an element's size, colour or text, so switching back puts everything exactly as it was.
 
 ## The four finishes
 
@@ -38,9 +38,9 @@ Right-click an element, open **Style**, then **Finish**. The five options are **
 
 - **The hand-drawn look is the same everywhere.** In Sketch and Marker, each element's wobble is worked out from the element itself, so it looks identical on every screen, after a reload and in exports, and only changes when you resize it.
 - **Selecting and connecting ignore the wobble.** Arrows attach, guides snap and clicks land on an element's true outline.
-- **Everything is drawn by hand in Sketch, and the words stay sharp.** Charts, concept graphics, checklists, progress bars, panels, buttons, a table's grid and every other element draw their lines and fills by hand, while their words and numbers sit crisply on top in the handwriting font, so small figures stay easy to read. Pen, pencil and highlighter strokes (already hand-drawn) and photos stay as they are, though a photo gets a hand-drawn edge round it. Circle and diamond arrowheads keep their shapes because they carry meaning.
+- **Everything is drawn by hand in Sketch, and the words stay sharp.** Charts, concept graphics, checklists, progress bars, panels, buttons, a table's grid and every other element draw their lines and fills by hand, while their words and numbers sit crisply on top in the handwriting font, so small figures stay easy to read. Freehand strokes (already hand-drawn) and photos stay as they are, though a photo gets a hand-drawn edge round it. Circle and diamond arrowheads keep their shapes because they carry meaning.
 - **Every box is shaded the same way.** In Sketch and Marker every filled box, from a plain shape to a card or a panel, gets pencil shading or marker colouring over its own colour, so labels stay readable on a light or a dark canvas. A pale border too faint to read once drawn by hand is drawn in a stronger shade of the same colour.
-- **The palette follows the tab.** Shape, text, sticky note, arrow and table tiles show the tab's finish, so you can see how a new element will look before you add it.
+- **The palette follows the tab.** Shape, text, sticky note and table tiles show the tab's finish, so you can see how a new element will look before you add it.
 - **Exports match the canvas.** PNG, SVG and PDF exports draw the same finish you see.
 - **Only Editors change finishes.** Participants and Viewers see every element in its finish but can't change it.
 

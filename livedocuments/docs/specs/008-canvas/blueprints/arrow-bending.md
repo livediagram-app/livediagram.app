@@ -41,7 +41,7 @@ Scope, by file:
 - `straight`, or `curved` without `curvePoints`: `bow`. `t` = the grab's projection parameter on
   the chord (straight) or the nearest of 64 samples of the quadratic (curved).
 - `curved` with `curvePoints`: `insert` at the index of the nearest segment of
-  `[from, ...anchors, to]`, the rule `addCurvePoint` used.
+  `[from, ...anchors, to]`.
 - `angled`: `slide` of the nearest segment of `arrowPathPolyline`; its unit direction is stored.
 
 **Apply** (`applyArrowBend(plan, delta)`), pure, from the start snapshot:
@@ -124,7 +124,7 @@ scales a free arrow.
 - An editable arrow line shows the `grab` cursor; locked, read-only and format-painter lines keep
   their existing cursor.
 - A selected free arrow shows the shape selection ring and handles; its ring edge shows `move`.
-- The "+" add-point handles are gone; the curve, bend-point and elbow handles are unchanged.
+- There are no "+" add-point handles; the curve, bend-point and elbow handles are as above.
 
 ## Accessibility
 

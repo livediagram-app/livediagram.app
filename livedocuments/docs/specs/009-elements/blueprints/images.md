@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the drawing the export door gives liveworkspace's previews                                                                |
 | `apps/api/wrangler.toml`                               | No bucket; `MEDIA_KEY` note                                                                                                                        |
 | `apps/api/hosted-vars.json`                            | Hosted livedocuments.app's `MEDIA_URL` per environment                                                                                             |
-| `apps/editor/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, …                                                                            |
+| `apps/editor/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiFetchImageBlobUrl`, `apiFetchImageDataUrl`                                                |
 | `apps/editor/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`                                                                                   |
 | `apps/editor/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                                                                                                   |
 | `apps/editor/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                                                                                           |
@@ -104,13 +104,11 @@ change (D46).
    box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[QB2]`
 6. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
    `naturalHeight` about the element's centre, disabled when either is absent. `[QB3]`
-7. **Activity.** Retired: the Set / Cleared image entries went with the Activity panel
-   (removed 2026-10-03). `[QB4]`
 
 ### Upload (`POST /api/images`)
 
 Guards run in this order; the first failure answers. Steps 1 to 6 are this api's; 7 is the media
-service's ([media.md](../../../../../liveworkspace/docs/media.md) "Uploads"), whose refusals are passed
+service's ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md) "Uploads"), whose refusals are passed
 on as sent (`serviceAnswer`).
 
 1. No media service → 503 `images_unavailable`.
@@ -204,10 +202,9 @@ This api sweeps no images of its own. A null or `data:` id references nothing
 - `MEDIA_KEY` absent: every `/api/images*` route answers 503 `images_unavailable`, the snapshot
   embed is a no-op and a document's push sends nothing. The service refusing the key
   (401) or failing (5xx) answers the same 503.
-- The editor withholds `onAddImage` when the deployment has no images, which hides every
-  `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
-  `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
-  reports only `emailEnabled` and the CLI fields.
+- The editor does not ask whether the deployment has images: it offers the image tiles wherever the person may
+  edit, and an upload against a deployment without them answers 503 `images_unavailable`, shown with its fixed copy
+  `[QB1]`. `GET /api/capabilities` reports only `emailEnabled` and the CLI fields.
 
 ## Interfaces and contracts
 
@@ -323,12 +320,12 @@ hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).
 Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `file_too_large`,
 `images_unavailable` map to fixed copy; `payload_too_large`, `malformed_jpeg` and
 `upload_conflict` show the raw `ApiError` message (GB6). The import pipeline maps the same
-tokens separately through `failureFromUploadError` (GB6). `apiListImages` and `apiImageUsage`
-read a 503 as `null` and `{}`.
+tokens separately through `failureFromUploadError` (GB6). `apiListImages`
+reads a 503 as `null`.
 
 ## Data and persistence
 
-- **Media service** ([media.md](../../../../../liveworkspace/docs/media.md)): one row per image
+- **Media service** ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md)): one row per image
   (`id`, owner, `app`, type, size, dimensions, hash, name, time) and its bytes in R2, keyed by id.
 - **Each document's own SQLite** (`document-schema.ts`): `image_refs` (the
   [reference index](image-reference-index.md)), `image_owners` (`image_id` TEXT PK, `owner_id`
@@ -479,7 +476,7 @@ read a 503 as `null` and `{}`.
 | O8  | Reference sync failed          | `console.error` | `[media] refs sync failed` + status, body                                              |
 | O9  | Document over one sync's limit | `console.error` | `[media] a document places more images than one sync carries` + `{ document, images }` |
 
-O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([media.md](../../../../../liveworkspace/docs/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands.
+O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([media.md](../../../../../liveworkspace/docs/specs/006-media/media.md)). O2 to O5 do not; Observability stays unchecked until GB5 lands.
 
 ## Testing
 

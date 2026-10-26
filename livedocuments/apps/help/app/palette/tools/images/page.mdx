@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ImageElement, ImagePicker } from '@liveworkspace/help-site/art/illustrations/palette-tools';
+import {
+  ImageElement,
+  ImagePicker,
+} from '@liveworkspace/help-site/art/illustrations/palette-tools';
 
 export const metadata = helpMetadata({
   title: 'Images',
@@ -74,7 +77,7 @@ Other formats are turned away with a message listing the accepted ones. SVG is r
 
 ## Avatars
 
-The **Avatar** tile, at the end of the **Media** category, places a circular photo of a person: an image element that starts square, keeps its proportions as you resize it, and is cropped to a circle. Tap or drag to place it, then double-click it to pick or upload the photo through the same picker. It suits org charts, team pages and personas.
+The **Avatar** tile, in the **Media** category just before Link Card, places a circular photo of a person: an image element that starts square, keeps its proportions as you resize it, and is cropped to a circle. Tap or drag to place it, then double-click it to pick or upload the photo through the same picker. It suits org charts, team pages and personas.
 
 ## Your image gallery
 
@@ -91,8 +94,8 @@ Every image you upload is indexed in a personal gallery, shared across all your 
 - **Unused uploads are cleared automatically.** Once a day, livedocuments removes images that are both more than 30 days old and used in no document, so abandoned uploads do not pile up. An image any document still uses is kept no matter its age, and recent uploads are left alone until the 30-day window passes.
 
 <Note>
-  When image uploads are not available, the Image and Avatar tiles are hidden, and an upload attempt
-  explains that uploads are not available on that server.
+  When image uploads are not available, the Image, Avatar and Hero tiles are hidden, and an upload
+  attempt explains that uploads are not available on that server.
 </Note>
 
 <Tip>

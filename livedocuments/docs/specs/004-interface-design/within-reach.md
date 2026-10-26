@@ -39,6 +39,7 @@ side's set and then the set of both, and loses nothing.
 
 ## Implementation
 
-One shared, pure function decides every within-reach set: `withinReach` in `@livedocuments/api-schema`
-(`../packages/api-schema/src/within-reach.ts`), used by the api worker and the editor app alike
+One shared, pure function decides every within-reach set: `withinReach` in `@liveworkspace/api-schema`
+(`../packages/api-schema/src/within-reach.ts`), which `@livedocuments/api-schema` re-exports. Jump Back In is drawn by
+the shared Explorer from liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md))
 ([blueprint](blueprints/within-reach.md)).

@@ -22,30 +22,30 @@ The image is a flat picture of the tab, drawn from what it holds:
 - **A Form** is drawn as respondents see it.
 - **A Dashboard** is drawn as its page, each metric and chart with its figures.
 
-It shows the plan's first tab, or for a link scoped to [one tab](/help/collaboration/sharing/one-tab/), that tab. A tab with nothing on it yet has no image.
+It shows the tab you pick in the **Live image** menu's **Tab** list (the first tab unless you choose another), or for a link scoped to [one tab](/help/collaboration/sharing/one-tab/), that tab. A tab with nothing on it yet has no image.
 
 ## Making a live image
 
 <Step n={1}>
-  Open the **Share** dialog, choose a level, and press **Create and Copy Link**. (Or press **Copy**
-  on a link you already have.)
+  Open the **Share** dialog, choose a level, and press **Create Pass**. (Or use a pass you already
+  have.)
 </Step>
 <Step n={2}>
-  The link looks like `https://liveplanner.app/project/…?s=CODE`. Its image address is
-  `https://liveplanner.app/api/share/CODE/image.svg`, with the same code.
+  On the pass, open **Live image**, pick the **Tab** it should show when the plan has several, and
+  choose **Copy image URL**, **Copy Markdown** or **Copy HTML**.
 </Step>
 <Step n={3}>
-  Paste it where you want the plan to appear: `![liveplanner tab](https://liveplanner.app/api/share/CODE/image.svg)`
-  in Markdown, or an `<img>` tag on a web page.
+  Paste it where you want the plan to appear: the Markdown in a README, or the HTML `<img>` tag on
+  a web page. The image address looks like `https://liveplanner.app/api/share/CODE/image.svg`.
 </Step>
 
 Editing the plan updates the image the next time it loads. Browsers and sites may keep a copy for a few minutes, so a page can show the previous version briefly after an edit.
 
 ## When it shows nothing
 
-A live image only works for a link that opens without a password. An `<img>` request cannot supply one, so while the plan has a [share password](/help/collaboration/sharing/share-passwords/), its image address shows nothing. Remove the password to use a live image, or use an [embed](/help/collaboration/sharing/embeds/), which can ask for the password inside its frame.
+A live image only works for a link that opens without a password. An `<img>` request cannot supply one, so while the plan has a [share password](/help/collaboration/sharing/share-passwords/), its image address shows nothing and the pass offers no **Live image** menu. Remove the password to use a live image, or use an [embed](/help/collaboration/sharing/embeds/), which can ask for the password inside its frame.
 
-A live image also stops working when its share link is turned off or [runs out](/help/collaboration/sharing/share-link-expiry/), so keep the link alive for as long as the image is in use.
+A live image also stops working when its share link is revoked or [runs out](/help/collaboration/sharing/share-link-expiry/), so keep the link alive for as long as the image is in use.
 
 ## Privacy
 

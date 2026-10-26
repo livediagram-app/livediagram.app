@@ -1,8 +1,8 @@
 # Share roles: blueprint
 
-> **Partly superseded (October 2026).** Share links, their levels and who may reach a document are the index's now
-> ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
-> shared one from `@liveworkspace/explorer`. Files marked (removed) below went with livedocuments's own copies.
+> Share links, their levels and who may reach a document are liveworkspace's index's
+> ([One Explorer: contracts](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access)), and the Share dialog is the
+> shared one from `@liveworkspace/explorer`. This blueprint covers what livedocuments does with the level it is handed.
 
 Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
@@ -19,27 +19,24 @@ socket) are not derived here.
 
 | File                                                                                                                                                            | Role                                                                                                                                        |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts` (new)                                                                                                             | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`                                                      |
+| `../packages/api-schema/src/access-levels.ts`                                                                                                                   | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`                                                      |
 | `packages/api-schema/src/index.ts`                                                                                                                              | `ShareRole` becomes an alias of `AccessLevel`                                                                                               |
 | `packages/api-schema/src/room-messages.ts`                                                                                                                      | `isPresenceOpKind`, `isSystemOpKind`: the op classes the gate reads; the `article` frame's `grow`                                           |
-| `packages/document/src/participant-content.ts` (new)                                                                                                            | The participant content rule: `applyParticipantOp`, `PARTICIPANT_TEXT_FIELDS`, `participantTabChange`                                       |
-| `packages/document/src/participant-article.ts` (new)                                                                                                            | The participant writing rule: `applyParticipantArticleOps`, `participantArticlesChange`                                                     |
+| `packages/document/src/participant-content.ts`                                                                                                                  | The participant content rule: `applyParticipantOp`, `PARTICIPANT_TEXT_FIELDS`, `participantTabChange`                                       |
+| `packages/document/src/participant-article.ts`                                                                                                                  | The participant writing rule: `applyParticipantArticleOps`, `participantArticlesChange`                                                     |
 | liveworkspace's index (sharing)                                                                                                                                 | A link's level and a visitor's, kept by the index with the link; the grant it signs carries the level                                       |
-| apps/api/src/share-link-row.ts, db/ws-tickets.ts, db/shared.ts (removed: links and grants are the index's)                                                      | Readers through `parseStoredLevel`                                                                                                          |
-| apps/api/src/auth/document-access.ts (removed)                                                                                                                  | Gates compare levels; `canParticipateDocument`                                                                                              |
 | `apps/api/src/routes/context.ts`                                                                                                                                | `gateParticipate` is the Participant check                                                                                                  |
-| apps/api/src/routes/document-share-routes.ts (removed)                                                                                                          | `POST /share` takes three levels                                                                                                            |
 | `apps/api/src/routes/document-room-routes.ts`                                                                                                                   | The ticket and the upgrade carry the effective level                                                                                        |
 | `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `room-participant.ts`                                                                         | Level on the session; op gate by class; a Participant's `el` ops and `article` frames through the tab write queue (`RoomParticipantWrites`) |
-| `apps/api/src/participant-write.ts` (new)                                                                                                                       | `writeParticipantOp`, `writeParticipantArticle`: compare-and-swap writes of the rules' output                                               |
+| `apps/api/src/participant-write.ts`                                                                                                                             | `writeParticipantOp`, `writeParticipantArticle`: compare-and-swap writes of the rules' output                                               |
 | `apps/api/src/db/image-grants.ts`                                                                                                                               | Image grants from edit collaborators only                                                                                                   |
 | `packages/agent-verbs/src/mcp/*`                                                                                                                                | `share_document.role` takes three levels, default `participate`                                                                             |
-| `apps/editor/lib/editor-capabilities.ts` (new)                                                                                                                  | `resolveEditorCapabilities`, `EditorCapabilities`                                                                                           |
+| `apps/editor/lib/editor-capabilities.ts`                                                                                                                        | `resolveEditorCapabilities`, `EditorCapabilities`                                                                                           |
 | `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `useParticipantSession`, `tab-save-flow`, `editor-page-helpers`)                         | `sessionRole: AccessLevel`; `can`; the participant save flow                                                                                |
 | `apps/editor/hooks/editor/useArticles.ts`                                                                                                                       | `canWrite` (a Participant's writing) beside `canEdit`; `reshape` for an Editor                                                              |
 | [`ShareComposer.tsx`](../../../../../packages/explorer/src/dialogs/share/ShareComposer.tsx), `parts.tsx` (the shared Share dialog in `@liveworkspace/explorer`) | Three cards                                                                                                                                 |
 | `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                                                                      | Participating pill                                                                                                                          |
-| `apps/editor/lib/collaborator-roster.ts`, app/explorer/views.tsx (removed)                                                                                      | Participant badge; Participate chip                                                                                                         |
+| `apps/editor/lib/collaborator-roster.ts`                                                                                                                        | Participant badge; Participate chip                                                                                                         |
 
 ## Domain and naming
 
@@ -180,7 +177,7 @@ delete, no document metadata, no whole `tab`. The socket being closed fails the 
 today; the unload flush sends the same frames at once.
 
 Hooks that write a tab's structure, or write without passing `commit`, take `structureBlocked`
-(`editsBlocked || isReadOnly`) or `structureCreateBlocked` (`createBlocked || isReadOnly`), never the opened
+(`editsBlocked || isReadOnly`) or `createBlocked` (`structureBlocked || activeLayerBlocked`), never the opened
 `editsBlocked`: layers, element helpers, tab canvas, images, swatch overrides, the page panel and the cleanup
 preview.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
@@ -306,10 +303,10 @@ anything; right for a review. "view": they only look, with no comments or votes.
 
 ## Data and persistence
 
-| Field                                   | Class      | Notes                                                                                                                                                                                    |
-| --------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A share link's level, a visitor's level | credential | Kept by liveworkspace's index with the link ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)); `view`, `participate` or `edit` |
-| The grant's level                       | ephemeral  | The effective level, signed into the index's grant the room admits a socket by                                                                                                           |
+| Field                                   | Class      | Notes                                                                                                                                                                                                    |
+| --------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A share link's level, a visitor's level | credential | Kept by liveworkspace's index with the link ([One Explorer: contracts](../../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access)); `view`, `participate` or `edit` |
+| The grant's level                       | ephemeral  | The effective level, signed into the index's grant the room admits a socket by                                                                                                                           |
 
 livedocuments keeps no share link or visitor row: sharing is the index's, and the room reads the level from the grant.
 Readers take a level through `parseStoredLevel`, so an unknown one reads as `view`. A
@@ -426,9 +423,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Every row of the participant content rule, every refusal and correction | `packages/document/src/participant-content.test.ts`                                                                      |
 | Only listed text fields ever land, for every element kind               | `packages/document/src/participant-content.leak.test.ts`                                                                 |
 | The participant writing rule: writing blocks, every refusal             | `packages/document/src/participant-article.test.ts`                                                                      |
-| `mergeLedgerAnswersIntoTab`                                             | `packages/document/src/collab-ledger.test.ts`                                                                            |
-| Gates compare levels                                                    | apps/api/src/auth/document-access.test.ts (removed)                                                                      |
-| Share create validates three levels                                     | apps/api/src/routes/document-share-routes.test.ts (removed)                                                              |
+| `mergeLedgerIntoTab`                                                    | `packages/document/src/collab-ledger.test.ts`                                                                            |
 | Write: applied, unchanged, refused, CAS retry, 404, 409, 413            | `apps/api/src/participant-write.test.ts`                                                                                 |
 | Op gate per level: `participant-content`, `participant-article`, drop   | `apps/api/src/room-op-gate.test.ts`                                                                                      |
 | Room: participant path, corrections, re-hydrate, `grow` relay           | `apps/api/src/room-participant.test.ts`, `document-room-participant.test.ts`, `document-room-routes.test.ts`             |

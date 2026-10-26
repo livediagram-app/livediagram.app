@@ -1,6 +1,6 @@
 # Fact sheet
 
-The canonical, true-today facts all marketing copy is built from. If something
+The canonical facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
 descriptions. Mirrors the site's own words (`SITE_DESCRIPTION` and `SITE_PITCH`
 in `packages/ui/src/site.ts`) and the marketing FAQ (`apps/marketing/lib/faq-content.tsx`).
@@ -24,7 +24,7 @@ Teams who write and present together: briefs, reports and proposals, launch
 decks and quarterly reviews, posters, one-pagers and social posts. The unit of
 value is the team, not the individual.
 
-## Shipped today
+## What it does
 
 - Articles: writing that flows onto pages, with headings, lists, quotes, code,
   pictures and charts. Paste from web pages, Google Docs or Word and the
@@ -40,7 +40,7 @@ value is the team, not the individual.
   comment threads and assigned actions.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
 - Tabs per document, nested folders in the Explorer, and a 30-day Trash.
-- Editor or view-only share links, with expiry, passwords and revoke any time;
+- Editor, Participant or Viewer share links, with expiry, passwords and revoke any time;
   live embeds and live images for wikis and READMEs.
 - Export pages as PDF, PNG, SVG or an animated GIF, articles as Markdown, and
   any tab as JSON to import back.
@@ -63,13 +63,14 @@ value is the team, not the individual.
 
 ## Stack
 
-Runs entirely on Cloudflare: Workers for the API and routing, D1 for storage,
-Durable Objects for realtime, Static Assets for the Next.js frontends. No
-Node-hosted backend, no SSR.
+Runs entirely on Cloudflare: Workers for the API and routing, a Durable Object
+per document holding its content and its realtime room, and Workers Static
+Assets for the Next.js frontends. No Node-hosted backend, no SSR. Realtime
+merges edits by element; two edits to the same element are last-writer-wins.
 
-## Not yet shipped (do not imply these exist)
+## Out of scope (do not imply these exist)
 
-- Operational transform / CRDT (realtime is last-writer-wins per element today).
+- Operational transform or CRDT editing.
 - Diagrams, whiteboards, mind maps, boards, sheets, forms, workshops (votes,
   timers) and an in-editor AI assistant are not part of livedocuments. AI works
   through your own assistant, over MCP, the CLI or the API.
@@ -77,4 +78,4 @@ Node-hosted backend, no SSR.
 ## Links
 
 - Hosted: https://livedocuments.app
-- Editor: https://livedocuments.app/live
+- Editor: https://livedocuments.app/new

@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and a link lifetime, that bound who can open a shared plan and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link is a capability: anyone holding the URL has its level: **Viewer**, **Participant** or **Editor**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. liveplanner gives you two controls to tighten that up, a password on the plan and a lifetime on each link, plus turning a link off outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
+A share link is a capability: anyone holding the URL has its level: **Viewer**, **Participant** or **Editor**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. liveplanner gives you two controls to tighten that up, a password on the plan and a lifetime on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
 ## Share password
 
@@ -18,21 +18,21 @@ You can put a single password on a plan: turn on **Password Protection** in the 
 
 - **One password covers every link** on the plan, [embeds](/help/collaboration/sharing/embeds/) included, not one password per link. While a password is set, a live image of the plan shows nothing, because an image can't ask for a password.
 - **You never need it.** The owner is identified directly, so you never get prompted on your own plan. Neither are members of the [team](/help/collaboration/teams/) whose library holds it.
-- **Nobody can read it back.** Only a scrambled (hashed) form of the password is stored, so even you see just "Links need a password." Note it down when you choose it; use **Change** or **Remove** any time.
+- **Nobody can read it back.** Only a scrambled (hashed) form of the password is stored, so even you see just "Password Set". Note it down when you choose it; use **Replace** or **Remove** any time.
 - **Changing it reaches everyone.** People already in the plan through a link are asked for the new password within a few minutes.
 
 The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. See [Share Passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.
 
 ## Link lifetime
 
-When you create a link, **Lasts** sets its lifetime, so access ends automatically without you having to remember to turn it off: **Forever** (the default), **1 week**, **1 month** or **6 months**.
+When you create a link, **Valid** sets its lifetime, so access ends automatically without you having to remember to revoke it: **Forever** (the default), **1 week**, **1 month** or **6 months**.
 
-When a link runs out it stops granting access everywhere: the share URL, its embed and live image, and the real-time room. It stays in the Share dialog marked **Expired**, where **Extend** gives it more time. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
+When a link runs out it stops granting access everywhere: the share URL, its embed and live image, and the real-time room. It moves to the Share dialog's **Expired** list, where **Extend** opens it again. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
 
 <Note>
-  Access is checked with short-lived passes that are renewed every few minutes, so a change to a
-  link, its password or a team reaches people already in the plan within a few minutes. Turning a
-  link off is faster: everyone using it is sent out straight away.
+  Access is checked with short-lived passes that are renewed every few minutes, so a change to the
+  password or a team reaches people already in the plan within a few minutes. Revoking a link, or
+  changing which tabs it opens, is faster: everyone using it is sent out or reloaded straight away.
 </Note>
 
 <Tip>

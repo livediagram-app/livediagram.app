@@ -3,8 +3,8 @@ import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from '../offl
 import { memBackend, testRecord } from '../offline/offline-test-utils';
 import { apiLoadTab, apiSaveTab } from './tabs';
 
-// A local document's open (docs/specs/013-workspace/blueprints/explorer-home-view.md "Local
-// opens"): the editor's marked first-tab read counts it in this browser, as the server counts a
+// A local document's open (docs/specs/013-workspace/explorer-home.md
+// "Opens"): the editor's marked first-tab read counts it in this browser, as the server counts a
 // cloud one; every other read of the same tab counts nothing, and nothing reaches the network.
 
 describe('apiLoadTab on a document stored only in this browser', () => {

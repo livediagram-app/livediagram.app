@@ -59,6 +59,4 @@ Binary assets live under `marketing/media/` (see its README for the suggested
 sub-layout and brand guidance). Prefer SVG for logos and optimised PNG / WebP
 for screenshots; screenshots should show a real deck or article with visible
 multiplayer cursors, since "no sign-in, real-time" is the pitch. Keep heavy
-binaries out of git where practical. There are no screenshots yet: the ones the fork
-brought showed livediagram, so they were removed; new ones go in `media/desktop/` and
-`media/mobile/`, captioned.
+binaries out of git where practical. Screenshots go in `media/desktop/` and `media/mobile/`, captioned.

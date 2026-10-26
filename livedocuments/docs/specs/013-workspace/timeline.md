@@ -3,7 +3,7 @@
 The record of what happened to the documents a person can reach, and their teams' documents, shown in the shared Explorer at
 `/explorer/timeline`. liveworkspace's index keeps it for every app; livedocuments reports who edited which document and
 renders the view through [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The calls and types are
-in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Timeline"; the help article
+in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Timeline"; the help article
 is `apps/help/app/explorer/timeline`.
 
 ## 1. What is recorded
@@ -85,4 +85,4 @@ An item's own history is **History** on its menu in the Explorer, the shared dia
 document's own Timeline, `GET /timeline?item=`, paged, on a day-by-day rail with filters and runs). A team's Team
 Activity: the index can answer it (by `t:<team>`), and it
 belongs with the editor and the Teams pages. An API token's expiry warning is the liveworkspace account's, sent by
-email ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)), and is no Timeline row.
+email ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)), and is no Timeline row.

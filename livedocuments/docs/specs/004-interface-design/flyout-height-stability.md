@@ -1,7 +1,5 @@
 # Menu flyouts must not resize under the pointer
 
-Status: shipped
-
 ## What
 
 Context-menu side flyouts flickered — opening, closing, and reopening in a
@@ -27,18 +25,16 @@ Show every row the panel can ever show, and disable the ones that don't apply
 yet. A control that is present-but-inert also reads better than one that
 materialises: it tells you the option exists and what enables it.
 
-Applied to the **Markers** category ([Shape markers](../009-elements/shape-markers.md)), which was the reported case: the
-Size row (Scale / S / M / L) used to mount only once a marker was chosen, so
-hover-previewing a marker tile grew the panel by a heading plus a four-up grid.
-It now always renders, at 40% opacity with `pointer-events-none` until a marker
-is set.
+In the **Markers** category ([Shape markers](../009-elements/shape-markers.md)) the Size row (Scale / S / M / L)
+always renders, at 40% opacity with `pointer-events-none` until a marker is set, so hover-previewing a marker tile
+never grows the panel by a heading plus a four-up grid.
 
 ## The second half: a settle window
 
 Height stability removes the cause; `MenuFlyoutSection` also stops the loop
 being able to run. Its position is measured after open, and a re-measure that
 lands within `SETTLE_FRAMES` frames of the last one is treated as the layout
-settling rather than as pointer intent — so a single legitimate reflow can't
+settling rather than as pointer intent , so a single legitimate reflow can't
 be mistaken for a leave.
 
 Both halves earn their place: the settle window is a guard against reflows we
@@ -80,9 +76,9 @@ So on a mobile viewport (`useIsMobileViewport`, Tailwind's `sm` breakpoint)
 the flyout stops pretending to be a side panel and becomes a **drill-down**:
 
 - It takes the host menu's **left, width and height**, covering it completely.
-  A shorter child used to leave the parent's remaining rows poking out below,
-  which both read as a stray panel and left those rows tappable, so the two
-  menus fought over the same gesture.
+  A shorter child would otherwise leave the parent's remaining rows poking out below,
+  reading as a stray panel and leaving those rows tappable, so the two menus
+  would fight over the same gesture.
 - Sideways it keeps the host's own inset and adds none: a floating menu
   already sits inside the screen's margin, and a bottom sheet runs edge to
   edge, so its cover does too (`coverHost`, `../packages/workbench/src/components/primitives/menu-flyout-cover.ts`).

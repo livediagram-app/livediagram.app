@@ -1,16 +1,13 @@
-# Emoji section in the Icons tab
+# Emoji icon entries
 
-> **Superseded by [Stickers](stickers.md)** for where they live. The model
-> below is unchanged and still correct — emoji are catalogue entries with a
-> `text` prim, and their ids are unchanged — but they are no longer a category
-> inside the Icons tab. They are the top-level **Stickers** category, and the
-> set grew from ~60 to ~190.
-
-Native colour emoji as first-class icon-catalogue entries, browsable under a new **Emoji** category in the palette's Icons tab. Stickies, retros, and reactions want emoji; the icon pipeline already gives us every behaviour for free once emoji are catalogue entries.
+Emoji are placed from the top-level **Stickers** category ([Stickers](stickers.md)), as their own element kind with
+their own artwork. The icon catalogue also holds every emoji as an ordinary line-art entry, so an icon element that
+names an `emoji-` id renders as the bare glyph. The palette does not offer those entries.
 
 ## Model: emoji are line-art catalogue entries with a text prim
 
-- The icon prim vocabulary (`../packages/icons/src/types.ts`, currently `path`/`circle`/`line`/`rect`/`polyline`/`polygon`/`ellipse`) gains one member:
+- The icon prim vocabulary (`packages/icons/src/types.ts`: `path`, `circle`, `line`, `rect`, `polyline`, `polygon`,
+  `ellipse`) has a `text` member:
 
   ```ts
   {
@@ -22,24 +19,33 @@ Native colour emoji as first-class icon-catalogue entries, browsable under a new
   }
   ```
 
-  Rendered as an SVG `<text>` with `text-anchor: middle`, `dominant-baseline: central`, `font-family: system-ui, sans-serif`. Emoji entries use `x: 12, y: 12, size: 20` in the 0..24 viewBox. The two prim renderers each gain a case: `Prim` in the editor's `icon-glyph.tsx` and `iconPrimMarkup` in `../packages/icons/src/markup.ts` (which also gains an XML text escaper — every existing prim payload is numeric, so none exists yet).
+  Rendered as an SVG `<text>` with `text-anchor: middle`, `dominant-baseline: central`, `font-family: system-ui,
+sans-serif`. Emoji entries use `x: 12, y: 12, size: 20` in the 0..24 viewBox. Both prim renderers handle it:
+  `Prim` in the editor's `icon-glyph.tsx` and `iconPrimMarkup` in `packages/icons/src/markup.ts`, which escapes the
+  text for XML.
 
-- Each emoji is an ordinary `IconDef` — `id` prefixed `emoji-` (flat namespace, uniqueness is test-pinned), `label`, and `keywords` carrying the search synonyms ("rocket launch ship" etc.). The entries live in their own pure-data file in `../packages/icons/src` (`sticker-catalog.ts` since [Stickers](stickers.md)) (size-exempt data catalogue), concatenated into the part-2 export so consumers see one line-art catalogue and the async icon chunk (`icon-registry.ts`) needs no changes.
-
-- A new `ICON_CATEGORIES` entry `{ id: 'emoji', label: 'Emoji', iconIds: [...] }` in `apps/editor/lib/icons.ts` makes it a filter chip in the Icons tab. The starter set is roughly 60 emoji weighted toward collaboration and status: smileys/reactions (thumbs up/down, clapping, party, thinking, heart), status marks (check, cross, warning, question, fire, star, sparkles, rocket, bulb, target, trophy, hourglass), work objects (calendar, clock, pin, lock, key, bug, wrench, memo, folder, chart), and hands/people.
+- Each emoji is an `IconDef`: `id` prefixed `emoji-` (flat namespace, uniqueness is test-pinned), `label`, and
+  `keywords`. The entries are **derived** from the sticker catalogue (`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`,
+  from `sticker-catalog.ts`) rather than hand-copied, so the two can't drift, and are part of the part-2 export.
+- No `ICON_CATEGORIES` entry holds them, and the Icons tab's search and the global "Add to canvas" list filter them
+  out (`isLegacyEmojiIconId`), so Stickers is the one place to browse or place an emoji.
 
 ## What we deliberately do NOT build
 
-No third catalogue, no id set, no MIME, no dispatch branch, no `noTint` plumbing. Those exist for Technology marks because brand tiles must be excluded from tinting and fold-into-shape; neither exclusion applies to emoji:
+No third catalogue, no id set, no MIME, no dispatch branch, no `noTint` plumbing. Those exist for Technology marks
+because brand tiles must be excluded from tinting and fold-into-shape; neither exclusion applies to emoji:
 
-- **Tinting is a natural no-op**: colour-emoji font glyphs ignore SVG stroke/fill, so the theme tint wrapper leaves them untouched, exactly like a label containing an emoji today.
-- **Fold-into-shape is a feature**: dragging an emoji onto a shape sets it as the shape's inline icon beside the label via the existing `acceptsInlineIcon` path, which is precisely what you want from a status emoji.
+- **Tinting is a natural no-op**: colour-emoji font glyphs ignore SVG stroke/fill, so the theme tint wrapper leaves
+  them untouched, exactly like a label containing an emoji.
+- **Fold-into-shape works**: an emoji icon on a shape is its inline icon beside the label, through the
+  `acceptsInlineIcon` path.
 
-## Inherited behaviours (all automatic, all catalogue-driven)
+## Inherited behaviours
 
-Palette grid + in-tab search, category filter, click-to-add (standalone icon element or fold into the selected shape), drag-to-canvas and drag-onto-shape via `ICON_DND_MIME`, the global search "Add to canvas" group, canvas rendering, editor export, the api share thumbnail (client-rendered SVG, so the viewer's emoji font applies), and the MCP render. Telemetry rides the existing `track('Element','Added','Icon')`.
+Canvas rendering, editor export, the share thumbnail (client-rendered SVG, so the viewer's emoji font applies) and the
+MCP render all come from the catalogue.
 
 ## Tests
 
-- `icons.test.ts` already pins: unique ids, label + ≥1 prim, every category id resolving to an entry — the emoji category and entries are covered by construction.
-- `resolve.test.ts`'s per-prim markup test gains the `text` case, including escaping.
+- `icon-catalog.test.ts` pins unique ids and a label plus at least one prim per entry.
+- `resolve.test.ts`'s per-prim markup test covers the `text` case, including escaping.

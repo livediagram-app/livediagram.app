@@ -1,7 +1,5 @@
 # Touch targets
 
-Status: shipped
-
 ## What
 
 On a touch screen every control has a tap area of at least **44 × 44px**, the size Apple's Human

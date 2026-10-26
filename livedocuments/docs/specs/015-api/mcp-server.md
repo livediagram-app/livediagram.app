@@ -1,11 +1,8 @@
 # MCP server
 
-**Status: live.** Merged and deployed at `mcp.livedocuments.app`; connect flow
-verified end-to-end from Claude. Builds directly on [Public API and API tokens](public-api-and-tokens.md)
-(API tokens), which it picks up where §7 left off: [Public API and API tokens](public-api-and-tokens.md) deferred "OAuth /
-third-party app authorization" — this spec adds exactly that, scoped to one
-client (an MCP server), reusing the `lwt_` token as the credential it ultimately
-mints. No new authorization model; an OAuth front door onto the existing token.
+Served at `mcp.livedocuments.app`. Builds on [Public API and API tokens](public-api-and-tokens.md): it adds OAuth
+third-party app authorization, scoped to one client (an MCP server), reusing the `lwt_` token as the credential it
+ultimately mints. No new authorization model; an OAuth front door onto the existing token.
 
 ## 1. Goal
 
@@ -19,8 +16,7 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing document — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. livedocuments runs no model of its own (the in-editor
-AI assistant was removed). The user already has a capable model in front of them; the
+load-bearing decision. livedocuments runs no model of its own. The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
@@ -613,7 +609,7 @@ The MCP worker reads three bindings and two out-of-band values. Bindings
 | `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                                     |
 
 `TELEMETRY_KEY` is livedocuments' Worker key for liveworkspace's central telemetry service
-(liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
+(liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
 lets them speak for livedocuments.app. It **must match** the api worker's and the service's
 `TELEMETRY_KEY_LIVEDOCUMENTS`; a mismatch is silent (the posts are simply not stored), so the deploy workflow
 drives both workers from one GitHub secret. `TELEMETRY_URL` names the service (unset is production's).

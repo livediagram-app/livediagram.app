@@ -1,6 +1,6 @@
 # Web components and no groups: blueprint
 
-Derived from [Web components are elements; groups are gone](../web-components-and-no-groups.md).
+Derived from [Web components are elements; no groups](../web-components-and-no-groups.md).
 The spec decides; this file only adds engineering precision. Defaults applied where the spec is
 silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 

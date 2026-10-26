@@ -1,7 +1,5 @@
 # Stickers
 
-Status: shipped
-
 ## What
 
 A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
@@ -104,37 +102,25 @@ identically everywhere including headless.
 
 ## No automatic tilt
 
-A sticker was briefly given a small tilt on drop, on the theory that an angle
-is what makes one read as stuck on rather than drawn in. It was wrong in
-practice: an element that arrives at an angle you did not ask for reads as a
-glitch, not as character, and the first thing you want to do is straighten it.
+Stickers land **square to the canvas**, like every other element. An element that arrives at an angle you did not
+ask for reads as a glitch, not as character, and the first thing you want to do is straighten it. Rotation is there by
+hand, from the element's Rotation menu, for anyone who wants the scrapbook look.
 
-Stickers land **square to the canvas**, like every other element. Rotation is
-still there by hand, from the element's Rotation menu, for anyone who wants the
-scrapbook look.
-
-The attempt did surface a real bug, which is fixed and worth naming because it
-was never sticker-specific. The pop-in entry animation sets
-`transform: scale(...)`, and a keyframe that touches `transform` **replaces**
-the element's inline `transform: rotate(Ndeg)` for its whole duration — so any
-rotated element popped in flat and then visibly snapped to its angle when the
-class dropped. The keyframe now multiplies in `--lvd-enter-rot` (0deg when
-unset), which BoxedElementView publishes alongside the rotation. Duplicate a
-rotated shape, or paste one, and it now enters at its angle.
+A rotated element enters at its angle. The pop-in entry animation sets `transform: scale(...)`, and a keyframe that
+touches `transform` **replaces** the element's inline `transform: rotate(Ndeg)` for its whole duration, so the keyframe
+multiplies in `--lvd-enter-rot` (0deg when unset), which BoxedElementView publishes alongside the rotation.
 
 ## Legacy emoji stay icons
 
-[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved documents hold
-`{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
-migrated**: silently restyling somebody's saved document with a plate, a shadow
+An icon element can name one of these emoji (`{ shape: 'icon', iconId: 'emoji-thumbs-up' }`). Such elements are
+**not turned into stickers**: silently restyling somebody's saved document with a plate, a shadow
 and a tilt is not ours to do.
 
-So the icon catalogue keeps rendering them exactly as it always has. Those
+So the icon catalogue renders them as bare glyphs ([Emoji icon entries](emoji-icons.md)). Those
 entries are **derived** from the sticker catalogue rather than hand-copied
-(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. Only the
-palette moved: the Emoji category is gone from `ICON_CATEGORIES`, the Icons
-tab's search and the global "Add to canvas" list both filter legacy emoji ids
-out, and Stickers is the one place you browse or place them.
+(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. No
+`ICON_CATEGORIES` entry holds them, the Icons tab's search and the global "Add to canvas" list both filter legacy
+emoji ids out, and Stickers is the one place you browse or place them.
 
 Sticker ids keep the `emoji-` prefix for the same reason — an id is what a
 saved element, an API payload and an MCP call carry.

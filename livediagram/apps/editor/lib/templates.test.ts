@@ -123,7 +123,7 @@ describe('TEMPLATES catalogue', () => {
   // Hidden templates are buildable but never listed, so every user-facing
   // count (docs/specs/019-marketing/marketing-site.md's "82 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
-  // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
+  // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
@@ -138,7 +138,7 @@ describe('TEMPLATES catalogue', () => {
     expect(extras).toHaveLength(72);
   });
 
-  it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
+  it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
     expect(TEMPLATES.filter((t) => t.hidden)).toEqual([]);
   });
 

@@ -30,7 +30,7 @@ Scope, by file:
 | Click outcome  | `PlainClickOutcome`                  | `deselect` or `select-alone`                                                     |
 | Settle a click | `handleElementClick(id)`             | Applies `plainClickOutcome` to the current selection: `onDeselect` or `onSelect` |
 | Arm a click    | `armPlainClick(press, onClick)`      | Waits for the press's own release; calls `onClick` when it was a plain click     |
-| Click prop     | `BoxedElementViewProps.onPlainClick` | Replaces `multiSelectActive`, which carried the retired sticky add mode          |
+| Click prop     | `BoxedElementViewProps.onPlainClick` | Called for a plain click on the element                                          |
 
 ## Behaviour and state
 

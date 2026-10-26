@@ -35,8 +35,9 @@ Banned: "stripe", "rail" (the timeline rail), "accent bar" (the banner's own bar
   element's own size.
 - Colour: `accentEdgeColor ?? drawnStroke`, where `drawnStroke` is the colour the border is drawn in (the same
   value the canvas and export already resolve), so a theme switch carries an unset colour.
-- Writes: `setAccentEdgeSelected(edge | null)` and `setAccentEdgeColorSelected(hex | null)` apply to every selected
-  shape that supports it, one history step; `null` deletes the field. Unsupported selected elements are untouched.
+- Writes: `AccentEdgeRow` commits `withAccentEdge(el, edge | null)` and `withAccentEdgeColor(el, hex | null)` through the
+  style ops (`ops.commit`, `ops.burst` while dragging a colour, `ops.preview` on hover) to every selected
+  shape that supports it (`supportsAccentEdge`), one history step; `null` deletes the field. Unsupported selected elements are untouched.
 - Style presets never write either field (D106). The format painter copies both with **Border** for shapes.
 
 ## Interfaces and contracts

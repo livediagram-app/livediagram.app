@@ -1,7 +1,5 @@
 # Arrow collision avoidance at draw time
 
-Status: shipped
-
 ## What
 
 When the user finishes DRAWING a new arrow, the editor checks whether the

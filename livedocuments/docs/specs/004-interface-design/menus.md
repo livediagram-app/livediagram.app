@@ -1,7 +1,5 @@
 # Menus
 
-Status: shipped
-
 ## What
 
 Every floating list of actions or settings that opens from a control, a right-click, a long press or

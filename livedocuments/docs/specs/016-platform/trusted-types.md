@@ -1,7 +1,5 @@
 # Trusted Types
 
-Status: shipped
-
 Every page on livedocuments.app enforces Trusted Types, so a string can never reach a DOM injection sink
 (`innerHTML`, `DOMParser`, a script's or a worker's URL, `eval`) unless a named policy made it. A DOM-based script
 injection then needs a policy's help, and every policy is small, named and listed here.

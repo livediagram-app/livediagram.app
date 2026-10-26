@@ -1,9 +1,9 @@
 # Profile pictures
 
-**Status: shipped.** A person who signs in with Google wears their Google picture on their avatar, in every app
+A person who signs in with Google wears their Google picture on their avatar, in every app
 and on liveworkspace.app. The platform rules (where the picture comes from, the **Show My Google Picture** switch,
 who may see it, the one URL rule and the shared `PictureDisc`) are liveworkspace's:
-[liveworkspace/docs/accounts.md "Profile pictures"](../../../../liveworkspace/docs/accounts.md). This page is
+[liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"](../../../../liveworkspace/docs/specs/003-accounts/accounts.md). This page is
 livedocuments' half: how the picture reaches the editor, the room and the avatars.
 
 ## 1. The person's own picture

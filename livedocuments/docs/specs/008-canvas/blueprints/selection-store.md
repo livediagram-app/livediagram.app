@@ -93,7 +93,7 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
   actions, never called in render.
 - `reshapingArrowId` changes value when a press lands on an arrow (a pending reshape); that is data,
   and re-renders the canvas as it should.
-- The canvas no longer receives `selectedId` or `multiSelectedIds`. Inside it:
+- The canvas does not receive `selectedId` or `multiSelectedIds`. Inside it:
   - the element layer renders each element through a memoised slot
     (`components/canvas/selection-aware-views.tsx`): `SelectableBoxedView` and `SelectableArrowView`
     read `elementSelectionFlags` for their element and hand the unchanged views `isSelected`,
@@ -106,13 +106,12 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
   - `LayerSelectionChrome` (the quick-connect pluses and union resize box) and
     `CanvasSelectionToolbars` take `selectionInput` (`CanvasSelectionInput`: the derivation's
     inputs other than the selection, memoised in `Canvas`) and call `useCanvasSelectionView`;
-  - `Canvas` reads the store with `get()` in handlers (`currentSelection`, `readSelection` for
-    `useCanvasSelectHandlers`) and subscribes to one narrow slice, `soleSelectedPathId` (the one
-    selected element when it is a path) for the path tool, which flips only for paths;
+  - `Canvas` reads the store with `get()` in handlers (`readSelection` for `useCanvasSelectHandlers`) and does not
+    subscribe to it;
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
   - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
-    with `sameMembers`); `useSlideDeck` no longer returns `selectionCount` / `currentSelectionIds`.
+    with `sameMembers`); `useSlideDeck` does not return `selectionCount` / `currentSelectionIds`.
 
 ### Above the canvas
 

@@ -1,7 +1,5 @@
 # Bending arrows and the double-press rule
 
-Status: shipped
-
 An arrow bends where you grab it. Pressing on the line and dragging reshapes the arrow at that
 point, so there is no separate "+" target to find, and nothing sits in the middle of the line to be
 hit by accident. A quick double-click anywhere on an arrow always edits its label, however fast it
@@ -80,7 +78,7 @@ snapped to, within the usual threshold (`ALIGN_SNAP_THRESHOLD`) and with the usu
 
 ## Moving and scaling a free arrow
 
-An arrow whose two ends are both free (attached to nothing) no longer moves by dragging its line,
+An arrow whose two ends are both free (attached to nothing) does not move by dragging its line,
 because dragging the line bends it. When selected, a free arrow wears a box's selection: the same
 brand ring round its drawn extent (padded clear of its endpoint grips), and the same corner and edge
 handles.

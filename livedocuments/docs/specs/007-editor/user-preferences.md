@@ -15,7 +15,7 @@ once per account / device and apply everywhere.
 ## Where preferences live
 
 Preferences live in the **liveworkspace accounts database** as the
-source of truth ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+source of truth ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Settings"), with `localStorage` as a fast warm cache so the editor
 never blocks on a network round-trip at boot. livedocuments keeps no
 table of its own for them.
@@ -31,9 +31,8 @@ table of its own for them.
   every app that has it; every other key is livedocuments' own. The api
   joins the two (`joinSettings`) on read and splits a patch
   (`splitSettings`) on write, so the editor only ever sees one flat set.
-  The editor settings that became shared in October 2026 were this app's own
-  before, so a value may still sit in this app's scope: `joinSettings` uses it
-  until `all` has one, and the first change writes `all` and drops the old copy.
+  A shared setting's value may also sit in this app's scope: `joinSettings` uses it
+  while `all` has none, and the first change writes `all` and drops the app's copy.
 - **Owners.** An account's settings are kept under its user id; a
   guest's under `guest_<participant id>`, so guests have them too. Each
   scope holds at most 16 KB, and a value is replaced whole.
@@ -92,7 +91,7 @@ status=<n>` or `save-not-confirmed`) leaves the mark, and the
   rather than over the network. Each change also sets the unsynced mark
   for the guest's `guest_<uuid>`, so this editor's next load keeps the
   cache over the server's copy and sends it on, as for a save of its own
-  that never landed ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md#settings)
+  that never landed ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md#settings)
   "A guest"). Renaming the key or the mark means changing
   `DEVICE_PREFERENCES` in `@liveworkspace/settings/device` with it; the
   settings-site-catalogue test fails until both agree.
@@ -261,15 +260,15 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Pages tour's seen record (docs/specs/007-editor/pages-tour.md), as `planTourSeen`: true counts every
+  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md): true counts every
   // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
   pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been taken (completed or skipped; declined too, until 25 October
-  // 2026). Feeds Settings' row per kind (Slides Tour, ...), which adds or removes its own kind, and which page a
-  // Start Pages Tour press prefers; it never hides the button.
+  // The page kinds whose Pages tour track has been taken (completed or skipped). Feeds Settings' row per kind
+  // (Slides Tour, ...), which adds or removes its own kind, and which page a Start Pages Tour press prefers; it
+  // never hides the button.
   pagesTourKinds?: PageKind[];
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
-  // (Play or Cancel on the offer toolbar, until 25 October 2026). Surfaced in Settings as Tours › Show Me, one switch
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken.
+  // Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted); it never hides the Start Tour button.
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken while Power user mode is on; written by its preset.
@@ -343,8 +342,7 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `panelLayout` and `minimalPanels`, which older blobs still carry, are
-  ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
+- `panelLayout` and `minimalPanels` are read by nothing: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `contentsPlacement` undefined → the Contents docked as a sidebar
   flush against the canvas's edge on a desktop, with more than one page (the
   default). `'button'` minimises it to its cluster button; a phone always has
@@ -394,16 +392,13 @@ Missing key === undefined === default behaviour. Concretely:
   feature working (see the data model). Emits `UI`/`Toggled`/
   `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
-- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
-  hover preview went with the Activity panel (removed 2026-10-03). A value
-  still stored under either is ignored on read and dropped on the next
-  write; Undo and Redo always show in the bottom-right cluster.
-  `skipLocationStep` went with the New Document wizard's Location step: `/new` never asks where a document
-  goes ([New document route](new-document-route.md#what-new-makes)), so a stored place is dropped the same way
-  and new documents follow the [default folders](../013-workspace/default-folders.md).
-  The keys livediagram stored for its other modes (`pagesModeEnabled`, `infographicModeEnabled`,
-  `planModeEnabled`, `recogniseShapes`, `tourSeen`, `planTourSeen`, `planTourTracks`, `workshopTourSeen`,
-  `drawTourSeen`, `formTourSeen`, the `whiteboard…` dock keys and `drawPattern`) are ignored the same way.
+- **Keys this editor does not read.** A stored key the preferences type does not name (`activityPanelEnabled`,
+  `skipLocationStep`, and the keys livediagram stores for its other modes, such as `infographicModeEnabled`,
+  `planModeEnabled`, `recogniseShapes`, `tourSeen`, `workshopTourSeen`, `drawTourSeen`, the `whiteboard…` dock keys
+  and `drawPattern`) is read by nothing; the blob keeps unknown keys as they are (`readUserPreferences`), for
+  another client that may have written them. Undo and Redo always show in the
+  bottom-right cluster, and `/new` never asks where a document goes
+  ([New document route](new-document-route.md#what-new-makes)).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -458,10 +453,8 @@ that is the only control.
   It is the answer to "I half-remember a setting about layer previews" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
-- **One setting, one control.** The Palette / Layers / Activity / AI / Map
-  gear popovers that used to carry a subset each are gone: once every
-  preference had a row in the dialog, those were five second homes for
-  settings that already had one. A handful of preferences DO keep a second,
+- **One setting, one control.** Every preference has its row in the dialog,
+  and no panel carries a gear popover with a second copy of some of them. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
@@ -549,7 +542,7 @@ and the dialog stays as the one complete, browsable index of them.
   - A targeted open (a search result, the `?settings=` deep link) wins over
     the memory and restores no scroll.
   - On a phone, closing from the root list reopens on the root list.
-  - A remembered category or row that no longer exists falls back to the
+  - A remembered category or row that does not exist falls back to the
     default category, or the top of the pane.
   - The search box always opens empty.
   - Stored device-local in `localStorage` under
@@ -714,22 +707,22 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour** and **Article
   Tour**), with a line saying where it runs and a **Learn more** to its article, under
-  one **Offer Again** section note. No tour offers itself any more: every tour is started from the footer's
+  one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
   **Start Tour** button, immediately left of Search, and stays there once taken ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
-  tour when it is on offer right now. (The note's words, and the Show Me section's, still describe tours offering themselves
-  once, as they did until 25 October 2026.) (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked
-  for them: a tour is not an accessibility setting.) Every switch is inverted: on means "not taken yet", the
-  preference records "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is
+  tour when it is on offer right now. The section note says so: "Start a tour from the Start Tour button in the bottom bar, left of Settings: it
+  offers the tour for what you are working on." Tours are not an accessibility setting, so they are not under
+  Accessibility. Every switch is inverted: on means "not taken yet", the
+  preference records "already seen", and its telemetry tokens describe the PREFERENCE (switching on is
   `...SeenOff`), so each dashboard series keeps its meaning.
 
   The Pages tour is a tour of several tracks (`apps/editor/lib/tour-tracks.ts`), one per page kind
   ([Pages tour](pages-tour.md)): **Pages Tours** is one switch over all of them (`tourTracksSwitch`, key
   `pagesTourSeen`: on while any track is untaken, off marks every track taken, on forgets every record), and each track
-  has its own row nested beneath it, named for itself (`tourTrackSwitch`). A track's row is on while its track is
+  has its own row nested beneath it, named for itself (`pagesTourTrackSwitch`). A track's row is on while its track is
   untaken; off adds its kind to `pagesTourKinds`, on removes it alone, and both clear the single `pagesTourSeen`,
   folding it into the list first so one track back on leaves the others taken. Power user mode's readout lists
-  the switch over all its tracks (**Pages Tours**). The old single flag `pagesTourSeen` counts every track only
+  the switch over all its tracks (**Pages Tours**). The single flag `pagesTourSeen` counts every track only
   while Power user mode is on.
 
   Below the Pages tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
@@ -770,11 +763,11 @@ and the dialog stays as the one complete, browsable index of them.
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
   keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
-  standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
+  standard kinds through the package's `bindRow`, which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
   liveworkspace.app renders the same view over this app's derived catalogue
-  ([liveworkspace/docs/site.md](../../../../liveworkspace/docs/site.md) "Settings"), so the app's
+  ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
   settings look the same there as here.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
@@ -784,9 +777,9 @@ and the dialog stays as the one complete, browsable index of them.
   at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
   for nothing. All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
-  merged across every app (liveworkspace/docs/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
+  merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
   on, with no group per app. In each, the shared rows come first: every editor setting two or more apps have
-  (`COMMON_SETTING_KEYS`, liveworkspace/docs/accounts.md "Common settings"), once, and any row two apps keep under the
+  (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row two apps keep under the
   same key and wording, once, written to each; then each app's own rows under a small sub-heading with its logo and
   name. This app's rows are its own Settings minus the shared switches the Account section already
   holds (a row marked "All apps" whose key is one of the Account section's), and its common rows are this editor's
@@ -798,7 +791,7 @@ and the dialog stays as the one complete, browsable index of them.
   editor's own row for the key when it has one (so the change is counted and synced as here), and
   its Profile's Name and Colour is edited in place, never a link away: the shared editor
   (`ProfileEditor` in `@liveworkspace/settings-ui`), which reads and patches the profile over the
-  same door (`/api/workspace/account/profile`, `bearerProfileHost`). A saved name or colour is the
+  same door (`/api/workspace/account/profile`, `requestProfileHost`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
   a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
@@ -831,8 +824,7 @@ and the dialog stays as the one complete, browsable index of them.
   button to the browser. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
-  a full keyboard and off on a tablet; it used to sit in Controls, and
-  before that at the foot of the Shortcuts dialog. Below it, the shortcut
+  a full keyboard and off on a tablet. Below it, the shortcut
   catalogue renders as collapsible groups, the same content the old dialog
   listed. The
   Notifications group holds `notificationsEnabled`, whose description

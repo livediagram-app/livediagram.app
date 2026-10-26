@@ -1,7 +1,5 @@
 # React state and effects
 
-Status: shipped
-
 ## What
 
 Every React component and hook in the repo keeps render pure and uses effects only to synchronise with
@@ -37,7 +35,7 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   (`../packages/workbench/src/hooks/ui/useFollowingDraft.ts`).
 - **Effects synchronise with the outside world** (subscriptions, timers, the DOM, storage, the network)
   and set state only from their callbacks. External stores are read with `useSyncExternalStore`: the
-  guest id (`subscribeGuestSelfId`), the guest-data migration (`subscribeGuestMigration`), the URL,
+  guest id (`subscribeGuestSelfId`), the URL,
   the help article's headings.
 - **An element a popover anchors to** is held in state through a callback ref, so the first render that
   has the element has it. A floating element re-positions through `useReposition(measure)`, with
@@ -46,8 +44,7 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
 - **Clocks.** Relative time comes from the shared tick store: `useRelativeNow()` returns the instant of
   the latest 30-second tick, one timer for the whole page. A running timer's readout uses `useNow`.
   Presence statuses read a snapshot the presence tick republishes, and a returning peer republishes at
-  once. A reading by the day (due and overdue counts, the calendar's month, the Gantt's today line) uses
-  `useToday()`, a store that moves on at local midnight and when the page is shown again. Nothing reads
+  once. Nothing reads
   the clock (`Date.now()`, `new Date()`) while rendering; a static page's copyright year is the build's,
   inlined at build (`@liveworkspace/next-config`).
 - **Effect dependencies are complete.** A dependency that must not retrigger the effect is read through

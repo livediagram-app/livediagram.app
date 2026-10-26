@@ -145,7 +145,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 24,
+    articleCount: 22,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
@@ -223,8 +223,9 @@ export const articles: Article[] = [
     slug: 'minimap',
     title: 'Map',
     description:
-      'The bottom-left Map: a zoomed-out overview with a box for your view. Tap or drag to navigate.',
-    keywords: 'minimap mini map overview navigate viewport birds eye locate where am i',
+      'There is no Map overview here: find your way with Contents and the page navigator.',
+    keywords:
+      'minimap mini map overview navigate viewport birds eye locate where am i contents pages',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -1708,31 +1709,11 @@ export const articles: Article[] = [
   {
     slug: 'layers',
     title: 'Layers',
-    description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
-    keywords: 'photoshop stack hide lock organise organize panel z order',
+    description: 'How Bring to Front and Send to Back stack a tab in layers, and Move to Layer.',
+    keywords: 'photoshop stack layer move to layer front back organise organize z order',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',
-  },
-  {
-    slug: 'layers-visibility-and-locking',
-    title: 'Hiding, Locking, and Dimming Layers',
-    description: 'Hide, lock, dim, or solo a whole layer, and preview one on hover.',
-    keywords: 'show visibility solo preview toggle eye protect',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
-  },
-  {
-    slug: 'layers-organising',
-    title: 'Organising and Merging Layers',
-    description: 'Rename, restack, merge, clear, and move elements between layers.',
-    keywords: 'organize rename reorder merge move clear manage',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
   },
   // ---- Sub-articles: Canvas ----
   {

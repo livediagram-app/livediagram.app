@@ -102,11 +102,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
     renders; a handler that is absent for a read-only surface stays `undefined`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `ShapeHitOutline`,
-  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`,
-  `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
-  while editing), `HeroCaptionCard`, `TableView` and the web faces. A stroke's
-  hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
-  path reads the zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
+  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`, `RichTextEditor` (mounted only
+  while editing), `HeroCaptionCard`, `TableView`, the concept graphics and the web faces. `FreehandSvg` reads no
+  zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
 - `ArrowView` takes `frame: ArrowViewFrame` and `holes: Rect[]` in place of `elementIndex` and
   `occluders`. The layer derives both per arrow on each element change: the frame with
   `deriveArrowViewFrame(arrow, elementIndex)`, the holes with `routeBehindHoles(arrow, from, to,
@@ -132,8 +130,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.
 - The elements themselves are listed by `CanvasElementList`, memoised, with every prop
-  identity-stable across editor renders that change nothing it draws (`useInsertShift` returns one
-  object while its answers hold). A press or a release that renders the editor (the drag state
+  identity-stable across editor renders that change nothing it draws. A press or a release that renders the editor (the drag state
   beginning or ending) renders the layer but walks none of the board's element slots.
 - Invariant: between the press and the release of a move, the editor root, `Canvas` and the element
   layer do not render; at the press and the release, the element list does not render unless an
@@ -183,8 +180,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### Selection chrome while a selection moves
 
-- `CanvasSelectionToolbars` reads `useCanvasGesture()`; `toolbarsStale` becomes
-  `quickRingOpen || insertionOpen || selectionMoving(gesture)`: the existing fade to `opacity: 0`
+- `CanvasSelectionToolbars` reads `useCanvasGesture()`; `toolbarsStale` is
+  `quickRingOpen || moving` (a selection moving in the gesture): the existing fade to `opacity: 0`
   and `visibility: hidden` over `--transition-duration-micro`.
 - `useEdgeAwarePlacement(bounds, offset, zoom, gap, suspended)`: while `suspended` its layout
   effect returns before measuring; `suspended` is in the effect's dependencies, so the first
@@ -194,8 +191,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 - `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
   `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
-  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
-  and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay` and `CanvasDrawPreview`; a move's frames keep it, so alignment guides read no layout.
 - The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
 
 ### The Map draws settled elements
@@ -209,9 +205,9 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   drag's release) commits first and the Map's rebuild and image parse follow as their own render
   (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
   128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
-  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer no longer yields a new
+  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer never yields a new
   array per render.
-- Pan and zoom never redraw the markup; they move only the viewport rectangle, as today.
+- Pan and zoom never redraw the markup; they move only the viewport rectangle.
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.
@@ -280,8 +276,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   editor app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
 - It seeds one document per series, each the reference board, through
   the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load. The two series keep
-  their livediagram names, `whiteboard` and `diagram` (`Measurement['tab']`): the `whiteboard` tab stores
-  `opensIn: 'draw'`, which reads as Pages, so both open in Pages and differ only by that stored value.
+  their livediagram names, `whiteboard` and `diagram` (`Measurement['tab']`): the `whiteboard` tab is seeded
+  with an `opensIn: 'draw'` field livedocuments does not read, so both open in Pages alike.
 - **Open** (`openBoard`): `REPEATS` (5) opens per tab, each in a fresh browser context; the row is
   `medianOfRuns` of the five. The gesture rows run on the last one. Before load, an init script
   records `longtask` and `long-animation-frame` entries (`{ start, end }`, buffered) into one

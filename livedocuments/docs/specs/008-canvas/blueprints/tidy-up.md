@@ -64,7 +64,7 @@ Nothing new is stored. A preview mutates `tabs` in the present only (`tickTabs`)
 
 - Tab switch with a preview on screen: the revert writes the snapshot back to its own tab id only.
 - Preview called with `editsBlocked`: no-op. Preview on an empty tab: no-op (no snapshot taken).
-- `endPreview` with nothing in flight: no-op.
+- `endCleanupPreview` with nothing in flight: no-op.
 - A remote edit arriving mid-preview: the revert restores the snapshot, which drops that edit from the present
   until the room's next state; same trade the style preview accepts (D82).
 

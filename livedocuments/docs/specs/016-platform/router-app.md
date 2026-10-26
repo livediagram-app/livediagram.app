@@ -8,24 +8,30 @@ A small Cloudflare Worker that fronts the apex domain (`livedocuments.app`) and 
 
 ## Routing table
 
-| Path                                                                                                                                                                         | Forwards to                                                                                |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `/api/index`, `/api/index/*`                                                                                                                                                 | liveworkspace's index (`INDEX_ORIGIN`, `https://liveworkspace.app` when unset), as-is      |
-| `/api`, `/api/*`                                                                                                                                                             | api worker (`apps/api`)                                                                    |
-| `/telemetry`, `/telemetry/*`                                                                                                                                                 | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/telemetry.md) |
-| `/help`, `/help/*`                                                                                                                                                           | help app (`apps/help`), stripped                                                           |
-| `/live/*` (the editor app's `_next` assets only)                                                                                                                             | editor app (`apps/editor`), stripped                                                       |
-| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                          |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                             |
-| everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                           |
+In order, the first match wins:
+
+| Path                                                                                                                                                                         | Forwards to                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| liveworkspace's pages and doors: `/explorer/*`, sign-in, `/api/workspace/*`, `/_liveworkspace/*`, `/api/workbench/*`                                                         | liveworkspace.app (`WORKSPACE_ORIGIN`), [below](#signing-in-on-livedocumentsapp)                                                       |
+| `/api/previews/*`, and a share link's `/api/share/<code>/image.svg`, `image.png` and `card`                                                                                  | liveworkspace's previews (`PREVIEWS_ORIGIN`, `https://liveworkspace.app` when unset), no cookies                                       |
+| `/api/index`, `/api/index/*`                                                                                                                                                 | liveworkspace's index (`INDEX_ORIGIN`, `https://liveworkspace.app` when unset), as-is                                                  |
+| `/api/drive`, `/api/drive/*`                                                                                                                                                 | liveworkspace's Drive sync (`DRIVE_ORIGIN`, production's when unset; [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)) |
+| `/api`, `/api/*`                                                                                                                                                             | api worker (`apps/api`)                                                                                                                |
+| `/live/*` (the editor app's `_next` assets only)                                                                                                                             | editor app (`apps/editor`), stripped                                                                                                   |
+| `/status`, `/status/*`                                                                                                                                                       | `301` to liveworkspace.app's status page at livedocuments's group (`statusRedirect`)                                                   |
+| `/telemetry`, `/telemetry/*`                                                                                                                                                 | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/specs/008-telemetry/telemetry.md)                         |
+| `/help`, `/help/*`                                                                                                                                                           | help app (`apps/help`), stripped                                                                                                       |
+| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                      |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                                                                         |
+| everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                       |
 
 The editor app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedocuments/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the editor worker's `out/` files are already prefix-free).
 
-The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the editor app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
+The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the editor app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (`forward(request, url, binding, origin, prefix)`, as for `/help/*`) so the worker serves them from `out/_next`. Pages carry no prefix: only `assetPrefix` is set, on assets.
 
-`/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. The one exception is `/api/index/*`, liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)): the Explorer and the editor call it on livedocuments's own origin, and the router passes it, path unchanged, to `INDEX_ORIGIN` (production's `https://liveworkspace.app` when unset; staging and local development name their own), so the browser needs no CORS and no liveworkspace.app cookie. Marketing sees `/`, `/faq`, etc. as-is.
+`/api/*` is forwarded **as-is**: no prefix stripping. The api worker expects the full `/api/...` path. The one exception is `/api/index/*`, liveworkspace's index ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)): the Explorer and the editor call it on livedocuments's own origin, and the router passes it, path unchanged, to `INDEX_ORIGIN` (production's `https://liveworkspace.app` when unset; staging and local development name their own), so the browser needs no CORS and no liveworkspace.app cookie. Marketing sees `/`, `/faq`, etc. as-is.
 
-**Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) used to fall through to marketing and 404, which is the wrong answer to an unambiguous address: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
+**Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) is an unambiguous address, so it is not left to marketing's 404: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
 
 **Not found.** An address no site has a page for gets that site's own not-found page, never the framework's bare
 "404 | This page could not be found.": the site's header and footer around one card (`PageNotFound` in
@@ -35,20 +41,21 @@ Centre** and **Troubleshooting**), then **Help Centre**. It is still a 404, so s
 engines drop it. The editor answers an unknown address with its own card instead
 ([New document route](../007-editor/new-document-route.md) "Unknown addresses").
 
-Two properties keep it safe. `explorer` is absent from the set: `/explorer/*` (a segment the help centre also uses) is liveworkspace's Explorer, served ahead of every route here ([The Explorer on livedocuments.app](#the-explorer-on-livedocumentsapp)). And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+Two properties keep it safe. `explorer` is absent from `HELP_CATEGORY_SEGMENTS`: `/explorer/*` is liveworkspace's Explorer, served ahead of every route here ([The Explorer on livedocuments.app](#the-explorer-on-livedocumentsapp)). And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
 ## Signing in on livedocuments.app
 
 Signing in and creating an account stay on livedocuments.app's address: the router serves liveworkspace's
 sign-in pages ahead of everything above, through the shared helper
 (`routeToWorkspace` and `workspaceRoutes` in `@liveworkspace/sites/workspace-proxy`;
-[liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#signing-in-on-the-apps-own-address)):
+[liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#signing-in-on-the-apps-own-address)):
 
-| Path                                                                   | Forwards to                                                                    |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `/sign-in`, `/sign-up`, `/consent` with a signed OAuth request (`sig`) | liveworkspace.app's page, no cookies either way                                |
-| `/api/workspace/auth/*`                                                | liveworkspace's accounts API at `/api/auth/*`, with the sign-in's cookies only |
-| `/_liveworkspace/*`                                                    | liveworkspace.app's build assets                                               |
+| Path                                                                   | Forwards to                                                                                                                        |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/sign-in`, `/sign-up`, `/consent` with a signed OAuth request (`sig`) | liveworkspace.app's page, no cookies either way                                                                                    |
+| `/api/workspace/auth/*`                                                | liveworkspace's accounts API at `/api/auth/*`, with the sign-in's cookies only                                                     |
+| `/_liveworkspace/*`                                                    | liveworkspace.app's build assets                                                                                                   |
+| `/api/workbench/*`                                                     | liveworkspace's workbench API at `/api/account/workbench/*`, no cookies ([Workbench embeds](../013-workspace/workbench-embeds.md)) |
 
 Without a signed request, `/sign-in` stays the app's own page (its sign-in hand-off). On the
 accounts route the app's own cookies never leave; liveworkspace's cookies land here renamed
@@ -60,8 +67,7 @@ session (so the other apps sign in without a click) and comes straight back to `
 ## The Explorer on livedocuments.app
 
 The Explorer is liveworkspace's page, served at livedocuments.app's own `/explorer` with the address unchanged (path,
-query and hash): the router asks the same shared helper first (`routeToWorkspace`, its switch
-`EXPLORER_ON_APP_ORIGIN` on for livedocuments; [liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+query and hash): the router asks the same shared helper first (`routeToWorkspace` with `workspaceRoutes`; [liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)).
 
 | Path                                        | Forwards to                                                               |
 | ------------------------------------------- | ------------------------------------------------------------------------- |
@@ -76,41 +82,14 @@ forward again. The page is `no-store`, as every page; the assets are content-has
 
 ## Implementation
 
-In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP); `/telemetry` is a redirect to liveworkspace's central dashboard, not a binding (liveworkspace/docs/telemetry.md). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + help) when forwarding to a binding:
-
-```ts
-// sketch, real source: apps/router/src/index.ts
-const LIVE_ROUTE_SEGMENTS = new Set([
-  'diagram',
-  'embed',
-  'explorer',
-  'get-started',
-  'join',
-  'new',
-  'oauth',
-  'sign-in',
-]);
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
-      return forward(request, url, env.API, env.API_ORIGIN); // /api/* as-is; api worker wants the full path
-    }
-    // /live/* is now ONLY the editor app's _next assets — strip and forward.
-    if (url.pathname === '/live' || url.pathname.startsWith('/live/')) {
-      return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, '/live');
-    }
-    if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return telemetryRedirect(env); // 301 to the central dashboard, ?app=livedocuments.app
-    }
-    // Clean live-app page routes + its root icon: forward as-is (no strip).
-    if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
-      return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN);
-    }
-    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
-  },
-};
-```
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP);
+`/telemetry` and `/status` are redirects to liveworkspace.app, and liveworkspace's own pages, index, previews and Drive
+are forwarded to its origins (`WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIGIN`, `DRIVE_ORIGIN`), not bindings. One
+`forward(request, url, binding, origin, stripPrefix?)` resolves each app target as _binding if present, else
+local-dev origin_ (see Local development below) and strips the prefix for the assetPrefix and basePath paths (`/live`
+assets and `/help`) when forwarding to a binding, re-prefixing a redirect's `Location` (`withPrefixedRedirect`). The
+order is `route()` in `apps/router/src/index.ts`, as the table above lists it; `LIVE_ROUTE_SEGMENTS` is
+`document`, `auth`, `embed`, `explorer`, `get-started`, `join`, `new`, `oauth`, `offline` and `sign-in`.
 
 Adding a new top-level route to the editor app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.
 

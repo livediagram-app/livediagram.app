@@ -5,7 +5,7 @@ visitors to sign in, plus a "Learn more" modal that lists the concrete
 benefits. It shows on the Explorer and, after a delay, inside the
 editor. Pure encouragement, never a wall: the canvas and the Explorer
 keep working without signing in (see
-[04-auth-and-guest-access.md](auth-and-guest-access.md)).
+[Auth + guest access](auth-and-guest-access.md)).
 
 ## Goals
 
@@ -130,8 +130,7 @@ Explorer's own banner's (liveworkspace):
 - `UI` / `Closed` / `SignInBannerExplorer` | `SignInBannerEditor`: the banner
   was dismissed.
 
-Before September 2026 these were sent without the surface (`SignInReasons`,
-`SignInBanner`); those rows age out with the 60-day retention. The Assign
+The Assign
 Action dialog's guest nudge is its own event, `UI` / `Opened` /
 `ActionSignInNudge` ([Assigned actions](../012-collaboration/assigned-actions.md)). The dashboard's Sign-In Prompts stack charts
 each of these by surface ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).

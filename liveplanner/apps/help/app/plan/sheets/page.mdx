@@ -29,7 +29,7 @@ A Sheet's colours follow the tab's theme.
 
 A new Sheet opens **Set up your sheet** over the editor, a few quick steps (**Not now** or Escape leaves it for later: the sheet shows **Set up sheet**, which opens it again where you left off):
 
-1. **Start From**: a **Blank** grid, your **Plan Cards** as rows, **Import CSV**, or one of twelve templates (below) (its **Choose File…** goes straight to the file picker, and the Sheet fills from the file). For Plan Cards, the next steps narrow the cards with the same search and filters as the Cards panel, then choose the columns from the fields those cards have (Number, Title, Type and State are always there). The rows stay linked to the cards, both ways:
+1. **Start From**: a **Blank** grid, your **Plan Cards** as rows, **Import CSV**, or one of fifteen templates (below) (its **Choose File…** goes straight to the file picker, and the Sheet fills from the file). For Plan Cards, the next steps narrow the cards with the same search and filters as **Find a Card**, then choose the columns from the fields those cards have (Number, Title, Type and State are always there). The rows stay linked to the cards, both ways:
 
 - Change a card anywhere and its row updates.
 - Edit a row and it waits as a draft, tinted, with **Save Card** (✓, or **Add Card** on a new row) and **Cancel Changes** (✕) in its **Controls** cell at the end of the table. **Save Card** writes the row to its card; **Cancel Changes** puts it back.
@@ -117,7 +117,7 @@ Under **Data** in the toolbar (or **Data Validation** when you right-click cells
 
 - **Dropdown** makes the selected cells pick from a list. Its options start as the values already in the cells; give each a colour, drag to reorder, and choose how it shows: **Chip** (a coloured pill), **Arrow** or **Plain Text**. **Dropdown (From a Range)** takes its options from other cells of the sheet instead. Click a chip or arrow, or press Alt and Down (⌥↓), to pick from the list; typing works too, and `done` is saved as the option `Done`.
 - **Checkbox** turns the selected cells into tick boxes. Click a box, or press Space with cells selected, to tick or untick them all. A ticked box is `TRUE` to formulas, so `=COUNTIF(B2:B9,TRUE)` counts the ticks.
-- **Data Validation…** opens the full rule: a dropdown, a checkbox, or a number, date or text rule (between two numbers, a date after another, a valid email address, and more). By default a value the rule doesn't allow is refused, and the cell says why; under **Advanced** you can choose **Show a Warning** instead (the value is kept, with a small red mark), and add **Help Text** to show in place of the standard message.
+- **Data Validation** opens the full rule: a dropdown, a checkbox, or a number, date or text rule (between two numbers, a date after another, a valid email address, and more). By default a value the rule doesn't allow is refused, and the cell says why; under **Advanced** you can choose **Show a Warning** instead (the value is kept, with a small red mark), and add **Help Text** to show in place of the standard message.
 
 A new rule replaces any rule its cells already had. **Remove Validation** takes the rule off the selected cells. Every rule is listed in **Sheet Settings** under **Data Validation**. Pasted and typed values are checked, as are changes made by AI agents; undo and CSV imports aren't, and any value they bring in that a rule doesn't allow is marked.
 

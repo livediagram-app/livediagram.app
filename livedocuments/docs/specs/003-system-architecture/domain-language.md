@@ -1,44 +1,36 @@
 # Domain language
 
-## Mode, kind and template
+## Mode, page kind and template
 
-Three words describe how a document and its tabs differ. They answer different questions and are never
-interchangeable. These are design decisions, taken before any feature that uses them.
+Three words describe how a document and its pages differ. They answer different questions and are never
+interchangeable.
 
-| Term         | Answers                        | Values                            | Where it lives                                |
-| ------------ | ------------------------------ | --------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Pages (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general tab (`TabKind`)       | `Tab.kind`                                    |
-| **template** | What was a document made from? | a Pages template (`TemplateKind`) | Captured once, at creation                    |
+| Term          | Answers                        | Values                                           | Where it lives                                     |
+| ------------- | ------------------------------ | ------------------------------------------------ | -------------------------------------------------- |
+| **mode**      | How is a tab worked on?        | Pages (`EditorMode`)                             | `editor-mode.ts`; a new document's creation intent |
+| **page kind** | What is a page?                | a slide, an infographic, an article (`PageKind`) | `Page.kind`; a tab's is its first page's           |
+| **template**  | What was a document made from? | a Pages template (`TemplateKind`)                | Captured once, at creation                         |
 
 ### Mode
 
 - livedocuments has one **editor mode**, Pages: every tab is a run of pages on a surround
   ([Pages mode](../007-editor/pages-mode.md)). The mode stays a named value (`EDITOR_MODE_CATALOGUE` in
-  `packages/document/src/editor-mode.ts`) so a stored mode reads through one place.
-- A tab stores the mode it **opens in**. A stored mode from livediagram (Diagram, Draw, Workshop, Plan, or Pages'
-  old names Illustrate and Infographic), or a `/new?mode=` link all read as Pages
-  (`parseEditorMode`).
+  `packages/document/src/editor-mode.ts`, `DEFAULT_EDITOR_MODE`) so the places that name one (a new document's
+  `CREATION_INTENT`, a placement default) read through one type, `isEditorMode`.
+- A tab stores no mode: the editor resolves it once (`useEditorMode`).
 - A mode is never a type of document or tab.
 
-### Kind
+### Page kind
 
-- A **tab kind** is what a tab is. livedocuments has one kind, the general tab (`'diagram'` in code, kept for stored
-  tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
-- What a **page** is (a design page, a slide or an article page) is the page's kind, not the
-  tab's ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
-  (`tabPageKind`), so a deck holds only slides.
+- What a **page** is (an infographic or design page, a slide, or an article page) is the page's kind
+  ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
+  (`tabPageKind`), so a deck holds only slides. A tab itself has no kind.
 
 ### Template
 
 - A **template** is what a document was made from. It shapes the starting pages of a tab and then has no further
   hold on it.
-- A template is never a kind or a type: a slide deck is a general tab made from the Slide Deck template.
-
-### Using the three together
-
-- **Default folders** are keyed by template ([Default folders](../013-workspace/default-folders.md)).
-- **Explorer filters** offer them as separate chips ([Explorer filters](../013-workspace/explorer-filters.md)).
+- A template is never a kind or a type: a slide deck is a tab of slides made from the Slide Deck template.
 - Code, copy and specs use these words only in these meanings.
 
 ## Page elements

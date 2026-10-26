@@ -47,8 +47,8 @@ have cloud documents and offline documents side by side.
   (`apps/editor/lib/offline/offline-ids.ts`), and every id registered or removed is told
   to the other tabs on the `livedocuments-offline` BroadcastChannel (`{ kind: 'add' |
 'remove', id }`), which apply it at once. Without it, a tab that missed a Take
-  Offline kept saving that document to the server (where it no longer is), and a tab
-  that missed a Sync Document or purge kept "saving" into a record that was gone.
+  Offline would keep saving that document to the server (where it no longer is), and a tab
+  that missed a Sync Document or purge would keep "saving" into a record that is gone.
 - **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
   the order, the folder) finds its record missing while the tab still
   lists the id, the id is forgotten (and the other tabs told) and the write fails with
@@ -94,7 +94,7 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Images                                                                    | **Embedded locally** — see below.                                                                                                                                                                                                                                                   |
 
 **Images embed locally ([Image element + per-owner gallery](../009-elements/images.md)).** In a cloud document, an added image uploads
-to R2 and is referenced by URL. In an offline document it can't — so an image is
+to liveworkspace's media service and is referenced by URL. In an offline document it can't, so an image is
 stored **inline as a `data:` URI** inside the document. Rendering is unchanged
 (`<img>` reads a data URI fine). This costs local storage, which is the accepted
 trade for staying fully offline. (Conversion re-homes images — see below.)
@@ -198,8 +198,7 @@ rows and its Current Document card, and the Trash.
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
-  as whose an item is, or as fine or failing. Until October 2026 it was amber, livedocuments'
-  accent and the warning tone. One pill for every editor and the Explorer
+  as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
 - **What it means, on hover and focus.** Its hover card reads "This Browser" over
@@ -354,7 +353,7 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **This Browser**. Referenced R2 images are downloaded and embedded
+  badge flips to **This Browser**. Referenced uploaded images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
@@ -415,11 +414,9 @@ The editor already has a **single persistence boundary**: `apps/editor/lib/api-c
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
-- **Dispatch per call, not a backend pair.** This was first drafted as two
-  implementations of one interface, an `ApiBackend` and a `LocalBackend`. What
-  shipped is smaller: each load / save / delete in `lib/api/*` opens with
+- **Dispatch per call, not a backend pair.** Each load / save / delete in `lib/api/*` opens with
   `if (await isOfflineId(id))` and hands off to `lib/offline/offline-store.ts`,
-  otherwise it does what it always did. There is no second class to keep in
+  otherwise it calls the api. There is no second class to keep in
   step with the first, and an endpoint that offline has no answer for simply
   never grows the branch.
 - Offline ids are client-generated (`crypto.randomUUID`) and registered in a
@@ -501,12 +498,11 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Implementation map
 
-- `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
-  new `LocalBackend` (IndexedDB) beside the existing API calls; per-document
-  dispatch via a local index.
-- New Document wizard (`TemplatePicker` / `template-picker-settings.tsx`,
-  [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
-  This Browser tile) + data-loss warning + contextual help link.
+- `apps/editor/lib/api-client.ts` + `lib/api/*`: the persistence seam; `lib/offline/*` (IndexedDB) beside the api
+  calls; per-document dispatch via a local index (`isOfflineId`).
+- `/new` (`apps/editor/app/new/page.tsx`, `useNewDocumentLocation`, `new-document-settings.ts`,
+  [Dedicated route for new-document creation](../007-editor/new-document-route.md)): where the new document is saved
+  ([Save Locations](save-locations.md)).
 - `EditorHeader` (`SharedBadge`) — the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline document is listed plus a

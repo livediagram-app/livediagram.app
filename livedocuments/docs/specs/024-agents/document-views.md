@@ -1,6 +1,6 @@
 # Document views
 
-**Status: built**, the `lint` view answered by the [diagram lint](diagram-lint.md); the CLI reads a pulled file's views
+The `lint` view is answered by the [diagram lint](diagram-lint.md); the CLI reads a pulled file's views
 offline and computes `diff` from its read copies.
 
 A **view** is a read-only text projection of a tab, each answering one kind of question at the lowest token cost.

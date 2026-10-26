@@ -12,7 +12,7 @@ One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPat
 straightEdges?: boolean; // true = render M/L segments, no Catmull-Rom smoothing
 ```
 
-Set by this tool at commit; absent on other freehand elements (an imported or older stroke). Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. (The headless renderer used to draw straight segments for every freehand, which made an exported pen stroke visibly more jagged than the canvas; it now matches.) A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
+Set by this tool at commit; absent on other freehand elements (an imported or older stroke). Both renderers branch on it: `straightEdges` draws `M/L` segments, anything else goes through the same `catmullRomToBezierPath` smoothing, so an export draws a pen stroke with the curve the canvas shows. A freehand of fewer than two points draws nothing on either. Wire validation accepts the optional boolean.
 
 ## Gesture
 

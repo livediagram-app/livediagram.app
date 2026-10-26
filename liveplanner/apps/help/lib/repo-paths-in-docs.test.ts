@@ -254,8 +254,13 @@ describe('spec references', () => {
   it('name spec files that exist', () => {
     const broken: string[] = [];
     for (const { f, src } of files) {
-      for (const m of src.matchAll(/\bdocs\/specs\/[\w./-]*?\.md\b/g)) {
-        if (!existsSync(`${ROOT}/${m[0]}`)) broken.push(`${f}: ${m[0]}`);
+      // A path with a product or platform folder in front (`liveworkspace/docs/specs/...`) is
+      // read from the monorepo's root; a bare one is this product's own.
+      for (const m of src.matchAll(
+        /\b(?:(?:liveworkspace|livediagram|liveplanner|livedocuments|livedesign)\/)?docs\/specs\/[\w./-]*?\.md\b/g,
+      )) {
+        const at = m[0].startsWith('docs/') ? `${ROOT}/${m[0]}` : `${ROOT}/../${m[0]}`;
+        if (!existsSync(at)) broken.push(`${f}: ${m[0]}`);
       }
     }
     expect(broken).toEqual([]);

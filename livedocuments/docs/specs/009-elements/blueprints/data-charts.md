@@ -275,7 +275,7 @@ CSS. CSV import runs locally on a user-picked file; nothing is uploaded.
 Worst case `MAX_DATA_ARRAY` (5 000) data per array: one path or rect per datum, one key row per
 datum (clipped by `overflow-hidden`). CSV caps keep an import at 12 × 200. The layout is a pure
 function per render; hover state is per view. A chart of 500 categories × 12 series: exporting
-one measured 8.3 ms (Line), 10.5 ms (Area) and 3.3 ms (Scatter) on a laptop (October 2026); a guard test holds the
+one measured 8.3 ms (Line), 10.5 ms (Area) and 3.3 ms (Scatter) on a laptop; a guard test holds the
 Area and Scatter export under 80 ms.
 
 ## Presentation and UX

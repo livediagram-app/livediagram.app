@@ -162,9 +162,7 @@ multi-selection the preset applies to every selected arrow at once.
   preview/revert (mouse pointers only).
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): applying / resetting a preset fires
   `track('Element', 'Changed', …)` with a `StylePreset` / `ArrowPreset` /
-  `StyleReset` type token. (A `BorderPreset` token was listed here too. There
-  are no border presets, in this spec or in the code, so nothing ever emitted
-  it.)
+  `StyleReset` type token. There are no border presets.
 
 ## Sticky-note presets
 

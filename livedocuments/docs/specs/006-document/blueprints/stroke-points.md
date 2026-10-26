@@ -17,7 +17,7 @@ spec.
 | Freehand geometry | `FreehandGeometry`               | A box and its normalised points, before packing (the live ink's layout)  |
 
 "Packed points" is the only name for the stored string: never "binary points", "ink data" or
-"point blob". `points` and `pressures` no longer name element fields anywhere.
+"point blob". `points` and `pressures` name no element field.
 
 ## Modules
 
@@ -183,7 +183,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | SVG export       | `packages/document/src/svg-render-shapes.ts`                               | decode                                                                              |
 | Stored migration | `packages/document/src/stored-elements.ts`                                 | adds `migrateLegacyStrokePoints`                                                    |
 | Canvas view      | `apps/editor/components/canvas/boxed-element-overlays.tsx`                 | decode                                                                              |
-| Commit types     | `apps/editor/components/canvas/Canvas.types.ts`                            | `PenInk` owns `pressures`                                                           |
 | Style presets    | `apps/editor/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
 | Realtime         | `apps/editor/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
 | Clipboard        | `apps/editor/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
@@ -193,7 +192,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Offline store    | `apps/editor/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
 | MCP server       | `packages/document/src/element-normalise.ts`, `tools.ts`                   | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
 | Polygon tool     | `useCanvasPolygonGesture.ts`                                               | unchanged: `createFreehand`                                                         |
-| Path tool        | `PathElement.nodes`                                                        | not a freehand: out of scope                                                        |
 | Undo             | `useEditorHistory.ts`                                                      | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence
@@ -248,11 +246,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit and erase: linear in the stroke; the live ink never encodes.
-- Fitting runs on release only, and only past the cap: one full RDP, then one O(n) count per
-  tolerance tried. Measured (vitest on an M-series Mac, median of 5): a 25,000-sample gentle curve
-  6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
-  case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
-  stroke that fits costs one array copy.
 
 ## Observability
 
@@ -290,17 +283,15 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 ## Constants and configuration
 
-| Constant                        | Value     | Provenance                                               | Safe range           |
-| ------------------------------- | --------- | -------------------------------------------------------- | -------------------- |
-| `STROKE_POINTS_VERSION`         | 1         | First binary layout                                      | 1 to 255             |
-| `STROKE_POINT_STEPS`            | 65,535    | u16 range; 0.069 px worst error measured on a real board | fixed by the layout  |
-| `STROKE_PRESSURE_STEPS`         | 255       | u8 range; pressure drives width only                     | fixed by the layout  |
-| `STROKE_POINT_MAX_ERROR`        | 1/131,070 | Half a step                                              | derived              |
-| `MAX_FREEHAND_POINTS`           | 20,000    | Unchanged from before                                    | 1 to 65,535          |
-| `STROKE_FIT_START_TOLERANCE_PX` | 0.1       | A tenth of a canvas px: invisible at zoom 1              | above 0, under 1     |
-| `STROKE_FIT_MAX_PASSES`         | 8         | 0.1 px doubled to 12.8 px, then even thinning            | 4 to 10              |
-| `MAX_PACKED_POINTS_LENGTH`      | 133,336   | `4 * ceil((2 + 20,000 * 5) / 3)`                         | derived              |
-| `STROKE_DECODE_CACHE_POINTS`    | 500,000   | 7x the largest real board's 66,128 points; 12 MB         | 100,000 to 2,000,000 |
+| Constant                     | Value     | Provenance                                               | Safe range           |
+| ---------------------------- | --------- | -------------------------------------------------------- | -------------------- |
+| `STROKE_POINTS_VERSION`      | 1         | First binary layout                                      | 1 to 255             |
+| `STROKE_POINT_STEPS`         | 65,535    | u16 range; 0.069 px worst error measured on a real board | fixed by the layout  |
+| `STROKE_PRESSURE_STEPS`      | 255       | u8 range; pressure drives width only                     | fixed by the layout  |
+| `STROKE_POINT_MAX_ERROR`     | 1/131,070 | Half a step                                              | derived              |
+| `MAX_FREEHAND_POINTS`        | 20,000    | The point cap                                            | 1 to 65,535          |
+| `MAX_PACKED_POINTS_LENGTH`   | 133,336   | `4 * ceil((2 + 20,000 * 5) / 3)`                         | derived              |
+| `STROKE_DECODE_CACHE_POINTS` | 500,000   | 7x the largest real board's 66,128 points; 12 MB         | 100,000 to 2,000,000 |
 
 ## Defaults ledger
 

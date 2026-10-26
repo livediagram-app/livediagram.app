@@ -26,7 +26,7 @@ drags for collaborators.
 | --------------- | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Preview         | `DragOverlay`      | `{ tabId, changed: Map<id, Element>, removed: Set<id>, added: { el, after: id \| null }[] }`                  |
 | Virtual tab     | `virtualTab(tab)`  | The active tab with the local overlay applied: what the drag logic reads mid-gesture                          |
-| Peer preview    | `PeerDragPreview`  | One peer's overlay: `{ presenceId, tabId, patches, at }`                                                      |
+| Peer preview    | `drag-preview` op  | One peer's overlay, a room op (`receivePeerDragPreview`, `apps/editor/hooks/collab/peer-drag-previews.ts`)    |
 | Patch           | `DragPreviewPatch` | `{ id }` plus the geometry a gesture changes (below)                                                          |
 | Affected arrows | `affectedArrows`   | Arrows previewed themselves, pinned to a changed element, or whose bounds meet a changed box's old or new box |
 
@@ -72,7 +72,7 @@ drags for collaborators.
 - The drag effect running with no drag while a preview remains (a route that neither committed nor
   cancelled) commits it, matching the old behaviour where every tick was a write.
 - Cancel (Escape, a pinch or second touch, unmount): `cancelPreview()`; nothing was written, so
-  nothing is restored (a cancelled pinch used to leave a half-applied move). Escape no longer calls
+  nothing is restored, and a cancelled pinch leaves no half-applied move. Escape does not call
   `cancelToCheckpoint`.
 - A gesture that changed nothing (a click) commits nothing and logs nothing.
 
@@ -100,7 +100,7 @@ drags for collaborators.
 - `affectedArrows(overlay, doc)`: previewed arrows, plus arrows pinned to a changed id (a reverse
   map built once per document change), plus arrows whose bounds meet a changed box's old or new box
   (a linear pass over the arrows' bounds, built once per document change).
-- Labels of affected arrows are laid out with `draftLayout(arrow, label, virtualElements)`; others
+- Labels of affected arrows are laid out with `draftLayout(arrow, label, virtual)` (`virtual`, the elements with the overlay shown); others
   keep the document's label pass.
 - The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
   `applyOverlay(elements, overlay)` while a preview lasts, so the union handles follow a

@@ -1,6 +1,6 @@
 # Agent changesets
 
-**Status: built.** Closed livedocuments-app/livedocuments.app#343. Operations are the full
+Operations are the full
 [edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves, and each
 refreshes the agent's [presence](agent-presence.md).
 
@@ -11,14 +11,14 @@ unit. The whole-tab `PUT` stays the editor's own autosave path and nothing else'
 
 ## Why
 
-Before changesets an agent wrote a tab with the editor's whole-tab `PUT` ([API app](../015-api/api.md), "The
-persistence boundary"). That write never reached the room, so:
+An agent writing a tab with the editor's whole-tab `PUT` ([API app](../015-api/api.md), "The persistence boundary")
+would never reach the room, so:
 
-- **A person never saw the agent's edit** until they reloaded, and their next autosave of the tab, built from a copy
-  without it, erased it from the store.
-- **An agent erased a person's edits.** The MCP's `update_document` read the tab, waited while the model thought,
-  then wrote the whole tab back over anything saved in between.
-- **A personal document had no room**, on the premise that it has one writer. An agent is a second writer.
+- **A person would not see the agent's edit** until they reloaded, and their next autosave of the tab, built from a
+  copy without it, would erase it from the store.
+- **An agent would erase a person's edits.** An MCP tool that reads the tab, waits while the model thinks, then
+  writes the whole tab back overwrites anything saved in between.
+- **A personal document needs a room** too: an agent is a second writer.
 
 ## What a changeset is
 
@@ -74,7 +74,7 @@ says what it has seen.
      changed it after, so the person's version stands. Taking the changeset's version keeps the save's live fields;
    - a **reorder** is re-applied only when the save still holds those elements in the order the changeset found.
      A save without the header (a bundle older than this spec) is treated as having seen nothing newer than
-     `CHANGESET_MERGE_WINDOW` ago.
+     `CHANGESET_MERGE_WINDOW_MS` ago.
 
 Because the merge reads the store rather than the room's live state, a changeset survives a dropped relay, a sleeping room and an
 editor that was offline when it landed.
@@ -176,8 +176,8 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 ## The MCP server
 
 `update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
-`update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap no longer
-erases anything:
+`update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap
+erases nothing:
 
 - It takes an optional `rev`, the revision `read_document` returned; the fingerprints come from the tool's own read
   at call time. A person's change between `read_document` and the call is overwritten only on the fields the ops
@@ -192,7 +192,7 @@ erases anything:
 | ----------------------------- | ---------- | ------------------------------------------------------------------------ |
 | `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large diagram fits; a runaway loop does not      |
 | `CHANGESET_RELAY_MAX_BYTES`   | 192 KiB    | Under the room's 256 KiB frame cap with room for metadata                |
-| `CHANGESET_MERGE_WINDOW`      | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
+| `CHANGESET_MERGE_WINDOW_MS`   | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
 | `CHANGESET_RETENTION_DAYS`    | 30         | Matches the Trash: an agent's work can be undone as long as a delete can |
 | `CHANGESET_REVEAL_MS`         | 2000       | Long enough to notice, short enough not to clutter                       |
 | `CHANGESET_TOAST_COALESCE_MS` | 10000      | One toast per burst of work                                              |

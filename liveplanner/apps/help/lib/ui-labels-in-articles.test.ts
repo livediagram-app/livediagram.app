@@ -103,6 +103,9 @@ function editorSource(): string {
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
   walk(`${ROOT}/../packages/ui/src`);
   walk(ICONS_PACKAGE);
+  // API tokens and the Explorer page's search are liveworkspace.app's own pages, which articles send readers to.
+  walk(`${ROOT}/../liveworkspace/apps/site/components`);
+  walk(`${ROOT}/../liveworkspace/apps/site/lib`);
   return all.toLowerCase();
 }
 

@@ -1,6 +1,6 @@
 # Edit operations
 
-**Status: built.** `@livedocuments/edit-operations` reads both forms and applies every operation below, by ref or
+`@livedocuments/edit-operations` reads both forms and applies every operation below, by ref or
 selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
 verdict; the [CLI](../015-api/cli.md) reaches them too.
 
@@ -48,7 +48,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `pyramidVariant`;
   `ELEMENT_FIELD_VALUES` in `@livedocuments/document`) refuses a value off it as `invalid_value`, naming the values it
-  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
+  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does, so `textSize=xl` is never stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 

@@ -6,7 +6,7 @@ field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
 Built from [`facts.md`](facts.md). No em dashes. Don't promise CRDT editing or
-native apps: not shipped.
+native apps: liveplanner has neither.
 
 ---
 
@@ -58,7 +58,7 @@ For Product Hunt, app store short descriptions, README intros.
 > Each plan holds tabs: kanban boards with swimlanes and WIP limits, Sheets
 > with over 150 functions and charts, dashboards of live slots, and forms whose
 > answers land as cards or rows. Start from a template such as a Project
-> Planner, Bug Triage or Budget Planner, and let your AI tools move cards over
+> Planner, Bug Tracker or Budget Planner, and let your AI tools move cards over
 > MCP.
 >
 > It is free for everyone with no paid tier, no ads and no third-party
@@ -90,12 +90,12 @@ For longer listing bodies and "about this project" sections.
 > notes. Forms share one public link, and every answer arrives as a card or a
 > row.
 >
-> Start from templates such as Kanban, OKRs, Hiring Pipeline, Invoice or an
-> RSVP form. Share editor, participant or view-only links, and let AI agents
+> Start from templates such as Kanban Board, OKRs, Hiring Pipeline, Invoice or
+> an Event RSVP form. Share editor, participant or view-only links, and let AI agents
 > read and change the plan over MCP, the API or the CLI.
 >
 > liveplanner is free for everyone with no paid tier and no plan for one, no
-> ads and no third-party trackers. [254 words]
+> ads and no third-party trackers. [256 words]
 
 ---
 
@@ -142,11 +142,11 @@ detailed Product Hunt write-up.
 >
 > #### Start fast, stay organised
 >
-> Open a template (Project Planner, Kanban, Bug Triage, Team Retro, Weekly
+> Open a template (Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly
 > Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch, Feedback
 > Board, Task Tracker), a spreadsheet (Budget Planner, Timesheet, Invoice,
 > Expense Report, Sales Pipeline, Inventory), a form (Bug Report, Feedback,
-> Feature Request, RSVP, Job Application, Contact), or start blank. File
+> Feature Request, Event RSVP, Job Application, Contact), or start blank. File
 > plans into folders, share a folder with a team, and catch up on what
 > changed from Home and the Inbox.
 >
@@ -164,4 +164,4 @@ detailed Product Hunt write-up.
 > CSV, an image, a PDF or a Markdown outline, and a sheet as CSV, whenever you
 > like.
 >
-> Open a link, plan, share. That is the whole pitch. [503 words]
+> Open a link, plan, share. That is the whole pitch. [505 words]
