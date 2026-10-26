@@ -1,5 +1,6 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   MAX_SHAPE_LIBRARIES_PER_OWNER,
   MAX_SHAPE_LIBRARY_ITEMS,
@@ -233,13 +234,15 @@ describe('GET /api/shape-libraries/:id/previews', () => {
       ],
     })) as unknown as ShapeLibraryItem[];
     expect(JSON.stringify(items).length).toBeLessThan(MAX_TAB_BYTES);
-    const started = performance.now();
-    const previews = shapePreviews(items);
-    const ms = performance.now() - started;
+    let previews: ReturnType<typeof shapePreviews> = {};
+    const ms = cpuMsOf(() => {
+      previews = shapePreviews(items);
+    });
     const bytes = JSON.stringify({ previews }).length;
     expect(Object.keys(previews)).toHaveLength(MAX_SHAPE_LIBRARY_ITEMS);
-    // Measured 62 ms and 1.2 MB (before compression) on a laptop; the budgets leave CI room.
-    expect(ms).toBeLessThan(500);
+    // CPU time, so a busy runner's waiting doesn't count (wall-clock 500 ms failed CI at 534). Measured 62 ms and
+    // 1.2 MB (before compression) on a laptop; cpuBudgetMs leaves CI room.
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
     expect(bytes).toBeLessThan(2_000_000);
   });
 });
