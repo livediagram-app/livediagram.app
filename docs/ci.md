@@ -61,9 +61,12 @@ result.
 - **Deploys** (`deploy-staging.yml` and `deploy-production.yml`, both calling `deploy.yml`, which calls
   `deploy-worker.yml` per Worker): see [Deploys](#deploys).
 
-CI runs no CodeQL scan, which needs GitHub Advanced Security on this private repository (the workflow is
-in git history, removed in the commit "CI: CodeQL out until Advanced Security is on"), and publishes no
-CLI: the CLIs' npm publishing and MCP Registry listing happen outside CI. Each product's CLI builds and
+- **CodeQL** (`codeql.yml`): one Analyze job scans the whole repository (Actions and
+  JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
+  released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
+  CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
+
+CI publishes no CLI: the CLIs' npm publishing and MCP Registry listing happen outside CI. Each product's CLI builds and
 packs on every run that reaches it (Build).
 
 ## Coverage report
