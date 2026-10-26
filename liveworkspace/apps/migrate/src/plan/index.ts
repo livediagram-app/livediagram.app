@@ -9,6 +9,7 @@
 //   <bundle>/ledger/<db>/NNNN.jsonl  the ledger rows each chunk writes, recorded once it has run
 //   <bundle>/r2/images.json        the objects to put in the media bucket; r2/pictures/ the drawn pictures
 //   <bundle>/rooms/<app>/<id>.json one MigrationRoomPayload per part; rooms/rooms.jsonl lists them in order
+//   <bundle>/people/<app>/<id>.json  one MigrationPersonPayload per person with shape libraries; people/people.jsonl
 //   <bundle>/kv/mcp-clients.json   the MCP's client registrations
 //   <bundle>/moved-parts.json      where each split document's parts went
 //   <bundle>/report.json           counts, matches, cross-product references, dropped history, collisions
@@ -33,10 +34,11 @@ import {
 import { writeCommunity } from './community.ts';
 import { TABLE_ORDER, type PlanContext } from './context.ts';
 import { documentPass, keptByPass, type SplitFn } from './documents.ts';
-import { JsonArrayFile, RoomFiles } from './files.ts';
+import { JsonArrayFile, PeopleFiles, RoomFiles } from './files.ts';
 import { writeFolders, writePlacementDefaults } from './folders.ts';
 import { readOauthKvDump } from './kv.ts';
 import { writeImages } from './media.ts';
+import { writeShapeLibraries } from './people.ts';
 import { Report } from './report.ts';
 import { writeTimeline } from './timeline.ts';
 
@@ -46,6 +48,7 @@ export type ManifestStep =
   | { step: 'sql'; db: Db; files: string[] }
   | { step: 'r2'; file: string; count: number }
   | { step: 'rooms'; file: string; count: number }
+  | { step: 'people'; file: string; count: number }
   | { step: 'kv'; file: string; count: number };
 
 export type Manifest = {
@@ -118,6 +121,8 @@ export async function plan(input: PlanInput): Promise<PlanResult> {
     writeLifecycle(ctx);
 
     const rooms = new RoomFiles(outDir, ledger);
+    const people = new PeopleFiles(outDir, ledger);
+    writeShapeLibraries(ctx, people);
     const r2 = new JsonArrayFile(join(outDir, 'r2', 'images.json'));
     const moved = new JsonArrayFile(join(outDir, 'moved-parts.json'));
     const folders = writeFolders(ctx);
@@ -139,6 +144,7 @@ export async function plan(input: PlanInput): Promise<PlanResult> {
     writeProfiles(ctx);
     writeLegacyGuests(ctx);
     rooms.close();
+    people.close();
     r2.close();
     moved.close();
 
@@ -155,6 +161,8 @@ export async function plan(input: PlanInput): Promise<PlanResult> {
     >;
     report.add('rooms.written', rooms.written);
     report.add('rooms.unchanged', rooms.unchanged);
+    report.add('people.written', people.written);
+    report.add('people.unchanged', people.unchanged);
     report.add('r2.objects', r2.count);
     report.add('movedParts', moved.count);
 
@@ -173,6 +181,7 @@ export async function plan(input: PlanInput): Promise<PlanResult> {
         { step: 'sql', db: 'media', files: files.media },
         { step: 'r2', file: 'r2/images.json', count: r2.count },
         { step: 'rooms', file: 'rooms/rooms.jsonl', count: rooms.written },
+        { step: 'people', file: 'people/people.jsonl', count: people.written },
         { step: 'sql', db: 'community', files: files.community },
         { step: 'kv', file: 'kv/mcp-clients.json', count: kvFresh.length },
       ],

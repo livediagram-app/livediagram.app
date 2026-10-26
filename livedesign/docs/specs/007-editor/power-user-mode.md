@@ -76,7 +76,7 @@ the interface, and leaves the controls:
 - **Selection kind chip.** The caption above the selection toolbar ("Selected Arrow", "Selected Square", "Selected
   Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
-- **Status bar text.** The bottom bar's Search, Start Tour, Settings and appearance controls show their icons only.
+- **Status bar text.** The bottom bar's Start Tour, Search, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
 - **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same

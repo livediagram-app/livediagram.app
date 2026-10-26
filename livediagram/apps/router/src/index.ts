@@ -4,7 +4,11 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
+import {
+  legacyEditorRedirect,
+  legacyFormRedirect,
+  legacyHelpRedirect,
+} from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 import {
   routeToWorkspace,
@@ -255,6 +259,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     return Response.redirect(telemetryDashboardUrl(env), 301);
   }
+  // An old form link: forms are liveplanner's now (docs/specs/016-platform/router-app.md).
+  const legacyForm = legacyFormRedirect(url, env.DEPLOY_ENV);
+  if (legacyForm) return legacyForm;
   if (hasPrefix(url.pathname, COMMUNITY_PATH)) {
     // Community (docs/specs/025-community/community.md), a basePath:'/community' static app: the same prefix-strip
     // as help.

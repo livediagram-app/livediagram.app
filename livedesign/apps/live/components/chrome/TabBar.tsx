@@ -202,7 +202,7 @@ export function TabBar({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
 
-  // Distinct folder names in this design, for the "Add to Folder"
+  // Distinct folder names in this design, for the "Organise in Tab Folder"
   // menu's pick list (docs/specs/006-design/tab-folders.md).
   const folderNames = folderNamesInDesign(tabs);
 

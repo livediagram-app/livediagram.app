@@ -1,5 +1,7 @@
-// Tests only: node:sqlite behind the slice of a Durable Object's `SqlStorage` the kit uses.
+// Tests only: node:sqlite behind the slice of a Durable Object's `SqlStorage` the kit uses. A Durable Object's SQLite
+// has D1's query limits, so each stand-in refuses a compound SELECT of more than five terms, as production would.
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { ItemSql, ItemSqlCursor } from './item-db';
 import type { SqlExec } from './outbox';
 
@@ -7,6 +9,7 @@ export function nodeSql(db = new DatabaseSync(':memory:')): SqlExec & { db: Data
   return {
     db,
     exec(query: string, ...bindings: unknown[]) {
+      assertD1Compound(query);
       const statement = db.prepare(query);
       const args = bindings.map((b) => (typeof b === 'boolean' ? Number(b) : b) as SQLInputValue);
       if (statement.columns().length === 0) {
@@ -33,6 +36,7 @@ function isScript(query: string): boolean {
 export function nodeItemSql(db: DatabaseSync): ItemSql {
   return {
     exec(query: string, ...bindings: unknown[]): ItemSqlCursor {
+      assertD1Compound(query);
       if (bindings.length === 0 && isScript(query)) {
         db.exec(query);
         return { toArray: () => [], columnNames: [] };

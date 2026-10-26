@@ -13,8 +13,9 @@ the registry from selection/document verbs to the whole app surface.
 - **Cmd/Ctrl+K opens the Search panel**, identically to Cmd/Ctrl+. (both
   stay; `K` is the convention users arrive with, `.` is grandfathered).
   Works in zen mode and read-only views, like the existing binding.
-- **The Explorer page is the shared Explorer's** (`@liveworkspace/explorer`), which keeps its own
-  shortcuts; these chords are the editor's.
+- **The Explorer page binds the same two chords** to its own Search panel (`useSearchShortcut` in
+  `@liveworkspace/explorer`), standing aside while the person is typing in a field and while a dialog
+  is open, as the editor's chords do.
 
 ## Registry expansion
 

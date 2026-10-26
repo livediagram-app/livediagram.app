@@ -15,9 +15,11 @@ afterEach(cleanup);
 function Board({
   initial,
   statusNames = new Map(),
+  canEdit = true,
 }: {
   initial: PlanBoardSetup;
   statusNames?: ReadonlyMap<string, string>;
+  canEdit?: boolean;
 }) {
   const [setup, setSetup] = useState(initial);
   return (
@@ -29,7 +31,7 @@ function Board({
             col={{ column, count: 0, overLimit: false } as never}
             setup={setup}
             palette={planPalette('light', {})}
-            canEdit
+            canEdit={canEdit}
             onChange={(next) => setSetup(next)}
             onMoveCards={() => {}}
             onTrashCards={() => {}}
@@ -81,6 +83,46 @@ describe('a column’s settings', () => {
     expect(
       screen.getByRole('button', { name: 'Shipped column settings' }).getAttribute('aria-expanded'),
     ).toBe('true');
+  });
+
+  // docs/specs/026-plan/plan-board.md "Suggested statuses".
+  it('adds a suggested status the board lacks and moves to it', () => {
+    const setup = presetSetup('kanban');
+    render(<Board initial={setup} />);
+    openAdd(setup);
+    // Kanban has Backlog, To Do, In Progress and Done already, and Review is not In Review.
+    expect(screen.queryByRole('button', { name: 'Add All' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Add In Review' }));
+    expect(
+      screen
+        .getByRole('button', { name: 'In Review column settings' })
+        .getAttribute('aria-expanded'),
+    ).toBe('true');
+  });
+
+  it('adds every suggestion with Add All after the column, closing the settings', () => {
+    const setup = presetSetup('todo');
+    render(<Board initial={setup} />);
+    openAdd(setup);
+    fireEvent.click(screen.getByRole('button', { name: 'Add All' }));
+    expect(
+      screen
+        .getAllByRole('button', { name: / column settings$/ })
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual([
+      'To Do column settings',
+      'Backlog column settings',
+      'In Progress column settings',
+      'In Review column settings',
+      'Done column settings',
+    ]);
+    expect(screen.queryByLabelText('Column name')).toBeNull();
+  });
+
+  it('offers no settings, and so no suggestions, to someone who may not edit', () => {
+    render(<Board initial={presetSetup('todo')} canEdit={false} />);
+    expect(screen.queryByRole('button', { name: /column settings$/ })).toBeNull();
+    expect(screen.queryByText('Suggested Statuses')).toBeNull();
   });
 
   it('opens the picker as its own popover pointing at the button, the settings open behind it', () => {

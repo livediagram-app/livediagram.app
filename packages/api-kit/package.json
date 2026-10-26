@@ -8,6 +8,8 @@
     "./api-token": "./src/api-token.ts",
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",
+    "./d1-compound": "./src/d1-compound.ts",
+    "./d1-compound-guard": "./src/d1-compound-guard.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
     "./openapi-types": "./src/openapi-types.ts",

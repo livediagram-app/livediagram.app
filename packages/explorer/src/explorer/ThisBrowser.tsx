@@ -39,6 +39,11 @@ import { BrowserIcon, useHostExtras } from './host';
 import { PaneIconButton } from '../panel/pane-parts';
 import { LocalPreview } from './LocalPreview';
 import { PaneHeader } from './PaneHeader';
+import { parseLens } from '../lens';
+import { viewLens, withLens } from '../views';
+import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
+import { useLensContext } from './SearchField';
+import { narrowThisBrowser, thisBrowserSubjects } from './this-browser-lens';
 import { daysLeftLabel } from './TrashPane';
 
 /** What a host hands the Explorer for This Browser. */
@@ -241,11 +246,26 @@ function LocalRow({
   );
 }
 
-/** `/explorer/offline`: every live item kept only in this browser, newest change first. */
+/** `/explorer/offline`: every live item kept only in this browser, newest change first, narrowed by the lens. */
 export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
-  const { words } = useExplorer();
-  const { host, live: items } = useThisBrowserItems();
+  const { words, view, app, navigate, lensSubjects } = useExplorer();
+  const { host, live } = useThisBrowserItems();
   useHandOver(host);
+  // The lens the address carries, matched here: the index never sees these items.
+  const lensContext = useLensContext();
+  const q = viewLens(view);
+  const parsed = useMemo(() => parseLens(q, lensContext), [q, lensContext]);
+  const items = useMemo(
+    () => narrowThisBrowser(live, parsed.lens, app, Date.now()),
+    [live, parsed, app],
+  );
+  // The list is always whole, so the field can mark a value that matches nothing.
+  useEffect(() => {
+    lensSubjects.current = thisBrowserSubjects(live, app);
+    return () => void (lensSubjects.current = null);
+  }, [lensSubjects, live, app]);
+  // Something is kept here, but the lens leaves nothing: only a set lens can.
+  const filteredEmpty = Boolean(host) && live.length > 0 && items.length === 0;
   return (
     <div data-explorer-view="offline">
       <PaneHeader title={THIS_BROWSER_COPY.label} onOpenNav={onOpenNav} showFilter={false} />
@@ -253,7 +273,15 @@ export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
         {words.many} kept only in this browser. They aren’t in your account and don’t sync to other
         devices.
       </p>
-      {!host || items.length === 0 ? (
+      {host && live.length > 0 ? <LensBar parsed={parsed} showIssues={!filteredEmpty} /> : null}
+      <LensAnnouncer lens={q} loading={false} shown={items.length} more={false} words={words} />
+      {filteredEmpty ? (
+        <FilteredEmpty
+          issues={parsed.issues}
+          words={words}
+          onClear={() => navigate(withLens(view, ''), { replace: true })}
+        />
+      ) : !host || items.length === 0 ? (
         <p className={`text-sm ${MUTED}`}>Nothing is kept only in this browser.</p>
       ) : (
         <ul className={`${LIST_CARD} divide-y divide-slate-100 dark:divide-slate-700/60`}>

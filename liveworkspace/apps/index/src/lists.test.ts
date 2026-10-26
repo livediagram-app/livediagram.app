@@ -175,6 +175,27 @@ describe('filters', () => {
     expect((await call('/items?apps=paint', { auth: ada.auth })).status).toBe(400);
   });
 
+  it('narrows by the mode an item last reported (Mode), values or-ed', async () => {
+    const ada = await person('user_a');
+    const draw = await makeItem(ada.auth, { title: 'Sketch', app: 'livediagram' });
+    const flow = await makeItem(ada.auth, { title: 'Flow', app: 'livediagram' });
+    const room = await makeItem(ada.auth, { title: 'Room', app: 'livediagram' });
+    // Never saved: no summary, so no mode.
+    await makeItem(ada.auth, { title: 'Blank', app: 'livediagram' });
+    const set = h.db.sql.prepare('UPDATE items SET summary = ? WHERE id = ?');
+    set.run(JSON.stringify({ mode: 'draw', elements: 3 }), draw.id);
+    set.run(JSON.stringify({ mode: 'diagram' }), flow.id);
+    set.run(JSON.stringify({ mode: 'workshop' }), room.id);
+    expect(titles(await list(ada.auth, 'modes=draw'))).toEqual(['Sketch']);
+    expect(titles(await list(ada.auth, 'modes=draw,workshop')).sort()).toEqual(['Room', 'Sketch']);
+    expect(titles(await list(ada.auth, 'modes=diagram&q=flow'))).toEqual(['Flow']);
+    expect(titles(await list(ada.auth, 'modes=pages'))).toEqual([]);
+    const tooMany = Array.from({ length: 9 }, (_, i) => `m${i}`).join(',');
+    for (const bad of ['modes=Draw%20it', `modes=${tooMany}`]) {
+      expect((await call(`/items?${bad}`, { auth: ada.auth })).status, bad).toBe(400);
+    }
+  });
+
   it('reaches a folder’s subfolders with deep', async () => {
     const ada = await person('user_a');
     const folder = async (name: string, parentId?: string) =>
@@ -328,6 +349,7 @@ describe('query plans', () => {
         since: 1,
         owner: 'me',
         intent: ['kanban'],
+        modes: ['draw'],
         apps: ['liveplanner', 'livediagram'],
         space: { mine: true, shared: true, teams: ['team1'] },
         limit: 50,
@@ -378,8 +400,9 @@ describe('at 2,000 items', () => {
     const kinds = ['canvas', 'plan', 'document', 'design'];
     const insert = db.prepare(
       `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, summary, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, NULL, ?, '{}', ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)`,
     );
+    const modes = ['diagram', 'draw', 'workshop'];
     db.exec('BEGIN');
     // 2,000 of Ada's (a quarter in her team), and 20,000 of other people's around them.
     for (let i = 0; i < 22_000; i++) {
@@ -394,6 +417,7 @@ describe('at 2,000 items', () => {
         team,
         scope,
         `Item ${i} ${i % 7 === 0 ? 'roadmap' : 'notes'}`,
+        JSON.stringify({ mode: modes[i % 3], elements: i % 50 }),
         i,
         1_000_000 + i,
       );
@@ -456,6 +480,15 @@ describe('at 2,000 items', () => {
       const q = 'view=search&q=item%20roadmap&owner=me&space=mine,team:team1&since=1&limit=200';
       return (await list(ada.auth, q)).items.length;
     });
+    // Mode reads each candidate's summary: the common case, and one that matches nothing (every row read).
+    const mode = await time(
+      'mode: workshop, 200',
+      async () => (await list(ada.auth, 'modes=workshop&limit=200')).items.length,
+    );
+    const modeNone = await time(
+      'mode matching nothing, every row read',
+      async () => (await list(ada.auth, 'modes=nowhere&limit=200')).items.length,
+    );
     const favs = await time(
       'favourites',
       async () => (await list(ada.auth, 'view=favourites&limit=200')).items.length,
@@ -464,7 +497,7 @@ describe('at 2,000 items', () => {
     // Generous for a loaded CI machine; locally each is a few milliseconds.
     expect(firstPage).toBeLessThan(150);
     expect(walk).toBeLessThan(1500);
-    for (const ms of [recent, oneApp, search, searchView, deepest, favs])
+    for (const ms of [recent, oneApp, search, searchView, deepest, mode, modeNone, favs])
       expect(ms).toBeLessThan(250);
 
     const first = await list(ada.auth, 'limit=200');

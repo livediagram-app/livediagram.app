@@ -39,6 +39,10 @@ export function ChromeControls({
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   return (
     <>
+      {/* The Start Tour button, first in the cluster and immediately left of Search: the one way into a tour,
+          drawn only while one is on offer (docs/specs/007-editor/editor-tour.md "Where it appears"). Leading the cluster, it comes and
+          goes without moving the controls beside it. */}
+      <TourOfferButton labelled={labelled} />
       {onOpenSearch ? (
         <HoverCard title="Search" description="Find plans, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
@@ -47,9 +51,6 @@ export function ChromeControls({
           </button>
         </HoverCard>
       ) : null}
-      {/* The Start Tour button, immediately left of Settings: the one way into a tour, drawn only while one is on
-          offer (docs/specs/007-editor/editor-tour.md "Where it appears"). */}
-      <TourOfferButton labelled={labelled} />
       {onOpenSettings ? (
         <HoverCard title={settingsLabel} description={settingsDescription}>
           <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

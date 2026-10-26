@@ -308,7 +308,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   can't read, and the platform keeps no device settings of its own beyond Appearance, already on the bar. Its code,
   and the app's catalogue, are fetched when the button is pointed at. The toasts and a guest's sign-in banner stand
   above the bar.
-- **Search.** The bar's Search and Cmd/Ctrl+K open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
+- **Search.** The bar's Search and Cmd/Ctrl+K or Cmd/Ctrl+. open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
   only when first opened): one field over the person's items (the index's `search` view, the words in the title or
   folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help
   articles in the app's help centre and, signed in, the sections of their account's settings. Items are asked for
@@ -412,7 +412,10 @@ up in the timings, the routers can reach the site through a service binding inst
 option), which removes the public round trip.
 
 Its styles are in their own stylesheet, `app/explorer/explorer.css`, so the other pages don't carry them. The
-pages are `noindex`. Cmd/Ctrl+K opens the Search panel.
+pages are `noindex`. Cmd/Ctrl+K and Cmd/Ctrl+. open the Search panel (`useSearchShortcut` from
+`@liveworkspace/explorer/search-shortcut`), the same two chords as the editors' command palette. They stand aside while
+the person is typing (a text field, a text area, a select or editable text) and while a dialog is open (anything
+marked `aria-modal`, the Search panel itself included), so a chord typed into a field or a dialog stays there.
 
 ### Your account (`/account/…`)
 

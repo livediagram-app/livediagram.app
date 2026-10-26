@@ -100,7 +100,7 @@ test.describe('editor modes', () => {
     await expect(page.getByRole('button', { name: /mode:/i })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Tab menu' }).click();
-    await expect(page.getByRole('button', { name: 'Add to Folder' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Organise in Tab Folder' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Mode/ })).toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Mode' })).toHaveCount(0);
     expectNoPageErrors(pageErrors);

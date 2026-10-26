@@ -15,6 +15,7 @@ import {
 import type { App } from '@liveworkspace/index-client';
 import {
   DEFAULT_FOLDER_OPTIONS as DIAGRAM_FOLDER_OPTIONS,
+  LENS_MODES as DIAGRAM_MODES,
   TEMPLATE_FAMILIES as DIAGRAM_FAMILIES,
 } from '@livediagram/api-schema';
 import { TEMPLATE_FAMILIES as PLAN_FAMILIES } from '@liveplanner/api-schema';
@@ -171,6 +172,16 @@ const LENS_TEMPLATES: Partial<Record<App, readonly LensOption[]>> = {
 
 export function lensTemplatesFor(app: App): readonly LensOption[] | undefined {
   return LENS_TEMPLATES[app];
+}
+
+// The editor modes an app's items open in, for the lens's Mode chip (an item's `summary.mode`): only an app with more
+// than one. livediagram's Diagram, Draw and Workshop; every other app's items open in one mode, so no chip.
+const LENS_MODES: Partial<Record<App, readonly LensOption[]>> = {
+  livediagram: DIAGRAM_MODES,
+};
+
+export function lensModesFor(app: App): readonly LensOption[] | undefined {
+  return LENS_MODES[app];
 }
 
 // Default Folders' entries per editor mode and specific kind, for an app that files new items by them (its

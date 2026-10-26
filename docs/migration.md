@@ -70,13 +70,26 @@ the copy takes).
      not a table of its own. `email_lifecycle` holds only which onboarding emails were sent; its stamps are copied
      too (into the accounts Worker's `email_lifecycle`, with `signup_app` livediagram), so nobody gets the welcome
      series again;
-   - `shape_libraries`, `custom_themes` and `placement_defaults` into each person's `PersonStore`.
+   - Plan's, Forms', Pages' and the logo pages' settings go to the app that has the feature, not livediagram:
+     `planTourSeen`, `planTourTracks` and `formTourSeen` to liveplanner's scope; `pagesTourSeen` to livedocuments'
+     and livedesign's, with each one's own page kinds of `pagesTourKinds` (article, slide and infographic to
+     livedocuments, logo and wireframe to livedesign); `logoGuides`, `logoGuidesHidden` and `logoGuideStrength` to
+     livedesign's. The old `recentExcludedIds` list is not a setting on the new side: it becomes the index's hidden
+     `opens` rows (step 2.3);
+   - `shape_libraries` into each person's livediagram `PersonStore`, through livediagram's person migration door
+     (Tooling); `placement_defaults` into the index's `placement_defaults`. `custom_themes` and tags are not carried:
+     livediagram has neither feature.
 4. **Recreate teams** in the accounts Worker (`liveworkspace/docs/specs/003-accounts/accounts.md`, Teams) from `teams` and
    `team_members`: each team with its name, organisation, members and roles through the owner map, **keeping the
    old team id** (both sides use a plain UUID as the key, `team.id` here and `teams.id` there, so documents keep
    their team with no team map). Roles map one to one (`admin`, `member` on both). An old member row with a
    `user_id` becomes `joined`; one with only an `email` (the old site's pending invitation) becomes `invited`, its
-   email sent only after the switch. An old creator row may have no `email` (the old table allowed null, the new
+   email sent only after the switch. A pending invitation keeps its reminder clock: `clockStartedAt` is the old
+   `clock_started_at` (its `created_at` where that is empty), with the old `reminder1/2/3_sent_at` and
+   `reminder_attempts`, so the accounts Worker's daily sweep carries on the old series where it stopped, sends no
+   reminder the old site had sent, and expires the invitation 28 days after its clock started, as the old site would
+   have. A catch-up run leaves the stamps as the first run wrote them (the sweep's own stamps don't move `updatedAt`,
+   so a rewrite could undo one). An old creator row may have no `email` (the old table allowed null, the new
    `team_member.email` doesn't), so it takes the account's email. This replaces 0002's "teams are managed
    separately". Recreating writes no `team_*` Timeline events and sends no
    invitation emails at import time.
@@ -121,9 +134,10 @@ One script, per document, in batches:
    (`document_not_empty`), so a catch-up run could never update one. The migration door writes the old times,
    takes changesets, marks what it wrote as imported with the old row's `updated_at`, and on a re-run replaces
    a tab only when it is still the imported revision (no one has edited it on the new side since).
-3. Register the document with the index: owner, team, folder, tags, favourites, Trash state, recent opens
-   (`document_opens`), and who it's shared with (`shared_with`, `share_links`, keeping each link's token so old
-   share URLs still work).
+3. Register the document with the index: owner, team, folder, favourites, Trash state, recent opens
+   (`document_opens`) with what each person hid from Recent (the old `recentExcludedIds` preference: an open row
+   marked `hidden`, or a row with no open, `last_opened_at` 0, for a document they hid but never opened), and who
+   it's shared with (`shared_with`, `share_links`, keeping each link's token so old share URLs still work).
 4. Shared tabs (one tab in several documents, `tab-document-many-to-many.md`) become `tab_shares` rows once every
    document holding the tab has been copied, so run that as a second pass.
 
@@ -132,7 +146,11 @@ One script, per document, in batches:
 imported so the import doesn't count as fresh activity or notify anyone. `agent_changesets` and their parts go into
 the document's `DocumentRoom` beside the tabs they changed. Where a tab was split off (step 3), its history goes
 with it to the product it went to, if that product keeps a Timeline for it; otherwise it stays on the livediagram
-part. An old event kind with no new equivalent is reported in the rehearsal and dropped rather than guessed.
+part. The kinds the index has under another name are mapped: `document_opened_by_visitor` and
+`document_copied_by_visitor` to `opened_by_visitor` and `copied_by_visitor`, `document_synced` to `synced`,
+`document_offline` to the person's own `taken_offline` (about no item, titled with the document's name),
+`team_invite_accepted` to `team_joined`, and `team_member_left` to `team_member_removed` marked `left`. An old event
+kind with no new equivalent is reported in the rehearsal and dropped rather than guessed.
 Not copied: `collab_threads` and `collab_actions` (a projection, rebuilt from the JSON), `change_log`, `events`
 (telemetry).
 
@@ -149,7 +167,7 @@ A livediagram document can hold tabs that now belong to four products. Each tab 
 
 - **One new document per product**, not per tab: a document with a diagram, two slide decks and a board becomes
   one livediagram document, one livedocuments document holding both decks, and one liveplanner project.
-- **The same name**, owner, team, folder, tags and sharing on every part, so each person finds them where they
+- **The same name**, owner, team, folder and sharing on every part, so each person finds them where they
   expect. A document with no diagram tabs keeps its id in the product that got most of it, so its links land
   there.
 - **A pointer from the original.** The livediagram part (or its link, if it has no diagram tabs) carries where
@@ -323,15 +341,16 @@ from a laptop. Nothing in it is deployed.
   bundle on disk: `manifest.json` (steps in apply order, the bundle id, the ledger generation it was planned
   against), `owner-map.json`, `sql/<db>/NNNN.sql` with `ledger/<db>/NNNN.jsonl` beside each chunk (accounts,
   index, media, community), `r2/images.json` (and `r2/pictures/` for drawn pictures), `rooms/rooms.jsonl`,
-  `kv/mcp-clients.json`, `moved-parts.json` and `report.json`. Deterministic: ids are name-based UUIDs, so the
-  same snapshot and ledger make a byte-identical bundle. Tabs are upgraded with `@livediagram/document`'s
-  `migrateStoredTabKeepingRetired` (every upgrade but the Pages and Plan drops). Each `CrossReference.picture` is
+  `people/people.jsonl`, `kv/mcp-clients.json`, `moved-parts.json` and `report.json`. Deterministic: ids are
+  name-based UUIDs, so the same snapshot and ledger make a byte-identical bundle. Tabs are upgraded with
+  `@livediagram/document`'s `migrateStoredTabKeepingRetired` (every upgrade but the Pages and Plan drops). Each `CrossReference.picture` is
   drawn with liveplanner's renderer into a PNG and lands as a media image in the person's library. Export
   `existing-accounts.json` right before `plan`: a stale one can let a Clerk row clash with an account made since.
 - `apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]`: runs the steps in order (accounts, index, media and R2,
-  the rooms through each app's migration door, community, the MCP's KV), each command with only that side's
-  credentials (it never passes the shell's `CLOUDFLARE_*` through), then records what it wrote in the ledger. A
-  bundle planned against an older ledger generation is refused.
+  the rooms through each app's migration door, livediagram's people (their shape libraries) through its person
+  migration door, community, the MCP's KV), each command with only that side's credentials (it never passes the
+  shell's `CLOUDFLARE_*` through), then records what it wrote in the ledger. A bundle planned against an older
+  ledger generation is refused.
 - `verify <bundle> --env … [--out <verify.json>]`: step 9's row counts, read back from each database (one
   wrangler call per 500 keys). It reads databases only, not the rooms.
 
@@ -343,8 +362,13 @@ What `plan` decides for you (all reported in `report.json`):
 - **Share links**: each goes to the part holding its tab, else to the part that kept the old id. People it was
   shared with see every part; a part with no link of its own gets a generated one (`shared_with` needs a link).
   Codes that differ only in case are reported (the new side stores them upper case).
-- **History**: Timeline events are written once, as `imp:<old id>`. Kinds with no new equivalent are dropped and
-  counted.
+- **History**: Timeline events are written once, as `imp:<old id>`, each old kind under its index name (step 2).
+  Kinds with no new equivalent are dropped and counted.
+- **Shape libraries**: one `MigrationPersonPayload` per person who had any, sent to livediagram's person migration
+  door. Added once and never updated: a library whose id the person already has is left as it is, and one whose
+  name they already use takes the next free `(n)`.
+- **Hidden from Recent**: each person's `recentExcludedIds` becomes `hidden` on their `opens` row for every part of
+  each document it names.
 - **Profiles and `legacy_guest`**: a `profile` row from each carried participant, and a `legacy_guest` row per old
   guest (step 6).
 - **Tokens**: only live ones are copied; one revoked on the old site after an earlier run gets its `revokedAt`.
@@ -374,6 +398,14 @@ in each app's `.env.example`, set for the migration and removed after it; it ope
 - Answers 200 `{ written, edited, meta }`, 400 for a body that isn't this app's payload, 503 when the write fails.
 - The index item must exist first (the index SQL runs before the rooms, with summary `{"imported":"1"}`). The
   room's first summary push carries the item's old `savedAt` as its change time.
+
+**The person migration door** (the same kit, livediagram's api only): `PUT /api/internal/people/:id/migration` with a
+`MigrationPersonPayload` (`v` 1, the app, the person's new owner id, their shape libraries as the old rows held
+them), behind `Bearer MIGRATION_KEY` alone; a plain 404 without it, or in an app that doesn't take one. The body is
+checked whole first (at most 32 MiB, 413 `too_large`; 400 for anything else wrong), then the libraries join the
+person's `PersonStore` as a guest's do when they sign in (`adoptShapeLibraries`): an id the store already holds is
+left alone, a name already in use takes the next free `(n)`. Answers 200 `{ moved, renamed }`, 503 when the write
+fails. The bundle lists the people in `people/people.jsonl`, one `people/<app>/<owner>.json` each.
 
 **API tokens.** `packages/api-kit/src/api-token.ts` has `LEGACY_API_TOKEN_PREFIX` and `hasApiTokenPrefix`, and its
 `isApiTokenFormat` takes `lvd_` beside `lwt_`. Every product's api-schema re-exports them, so the accounts Worker
@@ -421,8 +453,11 @@ in each app's `.env.example`, set for the migration and removed after it; it ope
 - **R2 copy speed**: one wrangler process per get and per put. At 50,000 images that is hours; if the rehearsal is
   slow, copy with an S3 client (rclone) under the same keys.
 - **Picture time**: 10,000 pictures is roughly 10–50 minutes on one thread; worker threads would cut it.
-- **Not carried**: tags (the index has none), shape libraries, custom themes, and tabs shared between documents
+- **Not carried**: tags and custom themes (livediagram has neither), and tabs shared between documents
   (`tab_shares`, a second pass not built). Invitations need an email after the switch.
+- **Invitation reminders before the switch**: an imported pending invitation is on the accounts Worker's reminder
+  sweep at once, while the old site still runs its own, so one that reaches a reminder age between the first run and
+  the switch may hear that reminder from both.
 - **A Community post** whose content moved to livedocuments or livedesign is skipped and reported.
 - **Two images, one owner**: when a guest is folded into an account and both had the same bytes, only the first
   goes in (reported); places using the other show nothing.

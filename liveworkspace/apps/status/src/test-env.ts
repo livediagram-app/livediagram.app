@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { Env } from './env';
 
 const MIGRATIONS = join(import.meta.dirname, '../migrations');
@@ -19,8 +20,12 @@ type Bound = {
 
 export function sqliteD1(): { db: D1Database; raw: DatabaseSync } {
   const raw = new DatabaseSync(':memory:');
-  for (const file of readdirSync(MIGRATIONS).toSorted())
-    if (file.endsWith('.sql')) raw.exec(readFileSync(join(MIGRATIONS, file), 'utf8'));
+  for (const file of readdirSync(MIGRATIONS).toSorted()) {
+    if (!file.endsWith('.sql')) continue;
+    const migration = readFileSync(join(MIGRATIONS, file), 'utf8');
+    assertD1Compound(migration);
+    raw.exec(migration);
+  }
 
   const exec = (sql: string, args: SQLInputValue[]): D1Result => {
     const stmt = raw.prepare(sql);
@@ -43,7 +48,9 @@ export function sqliteD1(): { db: D1Database; raw: DatabaseSync } {
     };
   };
 
+  // D1 refuses a compound SELECT of more than five terms, where node:sqlite allows 500.
   const prepare = (sql: string): Bound => {
+    assertD1Compound(sql);
     const bound = (args: SQLInputValue[]): Bound => ({
       sql,
       args,

@@ -36,6 +36,7 @@ import {
   COLUMN_NAME_MAX,
   WIP_LIMIT_MAX,
   addColumnAfter,
+  addColumnsAfter,
   moveColumn,
   recolourColumn,
   removeColumn,
@@ -468,6 +469,14 @@ export function PlanColumnPopover({
               if (!made) return;
               requestColumnSettings(made.column.id);
               onChange(made.setup, 'ColumnAdded');
+              onClose(false);
+            }}
+            onSuggest={(names) => {
+              const made = addColumnsAfter(setup, column.id, names);
+              if (!made) return;
+              // One suggestion moves the settings to its column, as a typed name does; Add All closes them.
+              if (names.length === 1) requestColumnSettings(made.column.id);
+              onChange(made.setup, 'ColumnAddedSuggested');
               onClose(false);
             }}
           />

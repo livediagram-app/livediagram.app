@@ -668,7 +668,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
-  **Start Tour** button, immediately left of Settings, and stays there once taken ([Pages tour](pages-tour.md)).
+  **Start Tour** button, immediately left of Search, and stays there once taken ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
   tour when it is on offer right now. (The note's words, and the Show Me section's, say tours offer themselves once; none
   does.) A tour is not an accessibility setting, so the rows are not under Accessibility. Every switch is inverted: on means "not taken yet", the

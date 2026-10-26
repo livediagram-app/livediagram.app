@@ -28,6 +28,8 @@ export type ListFilters = {
   owner?: ItemOwner;
   // Last words of the creation intent.
   intent?: string[];
+  // The mode the item's app last reported in its summary (livediagram's `diagram`, `draw`, `workshop`).
+  modes?: string[];
   // Where it lives: the person's own scope, reached through a link, or these joined teams.
   space?: { mine: boolean; shared: boolean; teams: string[] };
 };
@@ -105,7 +107,7 @@ const SUBTREE = `IN (WITH RECURSIVE sub(id) AS (SELECT ? UNION SELECT f.id FROM 
 /**
  * The filters' clauses over `items i`, for every list and Shared With Me: each word in the title or the
  * folder's name (the person's own folders, so another's names find nothing), the source, the last change,
- * whose it is, the intent's last word, and where it lives.
+ * whose it is, the intent's last word, the mode it opens in, and where it lives.
  */
 export function filterClauses(
   person: Person,
@@ -144,6 +146,11 @@ export function filterClauses(
       `(${filters.intent.map(() => "(i.intent = ? OR i.intent LIKE '%:' || ?)").join(' OR ')})`,
     );
     for (const word of filters.intent) args.push(word, word);
+  }
+  if (filters.modes?.length) {
+    // Read from the row the list already holds: no index, and none needed (the scope or folder drives the plan).
+    where.push(`json_extract(i.summary, '$.mode') ${IN_JSON}`);
+    args.push(JSON.stringify(filters.modes));
   }
   if (filters.space) {
     const { mine, shared, teams } = filters.space;

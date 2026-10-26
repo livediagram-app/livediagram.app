@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import router, { type Env } from './index';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
+import {
+  legacyEditorRedirect,
+  legacyFormRedirect,
+  legacyHelpRedirect,
+  liveplannerOrigin,
+} from './legacy-editor-route';
 
 function envWithLive() {
   const urls: string[] = [];
@@ -145,6 +150,18 @@ describe('legacyHelpRedirect', () => {
       ['/help/self-hosting/deploying-livediagram/', '/help/'],
       ['/help/self-hosting/configuration/', '/help/'],
       ['/help/self-hosting/configuration/drive-and-mcp/', '/help/'],
+      // Custom themes, tags and the AI assistant were removed: their articles land on the nearest live one.
+      ['/help/canvas/themes/custom-themes/', '/help/canvas/themes/'],
+      ['/help/canvas/themes/custom-themes', '/help/canvas/themes'],
+      ['/help/explorer/themes-library/', '/help/canvas/themes/'],
+      ['/help/explorer/tags/', '/help/explorer/folders/'],
+      ['/help/tools/ai/', '/help/account-and-data/connect-ai-mcp/'],
+      ['/help/tools/ai/ai-tools/', '/help/account-and-data/connect-ai-mcp/'],
+      // A retired category's link that lost its `/help` prefix lands on the help centre home too.
+      ['/self-hosting', '/help/'],
+      ['/self-hosting/', '/help/'],
+      ['/self-hosting/deploying-livediagram/', '/help/'],
+      ['/self-hosting/configuration/drive-and-mcp', '/help/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(
@@ -163,6 +180,10 @@ describe('legacyHelpRedirect', () => {
       '/help/account-and-data/exporting-diagrams/',
       '/help/tabs/add-to-document/',
       '/help/canvas/draw-mode/',
+      '/help/canvas/themes/',
+      '/help/explorer/folders/',
+      '/self-hostingx/',
+      '/help/self-hostingx/',
     ]) {
       expect(
         legacyHelpRedirect(
@@ -177,6 +198,49 @@ describe('legacyHelpRedirect', () => {
     const { env, urls } = envWithLive();
     const res = await dispatch('/help/tabs/add-to-diagram/', env);
     expect(res.status).toBe(308);
+    expect(urls).toEqual([]);
+  });
+});
+
+describe('legacyFormRedirect', () => {
+  const at = (path: string) =>
+    new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`);
+
+  it('sends an old form link to the same path on liveplanner, for good, keeping the query', () => {
+    const res = legacyFormRedirect(at('/form/AbC123?embed=1'), undefined)!;
+    expect(res.status).toBe(308);
+    expect(res.headers.get('location')).toBe('https://www.liveplanner.app/form/AbC123?embed=1');
+    expect(legacyFormRedirect(at('/form'), undefined)!.headers.get('location')).toBe(
+      'https://www.liveplanner.app/form',
+    );
+    expect(legacyFormRedirect(at('/form/'), undefined)!.headers.get('location')).toBe(
+      'https://www.liveplanner.app/form/',
+    );
+  });
+
+  it("names liveplanner's address for each deployment", () => {
+    expect(liveplannerOrigin(undefined)).toBe('https://www.liveplanner.app');
+    expect(liveplannerOrigin('staging')).toBe('https://staging.liveplanner.app');
+    expect(liveplannerOrigin('local')).toBe('http://localhost:3200');
+    expect(legacyFormRedirect(at('/form/CODE'), 'staging')!.headers.get('location')).toBe(
+      'https://staging.liveplanner.app/form/CODE',
+    );
+    expect(legacyFormRedirect(at('/form/CODE'), 'local')!.headers.get('location')).toBe(
+      'http://localhost:3200/form/CODE',
+    );
+  });
+
+  it('leaves look-alike paths alone', () => {
+    for (const path of ['/forms', '/formx/1', '/help/form', '/document/form']) {
+      expect(legacyFormRedirect(at(path), undefined), path).toBeNull();
+    }
+  });
+
+  it('redirects through the router before the editor sees it', async () => {
+    const { env, urls } = envWithLive();
+    const res = await dispatch('/form/CODE1234', env);
+    expect(res.status).toBe(308);
+    expect(res.headers.get('location')).toBe('https://www.liveplanner.app/form/CODE1234');
     expect(urls).toEqual([]);
   });
 });

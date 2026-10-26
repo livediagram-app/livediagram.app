@@ -150,6 +150,8 @@ export type ExplorerContextValue = {
   onHome?: HomeTelemetry;
   // The lens's Template values: the host's template families (none: no Template filter).
   lensTemplates: readonly LensOption[];
+  // The lens's Mode values: the host's editor modes (none: no Mode filter).
+  lensModes: readonly LensOption[];
   // A facet of the lens gained a value (`Explorer / Selected / <Facet>`).
   onLensSelected?: (type: LensTelemetryType) => void;
   // The rows the list on screen holds, as the lens reads them, when it is loaded whole (null while pages
@@ -242,6 +244,7 @@ export type ExplorerProviderProps = {
   onTimeline?: TimelineTelemetry;
   onHome?: HomeTelemetry;
   lensTemplates?: readonly LensOption[];
+  lensModes?: readonly LensOption[];
   // Default Folders' entries for what the host's items open in and their kinds (DefaultFolderOption), between the
   // app's own and its templates'; none by default.
   defaultFolderOptions?: readonly DefaultFolderOption[];
@@ -290,6 +293,7 @@ export function ExplorerProvider({
   onTimeline,
   onHome,
   lensTemplates = NO_TEMPLATES,
+  lensModes = NO_TEMPLATES,
   defaultFolderOptions = NO_DEFAULT_OPTIONS,
   onLensSelected,
   onOrganise,
@@ -421,6 +425,7 @@ export function ExplorerProvider({
       onTimeline,
       onHome,
       lensTemplates,
+      lensModes,
       onLensSelected,
       lensSubjects,
       expansion,
@@ -467,6 +472,7 @@ export function ExplorerProvider({
       onTimeline,
       onHome,
       lensTemplates,
+      lensModes,
       onLensSelected,
       expansion,
       onFolderShown,

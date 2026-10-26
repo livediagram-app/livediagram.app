@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 
 const MIGRATIONS = fileURLToPath(new URL('../migrations/', import.meta.url).href);
 
@@ -16,10 +17,14 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
   for (const file of readdirSync(MIGRATIONS)
     .filter((f) => f.endsWith('.sql'))
     .sort()) {
-    sql.exec(readFileSync(MIGRATIONS + file, 'utf8'));
+    const migration = readFileSync(MIGRATIONS + file, 'utf8');
+    assertD1Compound(migration);
+    sql.exec(migration);
   }
 
+  // D1 refuses a compound SELECT of more than five terms, where node:sqlite allows 500.
   const statement = (query: string, args: SQLInputValue[] = []) => {
+    assertD1Compound(query);
     const rows = () =>
       sql
         .prepare(query)
@@ -49,7 +54,10 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
   const db = {
     prepare: (query: string) => statement(query),
     // Never called here, but Better Auth recognises a D1 by it.
-    exec: async (query: string) => sql.exec(query),
+    exec: async (query: string) => {
+      assertD1Compound(query);
+      sql.exec(query);
+    },
     batch: async (statements: { exec: () => unknown }[]) => {
       sql.exec('BEGIN');
       try {

@@ -67,25 +67,33 @@ function orderSpaces(values: readonly string[]): SpaceValue[] {
   return [...inOrder(SPACE_FIXED_VALUES, values), ...teams];
 }
 
+/** The host's values of a dimension it names (Mode, Template), in its order. */
+function hostValues(
+  dimension: 'mode' | 'template',
+  context: Pick<LensContext, 'templates' | 'modes'>,
+): string[] {
+  return (dimension === 'mode' ? (context.modes ?? []) : context.templates).map((o) => o.value);
+}
+
 /** A dimension's values deduplicated and in its canonical order; any value outside it is dropped. */
 export function orderValues(
   dimension: LensDimension,
   values: readonly string[],
-  context: Pick<LensContext, 'templates'>,
+  context: Pick<LensContext, 'templates' | 'modes'>,
 ): string[] {
   if (dimension === 'space') return orderSpaces(values);
-  if (dimension === 'template') {
-    return inOrder(
-      context.templates.map((t) => t.value),
-      values,
-    );
+  if (dimension === 'template' || dimension === 'mode') {
+    return inOrder(hostValues(dimension, context), values);
   }
   return inOrder<string>(FIXED_VALUES[dimension], values);
 }
 
-/** Whether the dimension can be used here: Template only when the host names its families. */
+/** Whether the dimension can be used here: Template only when the host names its families, Mode its modes. */
 export function dimensionAvailable(dimension: LensDimension, context: LensContext): boolean {
-  return dimension !== 'template' || context.templates.length > 0;
+  if (dimension === 'template' || dimension === 'mode') {
+    return hostValues(dimension, context).length > 0;
+  }
+  return true;
 }
 
 function problem(
@@ -113,9 +121,19 @@ function readValue(dimension: LensDimension, raw: string, context: LensContext):
   const value = raw.toLowerCase();
   const known = isFixedDimension(dimension)
     ? (FIXED_VALUES[dimension] as readonly string[])
-    : context.templates.map((t) => t.value);
+    : hostValues(dimension, context);
   if (!known.includes(value)) return problem('unknown_value', dimension, raw);
   return { ok: true, value };
+}
+
+/** The old Explorer wrote a canvas's editor mode as Opens in (`opens-in:draw`): a word whose values are all the
+ *  host's modes reads as the Mode token it means, so an old link or habit lands on the same list. Anything else
+ *  keeps its key. */
+function legacyModeKey(key: string, rawValues: string, context: LensContext): string {
+  if (key !== 'opens-in' || rawValues === '') return key;
+  const modes = hostValues('mode', context);
+  const values = rawValues.toLowerCase().split(LENS_VALUE_SEPARATOR);
+  return values.every((value) => modes.includes(value)) ? 'mode' : key;
 }
 
 /** Reads one whitespace-free word against the grammar. A comma list is a token only when every entry is a value
@@ -123,7 +141,7 @@ function readValue(dimension: LensDimension, raw: string, context: LensContext):
 export function readWord(word: string, context: LensContext): WordReading {
   const [, rawKey, rawValues = ''] = TOKEN_SHAPED.exec(word) ?? [];
   if (rawKey === undefined) return PLAIN;
-  const key = rawKey.toLowerCase();
+  const key = legacyModeKey(rawKey.toLowerCase(), rawValues, context);
   if (!isLensDimension(key) || !dimensionAvailable(key, context)) {
     return { kind: 'text', problem: { reason: 'unknown_dimension', dimension: null, value: null } };
   }
@@ -144,6 +162,7 @@ function filtersOf(
   const of = (dimension: LensDimension) => applied.get(dimension) ?? [];
   return {
     'opens-in': inOrder(OPENS_IN_VALUES, of('opens-in')),
+    mode: orderValues('mode', of('mode'), context),
     template: orderValues('template', of('template'), context),
     'made-by': inOrder(MADE_BY_VALUES, of('made-by')),
     edited: inOrder(EDITED_VALUES, of('edited')),

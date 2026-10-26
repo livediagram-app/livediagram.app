@@ -107,6 +107,30 @@ function generated() {
       });
     }
   }
+  // Every owner hid 20 documents from Recent, and as many guests have two shape libraries each (an account here has
+  // no Clerk row, so its libraries would be skipped).
+  owners.forEach((owner, o) => {
+    const hidden = Array.from(
+      { length: 20 },
+      (_, k) => `doc-${String((o * 20 + k) % DOCS).padStart(6, '0')}`,
+    );
+    put(db, 'user_preferences', {
+      owner_id: owner,
+      prefs: JSON.stringify({ recentExcludedIds: hidden, planTourSeen: true }),
+      updated_at: NOW - DAY,
+    });
+    for (let l = 0; l < 2; l++) {
+      put(db, 'shape_libraries', {
+        id: `lib-${o}-${l}`,
+        owner_id: `00000000-0000-4000-8000-${String(o).padStart(12, '0')}`,
+        name: `Library ${l}`,
+        source: 'drawio',
+        items: JSON.stringify(Array.from({ length: 50 }, (_, s) => ({ id: `s${s}` }))),
+        created_at: NOW - DAY,
+        updated_at: NOW - DAY,
+      });
+    }
+  });
   db.exec('COMMIT');
   return db;
 }
@@ -123,6 +147,8 @@ it(`plans ${DOCS} documents within budget`, { timeout: BUDGET_MS * 2 }, async ()
       `heap +${Math.round((heapAfter - heapBefore) / 1e6)} MB`,
   );
   expect(rooms).toBe(DOCS);
+  expect(readdirSync(join(outDir, 'people', 'livediagram'))).toHaveLength(500);
+  expect(report.counts['opens.hidden']).toBeGreaterThanOrEqual(500 * 20);
   expect(ms).toBeLessThan(BUDGET_MS);
 });
 

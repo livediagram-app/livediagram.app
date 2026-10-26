@@ -33,8 +33,9 @@ export type ExplorerView =
   | { kind: 'gallery' }
   // The person's shape libraries, from the host's store (only where the host has one).
   | { kind: 'shape-libraries' }
-  // What the host app keeps only in this browser (only where the host can read it: the app's own address).
-  | { kind: 'offline' };
+  // What the host app keeps only in this browser (only where the host can read it: the app's own address), narrowed
+  // by the lens in this browser, since the index never sees them.
+  | ({ kind: 'offline' } & Lensed);
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
@@ -48,6 +49,8 @@ const LENS_VIEWS: Partial<Record<ExplorerView['kind'], LensViewKind>> = {
   favourites: 'aggregate',
   shared: 'aggregate',
   search: 'aggregate',
+  // One place, this browser: a Space token does not apply, as on any scoped view.
+  offline: 'scoped',
 };
 
 export function lensViewOf(kind: ExplorerView['kind']): LensViewKind | null {
@@ -127,8 +130,9 @@ export function viewFromLocation(
     case 'home':
     case 'invites':
     case 'shape-libraries':
-    case 'offline':
       return { kind: section };
+    case 'offline':
+      return lensed({ kind: 'offline' });
     case 'images':
       return { kind: 'gallery' };
     case 'search':

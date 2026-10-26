@@ -304,6 +304,8 @@ export function createFakeIndex(
         const mine = events
           .filter((e) => !query.app || e.app === query.app)
           .filter((e) => !query.item || e.itemId === query.item)
+          // One team's activity: the events on its items.
+          .filter((e) => !query.team || e.item?.teamId === query.team)
           .sort((a, b) => b.occurredAt - a.occurredAt);
         const { slice, next } = page(mine, query.limit ?? 30, query.cursor);
         return { events: slice, nextCursor: next, seenAt: timelineSeen.at };

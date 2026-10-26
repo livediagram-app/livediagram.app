@@ -152,6 +152,34 @@ export type MigrationDoorAnswer = {
   meta: boolean;
 };
 
+// ---- The person migration door -------------------------------------------------------------------------------------
+//
+// `PUT /api/internal/people/:id/migration` on livediagram's api, with `Authorization: Bearer <MIGRATION_KEY>` alone:
+// what the app keeps for one person beside their items. Today that is their shape libraries, which join the person's
+// store as a guest's do when they sign in: an id already there is left alone, a name in use takes the next free
+// " (n)". Never updates or deletes.
+
+/** One old `shape_libraries` row, as the person's store keeps it (`items` is the stored JSON array, raw). */
+export type MigrationShapeLibrary = {
+  id: string;
+  name: string;
+  source: string;
+  items: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type MigrationPersonPayload = {
+  v: 1;
+  app: MigrationApp;
+  /** The person on the new side, through the owner map: the path's id. */
+  personId: string;
+  shapeLibraries: MigrationShapeLibrary[];
+};
+
+/** The person door's answer: libraries added, and how many of those took a new name. */
+export type MigrationPersonAnswer = { moved: number; renamed: number };
+
 // ---- The split ------------------------------------------------------------------------------------------------------
 
 /** Where the parts of one old document went: the moved_parts mapping (docs/migration.md, step 3). */

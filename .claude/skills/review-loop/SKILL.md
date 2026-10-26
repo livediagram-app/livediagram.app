@@ -23,7 +23,7 @@ decide becomes a Question card.
 
 ## The plan's shape
 
-- **Work Items** tab: Work Item cards. This loop only uses two of its columns, **Under Review** and
+- **Backlog** tab (it was Work Items; tab names may change, so go by column names): Work Item cards. This loop only uses two of its columns, **Under Review** and
   **Reviewed**. The fields are Description, App, **Priority** (Low, Medium, High, Critical) and **Type**
   (Feature or Bug).
 - **Questions** tab: Question cards with two columns, **Under Review** and **Resolved**. The fields are

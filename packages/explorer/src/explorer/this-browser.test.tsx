@@ -1,7 +1,7 @@
 // This Browser on the app's own address: the host app's items kept only in this browser, read from the list the app
 // keeps (this-browser.ts), shown as liveplanner's own Explorer showed them: the sidebar row and its count, the view,
 // the Trash's group and Jump Back In. Without a host (liveworkspace.app) none of it shows.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import {
@@ -225,6 +225,34 @@ describe('This Browser in the Explorer', () => {
   it('says so when nothing is kept', async () => {
     page({ kind: 'offline' }, host([]));
     expect(await screen.findByText('Nothing is kept only in this browser.')).toBeTruthy();
+  });
+
+  it('narrows by the lens in this browser, with the chips, and says so when nothing matches', async () => {
+    const now = Date.now();
+    const onNavigate = page(
+      { kind: 'offline', q: 'road' },
+      host([
+        local(1, { title: 'Road map', updatedAt: now }),
+        local(2, { title: 'Budget', updatedAt: now }),
+      ]),
+    );
+    const rows = await screen.findAllByRole('link', { name: /Road map|Budget/ });
+    expect(rows.map((a) => a.getAttribute('href'))).toEqual(['/project/local-1']);
+    const filters = screen.getByRole('group', { name: 'Filters' });
+    // Only what the list keeps offers a chip: no Template, Made by or Mode here.
+    const chipNames = within(filters)
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '');
+    expect(chipNames.some((n) => /Edited/.test(n))).toBe(true);
+    expect(chipNames.some((n) => /Made by|Mode|Template/.test(n))).toBe(false);
+    cleanup();
+
+    // What the list does not keep (how it was made) matches nothing here; Clear empties the lens.
+    const clear = page({ kind: 'offline', q: 'made-by:ai' }, host([local(1)]));
+    expect(await screen.findByText(/match these filters/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole('button', { name: /Clear/ })[0]!);
+    expect(clear).toHaveBeenCalledWith({ kind: 'offline' }, '/explorer/offline', { replace: true });
+    expect(onNavigate).not.toHaveBeenCalled();
   });
 
   it('groups the trashed ones in the Trash', async () => {

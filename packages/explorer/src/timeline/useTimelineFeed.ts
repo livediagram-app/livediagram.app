@@ -3,7 +3,10 @@
 // The Timeline's pages from the index (GET /timeline): the first page on arrival and whenever the app filter
 // changes, then a page per Show More, each one bounded read. "This app" asks for the host app's events only;
 // "All" for every app's. What counts as new is fixed by the first page of the visit (its `seenAt`), and the visit
-// then marks the Timeline seen, so the next visit's New starts here.
+// then marks the Timeline seen, so the next visit's New starts here. Coming back to the browser tab reads the first
+// page again (at most once in 30 seconds, useReturnToTab, as the Inbox does) and merges it in at the head, keeping
+// the pages loaded and the visit's `seenAt`. With `team`, it is that team's activity (`GET /timeline?team=`): the
+// same pages, nothing marked seen.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -13,6 +16,8 @@ import {
   type TimelineEvent,
 } from '@liveworkspace/index-client';
 import type { AppFilter } from '../words';
+import { useReturnToTab } from '../data/useReturnToTab';
+import { mergeHead } from './merge';
 
 export type TimelineFeed = {
   events: TimelineEvent[];
@@ -28,8 +33,11 @@ export type TimelineFeed = {
   hide: (ids: readonly string[]) => () => void;
 };
 
-const timelineQuery = (only: App | null) =>
-  only ? { app: only, limit: TIMELINE_PAGE } : { limit: TIMELINE_PAGE };
+const timelineQuery = (only: App | null, team: string | null) => ({
+  ...(only ? { app: only } : {}),
+  ...(team ? { team } : {}),
+  limit: TIMELINE_PAGE,
+});
 
 const isAbort = (e: unknown) => e instanceof DOMException && e.name === 'AbortError';
 
@@ -40,6 +48,8 @@ export function useTimelineFeed(
   epoch: number,
   /** Called once the visit has marked the Timeline seen, so a count of what is new can drop. */
   onSeen?: () => void,
+  /** A team's activity in place of the reader's own Timeline: nothing is marked seen. */
+  team: string | null = null,
 ): TimelineFeed {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -57,19 +67,23 @@ export function useTimelineFeed(
   const more = useRef<AbortController | null>(null);
   // The app asked for, or null for every app's: a string, so a new render is not a new query.
   const only: App | null = filter === 'app' ? app : null;
+  // How the first page went, for a return to the tab: merged in once it landed, read again whole if it failed.
+  const first = useRef<'reading' | 'landed' | 'failed'>('reading');
 
   useEffect(() => {
     const abort = new AbortController();
+    first.current = 'reading';
     more.current?.abort();
     setLoadingMore(false);
     setLoading(true);
     setError(false);
-    client.timeline(timelineQuery(only), { signal: abort.signal }).then(
+    client.timeline(timelineQuery(only, team), { signal: abort.signal }).then(
       (page) => {
+        first.current = 'landed';
         setEvents(page.events);
         setCursor(page.nextCursor);
         setLoading(false);
-        if (!seenFixed.current) {
+        if (!seenFixed.current && !team) {
           seenFixed.current = true;
           setLastSeenAt(page.seenAt);
           // Best effort: a failed mark only means the same events read as new next time.
@@ -81,12 +95,32 @@ export function useTimelineFeed(
       },
       (e: unknown) => {
         if (isAbort(e)) return;
+        first.current = 'failed';
         setLoading(false);
         setError(true);
       },
     );
     return () => abort.abort();
-  }, [client, only, epoch, attempt]);
+  }, [client, only, team, epoch, attempt]);
+
+  // Back to the tab: the first page again, merged in at the head, the pages and cursor as they are. A failure keeps
+  // what is shown. A feed whose first page failed reads again whole, which is how it recovers on its own.
+  const [returned, setReturned] = useState(0);
+  useReturnToTab(() => {
+    if (first.current === 'failed') setAttempt((n) => n + 1);
+    else if (first.current === 'landed') setReturned((n) => n + 1);
+  });
+  useEffect(() => {
+    if (returned === 0) return;
+    const abort = new AbortController();
+    client.timeline(timelineQuery(only, team), { signal: abort.signal }).then(
+      (page) => setEvents((prev) => mergeHead(prev, page.events)),
+      () => {},
+    );
+    return () => abort.abort();
+    // Only a return reads again; the first-page effect covers a change of app, team or epoch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [returned]);
 
   useEffect(() => () => more.current?.abort(), []);
 
@@ -95,7 +129,7 @@ export function useTimelineFeed(
     const abort = new AbortController();
     more.current = abort;
     setLoadingMore(true);
-    client.timeline({ ...timelineQuery(only), cursor }, { signal: abort.signal }).then(
+    client.timeline({ ...timelineQuery(only, team), cursor }, { signal: abort.signal }).then(
       (page) => {
         setEvents((prev) => {
           const have = new Set(prev.map((e) => e.id));
@@ -111,7 +145,7 @@ export function useTimelineFeed(
         setLoadingMore(false);
       },
     );
-  }, [client, cursor, loadingMore, only]);
+  }, [client, cursor, loadingMore, only, team]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 

@@ -3,6 +3,7 @@
 // owner map; a row for an account the new side doesn't have (an old id with no Clerk row) is skipped and reported,
 // since its foreign key would fail.
 import { splitSettings } from '@liveworkspace/settings';
+import { RECENT_EXCLUDED_KEY } from './recent-hidden.ts';
 import { LIVEDIAGRAM_MEDIA_APP, sha256Hex } from '../ids.ts';
 import { DAY_MS, type PlanContext } from './context.ts';
 
@@ -163,9 +164,10 @@ export function writeTeams(ctx: PlanContext): void {
         updatedAt,
         REV,
         s(m.decline_token_hashes) ?? '',
-        // No reminder clock: an imported invitation is sent once, after the switch (docs/migration.md, step 1.4),
-        // never by the reminder sweep at import time.
-        null,
+        // A pending invitation keeps its reminder clock (docs/migration.md, step 1.4), so the accounts Worker's sweep
+        // carries on the old series with the old stamps below and expires it 28 days after it started. An old row
+        // from before the clock existed starts it at its invitation.
+        status === 'invited' ? (n(m.clock_started_at) ?? Number(m.created_at)) : null,
         n(m.reminder1_sent_at),
         n(m.reminder2_sent_at),
         n(m.reminder3_sent_at),
@@ -257,8 +259,32 @@ const RETIRED = new Set([
   'planModeEnabled',
   'skipLocationStep',
 ]);
-// Preferences that are another app's now: Plan's form-response emails are liveplanner's (its settings catalogue).
-const OTHER_APP_KEYS: Readonly<Record<string, string>> = { notifyFormResponses: 'liveplanner.app' };
+// Preferences that are another app's now (docs/migration.md, step 1.3): Plan's and Forms' tours and form-response
+// emails are liveplanner's, the Pages tour is livedocuments' and livedesign's (each takes its own page kinds), and a
+// logo page's construction guides are livedesign's. Each app's own user-preferences.ts reads them under these names.
+const OTHER_APP_KEYS: Readonly<Record<string, readonly string[]>> = {
+  notifyFormResponses: ['liveplanner.app'],
+  planTourSeen: ['liveplanner.app'],
+  planTourTracks: ['liveplanner.app'],
+  formTourSeen: ['liveplanner.app'],
+  pagesTourSeen: ['livedocuments.app', 'livedesign.app'],
+  pagesTourKinds: ['livedocuments.app', 'livedesign.app'],
+  logoGuides: ['livedesign.app'],
+  logoGuidesHidden: ['livedesign.app'],
+  logoGuideStrength: ['livedesign.app'],
+};
+// The Pages tour's kinds each app has: an old list is split between them, a kind neither has (photo pages came
+// later) dropped.
+const PAGE_KINDS_OF: Readonly<Record<string, ReadonlySet<string>>> = {
+  'livedocuments.app': new Set(['article', 'slide', 'infographic']),
+  'livedesign.app': new Set(['logo', 'wireframe', 'photo']),
+};
+
+// A key's value as one app takes it: the Pages tour's kinds cut to that app's own.
+function valueFor(site: string, key: string, value: unknown): unknown {
+  if (key !== 'pagesTourKinds' || !Array.isArray(value)) return value;
+  return value.filter((kind) => PAGE_KINDS_OF[site]!.has(String(kind)));
+}
 
 /** The old blob as the new scopes: `all`, livediagram's, and any other app's that took a key. */
 export function settingsScopes(
@@ -266,7 +292,7 @@ export function settingsScopes(
 ): Record<string, Record<string, unknown>> {
   const upgraded: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(prefs)) {
-    if (RETIRED.has(key)) continue;
+    if (RETIRED.has(key) || key === RECENT_EXCLUDED_KEY) continue;
     const current = RENAMED[key];
     if (current === undefined) upgraded[key] = value;
     else if (!(current in prefs)) upgraded[current] = value;
@@ -277,8 +303,8 @@ export function settingsScopes(
   for (const [key, value] of Object.entries(app)) {
     // splitSettings marks a common key's app copy for deletion (null): a stored blob has nothing to delete.
     if (value === null) continue;
-    const site = OTHER_APP_KEYS[key] ?? LIVEDIAGRAM_MEDIA_APP;
-    (scopes[site] ??= {})[key] = value;
+    for (const site of OTHER_APP_KEYS[key] ?? [LIVEDIAGRAM_MEDIA_APP])
+      (scopes[site] ??= {})[key] = valueFor(site, key, value);
   }
   return Object.fromEntries(
     Object.entries(scopes).filter(([, blob]) => Object.keys(blob).length > 0),

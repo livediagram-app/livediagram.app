@@ -109,6 +109,9 @@ describe('apply', () => {
     expect(text).toContain(
       'PUT $MIGRATE_ORIGIN_LIVEDIAGRAM/api/internal/items/doc-diagram/migration (Bearer $MIGRATION_KEY_LIVEDIAGRAM)',
     );
+    expect(text).toContain(
+      'person livediagram/user_ali: PUT $MIGRATE_ORIGIN_LIVEDIAGRAM/api/internal/people/user_ali/migration (Bearer $MIGRATION_KEY_LIVEDIAGRAM)',
+    );
     expect(text).toContain('CLOUDFLARE_API_TOKEN=$MIGRATE_TARGET_API_TOKEN');
     // A dry run never makes or writes a ledger.
     expect(() => Ledger.open(ledgerPath)).toThrow();
@@ -162,11 +165,17 @@ describe('apply', () => {
       'https://api.livediagram.test/api/internal/items/doc-guest/migration',
     );
     expect(requests.every((r) => r.headers.authorization?.startsWith('Bearer key-'))).toBe(true);
+    // The people after every room, each through livediagram's person door with its body from the bundle.
+    const urls = requests.map((r) => r.url);
+    const ali = urls.indexOf('https://api.livediagram.test/api/internal/people/user_ali/migration');
+    expect(ali).toBeGreaterThan(urls.findLastIndex((u) => u.includes('/items/')));
+    expect(JSON.parse(requests[ali]!.body)).toMatchObject({ personId: 'user_ali', v: 1 });
     expect(summary.edited).toEqual([{ app: 'livediagram', id: 'doc-guest', tabs: ['tg'] }]);
     const ledger = Ledger.open(ledgerPath);
     expect(ledger.generation()).toBe(1);
     expect(ledger.version('index', 'items', 'doc-diagram')).toBeDefined();
     expect(ledger.version('rooms', 'livediagram', 'doc-guest')).toBeDefined();
+    expect(ledger.version('people', 'livediagram', 'user_cy')).toBeDefined();
     expect(ledger.version('r2', 'objects', 'img-1')).toBeDefined();
     ledger.close();
   });

@@ -1,12 +1,13 @@
 'use client';
 
 // A team's view, at its root (liveplanner's TeamPane): the team card (teams/TeamCard.tsx), where the team is run in
-// place, over the team's library. A team the person is not in (gone, left, never joined) is a not-found card instead.
+// place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a not-found card instead.
 
 import type { ReactNode } from 'react';
 import { LIST_CARD } from '../ui/classes';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
 import { useExplorer } from './context';
+import { TeamActivity } from './TeamActivity';
 
 export { initialsOf, teamHeadline } from '../teams/TeamCard';
 export { memberName } from '../teams/rules';
@@ -30,6 +31,8 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
         <TeamMembersSkeleton />
       ) : null}
       {children}
+      {/* Keyed on the team: another team's view starts its feed, and its open state, afresh. */}
+      <TeamActivity key={teamId} teamId={teamId} />
     </div>
   );
 }

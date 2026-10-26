@@ -43,6 +43,7 @@ describe('parsing', () => {
     expect(lens.text).toEqual(['road', 'map']);
     expect(lens.filters).toEqual({
       'opens-in': [],
+      mode: [],
       template: ['retrospective', 'kanban'],
       'made-by': ['ai'],
       edited: ['7d'],
@@ -116,6 +117,46 @@ describe('parsing', () => {
       'people',
       'space',
     ]);
+  });
+
+  it('reads Mode by the host’s modes, takes an old Opens in mode as one, and has no chip without them', () => {
+    const MODES = [
+      { value: 'diagram', label: 'Diagram' },
+      { value: 'draw', label: 'Draw' },
+      { value: 'workshop', label: 'Workshop' },
+    ];
+    const withModes: LensContext = { ...scoped, modes: MODES };
+    const parsed = parseLens('mode:workshop,draw flow', withModes);
+    const { lens, issues } = parsed;
+    expect(issues).toEqual([]);
+    expect(lens.filters.mode).toEqual(['draw', 'workshop']);
+    expect(serialiseLens(lens)).toBe('mode:draw,workshop flow');
+    expect(lensChips(parseLens('', withModes), withModes).map((c) => c.dimension)).toContain(
+      'mode',
+    );
+    expect(lensPills(parsed, withModes, words).map((p) => p.label)).toContain(
+      'Mode: Draw, Workshop',
+    );
+    // The old Explorer's `opens-in:draw` lands on the same list; a real app kind stays Opens in.
+    const legacy = parseLens('opens-in:draw', withModes).lens;
+    expect(legacy.filters.mode).toEqual(['draw']);
+    expect(serialiseLens(legacy)).toBe('mode:draw');
+    expect(parseLens('opens-in:plan,draw', withModes)).toEqual(
+      parseLens('opens-in:plan,draw', scoped),
+    );
+    expect(parseLens('opens-in:', withModes).issues[0]!.reason).not.toBe('unknown_dimension');
+    expect(parseLens('mode:pages', withModes).issues[0]!.reason).toBe('unknown_value');
+    // The index narrows by mode; a row's own mode keeps it while it still matches.
+    expect(lensFilters(lens, 'scoped', 0)).toEqual({ q: 'flow', modes: ['draw', 'workshop'] });
+    expect(filtersKey({ modes: ['draw'] })).not.toBe(filtersKey({}));
+    const match = compileLens(lens, 0, { text: false });
+    const drawn = makeItem(1, { app: 'livediagram', kind: 'canvas', summary: { mode: 'draw' } });
+    expect(match(itemSubject(drawn, 'user_me'))).toBe(true);
+    expect(match(itemSubject({ ...drawn, summary: {} }, 'user_me'))).toBe(false);
+    expect(match(itemSubject({ ...drawn, summary: { mode: 'diagram' } }, 'user_me'))).toBe(false);
+    // No modes from the host: no Mode at all, and an old Opens in mode is a bad value, not a mode.
+    expect(parseLens('mode:draw', scoped).issues[0]!.reason).toBe('unknown_dimension');
+    expect(parseLens('opens-in:draw', scoped).issues[0]!.reason).toBe('unknown_value');
   });
 
   it('holds the word under the caret as pending', () => {

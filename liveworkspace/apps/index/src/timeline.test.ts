@@ -636,6 +636,8 @@ describe('the bound', () => {
       }
       event.run(id, itemApp, itemId, owner, i % 5 === 0 ? 'commented' : 'edited', `Item ${i}`, i);
       scope.run(`p:${owner}`, id, itemApp, i);
+      // Some 5,000 of the others' events are on a team's items: Team Activity's feed.
+      if (i >= 10_000 && i % 20 === 1) scope.run('t:team_t', id, itemApp, i);
     }
     db.exec('COMMIT');
     const big = await person('user_big', { teams: [{ id: 'team_a' }, { id: 'team_b' }] });
@@ -649,6 +651,20 @@ describe('the bound', () => {
       console.info(
         `[timeline] 10,000 own events, two pages (${query || 'all apps'}) in ${ms.toFixed(1)} ms`,
       );
+      expect(ms).toBeLessThan(250);
+    }
+    // A team's activity: the team's scope alone, one index range however many teams the person is in.
+    const member = await person('user_tm', {
+      teams: [{ id: 'team_t' }, ...Array.from({ length: 11 }, (_, i) => ({ id: `team_m${i}` }))],
+    });
+    for (const query of ['team=team_t', 'team=team_t&app=liveplanner']) {
+      const started = performance.now();
+      const first = await feed(member.auth, query);
+      const second = await feed(member.auth, `${query}&cursor=${first.nextCursor}`);
+      const ms = performance.now() - started;
+      expect(first.events).toHaveLength(30);
+      expect(second.events).toHaveLength(30);
+      console.info(`[timeline] a team's activity, two pages (${query}) in ${ms.toFixed(1)} ms`);
       expect(ms).toBeLessThan(250);
     }
     // The sidebar's count, with every one of them new and someone else's: it stops at 100 rows a scope.
@@ -781,6 +797,73 @@ describe('one item’s history', () => {
       expect(
         lines.filter((l) =>
           /\bSCAN (e|i|items|timeline_events|timeline_event_scopes|sc)\b(?! USING)/.test(l),
+        ),
+        plan,
+      ).toEqual([]);
+    }
+  });
+});
+
+describe('a team’s activity', () => {
+  it('lists only the team’s events, to a joined member, newcomers included', async () => {
+    const next = tick();
+    const ada = await person('user_ta1', { teams: [{ id: 'team_ta' }, { id: 'team_tb' }] });
+    const mine = await makeItem(ada.auth, { title: 'Mine' });
+    next();
+    await makeItem(ada.auth, { title: 'Ours', teamId: 'team_ta' });
+    next();
+    await makeItem(ada.auth, { title: 'Theirs', teamId: 'team_tb' });
+    next();
+    await call(`/items/${mine.id}`, { method: 'PATCH', auth: ada.auth, body: { title: 'Mine 2' } });
+
+    expect(kinds((await feed(ada.auth, 'team=team_ta')).events)).toEqual(['created Ours']);
+    expect(kinds((await feed(ada.auth, 'team=team_ta&app=liveplanner')).events)).toEqual([
+      'created Ours',
+    ]);
+    // Someone who joined later reads the team's whole history.
+    const dee = await person('user_ta1d', { teams: [{ id: 'team_ta' }] });
+    expect(kinds((await feed(dee.auth, 'team=team_ta')).events)).toEqual(['created Ours']);
+  });
+
+  it('refuses anyone not in the team, a malformed id, and a team with an item', async () => {
+    const bea = await person('user_ta2');
+    const res = await call('/timeline?team=team_ta', { auth: bea.auth });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ error: 'not_team_member' });
+    const ada = await person('user_ta2a', { teams: [{ id: 'team_ta' }] });
+    expect((await call('/timeline?team=', { auth: ada.auth })).status).toBe(400);
+    const both = await call(`/timeline?team=team_ta&item=${crypto.randomUUID()}`, {
+      auth: ada.auth,
+    });
+    expect(both.status).toBe(400);
+  });
+
+  it('reads the team’s scope through one index range, never scanning', () => {
+    const ada: Person = {
+      id: 'user_big',
+      kind: 'account',
+      teams: Array.from({ length: 12 }, (_, i) => `team_${i}`),
+    };
+    for (const spec of [
+      { limit: 30, team: 'team_3' },
+      { limit: 30, team: 'team_3', app: 'liveplanner' as const },
+      { limit: 30, team: 'team_3', cursor: { at: 5, id: 'x' } },
+    ]) {
+      const { sql, args } = buildTimelineQuery(ada, spec);
+      // One scope: the team's alone (a range for it, and with an app one more for the account's own events),
+      // whatever else the person is in.
+      const scopes = args.filter((a) => typeof a === 'string' && /^[pt]:/.test(a));
+      expect(new Set(scopes)).toEqual(new Set(['t:team_3']));
+      expect(scopes).toHaveLength(spec.app ? 2 : 1);
+      const lines = h.db.sql
+        .prepare(`EXPLAIN QUERY PLAN ${sql}`)
+        .all(...(args as SQLInputValue[]))
+        .map((r) => String((r as { detail: string }).detail));
+      const plan = lines.join('\n');
+      expect(plan).toMatch(spec.app ? /timeline_scopes_app/ : /timeline_scopes_all/);
+      expect(
+        lines.filter((l) =>
+          /\bSCAN (e|i|items|timeline_events|timeline_event_scopes)\b(?! USING)/.test(l),
         ),
         plan,
       ).toEqual([]);

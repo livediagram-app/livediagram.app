@@ -38,6 +38,7 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
 | My Work, and each of its folders                   | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders       | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | Recent, Favourites, Shared With Me, Search results | `/explorer/recent`, `/explorer/favourites`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
+| This Browser                                       | `/explorer/offline`                                                                | Scoped, matched in this browser   |
 | Home, Inbox, Timeline, Trash                       | Their own                                                                          | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every item the reader can open: their own, every team's they have
@@ -49,13 +50,20 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
   as one flat list, newest first. Folder rows step aside while the lens is set and return when it is cleared. A row
   from a subfolder names its folder.
 - The old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
+- **This Browser** (`/explorer/offline`) takes the lens too: the field and chip row narrow the canvases kept only in
+  this browser. The index never sees them, so the Explorer matches them itself (`thisBrowserSubject`, `compileLens`):
+  the words against the name, Edited against the last change, Opens in against this app, People as the reader's
+  own and Space as My Work (a Space token is inert here, as on any scoped view). Template, Made by AI and Mode are
+  not kept in this browser's list, so the chip row offers no chip for them there; a typed token for one still reads,
+  matches nothing, and says so with Clear Filters.
 
 ## The chip row
 
 Every list view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Opens in while every app shows, Template, Made by AI, Edited, People), then **Space** on aggregate views
-  only. Template shows only when the host names template families (`lensTemplates`).
+- One chip per dimension, in dimension order (Opens in while every app shows, Mode, Template, Made by AI, Edited, People), then **Space** on aggregate views
+  only. Template shows only when the host names template families (`lensTemplates`), and Mode only when it names
+  editor modes (`lensModes`): livediagram does, with Diagram, Draw and Workshop.
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape, Tab,
   a click outside or the chip again closes it, focus returning to the chip.
@@ -65,16 +73,24 @@ Every list view shows one row of chips under its page header and breadcrumb:
 
 ## Dimensions
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                              | Index filter |
-| --------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------- | ------------ |
-| Text      | (none)     | (the field) | Free words                                                                                           | `q`          |
-| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `document` liveplanner, `document` livedocuments, `design` livedesign: its app | `apps`       |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent        | `intent`     |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)        | `source=ai`  |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year     | `since`      |
-| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                           | `owner`      |
-| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only           | `space`      |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                  | Index filter |
+| --------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------- | ------------ |
+| Text      | (none)     | (the field) | Free words                                                                                               | `q`          |
+| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `document` liveplanner, `document` livedocuments, `design` livedesign: its app     | `apps`       |
+| Mode      | `mode`     | Mode        | `diagram` Diagram, `draw` Draw, `workshop` Workshop: the mode the canvas opens in (its summary's `mode`) | `modes`      |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent            | `intent`     |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)            | `source=ai`  |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year         | `since`      |
+| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                               | `owner`      |
+| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only               | `space`      |
 
+- **Mode** is the editor mode a canvas opens in, the one its room last reported to the index (`summary.mode`, the
+  mode of the tab written last, `diagram` when none says otherwise), so a canvas switched to Draw is found by
+  `mode:draw` once it is saved. The values are the host's (`lensModes`); livediagram's are its `EDITOR_MODES`.
+  A canvas that has never been saved has no mode yet and matches no Mode value. The old Explorer wrote the mode as
+  `opens-in:draw`: that spelling still reads, as the Mode token (`mode:draw`), so an old link or habit lands on the
+  same list; written back, it is `mode:draw`. A list mixing apps and modes (`opens-in:plan,draw`) is not an old
+  spelling and reads as before.
 - **Template** is the template family a canvas was made from, read from the creation intent the index keeps
   (`template:retrospective`): livediagram's one family, labelled Retrospective
   (`CANVAS_TEMPLATE_FAMILIES`, `apps/editor/lib/canvas-template-families.ts`; liveworkspace.app's Explorer names the
@@ -138,7 +154,7 @@ The string is words separated by whitespace.
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
-(Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My Work and Shared
+(Opens in, Mode, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My Work and Shared
 With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Clearing a chip removes every token of its dimension. The index takes at most 16 words
 and 8 values per filter.
@@ -207,7 +223,7 @@ or filter canvases" (the host's word for its items).
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the
 Explorer calls the host's `onLensSelected(<Facet>)` once, and livediagram's count is `Explorer / Selected / <Facet>`, with
-`<Facet>` from the closed set `Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`
+`<Facet>` from the closed set `Text`, `OpensIn`, `Mode`, `Template`, `MadeBy`, `Edited`, `People`, `Space`
 (`LENS_TELEMETRY_TYPES`).
 Text counts when it goes from empty to non-empty. Never a value, a word or an id. A lens arriving with a link, or
 restored by Back, counts for nothing. `Kind` is a retired type.

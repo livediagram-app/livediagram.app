@@ -222,7 +222,8 @@ on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (
   apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and
   **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
   panel's This Browser rows. Every app's host deletes in place (`remove`, its offline store's delete), so Delete is
-  never missing in one app and there in another.
+  never missing in one app and there in another. The view takes the filter lens like My Work (the field and chip
+  row), matched in the browser over the list, since the index never sees these items.
 - **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
   index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store
   directly; for the page, the app also keeps a snapshot of them in localStorage under
@@ -347,7 +348,10 @@ the app is always there.
 
 The Timeline moves too, and spans apps the same way: the index records what it changes itself (made,
 renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what. The
-Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it.
+Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it. Coming back to the
+browser tab reads its first page again and merges it in at the head (at most once in 30 seconds, as the Inbox
+does), keeping the pages loaded and the visit's New marks. A team's view carries **Team Activity** under its library,
+closed until opened: the team's own feed (`GET /timeline?team=`), every member seeing the team's whole history.
 
 ### 6. Content lives in one Durable Object per item
 

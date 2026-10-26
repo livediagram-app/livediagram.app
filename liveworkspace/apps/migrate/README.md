@@ -42,6 +42,8 @@ r2/images.json           every object to put in the media bucket (old images by 
 r2/pictures/<id>.png     the pictures drawn for frozen cross-product references
 rooms/<app>/<id>.json    one MigrationRoomPayload per part, for each app's migration door
 rooms/rooms.jsonl        the rooms in the order apply sends them
+people/<app>/<owner>.json  one MigrationPersonPayload per person with shape libraries, for livediagram's person door
+people/people.jsonl      the people in the order apply sends them
 kv/mcp-clients.json      the MCP's client registrations, as `kv bulk put` takes them
 moved-parts.json         where each split document's parts went
 report.json              counts per table, cross-product references, dropped history, collisions, skipped rows
@@ -73,7 +75,7 @@ wrote, and `apply` prints the parts whose tabs were edited on the new side and l
 | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MIGRATE_TARGET_API_TOKEN`                                                           | Every write on the liveworkspace account (D1, the media bucket, KV), and verify's reads. The account id comes from each service's `wrangler.toml`. |
 | `MIGRATE_SOURCE_ACCOUNT_ID`, `MIGRATE_SOURCE_API_TOKEN`                              | Reading the old `livediagram-images` bucket. A read-only R2 token is enough.                                                                       |
-| `MIGRATE_ORIGIN_<APP>` (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`) | Each app api's origin for `PUT /api/internal/items/:id/migration`.                                                                                 |
+| `MIGRATE_ORIGIN_<APP>` (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`) | Each app api's origin for `PUT /api/internal/items/:id/migration` (and livediagram's for `PUT /api/internal/people/:id/migration`).                |
 | `MIGRATION_KEY_<APP>`                                                                | The `MIGRATION_KEY` secret set on that api for the migration.                                                                                      |
 | `MIGRATE_WRANGLER` (optional)                                                        | Another wrangler command; the default is the repository's own.                                                                                     |
 
@@ -101,6 +103,8 @@ finished.
 - A `MigrationRoomPayload` (`packages/migration/src/contract.ts`) at `PUT /api/internal/items/:id/migration`, with
   `Bearer MIGRATION_KEY`, answering a `MigrationDoorAnswer`. That includes a liveplanner project with zero tabs (cards
   only), and `imageOwners` naming images whose rows are already in the media service (apply runs media before rooms).
+- livediagram only: a `MigrationPersonPayload` at `PUT /api/internal/people/:id/migration`, with `Bearer MIGRATION_KEY`,
+  answering `{ moved, renamed }`: the person's shape libraries, added to their store once.
 - Each item is already in the index, with the summary `{"imported":"1"}`, so the index's empty-item sweep leaves it
   alone. The door's first summary push should send `savedAt` as the change time, because the index keeps the later
   of the two.

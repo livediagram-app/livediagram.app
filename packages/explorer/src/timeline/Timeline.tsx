@@ -56,6 +56,8 @@ export type TimelineProps = {
   emptyState?: ReactNode;
   /** The read failed: with nothing loaded this outranks the empty state, since an unread feed is not an empty one. */
   error?: boolean;
+  /** What the failed state says; the reader's own Timeline by default. */
+  errorTitle?: string;
   onRetry?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -79,6 +81,7 @@ export function Timeline({
   isEmpty,
   emptyState,
   error,
+  errorTitle,
   onRetry,
   hasMore,
   loadingMore,
@@ -160,7 +163,7 @@ export function Timeline({
   }, [pulseDay, clearPulse]);
 
   if (loading) return <SkeletonFeed />;
-  if (error && isEmpty) return <TimelineErrorState onRetry={onRetry} />;
+  if (error && isEmpty) return <TimelineErrorState onRetry={onRetry} title={errorTitle} />;
   if (isEmpty) return <>{emptyState ?? null}</>;
 
   // Not the empty state: the filters hid what there is. They run on the loaded pages only, so while the index has
@@ -307,15 +310,19 @@ function SkeletonFeed() {
 }
 
 /** "We couldn't read the feed": never the empty state, which would tell someone with a history that they have none. */
-export function TimelineErrorState({ onRetry }: { onRetry?: () => void }) {
+export function TimelineErrorState({
+  onRetry,
+  title = 'Couldn\u2019t load your Timeline',
+}: {
+  onRetry?: () => void;
+  title?: string;
+}) {
   return (
     <div
       role="alert"
       className="rounded-xl border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-700"
     >
-      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-        Couldn&rsquo;t load your Timeline
-      </p>
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{title}</p>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Your history is safe. Check your connection and try again.
       </p>

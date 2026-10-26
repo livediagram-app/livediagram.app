@@ -20,6 +20,8 @@ describe('views and their addresses', () => {
     { kind: 'invites' },
     { kind: 'gallery' },
     { kind: 'shape-libraries' },
+    { kind: 'offline' },
+    { kind: 'offline', q: 'edited:7d road' },
   ];
   it.each(views)('round-trips %o', (view) => {
     const path = explorerPath(view, '/explorer');

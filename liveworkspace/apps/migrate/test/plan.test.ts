@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { MigrationRoomPayload } from '@liveworkspace/migration';
+import type { MigrationPersonPayload, MigrationRoomPayload } from '@liveworkspace/migration';
 import { verifySharePassword } from '../../index/src/password-hash.ts';
 import { mediaGuestOwnerSync } from '../src/ids.ts';
 import type { R2Entry } from '../src/plan/files.ts';
@@ -50,7 +50,7 @@ describe('plan, first run', async () => {
     shareCodeCaseCollisions: { items: unknown[] };
     imageCollisions: { items: unknown[] };
     droppedHistory: Record<string, number>;
-    skipped: { items: { what: string; id: string }[] };
+    skipped: { items: { what: string; id: string; why: string }[] };
   };
 
   it('writes the bundle the spec lays out, steps in apply order', () => {
@@ -60,6 +60,7 @@ describe('plan, first run', async () => {
       'sql:media',
       'r2',
       'rooms',
+      'people',
       'sql:community',
       'kv',
     ]);
@@ -71,6 +72,7 @@ describe('plan, first run', async () => {
       'r2/images.json',
       'kv/mcp-clients.json',
       'rooms/rooms.jsonl',
+      'people/people.jsonl',
     ]) {
       expect(statSync(join(outDir, f)).isFile()).toBe(true);
     }
@@ -124,7 +126,14 @@ describe('plan, first run', async () => {
         clockStartedAt: null,
         expiredAt: null,
       },
-      { id: 'm3', email: 'new@x.com', status: 'invited', clockStartedAt: null, expiredAt: null },
+      // A pending invitation keeps its reminder clock; one from before the clock starts at its invitation.
+      {
+        id: 'm3',
+        email: 'new@x.com',
+        status: 'invited',
+        clockStartedAt: NOW - 2 * DAY,
+        expiredAt: null,
+      },
       {
         id: 'm4',
         email: 'old@x.com',
@@ -132,7 +141,18 @@ describe('plan, first run', async () => {
         clockStartedAt: null,
         expiredAt: NOW - 8 * DAY,
       },
+      {
+        id: 'm5',
+        email: 'early@x.com',
+        status: 'invited',
+        clockStartedAt: NOW - 4 * DAY,
+        expiredAt: null,
+      },
     ]);
+    // The old reminder stamps come too, so the sweep sends none twice.
+    expect(
+      all(dbs.accounts, "SELECT reminder1SentAt, reminder2SentAt FROM team_member WHERE id = 'm3'"),
+    ).toEqual([{ reminder1SentAt: NOW - DAY, reminder2SentAt: null }]);
     // Every team write took a rev from team_seq, as the accounts Worker's own do.
     const seq = all<{ value: number }>(dbs.accounts, 'SELECT value FROM team_seq')[0]!.value;
     expect(seq).toBeGreaterThan(0);
@@ -179,7 +199,26 @@ describe('plan, first run', async () => {
       rows.map((r) => [r.scope, JSON.parse(r.prefs) as Record<string, unknown>]),
     );
     expect(byScope['livediagram.app']).toMatchObject({ notifyDocumentJoin: false });
-    expect(byScope['liveplanner.app']).toEqual({ notifyFormResponses: false });
+    expect(byScope['liveplanner.app']).toEqual({
+      notifyFormResponses: false,
+      planTourSeen: true,
+      planTourTracks: ['boards'],
+      formTourSeen: true,
+    });
+    // The Pages tour goes to both apps that have one, each with its own page kinds; the logo guides to livedesign.
+    expect(byScope['livedocuments.app']).toEqual({
+      pagesTourSeen: false,
+      pagesTourKinds: ['slide'],
+    });
+    expect(byScope['livedesign.app']).toEqual({
+      pagesTourSeen: false,
+      pagesTourKinds: ['logo'],
+      logoGuides: false,
+      logoGuidesHidden: ['grid'],
+      logoGuideStrength: 'faint',
+    });
+    for (const key of ['planTourSeen', 'pagesTourSeen', 'logoGuides', 'recentExcludedIds'])
+      expect(byScope['livediagram.app'], key).not.toHaveProperty(key);
     expect(JSON.stringify(byScope)).not.toContain('planModeEnabled');
     expect(JSON.stringify(byScope)).not.toContain('notifyDiagramJoin');
   });
@@ -320,7 +359,7 @@ describe('plan, first run', async () => {
     expect(
       all(
         dbs.index,
-        'SELECT id, app, item_id, type, detail, occurred_at FROM timeline_events ORDER BY id',
+        "SELECT id, app, item_id, type, detail, occurred_at FROM timeline_events WHERE id IN ('imp:e1', 'imp:e2', 'imp:e3', 'imp:e4') ORDER BY id",
       ),
     ).toEqual([
       {
@@ -355,6 +394,106 @@ describe('plan, first run', async () => {
       ),
     ).toEqual([{ scope: 'p:user_ali' }, { scope: 'p:user_newbo' }]);
     expect(report.droppedHistory).toEqual({ theme_created: 1 });
+  });
+
+  it('maps the old kinds the index has under another name', () => {
+    const rows = all<{
+      id: string;
+      app: string;
+      item_id: string | null;
+      actor_id: string | null;
+      actor_name: string | null;
+      type: string;
+      title: string;
+      detail: string;
+    }>(
+      dbs.index,
+      "SELECT id, app, item_id, actor_id, actor_name, type, title, detail FROM timeline_events WHERE id NOT IN ('imp:e1', 'imp:e2', 'imp:e4') ORDER BY CAST(substr(id, 6) AS INTEGER)",
+    );
+    expect(rows.map((r) => [r.id, r.app, r.item_id, r.type])).toEqual([
+      ['imp:e5', 'livediagram', 'doc-diagram', 'opened_by_visitor'],
+      ['imp:e6', 'livediagram', 'doc-diagram', 'copied_by_visitor'],
+      ['imp:e7', 'livediagram', 'doc-diagram', 'synced'],
+      ['imp:e8', 'livediagram', null, 'taken_offline'],
+      ['imp:e9', 'livediagram', null, 'taken_offline'],
+      ['imp:e10', 'liveworkspace', null, 'team_joined'],
+      ['imp:e11', 'liveworkspace', null, 'team_member_removed'],
+      ['imp:e12', 'liveworkspace', null, 'team_member_removed'],
+    ]);
+    const by = Object.fromEntries(rows.map((r) => [r.id, r]));
+    // A visitor with no identity has no actor, but keeps the name the old event had.
+    expect(by['imp:e5']).toMatchObject({ actor_id: null, actor_name: 'Visitor' });
+    // Taken offline names the document as it was, from its snapshot or, failing that, its description.
+    expect(by['imp:e8']!.title).toBe('Offline plan');
+    expect(by['imp:e9']!.title).toBe('Described');
+    // A member leaving reads as Member Left (the Explorer's `left`), with the team and name it had.
+    expect(JSON.parse(by['imp:e11']!.detail)).toEqual({
+      imported: '1',
+      left: '1',
+      teamId: 'team1',
+      memberName: 'Bo',
+    });
+    expect(JSON.parse(by['imp:e12']!.detail)).toMatchObject({ left: '1', teamId: null });
+    expect(
+      all(dbs.index, "SELECT scope FROM timeline_event_scopes WHERE event_id = 'imp:e8'"),
+    ).toEqual([{ scope: 'p:user_ali' }]);
+  });
+
+  it('marks what each person hid from Recent on their opens row, opened or not', () => {
+    expect(
+      all(
+        dbs.index,
+        "SELECT person_id, item_id, last_opened_at, hidden FROM opens WHERE item_id IN ('doc-diagram', 'doc-slides') ORDER BY item_id, person_id",
+      ),
+    ).toEqual([
+      { person_id: 'user_ali', item_id: 'doc-diagram', last_opened_at: NOW - 200 * DAY, hidden: 1 },
+      { person_id: 'user_newbo', item_id: 'doc-diagram', last_opened_at: NOW - 2 * DAY, hidden: 0 },
+      { person_id: 'user_ali', item_id: 'doc-slides', last_opened_at: 0, hidden: 1 },
+    ]);
+    // A hide with no open counts no day towards Most Used.
+    expect(all(dbs.index, "SELECT 1 FROM use_days WHERE item_id = 'doc-slides'")).toEqual([]);
+  });
+
+  it('sends each person’s shape libraries to livediagram’s person door, through the owner map', () => {
+    const lines = readFileSync(join(outDir, 'people', 'people.jsonl'), 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => JSON.parse(l) as [string, string, string]);
+    expect(lines.map(([app, id]) => [app, id])).toEqual([
+      ['livediagram', 'user_ali'],
+      ['livediagram', 'user_cy'],
+    ]);
+    const ali = JSON.parse(
+      readFileSync(join(outDir, 'people', 'livediagram', 'user_ali.json'), 'utf8'),
+    ) as MigrationPersonPayload;
+    expect(ali).toEqual({
+      v: 1,
+      app: 'livediagram',
+      personId: 'user_ali',
+      shapeLibraries: [
+        {
+          id: 'lib-a1',
+          name: 'Icons',
+          source: 'drawio',
+          items: '[{"id":"s1"}]',
+          createdAt: NOW - 6 * DAY,
+          updatedAt: NOW - 6 * DAY + 1,
+        },
+        {
+          id: 'lib-a2',
+          name: 'Flows',
+          source: 'drawio',
+          items: '[{"id":"s1"}]',
+          createdAt: NOW - 5 * DAY,
+          updatedAt: NOW - 5 * DAY + 1,
+        },
+      ],
+    });
+    expect(report.skipped.items).toContainEqual({
+      what: 'shape_library',
+      id: 'lib-zz',
+      why: 'no account',
+    });
   });
 
   it('keeps Recent and only the last 90 days of Most Used', () => {
@@ -402,8 +541,10 @@ describe('plan, first run', async () => {
     expect((await verify(queries, execute)).filter((t) => t.missing > 0)).toEqual([]);
     dbs.index.exec("DELETE FROM items WHERE id = 'doc-slides'");
     const after = (await verify(queries, execute)).filter((t) => t.missing > 0);
+    // Its opens row (Ali hid it from Recent) goes with it.
     expect(after.map((t) => [t.table, t.missing, t.sample])).toEqual([
       ['items', 1, ['doc-slides']],
+      ['opens', 1, ['user_ali|doc-slides']],
     ]);
   });
 

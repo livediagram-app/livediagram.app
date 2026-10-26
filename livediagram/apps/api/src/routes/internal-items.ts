@@ -11,7 +11,8 @@
 // path: a share link made (the first-share milestone), or someone's first time in through a link (the owner's
 // "someone joined" email). The export door draws the canvas for liveworkspace's previews, which call it with
 // MEDIA_KEY, and answers its whole file for liveworkspace's Drive mirror, which calls it and the import door with
-// DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps", routes/internal-file.ts).
+// DRIVE_KEY (liveworkspace/docs/drive.md "Contracts > The apps", routes/internal-file.ts). The migration's two doors
+// take MIGRATION_KEY (docs/migration.md "Tooling"): a document's part into its room, and a person's shape libraries.
 import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
@@ -24,6 +25,7 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
+import { personStore } from '../person-client';
 import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
@@ -98,6 +100,10 @@ export function handleInternalItems(
         checkMigrationTabSizes(payload, MAX_TAB_BYTES);
         return documentRoom(env, payload.id).importMigrated(payload);
       },
+      // An old livediagram.app person's shape libraries, into their store (the person migration door,
+      // docs/migration.md): added as a guest's are on sign-in, an id already there left alone.
+      migratePerson: (payload) =>
+        personStore(env, payload.personId).adoptShapeLibraries(payload.shapeLibraries),
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },

@@ -1,5 +1,5 @@
 // A lens as the index's list filters (one-explorer-contracts.md "The lens's filters"): the words, Made by AI, the
-// widest Edited cutoff, People, Template's families and, on an aggregate view, Space. The index narrows the list
+// widest Edited cutoff, People, Template's families, Mode's modes and, on an aggregate view, Space. The index narrows the list
 // and pages what is left, so a lens reaches every item however long the list.
 
 import type { ItemFilters } from '@liveworkspace/index-client';
@@ -18,6 +18,7 @@ export function lensFilters(lens: Lens, view: LensView, now: number): ItemFilter
   // Both People values together admit everyone.
   if (filters.people.length === 1) out.owner = filters.people[0];
   if (filters.template.length > 0) out.intent = filters.template;
+  if (filters.mode.length > 0) out.modes = filters.mode;
   if (view === 'aggregate' && filters.space.length > 0) out.space = filters.space;
   return out;
 }
@@ -33,6 +34,7 @@ export function filtersKey(filters: ItemFilters): string {
     since,
     filters.owner ?? '',
     filters.intent ?? [],
+    filters.modes ?? [],
     filters.space ?? [],
   ]);
 }

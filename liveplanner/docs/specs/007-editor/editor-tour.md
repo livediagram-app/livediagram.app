@@ -12,11 +12,15 @@ The same way in as livediagram's ([Editor tour](../../../../livediagram/docs/spe
 it appears"), with liveplanner's tours on it:
 
 - **The footer's Start Tour button is the one way in.** Every tour on offer is started from one button in the
-  editor's bottom bar, immediately left of Settings: a contained chip with a play glyph in a small accent disc,
+  editor's bottom bar, immediately left of Search: a contained chip with a play glyph in a small accent disc,
   reading **Start Boards Tour**, **Start Sheets Tour**, **Start Forms Tour** or **Start Dashboards Tour**
   (`TourOfferButton`, `@liveworkspace/workbench/components/tour`). On a phone, and wherever its neighbours drop
   their words, it shows the glyph alone and keeps its full name as its accessible name. With no tour on offer it is
   not drawn. A tour never starts, prompts or offers itself on its own: no banner, no card.
+- **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
+  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
+  Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): a surface on the tab first
   (the Dashboards tour, while a dashboard is open), then the tab's own (the Plan tour on a board or Sheet, the

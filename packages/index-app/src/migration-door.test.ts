@@ -7,6 +7,7 @@ import {
   MigrationTabTooLarge,
   checkMigrationTabSizes,
   parseMigrationPayload,
+  parseMigrationPersonPayload,
 } from './migration-door';
 
 beforeEach(() => {
@@ -250,5 +251,136 @@ describe('the legacy people merge', () => {
     expect((await merge('guest_old', { into: 'guest_new', legacy: 'yes' }).res).status).toBe(400);
     expect((await merge('guest_old', { into: 'guest_old', legacy: true }).res).status).toBe(400);
     expect((await merge('guest_old', { into: 'team_x', legacy: true }).res).status).toBe(400);
+  });
+});
+
+describe('PUT /api/internal/people/:id/migration', () => {
+  const library = (over: Record<string, unknown> = {}) => ({
+    id: 'lib-1',
+    name: 'Icons',
+    source: 'own',
+    items: '[]',
+    createdAt: 1000,
+    updatedAt: 2000,
+    ...over,
+  });
+  const personPayload = (over: Record<string, unknown> = {}) => ({
+    v: 1,
+    app: 'livediagram',
+    personId: 'user_ali',
+    shapeLibraries: [library()],
+    ...over,
+  });
+  const PERSON_ANSWER = { moved: 1, renamed: 0 };
+  const put = (
+    body: unknown,
+    options: {
+      auth?: string;
+      person?: string;
+      migrationKey?: string;
+      app?: 'livediagram';
+      migratePerson?: InternalItemHandlers['migratePerson'] | null;
+    } = {},
+  ) => {
+    const migratePerson =
+      options.migratePerson === null
+        ? undefined
+        : (options.migratePerson ?? vi.fn(async () => PERSON_ANSWER));
+    return {
+      migratePerson,
+      res: handleInternalItems(
+        new Request(
+          `https://app.test/api/internal/people/${options.person ?? 'user_ali'}/migration`,
+          {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${options.auth ?? 'mig'}` },
+            body: typeof body === 'string' ? body : JSON.stringify(body),
+          },
+        ),
+        {
+          key: 'idx',
+          app: 'app' in options ? options.app : 'livediagram',
+          migrationKey: 'migrationKey' in options ? options.migrationKey : 'mig',
+          handlers: { purge: async () => {}, migratePerson },
+        },
+      ),
+    };
+  };
+
+  it('adds the libraries on MIGRATION_KEY and answers what moved', async () => {
+    const { res, migratePerson } = put(personPayload());
+    const r = await res;
+    expect(r.status).toBe(200);
+    expect(await r.json()).toEqual(PERSON_ANSWER);
+    expect(migratePerson).toHaveBeenCalledWith(personPayload());
+  });
+
+  it('takes the migration key alone: the index key is a 401, and no key set is a 404', async () => {
+    expect((await put(personPayload(), { auth: 'idx' }).res).status).toBe(401);
+    expect((await put(personPayload(), { migrationKey: undefined }).res).status).toBe(404);
+  });
+
+  it('is a 404 for an app with no handler, no app name, or a person id that is not one', async () => {
+    expect((await put(personPayload(), { migratePerson: null }).res).status).toBe(404);
+    expect((await put(personPayload(), { app: undefined }).res).status).toBe(404);
+    expect((await put(personPayload(), { person: 'team_x' }).res).status).toBe(404);
+  });
+
+  it('refuses a body that is not this app’s payload for this person', async () => {
+    const bad: unknown[] = [
+      'not json',
+      [],
+      personPayload({ v: 2 }),
+      personPayload({ app: 'livedesign' }),
+      personPayload({ personId: 'user_bo' }),
+      personPayload({ shapeLibraries: 'none' }),
+      personPayload({ shapeLibraries: [library(), library()] }),
+      personPayload({ shapeLibraries: [7] }),
+      personPayload({ shapeLibraries: [library({ id: '' })] }),
+      personPayload({ shapeLibraries: [library({ name: 'x'.repeat(1001) })] }),
+      personPayload({ shapeLibraries: [library({ items: [] })] }),
+      personPayload({ shapeLibraries: [library({ createdAt: 'then' })] }),
+    ];
+    for (const body of bad) {
+      const { res, migratePerson } = put(body);
+      expect((await res).status, JSON.stringify(body)).toBe(400);
+      expect(migratePerson).not.toHaveBeenCalled();
+    }
+  });
+
+  it('refuses a body over 32 MiB, and answers 503 when the store fails', async () => {
+    const big = await handleInternalItems(
+      new Request('https://app.test/api/internal/people/user_ali/migration', {
+        method: 'PUT',
+        headers: { Authorization: 'Bearer mig' },
+        body: JSON.stringify({ pad: 'x'.repeat(32 * 1024 * 1024) }),
+      }),
+      {
+        key: 'idx',
+        app: 'livediagram',
+        migrationKey: 'mig',
+        handlers: { purge: async () => {}, migratePerson: async () => PERSON_ANSWER },
+      },
+    );
+    expect(big.status).toBe(413);
+    const down = put(personPayload(), {
+      migratePerson: async () => {
+        throw new Error('down');
+      },
+    });
+    expect((await down.res).status).toBe(503);
+  });
+
+  it('lets an unexpected error in the check through', () => {
+    // A getter that throws something other than a refusal is a bug, not a bad body.
+    const body = {
+      v: 1,
+      app: 'livediagram',
+      personId: 'user_ali',
+      get shapeLibraries(): unknown {
+        throw new TypeError('boom');
+      },
+    };
+    expect(() => parseMigrationPersonPayload(body, 'livediagram', 'user_ali')).toThrow('boom');
   });
 });

@@ -29,7 +29,7 @@ function enterProps(layout: PlacementLayout, index: number | undefined) {
 // The "New Folder" tile: a dashed card that flips into a small naming form in
 // place (the popover the flow needs, without portal plumbing inside the
 // modal). Enter creates in the CURRENT level's scope and the browser selects
-// the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
+// the fresh folder; Escape backs out. Exported for the tab Organise in Tab Folder
 // dialog (tab-folders.md), which offers the same create-in-place affordance.
 // The dashed "create one here" tile: a label at rest, an inline name field
 // once clicked. New Folder and New Team are two skins of it, so the two

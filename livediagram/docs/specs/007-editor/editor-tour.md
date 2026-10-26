@@ -16,13 +16,17 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
 ## Where it appears
 
 - **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
-  the avatar tour) is started from one button in the editor's bottom bar, immediately left of Settings:
+  the avatar tour) is started from one button in the editor's bottom bar, immediately left of Search:
   a contained chip with a play glyph in a small accent disc, reading **Start Diagram Tour** (`TourOfferButton`,
   `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
   wherever its neighbours drop their words, it shows the glyph alone and keeps **Start Diagram Tour** as its
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
   own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
+- **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
+  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
+  Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
   tour first, then a tool in hand or a surface on the tab (the Avatar tour), then the tab's

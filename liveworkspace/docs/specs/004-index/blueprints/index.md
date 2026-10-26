@@ -82,6 +82,7 @@ Every route the specs name, with the section that defines it (each checked to ha
 | `GET /app/people/:id/count?limit=`                            | [one-explorer-contracts.md "Notices"](../../004-index/one-explorer-contracts.md#notices)                                           |
 | `POST /internal/timeline {events}`                            | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
 | `GET /timeline?app=&limit=&cursor=`                           | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
+| `GET /timeline?team=<id>&app=&limit=&cursor=`                 | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
 | `GET /timeline?item=<id>&limit=&cursor=`                      | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
 | `POST /timeline/seen`                                         | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |
 | `POST /timeline/dismiss {ids}`                                | [one-explorer-contracts.md "Timeline"](../../004-index/one-explorer-contracts.md#timeline)                                         |

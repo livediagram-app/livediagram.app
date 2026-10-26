@@ -1,7 +1,8 @@
 // The lens's catalogue (liveplanner/docs/specs/013-workspace/explorer-filters.md "Dimensions"): every dimension,
 // its values, their labels and the closed telemetry types. Brought over from liveplanner's explorer-lens for the
 // index's lists: Opens in names the app an item opens in, by its kind (`opens-in:plan`), from every app the index
-// knows; Template's values are the host app's own (its template families).
+// knows; Mode's values are the host app's own editor modes (livediagram's Diagram, Draw and Workshop), and
+// Template's its template families.
 
 import { APP_KINDS, APPS, type App, type Kind } from '@liveworkspace/index-client';
 import { APP_SITES } from '@liveworkspace/sites';
@@ -9,6 +10,7 @@ import { APP_SITES } from '@liveworkspace/sites';
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [
   'opens-in',
+  'mode',
   'template',
   'made-by',
   'edited',
@@ -47,8 +49,8 @@ export type PeopleValue = (typeof PEOPLE_VALUES)[number];
 export const SPACE_FIXED_VALUES = ['mine', 'shared'] as const;
 export const SPACE_TEAM_PREFIX = 'team:';
 
-/** The dimensions whose values are a fixed list, with that list. Template's come from the host; Space's teams
- *  from the person. */
+/** The dimensions whose values are a fixed list, with that list. Mode's and Template's come from the host; Space's
+ *  teams from the person. */
 export const FIXED_VALUES = {
   'opens-in': OPENS_IN_VALUES,
   'made-by': MADE_BY_VALUES,
@@ -62,6 +64,7 @@ export const isFixedDimension = (d: LensDimension): d is FixedDimension => d in 
 /** The chip label of each dimension; also how messages name it. */
 export const DIMENSION_LABELS: Record<LensDimension, string> = {
   'opens-in': 'Opens in',
+  mode: 'Mode',
   template: 'Template',
   'made-by': 'Made by AI',
   edited: 'Edited',
@@ -91,6 +94,7 @@ export type LensFacet = 'text' | LensDimension;
 export const LENS_TELEMETRY_TYPES = {
   text: 'Text',
   'opens-in': 'OpensIn',
+  mode: 'Mode',
   template: 'Template',
   'made-by': 'MadeBy',
   edited: 'Edited',

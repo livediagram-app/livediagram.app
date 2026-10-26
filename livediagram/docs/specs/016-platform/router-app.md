@@ -8,18 +8,19 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 
 ## Routing table
 
-| Path                                                                                                                                                                                               | Forwards to                                                                                           |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/api/index/*`, `/api/drive/*`, `/api/previews/*` and a share link's image and card                                                                                                                | liveworkspace's index, Google Drive mirror and previews, ahead of the api row                         |
-| `/api`, `/api/*`                                                                                                                                                                                   | api worker (`apps/api`)                                                                               |
-| `/telemetry`, `/telemetry/*`                                                                                                                                                                       | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md)) |
-| `/help`, `/help/*`                                                                                                                                                                                 | help app (`apps/help`), stripped                                                                      |
-| `/community`, `/community/*`                                                                                                                                                                       | Community (`apps/community`), stripped                                                                |
-| `/live/*` (the editor app's `_next` assets only)                                                                                                                                                   | editor app (`apps/editor`), stripped                                                                  |
-| `/explorer/*`                                                                                                                                                                                      | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)             |
-| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/form/*`, `/get-started`, `/import`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                     |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                                   | 308 redirect to `/help/<path>`                                                                        |
-| everything else                                                                                                                                                                                    | marketing app (`apps/marketing`)                                                                      |
+| Path                                                                                                                                                                                    | Forwards to                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `/api/index/*`, `/api/drive/*`, `/api/previews/*` and a share link's image and card                                                                                                     | liveworkspace's index, Google Drive mirror and previews, ahead of the api row                         |
+| `/api`, `/api/*`                                                                                                                                                                        | api worker (`apps/api`)                                                                               |
+| `/telemetry`, `/telemetry/*`                                                                                                                                                            | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md)) |
+| `/form`, `/form/*` (old form links)                                                                                                                                                     | 308 to the same path on liveplanner ("Old form links go to liveplanner" below)                        |
+| `/help`, `/help/*`                                                                                                                                                                      | help app (`apps/help`), stripped                                                                      |
+| `/community`, `/community/*`                                                                                                                                                            | Community (`apps/community`), stripped                                                                |
+| `/live/*` (the editor app's `_next` assets only)                                                                                                                                        | editor app (`apps/editor`), stripped                                                                  |
+| `/explorer/*`                                                                                                                                                                           | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)             |
+| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/import`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                     |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                        | 308 redirect to `/help/<path>`                                                                        |
+| everything else                                                                                                                                                                         | marketing app (`apps/marketing`)                                                                      |
 
 The editor app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip: the editor worker's `out/` files are already prefix-free).
 
@@ -35,8 +36,14 @@ The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` 
 have a typo.", with a way back to the site's home (marketing: **Go to the Home Page**; the help centre: **Browse Help
 Centre** and **Troubleshooting**; Community: **Back to Community**), then **Help Centre**. It is still a 404, so search
 engines drop it. The editor answers an unknown address with its own card instead
-([New document route](../007-editor/new-document-route.md) "Unknown addresses"). That includes a retired form link, `/form/<code>`: forms are liveplanner's now, and the
-editor keeps the segment only so those visits still count as its page views.
+([New document route](../007-editor/new-document-route.md) "Unknown addresses").
+
+**Old form links go to liveplanner.** Forms are liveplanner's now, and the migration carries every form's public
+link across with its code ([docs/migration.md](../../../../docs/migration.md), step 3). So an old form link,
+`/form/<code>` (and the bare `/form`), answers a permanent `308` to the same path on liveplanner, query string
+included, before any worker sees it: `https://www.liveplanner.app` in production, `https://staging.liveplanner.app`
+on staging and `http://localhost:3200` locally (`DEPLOY_ENV`). `form` stays in `LIVE_ROUTE_SEGMENTS` so the
+page views recorded for it before the redirect are still filed under the editor app.
 
 Two properties keep it safe. It sits **after** the live-route check, and `/explorer/*` (a segment the help centre uses too) is answered by liveworkspace's Explorer before either, which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
@@ -112,7 +119,7 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 Every `/diagram/<id>` address (share links, embeds, bookmarks, `/diagram/shared?s=…`) answers a permanent `308` to the same path under `/document` ([Document](../006-document/document.md)), query string included, before any worker sees it (`apps/router/src/legacy-editor-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths.
 
-The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address.
+The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
 <!-- /legacy-names -->
 
 ## Local development
