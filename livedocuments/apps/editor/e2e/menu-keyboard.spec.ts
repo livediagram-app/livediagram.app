@@ -130,7 +130,8 @@ test.describe('menus by keyboard', () => {
     await switcher.focus();
     await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: 'Switch site' });
+    // The open menu is named for what it lists (@liveworkspace/ui SiteSwitcher), its trigger for what it does.
+    const menu = page.getByRole('menu', { name: 'liveworkspace sites' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');
