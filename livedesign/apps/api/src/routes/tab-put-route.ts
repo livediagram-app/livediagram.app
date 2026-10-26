@@ -12,12 +12,7 @@ import {
 import { isValidTab, migrateIncomingTab, type Tab } from '@livedesign/design';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { newCommentsBy, rewriteCommentAuthors } from '../comments';
-import {
-  changesetMergePages,
-  getTab,
-  isTabRevStale,
-  upsertTabAtRev,
-} from '../db';
+import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
 import { getParticipant } from '../accounts/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
@@ -110,19 +105,18 @@ export async function handleTabPut(
     // Newly added comments carry the resolved owner's profile, never the client's claim
     // (docs/specs/014-identity/auth-and-guest-access.md). Remembered per isolate for a minute
     // (accounts/profiles.ts), so an autosave asks the accounts Worker at most once a minute, and
-    // asked before the loop, so that ask overlaps the tab's own reads.
+    // asked before the loop, so that ask overlaps the tab's own reads. With no profile (a guest who set no name, or
+    // the accounts Worker out of reach) the writer is still the owner: the comments already stored stay locked.
     const writerParticipant = await writer;
-    const sanitised: Tab = writerParticipant
-      ? {
-          ...body,
-          elements: rewriteCommentAuthors(
-            body.elements,
-            existingTab?.elements ?? [],
-            writerParticipant,
-            commentAuthors,
-          ),
-        }
-      : body;
+    const sanitised: Tab = {
+      ...body,
+      elements: rewriteCommentAuthors(
+        body.elements,
+        existingTab?.elements ?? [],
+        writerParticipant ?? { id: owner, name: '', color: '', createdAt: 0 },
+        commentAuthors,
+      ),
+    };
     let rev = 0;
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores

@@ -242,8 +242,10 @@ describe('the tab PUT', () => {
     let interleave = 1;
     db.env.DESIGN_DB.batch = async (statements: D1PreparedStatement[]) => {
       // Only a tab write meets the race: the design's reads (its outline, the outbox drain) batch too.
-    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
-    if (writesTab && interleave > 0) {
+      const writesTab = statements.some((st) =>
+        /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query),
+      );
+      if (writesTab && interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
@@ -254,6 +256,46 @@ describe('the tab PUT', () => {
 
     interleave = 5;
     expect((await save(db, [box('a')], { 'X-Changeset-Seen': seen })).status).toBe(409);
+  });
+});
+
+describe('comments in a tab PUT', () => {
+  // docs/specs/014-identity/auth-and-guest-access.md: a comment's author is the server's word. A writer with no
+  // profile (a guest who never set a name; here there is no accounts Worker) once had the body stored as sent, so an
+  // edit link could put words in someone else's mouth or post under their name.
+  const thread = (comments: object[]) =>
+    ({ ...box('a'), commentThread: { comments, resolved: false } }) as unknown as Element;
+  const bobs = {
+    id: 'c1',
+    text: 'Ship it',
+    createdAt: 1,
+    authorName: 'Bob',
+    authorColor: '#111111',
+    authorId: 'user_bob',
+  };
+
+  it("keeps someone else's comment and credits a new one to the writer, with no profile", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const db = await designWith([thread([bobs])]);
+    const forged = {
+      id: 'c2',
+      text: 'Delete it all',
+      createdAt: 2,
+      authorName: 'Alice',
+      authorColor: '#222222',
+      authorId: 'user_alice',
+      tokenId: 'tok_x',
+    };
+    const res = await save(db, [
+      thread([{ ...bobs, text: 'Never ship', authorName: 'Eve' }, forged]),
+    ]);
+    expect(res.status).toBe(200);
+    const comments = (
+      stored(db)[0] as unknown as { commentThread: { comments: Record<string, unknown>[] } }
+    ).commentThread.comments;
+    expect(comments[0]).toMatchObject({ text: 'Ship it', authorName: 'Bob', authorId: 'user_bob' });
+    expect(comments[1]).toMatchObject({ text: 'Delete it all', authorId: OWNER, authorName: '' });
+    expect(comments[1]).not.toHaveProperty('tokenId');
   });
 });
 
