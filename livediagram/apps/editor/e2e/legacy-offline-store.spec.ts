@@ -60,6 +60,7 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  expect(stores).toEqual(['documents']);
+  // `diagrams` is gone; version 3's `retired-parts` sits beside `documents` (offline-mode.md "Retired parts set aside").
+  expect([...stores].sort()).toEqual(['documents', 'retired-parts']);
   expectNoPageErrors(pageErrors);
 });
