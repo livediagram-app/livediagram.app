@@ -13,19 +13,16 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | Local development      | `.env.local` (gitignored) per app/worker                          |
 | Cloudflare Workers     | `wrangler secret put`, never in `wrangler.toml`                   |
 | Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
-| CI / Deploy            | GitHub repo secrets, see below                                    |
+| CI / Deploy            | The one repository secret, `CLOUDFLARE_API_TOKEN` (below)         |
 | Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
 
-### GitHub Actions secrets
+### The deploy credential
 
-Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
-
-| Secret          | Purpose                                                                                                                                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
-
-The deploy workflow also **syncs** the sign-in values and one more of the worker secrets below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` and `MEDIA_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
+The monorepo's root workflows hold one repository secret, **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace
+Cloudflare account ([Deployment](../016-platform/deployment.md#credentials-and-secrets), the liveworkspace root's
+`docs/ci.md` "Deploys"). Every `wrangler.toml` pins the account id, which is an identifier, not a secret. A deploy
+writes code and plain vars only; it never writes a Worker secret, so the ones below are set on each worker and
+survive every deploy.
 
 ## Worker secrets in use today
 
@@ -45,7 +42,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `AI_BASE_URL`, `AI_VISION_MODEL`, `AI_*`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livediagram.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile"). `COMMUNITY_ENABLED` is non-secret configuration too, but unset by default: it is only set to switch the Community off ([Community](../025-community/community.md#turning-the-community-off)), as a `[vars]` entry, a dashboard variable or a secret, and is documented in `apps/api/.env.example`.
 
-`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
+`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are set the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
 ## What is "safe to publish" client-side
 

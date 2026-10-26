@@ -227,11 +227,11 @@ Charts render in inline SVG (a line with a shaded selected-window span and a das
 ## Routing & deploy
 
 - **Router** ([08](../016-platform/router-app.md)): `/telemetry` and everything under it 301 to the liveworkspace dashboard, `?app=livediagram.app` (staging's on staging). There is no telemetry service binding.
-- **Deploy** ([10](../016-platform/deployment.md)): nothing of telemetry's here. The service and its dashboard deploy from liveworkspace; this repo's deploy syncs `TELEMETRY_KEY` onto the api and mcp workers from the GitHub secret of that name.
+- **Deploy** ([10](../016-platform/deployment.md)): nothing of telemetry's here. The service and its dashboard deploy from liveworkspace; `TELEMETRY_KEY` is a Worker secret on the api and mcp workers, set once per environment with `wrangler secret put`, which a deploy never overwrites.
 
 ## Provisioning (one-time, owner only)
 
-1. Generate livediagram's key (`openssl rand -hex 32`) and set it on the service as `TELEMETRY_KEY_LIVEDIAGRAM`, and as the `TELEMETRY_KEY` GitHub secret (`TELEMETRY_KEY_STAGING` for staging), which the deploy puts on the api and mcp workers. A mismatch produces no error, just missing server-side counts, so verify with `wrangler secret list` on all three.
+1. Generate livediagram's key (`openssl rand -hex 32`) and set it on the service as `TELEMETRY_KEY_LIVEDIAGRAM`, and set the same value as the `TELEMETRY_KEY` secret on the api and mcp workers (`wrangler secret put TELEMETRY_KEY`, and again with `--env staging` with staging's key). A mismatch produces no error, just missing server-side counts, so verify with `wrangler secret list` on all three.
 2. `TELEMETRY_ENABLED` and `TELEMETRY_URL` come from the hosted profile; a deployment sets them itself, with a service of its own to send to (the hosted one only takes livediagram.app's origins and key).
 
 ## Privacy posture

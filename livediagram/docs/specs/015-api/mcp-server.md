@@ -61,9 +61,8 @@ stays a pure REST/WS surface.
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.livediagram.app`** (its own hostname,
-  like the api). Add the service to the deploy workflow alongside marketing /
-  live / telemetry / api (it depends on api existing, so it deploys in the same
-  wave as api or just after). The `router` worker is unchanged: `mcp.` is a
+  like the api). The monorepo's deploy ships it in the tier after the api
+  (its service binding needs the api to exist, [Deployment](../016-platform/deployment.md) "Deploy"). The `router` worker is unchanged: `mcp.` is a
   separate host, not a path under the main hostname, so it carries no router
   business logic. `GET /health` returns `{ status: 'ok' }`.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
@@ -893,8 +892,8 @@ telemetry service directly: a Worker sends no Origin, so the key is how the
 service knows the batch is livediagram's. (It replaced `INTERNAL_EVENTS_KEY`,
 which exempted these posts from the api's per-IP limiter when they went over the
 service binding.) The value **must match** the api worker's and the service's
-`TELEMETRY_KEY_LIVEDIAGRAM`, and a mismatch is silent: the deploy workflow drives
-both workers from one GitHub secret for exactly that reason. See
+`TELEMETRY_KEY_LIVEDIAGRAM`, and a mismatch is silent, so set the same value on both workers with
+`wrangler secret put TELEMETRY_KEY` and check it with `wrangler secret list` on each. See
 [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
 
 ### 4.14 Tool annotations (behaviour hints)

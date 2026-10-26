@@ -40,7 +40,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/e2e/perf/calibrate.ts`                                      | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                |
 | `apps/live/e2e/perf/trace-tasks.ts`                                    | `mainThreadTasks`: the renderer main thread's task durations from a trace                                       |
 | `apps/live/e2e/perf/canvas.perf.ts`                                    | The probe: seeds, runs each gesture under a trace, writes the report                                            |
-| `.github/workflows/canvas-perf.yml`                                    | The nightly run and the budget issue                                                                            |
+| root `.github/workflows/canvas-perf.yml`                               | The nightly run and the budget issue                                                                            |
 
 ## Domain and naming
 
@@ -327,14 +327,15 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 
 ### The nightly run
 
-- `.github/workflows/canvas-perf.yml`: `schedule` at `30 2 * * *` (D67) and `workflow_dispatch`; permissions
-  `contents: read`, `issues: write`, `actions: read`; one run at a time.
+- The root `.github/workflows/canvas-perf.yml`: `schedule` at `30 2 * * *` (D67) and `workflow_dispatch`; permissions
+  `contents: read`, `issues: write`, `actions: read`; one run at a time, with one job per product (livedesign's among them).
 - `apps/live/e2e/perf/nightly.mjs previous` prints the head SHA of the last successful run of this
   workflow on `main` (the REST API, `GITHUB_API_URL`). On a scheduled run that SHA equals
   `github.sha` → the summary says nothing is new and every later step is skipped.
-- Otherwise: the e2e image and install as `e2e.yml` (with its image check), `next build` of
+- Otherwise: Playwright's container image, `pnpm install`, a check that the workflow's image matches the locked
+  Playwright version, `next build` of
   `apps/live`, `pnpm --filter @livedesign/live perf:canvas`, then `nightly.mjs report`, and the
-  `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf` with
+  `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf-livedesign` with
   `retention-days: 14`.
 - `nightly.mjs report` writes the table to `$GITHUB_STEP_SUMMARY`, finds the open issue titled
   `Canvas performance budget: livedesign` (by title; no label), and acts on `budgetIssueAction`

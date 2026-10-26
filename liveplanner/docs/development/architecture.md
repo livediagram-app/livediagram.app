@@ -118,19 +118,17 @@ Every caller is a verified token: a liveworkspace account's access token, or a l
 
 ## Deployment
 
-GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then marketing / help / api ship in parallel; live and mcp deploy after `api` (both have service bindings to it), and the router deploys last because its service bindings need the others to exist.
+liveplanner deploys from the monorepo's root `.github/workflows/` to the liveworkspace Cloudflare account ([docs/ci.md](../../../docs/ci.md) "Deploys"). One reusable workflow (`deploy.yml`, each Worker through `deploy-worker.yml`) deploys an environment, so the two cannot drift: its plan diffs the commit against the environment's `deployed/<environment>` tag, asks Turborepo which workspaces that reaches, and deploys only those Workers, in three tiers, each waiting for the one before: the api, then marketing, editor, help and mcp (bound to the api), then the router, whose service bindings need the others to exist.
 
-Two environments run that same sequence, from one reusable workflow (`deploy-reusable.yml`) so they cannot drift:
-
-|         | Production                   | Staging                                                |
-| ------- | ---------------------------- | ------------------------------------------------------ |
-| Host    | `liveplanner.app`            | `staging.liveplanner.app`                              |
-| Trigger | Manual, after a green CI run | Automatic, on every green CI run on `main`             |
-| Workers | `liveplanner-<app>`          | `liveplanner-<app>-staging` (wrangler `[env.staging]`) |
-| Data    | Durable Objects              | Its own KV / objects, no production data, ever         |
+|         | Production                                                    | Staging                                                           |
+| ------- | ------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Host    | `liveplanner.app`                                             | `staging.liveplanner.app`                                         |
+| Trigger | By hand (`deploy-production.yml`), shipping what staging runs | Automatic (`deploy-staging.yml`), on every green CI run on `main` |
+| Workers | `liveplanner-<app>`                                           | `liveplanner-<app>-staging` (wrangler `[env.staging]`)            |
+| Data    | Durable Objects                                               | Its own KV / objects, no production data, ever                    |
 
 Staging exists mainly so a schema change runs against real remote storage one deploy before it reaches people's projects. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging`). See [Staging environment](../specs/016-platform/staging-environment.md).
 
-Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, per-owner image caps), which the workflow adds with `wrangler deploy --var` only in liveplanner.app's own repository and then reads back off the live api worker. Any other deployment (a preview, a deploy from another repository) gets the committed config alone, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
+Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, per-owner image caps), which the deploy adds with `wrangler deploy --var` and then reads back off the live api worker. A deploy of the committed config alone gets none of it, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
 
 See [Deployment](../specs/016-platform/deployment.md) for the deployment contract and its step-by-step.

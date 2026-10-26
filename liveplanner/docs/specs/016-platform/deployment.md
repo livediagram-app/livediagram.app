@@ -58,7 +58,7 @@ change reaches it ([docs/ci.md](../../../../docs/ci.md) "Only what changed"). Fo
   thresholds are enforced; the rest run `test`. Two at a time (`--concurrency=2`): each vitest fills the cores.
 - **Editor unit tests i/3**: `@liveplanner/editor` under coverage, a third of its files per job
   (`vitest run --coverage --shard=i/3`) ([Coverage report](../003-system-architecture/testing.md#coverage-report)).
-  `scripts/ci-test-filters.mjs` keeps the editor out of the Tests job, so each suite runs exactly once.
+  The root planner (`ci-plan.mjs`) keeps the editor out of the Tests job, so each suite runs exactly once.
 - **Build**: the affected workspaces' builds, the CLI's `npm pack --dry-run`, and `staging:check`.
 - **CI**: one job that fails when any of the above failed. It is the check `main` requires.
 

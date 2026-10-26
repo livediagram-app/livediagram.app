@@ -33,12 +33,14 @@ The monorepo's root `.github/workflows/ci.yml` runs on every pull request and ev
 touched and everything depending on them) and groups them by product, so livedesign's jobs run only when a change
 reaches livedesign. For livedesign's group:
 
-- **Checks**: lint, type check and the format check.
-- **Tests**: every workspace's tests, then `test:coverage` for those with it (enforcing the per-file coverage
-  thresholds), uploading coverage to Codecov.
+- **Checks**: lint and type check of the affected workspaces, and livedesign's own `format:check`.
+- **Tests**: every affected workspace's suite once. Those with `test:coverage` run that (enforcing the per-file
+  coverage thresholds), the rest run `test`; coverage goes to Codecov under the `livedesign` flag.
 - **Editor unit tests**: the editor's suite (`apps/live`) under coverage, sharded
   ([Coverage report](../003-system-architecture/testing.md#coverage-report)).
-- **Build**: every app's build, the CLI package's dry run, and `staging:check`.
+- **Build**: the affected workspaces' builds, the CLI's `npm pack --dry-run` when the CLI is reached, and
+  `staging:check`.
+- **CI**: one job that fails when any of the above failed. It is the check `main` requires.
 
 `staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp,
 router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]`

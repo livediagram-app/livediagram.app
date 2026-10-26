@@ -162,18 +162,16 @@ the "decides who may see this" or "decides what may be deleted" set.
 
 ## CI
 
-CI runs parallel jobs (the monorepo's root `.github/workflows/ci.yml`, livedesign's group when a change reaches it): **Checks** runs lint →
-format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
-suite exactly once (a workspace with `test:coverage` runs only that), for every
-workspace but the editor; **Editor unit tests i/3** run the editor's suite
-(`apps/live`, most of the repository's tests) under coverage, a third of its
-files each (`vitest run --shard=i/3`); **Build** runs the build and the staging
-config check. No CI change is needed to start running
-tests; adding a `test` script to a workspace is enough for Turborepo to pick
-it up.
+The monorepo's root `ci.yml` runs livedesign's group when a change reaches it
+([Deployment](../016-platform/deployment.md#ci), the liveworkspace root's `docs/ci.md`): **Checks** runs lint,
+type check and format check; **Tests** runs each affected workspace's suite exactly once (a workspace with
+`test:coverage` runs only that, so its thresholds are enforced), for every workspace but the editor; **Editor unit
+tests i/3** run the editor's suite (`apps/live`, most of the product's tests) under coverage, a third of its files
+each (`vitest run --coverage --shard=i/3`); **Build** runs the builds and the staging config check. No CI change is
+needed to start running tests; adding a `test` script to a workspace is enough for Turborepo to pick it up.
 
-Checks, Tests, every Editor unit tests job and Build are required status checks on `main`, with every E2E Smoke job
-([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
+The one required check on `main` is **CI**, which fails when any of those jobs failed, with **E2E**, the end-to-end
+workflow's result ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
 `workflow_dispatch` run on the same commit is not attached to it.
 
 Coverage is a separate step because it enforces the thresholds above, and
@@ -197,9 +195,7 @@ stays the thresholds above, and a failed upload leaves the job green.
 
 The pull request's coverage report is the monorepo's own, written into the description from CI's
 lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
-coverage, and a row per product the run reached against `main`. It replaces the
-`coverage-report.yml` and `scripts/coverage-report.mjs` this product carried in its own repository,
-which no longer run.
+coverage, and a row per product the run reached against `main`.
 
 ## Before a push
 

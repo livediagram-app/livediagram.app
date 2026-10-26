@@ -13,7 +13,7 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | Local development      | `.env.local` (gitignored) per app/worker                          |
 | Cloudflare Workers     | `wrangler secret put`, never in `wrangler.toml`                   |
 | Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
-| CI / Deploy            | GitHub repo secrets: see below                                    |
+| CI / Deploy            | The one repository secret, `CLOUDFLARE_API_TOKEN` (below)         |
 | Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
 
 ### GitHub Actions secrets

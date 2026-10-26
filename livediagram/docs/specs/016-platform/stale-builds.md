@@ -88,7 +88,7 @@ back, so a later failure on the page can still reload once.
 
 ## Knowing which build is live
 
-- **The build id** is the commit the deploy built (the build job's checkout), baked into the editor's static export as
+- **The build id** is the commit the deploy built (the commit `deploy-worker.yml` checks out), baked into the editor's static export as
   `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="livediagram-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
   without one (local development, a deployment that sets neither) disables this layer; the safety
   net still works.
@@ -145,7 +145,7 @@ uncaught error or rejection, an area error boundary, or the app's root error bou
 
 ## Deploy window and failure modes
 
-- The api and the editor deploy in parallel. In the seconds between, ids differ and navigations are
+- The api deploys a tier before the editor. In the minutes between, ids differ and navigations are
   full page loads; harmless.
 - If one of the two deploys fails, every navigation stays a full page load until they match again:
   slower, never broken.

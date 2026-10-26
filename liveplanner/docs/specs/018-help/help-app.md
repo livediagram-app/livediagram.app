@@ -297,7 +297,7 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `liveplanner-help`.
+`liveplanner-help` deploys with the other sites, in the monorepo deploy's second tier (its build from full history, so the sitemap dates each article by its last commit), before the router, whose `HELP` service binding names it ([Deployment](../016-platform/deployment.md) "Deploy").
 
 ## Out of scope (for now)
 

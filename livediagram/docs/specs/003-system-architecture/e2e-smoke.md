@@ -12,20 +12,19 @@ test lives here.
 
 ## When it runs
 
-The suite is a **per-PR merge gate**. **Every one of its jobs** (below) is a required status check
-on `main` beside CI's jobs ([CI](testing.md#ci)), so a pull request whose change breaks a browser flow
-cannot merge. A check is named after its job, so renaming a job or changing the shard count
-updates the `main` ruleset's required checks in the same change; until then a pull request waits
-on a check that never reports, or merges without one. A post-merge-only run let regressions land unseen and kept `main` red for
-hours at a time while later pull requests inherited the failure.
+The suite is a **per-PR merge gate**. It runs from the monorepo's root `e2e.yml` (named **E2E**), which calls
+`e2e-product.yml` for livediagram whenever a change reaches its editor, `@livediagram/editor` ([docs/ci.md](../../../../docs/ci.md)).
+The workflow's one result job, **E2E**, is a required check on `main` beside **CI** ([CI](testing.md#ci)), so a pull
+request whose change breaks a browser flow cannot merge, and a renamed job or a new shard count needs no ruleset
+change. A post-merge-only run let regressions land unseen and kept `main` red for hours at a time while later pull
+requests inherited the failure.
 
-The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
-run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the gate never
-holds back a merge for longer than CI itself does. The run needs no secret, no
-Cloudflare account and no deployed environment: the stack is local to the runner
-([The stack under test](#the-stack-under-test)), so a pull request from a fork runs it too.
+The price of the gate is the run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the
+gate never holds back a merge for longer than CI itself does. The run needs no secret, no Cloudflare account and no
+deployed environment: the stack is local to the runner ([The stack under test](#the-stack-under-test)), so every
+pull request runs it.
 
-The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggered on:
+`e2e.yml` runs on:
 
 - **`pull_request`**: every pull request, the gate;
 - **push to `main`**: the merged result, since a pull request is tested against the `main` it
@@ -33,24 +32,23 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 - **`workflow_dispatch`**: by hand against any branch; such a run is not attached to a pull
   request, so it never stands in for the required check.
 
-A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
-pull request never queues two runs of the suite.
+A new push to a pull request cancels its run in flight (`concurrency`); on `main` every commit's run goes to the end.
 
 It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                           | Runs                                                                                                    |
-| ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                             | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | live, help, telemetry, community, then marketing | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`)         | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                              | Runs                                                                                                    |
+| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer) | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | the editor, help and community, then marketing      | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | the editor with sign-in on (`build:signed-in`)      | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
-Only the sites audit opens help, telemetry, the Community and marketing, so only its job pays for their builds. Marketing builds after the
+Only the sites audit opens help, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
 
-Cost controls, all in `e2e.yml` and `playwright.config.ts`:
+Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 
 - **Chromium only** (`--project=chromium`); no Firefox / WebKit. A `webkit` project exists
   only when `E2E_WEBKIT=1` is set (after `playwright install webkit`) and runs just
@@ -83,7 +81,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   `startBlankDocument`, `startTemplateDocument`, `openStartBlank` and `openBlankSession` do it for every caller; a
   spec that means the guest's own create passes `/new` itself. `e2e/server-new.test.ts` holds every spec that seeds
   through the api to it.
-- **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
+- **Sharded** (`--shard=i/6`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
   test (container, install, the live build), and the Sites audit, which cannot be split, takes
@@ -91,15 +89,15 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   floor: more shards finish no sooner, and each takes one of the account's 20 concurrent runner
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
-- **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
+- **No type check in the builds**: `e2e-product.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
   own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
-  apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
+  apps). CI's Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
   run on `main` before it builds, so it compiles only what changed
   (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it,
-  keyed by version, lockfile and commit, one copy per set of builds (`live`, `live-signed-in`,
-  `sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
+  keyed by version, lockfile and commit, one copy per set of builds (`livediagram-live`,
+  `livediagram-editor-signed-in`, `livediagram-sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
   re-checks every input, so a cache from an older commit only ever saves work, and a lockfile change
   starts cold. Each restore logs `[next-cache] <name>: restored <key>` or a miss. A cache only ever
   saves time: every build runs through `scripts/next-build-cold-retry.sh`, which, when a build fails
@@ -113,9 +111,9 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
   on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
   guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
-  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e.yml`
+  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e-product.yml`
   uploads them whenever any holds a trace, a timed-out run included, one artefact per job
-  (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
+  (`livediagram-playwright-report-shard-i`, `livediagram-playwright-report-sites`, `livediagram-playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
   `dismissQuickTour` returns at once: no tour offers itself (tours start
@@ -219,7 +217,7 @@ guest handoff (`/e2e/accounts/api/auth/guest`, which redirects back to `/auth/gu
 in the fragment, refusing any `redirect_uri` that is not this stack's), and one per call on
 `/e2e/guest-token` for specs. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's state outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's state outlives a test. `e2e-product.yml` builds and runs them in their own job, beside the smoke shards.
 
 Teams and API tokens are the liveworkspace account's, so the stand-in keeps them too, in memory, as
 liveworkspace.app does. The api worker is started with a test client (`ACCOUNTS_CLIENT_ID`,
@@ -319,7 +317,7 @@ tests where it's cheap.
 - `apps/editor/e2e/fixtures/`: drawn wall photos for the photo import; `audit-screens.ts`, `contrast.ts`,
   `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
-- `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
+- The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
   (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
@@ -327,4 +325,4 @@ tests where it's cheap.
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so
-`e2e.yml` is the only thing that runs it in CI.
+the E2E workflow is the only thing that runs it in CI.

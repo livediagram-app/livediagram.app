@@ -61,9 +61,8 @@ stays a pure REST/WS surface.
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.liveplanner.app`** (its own hostname,
   `mcp-staging.liveplanner.app` in staging, each a custom domain declared in
-  `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). Add the service to the deploy workflow alongside marketing /
-  live / telemetry / api (it depends on api existing, so it deploys in the same
-  wave as api or just after). The `router` worker is unchanged; `mcp.` is a
+  `apps/mcp/wrangler.toml`, [Deployment](../016-platform/deployment.md#custom-domain)). The monorepo's deploy ships it in the tier after the api
+  (its service binding needs the api to exist, [Deployment](../016-platform/deployment.md) "Deploy"). The `router` worker is unchanged; `mcp.` is a
   separate host, not a path under the main hostname, so it carries no router
   business logic. `GET /health` returns `{ status: 'ok' }`.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
@@ -577,8 +576,8 @@ The MCP worker reads three bindings and two out-of-band values. Bindings
 `TELEMETRY_KEY` is liveplanner's Worker key for liveworkspace's central telemetry service
 (liveworkspace/docs/specs/008-telemetry/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
 lets them speak for liveplanner.app. It **must match** the api worker's and the service's
-`TELEMETRY_KEY_LIVEPLANNER`; a mismatch is silent (the posts are simply not stored), so the deploy workflow
-drives both workers from one GitHub secret. `TELEMETRY_URL` names the service (unset is production's).
+`TELEMETRY_KEY_LIVEPLANNER`; a mismatch is silent (the posts are simply not stored), so set the same value on
+both workers with `wrangler secret put TELEMETRY_KEY`. `TELEMETRY_URL` names the service (unset is production's).
 See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
 
 ### 4.14 Tool annotations (behaviour hints)

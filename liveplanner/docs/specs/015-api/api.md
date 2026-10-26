@@ -33,7 +33,7 @@ The api resolves who is calling through three identities, in this order of prefe
 
 No Bearer at all is a **link visitor**: someone holding only a share code. There is no guest header: no `X-Owner-Id`, `X-Owner-Sig`, `POST /api/guest-id` or `POST /api/migrate`, and no self-minted guest id.
 
-`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` are **worker secrets** (`wrangler secret put`, synced from GitHub repo secrets on deploy), not `[vars]` entries. Only the client secret is sensitive, but keeping every out-of-band value in one mechanism is simpler than reasoning about which ones are safe in the open ([Secrets policy](../002-project-scope/secrets-policy.md)). Leaving `ACCOUNTS_URL` or `API_RESOURCE` unset leaves every caller a link visitor, useful for local dev or for environments without an accounts client yet. The sign-in round trip itself (`/api/auth/sign-in`, `/callback`, `/token`, `/sign-out`) and the guest handoff (`/api/auth/guest`) live in `apps/api/src/routes/auth.ts`.
+`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` are **worker secrets** (`wrangler secret put` on each worker and environment; a deploy never writes them, so they survive every deploy), not `[vars]` entries. Only the client secret is sensitive, but keeping every out-of-band value in one mechanism is simpler than reasoning about which ones are safe in the open ([Secrets policy](../002-project-scope/secrets-policy.md)). Leaving `ACCOUNTS_URL` or `API_RESOURCE` unset leaves every caller a link visitor, useful for local dev or for environments without an accounts client yet. The sign-in round trip itself (`/api/auth/sign-in`, `/callback`, `/token`, `/sign-out`) and the guest handoff (`/api/auth/guest`) live in `apps/api/src/routes/auth.ts`.
 
 ### Access
 
@@ -474,4 +474,4 @@ Before the first deploy:
 
 There is no bucket and no database to create (a plan's previews are liveworkspace's, [previews.md](../../../../liveworkspace/docs/specs/006-media/previews.md)) and nothing to migrate: each plan's object and each workbench creates its own SQLite on first use.
 
-After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `liveplanner-api` means the API must deploy before the router.
+After that, the monorepo's root deploy workflows ship it ([Deployment](../016-platform/deployment.md) "Deploy"): the api is in the first tier, since the router's service binding to `liveplanner-api` means the API must deploy before the router.
