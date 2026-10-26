@@ -18,6 +18,12 @@ type FormMetricShown = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// The local calendar day an instant falls on, as a whole number of days, so "days until" counts calendar days
+// rather than 24-hour blocks (a form closing at 9am tomorrow is "1 day" away at 5pm today, never "Today").
+const localDay = (at: number) => {
+  const d = new Date(at);
+  return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY_MS);
+};
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const dayOf = (at: number) =>
   new Date(at).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -65,9 +71,9 @@ export function formMetricShown(
     case 'closes': {
       if (!form.closesAt) return { hero: 'No date', line: 'Takes responses until you close it' };
       if (form.closesAt <= now) return { hero: 'Closed', line: `Closed ${dayOf(form.closesAt)}` };
-      const days = Math.ceil((form.closesAt - now) / DAY_MS);
+      const days = localDay(form.closesAt) - localDay(now);
       return {
-        hero: days <= 1 ? 'Today' : plural(days, 'day', 'days'),
+        hero: days <= 0 ? 'Today' : plural(days, 'day', 'days'),
         line: `Closes ${dayOf(form.closesAt)}`,
       };
     }

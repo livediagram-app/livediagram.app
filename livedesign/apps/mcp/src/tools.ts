@@ -45,11 +45,12 @@ import {
   requireToken,
   shareUrl,
   textResult,
+  ToolInputError,
   type Extra,
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
-import { elementsIssue } from './element-values';
+import { elementsIssue, tabElementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
@@ -166,11 +167,11 @@ export function registerTools(server: McpServer, env: Env): void {
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
       const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
-      const candidate: unknown = {
-        id: tabId,
-        name: t.name,
-        elements: normaliseElements(ended.elements),
-      };
+      const finished = normaliseElements(ended.elements);
+      const candidate: unknown = { id: tabId, name: t.name, elements: finished };
+      // What is wrong, named, before the general shape of an element.
+      const shapeIssue = t.elements ? tabElementsIssue(finished) : null;
+      if (shapeIssue) return errorResult(`Tab "${t.name}": ${shapeIssue}`);
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
@@ -399,13 +400,21 @@ export function registerTools(server: McpServer, env: Env): void {
     if (args.tabId) {
       // The tab name route: the name only, relayed to anyone with the design open
       // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames").
-      const { tab } = await apiJson<{ tab: { name: string } }>(
-        env,
-        token,
-        `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
-        { method: 'PUT', body: JSON.stringify({ name: args.name }) },
-      );
-      return textResult({ renamed: 'tab', tabId: args.tabId, name: tab.name });
+      let renamed: { tab: { name: string } };
+      try {
+        renamed = await apiJson<{ tab: { name: string } }>(
+          env,
+          token,
+          `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
+          { method: 'PUT', body: JSON.stringify({ name: args.name }) },
+        );
+      } catch (err) {
+        // The route answers a bare 404 for a tab the design does not hold, which read as "no such design".
+        if (err instanceof ApiError && err.status === 404)
+          await refuseUnknownTab(env, token, args.designId, args.tabId);
+        throw err;
+      }
+      return textResult({ renamed: 'tab', tabId: args.tabId, name: renamed.tab.name });
     }
     const { design: liveDoc } = await apiJson<DesignResponse>(
       env,
@@ -495,6 +504,28 @@ export function registerTools(server: McpServer, env: Env): void {
 }
 
 // Why a delete was refused, by what was deleted and the status.
+// Throws the ToolInputError naming the design's tabs when it holds no tab `tabId`; returns when the design cannot be
+// read (then the design is what is missing) or does hold it.
+async function refuseUnknownTab(
+  env: Env,
+  token: string,
+  designId: string,
+  tabId: string,
+): Promise<void> {
+  let tabs: { id: string; name: string }[];
+  try {
+    ({
+      design: { tabs },
+    } = await apiJson<DesignResponse>(env, token, `/designs/${encodeURIComponent(designId)}`));
+  } catch {
+    return;
+  }
+  if (tabs.some((t) => t.id === tabId)) return;
+  throw new ToolInputError(
+    `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+  );
+}
+
 export function deleteRefusal(status: number, tab: boolean): string {
   if (status === 410) return 'It is already in the Trash (see list_trash).';
   if (status === 403) return 'You may view this design but not change it.';

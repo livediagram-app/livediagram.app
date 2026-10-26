@@ -99,7 +99,6 @@ export function youtubeEmbedUrl(videoId: string): string {
   return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
 }
 
-/** The canonical watch page, for the "open on YouTube" affordance. */
 // --- Other providers (docs/specs/009-elements/embed-providers.md) --------------------------------------------
 //
 // The video element was built YouTube-only (docs/specs/009-elements/youtube-video.md), and its own spec noted
@@ -180,7 +179,11 @@ function embedTargetOf(url: string | undefined | null, figmaEmbed: string): Embe
     return null;
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
-  const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+  // A YouTube link with no video in it (a channel, a playlist, a cut-off share link) is not a video, and YouTube
+  // refuses to be framed, so it never falls through to a blank website embed below.
+  const fullHost = parsed.hostname.toLowerCase();
+  if (YOUTUBE_HOSTS.has(fullHost) || SHORT_HOSTS.has(fullHost)) return null;
+  const host = fullHost.replace(/^www\./, '');
   const path = parsed.pathname;
 
   if (host === 'vimeo.com' || host === 'player.vimeo.com') {

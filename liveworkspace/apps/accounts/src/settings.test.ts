@@ -8,15 +8,17 @@ import {
   SETTINGS_MAX_BYTES,
   writeSettings,
 } from './settings.ts';
-import { testD1 } from './test-d1.ts';
+import { addUser, testD1 } from './test-d1.ts';
 
 const ADA = 'user_ada';
 const GUEST = 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b';
 
 let db: D1Database;
+let sql: ReturnType<typeof testD1>['sql'];
 
 beforeEach(() => {
-  db = testD1().db;
+  ({ db, sql } = testD1());
+  addUser(sql, { id: ADA, email: 'ada@example.com', name: 'Ada Lovelace' });
 });
 
 async function write(owner: string, app: Parameters<typeof writeSettings>[2], patches: object) {
@@ -131,6 +133,23 @@ describe('settings', () => {
     await deleteSettings(db, ADA);
     expect(await readSettings(db, ADA, 'livediagram.app')).toMatchObject({ updatedAt: null });
     expect((await readSettings(db, GUEST, null)).all).toEqual({ a: 1 });
+  });
+});
+
+describe('a closed account', () => {
+  it('can’t have its settings written back by a token that outlived it', async () => {
+    await write(ADA, 'livediagram.app', { all: { theme: 'dark' } });
+    await deleteSettings(db, ADA);
+    sql.prepare('DELETE FROM "user" WHERE id = ?').run(ADA);
+    expect(
+      await writeSettings(db, ADA, 'livediagram.app', { all: { theme: 'light' }, app: { a: 1 } }),
+    ).toMatchObject({ ok: false, status: 404, error: 'unknown_owner' });
+    const left = sql.prepare('SELECT COUNT(*) AS n FROM settings WHERE owner_id = ?').get(ADA);
+    expect(left).toEqual({ n: 0 });
+  });
+
+  it('still lets a guest, who has no account row, write', async () => {
+    expect((await write(GUEST, null, { all: { theme: 'dark' } })).all).toEqual({ theme: 'dark' });
   });
 });
 

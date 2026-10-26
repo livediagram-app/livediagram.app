@@ -178,12 +178,13 @@ export function StartPanel<C extends string>({
         <span className="min-w-0 flex-1 whitespace-nowrap leading-snug sm:whitespace-normal">
           {c.name}
         </span>
-        {/* How many it holds, as a badge (the shared CountBadge), tinted with the chosen category. */}
+        {/* How many it holds, as a badge (the shared CountBadge), tinted with the chosen category. The chosen
+            one's figure is the ink: the accent on its own tint, over the row's, fell under WCAG AA. */}
         <CountBadge
           count={cardsIn(c.id).length}
           className="shrink-0 max-sm:hidden"
           background={on ? startTint(palette, 22) : palette.column}
-          color={on ? palette.focus : palette.muted}
+          color={on ? palette.text : palette.muted}
         />
       </button>
     );

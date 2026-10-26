@@ -33,10 +33,12 @@ const redeemed = new Set<string>();
 type Step = { kind: 'working' } | ConnectedView;
 
 const FAILED_BODY: Record<Extract<ConnectedView, { kind: 'failed' }>['reason'], string> = {
-  invalid_state: 'This connection wasn’t started here, or it took too long. Connect again from Cloud Sync.',
+  invalid_state:
+    'This connection wasn’t started here, or it took too long. Connect again from Cloud Sync.',
   no_refresh_token: 'Google didn’t give lasting access. Connect again from Cloud Sync.',
   refused: 'Google didn’t accept the connection. Try again from Cloud Sync.',
-  offline: 'Couldn’t reach liveworkspace. Check your connection, then connect again from Cloud Sync.',
+  offline:
+    'Couldn’t reach liveworkspace. Check your connection, then connect again from Cloud Sync.',
 };
 
 export function DriveConnectedPage() {
@@ -50,7 +52,7 @@ export function DriveConnectedPage() {
     // A cancel needs no one signed in: nothing is redeemed.
     if (!query.error && signedIn !== 'in') return;
     const origin = workspaceOrigin();
-    const remembered = takeConsent(sessionStorage, query.state);
+    const remembered = takeConsent(() => sessionStorage, query.state);
     const plan = planConnected(query, remembered, origin);
     if (plan.kind === 'leave') {
       // Replaces this page, so Back never lands on a spent code.
@@ -90,7 +92,11 @@ export function DriveConnectedPage() {
           body="Google Drive connects to your liveworkspace account. We’ll bring you right back."
         />
       ) : step.kind === 'failed' ? (
-        <DriveMessage state="failed" title="Google Drive couldn’t be connected" body={FAILED_BODY[step.reason]}>
+        <DriveMessage
+          state="failed"
+          title="Google Drive couldn’t be connected"
+          body={FAILED_BODY[step.reason]}
+        >
           <PrimaryLink href={step.returnTo}>Back to Cloud Sync</PrimaryLink>
         </DriveMessage>
       ) : step.kind === 'switch' ? (

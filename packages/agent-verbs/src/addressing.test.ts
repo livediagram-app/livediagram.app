@@ -30,6 +30,14 @@ async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<A
 }
 
 describe('parseDocumentUrl', () => {
+  it('refuses a link with a broken escape as a link, not with a URIError', async () => {
+    expect(await failureOf(() => parseDocumentUrl(`${HOST}/sketch/abc%E0`, HOST))).toMatchObject({
+      kind: 'usage',
+      what: 'sketch',
+      message: `${HOST}/sketch/abc%E0 is not a sketch link`,
+    });
+  });
+
   it('reads a document link and a share link, on the host or its www twin', () => {
     expect(parseDocumentUrl(`${HOST}/sketch/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
     expect(parseDocumentUrl(`https://www.acme.example/sketch/${DOC_A}?tab=x`, HOST)).toEqual({

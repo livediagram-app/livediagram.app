@@ -28,7 +28,12 @@ describe('sendEmail', () => {
   it('leaves out the headers and text it was not given', async () => {
     const b = binding(async () => ({ messageId: 'm-2' }));
     await sendEmail(b, { from: 'a@b.app', to: 'c@d.app', subject: 's', html: 'h' });
-    expect(b.send).toHaveBeenCalledWith({ from: 'a@b.app', to: 'c@d.app', subject: 's', html: 'h' });
+    expect(b.send).toHaveBeenCalledWith({
+      from: 'a@b.app',
+      to: 'c@d.app',
+      subject: 's',
+      html: 'h',
+    });
   });
 
   it('passes on a refusal', async () => {
@@ -36,9 +41,9 @@ describe('sendEmail', () => {
     const b = binding(async () => {
       throw refusal;
     });
-    await expect(sendEmail(b, { from: 'a@b.app', to: 'c@d.app', subject: 's', html: 'h' })).rejects.toBe(
-      refusal,
-    );
+    await expect(
+      sendEmail(b, { from: 'a@b.app', to: 'c@d.app', subject: 's', html: 'h' }),
+    ).rejects.toBe(refusal);
   });
 
   it('gives up on a send that hangs', async () => {
@@ -75,5 +80,11 @@ describe('redactAddress', () => {
   it('keeps the first two characters and the domain', () => {
     expect(redactAddress('jo.smith@example.com')).toBe('jo***@example.com');
     expect(redactAddress('nope')).toBe('***');
+  });
+
+  it('never shows a short local part whole, nor the @ twice', () => {
+    expect(redactAddress('a@example.com')).toBe('***@example.com');
+    expect(redactAddress('jo@example.com')).toBe('j***@example.com');
+    expect(redactAddress('joe@example.com')).toBe('jo***@example.com');
   });
 });

@@ -366,7 +366,7 @@ Metrics**, offered only while the project has a Form tab. Six figures (`form-met
 | **New Responses**  | How many are new to the reader ("new to you since you last looked")                                                                                              |
 | **Form Status**    | A pill: **Accepting** (green), **Closed** (amber; also past its Close On or at its Response Limit), **Not Published**, **Suspended** (red), or **Draft** offline |
 | **Response Limit** | "42 / 100" with a bar toward the limit (amber once reached) and how many to go; **No limit** without one                                                         |
-| **Closes**         | Days until it closes ("3 days", **Today**), its date beneath; **Closed** once past; **No date** without one                                                      |
+| **Closes**         | Calendar days until it closes ("3 days", "1 day", **Today**), its date beneath; **Closed** once past; **No date** without one                                    |
 | **Form Link**      | The link to copy (**Copy**, an Editor's) once published; "Not published yet." before                                                                             |
 
 Placed, it reads the project's first Form tab; an Editor changes the form from the select at the card's foot while

@@ -65,4 +65,20 @@ describe('useFocusReturn', () => {
     runFrame();
     expect(document.activeElement).toBe(canvas);
   });
+
+  it('still puts focus back when the fallback changes before the frame runs', () => {
+    const present = button('Present');
+    const canvas = button('Canvas');
+    present.focus();
+    const { rerender } = renderHook(({ on }) => useFocusReturn(on, () => canvas), {
+      initialProps: { on: false },
+    });
+    rerender({ on: true });
+    (document.activeElement as HTMLElement | null)?.blur();
+    rerender({ on: false });
+    // The render that brings the chrome back hands a new fallback.
+    rerender({ on: false });
+    runFrame();
+    expect(document.activeElement).toBe(present);
+  });
 });

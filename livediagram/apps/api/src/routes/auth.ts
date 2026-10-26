@@ -111,12 +111,23 @@ function appOrigin(env: Env, request: Request): string {
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;
 
 // Only a path on this site: anything else (`//evil.example`, `https://…`, `/\evil`) would make the
-// sign-in an open redirect.
+// sign-in an open redirect. A C0 control, space or DEL is refused too: a browser drops a tab or newline when it
+// follows a URL, so `/<tab>/evil.example` would land on `//evil.example`.
 export function safeReturnPath(value: string | null): string {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
     return DEFAULT_RETURN;
   }
+  if (hasControlOrSpace(value)) return DEFAULT_RETURN;
   return value;
+}
+
+// The C0 controls, space and DEL: a URL parser strips or drops them, so none belongs in a path we follow.
+function hasControlOrSpace(path: string): boolean {
+  for (let i = 0; i < path.length; i++) {
+    const code = path.charCodeAt(i);
+    if (code <= 0x20 || code === 0x7f) return true;
+  }
+  return false;
 }
 
 export function readCookie(request: Request, name: string): string | null {

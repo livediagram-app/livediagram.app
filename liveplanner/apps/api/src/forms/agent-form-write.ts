@@ -1,10 +1,16 @@
 // An agent's form write (docs/specs/030-forms/forms.md "Agents", blueprint §15): a Form tab's form replaced whole,
 // at the revision the agent read, then relayed to open editors as the `tab-meta` an editor's own edit sends. The tab
-// takes the form's heading as its name. While the form takes responses only its settings may change. A lost race
-// repeats once from the read.
+// takes the form's heading as its name. While the form takes responses only its settings may change: a form switched
+// on but past its Close On or at its Response Limit takes none, so it is not locked (unless the write would open it
+// again). A lost race repeats once from the read.
 import type { RoomOp } from '@liveplanner/api-schema';
 import { tabKindOf, type Tab } from '@liveplanner/project';
-import { changesBeyondSettings, readForm } from '@liveplanner/forms';
+import {
+  changesBeyondSettings,
+  closedBySettings,
+  readForm,
+  type FormDefinition,
+} from '@liveplanner/forms';
 import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
@@ -57,7 +63,10 @@ export async function writeAgentForm(
     const before = readForm(stored.tab.form);
     if (!before || changesBeyondSettings(before, form)) {
       const live = await getLiveFormLink(env, projectId, tabId);
-      if (live?.open === 1) {
+      const now = Date.now();
+      const taking = (f: FormDefinition | null): boolean =>
+        !f || !closedBySettings(f, { responses: live!.responses, now });
+      if (live?.open === 1 && (taking(before) || taking(form))) {
         console.info('[forms] agent.locked', where);
         return refused(409, 'form_locked', FORM_LOCKED_MESSAGE);
       }

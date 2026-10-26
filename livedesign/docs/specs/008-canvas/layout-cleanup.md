@@ -28,7 +28,9 @@ off", not "this diagram has no layout".
 
 - **Sizes** round to the 10 px grid per element. A circle, diamond or actor drawn square stays
   square; one drawn otherwise keeps its own proportions (a flowchart's decision is a wide
-  diamond, and squaring it doubled its height into the steps around it).
+  diamond, and squaring it doubled its height into the steps around it). An aspect-locked shape keeps
+  its ratio; one drawn square takes the square rule alone, so a locked circle stays round and does
+  not grow from press to press.
 - **Positions snap by shared lines, not box by box.** Every box offers a start, centre and end line
   on each axis; lines of one kind within `ALIGN_TOLERANCE` (8 px) form a group, and two boxes an
   arrow runs straight between (bottom to top, or side to side) also join a centre group within

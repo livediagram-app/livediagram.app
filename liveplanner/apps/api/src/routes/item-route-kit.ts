@@ -6,6 +6,7 @@ import {
   isArchived,
   isTrashed,
   itemIdsShownOnTab,
+  tabShowsEveryCard,
   itemPersonId,
   statusExcluded,
   typesOf,
@@ -38,6 +39,8 @@ export type ItemCaller = {
   doc?: NonNullable<Awaited<ReturnType<typeof getProject>>>;
   // The item ids the caller may touch, when their grant is confined to one tab.
   scope: Set<string> | null;
+  // Whether that tab shows every card (a board or plan view on it), so a card the caller makes stays in scope.
+  scopeTakesNew?: boolean;
   // The store as read to work out that scope, so a list does not read it twice.
   items?: Item[];
   // Whether the caller holds edit, once a write has had to ask (isItemEditor).
@@ -127,6 +130,7 @@ export async function itemCaller(
     owner,
     doc,
     scope: itemIdsShownOnTab(tab.elements, items),
+    scopeTakesNew: tabShowsEveryCard(tab.elements),
     items,
   };
 }

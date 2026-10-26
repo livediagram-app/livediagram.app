@@ -1,4 +1,17 @@
+import type { Metadata } from 'next';
 import { Wordmark } from '@/components/Wordmark';
+
+// Its own title, and no home-page Open Graph address: without this, the root layout's title, description and
+// `og:url` of `/` made every unknown address announce itself as the home page. Never indexed.
+const TITLE = 'Nothing here · liveworkspace';
+const DESCRIPTION = 'liveworkspace has no page at this address.';
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  robots: { index: false, follow: true },
+  openGraph: { title: TITLE, description: DESCRIPTION, siteName: 'liveworkspace', type: 'website' },
+  twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
+};
 
 // An address liveworkspace.app has no page for. Kept light: Next carries this tree in every page.
 export default function NotFound() {

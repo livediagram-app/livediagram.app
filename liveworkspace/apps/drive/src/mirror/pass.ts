@@ -35,7 +35,7 @@ export type PassOutcome =
   // Nothing to schedule: disconnected meanwhile, or the grant needs a new consent.
   | { kind: 'stopped' };
 
-// The root folder, by id: found again by its lwRoot after a reconnect, made in My Drive otherwise. The first page
+// The root folder, by id: found again by its lwRoot after a reconnect (one the person owns), made in My Drive otherwise. The first page
 // token is taken before anything is written, so every later write reads back as an echo.
 async function ensureRoot(
   rt: Runtime,
@@ -47,7 +47,8 @@ async function ensureRoot(
   const existing = await drive.listFiles(
     `appProperties has { key='${DRIVE_PROP_ROOT}' and value='${deps.origin}' } and trashed = false`,
   );
-  let root = existing[0];
+  // Only a root in the person's own Drive: anyone can tag a folder of theirs as a root and share it.
+  let root = existing.find((f) => f.ownedByMe);
   if (root) {
     driveLog('root-found', { person: rt.personId, root: root.id });
   } else {

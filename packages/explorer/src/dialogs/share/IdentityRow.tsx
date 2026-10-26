@@ -9,10 +9,12 @@ import type { ShareIdentity } from './types';
 
 export function initialsOf(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
+  // Code points, so a name that starts with an emoji keeps it whole.
+  const first = (word: string, n = 1) => Array.from(word).slice(0, n).join('');
   const letters =
     words.length > 1
-      ? `${words[0]![0]}${words[words.length - 1]![0]}`
-      : (words[0] ?? '?').slice(0, 2);
+      ? `${first(words[0]!)}${first(words[words.length - 1]!)}`
+      : first(words[0] ?? '?', 2);
   return letters.toUpperCase();
 }
 

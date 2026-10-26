@@ -222,7 +222,9 @@ export function useTabActions(deps: TabActionsDeps) {
     // peer's selection of the original render (and lock, docs/specs/007-editor/editor-app.md) on
     // the copy too, since remote selections resolve by element id.
     const reminted = remintTabElements({ ...src, elements: src.elements.map((el) => ({ ...el })) });
-    const name = `${src.name} copy`;
+    // Capped like every name the editor makes (docs/specs/006-document/name-length.md): a full-length name's copy ran
+    // past it.
+    const name = truncateName(`${src.name} copy`);
     const copy: Tab = { ...reminted, id: crypto.randomUUID(), name };
     const srcIndex = tabs.findIndex((t) => t.id === id);
     commitTabs((ts) => {

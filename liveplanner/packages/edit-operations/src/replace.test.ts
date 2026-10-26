@@ -144,12 +144,17 @@ describe('applyReplace refusals', () => {
     ]);
     expect(rejection.hint).toContain('plan-view');
     expect(refusal({ elements: [{ id: 'x', type: 'sticky' }] }).code).toBe('invalid_value');
+    expect(refusal({ elements: [null] }).details).toEqual([
+      'elements: an element with no type is not an element a liveplanner tab holds',
+    ]);
   });
 
   it('refuses elements that are not a list, or an element the format does not allow', () => {
     expect(refusal({ elements: 'x' }).details).toEqual(['elements: expected an array of elements']);
     const { x: _x, ...noX } = newView('g1', 'gantt');
     expect(refusal({ elements: [noX] }).details).toEqual(['g1 x: a finite number']);
+    const { id: _id, ...noId } = newView('g1', 'gantt');
+    expect(refusal({ elements: [noId] }).details).toEqual(['an element id: a non-empty string']);
   });
 
   it('refuses two elements with one id', () => {

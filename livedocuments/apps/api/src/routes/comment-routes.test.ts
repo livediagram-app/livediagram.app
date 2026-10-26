@@ -358,4 +358,14 @@ describe('the thread listing', () => {
     expect((await list('', 'stranger')).status).toBe(403);
     expect((await call({ method: 'POST', path: '/comments' })).status).toBe(405);
   });
+
+  it('answers a tab-scoped link whose tab has no comments with an empty list, not a refusal', async () => {
+    seed(
+      [shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })],
+      [shape('d')],
+    );
+    const res = await list('?status=all', 'guest', 'TAB2');
+    expect(res.status).toBe(200);
+    expect(res.body.threads).toEqual([]);
+  });
 });

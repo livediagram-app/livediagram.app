@@ -16,6 +16,7 @@ import {
 } from 'react';
 
 type Tone = 'info' | 'success' | 'error';
+type Hold = 'hover' | 'focus';
 type Toast = { id: number; tone: Tone; text: string; action?: { label: string; run: () => void } };
 
 export type ToastApi = {
@@ -37,9 +38,18 @@ export function useToast(): ToastApi {
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const next = useRef(1);
-  // Each toast's clock: the timer while it runs, and how long it has left (kept while paused).
+  // Each toast's clock: the timer while it runs, how long it has left (kept while paused), and what holds it
+  // (the pointer over it, focus in it).
   const timers = useRef(
-    new Map<number, { timer: ReturnType<typeof setTimeout> | null; left: number; since: number }>(),
+    new Map<
+      number,
+      {
+        timer: ReturnType<typeof setTimeout> | null;
+        left: number;
+        since: number;
+        holds: Set<Hold>;
+      }
+    >(),
   );
 
   const dismiss = useCallback((id: number) => {
@@ -55,23 +65,29 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         timer: setTimeout(() => dismiss(id), left),
         left,
         since: Date.now(),
+        holds: new Set(),
       });
     },
     [dismiss],
   );
 
-  // Hovered or focused: the clock stops; it goes on from where it was when they leave.
-  const pause = useCallback((id: number) => {
+  // Hovered or focused: the clock stops; it goes on from where it was once neither holds it, so the pointer
+  // leaving never restarts it under focus still on Undo.
+  const pause = useCallback((id: number, hold: Hold) => {
     const clock = timers.current.get(id);
-    if (!clock?.timer) return;
+    if (!clock) return;
+    clock.holds.add(hold);
+    if (!clock.timer) return;
     clearTimeout(clock.timer);
     clock.timer = null;
     clock.left = Math.max(0, clock.left - (Date.now() - clock.since));
   }, []);
   const resume = useCallback(
-    (id: number) => {
+    (id: number, hold: Hold) => {
       const clock = timers.current.get(id);
-      if (clock && !clock.timer) run(id, clock.left);
+      if (!clock) return;
+      clock.holds.delete(hold);
+      if (!clock.timer && clock.holds.size === 0) run(id, clock.left);
     },
     [run],
   );
@@ -120,10 +136,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.tone === 'error' ? 'alert' : 'status'}
-            onMouseEnter={() => pause(t.id)}
-            onMouseLeave={() => resume(t.id)}
-            onFocus={() => pause(t.id)}
-            onBlur={() => resume(t.id)}
+            onMouseEnter={() => pause(t.id, 'hover')}
+            onMouseLeave={() => resume(t.id, 'hover')}
+            onFocus={() => pause(t.id, 'focus')}
+            onBlur={() => resume(t.id, 'focus')}
             className="pointer-events-auto flex max-w-md animate-fade-in items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <span

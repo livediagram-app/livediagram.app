@@ -108,6 +108,14 @@ describe('add with an element', () => {
     });
   });
 
+  it('names an element with no shape plainly when it carries a prototype key, offering only the common fields', () => {
+    const element = JSON.parse('{"constructor": 1, "type": "sticky"}') as Record<string, unknown>;
+    const rejection = refused(run([{ op: 'add', element }]));
+    expect(rejection).toMatchObject({ code: 'unknown_field' });
+    expect(rejection.details[0]).toBe('element has no field "constructor"');
+    expect(rejection.details[1]).not.toContain('planView');
+  });
+
   it('refuses an element on a locked layer', () => {
     const tab: Tab = {
       ...sprintDashboard(),

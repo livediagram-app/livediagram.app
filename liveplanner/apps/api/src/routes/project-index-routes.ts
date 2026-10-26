@@ -7,7 +7,7 @@ import {
   readProjectConversion,
 } from '@liveplanner/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
-import { json } from '../responses';
+import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
 import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
 
@@ -42,11 +42,11 @@ export async function handleProjectIndexRoutes(ctx: RouteContext): Promise<Respo
       // "Taken Offline" rather than a deletion.
       if (readProjectConversion(request.headers.get(PROJECT_CONVERSION_HEADER)) === 'offline') {
         await client.deleteItem(id, { permanent: true, reason: 'offline' });
-        return new Response(null, { status: 204 });
+        return noContent();
       }
       const permanent = ['1', 'true'].includes(url.searchParams.get('permanent') ?? '');
       await client.deleteItem(id, { permanent });
-      return new Response(null, { status: 204 });
+      return noContent();
     }
     const body = await readOptionalBody(request);
     if (isCopy) {

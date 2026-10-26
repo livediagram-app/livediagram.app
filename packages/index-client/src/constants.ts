@@ -225,6 +225,7 @@ export const INDEX_ERRORS = [
   'invalid_team',
   'invalid_level',
   'invalid_tab',
+  'invalid_expiry',
   'invalid_key',
   'invalid_summary',
   'invalid_collab',

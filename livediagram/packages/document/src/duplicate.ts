@@ -32,12 +32,7 @@ import {
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
 // timeline never sees added.
 // The clipboard strips the same list on the way out (stripIdentity in apps/editor).
-export const ORIGINAL_ONLY_FIELDS = [
-  'commentThread',
-  'responses',
-  'action',
-  'actions',
-] as const;
+export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'responses', 'action', 'actions'] as const;
 
 export function freshCopyFields(el: Element): {
   rotation?: number;
@@ -63,11 +58,18 @@ export function freshCopyFields(el: Element): {
 //
 // Returns the new elements plus a map of old → new ids so callers can wire
 // extra arrows (e.g. a connector from the original to the duplicate).
+//
+// `existing` is what an uncopied end may stay pinned to: the ids already on the
+// tab the copies land on. It defaults to every id in `elements`, which is that
+// tab for a duplicate; a paste passes the tab's own ids, because the clipboard
+// elements it merges in are not on the tab (an arrow hung off a copied arrow
+// that was dropped kept naming it, and was drawn at the canvas origin).
 export function duplicateElements(
   elements: Element[],
   ids: ReadonlySet<ElementId>,
   dx: number,
   dy: number,
+  existing?: ReadonlySet<ElementId>,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {
   const idMap = new Map<ElementId, ElementId>();
   const newBoxed: BoxedElement[] = [];
@@ -79,7 +81,7 @@ export function duplicateElements(
     newBoxed.push({ ...el, id: newId, x: el.x + dx, y: el.y + dy, ...freshCopyFields(el) });
   }
 
-  const existingIds = new Set(elements.map((e) => e.id));
+  const existingIds = existing ?? new Set(elements.map((e) => e.id));
 
   // Decide which arrows copy, and mint their new ids into idMap BEFORE
   // building any copy: an on-arrow endpoint (docs/specs/008-canvas/arrow-to-arrow.md) can only follow
@@ -238,8 +240,9 @@ export function duplicateElements(
 
 // Re-point element-to-element references after a caller has renamed some
 // element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), a mind-map node's parent (docs/specs/009-elements/mind-node.md) and a
-// portal's partner (docs/specs/009-elements/portal-element.md). A reference whose target isn't in the map is
+// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), a mind-map node's parent (docs/specs/009-elements/mind-node.md), a
+// portal's partner (docs/specs/009-elements/portal-element.md) and an attached badge's or pointer note's host
+// (docs/specs/009-elements/badge.md). A reference whose target isn't in the map is
 // left alone. Element links are deliberately NOT touched: a link names its
 // tab as well as its element, and that is still the source tab.
 //
@@ -276,13 +279,17 @@ export function remapElementRefs<E extends Element>(
     // A flowchart's id is its first step's, so it renames with it; so does a step's lane.
     const chart = el.flowchartId !== undefined ? idMap.get(el.flowchartId) : undefined;
     const lane = el.flowLaneId !== undefined ? idMap.get(el.flowLaneId) : undefined;
-    if (!parent && !portal && !chart && !lane) return el;
+    // An attached badge, step or pointer note follows its host's new id; missed, a duplicated tab's chips
+    // named hosts on the SOURCE tab and came loose from their copies.
+    const host = el.attachedTo !== undefined ? idMap.get(el.attachedTo) : undefined;
+    if (!parent && !portal && !chart && !lane && !host) return el;
     return {
       ...el,
       ...(parent ? { mindParentId: parent } : {}),
       ...(portal ? { portalTarget: portal } : {}),
       ...(chart ? { flowchartId: chart } : {}),
       ...(lane ? { flowLaneId: lane } : {}),
+      ...(host ? { attachedTo: host } : {}),
     };
   });
 }

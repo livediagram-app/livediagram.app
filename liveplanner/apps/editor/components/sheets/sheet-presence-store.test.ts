@@ -22,20 +22,27 @@ describe('hearing peers', () => {
     const off = p.subscribe(heard);
     p.receive('ann', op('sheetA', [range('r1')], true));
     p.receive('bob', op('sheetB', [range('r2')]));
-    expect(p.on('sheetA')).toEqual([
+    expect(p.on('sheetA', 't1')).toEqual([
       ['ann', { tabId: 't1', sheetId: 'sheetA', ranges: [range('r1')], editing: true, at: 1234 }],
     ]);
-    expect(p.on('sheetB').map(([id]) => id)).toEqual(['bob']);
+    expect(p.on('sheetB', 't1').map(([id]) => id)).toEqual(['bob']);
     p.receive('ann', op('sheetA', null));
     p.receive('bob', op('sheetB', []));
-    expect(p.on('sheetA')).toEqual([]);
-    expect(p.on('sheetB')).toEqual([]);
+    expect(p.on('sheetA', 't1')).toEqual([]);
+    expect(p.on('sheetB', 't1')).toEqual([]);
     expect(heard).toHaveBeenCalledTimes(4);
     expect(p.getVersion()).toBe(4);
     off();
     p.receive('ann', op('sheetA', [range('r1')]));
     expect(heard).toHaveBeenCalledTimes(4);
     vi.useRealTimers();
+  });
+
+  it("draws a selection only on the tab it names, so a scoped peer's presence never shows on a tab it can't reach", () => {
+    const p = new SheetPresence();
+    p.receive('eve', { ...op('sheetA', [range('r1')]), tabId: 'tScoped' });
+    expect(p.on('sheetA', 't1')).toEqual([]);
+    expect(p.on('sheetA', 'tScoped').map(([id]) => id)).toEqual(['eve']);
   });
 });
 

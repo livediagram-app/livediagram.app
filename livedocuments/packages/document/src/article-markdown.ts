@@ -81,6 +81,21 @@ function readInline(text: string, base: Omit<ArticleRun, 'text'>): ArticleRun[] 
   return runs;
 }
 
+// A code fence as CommonMark reads one: a line opening with three or more backticks opens it, and only a line of
+// backticks alone, at least as many, closes it. Any line starting with three closed it, so code holding a line such
+// as "```js" (a Markdown how-to) split into code, a paragraph and more code. The writer fences code with one more
+// backtick than its own longest such line (articleToMarkdown).
+/** The backticks opening a fence on `line`, or 0 when it opens none. */
+export function fenceOpening(line: string): number {
+  const m = /^\s*(`{3,})/.exec(line);
+  return m ? m[1]!.length : 0;
+}
+/** True when `line` closes a fence opened with `fence` backticks. */
+export function closesFence(line: string, fence: number): boolean {
+  const bare = line.trim();
+  return bare.length >= fence && /^`+$/.test(bare);
+}
+
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
 
 /** Markdown as blocks. */
@@ -101,10 +116,11 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
   };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
-    if (/^```/.test(line.trim())) {
+    const fence = fenceOpening(line);
+    if (fence) {
       flush();
       const body: string[] = [];
-      for (i++; i < lines.length && !/^```/.test(lines[i]!.trim()); i++) body.push(lines[i]!);
+      for (i++; i < lines.length && !closesFence(lines[i]!, fence); i++) body.push(lines[i]!);
       blocks.push({ id: id(), type: 'code', text: body.join('\n') });
       continue;
     }

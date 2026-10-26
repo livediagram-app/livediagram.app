@@ -150,6 +150,21 @@ describe('the settings each type takes', () => {
     });
   });
 
+  it('counts Other among a multiple choice’s picks, and reads 0 as no bound, as the builder does', () => {
+    const multi = { ...blankQuestion('multi', 'q'), prompt: 'P', options: ['A', 'B'] };
+    expect(applyQuestionSet(multi, { other: true, max: 3 })).toMatchObject({
+      ok: true,
+      question: { max: 3 },
+    });
+    expect(applyQuestionSet(multi, { max: 3 })).toMatchObject({ code: 'picks_out_of_range' });
+    expect(applyQuestionSet(multi, { other: true, max: 4 })).toMatchObject({
+      code: 'picks_out_of_range',
+      message: expect.stringContaining('from 1 to its 3 options (Other counts as one)'),
+    });
+    const cleared = applyQuestionSet({ ...multi, min: 1, max: 2 }, { min: 0 });
+    expect(cleared.ok && cleared.question).toEqual({ ...multi, max: 2 });
+  });
+
   it('reads a multiple choice with no options as offering none', () => {
     const bare = { id: 'q', type: 'multi' as const, prompt: 'P' };
     expect(applyQuestionSet(bare, { max: 1 })).toMatchObject({ code: 'picks_out_of_range' });

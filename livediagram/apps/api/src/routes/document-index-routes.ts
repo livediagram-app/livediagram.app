@@ -11,7 +11,7 @@ import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { countCommunityCopy } from '../community-service';
 import { documentRoom } from '../document-client';
 import { capStoredName } from '../names';
-import { json } from '../responses';
+import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
 import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
 
@@ -48,7 +48,7 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
         readDocumentConversion(request.headers.get(DOCUMENT_CONVERSION_HEADER)) === 'offline';
       const permanent = offline || ['1', 'true'].includes(url.searchParams.get('permanent') ?? '');
       await client.deleteItem(id, offline ? { permanent, reason: 'offline' } : { permanent });
-      return new Response(null, { status: 204 });
+      return noContent();
     }
     const body = await readOptionalBody(request);
     if (isCopy) {

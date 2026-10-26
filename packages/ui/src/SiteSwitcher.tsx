@@ -18,6 +18,9 @@ import { ChevronDownIcon } from './icons/navigation';
 import { useMenu, useMenuButton } from './menu';
 import { useClickOutside } from './useClickOutside';
 
+// The open menu's name. Given to useMenu: an aria-label on the surface itself is overwritten by its trigger's name.
+const MENU_LABEL = 'liveworkspace sites';
+
 export function SiteSwitcher({
   app,
   current,
@@ -38,7 +41,13 @@ export function SiteSwitcher({
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
-  const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
+  const { attach, surfaceProps } = useMenu({
+    open,
+    onClose: close,
+    trigger,
+    initialFocus,
+    label: MENU_LABEL,
+  });
   useClickOutside(ref, close, open);
 
   return (
@@ -77,7 +86,6 @@ export function SiteSwitcher({
         <div
           ref={attach}
           {...surfaceProps}
-          aria-label="liveworkspace sites"
           className="w-72 max-sm:w-[calc(100vw-2rem)] outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           <SiteRow

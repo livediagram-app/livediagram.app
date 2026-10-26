@@ -166,6 +166,8 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
 - Password Protection guards every link at once. Spaces around it are trimmed. Passes show a Password tag.
 - Show Me runs a short tour over the dialog. A guest sees "Sharing as" with their name in the footer.
 - A copy the browser refuses says so. Every refusal from the index is a note.
+- A pass's changes show at once. A refused one takes back only the fields it was still the newest change to, and a
+  refused revoke puts the pass back where it was in the list.
 - A host can add a tab of its own beside Passes (`appTab`: its label, a badge, its panel; livediagram's Community), or a
   section below Password Protection (`appSection`).
 

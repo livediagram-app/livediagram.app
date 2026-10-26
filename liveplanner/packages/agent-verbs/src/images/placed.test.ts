@@ -40,6 +40,12 @@ describe('imageIdIssue', () => {
     );
   });
 
+  it('refuses a picture no element places, such as a page background', () => {
+    expect(imageIdIssue({ background: { fill: { kind: 'image', imageId: 'z' } } })).toMatch(
+      /^imageId "z" names an uploaded picture/,
+    );
+  });
+
   it('passes an input that places none, placeholders included', () => {
     expect(imageIdIssue({ elements: [{ id: 'a', type: 'image', imageId: null }] })).toBeNull();
   });

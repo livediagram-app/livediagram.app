@@ -15,7 +15,8 @@ const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:']);
 export function normaliseUrl(raw: string): string | null {
   const t = raw.trim();
   if (!t) return null;
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`;
+  // A colon followed by a port is a host, not a scheme: `example.com:8080/x` and `localhost:3000` are bare hosts.
+  const withScheme = /^[a-z][a-z0-9+.-]*:(?!\d+(?:[/?#]|$))/i.test(t) ? t : `https://${t}`;
   let u: URL;
   try {
     u = new URL(withScheme);

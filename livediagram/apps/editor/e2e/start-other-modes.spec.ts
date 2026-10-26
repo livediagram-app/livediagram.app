@@ -35,7 +35,8 @@ test('Start Diagramming finds a Workshop template and switches the tab to it', a
   await createInMode(page, 'diagram');
   const start = page.getByRole('region', { name: 'Start Diagramming' });
   await start.getByRole('textbox', { name: 'Find a template' }).fill('sailboat');
-  await expect(start.getByRole('status')).toHaveText(
+  // The search's own line: the footer's Sync to Server switch keeps a live region of its own, empty until it speaks.
+  await expect(start.getByRole('status').filter({ hasText: 'No diagram templates' })).toHaveText(
     'No diagram templates match “sailboat”. Found in other modes.',
   );
   const workshop = start

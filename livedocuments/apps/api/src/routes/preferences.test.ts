@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ACCOUNTS_ON, stubAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
@@ -93,5 +95,20 @@ describe('PUT /api/preferences', () => {
     accounts.failWith = 502;
     const down = await handlePreferences(ctx('PUT', { body: { prefs: { mapSize: 'tall' } } }));
     expect(down.status).toBe(503);
+  });
+});
+
+// The api spec's rows said 4 KB, "upserts" and "empty object when no row exists" long after the route became a
+// 16 KB patch answering { prefs: null }. Pin the PUT row to the cap the route holds.
+describe('the spec', () => {
+  it('states the cap the route holds, and the patch it is', () => {
+    const spec = readFileSync(
+      fileURLToPath(new URL('../../../../docs/specs/015-api/api.md', import.meta.url).href),
+      'utf8',
+    );
+    const row = spec.split('\n').find((line) => /^\| PUT +\| `\/api\/preferences`/.test(line));
+    expect(row).toContain(`${PREFERENCES_PATCH_MAX / 1024} KB`);
+    expect(row).toContain('patch');
+    expect(row).toContain('preferences_not_stored');
   });
 });

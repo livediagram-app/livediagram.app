@@ -123,6 +123,39 @@ describe('deriveCanvasSelection', () => {
     expect(s.showPlus).toBe(false);
   });
 
+  it('a locked member first in z-order leaves the union handles to the members that resize', () => {
+    const els: Element[] = [box('a', { locked: true }), box('b', { x: 200 }), box('c', { x: 400 })];
+    const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b', 'c']) });
+    expect(s.showUnionResize).toBe(true);
+    // The press goes to a member the drag accepts, and the box spans what the drag moves.
+    expect(s.unionResizePrimaryId).toBe('b');
+    expect(s.unionResizeBounds).toEqual({ x: 200, y: 0, width: 300, height: 60 });
+  });
+
+  it('an arrow first in z-order still shows the union handles over the boxes', () => {
+    const els: Element[] = [arrow('l'), box('b', { x: 200 }), box('c', { x: 400 })];
+    const s = derive({ elements: els, multiSelectedIds: new Set(['l', 'b', 'c']) });
+    expect(s.showUnionResize).toBe(true);
+    expect(s.unionResizePrimaryId).toBe('b');
+  });
+
+  it('a selection of locked members only shows no union handles', () => {
+    const els: Element[] = [box('a', { locked: true }), box('b', { x: 200, locked: true })];
+    const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });
+    expect(s.showUnionResize).toBe(false);
+  });
+
+  it('the union box takes in a rotated member as drawn', () => {
+    // 100 x 60 turned a quarter about (250, 30): drawn over x 220..280, y -20..80.
+    const els: Element[] = [box('a'), box('b', { x: 200, rotation: 90 })];
+    const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });
+    const b = s.unionResizeBounds!;
+    expect(b.x).toBeCloseTo(0);
+    expect(b.y).toBeCloseTo(-20);
+    expect(b.width).toBeCloseTo(280);
+    expect(b.height).toBeCloseTo(100);
+  });
+
   it('an arrow-only marquee shows the floating toolbar (spanning the arrows) but no resize box', () => {
     const els: Element[] = [
       arrow('a', { x: 0, y: 0 }, { x: 40, y: 20 }),

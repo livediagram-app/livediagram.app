@@ -89,6 +89,18 @@ const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
     'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60 sm:bg-slate-900/10 sm:backdrop-blur-none sm:dark:bg-slate-950/20',
 };
 
+// A dialog can open over another (a confirm asked from inside Settings): Escape closes the one on top alone, as a
+// press on its backdrop does. Every dialog listens on the document, so without this one Escape closed them all. The
+// one on top is the last panel in the page: its portal mounted after the other's, so it is drawn over it. Only an
+// open dialog renders its panel, so the page holds exactly the open ones.
+const PANEL_SELECTOR = '[data-dialog-panel]';
+
+function isTopDialog(panel: HTMLElement | null): boolean {
+  if (!panel) return false;
+  const panels = panel.ownerDocument.querySelectorAll(PANEL_SELECTOR);
+  return panels[panels.length - 1] === panel;
+}
+
 // Below Tailwind's sm breakpoint: where a phone sheet docks and the larger sizes go edge to edge.
 const PHONE_QUERY = '(max-width: 639.98px)';
 
@@ -128,7 +140,7 @@ export function Dialog({
   children,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const sheet = useSheetDrag(onClose);
+  const sheet = useSheetDrag(onClose, open);
   // Whether the press now under way began on the backdrop itself.
   const pressedBackdrop = useRef(false);
   // Escape stays bound while open and reads closeOnEscape at the moment of the key: re-binding the listener
@@ -140,7 +152,7 @@ export function Dialog({
   }, [closeOnEscape]);
   useEscape(
     () => {
-      if (closeOnEscapeRef.current) onClose();
+      if (closeOnEscapeRef.current && isTopDialog(panelRef.current)) onClose();
     },
     { enabled: open, preventDefault: true },
   );
@@ -197,6 +209,7 @@ export function Dialog({
           ref={panelRef}
           role="dialog"
           aria-modal="true"
+          data-dialog-panel=""
           aria-labelledby={titleId}
           aria-label={ariaLabel}
           tabIndex={-1}

@@ -49,7 +49,7 @@ import {
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
-import { elementsIssue } from './element-values';
+import { elementsIssue, tabElementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
@@ -167,11 +167,11 @@ export function registerTools(server: McpServer, env: Env): void {
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
       const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
-      const candidate: unknown = {
-        id: tabId,
-        name: t.name,
-        elements: normaliseElements(ended.elements),
-      };
+      const finished = normaliseElements(ended.elements);
+      const candidate: unknown = { id: tabId, name: t.name, elements: finished };
+      // What is wrong, named, before the general shape of an element.
+      const shapeIssue = t.elements ? tabElementsIssue(finished) : null;
+      if (shapeIssue) return errorResult(`Tab "${t.name}": ${shapeIssue}`);
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +

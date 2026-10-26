@@ -38,4 +38,31 @@ describe('drawBoxed', () => {
     expect(alphas.length).toBeGreaterThan(0);
     for (const a of alphas) expect(a).toBeCloseTo(0.2, 6);
   });
+
+  it('breaks a word wider than the box, as the SVG export does', () => {
+    const texts: string[] = [];
+    const ctx = new Proxy<Record<string, unknown>>(
+      {},
+      {
+        get(target, key) {
+          if (key === 'fillText') return (s: string) => texts.push(s);
+          if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+          if (key in target) return target[key as string];
+          return () => undefined;
+        },
+        set(target, key, value) {
+          target[key as string] = value;
+          return true;
+        },
+      },
+    ) as unknown as CanvasRenderingContext2D;
+    const el = {
+      ...createShape('square', 0, 0),
+      width: 80,
+      label: 'Supercalifragilisticexpialidocious',
+    } as unknown as BoxedElement;
+    drawBoxed(ctx, el, undefined, 1);
+    expect(texts.length).toBeGreaterThan(1);
+    expect(texts.join('')).toBe('Supercalifragilisticexpialidocious');
+  });
 });

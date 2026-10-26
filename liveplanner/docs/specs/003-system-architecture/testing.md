@@ -329,8 +329,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 
   This exists because a real bug could not be caught without it, in the
   Timeline, whose state lives in hooks rather than in pure helpers:
-  `useTimelineFeed.test.tsx` covers one scope's fetched-period cache leaking
-  into another's ([Timeline](../013-workspace/timeline.md) §3.4). It fails if its
+  `useTimelineFeed.test.ts` covers a failed Show More that swapped every
+  event already shown for an error ([Timeline](../013-workspace/timeline.md) §3). It fails if its
   fix is reverted.
 
   Both workspaces load the same setup file — `react-cleanup` out of

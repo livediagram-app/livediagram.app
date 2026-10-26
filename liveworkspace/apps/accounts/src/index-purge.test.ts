@@ -121,14 +121,11 @@ describe('deleteAccount', () => {
 
   const close = () =>
     deleteAccount(
-      new Request(
-        'https://liveworkspace.app/api/auth/delete-account',
-        {
-          method: 'POST',
-          headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
-          body: JSON.stringify({ token: 'access-token' }),
-        },
-      ),
+      new Request('https://liveworkspace.app/api/auth/delete-account', {
+        method: 'POST',
+        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+        body: JSON.stringify({ token: 'access-token' }),
+      }),
       auth,
       db,
       config,
@@ -137,6 +134,21 @@ describe('deleteAccount', () => {
   beforeEach(() => {
     addUser(sql, { id: 'user_ada', email: 'ada@example.com' });
     addUser(sql, { id: 'user_bea', email: 'bea@example.com' });
+  });
+
+  it('refuses a body of null as a bad request, closing nothing', async () => {
+    const res = await deleteAccount(
+      new Request('https://liveworkspace.app/api/auth/delete-account', {
+        method: 'POST',
+        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+        body: 'null',
+      }),
+      auth,
+      db,
+      config,
+    );
+    expect(res.status).toBe(400);
+    expect(sql.prepare('SELECT id FROM "user"').all()).toHaveLength(2);
   });
 
   it('tells the index, naming the teams that closed with the account', async () => {
@@ -158,14 +170,11 @@ describe('deleteAccount', () => {
   it('disconnects the account’s Google Drive mirror once the account is gone', async () => {
     const disconnected: string[] = [];
     const res = await deleteAccount(
-      new Request(
-        'https://liveworkspace.app/api/auth/delete-account',
-        {
-          method: 'POST',
-          headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
-          body: JSON.stringify({ token: 'access-token' }),
-        },
-      ),
+      new Request('https://liveworkspace.app/api/auth/delete-account', {
+        method: 'POST',
+        headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+        body: JSON.stringify({ token: 'access-token' }),
+      }),
       auth,
       db,
       config,

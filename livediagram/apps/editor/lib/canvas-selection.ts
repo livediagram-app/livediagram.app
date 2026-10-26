@@ -6,10 +6,11 @@
 // is unit-testable in isolation (the component itself has no tests).
 import { isFixedSizeElement, isChipShape, type Rect } from '@livediagram/document';
 import {
+  drawnBounds,
   elementBounds,
   isBoxed,
-  unionBoxedBounds,
   unionRects,
+  type BoxedElement,
   type Element,
   type ElementId,
 } from '@livediagram/document';
@@ -180,18 +181,27 @@ export function deriveCanvasSelection(input: {
   const resizeVisible = (id: string) => gripsOf(id).handles;
   const anchorVisible = (id: string) => gripsOf(id).anchors;
 
+  // The union resize box spans the members a resize moves: boxed and unlocked (the drag leaves
+  // locked members and arrows where they are), each as drawn, so a rotated member's turned
+  // corners sit inside it. Those members also pick the primary the handles press, so a locked
+  // box or an arrow first in z-order neither hides the handles nor takes a press it refuses
+  // (docs/specs/008-canvas/blueprints/resize.md).
+  const unionMembers =
+    multiSelectedIds.size > 1
+      ? elements.filter(
+          (el): el is BoxedElement =>
+            multiSelectedIds.has(el.id) && isBoxed(el) && el.locked !== true,
+        )
+      : [];
   const unionResizeIds: ReadonlySet<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : null;
-  const unionResizeBounds =
-    unionResizeIds && selected ? unionBoxedBounds(elements, unionResizeIds) : null;
-  const unionResizePrimaryId = multiSelectedIds.size > 1 ? (multiPrimaryId ?? selectedId) : null;
+  const unionResizeBounds = unionRects(unionMembers.map(drawnBounds));
+  const unionResizePrimaryId = unionMembers[0]?.id ?? null;
   const showUnionResize =
     !!unionResizeBounds &&
     !!unionResizePrimaryId &&
-    selectedIsBoxed &&
     editingId !== unionResizePrimaryId &&
     !isPaintMode &&
-    !selectedLocked &&
     !tabLocked &&
     !readOnly;
 

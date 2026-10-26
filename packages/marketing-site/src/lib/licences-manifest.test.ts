@@ -26,6 +26,7 @@ describe('parseLicencesManifest', () => {
     ['another schema', JSON.stringify({ ...valid, schemaVersion: 2 })],
     ['no sections', JSON.stringify({ schemaVersion: 1, texts: {} })],
     ['no texts', JSON.stringify({ schemaVersion: 1, sections: [] })],
+    ['null texts', JSON.stringify({ schemaVersion: 1, sections: [], texts: null })],
   ])('fails a manifest that is %s', (_, raw) => {
     expect(() => parseLicencesManifest(raw)).toThrow(
       expect.objectContaining({ name: 'LicencesManifestInvalid' }),

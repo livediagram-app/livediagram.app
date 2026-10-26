@@ -126,7 +126,8 @@ function isScalar(v: unknown): v is string | number | boolean | null {
   );
 }
 
-function validDate(s: string): boolean {
+// A date as a card stores one: YYYY-MM-DD, a day that exists.
+export function validDate(s: string): boolean {
   const m = DATE.exec(s);
   if (!m) return false;
   const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));

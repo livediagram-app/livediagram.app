@@ -244,8 +244,10 @@ export function wrapLines(body: string, width: number, size: number, max: number
     if (lines.length === max) break;
   }
   if (line && lines.length < max) lines.push(line);
+  // Against the words joined as the lines join them: against the raw body, a double space or a line break counted as
+  // text that ran on, and a card that fitted ended in a false ellipsis.
   const used = lines.join(' ').length;
-  if (lines.length === max && used < body.trim().length) {
+  if (lines.length === max && used < words.join(' ').length) {
     lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
   }
   // A single word longer than a line (a URL, a long name) is cut too, rather

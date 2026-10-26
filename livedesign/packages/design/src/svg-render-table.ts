@@ -111,6 +111,8 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
         text,
         Math.max(8, cw - pad * 2),
         labelMeasure(fontPx, weight >= 600, italic),
+        // A word wider than its cell breaks, as the canvas cell's break-words does, rather than running across the next.
+        true,
       ).slice(0, maxLines);
       const blockH = (lines.length - 1) * lineH;
       // Vertical placement: the FIRST line's central baseline, per the

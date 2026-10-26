@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
-import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, serverNewUrl } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the document format number every
@@ -34,7 +34,7 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 async function openWhiteboard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await page.locator('[data-whiteboard-dock]').waitFor();

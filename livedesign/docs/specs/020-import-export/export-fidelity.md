@@ -65,6 +65,10 @@ hand `svgArrow` the elements the export draws as its occluders, so a line
 breaks only behind a box that is in the picture (never one on a hidden layer
 or off the page), and the export's paper (`EXPORT_PAPER` on a page frame, else
 the tab's background) as the fill of a hollow head, as the canvas fills it.
+The PNG / PDF paints a run of consecutive arrows as one layer; an arrow that
+fails to draw (its markup throws, or the browser refuses its layer) is skipped
+and logged (`[export] arrow skipped`, with its id), and the rest of the run is
+drawn arrow by arrow, so one broken arrow never fails the whole export.
 
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
@@ -90,7 +94,13 @@ would be worse than the gap:
 ### Faces export as they look
 
 A box label breaks a word wider than its
-line between characters, as the canvas's `break-words` does; an icon caption keeps the word whole.
+line between characters, as the canvas's `break-words` does, in the SVG and the PNG alike, and so does a
+table cell's text; an icon caption keeps the word whole. A break falls between characters as a reader sees
+them, so an emoji is never cut in half. A formatted label (bold, italic, colour runs) puts a space
+only where its text has white space, so part of a word in bold ("**Re**act") exports as one word,
+never broken across lines. A code block counts columns as a monospace face draws them, a wide
+character (an emoji, a CJK character) taking two, so its lines wrap and clip at the card's edge and
+never cut an emoji in half.
 The one small
 known gap is the Callout body's indent, a few pixels off the canvas's.
 

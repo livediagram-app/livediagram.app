@@ -146,6 +146,7 @@ describe('DELETE /api/trash/:id', () => {
     index['DELETE /items/mine'] = () => new Response(null, { status: 204 });
     const res = await call('DELETE', '/api/trash/mine');
     expect(res.status).toBe(204);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(calls).toHaveLength(1);
     expect(calls[0]!.search.get('permanent')).toBeTruthy();
   });

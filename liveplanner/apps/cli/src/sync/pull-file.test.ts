@@ -3,6 +3,7 @@ import { canonicalJson, type ShapeElement, type Tab } from '@liveplanner/project
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   pullFileText,
   tabHashes,
@@ -58,6 +59,16 @@ describe('tabHashes', () => {
     const moved = await tabHashes(tab({ elements: [{ ...square, x: 5 }] }));
     expect(moved.hash).not.toBe(one.hash);
     expect(moved.settingsHash).toBe(one.settingsHash);
+  });
+});
+
+// CLI28: a pull overwrites the file only when nothing in it changed since the last pull.
+describe('isLocallyChanged', () => {
+  it('reads a tab added or dropped, its elements changed, or its settings changed alone', () => {
+    expect(isLocallyChanged(file(), { t1: { hash: 'h', settingsHash: 's' } })).toBe(false);
+    expect(isLocallyChanged(file(), {})).toBe(true);
+    expect(isLocallyChanged(file(), { t1: { hash: 'x', settingsHash: 's' } })).toBe(true);
+    expect(isLocallyChanged(file(), { t1: { hash: 'h', settingsHash: 'renamed' } })).toBe(true);
   });
 });
 

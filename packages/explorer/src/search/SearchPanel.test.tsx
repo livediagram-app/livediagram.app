@@ -97,6 +97,29 @@ describe('the Search panel', () => {
     expect(index.count('listFolders')).toBe(1);
   });
 
+  it('keeps the first result highlighted when an arrow is pressed before the results arrive', async () => {
+    vi.useFakeTimers();
+    const index = createFakeIndex({ items: [makeItem(1, { title: 'Plan' })] });
+    const onOpen = vi.fn();
+    render(
+      <SearchPanel
+        client={index.client}
+        itemHref={(i) => `/open/${i.id}`}
+        onOpen={onOpen}
+        onClose={vi.fn()}
+      />,
+    );
+    await act(async () => {});
+    const field = screen.getByRole('combobox', { name: 'Search' });
+    fireEvent.change(field, { target: { value: 'plan' } });
+    // Still waiting for the pause in typing: nothing to move through yet.
+    fireEvent.keyDown(field, { key: 'ArrowDown' });
+    await typeAndWait('plan');
+    expect(screen.getByRole('option', { name: /Plan/ }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onOpen).toHaveBeenCalledWith('/open/item-1');
+  });
+
   it('opens a help article in a new tab', async () => {
     vi.useFakeTimers();
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);

@@ -120,6 +120,29 @@ describe('teams', () => {
     expect(await updateTeam(db, ADA, teamId, { name: 'Studio' })).toMatchObject({ ok: true });
   });
 
+  it('never leaves a team without an admin when two admins demote or remove each other at once', async () => {
+    const admins = `SELECT COUNT(*) AS n FROM team_member WHERE teamId = ? AND status = 'joined' AND role = 'admin'`;
+    for (const race of ['demote', 'remove'] as const) {
+      sql.exec('DELETE FROM team_member; DELETE FROM team;');
+      const teamId = await teamWith(BEA, CY);
+      const [ada, bea] = [await memberId(teamId, ADA), await memberId(teamId, BEA)];
+      await setMemberRole(db, ADA, teamId, bea, 'admin');
+      const results =
+        race === 'demote'
+          ? await Promise.all([
+              setMemberRole(db, ADA, teamId, bea, 'member'),
+              setMemberRole(db, BEA, teamId, ada, 'member'),
+            ])
+          : await Promise.all([
+              removeMember(db, ADA, teamId, bea),
+              removeMember(db, BEA, teamId, ada),
+            ]);
+      expect((sql.prepare(admins).get(teamId) as { n: number }).n).toBe(1);
+      expect(results.filter((r) => r.ok)).toHaveLength(1);
+      expect(results.find((r) => !r.ok)).toMatchObject({ status: 409, error: 'last_admin' });
+    }
+  });
+
   it('never leaves a team without an admin', async () => {
     const teamId = await teamWith(BEA);
     const ada = await memberId(teamId, ADA);

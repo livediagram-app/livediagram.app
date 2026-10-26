@@ -108,6 +108,62 @@ describe('a written article read back', () => {
       ).toEqual([runs]);
     }
   });
+
+  const roundTrip = (blocks: ArticleBlock[]) => shape(blocksOf(articleToMarkdown({ blocks })));
+
+  it('keeps a code block holding fence lines whole, and the text after it', () => {
+    const blocks: ArticleBlock[] = [
+      { id: 'c', type: 'code', text: 'Write:\n```js\nlet a;\n```\n````\nend' },
+      { id: 'p', type: 'paragraph', runs: [{ text: 'after' }] },
+    ];
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+    // A fence closes only on a line of backticks alone, at least as many as opened it.
+    expect(shape(blocksOf('```\na\n```js\nb\n```'))).toEqual([
+      { type: 'code', text: 'a\n```js\nb' },
+    ]);
+  });
+
+  it('keeps a link whose address holds parentheses', () => {
+    const href = 'https://en.wikipedia.org/wiki/Mercury_(planet)';
+    const blocks: ArticleBlock[] = [
+      { id: 'p', type: 'paragraph', runs: [{ text: 'Mercury', href }, { text: ' tail' }] },
+    ];
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+  });
+
+  it("keeps inline code's link, bold and edge spaces", () => {
+    const blocks: ArticleBlock[] = [
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [
+          { text: 'npm i', code: true, href: 'https://npmjs.com' },
+          { text: ' then ' },
+          { text: ' run ', code: true, b: true },
+        ],
+      },
+    ];
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+  });
+
+  it('keeps a title in quotes', () => {
+    for (const title of ['"Quoted"', "'Single'", '"Mixed\'']) {
+      const blocks: ArticleBlock[] = [
+        { id: 't', type: 'paragraph', style: 'title', runs: [{ text: title }] },
+      ];
+      expect(roundTrip(blocks), title).toEqual(shape(blocks));
+    }
+  });
+
+  it('keeps an opening divider, and what follows it, out of front matter', () => {
+    const blocks: ArticleBlock[] = [
+      { id: 'd1', type: 'divider' },
+      { id: 'p', type: 'paragraph', runs: [{ text: 'Hello' }] },
+      { id: 'd2', type: 'divider' },
+      { id: 'q', type: 'paragraph', runs: [{ text: 'World' }] },
+    ];
+    expect(roundTrip(blocks)).toEqual(shape(blocks));
+  });
 });
 
 describe('a Markdown table', () => {

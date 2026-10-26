@@ -21,10 +21,14 @@ function fromRepository(repository: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;
   const shorthand = GITHUB_SHORTHAND.exec(raw);
   if (shorthand) return `https://github.com/${shorthand[1]}`;
+  // `git+ssh://git@host/path` and `git+https://…#branch` are how npm writes many repositories: the ssh form had
+  // failed the https check and the fragment stayed on the link, so the work showed no Source link or a broken one.
   return https(
     raw
       .replace(/^git\+/, '')
+      .replace(/#.*$/, '')
       .replace(/^git:\/\//, 'https://')
+      .replace(/^ssh:\/\/git@([^/:]+)[:/]/, 'https://$1/')
       .replace(/^git@([^:]+):/, 'https://$1/')
       .replace(/\.git$/, ''),
   );

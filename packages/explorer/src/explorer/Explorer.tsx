@@ -8,6 +8,7 @@
 // under it, then the sidebar and the pane.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEscape, useFocusTrap } from '@liveworkspace/ui';
 import { CloseIcon } from '../ui/icons';
 import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
@@ -553,16 +554,11 @@ function Pane({
 
 function SectionsDrawer({ onClose }: { onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    panel.current?.focus({ preventScroll: true });
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      e.preventDefault();
-      onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  // Focus goes to the panel once, as it opens, stays inside while it is open and goes back to "Browse sections" when
+  // it closes. Escape reads the latest onClose: keyed on it, as a fresh arrow each render, the panel took focus back
+  // from whatever row was focused every time the Explorer rendered.
+  useFocusTrap(panel, true, 'container');
+  useEscape(onClose, { preventDefault: true });
   return (
     <div className="fixed inset-0 z-40 sm:hidden">
       <div

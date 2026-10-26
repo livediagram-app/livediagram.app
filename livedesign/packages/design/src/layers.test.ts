@@ -220,6 +220,26 @@ describe('bring to front / send to back as layer moves', () => {
     ]);
   });
 
+  it('never moves the selection onto a hidden or locked edge layer', () => {
+    for (const top of [L('top', { visible: false }), L('top', { locked: true })]) {
+      const t = tab([box('a'), box('b')], [L(DEFAULT_LAYER_ID), top]);
+      const out = bringElementsToFrontLayer(t, new Set(['a']));
+      expect(layerIds(out).slice(0, 2)).toEqual([DEFAULT_LAYER_ID, 'top']);
+      const a = out.elements.find((e) => e.id === 'a') as ShapeElement;
+      expect(a.layerId).not.toBe('top');
+      expect(out.layers!.at(-1)!.id).toBe(a.layerId);
+    }
+  });
+
+  it('send to back leaves an element with no known layer where it was, once the default layer is gone', () => {
+    // The default layer was deleted: 'orphan' (no layerId) belongs to the bottom layer, 'base'.
+    const t = tab([box('orphan'), box('b', { layerId: 'top' })], [L('base'), L('top')]);
+    const out = sendElementsToBackLayer(t, new Set(['b']));
+    const bands = layerBands(out.elements, out.layers);
+    expect(bands.map((band) => ids(band.elements))).toEqual([['b'], ['orphan']]);
+    expect(layerIds(out)).toContain('base');
+  });
+
   it('prunes a layer the move emptied, but not one that was already empty', () => {
     const t = tab(
       [box('a', { layerId: 'mid' }), box('b')],

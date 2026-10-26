@@ -52,9 +52,9 @@ export function privacyPolicyMoved(product: string): MovedPage {
 export function termsMoved(product: string): MovedPage {
   return moved(
     `${LIVEWORKSPACE_URL}/terms`,
-    'terms',
+    'terms of service',
     'Terms of Service',
-    `The terms for ${product} is liveworkspace's, on liveworkspace.app.`,
+    `The terms of service for ${product} are liveworkspace's, on liveworkspace.app.`,
   );
 }
 

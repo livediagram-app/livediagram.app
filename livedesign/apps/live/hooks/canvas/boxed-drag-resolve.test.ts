@@ -42,3 +42,38 @@ describe('resolveBoxedMove — Page lines', () => {
     expect([out.tx, out.ty]).toEqual([-100, -100]);
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md: the equal-spacing guide shows while the spacing snap is in effect,
+// the move that lands exactly on even spacing included (its delta is 0, and the guide was dropped).
+describe('resolveBoxedMove — equal spacing', () => {
+  const box = (id: string, x: number, y: number, width = 100, height = 100): StickyElement => ({
+    id,
+    type: 'sticky',
+    x,
+    y,
+    width,
+    height,
+  });
+  const move = (dx: number) =>
+    resolveBoxedMove({
+      elements: [box('a', 0, 0), box('b', 400, 0), box('c', 0, 300, 100, 60)],
+      startBounds: new Map([['c', { x: 0, y: 300, width: 100, height: 60 }]]),
+      primaryId: 'c',
+      dx,
+      dy: -280,
+      noSnap: false,
+      guidesOn: true,
+    });
+
+  it('guides a move snapped onto even spacing', () => {
+    const out = move(203);
+    expect(out.tx).toBe(200);
+    expect(out.distGuides.filter((g) => g.axis === 'x')).toHaveLength(1);
+  });
+
+  it('keeps the guide when the move lands exactly on even spacing', () => {
+    const out = move(200);
+    expect(out.tx).toBe(200);
+    expect(out.distGuides.filter((g) => g.axis === 'x')).toHaveLength(1);
+  });
+});

@@ -107,6 +107,21 @@ describe('createPresenceCoalescer', () => {
     expect(h.commits()).toBe(1);
   });
 
+  it('forgets a departed peer’s buffered packets, so the next frame cannot bring them back', () => {
+    // The peer's last move and the roster that drops them land in the same frame.
+    const h = setup();
+    h.presence.cursor('gone', { tabId: 't1', x: 5, y: 0 });
+    h.presence.laser('gone', { tabId: 't1', point: point(1) });
+    h.presence.avatar('gone', { tabId: 't1', avatar: avatarOf(1) });
+    h.presence.cursor('here', { tabId: 't1', x: 1, y: 0 });
+    h.presence.prune(new Set(['here']));
+    runFrame();
+    expect(h.cursors().has('gone')).toBe(false);
+    expect(h.lasers().has('gone')).toBe(false);
+    expect(h.avatars().has('gone')).toBe(false);
+    expect(h.cursors().get('here')).toEqual({ tabId: 't1', x: 1, y: 0 });
+  });
+
   it('keeps a null cursor, because "left the tab" is a position', () => {
     const h = setup();
     h.presence.cursor('peer', null);

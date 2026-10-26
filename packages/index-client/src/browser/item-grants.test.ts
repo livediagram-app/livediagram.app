@@ -68,6 +68,24 @@ describe('grant', () => {
     expect(index.grant).toHaveBeenCalledOnce();
   });
 
+  it('a request with a password never joins one in flight without it, and the older refusal does not win', async () => {
+    let refuse!: (e: unknown) => void;
+    index.grant.mockImplementationOnce(
+      () => new Promise((_, reject) => (refuse = reject)), // the link's first ask, with no password
+    );
+    index.grant.mockResolvedValueOnce(grantOf('with-pw'));
+    const first = grants.grant('d1', { code: 'C' });
+    const typed = grants.grant('d1', { code: 'C', password: 'pw' }, { fresh: true });
+    expect((await typed)?.grant).toBe('with-pw');
+    expect(index.grant).toHaveBeenLastCalledWith('d1', { code: 'C', password: 'pw' });
+    refuse(new IndexError(401, 'password_required'));
+    expect(await first).toBeNull();
+    // The newer answer stands: the grant is held and no refusal is remembered over it.
+    expect(grants.held('d1', { code: 'C' })).toBe('with-pw');
+    expect(grants.refusal('d1', { code: 'C' })).toBeNull();
+    expect((await grants.grant('d1', { code: 'C' }))?.grant).toBe('with-pw');
+  });
+
   it('asks again after a network failure', async () => {
     index.grant.mockRejectedValueOnce(new TypeError('offline'));
     index.grant.mockResolvedValueOnce(grantOf('g'));

@@ -51,7 +51,8 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   hosts.
 - **Following the host.** An attached badge moves with its host in a drag, a nudge and every layout (tidy,
   a stack's reflow) and re-settles on its point when the host is resized or rotated. It is **deleted** with its host
-  and **copied and duplicated** with it (the copy attaches to the host's copy). Undo restores both together.
+  and **copied and duplicated** with it (the copy attaches to the host's copy), a duplicated or imported tab
+  included. Undo restores both together.
 - **Above its host.** An attached badge draws above its host whatever the layer order, so a later shape never covers
   it.
 - **On its own.** Copying, duplicating or deleting a badge on its own does just that; a pasted lone badge is

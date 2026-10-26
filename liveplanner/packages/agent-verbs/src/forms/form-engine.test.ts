@@ -280,6 +280,43 @@ describe('a sheet form’s sheet', () => {
     ]);
   });
 
+  it('writes each header as text, so "2024" or "=Score" never becomes a number or a formula', async () => {
+    const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
+    const server = sheetServer('doc', [
+      sheetJson({ id: 'sheet_budget', tabId: 'budget', title: 'Budget' }, [
+        ['#', 'Submitted', 'Summary', 'Severity', 'Can we contact you?'],
+      ]),
+    ]);
+    const { client } = api(
+      null,
+      {
+        '/projects/doc/tabs/form': { tab: formTabBody(sheetForm) },
+        '/projects/doc/tabs/budget': {
+          tab: { id: 'budget', kind: 'sheet', elements: [], rev: 1 },
+        },
+      },
+      server.routes,
+    );
+    const r = await changeForm(
+      client,
+      'doc',
+      undefined,
+      ['2024', 'TRUE', '=Score', "'Quoted"].map((prompt) => ({
+        op: 'add_question' as const,
+        question: { type: 'short' as const, prompt },
+      })),
+      'mcp',
+    );
+    expect(r.ok).toBe(true);
+    const cells = server.writes.flatMap((w) => ('cells' in w.write ? w.write.cells : []));
+    expect(cells.flatMap((c) => (c?.i ? [c.i] : []))).toEqual([
+      { s: '2024' },
+      { s: 'TRUE' },
+      { s: '=Score' },
+      { s: "'Quoted" },
+    ]);
+  });
+
   it('is not read when no question is new to it', async () => {
     const sheetForm = { ...bugForm(), sheet: { tabId: 'budget', sheetId: 'sheet_budget' } };
     const { client } = api(null, { '/projects/doc/tabs/form': { tab: formTabBody(sheetForm) } });

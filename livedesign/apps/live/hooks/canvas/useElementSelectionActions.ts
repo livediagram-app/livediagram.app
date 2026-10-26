@@ -12,12 +12,12 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
-  arrowReferencesAny,
   createText,
   bringManyToFront,
   duplicateElements,
   sendManyToBack,
   isBoxed,
+  withAttachedArrows,
   type Element,
   type Tab,
 } from '@livedesign/design';
@@ -96,18 +96,18 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     removeSelected(targetIds);
   };
 
+  // What a delete never takes: a locked element, or one on a locked layer.
+  const isProtected = (el: Element) => el.locked === true || layerLockedIds.has(el.id);
+
   const removeSelected = (targetIds: Set<string>) => {
     haptic('delete');
     commit((els) => {
-      return els.filter((el) => {
-        // Belt-and-suspenders: never drop a locked element, even via the
-        // arrow cascade (a locked arrow survives its endpoint going).
-        // A locked LAYER protects its elements the same way (docs/specs/006-design/layers.md).
-        if (el.locked === true || layerLockedIds.has(el.id)) return true;
-        if (targetIds.has(el.id)) return false;
-        if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
-        return true;
-      });
+      // The arrows attached to what goes, and those hung off them in turn (withAttachedArrows).
+      const gone = withAttachedArrows(els, targetIds, isProtected);
+      // Belt-and-suspenders: never drop a locked element, even via the
+      // arrow cascade (a locked arrow survives its endpoint going).
+      // A locked LAYER protects its elements the same way (docs/specs/006-design/layers.md).
+      return els.filter((el) => isProtected(el) || !gone.has(el.id));
     });
     setSelectedId(null);
     setEditingId(null);
@@ -192,12 +192,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
     commit((els) => {
-      return els.filter((el) => {
-        if (el.locked === true || layerLockedIds.has(el.id)) return true;
-        if (targetIds.has(el.id)) return false;
-        if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
-        return true;
-      });
+      const gone = withAttachedArrows(els, targetIds, isProtected);
+      return els.filter((el) => isProtected(el) || !gone.has(el.id));
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);

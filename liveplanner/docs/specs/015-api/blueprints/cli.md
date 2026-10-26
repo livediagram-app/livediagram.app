@@ -95,7 +95,7 @@ Scope, by file:
 | Verb                | `Verb`, id `<resource>.<verb>` (`tab.view`)                             | One capability; a command and a tool are its projections                 |
 | Command             | `liveplanner <resource> <verb>`                                         | The CLI's front door to a verb                                           |
 | Tool                | the MCP's snake_case name                                               | The MCP's front door to a verb                                           |
-| Resource            | `RESOURCES` entry (`project`, `tab`, ...)                               | The first word; `doc` and `el` are its aliases                           |
+| Resource            | `RESOURCES` entry (`project`, `tab`, ...)                               | The first word; `el` is its alias                                        |
 | Behaviour           | `VerbBehaviour`: `read`, `write`, `destructive`                         | As the MCP's `ToolBehaviour`, which becomes an alias of it               |
 | Local verb          | `Verb.local: true`                                                      | A verb whose handler needs Node and lives in `apps/cli/src/commands`     |
 | Profile             | `Profile { name, host }`                                                | A named host in `config.toml`                                            |
@@ -464,8 +464,9 @@ Positionals in `<>`, optional in `[]`. `<project>` and `--tab` resolve as above.
   with `json=1`.
 - **`-q`** prints `quiet(output)`, one ref or id a line; a list's footer goes to stderr.
 - **Lists** stop at `--limit` (default `LIST_DEFAULT_LIMIT`, at most `LIST_MAX_LIMIT`) and end with one stdout line
-  when cut: `… <n> more; --limit <m>, or narrow with <how>`. An empty list prints `no <things>` (with
-  `match "<query>"` when narrowed).
+  when cut: `… <n> more; --limit <m>, or narrow with <how>` (`moreLine`); when showing them all would take more
+  than the flag's maximum, `… <n> more; narrow with <how> (--limit goes up to <max>)`, never a `--limit` the flag
+  refuses. An empty list prints `no <things>` (with `match "<query>"` when narrowed).
 - **Errors** go to stderr in `formatError`'s shape:
 
 ```text
@@ -960,7 +961,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 
 | Spec rule                                                                                     | Test                                                                                                                                                                            |
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Resource then verb; the `doc` alias; `el` and `edit` with their verbs                         | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                                        |
+| Resource then verb; `el` and `edit` with their verbs                                          | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                                        |
 | Unknown verb or flag exits 2 with a suggestion; no `--token`                                  | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                                        |
 | Every command in the spec's table exists with its flags                                       | `apps/cli/src/dispatch/commands-table.test.ts` (the table as data, against the routing and each verb's flags)                                                                   |
 | Addressing: name, prefix, URL, share URL, pull file; ambiguity refused with candidates        | `../packages/agent-verbs/src/addressing.test.ts`                                                                                                                                |

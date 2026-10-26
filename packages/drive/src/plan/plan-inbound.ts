@@ -58,7 +58,12 @@ function blankRow(kind: DriveRow['kind'], id: string, app: DriveRow['app'], file
   };
 }
 
-const ours = (file: DriveFile, snapshot: MirrorSnapshot) => file.appProperties[DRIVE_PROP_ORIGIN] === snapshot.origin;
+// A file the service made for this person: tagged with this origin, and in their own Drive. Tags are only app
+// properties, which anyone with a token for this client can set on a file of their own and share; the person
+// opening such a file with liveworkspace must never have it taken for one of theirs (a folder recreated, an item's
+// file adopted, so its writes go to someone else's file).
+const ours = (file: DriveFile, snapshot: MirrorSnapshot) =>
+  file.ownedByMe && file.appProperties[DRIVE_PROP_ORIGIN] === snapshot.origin;
 
 // A file the service made but holds no row for: a folder deleted here and restored in Drive, or a file seen
 // before its row was recorded.

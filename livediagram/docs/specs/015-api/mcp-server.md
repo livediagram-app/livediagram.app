@@ -234,7 +234,9 @@ of `elements` — the server materialises the hand-tuned scaffold from
 `@livediagram/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
 canvas overrides; the model then personalises labels via `update_document`'s
-`ops` mode. The MCP:
+`ops` mode. A tab's `name` is optional: an unnamed template tab takes the template's title, as the editor names one
+(`templateTabName`, [The tab's name](../007-editor/templates-by-mode.md#the-tabs-name)), and any other unnamed tab is
+"Tab n". The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
    a clear message naming the offending tab).
@@ -584,7 +586,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
   with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
   names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
-  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
+  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; a part no edge joins to the root hangs off it as a
+  branch of its own, its edges still the tree's; each first-level
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
   whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
@@ -594,7 +597,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
   out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
-  the stops, a node given no shape a circle).
+  the stops, the ring widened until no stop comes within half a gap of the centre's stack, a node given no shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its

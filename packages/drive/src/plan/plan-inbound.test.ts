@@ -616,6 +616,19 @@ describe('planInbound: unrecorded files', () => {
     });
   });
 
+  it('ignores a file someone else owns, however it is tagged', () => {
+    const folder = folderFile({ id: 'theirs', ownedByMe: false });
+    expect(planInbound(change(folder, { fileId: 'theirs' }), empty())).toEqual({
+      kind: 'ignore',
+      reason: 'not-ours',
+    });
+    const { adopt } = planAdoption(
+      [file({ id: 'their-file', ownedByMe: false }), folder],
+      snap({ rows: [] }),
+    );
+    expect(adopt).toEqual([]);
+  });
+
   it('leaves the root to the service', () => {
     const root = file({
       id: 'root',

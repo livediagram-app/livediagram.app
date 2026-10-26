@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   isLaneBand,
+  laneDrawnSize,
   laneEdgeOfElement,
   laneGutterEdge,
   laneSizeOfElement,
@@ -10,6 +11,7 @@ import {
   type TextAlignY,
 } from '@livediagram/document';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { laneSeamTravel } from '@/lib/lane-seam-travel';
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind its title, with a
 // divider where it meets the body.
@@ -54,6 +56,7 @@ export function LaneGutter({
   elementId,
   elementX,
   elementY,
+  rotation = 0,
 }: {
   stroke: string;
   // An explicit heading background (docs/specs/009-elements/lane.md). Unset keeps the historical
@@ -86,6 +89,8 @@ export function LaneGutter({
   elementId: string;
   elementX: number;
   elementY: number;
+  // The lane's turn, so the drag reads the pointer along the lane's own axis.
+  rotation?: number;
 }) {
   const zoom = useCanvasZoom();
   // The gutter FOLLOWS the title. Pinning it left while the text moved right
@@ -98,7 +103,7 @@ export function LaneGutter({
   // Live size during a drag, so the strip follows the pointer without a
   // commit per frame; released value is what lands in the element.
   const [dragSize, setDragSize] = useState<number | null>(null);
-  const dragRef = useRef<{ start: number; from: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; from: number } | null>(null);
   // The same live size in a ref. Release has to read the size the pointer
   // last reached, and neither alternative works: a setState UPDATER runs
   // during React's render phase, so committing from inside one updates the
@@ -110,9 +115,15 @@ export function LaneGutter({
     liveSizeRef.current = px;
     setDragSize(px);
   };
+  // At rest the strip draws as the export does, a pixel short of the lane's span, so a lane shrunk
+  // below its heading keeps a body edge instead of the strip spilling past it.
   const size =
     dragSize ??
-    laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize, titleOrientation });
+    laneDrawnSize(
+      { textAlignX: alignX, textAlignY: alignY, headerSize, titleOrientation },
+      width,
+      height,
+    );
   const maxSize = Math.max(MIN_GUTTER_PX, (band ? height : width) - MIN_GUTTER_PX);
 
   // Only an edge-hugging gutter inherits the lane's corner radius; a centred
@@ -152,7 +163,7 @@ export function LaneGutter({
     const onMove = (e: PointerEvent) => {
       const d = dragRef.current;
       if (!d) return;
-      const travel = (band ? e.clientY : e.clientX) - d.start;
+      const travel = laneSeamTravel(e.clientX - d.startX, e.clientY - d.startY, rotation, band);
       // A gutter on the far edge grows as the pointer moves TOWARDS the
       // element, so its travel is inverted. A CENTRED strip is driven from
       // its right-hand seam and grows both ways at once, so a pixel of
@@ -163,8 +174,9 @@ export function LaneGutter({
       // Snap in ABSOLUTE canvas space, where the targets live, then convert
       // the result back into a thickness.
       // A centred strip has no single seam to line anything up with, so it
-      // is sized freely rather than snapped.
-      if (!onSnapSeam || edge === 'centre-x') {
+      // is sized freely rather than snapped; nor does a turned lane's seam lie
+      // on the canvas axes the targets live on.
+      if (!onSnapSeam || edge === 'centre-x' || rotation % 360 !== 0) {
         setLiveSize(raw);
         return;
       }
@@ -204,13 +216,14 @@ export function LaneGutter({
     elementY,
     width,
     height,
+    rotation,
   ]);
 
   const startDrag = (e: React.PointerEvent) => {
     // Stop the canvas reading this as a drag of the element itself.
     e.preventDefault();
     e.stopPropagation();
-    dragRef.current = { start: band ? e.clientY : e.clientX, from: size };
+    dragRef.current = { startX: e.clientX, startY: e.clientY, from: size };
     setLiveSize(size);
   };
 

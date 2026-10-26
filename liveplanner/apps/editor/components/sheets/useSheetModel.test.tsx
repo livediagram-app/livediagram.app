@@ -441,7 +441,7 @@ describe('the room', () => {
     act(() => h.presence('peer', op));
     expect(
       sheetPresenceFor(store)
-        .on('sheetAAAA')
+        .on('sheetAAAA', 't1')
         .map(([id]) => id),
     ).toEqual(['peer']);
     h.resync();

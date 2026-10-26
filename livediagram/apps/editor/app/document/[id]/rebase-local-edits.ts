@@ -22,15 +22,23 @@ export function rebaseLocalEdits(fetched: Tab, screen: Tab, baseline: Tab | unde
   }
   const deleted = new Set(baseline.elements.filter((e) => !screenIds.has(e.id)).map((e) => e.id));
   const fields: Partial<Tab> = {};
-  for (const key of Object.keys(screen) as (keyof Tab)[]) {
+  // A field cleared here is a field the screen no longer has (a tab look reset deletes its font, an
+  // ended vote or timer is dropped), so the keys come from both sides: one only the baseline holds
+  // is an edit too, and the fetched copy must lose it.
+  const cleared: (keyof Tab)[] = [];
+  const keys = new Set([...Object.keys(screen), ...Object.keys(baseline)] as (keyof Tab)[]);
+  for (const key of keys) {
     if (key === 'elements') continue;
-    if (!same(screen[key], baseline[key])) Object.assign(fields, { [key]: screen[key] });
+    if (same(screen[key], baseline[key])) continue;
+    if (key in screen) Object.assign(fields, { [key]: screen[key] });
+    else cleared.push(key);
   }
   if (
     changed.size === 0 &&
     added.length === 0 &&
     deleted.size === 0 &&
-    Object.keys(fields).length === 0
+    Object.keys(fields).length === 0 &&
+    cleared.length === 0
   )
     return fetched;
   const fetchedIds = new Set(fetched.elements.map((e) => e.id));
@@ -38,5 +46,7 @@ export function rebaseLocalEdits(fetched: Tab, screen: Tab, baseline: Tab | unde
     ...fetched.elements.filter((e) => !deleted.has(e.id)).map((e) => changed.get(e.id) ?? e),
     ...added.filter((e) => !fetchedIds.has(e.id)),
   ];
-  return { ...fetched, ...fields, elements };
+  const out: Tab = { ...fetched, ...fields, elements };
+  for (const key of cleared) delete out[key];
+  return out;
 }

@@ -130,7 +130,13 @@ export function useEditorComments(deps: EditorCommentsDeps): EditorCommentsApi {
           if (created?.id) replaceCommentId(elementId, comment.id, created.id);
           track('Comment', 'Added');
         })
-        .catch(() => {});
+        .catch((err: unknown) => {
+          // A comment the server refused goes again, like a refused resolve (PR36): the room
+          // refuses a non-edit session's delta, so it lived on this screen alone and would have
+          // read as posted until a reload took it away.
+          console.warn('[comments] comment not saved', { error: String(err) });
+          deps.applyElementDelta(elementId, { kind: 'comment-remove', commentId: comment.id });
+        });
     } else {
       // Owners / editors persist through the tab autosave, the same path
       // as every element edit, so the local add is the event.

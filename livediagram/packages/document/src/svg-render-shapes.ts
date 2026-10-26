@@ -10,7 +10,7 @@ import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { graphemes, r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
@@ -231,18 +231,51 @@ const CODE_PAD = 12;
 // Break one source line to `width` columns, on spaces where there is one and
 // mid-token where there is not (a URL or a minified line has no spaces, and
 // leaving it long would just run off the card again).
+// Columns are as a monospace face draws them: a character (grapheme) takes one, a wide one (an emoji, a CJK
+// character) two, so a line of emoji wraps at the card's edge, as on the canvas, and is never cut in half.
+const ASCII_LINE = /^[\x20-\x7e]*$/;
+const WIDE_CHAR =
+  /\p{Extended_Pictographic}|\p{Regional_Indicator}|[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]|[\u{20000}-\u{3fffd}]/u;
+const columnsOf = (g: string): number => (WIDE_CHAR.test(g) ? 2 : 1);
+
 function wrapLine(line: string, width: number): string[] {
-  if (line.length <= width) return [line];
+  if (line.length <= width && ASCII_LINE.test(line)) return [line];
   const out: string[] = [];
-  let rest = line;
-  while (rest.length > width) {
-    const slice = rest.slice(0, width + 1);
-    const at = slice.lastIndexOf(' ');
-    const cut = at > width * 0.5 ? at : width;
-    out.push(rest.slice(0, cut));
-    rest = rest.slice(at > width * 0.5 ? cut + 1 : cut);
+  let cur: string[] = [];
+  let used = 0;
+  for (const g of graphemes(line)) {
+    const w = columnsOf(g);
+    if (used + w > width && cur.length > 0) {
+      // Back to the last space past half the line, as a word wrap; else cut here, mid-token.
+      const at = cur.lastIndexOf(' ');
+      if (g !== ' ' && at > 0 && at >= cur.length * 0.5) {
+        out.push(cur.slice(0, at).join(''));
+        cur = cur.slice(at + 1);
+      } else {
+        out.push(cur.join(''));
+        cur = [];
+      }
+      used = cur.reduce((n, c) => n + columnsOf(c), 0);
+      // A space at the break is the break itself.
+      if (g === ' ' && cur.length === 0) continue;
+    }
+    cur.push(g);
+    used += w;
   }
-  out.push(rest);
+  out.push(cur.join(''));
+  return out;
+}
+
+// The characters of a line that fit in `n` columns, never half an emoji.
+function firstColumns(line: string, n: number): string {
+  if (line.length <= n && ASCII_LINE.test(line)) return line;
+  let out = '';
+  let used = 0;
+  for (const g of graphemes(line)) {
+    used += columnsOf(g);
+    if (used > n) break;
+    out += g;
+  }
   return out;
 }
 
@@ -270,7 +303,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
       (line, i) =>
         `<text x="${r2(el.x + CODE_PAD)}" y="${r2(el.y + CODE_PAD + CODE_LINE_HEIGHT * i + CODE_FONT_SIZE * 0.85)}"` +
         ` font-family="${CODE_FONT}" font-size="${CODE_FONT_SIZE}" fill="${textColor}"` +
-        ` xml:space="preserve">${xmlEscape(line.slice(0, maxChars))}</text>`,
+        ` xml:space="preserve">${xmlEscape(firstColumns(line, maxChars))}</text>`,
     )
     .join('');
   // Language badge, top-right, hidden for 'plain' (docs/specs/009-elements/code-block.md).

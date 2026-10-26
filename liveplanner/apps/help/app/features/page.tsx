@@ -3,7 +3,7 @@ import { site } from '@/lib/help-site';
 
 export const metadata = featuresMetadata(
   site,
-  'Browse liveplanner feature guides by area: User Interface, Explorer, Palette, Canvas, Tabs, Collaboration, and Tools.',
+  'Browse liveplanner feature guides by area: Plan, User Interface, Explorer, Tabs, Collaboration, Tools, and Search Panel.',
 );
 
 export default function Features() {

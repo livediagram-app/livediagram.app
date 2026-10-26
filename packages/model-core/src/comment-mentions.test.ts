@@ -36,6 +36,24 @@ describe('assignHandles', () => {
     ]);
     expect(out.map((p) => p.handle)).toEqual(['sam-lee', 'sam-lee-2', 'priya-k', 'teammate']);
   });
+
+  it('never suffixes onto a handle someone already has', () => {
+    const handles = (names: string[]) =>
+      assignHandles(names.map((name) => ({ name }))).map((p) => p.handle);
+    expect(handles(['Sam Lee', 'Sam Lee', 'Sam Lee 2'])).toEqual([
+      'sam-lee',
+      'sam-lee-2',
+      'sam-lee-2-2',
+    ]);
+    expect(handles(['Sam Lee 2', 'Sam Lee', 'Sam Lee', 'Sam Lee'])).toEqual([
+      'sam-lee-2',
+      'sam-lee',
+      'sam-lee-3',
+      'sam-lee-4',
+    ]);
+    const many = handles(Array.from({ length: 500 }, () => 'Sam'));
+    expect(new Set(many).size).toBe(500);
+  });
 });
 
 describe('textMentions', () => {

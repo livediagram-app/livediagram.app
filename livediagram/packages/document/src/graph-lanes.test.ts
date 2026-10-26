@@ -177,3 +177,18 @@ describe('a router line into a crowded side', () => {
     expect(new Set(sides).size).toBe(3);
   });
 });
+
+describe('a member listed twice in swimlanes', () => {
+  it('draws the node once, under its one id', () => {
+    const els = lay({
+      style: 'lanes',
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+      groups: [{ id: 'L', label: 'Lane', members: ['a', 'a', 'b'] }],
+    });
+    expect(els.filter((e) => e.id === 'a')).toHaveLength(1);
+  });
+});

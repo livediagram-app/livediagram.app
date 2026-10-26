@@ -204,7 +204,7 @@ export async function renderTabToCanvas(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(els, labels);
+  const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
   const pad = frame ? 0 : EXPORT_PADDING;
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
@@ -359,29 +359,51 @@ export async function renderTabToCanvas(
     ctx.save();
     ctx.clip(new Path2D(frame.clipPath));
   }
-  let arrowRun: string[] = [];
+  // One arrow that fails to draw is skipped and logged, never the whole export (export-fidelity.md).
+  let arrowRun: { id: string; svg: string }[] = [];
+  const arrowLayer = (markup: string) =>
+    svgToImage(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
+        ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${markup}</svg>`,
+    );
   const flushArrows = async () => {
     if (arrowRun.length === 0) return;
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(aw * scale)}" height="${r2(ah * scale)}"` +
-      ` viewBox="${r2(ax)} ${r2(ay)} ${r2(aw)} ${r2(ah)}">${fontDefs}${arrowRun.join('')}</svg>`;
+    const run = arrowRun;
     arrowRun = [];
-    ctx.drawImage(await svgToImage(svg), ax, ay, aw, ah);
+    try {
+      ctx.drawImage(await arrowLayer(run.map((a) => a.svg).join('')), ax, ay, aw, ah);
+      return;
+    } catch {
+      // The run as one layer failed: draw its arrows one by one, so only the broken one is lost.
+    }
+    for (const a of run) {
+      try {
+        ctx.drawImage(await arrowLayer(a.svg), ax, ay, aw, ah);
+      } catch {
+        console.warn('[export] arrow skipped', { elementId: a.id });
+      }
+    }
   };
   for (const { el, alpha } of ordered) {
     if (el.type === 'arrow') {
-      const svg = svgArrow(
-        el,
-        tab.elements,
-        surface,
-        tabFont,
-        labels,
-        undefined,
-        els,
-        paper,
-        tab.finish,
-      );
-      arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
+      let svg: string;
+      try {
+        svg = svgArrow(
+          el,
+          tab.elements,
+          surface,
+          tabFont,
+          labels,
+          undefined,
+          els,
+          paper,
+          tab.finish,
+        );
+      } catch {
+        console.warn('[export] arrow skipped', { elementId: el.id });
+        continue;
+      }
+      arrowRun.push({ id: el.id, svg: alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg });
       continue;
     }
     await flushArrows();
@@ -479,7 +501,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     layerOpacity < 1
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
-  const bounds = frame ? frame.bounds : contentBounds(els, labels);
+  const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
   const pad = frame ? 0 : EXPORT_PADDING;
   const draw = bounds;
   const vbX = draw.x - pad;

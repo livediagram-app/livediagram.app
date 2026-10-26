@@ -541,6 +541,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
     `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
+    Either section that can't be read says so with **Try again**.
     On an app's address and in an editor, a link to the same section on liveworkspace.app.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
     editor's Trash, Cloud Sync and Delete Account, folded in as above.
@@ -567,7 +568,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
 - **Saving.** Each change is shown at once and written alone, as a patch of just its key: an app's row to the app's
   scope (`PATCH /api/account/settings/:app` `{ app }`), an Account switch, a Common row or a common setting's row on
   an app's side to `all` (`PATCH /api/account/settings` `{ all }`; a field of an object, a Presenting option say,
-  writes the object with the rest kept, the old copy filling in where `all` has none); put back with a note if the write fails; a slider saves on release, as in the app. The profile's name is
+  writes the object with the rest kept, the old copy filling in where `all` has none); put back with a note if the write fails (to what the server last took, so two refused changes in a row never leave the first one showing); a slider saves on release, as in the app. The profile's name is
   saved once typing pauses (800 ms), when the field is left, or as the page closes, never per keystroke; its colour
   at once. Each change is counted as the app's own Settings counts it (`lib/settings-telemetry.ts`); a common
   setting's row in the name of the app its wording came from (the app the panel was opened for when it has the

@@ -679,6 +679,7 @@ function BoxedElementViewImpl({
               elementId={element.id}
               elementX={element.x}
               elementY={element.y}
+              rotation={rotation}
               alignX={alignX}
               alignY={alignY}
             />

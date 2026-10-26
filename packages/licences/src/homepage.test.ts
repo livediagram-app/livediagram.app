@@ -11,6 +11,9 @@ describe('homepageFromManifest', () => {
     [{ repository: 'github:a/b' }, 'https://github.com/a/b'],
     [{ repository: 'a/b' }, 'https://github.com/a/b'],
     [{ repository: { url: 'git@github.com:a/b.git' } }, 'https://github.com/a/b'],
+    [{ repository: { url: 'git+ssh://git@github.com/a/b.git' } }, 'https://github.com/a/b'],
+    [{ repository: 'ssh://git@github.com:a/b.git' }, 'https://github.com/a/b'],
+    [{ repository: 'git+https://github.com/a/b.git#main' }, 'https://github.com/a/b'],
     [{ homepage: 'http://insecure.example', repository: 'a/b' }, 'https://github.com/a/b'],
   ])('reads %j', (manifest, url) => {
     expect(homepageFromManifest(manifest)).toBe(url);

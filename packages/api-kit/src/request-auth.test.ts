@@ -11,6 +11,11 @@ describe('bearerTokenOf', () => {
     expect(bearerTokenOf('Bearer abc')).toBe('abc');
     expect(bearerTokenOf('Bearer  abc ')).toBe('abc');
   });
+  it('matches the scheme in any case', () => {
+    expect(bearerTokenOf('bearer abc')).toBe('abc');
+    expect(bearerTokenOf('BEARER abc')).toBe('abc');
+    expect(bearerTokenOf('Bearerabc')).toBeNull();
+  });
   it('rejects a missing header, another scheme and an empty token', () => {
     expect(bearerTokenOf(null)).toBeNull();
     expect(bearerTokenOf(undefined)).toBeNull();

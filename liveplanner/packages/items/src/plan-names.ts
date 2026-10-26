@@ -4,7 +4,7 @@
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
 import { isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
-import { knownFieldKind, PRIORITIES, validateFields } from './fields';
+import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
 import {
   ITEM_CHECKLIST_MAX,
   ITEM_LABEL_MAX,
@@ -110,7 +110,7 @@ export function personNamed(name: string, people: readonly ItemPerson[]): ItemPe
   const key = statusKey(name);
   const known = people.find((p) => statusKey(p.name) === key);
   if (known) return known;
-  const slug = slugOf(name, 30) || 'person';
+  const slug = personSlug(name, key, people);
   let hash = 0;
   for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   const taken = new Set(people.map((p) => p.color.toLowerCase()));
@@ -119,6 +119,17 @@ export function personNamed(name: string, people: readonly ItemPerson[]): ItemPe
   for (let step = 0; step < n && taken.has(PLAN_TYPE_COLOURS[pick]!.toLowerCase()); step++)
     pick = (pick + 1) % n;
   return { id: `n-${slug}`, name: name.trim(), color: PLAN_TYPE_COLOURS[pick]! };
+}
+
+// A new person's id slug: the name's, so "Sam" is `n-sam` everywhere. A name the slug cannot spell (one in a script
+// it drops, "Иван") or one shortened onto someone else's id gets a hash of the whole name, so two people never
+// share an id (and so a swimlane or an assignee filter).
+function personSlug(name: string, key: string, people: readonly ItemPerson[]): string {
+  const slug = slugOf(name, 30);
+  if (slug && !people.some((p) => p.id === `n-${slug}`)) return slug;
+  let h = 0x811c9dc5;
+  for (const ch of key) h = Math.imul(h ^ ch.codePointAt(0)!, 0x01000193) >>> 0;
+  return `${(slug || 'person').slice(0, 22).replace(/-+$/, '')}-${h.toString(36)}`;
 }
 
 // Built-in fields by the names the interface gives them, beside their ids.
@@ -232,6 +243,22 @@ export function resolveFields(
           `${field.label} is a rating: give a whole number from 1 to ${scale}.`,
         );
       out[key] = n;
+    } else if (field.kind === 'number' && typeof value === 'string') {
+      // A number written as text is read as the number, as a built-in Number's is.
+      const n = value.trim() === '' ? NaN : Number(value.trim());
+      if (!Number.isFinite(n))
+        return refuse(
+          'value_invalid',
+          `"${value}" is not a number for ${field.label}: give a number.`,
+        );
+      out[key] = n;
+    } else if (field.kind === 'date' && typeof value === 'string') {
+      if (!validDate(value.trim()))
+        return refuse(
+          'value_invalid',
+          `"${value}" is not a date for ${field.label}: give a date, such as 2026-10-14.`,
+        );
+      out[key] = value.trim();
     } else if (field.kind === 'currency' && typeof value === 'string') {
       // "£12,500" or "1200.50": the amount, its symbols and grouping aside.
       const amount = Number(value.replace(/[^\d.-]/g, ''));

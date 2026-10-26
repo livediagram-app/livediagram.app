@@ -1,6 +1,6 @@
 // /api/preferences — a person's settings (docs/specs/007-editor/user-preferences.md), kept by the
 // liveworkspace accounts Worker (person/settings.ts). Hybrid identity: the account id when signed in,
-// X-Owner-Id otherwise, matching the rest of the api.
+// the guest's id otherwise (each from its Bearer token), matching the rest of the api.
 //
 //   GET → { prefs }: `all` and this app's scope as one flat set. `prefs: null` says they aren't kept
 //         here (no accounts Worker on this deployment, or an owner id it has no place for): the

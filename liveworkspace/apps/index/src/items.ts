@@ -114,7 +114,11 @@ export async function parseListFilters(
   }
   const space = params.get('space');
   if (space !== null) {
-    const values = readList(space, (v) => v === 'mine' || v === 'shared' || v.startsWith('team:'));
+    // A team needs its id: `team:` alone is a malformed filter, not a team the person isn't in.
+    const values = readList(
+      space,
+      (v) => v === 'mine' || v === 'shared' || (v.startsWith('team:') && isId(v.slice(5))),
+    );
     if (!values) return badRequest('invalid_query');
     const teams = values.filter((v) => v.startsWith('team:')).map((v) => v.slice(5));
     if (!(await inTeamsNow(env, person, teams))) return forbidden('not_team_member');

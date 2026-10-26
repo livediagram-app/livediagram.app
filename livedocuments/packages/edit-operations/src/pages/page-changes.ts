@@ -88,8 +88,8 @@ const describePatch = (input: PageBackgroundInput) =>
     .filter(Boolean)
     .join(', ');
 
-function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
-  const kind = page ? pageKindOf(page) : 'infographic';
+function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'>): string {
+  const kind = pageKindOf(page);
   // "An infographic page", "An article page", "A slide page".
   const aKind = `${/^[aeiou]/.test(kind) ? 'An' : 'A'} ${kind}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
@@ -137,7 +137,7 @@ export function applyPageChanges(
       const stop = (code: PagesRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
       };
-      const take = (out: PageEdit<Tab>, page?: Pick<Page, 'kind'>): Tab => {
+      const take = (out: PageEdit<Tab>, page: Pick<Page, 'kind'>): Tab => {
         if ('refused' in out) stop(CODE[out.refused], messageFor(out.refused, current, page));
         return (out as { tab: Tab }).tab;
       };

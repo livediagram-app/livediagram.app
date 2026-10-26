@@ -159,11 +159,13 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     if (body.level !== undefined && !isLevel(body.level)) return badRequest('invalid_level');
     const tab = readTab(body.tabId);
     if (tab === INVALID) return badRequest('invalid_tab');
-    const expiry: ShareLinkExpiry = (SHARE_LINK_EXPIRIES as readonly unknown[]).includes(
-      body.expiry,
+    // Left out is `never`; a value that is no expiry is refused, never read as a link that lasts for ever.
+    if (
+      body.expiry !== undefined &&
+      !(SHARE_LINK_EXPIRIES as readonly unknown[]).includes(body.expiry)
     )
-      ? (body.expiry as ShareLinkExpiry)
-      : 'never';
+      return badRequest('invalid_expiry');
+    const expiry: ShareLinkExpiry = (body.expiry as ShareLinkExpiry | undefined) ?? 'never';
     const now = Date.now();
     const link: LinkRow = {
       code: generateShareCode(),

@@ -91,6 +91,17 @@ describe('the read API', () => {
     expect(again.at).toBe(T0);
   });
 
+  it('answers a HEAD from the edge cache with headers only, no body', async () => {
+    const env = testEnv();
+    await runOnce(env, T0, { results: all });
+    await get(env, '/api/status');
+    expect(store.size).toBe(1);
+    const head = await get(env, '/api/status', { method: 'HEAD' });
+    expect(head.status).toBe(200);
+    expect(head.headers.get('Cache-Control')).toBe('public, max-age=120');
+    expect(head.body).toBeNull();
+  });
+
   it('skips the cache in development', async () => {
     const env = testEnv({ ENVIRONMENT: 'development' });
     await get(env, '/api/status');
@@ -104,6 +115,14 @@ describe('the read API', () => {
     expect((await get(env, '/api/status/other')).status).toBe(404);
     expect((await get(env, '/api/statusx')).status).toBe(404);
     expect((await get(env, '/')).status).toBe(404);
+  });
+
+  it('answers an empty history, not a 500, when the stored row is not JSON', async () => {
+    const env = testEnv();
+    env.raw.exec("INSERT INTO snapshots (key, at, body) VALUES ('history', 1, '{\"v\":1,\"at')");
+    const res = await get(env, '/api/status/history?days=7');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ v: 1, at: null, days: 7, services: {} });
   });
 
   it('limits each network’s reads that miss the cache', async () => {

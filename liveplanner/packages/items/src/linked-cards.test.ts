@@ -417,4 +417,14 @@ describe('healLinkedCards', () => {
       heal([record({ status: 'wont-do', updatedAt: 200 })], [inDone], noAfter).patches,
     ).toEqual([]);
   });
+
+  it('reads open in Done as agreeing on a board whose first column is Done, so the heal settles', () => {
+    const doneFirst = { ...setup, columns: setup.columns.slice(1) };
+    // The card an open action starts with on such a board sits in Done, the board's first column.
+    const made = heal([record()], [], doneFirst).creates[0]!;
+    expect(made.fields['status']).toBe('done');
+    const inDone = inSync(record(), { status: 'done' });
+    expect(heal([record()], [inDone], doneFirst).patches).toEqual([]);
+    expect(heal([record({ updatedAt: 200 })], [inDone], doneFirst).patches).toEqual([]);
+  });
 });

@@ -173,7 +173,7 @@ function formatNumberSection(n: number, toks: Tok[]): string {
       while (k > 0 && fracPh[k - 1]!.v === '#') k--;
       return k;
     })();
-    const fixed = Math.abs(value).toFixed(fracMax);
+    const fixed = decimalFixed(Math.abs(value), fracMax);
     let [intPart, frac = ''] = fixed.split('.');
     while (frac.length > fracMin && frac.endsWith('0')) frac = frac.slice(0, -1);
     const minInt = intPh.filter((t) => t.k === 'ph' && t.v === '0').length;
@@ -291,6 +291,14 @@ function formatDateSection(serial: number, toks: Tok[]): string {
   return out;
 }
 
+// A non-negative number to `digits` decimals, rounding half away as ROUND does: worked at 15 significant digits
+// first, so 1.005 (stored as 1.00499…) draws 1.01 as the Number format and ROUND give it, not 1.00.
+function decimalFixed(x: number, digits: number): string {
+  const scaled = x * 10 ** digits;
+  if (!(scaled < 1e15)) return x.toFixed(digits);
+  return (Math.round(Number(scaled.toPrecision(15))) / 10 ** digits).toFixed(digits);
+}
+
 export function formatCodeText(value: number | string, code: string): string {
   const sections = splitSections(code);
   if (typeof value === 'string') {
@@ -302,12 +310,14 @@ export function formatCodeText(value: number | string, code: string): string {
   }
   let section = sections[0]!;
   let n = value;
-  if (n < 0 && sections.length >= 2 && sections[1] !== '') {
+  if (n < 0 && sections.length >= 2) {
     section = sections[1]!;
     n = -n;
   } else if (n === 0 && sections.length >= 3) {
     section = sections[2]!;
   }
+  // An empty section among several hides its numbers, as in Excel and Google Sheets (`;;;` hides everything).
+  if (section === '' && sections.length >= 2) return '';
   if (section.trim() === '' && code.trim() === '') return numberText(value);
   if (section.trim().toLowerCase() === 'general') return numberText(n);
   if (isDateSection(section)) return formatDateSection(n, tokenize(section, true));

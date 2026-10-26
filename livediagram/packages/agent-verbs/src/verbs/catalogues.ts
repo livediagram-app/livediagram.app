@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { IconSearchResponse, TemplateCatalogueResponse } from '@livediagram/api-schema';
 import { ApiError } from '@liveworkspace/api-client';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
-import { columns } from './shared';
+import { columns, moreLine } from './shared';
 
 export const ICON_SEARCH_DEFAULT_LIMIT = 20;
 const NEAREST_MAX = 6;
@@ -129,7 +129,7 @@ export const iconSearch = defineVerb({
     ...(icons.length
       ? columns(icons.map((i) => [i.id, JSON.stringify(i.label), i.set]))
       : ['no icons match']),
-    ...(more > 0 ? [`… ${more} more; --limit ${icons.length + more}, or narrow the words`] : []),
+    ...(more > 0 ? [moreLine(icons.length, more, ICON_SEARCH_MAX_LIMIT, 'narrow the words')] : []),
   ],
   quiet: ({ icons }) => icons.map((i) => i.id),
   cli: {

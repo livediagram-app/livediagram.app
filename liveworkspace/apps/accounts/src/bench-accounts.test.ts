@@ -49,6 +49,7 @@ describe('bench accounts', () => {
 
   it('refuses a count out of range', async () => {
     const { call } = setup();
+    expect((await call(null)).status, 'a null body').toBe(400);
     for (const count of [0, -1, 1.5, BENCH_ACCOUNTS_MAX + 1, '3', undefined]) {
       expect((await call({ count })).status, String(count)).toBe(400);
     }

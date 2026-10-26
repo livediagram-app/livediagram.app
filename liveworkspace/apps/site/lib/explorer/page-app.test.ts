@@ -4,7 +4,7 @@
 // it asks as the app's session, reaches liveworkspace's account API through the app's router with its token, and
 // sends liveworkspace's own pages to liveworkspace.app.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { appHosts, appOfHost, appOrigin, pageApp, workspaceHref } from './page-app';
+import { appHosts, appOfHost, appOfPageHost, appOrigin, pageApp, workspaceHref } from './page-app';
 import { appAccount, appSignInHref, resetAppSession } from './app-session';
 import { accountFetch, resetWorkspaceIdentity, workspaceIdentity } from './token';
 import { explorerSilentSignInScript } from './silent';
@@ -35,6 +35,21 @@ afterEach(() => {
 });
 
 describe('where the page is', () => {
+  it('reads any local port in an app’s block as that app’s page, an E2E stack’s among them', () => {
+    expect(appOfPageHost('localhost:3102')).toBe('livediagram');
+    expect(appOfPageHost('localhost:3115')).toBe('livediagram');
+    expect(appOfPageHost('localhost:3202')).toBe('liveplanner');
+    expect(appOfPageHost('127.0.0.1:3302')).toBe('livedocuments');
+    expect(appOfPageHost('localhost:3499')).toBe('livedesign');
+    expect(appOfPageHost('livediagram.app')).toBe('livediagram');
+    // liveworkspace's own block, and ports in no block, are liveworkspace.app's page.
+    expect(appOfPageHost('localhost:3000')).toBeNull();
+    expect(appOfPageHost('localhost:3650')).toBeNull();
+    expect(appOfPageHost('example.com:3102')).toBeNull();
+    // Return addresses are vetted by appOfHost, which knows each router's port alone.
+    expect(appOfHost('localhost:3102')).toBeNull();
+  });
+
   it('knows every switched-on app by its live, www, staging and local address', () => {
     expect(appOfHost('liveplanner.app')).toBe('liveplanner');
     expect(appOfHost('www.livedesign.app')).toBe('livedesign');

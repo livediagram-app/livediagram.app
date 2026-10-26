@@ -2277,6 +2277,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editingId,
     setEditingId,
     activeTab,
+    layerLockedIds,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -2357,7 +2358,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCut: () => {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
-      copySelection();
+      copySelection({ cut: true });
       if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected();
       } else {

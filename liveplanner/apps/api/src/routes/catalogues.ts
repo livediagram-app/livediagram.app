@@ -13,6 +13,16 @@ export const CATALOGUE_CACHE_CONTROL = 'public, max-age=300';
 
 const cached = { 'Cache-Control': CATALOGUE_CACHE_CONTROL };
 
+// A path segment as sent, percent-escapes undone; null for a malformed escape (`%E0%A4%A`, a lone `%`), which
+// names no template or kind, so it is the same 404 as an unknown one rather than a URIError's 500.
+function decodedSegment(segment: string): string | null {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
+  }
+}
+
 function answered(segment: string, res: Response): Response {
   console.info(`[catalogues] ${segment} ${res.status}`);
   return res;
@@ -23,7 +33,8 @@ function templates(ctx: RouteContext): Response {
   if (kind === undefined)
     return json(templateCatalogue() satisfies TemplateCatalogueResponse, { headers: cached });
   if (ctx.segments.length > 3) return notFound();
-  const decoded = templateKindOf(decodeURIComponent(kind));
+  const segment = decodedSegment(kind);
+  const decoded = segment === null ? null : templateKindOf(segment);
   if (!decoded)
     return json(
       { error: 'unknown_template', kinds: templateCatalogue().templates.map((t) => t.kind) },
@@ -42,7 +53,8 @@ function schema(ctx: RouteContext): Response {
   const kind = ctx.segments[2];
   if (kind === undefined) return textPlain(elementKindsText(), { headers: cached });
   if (ctx.segments.length > 3) return notFound();
-  const text = elementFormatText(decodeURIComponent(kind));
+  const segment = decodedSegment(kind);
+  const text = segment === null ? null : elementFormatText(segment);
   if (text === null) return json({ error: 'unknown_kind', kinds: addableKinds() }, { status: 404 });
   return textPlain(text, { headers: cached });
 }

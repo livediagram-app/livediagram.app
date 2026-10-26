@@ -190,5 +190,10 @@ describe('embedTargetFor', () => {
     // video" is more useful than silently framing a 404 page.
     expect(embedTargetFor('https://vimeo.com/nonsense')).toBeNull();
     expect(embedTargetFor('https://docs.google.com/forms/d/abc/viewform')).toBeNull();
+    // YouTube too: a channel, a playlist or a cut-off share link is no video, and YouTube refuses framing.
+    expect(embedTargetFor('https://www.youtube.com/@somechannel')).toBeNull();
+    expect(embedTargetFor('https://youtube.com/playlist?list=PL123')).toBeNull();
+    expect(embedTargetFor('https://m.youtube.com/')).toBeNull();
+    expect(embedTargetFor('https://youtu.be/tooshort')).toBeNull();
   });
 });

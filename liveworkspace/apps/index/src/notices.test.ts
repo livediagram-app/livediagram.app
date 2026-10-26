@@ -91,6 +91,7 @@ describe('a person’s count of items made', () => {
     await makeItem(ada.auth, { app: 'livediagram', kind: 'canvas' });
     expect(await body(await count('user_a'))).toEqual({ count: 5 });
     expect(await body(await count('user_a', '?limit=3'))).toEqual({ count: 3 });
+    expect(await body(await count('user_a', '?limit='))).toEqual({ count: 5 });
     expect(await body(await count('user_a', '', 'livediagram', 'ld-key'))).toEqual({ count: 1 });
     expect(await body(await count('user_nobody'))).toEqual({ count: 0 });
   });

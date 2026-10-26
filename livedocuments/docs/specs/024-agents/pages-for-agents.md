@@ -116,14 +116,20 @@ Writes an article's text from **Markdown**.
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
   code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). Inline code reads and
   is written as CommonMark has it: a fence of any number of backticks, escapes literal inside it, one edge space
-  stripped, so code holding a backtick survives the round trip. A line holding only
+  stripped, so code holding a backtick survives the round trip; it keeps its link, bold, italic and strikethrough
+  around it. A code block's fence is three or more backticks and only a line of backticks alone, at least as many,
+  closes it; code is written with one backtick more than its own longest fence-like line, so code holding a
+  ` ``` ` line stays one block. A link's parentheses and backslashes are escaped in its address, so an address
+  such as `…/Mercury_(planet)` reads back whole. A title or subtitle wrapped in quotes is written inside the other
+  quote, so its quotes read back, and without front matter an opening divider is written `***`, never read as front
+  matter. A line holding only
   `\pagebreak` is a page break. An article's text holds no tables: a Markdown table is written as a list, one item
   per row, and the answer says how many it wrote that way and points at a table element on a page instead.
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
   `---`. They become the article's `title` and `subtitle` blocks, first. Without front matter the text is written as
   given (a replace keeps no old title).
 - **Zones** (objects and drawings in the text) are written as a line `[zone <id>]`, as the `pages` view prints them.
-  A replace keeps a zone exactly where its line is; a zone of the article whose line is missing is removed with the
+  A replace keeps a zone exactly where its line is (an append leaves a zone it names where it already is); a zone of the article whose line is missing is removed with the
   elements in it, and the answer says so ("Removed zone z-12 and 3 elements"). An unknown zone id is refused
   (`zone_unknown`). New zones are made in the editor, not by agents.
 - **Margin notes** live on runs; a replace keeps none and removes their markers, saying how many; append keeps them.

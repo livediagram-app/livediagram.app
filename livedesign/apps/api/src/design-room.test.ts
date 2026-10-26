@@ -1231,6 +1231,23 @@ describe('DesignRoom freeing a selection lock (docs/specs/007-editor/live-app.md
     ]);
   });
 
+  it("lets a tab-scoped editor free a hold on its own tab only, never on one it can't reach", () => {
+    const { room, state } = newRoom();
+    const scoped = makeSocket();
+    const onOther = makeSocket();
+    const onMine = makeSocket();
+    seedSession(state, scoped, presence('scoped', 'edit'));
+    (scoped.attachment as { tabScope?: string }).tabScope = 't1';
+    seedSession(state, onOther, { ...presence('other', 'edit'), tabId: 't2' });
+    seedSession(state, onMine, { ...presence('mine', 'edit'), tabId: 't1' });
+    sendFrame(room, scoped, unlock('other'));
+    sendFrame(room, scoped, unlock('mine'));
+    expect(released(onOther)).toEqual([]);
+    expect(released(onMine)).toEqual([
+      { kind: 'selection-released', elementId: 'el-1', by: 'scoped' },
+    ]);
+  });
+
   it('ignores an unlock aimed at yourself', () => {
     const { room, host } = room3();
     sendFrame(room, host, unlock('host'));

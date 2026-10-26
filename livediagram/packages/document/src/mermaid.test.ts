@@ -266,6 +266,31 @@ describe('parseMermaid', () => {
   });
 });
 
+// docs/specs/020-import-export/mermaid.md "Subgraphs → frames": every node and every frame arrives under an id of
+// its own.
+describe('parseMermaid subgraph ids', () => {
+  const ids = (text: string) => {
+    const r = parseMermaid(text);
+    if (!r.ok) throw new Error(r.error);
+    return r.graph;
+  };
+
+  it('carries a subgraph opened again by its id on as the same frame', () => {
+    const g = ids('flowchart TD\n  subgraph g [Team]\n    x\n  end\n  subgraph g\n    y\n  end');
+    expect(g.clusters).toEqual([{ id: 'g', label: 'Team', members: ['x', 'y'] }]);
+  });
+
+  it('gives a frame a fresh id when a node is written out with its id', () => {
+    const g = ids('flowchart TD\n  subgraph a\n    b\n  end\n  a[Real node] --> b');
+    expect(g.nodes.map((n) => n.id).sort()).toEqual(['a', 'b']);
+    expect(g.clusters).toEqual([{ id: 'a_subgraph', label: 'a', members: ['b'] }]);
+    expect(g.edges).toEqual([{ from: 'a', to: 'b' }]);
+    const els = layoutClusteredGraph(g);
+    expect(new Set(els.map((e) => e.id)).size).toBe(els.length);
+    expect(isValidTab({ id: 't', name: 'T', elements: els })).toBe(true);
+  });
+});
+
 // docs/specs/020-import-export/mermaid.md: a real-world paste imports its graph and skips the decoration.
 describe('parseMermaid real-world forms', () => {
   const edgesOf = (text: string) => {
@@ -557,6 +582,55 @@ describe('mermaidFromTab', () => {
     // Never a raw `%%`: an unquoted edge label would read it as a comment.
     expect(out).not.toContain('%%');
     const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => n.label)).toEqual([...labels, 'Z']);
+    expect(back.graph.edges.map((e) => e.label)).toEqual(labels);
+  });
+
+  it("brings an arrow's empty frame back under its title, never its id", () => {
+    const elements = [
+      {
+        id: 'f',
+        type: 'shape',
+        shape: 'frame',
+        x: 0,
+        y: 0,
+        width: 300,
+        height: 200,
+        label: 'Backend',
+      },
+      {
+        id: 'a',
+        type: 'shape',
+        shape: 'square',
+        x: 500,
+        y: 0,
+        width: 100,
+        height: 50,
+        label: 'Client',
+      },
+      {
+        id: 'e',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'a' },
+        to: { kind: 'pinned', elementId: 'f' },
+      },
+    ] as unknown as Element[];
+    const back = parseMermaid(mermaidFromTab({ elements }));
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => n.label).sort()).toEqual(['Backend', 'Client']);
+    expect(back.graph.edges).toHaveLength(1);
+  });
+
+  it('round-trips labels wrapped in backticks or holding a <br> written as text', () => {
+    const labels = ['`code`', '`*a*`', 'Use <br> here', 'a<BR/>b', 'x < y'];
+    const els = graphToElements({
+      nodes: [...labels.map((label, i) => ({ id: `n${i}`, label })), { id: 'z', label: 'Z' }],
+      edges: labels.map((label, i) => ({ from: `n${i}`, to: 'z', label })),
+    });
+    const back = parseMermaid(mermaidFromTab({ elements: els }));
     expect(back.ok).toBe(true);
     if (!back.ok) return;
     expect(back.graph.nodes.map((n) => n.label)).toEqual([...labels, 'Z']);

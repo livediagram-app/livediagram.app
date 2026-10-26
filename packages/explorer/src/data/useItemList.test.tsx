@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { IndexError } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { createItemOverlay } from './overlay';
 import { useItemList } from './useItemList';
@@ -89,5 +90,24 @@ describe('useItemList', () => {
     expect(result.current.items[0]).toBe(kept);
     act(() => undo());
     expect(result.current.items.map((i) => i.id)).toEqual(['item-1', 'item-2']);
+  });
+
+  it('shows the list as loading again while Try again reads it', async () => {
+    const index = createFakeIndex({ items: many(3) });
+    index.fail.set('listItems', new IndexError(500, 'unknown'));
+    const { result } = renderHook(() => useView(index, { kind: 'all' }));
+    await waitFor(() => expect(result.current.error).toBe(true));
+    expect(result.current.loading).toBe(false);
+
+    index.fail.delete('listItems');
+    index.hold.add('listItems');
+    act(() => result.current.retry());
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBe(false);
+
+    index.release();
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.items).toHaveLength(3);
+    expect(result.current.error).toBe(false);
   });
 });

@@ -11,12 +11,7 @@ import { useEffect, useRef } from 'react';
 // rebuilding the listener. Most dialogs never call it directly: they
 // render <Dialog>, which calls it once for all of them. The direct
 // callers are the popovers, menus and one-off modals that have no
-// such wrapper.
-//
-// One surface deliberately does NOT use it: ContextMenu still combines
-// Escape with a click-outside handler in the same useEffect, because it
-// also listens to the `contextmenu` event so a second right-click
-// stack-replaces the menu, which useClickOutside doesn't cover.
+// such wrapper. Menus take Escape from useMenu / useControlMenu instead.
 //
 // Options:
 //   `enabled` (default true): when false, no listener is registered.

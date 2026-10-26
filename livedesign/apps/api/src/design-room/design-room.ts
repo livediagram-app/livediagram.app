@@ -1342,7 +1342,11 @@ export class DesignRoom extends DurableObject<Env> {
     const asker = session.presence?.id ?? session.presenceId;
     if (typeof target !== 'string' || target === asker) return;
     if (typeof elementId !== 'string' || elementId.length === 0) return;
-    if (!this.socketByPresence(target)) return;
+    const holder = this.socketByPresence(target);
+    if (!holder) return;
+    // A tab-scoped session acts on its own tab only (docs/specs/013-workspace/tab-scoped-share-links.md): it frees a
+    // hold only from someone working on that tab, never one on a tab it cannot reach.
+    if (session.tabScope && this.readSession(holder)?.presence?.tabId !== session.tabScope) return;
     this.sendToPresence(target, { kind: 'selection-released', elementId, by: asker });
   }
 

@@ -231,7 +231,13 @@ export function drawBoxed(
         label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
       // Wrap to the element width so long labels stay inside the box, then
       // stack the lines from the label's vertical anchor.
-      const lines = wrapLabel(label.text, label.maxWidth, (s) => ctx.measureText(s).width);
+      // A word wider than the box breaks as the SVG export and the canvas break it; an icon caption stays whole.
+      const lines = wrapLabel(
+        label.text,
+        label.maxWidth,
+        (s) => ctx.measureText(s).width,
+        !(el.type === 'shape' && el.shape === 'icon'),
+      );
       const lineH = label.size * LABEL_LINE_HEIGHT;
       let ly = firstY(lines.length, lineH);
       for (const line of lines) {

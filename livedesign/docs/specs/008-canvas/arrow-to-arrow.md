@@ -49,7 +49,13 @@ threshold, excludeId)` (`geometry-snapping.ts`) compute the dots + the nearest
   attached to it (no two-arrow cycle).
 - Cascade rules mirror pinned: duplicating remaps the connection to the copied
   target when present (`factories.ts`); deleting a target arrow cascade-deletes
-  the arrows attached to it (`arrowReferencesAny`).
+  the arrows attached to it, and those hung off THEM in turn, so deleting a box
+  takes its connector and any arrow hung off that connector (`withAttachedArrows`,
+  shared by Delete, the eraser, Combine and layer deletion).
+- A paste keeps an uncopied `on-arrow` end only when its target is on the tab
+  it lands on: an arrow hung off a copied connector that could not land (its
+  boxes stayed behind) is dropped with it, never left naming the connector's
+  clipboard id.
 - Reveal distance (perpendicular) shows the dots; a tighter threshold connects.
   Drag-snap lives in `apps/live/hooks/canvas/useEditorDrag.ts`.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Linked', 'ArrowPoint')`, once per drag.

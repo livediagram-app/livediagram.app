@@ -63,6 +63,11 @@ describe('page metadata', () => {
     });
     expect(SITE.rootMetadata({ other: { a: 'b' } }).other).toEqual({ a: 'b' });
   });
+
+  it("points the default canonical at the home's own route, with its trailing slash", () => {
+    expect(SITE.rootMetadata().alternates).toEqual({ canonical: '/help/' });
+    expect(SITE.sitemap()[0]!.url).toBe('https://testapp.example/help/');
+  });
 });
 
 describe('article neighbours', () => {

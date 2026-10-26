@@ -23,10 +23,11 @@ describe('gateClientOp', () => {
 
   it('relays presence from anyone, mutations from an editor only', () => {
     expect(gateClientOp({ kind: 'cursor' }, as('view'))).toEqual(relay(true));
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('edit'))).toEqual(relay(false));
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('view'))).toEqual(DROP);
+    const tab = { kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } };
+    expect(gateClientOp(tab, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(tab, as('view'))).toEqual(DROP);
     // An unknown role reads as the lowest level.
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
+    expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
   it('keeps a viewer from taking part: answers, reactions, speech and focus', () => {
@@ -49,7 +50,9 @@ describe('gateClientOp', () => {
       relay(false, true),
     );
     expect(gateClientOp({ kind: 'vote', voter: 'you' }, as('participate'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } }, as('participate')),
+    ).toEqual(DROP);
   });
 
   it("shows only an editor's drag preview", () => {
@@ -59,8 +62,45 @@ describe('gateClientOp', () => {
 
   it('keeps a tab-scoped session to its own tab', () => {
     const scoped = as('edit', { tabScope: 't1' });
-    expect(gateClientOp({ kind: 'tab', tabId: 't1' }, scoped)).toEqual(relay(false));
-    expect(gateClientOp({ kind: 'tab', tabId: 't2' }, scoped)).toEqual(DROP);
+    const tabOp = (tabId: string) => ({ kind: 'tab', tabId, tab: { id: tabId, elements: [] } });
+    expect(gateClientOp(tabOp('t1'), scoped)).toEqual(relay(false));
+    expect(gateClientOp(tabOp('t2'), scoped)).toEqual(DROP);
     expect(gateClientOp({ kind: 'document-meta' }, scoped)).toEqual(DROP);
+  });
+
+  it("drops a tab op whose payload names another tab, so a scoped link can't renumber its tab onto one it can't reach", () => {
+    const scoped = as('edit', { tabScope: 't1' });
+    // The envelope names the scoped tab; the payload, which receivers merge over it, names another.
+    expect(
+      gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't2', elements: [] } }, scoped),
+    ).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { elements: [] } }, scoped)).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't1' }, scoped)).toEqual(DROP);
+    for (const key of ['id', 'elements', 'articles']) {
+      expect(
+        gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { [key]: 't2' } }, scoped),
+      ).toEqual(DROP);
+    }
+    expect(gateClientOp({ kind: 'tab-meta', tabId: 't1' }, scoped)).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, scoped),
+    ).toEqual(relay(false));
+    // The same holds for an unscoped editor: the payload's id is never the sender's to change.
+    expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't2' } }, as('edit'))).toEqual(DROP);
+  });
+
+  it('decides a tab op in well under a microsecond (it runs on every op)', () => {
+    const op = { kind: 'tab', tabId: 't1', tab: { id: 't1', elements: [] } };
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan', vote: null } };
+    const sender = as('edit', { tabScope: 't1' });
+    const n = 200_000;
+    const start = performance.now();
+    for (let i = 0; i < n; i++) {
+      gateClientOp(op, sender);
+      gateClientOp(meta, sender);
+    }
+    const perOpUs = ((performance.now() - start) * 1000) / (2 * n);
+    // Measured about 0.1 µs per op; the budget leaves room for a busy CI machine.
+    expect(perOpUs).toBeLessThan(5);
   });
 });

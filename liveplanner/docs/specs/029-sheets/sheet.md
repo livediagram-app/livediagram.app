@@ -549,7 +549,8 @@ view gets the header and **Copy** alone.
   `[h]:mm:ss`, `@`), then **Cancel** and **Apply** (one change, one undo step). A code takes what
   [`TEXT`](formulas.md#functions) reads: digits (`0`, `#`, `,`, `.`), percent, scientific, literal text in quotes, a
   currency symbol, the date and time parts, elapsed hours, `@` for text, and up to four `;` sections (positive,
-  negative, zero, text). A code up to 64 characters (`FORMAT_CODE_MAX`); one that cannot be read is not applied ("That
+  negative, zero, text; an empty one hides its values, so `;;;` hides everything). Numbers round half away from zero,
+  as `ROUND` does (`1.005` in `0.00` is `1.01`). A code up to 64 characters (`FORMAT_CODE_MAX`); one that cannot be read is not applied ("That
   format code can't be read"). A custom code is drawn the same in every locale, as `TEXT` writes it.
 - Number formats are drawn in the viewer's locale (separators, date order), so two people may see `1,234.50` and
   `1.234,50` for the same value.

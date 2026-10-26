@@ -37,7 +37,8 @@ const ERROR_NOTE =
 
 type Load<T> = { state: 'loading' } | { state: 'error' } | { state: 'ready'; data: T };
 
-function useLoad<T>(read: () => Promise<T | null>): [Load<T>, () => void] {
+// The read, `reload` (read again, keeping what shows meanwhile) and `retry` (after a failure: loading again).
+function useLoad<T>(read: () => Promise<T | null>): [Load<T>, () => void, () => void] {
   const [load, setLoad] = useState<Load<T>>({ state: 'loading' });
   const [turn, setTurn] = useState(0);
   useEffect(() => {
@@ -50,7 +51,24 @@ function useLoad<T>(read: () => Promise<T | null>): [Load<T>, () => void] {
       live = false;
     };
   }, [read, turn]);
-  return [load, useCallback(() => setTurn((n) => n + 1), [])];
+  const reload = useCallback(() => setTurn((n) => n + 1), []);
+  const retry = useCallback(() => {
+    setLoad({ state: 'loading' });
+    setTurn((n) => n + 1);
+  }, []);
+  return [load, reload, retry];
+}
+
+function TryAgain({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative touch-target ml-2 cursor-pointer font-semibold underline underline-offset-2 hover:no-underline"
+    >
+      Try again
+    </button>
+  );
 }
 
 function MethodTile({ children }: { children: ReactNode }) {
@@ -112,7 +130,7 @@ export function SignInMethodsRows({
   security: AccountSecurity;
   email?: string | null;
 }) {
-  const [load] = useLoad(security.signInMethods);
+  const [load, , retry] = useLoad(security.signInMethods);
   const [connecting, setConnecting] = useState(false);
   const [failed, setFailed] = useState(false);
   const google = load.state === 'ready' ? load.data.google : null;
@@ -176,7 +194,12 @@ export function SignInMethodsRows({
             )
           }
         >
-          {failed || load.state === 'error' ? (
+          {load.state === 'error' ? (
+            <p role="alert" className={ERROR_NOTE}>
+              Couldn’t reach your account just now.
+              <TryAgain onClick={retry} />
+            </p>
+          ) : failed ? (
             <p role="alert" className={ERROR_NOTE}>
               Couldn’t reach your account just now. Try again in a moment.
             </p>
@@ -250,9 +273,13 @@ function signedInSince(iso: string): string {
 
 /** Where You're Signed In: each session, this device first, signing out of any other. */
 export function SessionsRows({ security }: { security: AccountSecurity }) {
-  const [load, reload] = useLoad(security.sessions);
+  const [load, reload, retry] = useLoad(security.sessions);
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  // Sessions signed out here, left out at once: the list is read again after, and until that answer came the
+  // signed-out row stayed with its Sign Out button live again, so it could be pressed twice. `others` is every
+  // session but this one.
+  const [gone, setGone] = useState<ReadonlySet<string>>(() => new Set());
   const [now] = useState(() => Date.now());
 
   async function act(id: string, run: () => Promise<boolean>) {
@@ -260,8 +287,10 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
     setFailed(false);
     const ok = await run().catch(() => false);
     setBusy(null);
-    if (ok) reload();
-    else setFailed(true);
+    if (ok) {
+      setGone((was) => new Set(was).add(id));
+      reload();
+    } else setFailed(true);
   }
 
   if (load.state !== 'ready') {
@@ -270,7 +299,10 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
         row={{ key: 'sessions', label: 'Where You’re Signed In', description: '' }}
         descriptionContent={
           load.state === 'error' ? (
-            <span role="alert">Couldn’t load your sessions just now.</span>
+            <span role="alert">
+              Couldn’t load your sessions just now.
+              <TryAgain onClick={retry} />
+            </span>
           ) : (
             <span
               aria-busy
@@ -281,10 +313,12 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
       />
     );
   }
-  const sessions = [...load.data].sort(
-    (a, b) =>
-      Number(b.current) - Number(a.current) || Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
-  );
+  const sessions = load.data
+    .filter((s) => s.current || !(gone.has(s.id) || gone.has('others')))
+    .sort(
+      (a, b) =>
+        Number(b.current) - Number(a.current) || Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+    );
   const others = sessions.filter((s) => !s.current).length;
   return (
     <>

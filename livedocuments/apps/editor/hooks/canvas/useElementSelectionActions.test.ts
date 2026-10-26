@@ -95,6 +95,25 @@ describe('deleteSelected lock protection', () => {
     // 'a' goes, its unlocked arrow cascades away, the locked arrow + 'b' stay.
     expect(ids(getResult())).toEqual(['b', 'locked']);
   });
+
+  it('takes the arrow hung off a cascaded connector, and the one hung off that', () => {
+    const hung = (id: string, onto: string): ArrowElement => ({
+      id,
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'on-arrow', arrowId: onto, t: 0.5 },
+    });
+    const els = [
+      shape('a'),
+      shape('b'),
+      pinnedArrow('x', 'a', 'b'),
+      hung('y', 'x'),
+      hung('z', 'y'),
+    ];
+    const { actions, getResult } = setup(els, { selection: ['a'] });
+    actions.deleteSelected();
+    expect(ids(getResult())).toEqual(['b']);
+  });
 });
 
 describe('deleteMultiSelected lock protection', () => {

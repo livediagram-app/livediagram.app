@@ -5,7 +5,7 @@
 // and nothing covers the fine print. Choosing a level folds it again. livediagram's ShareRolePicker from before the
 // Explorer split, in each app's words.
 
-import { useId, useState, type KeyboardEvent } from 'react';
+import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Level } from '@liveworkspace/index-client';
 import { CheckIcon, ChevronDownIcon } from '@liveworkspace/ui';
 import { LEVEL_ORDER, LEVEL_PASS } from './parts';
@@ -20,10 +20,17 @@ export function RolePicker({
   const [open, setOpen] = useState(false);
   const listId = useId();
   const pass = LEVEL_PASS[level];
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Folding makes the levels inert, which would drop focus on one of them to the page: it goes back to the card.
+  const fold = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
 
   const choose = (next: Level) => {
     onChange(next);
-    setOpen(false);
+    fold();
   };
 
   // Arrow keys walk the levels, wrapping; Home and End reach the ends, as in any radio group.
@@ -33,7 +40,7 @@ export function RolePicker({
       e.preventDefault();
       e.stopPropagation();
       e.nativeEvent.stopImmediatePropagation();
-      setOpen(false);
+      fold();
       return;
     }
     const i = LEVEL_ORDER.indexOf(level);
@@ -62,6 +69,7 @@ export function RolePicker({
       }`}
     >
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-controls={listId}

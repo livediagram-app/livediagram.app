@@ -166,8 +166,12 @@ function setCellStyleRaw(
   return { ...t, cellStyles };
 }
 
-function moveInArray<T>(arr: T[], from: number, to: number): T[] {
-  const a = [...arr];
+// `arr` moved as a list of `n` (padded with `fill`): a parallel list (widths, heights, styles) can be shorter than the
+// grid, as after a paste grew it, and splicing past its end moved a width or style onto the wrong column.
+function moveInArray<T>(arr: T[], from: number, to: number, n: number, fill: () => T): T[] {
+  const a = Array.from({ length: Math.max(n, arr.length) }, (_, i) =>
+    i < arr.length ? arr[i]! : fill(),
+  );
   const [x] = a.splice(from, 1);
   a.splice(to, 0, x as T);
   return a;
@@ -178,10 +182,12 @@ function moveInArray<T>(arr: T[], from: number, to: number): T[] {
 export function moveTableColumn(t: TableElement, from: number, to: number): TableElement {
   const cols = tableColCount(t);
   if (from === to || from < 0 || from >= cols || to < 0 || to >= cols) return t;
-  const cells = t.cells.map((row) => moveInArray(row, from, to));
-  const colWidths = t.colWidths ? moveInArray(t.colWidths, from, to) : t.colWidths;
+  const cells = t.cells.map((row) => moveInArray(row, from, to, cols, () => ''));
+  const colWidths = t.colWidths
+    ? moveInArray(t.colWidths, from, to, cols, () => null)
+    : t.colWidths;
   const cellStyles = t.cellStyles
-    ? t.cellStyles.map((row) => moveInArray(row, from, to))
+    ? t.cellStyles.map((row) => moveInArray(row, from, to, cols, () => null))
     : t.cellStyles;
   return { ...t, cells, colWidths, cellStyles };
 }
@@ -189,9 +195,13 @@ export function moveTableColumn(t: TableElement, from: number, to: number): Tabl
 export function moveTableRow(t: TableElement, from: number, to: number): TableElement {
   const rows = t.cells.length;
   if (from === to || from < 0 || from >= rows || to < 0 || to >= rows) return t;
-  const cells = moveInArray(t.cells, from, to);
-  const rowHeights = t.rowHeights ? moveInArray(t.rowHeights, from, to) : t.rowHeights;
-  const cellStyles = t.cellStyles ? moveInArray(t.cellStyles, from, to) : t.cellStyles;
+  const cells = moveInArray(t.cells, from, to, rows, () => []);
+  const rowHeights = t.rowHeights
+    ? moveInArray(t.rowHeights, from, to, rows, () => null)
+    : t.rowHeights;
+  const cellStyles = t.cellStyles
+    ? moveInArray(t.cellStyles, from, to, rows, () => [])
+    : t.cellStyles;
   return { ...t, cells, rowHeights, cellStyles };
 }
 

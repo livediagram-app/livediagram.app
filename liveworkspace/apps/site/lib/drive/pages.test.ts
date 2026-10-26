@@ -50,11 +50,21 @@ describe('where a connect comes back to', () => {
 
   it('is kept against the state issued, once', () => {
     const storage = memory();
-    rememberConsent(storage, 'st1', 'https://liveplanner.app/p');
-    expect(takeConsent(storage, 'other')).toBeNull();
-    rememberConsent(storage, 'st1', 'https://liveplanner.app/p');
-    expect(takeConsent(storage, 'st1')).toBe('https://liveplanner.app/p');
-    expect(takeConsent(storage, 'st1')).toBeNull();
+    const session = () => storage;
+    rememberConsent(session, 'st1', 'https://liveplanner.app/p');
+    expect(takeConsent(session, 'other')).toBeNull();
+    rememberConsent(session, 'st1', 'https://liveplanner.app/p');
+    expect(takeConsent(session, 'st1')).toBe('https://liveplanner.app/p');
+    expect(takeConsent(session, 'st1')).toBeNull();
+  });
+
+  it('carries on when the tab has no storage at all (site data blocked)', () => {
+    // Reading `window.sessionStorage` itself throws then, before any getItem.
+    const blocked = () => {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    };
+    expect(() => rememberConsent(blocked, 'st1', 'https://liveplanner.app/p')).not.toThrow();
+    expect(takeConsent(blocked, 'st1')).toBeNull();
   });
 });
 
@@ -62,7 +72,9 @@ describe('/drive/connected', () => {
   const query = (search: string) => connectedQuery(search);
 
   it('goes back calmly after a cancel at Google, to the page it came from', () => {
-    expect(planConnected(query('?error=access_denied&state=st1'), 'https://liveplanner.app/p', LW)).toEqual({
+    expect(
+      planConnected(query('?error=access_denied&state=st1'), 'https://liveplanner.app/p', LW),
+    ).toEqual({
       kind: 'leave',
       to: 'https://liveplanner.app/p?drive=cancelled',
     });
@@ -84,7 +96,10 @@ describe('/drive/connected', () => {
   });
 
   it('sends a connection back to its return page, saying so', () => {
-    const answer = ok<DriveConnectAnswer>({ outcome: 'connected', returnTo: 'https://liveplanner.app/p?a=1' });
+    const answer = ok<DriveConnectAnswer>({
+      outcome: 'connected',
+      returnTo: 'https://liveplanner.app/p?a=1',
+    });
     expect(connectedView(answer, EXPLORER)).toEqual({
       kind: 'leave',
       to: 'https://liveplanner.app/p?a=1&drive=connected',
@@ -92,19 +107,32 @@ describe('/drive/connected', () => {
   });
 
   it('asks Switch Google Account? for a consent from another account', () => {
-    const answer = ok<DriveConnectAnswer>({ outcome: 'switch_pending', returnTo: `${LW}/x`, until: 5 });
-    expect(connectedView(answer, EXPLORER)).toEqual({ kind: 'switch', returnTo: `${LW}/x`, until: 5 });
+    const answer = ok<DriveConnectAnswer>({
+      outcome: 'switch_pending',
+      returnTo: `${LW}/x`,
+      until: 5,
+    });
+    expect(connectedView(answer, EXPLORER)).toEqual({
+      kind: 'switch',
+      returnTo: `${LW}/x`,
+      until: 5,
+    });
   });
 
   it('says why a connection failed, with the way back', () => {
     expect(
-      connectedView(ok<DriveConnectAnswer>({ outcome: 'no_refresh_token', returnTo: `${LW}/x` }), EXPLORER),
+      connectedView(
+        ok<DriveConnectAnswer>({ outcome: 'no_refresh_token', returnTo: `${LW}/x` }),
+        EXPLORER,
+      ),
     ).toEqual({ kind: 'failed', reason: 'no_refresh_token', returnTo: `${LW}/x` });
     expect(connectedView(refused(400, 'invalid_state'), EXPLORER)).toMatchObject({
       reason: 'invalid_state',
       returnTo: EXPLORER,
     });
-    expect(connectedView(refused(502, 'google_failed'), EXPLORER)).toMatchObject({ reason: 'refused' });
+    expect(connectedView(refused(502, 'google_failed'), EXPLORER)).toMatchObject({
+      reason: 'refused',
+    });
     expect(connectedView(refused(0, 'offline'), EXPLORER)).toMatchObject({ reason: 'offline' });
   });
 
@@ -130,15 +158,26 @@ describe('/drive/open', () => {
 
   it('offers Import as a copy, saying when it is a copy made in Drive', () => {
     expect(
-      openView(ok<DriveOpenAnswer>({ action: 'import', app: 'livediagram', name: 'Flow', reason: 'copy' })),
+      openView(
+        ok<DriveOpenAnswer>({ action: 'import', app: 'livediagram', name: 'Flow', reason: 'copy' }),
+      ),
     ).toEqual({ kind: 'import', app: 'livediagram', name: 'Flow', copy: true });
     expect(
-      openView(ok<DriveOpenAnswer>({ action: 'import', app: 'livediagram', name: 'Flow', reason: 'shared' })),
+      openView(
+        ok<DriveOpenAnswer>({
+          action: 'import',
+          app: 'livediagram',
+          name: 'Flow',
+          reason: 'shared',
+        }),
+      ),
     ).toMatchObject({ copy: false });
   });
 
   it('offers Allow access without a usable connection', () => {
-    expect(openView(ok<DriveOpenAnswer>({ action: 'allow_access' }))).toEqual({ kind: 'allow_access' });
+    expect(openView(ok<DriveOpenAnswer>({ action: 'allow_access' }))).toEqual({
+      kind: 'allow_access',
+    });
     expect(openView(refused(409, 'not_connected'))).toEqual({ kind: 'allow_access' });
     expect(openView(refused(409, 'needs_reconnect'))).toEqual({ kind: 'allow_access' });
   });

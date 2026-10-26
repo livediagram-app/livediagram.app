@@ -70,7 +70,8 @@ Three details it has to get right:
   not yet saved (offline, or inside the debounce) is not on the server, so each
   element changed, added or deleted since the last save, judged against the save
   baseline by content, is applied to the fetched copy, as is each tab field
-  changed here. The next save then sends exactly those edits. A reconnect after
+  changed here, including one cleared here (a look reset's font, an ended vote
+  or timer), which the fetched copy loses too. The next save then sends exactly those edits. A reconnect after
   offline work keeps it.
 - **`lastSavedTabsRef` moves with it.** Otherwise the next autosave tick diffs
   fresh server content against a stale baseline and PUTs the pre-resync tabs

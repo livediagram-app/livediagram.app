@@ -54,6 +54,14 @@ export function sweepEdgelessNodes(elements: Element[], exempt?: Set<string>): E
   const touched = new Set<string>();
   for (const el of elements) {
     if (el.type !== 'arrow') continue;
+    // A loop back to its own node places nothing (the layout drops it), so a node with only that is still loose:
+    // counted, it stayed at the origin, over the first placed node.
+    if (
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      el.from.elementId === el.to.elementId
+    )
+      continue;
     if (el.from.kind === 'pinned') touched.add(el.from.elementId);
     if (el.to.kind === 'pinned') touched.add(el.to.elementId);
   }

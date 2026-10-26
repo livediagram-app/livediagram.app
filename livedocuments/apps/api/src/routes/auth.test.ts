@@ -361,6 +361,26 @@ describe('safeReturnPath', () => {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
   });
+
+  it('refuses control characters and spaces, which the browser drops to leave `//evil.example`', () => {
+    for (const unsafe of [
+      '/\t/evil.example',
+      '/\n/evil.example',
+      '/\r/evil.example',
+      '/ /evil.example',
+      '/\u007f/x',
+    ]) {
+      expect(safeReturnPath(unsafe)).toBe('/explorer/home');
+    }
+  });
+
+  it('sends a rate-limited bounce with a tab in its return path home, never off the site', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await call(`/api/auth/silent?return=${encodeURIComponent('/\t/evil.example')}`, {
+      env: { ...ENV, WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    });
+    expect(res.headers.get('Location')).toBe('/explorer/home');
+  });
 });
 
 describe('readCookie', () => {

@@ -2,6 +2,7 @@
 // moving, ordering, sizing, hiding, freezing, merging and filtering rows and columns, by id. Applying a change
 // never needs a position someone else may have moved: ids that are gone are skipped, an `after` that is gone lands
 // at the end.
+import { mapFormulaRefs } from './formula/stored';
 import { insertIds, layoutIndex, moveIds } from './layout';
 import type {
   CardTable,
@@ -10,6 +11,8 @@ import type {
   IdRange,
   SheetFilter,
   SheetLayout,
+  StoredFormula,
+  StoredRef,
   ValidationRule,
 } from './sheet';
 import { sameName } from './range-names';
@@ -96,6 +99,67 @@ export function shrinkRange(
   const cols = pick(before.cols, range.c1, range.c2, goneCols);
   if (!rows || !cols) return null;
   return { r1: rows[0], r2: rows[1], c1: cols[0], c2: cols[1] };
+}
+
+// A custom formula is written for its range's top-left cell (conditional-formatting.md). When a deletion takes
+// that corner's row or column, the range starts at the next one, so the formula's relative parts on this sheet move
+// with it: each keeps its offset from the corner, counted in the layout after. One the move takes off the grid is
+// #REF!. A corner that survives leaves the formula as it is (its references are by id, as a cell's are).
+function reanchorFormula(
+  fx: StoredFormula,
+  before: SheetLayout,
+  after: SheetLayout,
+  from: IdRange,
+  to: IdRange,
+): StoredFormula {
+  const bi = layoutIndex(before);
+  const ai = layoutIndex(after);
+  const corner = (pos: ReadonlyMap<string, number>, a: string, b: string) =>
+    Math.min(pos.get(a) ?? Infinity, pos.get(b) ?? Infinity);
+  const oldTop = corner(bi.rowPos, from.r1, from.r2);
+  const oldLeft = corner(bi.colPos, from.c1, from.c2);
+  const newTop = corner(ai.rowPos, to.r1, to.r2);
+  const newLeft = corner(ai.colPos, to.c1, to.c2);
+  if (![oldTop, oldLeft, newTop, newLeft].every(Number.isFinite)) return fx;
+  const rowMoved = before.rows[oldTop] !== after.rows[newTop];
+  const colMoved = before.cols[oldLeft] !== after.cols[newLeft];
+  if (!rowMoved && !colMoved) return fx;
+  // `undefined` leaves the part as it is; null is off the grid.
+  const move = (
+    id: string | undefined,
+    absolute: boolean,
+    pos: ReadonlyMap<string, number>,
+    list: readonly string[],
+    oldAt: number,
+    newAt: number,
+  ): string | undefined | null => {
+    if (id === undefined || absolute) return undefined;
+    const at = pos.get(id);
+    if (at === undefined) return undefined;
+    return list[newAt + (at - oldAt)] ?? null;
+  };
+  return mapFormulaRefs(fx, (ref) => {
+    if (ref.s !== undefined || ref.st !== undefined) return ref;
+    const a = ref.a ?? 0;
+    const out: StoredRef = { ...ref };
+    let changed = false;
+    const parts = [
+      ['r1', 1, rowMoved, bi.rowPos, after.rows, oldTop, newTop],
+      ['r2', 4, rowMoved, bi.rowPos, after.rows, oldTop, newTop],
+      ['c1', 2, colMoved, bi.colPos, after.cols, oldLeft, newLeft],
+      ['c2', 8, colMoved, bi.colPos, after.cols, oldLeft, newLeft],
+    ] as const;
+    for (const [key, bit, moved, pos, list, oldAt, newAt] of parts) {
+      if (!moved) continue;
+      const next = move(ref[key], (a & bit) !== 0, pos, list, oldAt, newAt);
+      if (next === null) return null;
+      if (next !== undefined && next !== ref[key]) {
+        out[key] = next;
+        changed = true;
+      }
+    }
+    return changed ? out : ref;
+  });
 }
 
 function dropKeys(map: Record<string, number> | undefined, gone: ReadonlySet<string>) {
@@ -189,7 +253,9 @@ export function applyLayoutChange(layout: SheetLayout, ch: LayoutChange): SheetL
       if (layout.formatRules?.length) {
         const rules = layout.formatRules.flatMap((x): FormatRule[] => {
           const range = shrinkRange(x, layout, goneRows, goneCols);
-          return range ? [{ ...x, ...range }] : [];
+          if (!range) return [];
+          const fx = x.fx && reanchorFormula(x.fx, layout, next, x, range);
+          return [{ ...x, ...range, ...(fx ? { fx } : {}) }];
         });
         next.formatRules = rules.length ? rules : undefined;
       }

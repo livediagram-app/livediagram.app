@@ -130,14 +130,14 @@ export function cardStatusFor(
   return (setup.columns[done + 1] ?? setup.columns[done])!.status;
 }
 
-// Whether a card's status and a record's agree. A board with no column after Done holds Won't Do in Done, so there
-// the two read as one; anything else is a disagreement.
+// Whether a card's status and a record's agree. A card already where the record would put it agrees: a board with
+// no column after Done holds Won't Do in Done, and one whose first column is Done holds open there, so the heal never
+// rewrites the same status on every pass. Anything else is a disagreement.
 function statusAgrees(setup: PlanBoardSetup, card: Item, record: LinkedRecordStatus): boolean {
-  const read = recordStatusOf(setup, itemStatus(card));
+  const current = itemStatus(card);
+  const read = recordStatusOf(setup, current);
   if (read === null || read === record) return true;
-  const done = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
-  const nothingAfterDone = done === setup.columns.length - 1;
-  return nothingAfterDone && read === 'done' && record === 'wont-do';
+  return cardStatusFor(setup, record, current) === current;
 }
 
 const clip = (text: string, max: number) => text.slice(0, max);

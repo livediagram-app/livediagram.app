@@ -171,6 +171,16 @@ describe('deleteLayer', () => {
     expect(ids(out.elements)).toEqual(['safe']);
   });
 
+  it('takes the arrow hung off a cascaded arrow too', () => {
+    const pinned = arrow('ar', { from: { kind: 'pinned', elementId: 'doomed', anchor: 'e' } });
+    const hung = arrow('hung', { to: { kind: 'on-arrow', arrowId: 'ar', t: 0.5 } });
+    const t = tab(
+      [box('doomed', { layerId: 'top' }), box('safe'), pinned, hung],
+      [L(DEFAULT_LAYER_ID), L('top')],
+    );
+    expect(ids(deleteLayer(t, 'top').elements)).toEqual(['safe']);
+  });
+
   it('elements with a missing layerId follow the default layer to deletion', () => {
     const t = tab(
       [box('legacy'), box('kept', { layerId: 'top' })],

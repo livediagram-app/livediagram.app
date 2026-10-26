@@ -89,14 +89,13 @@ function namedColumns(
     if (columns.some((c) => statusKey(c.name) === statusKey(name)))
       return `Two columns are called "${name}".`;
     const named = statusNamed(name, pairs);
-    const id = slugOf(name, 24) || `column-${columns.length + 1}`;
+    const slug = slugOf(name, 24) || `column-${columns.length + 1}`;
+    // The status is made from the unique id: two names that shorten to one slug ("Waiting for customer feedback
+    // A" and "… B", or two in a script the slug drops) would otherwise share a status, and one column be lost.
+    const id = columns.some((c) => c.id === slug) ? `${slug}-${columns.length + 1}` : slug;
     const status =
       named && !columns.some((c) => c.status === named.status) ? named.status : `${id}~${suffix}`;
-    columns.push({
-      id: columns.some((c) => c.id === id) ? `${id}-${columns.length + 1}` : id,
-      status,
-      name,
-    });
+    columns.push({ id, status, name });
   }
   return columns;
 }

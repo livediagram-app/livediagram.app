@@ -80,24 +80,35 @@ export function layoutMindmapGraph(
   if (!root) return [];
   // The tree: breadth first from the root along edges either way.
   const children = new Map<string, string[]>();
+  const childrenOf = (id: string) => children.get(id) ?? children.set(id, []).get(id)!;
   const seen = new Set([root.id]);
-  const queue = [root.id];
   const treeEdges = new Set<string>();
-  while (queue.length) {
-    const at = queue.shift()!;
-    for (const e of graph.edges) {
-      const other = e.from === at ? e.to : e.to === at ? e.from : null;
-      if (!other || seen.has(other) || !byId.has(other)) continue;
-      seen.add(other);
-      queue.push(other);
-      (children.get(at) ?? children.set(at, []).get(at)!).push(other);
-      treeEdges.add(`${e.from}->${e.to}`);
+  const grow = (from: string) => {
+    const queue = [from];
+    while (queue.length) {
+      const at = queue.shift()!;
+      for (const e of graph.edges) {
+        const other = e.from === at ? e.to : e.to === at ? e.from : null;
+        if (!other || seen.has(other) || !byId.has(other)) continue;
+        seen.add(other);
+        queue.push(other);
+        childrenOf(at).push(other);
+        treeEdges.add(`${e.from}->${e.to}`);
+      }
     }
+  };
+  grow(root.id);
+  // A part no edge joins to the root hangs off it by its own first node (one nothing enters, else its first), its own
+  // edges still the tree's: hung node by node, so nothing is lost, its links were drawn dashed across the map.
+  for (const n of [
+    ...graph.nodes.filter((m) => !entered.has(m.id)),
+    ...graph.nodes.filter((m) => entered.has(m.id)),
+  ]) {
+    if (seen.has(n.id)) continue;
+    seen.add(n.id);
+    childrenOf(root.id).push(n.id);
+    grow(n.id);
   }
-  // Nodes no edge reaches hang off the root, so nothing is lost.
-  for (const n of graph.nodes)
-    if (!seen.has(n.id))
-      (children.get(root.id) ?? children.set(root.id, []).get(root.id)!).push(n.id);
 
   const leafSpec = (id: string, hue: (typeof MIND_HUES)[number]): MindSpec => {
     const n = byId.get(id)!;

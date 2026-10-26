@@ -10,6 +10,7 @@ export {
   LIST_DEFAULT_LIMIT,
   LIST_MAX_LIMIT,
   minute,
+  moreLine,
 } from '@liveworkspace/agent-verbs/listing';
 
 type ProjectWithTabs = ResolvedProject & { tabs: TabSummary[] };

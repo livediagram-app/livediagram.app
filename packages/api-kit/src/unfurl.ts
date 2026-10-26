@@ -49,7 +49,9 @@ export function isBlockedHost(hostname: string): boolean {
       if (isBlockedIpv4((hi >> 8) & 0xff, hi & 0xff)) return true;
     }
   }
-  if (h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) return true; // ipv6 ULA / link-local
+  // IPv6 ULA (fc00::/7) and link-local (fe80::/10), on an IPv6 literal only: a domain such as fdic.gov or
+  // fcbarcelona.com starts with the same letters and is public.
+  if (h.includes(':') && /^(f[cd]|fe[89ab])/.test(h)) return true;
   return false;
 }
 

@@ -6,6 +6,7 @@ import { newPlanSheetId, type Element, type Tab } from '@liveplanner/project';
 import {
   MAPPABLE_KINDS,
   QUESTION_TYPE_NAMES,
+  RATING_SCALE_DEFAULT,
   canGoToTitle,
   destinationType,
   formStarter,
@@ -23,6 +24,7 @@ import {
   boardTakesType,
   newCustomFieldId,
   newItemTypeId,
+  ratingScaleOf,
   resolveType,
   type CustomFieldDef,
   type ItemTypeDef,
@@ -269,6 +271,21 @@ export function setGoesTo(d: FormDraft, q: FormQuestion, goesTo: string): FormRe
     return refuse(
       'field_does_not_fit',
       `The ${type.label} field "${field.label}" is ${field.kind}; ${withArticle(QUESTION_TYPE_NAMES[q.type])} answer goes to ${MAPPABLE_KINDS[q.type].join(' or ')} fields. Name another field, or a new name for a new one.`,
+    );
+  // A Rating field keeps a question's rating only on a scale as long (forms.md "Mapping"); a field the type hides
+  // is not on its cards. Either mapping would read as broken and send the answer to the Description.
+  if (field && field.kind === 'rating') {
+    const need = q.scale ?? RATING_SCALE_DEFAULT;
+    if (ratingScaleOf(field) < need)
+      return refuse(
+        'field_does_not_fit',
+        `The ${type.label} field "${field.label}" rates out of ${ratingScaleOf(field)}; "${q.prompt}" rates out of ${need}. Name a Rating field out of ${need} or more, a Number field, or a new name for a new one.`,
+      );
+  }
+  if (field && !type.fields.includes(field.id))
+    return refuse(
+      'field_does_not_fit',
+      `The ${type.label} field "${field.label}" is hidden from the card type: show it again with change_card_types, or name another field.`,
     );
   if (field && q.other && (field.kind === 'choice' || field.kind === 'multichoice'))
     return refuse(

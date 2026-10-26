@@ -76,8 +76,10 @@ only the sweep direction differs).
   round-trip. Mermaid's numeric entity codes (`#124;` is `|`, `#37;` is `%`)
   decode on import. On export a `|` in an edge label is written `#124;`, a
   `%%` is written `#37;#37;` (an unquoted edge label would otherwise read it
-  as a comment), and a `#` that would read as an entity code is written
-  `#35;`, so every label round-trips losslessly.
+  as a comment), a `#` that would read as an entity code is written
+  `#35;`, a backtick `#96;` (a label wrapped in backticks would read back as a
+  markdown string, its marks stripped) and the `<` of a `<br>` typed as text
+  `#60;` (it would read back as a line break), so every label round-trips losslessly.
 - **Subgraphs → frames**: a top-level `subgraph id[Title] … end` block imports
   as a **frame** shape ([Canvas and palette](../008-canvas/canvas-and-palette.md)) drawn around its member nodes, laid out as a
   cluster: members are laid out among themselves, the cluster participates in
@@ -85,6 +87,10 @@ only the sweep direction differs).
   A node belongs to the **first subgraph that mentions it** (matching
   Mermaid), wherever it was first written: `A --> C` above a `subgraph Kitchen` whose block uses `C` still puts
   `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id — the arrow pins to the frame.
+  An empty subgraph draws no frame; an edge to it keeps a box of its own, labelled with the subgraph's title.
+  A subgraph opened again by the same id carries on the first one (one frame, the members of both). A node written
+  out with a subgraph's id (`a[Real node]` beside `subgraph a`) keeps the id, so edges naming it reach the node, and
+  the frame takes a fresh one (`a_subgraph`): neither is lost under the other's element id.
   Nested subgraphs fold into their top-level ancestor (frames import one
   level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
   groups draw one level deep"), rather than dropping the nesting silently. On export, each frame becomes a `subgraph` block containing
@@ -190,7 +196,8 @@ a `sequenceDiagram` and draws it the way the sequence diagram template does.
   inside, with its operator as its label and
   each guard in muted text, operands split by a dashed divider.
 - **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
-  naming the limit.
+  naming the limit. Graph input's `style: "sequence"` is held to the same caps (its nodes the participants, its
+  edges the messages), refused the same way by the MCP and the api's changeset.
 
 ## Layout
 

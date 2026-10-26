@@ -33,8 +33,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
       // appended; otherwise merged, keeping our folder.
-      if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, op.tab];
-      return updateTab(tabs, op.tabId, (tab) => mergeRemoteTab(tab, op.tab));
+      // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
+      // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
+      if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
+      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -78,8 +80,11 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by document-meta
       // (docs/specs/006-document/tab-folders.md).
       return updateTab(tabs, op.tabId, (tab) => {
-        const { folder: _ignored, ...patch } = op.patch;
-        const merged: Tab = { ...tab, ...patch, folder: tab.folder };
+        // Only non-element fields: never the id, elements or writing (META_SKIP), whatever the patch carries.
+        const patch = Object.fromEntries(
+          Object.entries(op.patch ?? {}).filter(([key]) => !META_SKIP.has(key)),
+        );
+        const merged: Tab = { ...tab, ...patch, id: tab.id, folder: tab.folder };
         // Fields the sender removed (docs/specs/012-collaboration/collab-race-hardening.md); never one a patch can't touch.
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];

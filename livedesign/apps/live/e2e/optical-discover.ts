@@ -103,11 +103,18 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     const baseline = rect.top + m.fontBoundingBoxAscent;
     return { baseline, mid: baseline - m.actualBoundingBoxAscent / 2 };
   };
+  // Text that renders: a node under `display: none` (a label a container query hides) has no boxes, and its empty
+  // rect at the viewport's origin once read as content hundreds of pixels off the shape's centre.
+  const rendered = (n: Text) => {
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    return range.getClientRects().length > 0;
+  };
   const textNodes = (root: Element) => {
     const out: Text[] = [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null)
-      if (n.data.trim() && !n.parentElement?.closest('svg')) out.push(n);
+      if (n.data.trim() && !n.parentElement?.closest('svg') && rendered(n)) out.push(n);
     return out;
   };
   // Text a shape owns: not inside a painted shape nested within it (an avatar disc in a card

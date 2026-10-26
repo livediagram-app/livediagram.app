@@ -278,6 +278,10 @@ export async function apply(o: ApplyOptions): Promise<ApplySummary> {
   const summary: ApplySummary = { ran: 0, skipped: 0, edited: [] };
   if (o.env !== 'staging' && o.env !== 'production')
     throw new Error(`--env must be staging or production`);
+  // `--concurrency abc` or 0 would start no workers at all, so the R2 objects and rooms would be skipped while the run
+  // still reported success.
+  if (!Number.isInteger(concurrency) || concurrency < 1)
+    throw new Error('--concurrency must be a whole number, 1 or more');
 
   const targetToken = need(o.vars, TARGET_TOKEN_VAR, o.dryRun);
   const secrets = [targetToken];

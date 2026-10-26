@@ -101,6 +101,19 @@ describe('which tab', () => {
       code: 'not_found',
     });
   });
+
+  it('asks for a tab when the document has none the caller can reach', async () => {
+    const api = fakeApi({
+      ...library,
+      [`/documents/${DOC_A}`]: {
+        document: { id: DOC_A, name: 'Auth flow', tabs: [{ id: ONE, outOfScope: true }] },
+      },
+    });
+    expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({
+      ok: false,
+      code: 'tab_needed',
+    });
+  });
 });
 
 describe('the calls', () => {
@@ -162,9 +175,29 @@ describe('the calls', () => {
     });
     expect(await readArticle(none.api, 'nope', {})).toMatchObject({ ok: false });
   });
+
+  it('passes on the refusal of a document it cannot find, sending nothing', async () => {
+    const { api, sent } = setUp();
+    expect(await changePages(api, 'nope', { changes: [] }, 'cli')).toMatchObject({
+      ok: false,
+      code: 'not_found',
+    });
+    expect(await writeArticle(api, 'nope', { markdown: 'x' }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'not_found',
+    });
+    expect(sent).toEqual([]);
+  });
 });
 
 describe('page ls and page set', () => {
+  it('refuses a tab it cannot read, as the api refuses it', async () => {
+    const { ctx } = setUp({ [ONE]: ARTICLE_TAB });
+    await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, tab: TWO }))).rejects.toThrow(
+      VerbRefusal,
+    );
+  });
+
   it('prints the pages view, fitted when asked', async () => {
     const { ctx } = setUp();
     const out = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }));

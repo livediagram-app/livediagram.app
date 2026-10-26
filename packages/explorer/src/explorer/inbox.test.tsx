@@ -556,6 +556,56 @@ describe('the verbs', () => {
     expect(titles()).toEqual(['Budget']);
   });
 
+  it('shows a reply once, after the thread is read again with it', async () => {
+    const replies: string[] = [];
+    const loadThread = vi.fn(async () => [
+      { id: 'c1', authorName: 'Ada King', text: 'Can we halve it?', at: NOW - DAY },
+      ...replies.map((text, i) => ({ id: `r${i}`, authorName: null, mine: true, text, at: NOW })),
+    ]);
+    const reply = vi.fn(async (_t: InboxTarget, text: string) => {
+      replies.push(text);
+    });
+    const index = createFakeIndex();
+    index.inbox.threads.push(thread());
+    renderInbox(index, { inbox: { actions: host(['reply'], { loadThread, reply }) } });
+    await screen.findByText('Can we halve it?');
+    await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(1));
+    const field = screen.getByRole('textbox', { name: 'Reply' });
+    fireEvent.change(field, { target: { value: 'Halve it.' } });
+    fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
+    await waitFor(() => expect(loadThread).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getAllByText('Halve it.')).toHaveLength(1));
+    // And it stays at one once the read has landed.
+    await act(async () => {});
+    expect(screen.getAllByText('Halve it.')).toHaveLength(1);
+  });
+
+  it('leaves the next row alone when a reply finishes after the choice moved on', async () => {
+    let finish!: () => void;
+    const reply = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const index = createFakeIndex();
+    index.inbox.threads.push(
+      thread({ elementId: 'e1', elementLabel: 'Budget', latestAt: NOW - MIN }),
+      thread({ elementId: 'e2', elementLabel: 'Venue', latestAt: NOW - 2 * MIN }),
+    );
+    renderInbox(index, { inbox: { actions: host(['reply'], { reply }) } });
+    await screen.findAllByRole('option');
+    const field = () => screen.getByRole('textbox', { name: 'Reply' }) as HTMLTextAreaElement;
+    fireEvent.change(field(), { target: { value: 'Halve it.' } });
+    fireEvent.keyDown(field(), { key: 'Enter', metaKey: true });
+    await waitFor(() => expect(reply).toHaveBeenCalledTimes(1));
+    fireEvent.keyDown(listbox(), { key: 'j' });
+    fireEvent.change(field(), { target: { value: 'Half-written' } });
+    await act(async () => finish());
+    expect(field().value).toBe('Half-written');
+    expect(screen.queryByText('Halve it.')).toBeNull();
+  });
+
   it('reads a thread only once the choice settles, once per thread, and keeps it', async () => {
     const loadThread = vi.fn(async (t: InboxTarget) => [
       { id: 'c1', authorName: 'Ada King', text: `First on ${t.elementId}`, at: NOW - DAY },

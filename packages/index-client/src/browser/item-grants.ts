@@ -3,7 +3,8 @@
 // The editor asks for it while the item's code loads, keeps it until a minute before it lapses, and sends it with
 // every request about that item as `X-Index-Grant`, and on the room's upgrade as the ticket.
 //
-// One request per item and link per ten minutes: concurrent callers share the one in flight, and the open item's
+// One request per item and link per ten minutes: concurrent callers share the one in flight (one with a different
+// password asks on its own, and the newer answer stands), and the open item's
 // grant is fetched again a minute before it lapses so a save never waits on it. Each app makes one set with
 // createItemGrants, naming its index client, the window global its boot script leaves an early grant on, and the
 // api path segment its items live under (`/api/<segment>/<id>`).
@@ -60,6 +61,8 @@ type Held = {
   grant: GrantResponse | null;
   // When this answer stops being used: a minute before the grant lapses, or when a refusal is forgotten.
   until: number;
+  // Which request answered it (counting up): an answer to an older request never replaces a newer one's.
+  seq: number;
 };
 
 export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
@@ -72,8 +75,15 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   const refusals = new Map<string, string>();
 
   const keyOf = (itemId: string, share: ItemShare) => `${itemId}|${share?.code ?? ''}`;
+  // Requests in flight are shared per item, link and password: one sent with a password typed meanwhile never joins
+  // one sent without it (or with the wrong one), whose refusal it would otherwise be handed.
+  const flightOf = (key: string, share: ItemShare) => `${key}|${share?.password ?? ''}`;
+  let requests = 0;
 
+  // False when a newer request has already answered for this key (its answer stands).
   const remember = (key: string, value: Held) => {
+    const now = held.get(key);
+    if (now && now.seq > value.seq) return false;
     held.delete(key);
     held.set(key, value);
     while (held.size > GRANTS_HELD_MAX) {
@@ -82,6 +92,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       clearTimeout(renewTimers.get(oldest));
       renewTimers.delete(oldest);
     }
+    return true;
   };
 
   // The grant the page asked for before its code loaded, taken once, for the item and link it was asked for.
@@ -95,11 +106,12 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   };
 
   const fetchGrant = async (itemId: string, share: ItemShare, key: string) => {
+    const seq = ++requests;
     const early = takeEarlyGrant(itemId, share);
     if (early) {
       const grant = await early;
       if (grant) {
-        remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS });
+        remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS, seq });
         return grant;
       }
     }
@@ -107,13 +119,16 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       const grant = await opts
         .client()
         .grant(itemId, share ? { code: share.code, password: share.password ?? null } : null);
-      refusals.delete(key);
-      remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS });
+      if (remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS, seq })) {
+        refusals.delete(key);
+      }
       return grant;
     } catch (err) {
-      if (err instanceof IndexError) {
+      if (
+        err instanceof IndexError &&
+        remember(key, { grant: null, until: Date.now() + GRANT_REFUSAL_MEMORY_MS, seq })
+      ) {
         refusals.set(key, err.code);
-        remember(key, { grant: null, until: Date.now() + GRANT_REFUSAL_MEMORY_MS });
       }
       // A network failure is not remembered: the next request asks again.
       return null;
@@ -127,10 +142,11 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
     const key = keyOf(itemId, share);
     const kept = held.get(key);
     if (!o.fresh && kept && kept.until > Date.now()) return Promise.resolve(kept.grant);
-    let pending = inflight.get(key);
+    const flight = flightOf(key, share);
+    let pending = inflight.get(flight);
     if (!pending) {
-      pending = fetchGrant(itemId, share, key).finally(() => inflight.delete(key));
-      inflight.set(key, pending);
+      pending = fetchGrant(itemId, share, key).finally(() => inflight.delete(flight));
+      inflight.set(flight, pending);
     }
     return pending;
   };
@@ -149,8 +165,13 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
 
   return {
     // A grant the editor already has (the create answers one), kept as if it had been fetched.
-    seed: (itemId, g, share = null) =>
-      remember(keyOf(itemId, share), { grant: g, until: g.expiresAt - GRANT_RENEW_BEFORE_MS }),
+    seed: (itemId, g, share = null) => {
+      remember(keyOf(itemId, share), {
+        grant: g,
+        until: g.expiresAt - GRANT_RENEW_BEFORE_MS,
+        seq: ++requests,
+      });
+    },
     grant,
     // The held grant, synchronously, while it has not lapsed: for the unload flush, which cannot wait.
     held: (itemId, share = null) => {

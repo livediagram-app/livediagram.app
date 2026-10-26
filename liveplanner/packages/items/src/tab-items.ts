@@ -11,17 +11,22 @@ export interface TabItemElement {
   planCard?: { itemId?: unknown };
 }
 
-// `elements` takes any element list: a weak TabItemElement[] would refuse a typed project element union.
+// Whether a tab shows every card: it holds a Plan board, or a plan view (docs/specs/026-plan/plan-views.md "On the
+// canvas"), so a card made from it is one it shows. `elements` takes any element list: a weak TabItemElement[]
+// would refuse a typed project element union.
+export function tabShowsEveryCard(elements: readonly object[]): boolean {
+  return (elements as readonly TabItemElement[]).some(
+    (el) =>
+      (el.shape === 'plan-board' && normaliseBoardSetup(el.planBoard) !== null) ||
+      el.shape === 'plan-view',
+  );
+}
+
 export function itemIdsShownOnTab(elements: readonly object[], items: Iterable<Item>): Set<string> {
   const ids = new Set<string>();
-  let board = false;
-  for (const el of elements as readonly TabItemElement[]) {
+  for (const el of elements as readonly TabItemElement[])
     if (el.shape === 'plan-card' && typeof el.planCard?.itemId === 'string')
       ids.add(el.planCard.itemId);
-    if (el.shape === 'plan-board' && normaliseBoardSetup(el.planBoard)) board = true;
-    // A plan view reads every card (docs/specs/026-plan/plan-views.md "On the canvas").
-    if (el.shape === 'plan-view') board = true;
-  }
-  if (board) for (const it of items) ids.add(it.id);
+  if (tabShowsEveryCard(elements)) for (const it of items) ids.add(it.id);
   return ids;
 }

@@ -41,6 +41,37 @@ export const MAX_SIZE_PX = 20000;
 const clampSizePx = (n: number): number =>
   Math.round(Math.min(MAX_SIZE_PX, Math.max(MIN_SIZE_PX, Number.isFinite(n) ? n : MIN_SIZE_PX)));
 
+// The box a typed size gives `el` (docs/specs/008-canvas/element-size.md): what was typed, clamped to
+// MIN_SIZE_PX…MAX_SIZE_PX. With the aspect lock on and one side typed, both sides scale together, and the clamp
+// limits that one scale so the ratio survives it: clamping each side on its own turned a locked 2:1 box typed
+// 30000 wide into 20000×15000. A ratio too extreme for any scale to fit both sides falls back to clamping each.
+export function typedSize(
+  el: { width: number; height: number; aspectLocked?: boolean },
+  size: { width?: number; height?: number },
+): { width: number; height: number } {
+  const oneSide = (size.width === undefined) !== (size.height === undefined);
+  if (el.aspectLocked === true && oneSide && el.width > 0 && el.height > 0) {
+    const typed = size.width ?? size.height!;
+    let scale = Number.isFinite(typed)
+      ? typed / (size.width !== undefined ? el.width : el.height)
+      : 0;
+    const least = Math.max(MIN_SIZE_PX / el.width, MIN_SIZE_PX / el.height);
+    const most = Math.min(MAX_SIZE_PX / el.width, MAX_SIZE_PX / el.height);
+    if (least <= most) {
+      scale = Math.min(most, Math.max(least, scale));
+      return { width: clampSizePx(el.width * scale), height: clampSizePx(el.height * scale) };
+    }
+  }
+  let width = size.width ?? el.width;
+  let height = size.height ?? el.height;
+  if (el.aspectLocked === true && oneSide) {
+    const ratio = el.height > 0 ? el.width / el.height : 1;
+    if (size.width !== undefined) height = Math.round(width / ratio);
+    else width = Math.round(height * ratio);
+  }
+  return { width: clampSizePx(width), height: clampSizePx(height) };
+}
+
 // The selection-wide setters for shape geometry + styling: kind (morph),
 // aspect-ratio reset, rotation, border weight / pattern / radius, status
 // markers, and the one-click colour / border presets and reset. All resolve
@@ -108,22 +139,7 @@ export function useShapeStyleSetters({
       els.map((el) => {
         // A locked element is never resized (docs/specs/008-canvas/canvas-and-palette.md "Locking").
         if (el.id !== selectedId || !isBoxed(el) || el.locked === true) return el;
-        const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
-        const ratio = el.height > 0 ? el.width / el.height : 1;
-        let width = size.width ?? el.width;
-        let height = size.height ?? el.height;
-        if (locked && ratio > 0) {
-          if (size.width !== undefined && size.height === undefined) {
-            height = Math.round(width / ratio);
-          } else if (size.height !== undefined && size.width === undefined) {
-            width = Math.round(height * ratio);
-          }
-        }
-        return {
-          ...el,
-          width: clampSizePx(width),
-          height: clampSizePx(height),
-        };
+        return { ...el, ...typedSize(el, size) };
       }),
     );
     track('Element', 'Changed', 'Size');

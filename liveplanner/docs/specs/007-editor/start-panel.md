@@ -16,7 +16,8 @@ remains, and it cannot be closed.
 - **Header:** the title, one line under it, the search box, and in the top right corner the **Help** link. On a
   phone the search takes its own row under the title, the help staying beside the title.
 - **Rail:** **Recommended** and the start's groups, each with its glyph and count; long names wrap beside the glyph
-  on a wide rail.
+  on a wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on
+  its own tint fell to 3.6:1 in dark.
 - **Cards:** each choice's picture on a soft plate, its name and its line. Choosing a card acts at once. A template
   lands on the tab painted in the **tab's theme**: the panel picks no theme, so the scaffold takes the colours the tab
   already wears rather than the template's built-in ones. The tab's backdrop is left as it is.

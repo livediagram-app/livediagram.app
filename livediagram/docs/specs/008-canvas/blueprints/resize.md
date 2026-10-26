@@ -53,7 +53,13 @@ delta)` and an edge handle changes its own axis only; constrained, it returns
 unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the resizable members
   (fixed-size members set none); free, `nextBounds(union, mode, dx, dy, false)`. Each member maps
   through `unionResizeMember` around the union anchor; fixed-size members move but keep their size.
-  No snap, `guides: null`.
+  No snap, `guides: null`. The union is of each member's `drawnBounds` (its rotated corners), the
+  same box `deriveCanvasSelection` draws; a rotated member scales about its centre, the centre
+  mapped through the union scale and each own side scaled by `hypot` of the union scale along that
+  side's direction (`width * hypot(sx cos, sy sin)`, `height * hypot(sx sin, sy cos)`).
+- The union handles (`deriveCanvasSelection`): members are the selection's boxed, unlocked
+  elements in z-order; the box is their `drawnBounds` union and the primary the first of them.
+  None (all locked, or arrows only) shows no handles.
 - `unionResizeMember` floors each side at `min(MIN_SIZE, the side at the press)`, so a member that
   began thinner than `MIN_SIZE` is never bumped up.
 - Draw-to-size (`useCanvasDrawGesture.nextDrawDrag`): with `e.shiftKey` the end point becomes the

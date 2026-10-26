@@ -37,6 +37,9 @@ describe('arrays', () => {
     ['=COUNTA(UNIQUE(A1:A4))', 3],
     ['=COUNTA(UNIQUE(A1:A4, FALSE, TRUE))', 2],
     ['=COUNTA(UNIQUE({1,1,2}, TRUE))', 2],
+    // Case counts, as in Google Sheets; a number and the same digits as text are two values.
+    ['=COUNTA(UNIQUE({"Apple";"apple";"Apple"}))', 2],
+    ['=COUNTA(UNIQUE({1;"1"}))', 2],
     ['=SUM(SEQUENCE(4))', 10],
     ['=SUM(SEQUENCE(2, 3, 10, 5))', 135],
     ['=INDEX(SORTBY(A1:A4, B1:B4, -1), 1)', 'a'],

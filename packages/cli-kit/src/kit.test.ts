@@ -98,6 +98,15 @@ describe('config.toml', () => {
     expect(withTelemetry(text, false)).toBe(`telemetry = false\n${text}`);
     expect(() => parseConfig('what', 'config.toml')).toThrow(CliError);
   });
+
+  it('names the line of a string whose escape JSON does not read, rather than throwing a SyntaxError', () => {
+    for (const text of ['[profiles.a]\nhost = "https://x.app/a\\q"', 'default_profile = "a\tb"']) {
+      expect(() => parseConfig(text, 'config.toml'), text).toThrow(CliError);
+    }
+    expect(() => parseConfig('[profiles.a]\nhost = "x\\q"', 'config.toml')).toThrow(
+      'config.toml line 2 does not read',
+    );
+  });
 });
 
 describe('the product names', () => {

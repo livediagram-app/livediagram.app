@@ -261,7 +261,15 @@ describe('GET /api/auth/silent', () => {
   });
 
   it('never goes back off the site', async () => {
-    for (const bad of ['//evil.example', 'https://evil.example', '/\\evil.example', '']) {
+    // A tab, newline or space would be dropped by the browser, leaving `//evil.example`.
+    const dropped = ['/\t/evil.example', '/\n/evil.example', '/\r/evil.example', '/ /evil.example'];
+    for (const bad of [
+      '//evil.example',
+      'https://evil.example',
+      '/\\evil.example',
+      '',
+      ...dropped,
+    ]) {
       const res = await start(`return=${encodeURIComponent(bad)}`, 'lp_silent=1');
       expect(res.headers.get('location')).toBe('/explorer/home');
     }

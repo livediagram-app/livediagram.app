@@ -39,11 +39,11 @@ pull request never queues two runs of the suite.
 It runs **every** spec file in `apps/live/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                   | Runs                                                                    |
-| ------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests |
-| **Sites audit**     | live, help, then marketing               | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`    |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))           |
+| Job                 | Builds                                   | Runs                                                                                                    |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | live, help, then marketing               | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
 Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -72,6 +72,13 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   `ownerHeaders` (its token as the Bearer) for Playwright requests, `adoptGuest` to put it where the
   page keeps it, and `designHeaders` to add the index's grant on a design as `X-Index-Grant`
   (`apps/live/e2e/fixtures.ts`).
+- **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)),
+  and the index holds no item for it, so its grant request answers 404. A spec that needs its new design on the
+  server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
+  `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the
+  placement that makes `/new` create on livedesign whoever is creating. `openStartBlank` and `startBlankDesign` do
+  it for every caller; a spec that means the guest's own create opens `/new` itself. `e2e/server-new.test.ts` holds
+  every spec that seeds through the api to it.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -241,6 +248,7 @@ One spec file per feature, each linking the spec it proves:
 | `contrast-audit.spec.ts`        | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                                        |
 | `optical-audit.spec.ts`         | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
 | `optical-audit-sites.spec.ts`   | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                                             |
+| `marketing-header-fit.spec.ts`  | the marketing header fits a 320, 360, 390 and 430px phone: no sideways scroll, the CTA keeps its 16px gutter (in the `sites` project, which builds marketing)                                                                                                                                                                                                                                 | [Marketing site](../019-marketing/marketing-site.md)                                                          |
 | `optical-clip.spec.ts`          | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)                        |
 | `shape-stroke-inside.spec.ts`   | every shape drawn to its box edge paints no stroke outside it, in pixels                                                                                                                                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                     |
 

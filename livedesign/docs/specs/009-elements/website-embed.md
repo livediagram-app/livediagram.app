@@ -17,7 +17,8 @@ the URL passed through untouched. Three things about where it sits:
 - **Not reached by a malformed link for a provider we DO know.** `vimeo.com/nonsense`
   still returns `null`, because "that isn't a Vimeo video" is a more useful
   answer than silently framing a 404 page. Only hosts we have no opinion about
-  reach the catch-all.
+  reach the catch-all. A YouTube link with no video in it (a channel, a playlist) is
+  refused the same way: YouTube will not be framed, so it would only come up blank.
 - **`http(s)` only**, as for the named providers. A `javascript:` or `data:` URL is refused
   before the catch-all can see it. With a catch-all in place this is the
   property that matters most: it must not become a way in.

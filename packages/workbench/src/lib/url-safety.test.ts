@@ -7,6 +7,12 @@ describe('normaliseUrl (link scheme allowlist)', () => {
     expect(normaliseUrl('  example.com  ')).toBe('https://example.com');
   });
 
+  it('reads a host with a port as a bare host, not a scheme', () => {
+    expect(normaliseUrl('example.com:8080/x')).toBe('https://example.com:8080/x');
+    expect(normaliseUrl('localhost:3000')).toBe('https://localhost:3000');
+    expect(normaliseUrl('example.com:8080?q=1')).toBe('https://example.com:8080?q=1');
+  });
+
   it('keeps http / https / mailto as-is', () => {
     expect(normaliseUrl('http://example.com')).toBe('http://example.com');
     expect(normaliseUrl('https://example.com')).toBe('https://example.com');

@@ -76,7 +76,8 @@ Each action has exactly one linked card, made of the **Action** type:
 - **Status**, card to action: a column before the done column is **open**, the done column is **done**, a column
   after it is **Won't Do**. Action to card: open goes to the board's first column (unless the card is already in an
   open column, where it stays), done to the done column, Won't Do to the first column after Done (or Done, on a board
-  that has no column after it).
+  that has no column after it). A card already where its action would put it agrees with it, so on a board whose
+  first column is Done an open action's card stays in Done and is never rewritten.
 - A card in a status the Actions board does not show (moved there on another board, or in the Trash) does not change
   its action.
 - **The action goes, its card stays**: deleting the action, or the element or tab holding it (an Action panel full of

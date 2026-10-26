@@ -104,7 +104,7 @@ Returns `{ ok: true, fields }` or `{ ok: false, error: ItemRejection, field }`. 
 | --------- | ------------------------------------------------------------------ |
 | text      | string, trimmed, 1..`ITEM_TITLE_MAX` (title); empty title rejected |
 | long text | string ≤ `ITEM_DESCRIPTION_MAX`                                    |
-| status    | string ≤ 40                                                        |
+| status    | string ≤ 40, trimmed, not empty                                    |
 | person    | `{ id ≤ 64, name ≤ 80, color #rrggbb }`                            |
 | priority  | one of `PRIORITIES`                                                |
 | labels    | ≤ `ITEM_LABELS_MAX` strings ≤ 32, de-duplicated                    |

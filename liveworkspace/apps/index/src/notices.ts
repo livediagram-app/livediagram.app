@@ -69,7 +69,8 @@ export async function handleAppPeople(
     return notFound();
   }
   const raw = new URL(request.url).searchParams.get('limit');
-  const limit = raw === null ? OWNED_COUNT_MAX : Number(raw);
+  // `?limit=` left empty is the default, as on every list (codec.ts parseLimit), not Number('') = 0.
+  const limit = raw === null || raw === '' ? OWNED_COUNT_MAX : Number(raw);
   if (!Number.isInteger(limit) || limit < 1 || limit > OWNED_COUNT_MAX)
     return badRequest('invalid_query');
   const row = await env.INDEX_DB.prepare(

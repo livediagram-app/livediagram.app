@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  test,
+  serverNewUrl,
+} from './fixtures';
 
 // docs/specs/008-canvas/corner-radius.md and quick-style-panel.md "Corners": a small rounded square
 // stays a rounded square (corners never past a quarter of its side), and a whiteboard's quick
@@ -30,7 +37,7 @@ async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
   // Wide enough that the fitted board sits clear of the quick style panel.
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

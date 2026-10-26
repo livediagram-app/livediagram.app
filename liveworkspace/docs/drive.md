@@ -78,7 +78,10 @@ The origins are `https://liveworkspace.app` and `https://staging.liveworkspace.a
   draw has none.
 - **`appProperties`:** `lwItemId`, `lwApp`, `lwOrigin` (the liveworkspace origin of the environment) on a file;
   `lwFolderId` and `lwOrigin` on a folder; `lwRoot` on the root. A file maps back to its item after any rename or
-  move, and a file from another environment is recognised as foreign.
+  move, and a file from another environment is recognised as foreign. So is a file the person doesn't own
+  (`ownedByMe` false): tags are only app properties, which anyone holding a token for this client can set on a file
+  of their own and share, so a tagged file shared with the person and opened with liveworkspace is never taken for
+  their root, one of their folders or an item's file. Rows already recorded keep their file whoever owns it.
 
 ## Folders
 
@@ -390,6 +393,8 @@ last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs pa
 - Check now sets the next pass to write every changed item regardless of the per-item interval.
 - An import lands in the person's root (`folderId: null`). An import door that refuses the envelope answers
   `400 invalid_request`. Any other door failure answers `502 google_failed`.
+- Open and import answer `502 google_failed` for any failure they have no named answer for: Google erroring once the
+  client stops retrying, Google's token endpoint down, the index erroring, or a door timing out. Never a bare 500.
 - Marks cover the mirrored rows and failed writes. An item not yet mirrored carries no mark until its first pass.
 - The Durable Object's RPC for consent is `connectGoogle` (`connect` is the runtime's own name).
 - Locally the service runs on port 3011 (`corepack pnpm dev:drive`). The site's dev server and each router's

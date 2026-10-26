@@ -101,6 +101,27 @@ describe('RoomAgentPresence', () => {
     expect(await presence.write(write())).toMatchObject({ ok: true, created: false });
   });
 
+  it('treats an expired entry the alarm has not swept yet as gone', async () => {
+    const { presence, clock } = setup();
+    await presence.write(write({ ttlMs: 100 }));
+    clock.now += 200;
+    const refreshed = await presence.write(write({ mode: 'refresh', ttlMs: 30_000 }));
+    expect(refreshed).toMatchObject({ ok: true, created: true, broadcast: true });
+    expect(presence.live()[0]).toMatchObject({ id: 'ap2', status: null, focus: [] });
+  });
+
+  it('frees a full room’s expired places for a new entry', async () => {
+    const { presence, clock } = setup();
+    for (let i = 0; i < AGENT_PRESENCE_ROOM_MAX; i += 1)
+      await presence.write(write({ tokenId: `tok_x${i}`, ttlMs: 100 }));
+    clock.now += 200;
+    expect(await presence.write(write({ tokenId: 'tok_new' }))).toMatchObject({
+      ok: true,
+      created: true,
+    });
+    expect(presence.live()).toHaveLength(1);
+  });
+
   it('clears one entry, entries by a rule, and sweeps the expired', async () => {
     const { presence, clock, stored } = setup();
     await presence.write(write());

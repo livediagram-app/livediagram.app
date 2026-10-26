@@ -14,6 +14,18 @@ import { ADMIN_HEADER, sameSecret } from './secrets.ts';
 export const AUTH_BASE_PATH = '/api/auth';
 export const SEND_CODE_PATH = '/email-otp/send-verification-otp';
 export const SIGN_IN_CODE_PATH = '/sign-in/email-otp';
+// The email-otp plugin's other routes. Signing in is the only code flow here (no passwords, no email change), and
+// `check-verification-otp` checks a sign-in code without spending it, counting attempts in a read and a separate write,
+// so guesses sent at once all count as one. Off, with the plugin's code flows nothing here uses.
+export const UNUSED_CODE_PATHS = [
+  '/email-otp/check-verification-otp',
+  '/email-otp/verify-email',
+  '/email-otp/request-password-reset',
+  '/forget-password/email-otp',
+  '/email-otp/reset-password',
+  '/email-otp/request-email-change',
+  '/email-otp/change-email',
+] as const;
 
 // Longer names are cut to this on the way in; it keeps a name from swamping the apps' layouts.
 export const NAME_MAX_LENGTH = 80;
@@ -64,8 +76,9 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     secret: config.secret,
     database,
     // The jwt plugin's own /token hands a session JWT to any signed-in browser. Apps get
-    // their tokens from /oauth2/token instead, so this one stays off.
-    disabledPaths: ['/token'],
+    // their tokens from /oauth2/token instead, so this one stays off. So do the code routes
+    // other than sending one and signing in with it (UNUSED_CODE_PATHS).
+    disabledPaths: ['/token', ...UNUSED_CODE_PATHS],
     // The sign-in pages on each app's own address (handoff.ts) post here through the app's router.
     trustedOrigins: config.appOrigins ?? [],
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's

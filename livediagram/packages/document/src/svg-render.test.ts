@@ -335,6 +335,15 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('y1="60"');
     });
 
+    it('breaks a word wider than its cell, as the canvas’s break-words does', () => {
+      const svg = renderElementsToSvg(
+        tab([table({ cells: [['Supercalifragilisticexpialidocious', 'x']], height: 200 })]),
+      );
+      // Drawn whole, the word ran across the next cell.
+      expect(svg).not.toContain('>Supercalifragilisticexpialidocious<');
+      expect(svg).toContain('>Supercal');
+    });
+
     it('tints the header band and honours pinned column widths', () => {
       const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
       // Header band: the opaque tint the canvas paints, over the first row.
@@ -439,6 +448,42 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('return x;');
       expect(svg).toContain('>ts</text>'); // language badge
       expect(svg).toContain('ui-monospace');
+    });
+
+    it('wraps and clips a code block’s emoji whole, never half of one', () => {
+      // 107px wide is 11 columns, and an emoji takes two, as a monospace face draws it: 5 to a line, the odd
+      // column left empty. 25 emoji wrap, and with wrapping off the one line is cut at the card.
+      for (const codeWrap of [undefined, false]) {
+        const svg = renderElementsToSvg(
+          tab([
+            shape('cb', {
+              shape: 'code-block',
+              width: 107,
+              height: 400,
+              code: '🙂'.repeat(25),
+              ...(codeWrap === false ? { codeWrap } : {}),
+            }),
+          ]),
+        );
+        // A lone surrogate is half an emoji.
+        expect(svg, String(codeWrap)).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/);
+        expect(svg, String(codeWrap)).not.toMatch(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
+        expect(svg).toContain('>🙂🙂🙂🙂🙂<');
+        expect(svg).not.toContain('🙂🙂🙂🙂🙂🙂');
+      }
+    });
+
+    it('wraps a code line of wide characters at the card, and plain text at its spaces', () => {
+      const lines = (code: string) =>
+        [
+          ...renderElementsToSvg(
+            tab([shape('cb', { shape: 'code-block', width: 107, height: 400, code })]),
+          ).matchAll(/xml:space="preserve">([^<]*)</g),
+        ].map((m) => m[1]);
+      // CJK characters are wide too.
+      expect(lines('漢字漢字漢字漢字')).toEqual(['漢字漢字漢', '字漢字']);
+      expect(lines('const total = sum')).toEqual(['const total', '= sum']);
+      expect(lines('abcdefghijklmnop')).toEqual(['abcdefghijk', 'lmnop']);
     });
 
     it('renders a checklist as rows with ticked boxes + strike-through (docs/specs/009-elements/checklist.md)', () => {

@@ -12,7 +12,7 @@ never told a change worked when it shows on no board.
 | --------------- | --------------------------------------------------------------------------- |
 | **column name** | What a board's column is called ("In Progress"): what people and agents say |
 | **status**      | The id a column files cards by (`in-progress~k3f2`): what items store       |
-| **the plan**    | A project's boards, their columns and the card types, as agents read them  |
+| **the plan**    | A project's boards, their columns and the card types, as agents read them   |
 | **card type**   | An [item type](item-types.md): the interface's word, used by agents too     |
 
 ## Reading the plan
@@ -53,14 +53,16 @@ Every write takes what a person would say, and stores the ids:
   aside (`statusKey`): "in progress", "In-Progress" and "IN PROGRESS" are one column. A status matches exactly.
 - **A card type** is its id or its name ("Bug", "bug").
 - **A custom field** is its id (`f-severity`) or its name ("Severity") on the item's type; a Choice takes one of
-  its options, by name, case aside.
+  its options, by name, case aside. A Number takes a number (text that reads as one, "5", is read as it) and a Date
+  a date such as 2026-10-14; anything else is `value_invalid`, naming what the field takes.
 - **A built-in field** is its id (`assignee`, `due`) or a name the interface gives it ("Due Date", "Assigned To",
   "Owner"). A name a type's own custom field has wins over a built-in's other name: on a Post type with a custom
   "Owner" field, "Owner" is that field, not the Assignee; elsewhere it is the Assignee. A built-in's id always means
   the built-in.
 - **An assignee** is a person object `{ id, name, color }` or a name. A name matches a person already assigned on
   the project (case aside); otherwise it makes a named person (`n-` and a slug of the name, a Plan swatch chosen
-  from the name), so "Sam" is the same person on every card.
+  from the name; a hash of the name joins the slug when the slug cannot spell it, "Иван", or another person on the
+  project already has that id), so "Sam" is the same person on every card.
 - **Unknown names are refused, never stored**: a status no board names is `status_unknown`, a type the catalogue
   lacks is `type_unknown`, a custom field the type lacks is `field_unknown`, a Choice value not offered is
   `choice_unknown`. Each refusal lists what is there ("Columns: Backlog, In Progress, Review, Done"). A card that

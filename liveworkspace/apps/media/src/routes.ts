@@ -78,7 +78,14 @@ export async function handleApp(
   if (!app) return unauthorized();
   if (!env.MEDIA) return unavailable();
   const bucket = env.MEDIA;
-  const segments = path.split('/').filter(Boolean);
+  // Decoded, as the client encodes them (packages/media client.ts): a guest owner is `guest:<hash>`, sent as
+  // `guest%3A<hash>`, and must match the rows as stored.
+  let segments: string[];
+  try {
+    segments = path.split('/').filter(Boolean).map(decodeURIComponent);
+  } catch {
+    return notFound();
+  }
   const method = request.method;
   const owner = url.searchParams.get('owner');
 

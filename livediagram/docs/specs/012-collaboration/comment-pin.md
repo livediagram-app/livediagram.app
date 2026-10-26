@@ -72,6 +72,9 @@ and right-click opens the ordinary element menu.
   It has no autosave, so its changes go through the comment endpoints, the same way the popover sends them
   (`commentPersisters` in `apps/editor/lib/comment-persistence.ts`, shared by both surfaces); an Editor's ride the room
   and the tab save. Before the two shared it, a Participant's panel comment stayed on its own screen, unsaved.
+  A change the server refuses goes back on screen (`useEditorComments`): a refused resolve or reopen puts the
+  thread back, and a refused comment is taken off again with `[comments] comment not saved`, so nothing reads as
+  posted that nobody else can see.
 - **Export** draws the header (with **Resolved** once resolved) and the newest
   comments as bubbles with their authors (`svg-render-faces.ts`), so the card reads the same in a PNG.
 - **It does not collapse.** A collapse-to-summary was built and then dropped: a

@@ -9,6 +9,12 @@ import { useLayoutEffect, useRef } from 'react';
 export function useFocusReturn(active: boolean, fallback: () => HTMLElement | null): void {
   const opener = useRef<HTMLElement | null>(null);
   const was = useRef(false);
+  // Read when the frame runs, not an effect dependency: a new fallback on the render that brings the chrome back
+  // re-ran the effect, whose cleanup cancelled the pending frame, so focus never came back.
+  const fallbackRef = useRef(fallback);
+  useLayoutEffect(() => {
+    fallbackRef.current = fallback;
+  }, [fallback]);
   useLayoutEffect(() => {
     if (active === was.current) return;
     was.current = active;
@@ -21,9 +27,10 @@ export function useFocusReturn(active: boolean, fallback: () => HTMLElement | nu
     opener.current = null;
     // After the frame that brings the chrome back, so a control hidden while it ran can take focus again.
     const frame = requestAnimationFrame(() => {
-      const target = back?.isConnected && back.getClientRects().length > 0 ? back : fallback();
+      const target =
+        back?.isConnected && back.getClientRects().length > 0 ? back : fallbackRef.current();
       target?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
-  }, [active, fallback]);
+  }, [active]);
 }

@@ -240,8 +240,9 @@ lock falls away through the path that already existed and the room tells nobody
 else anything.
 
 Refusals are silent — a caller without the baton, a target who has already
-left, an unlock aimed at yourself. Answering any of them would tell a peer
-which presence ids are live.
+left, an unlock aimed at yourself, or one from a tab-scoped session aimed at
+someone on another tab ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)).
+Answering any of them would tell a peer which presence ids are live.
 
 ## The wire
 

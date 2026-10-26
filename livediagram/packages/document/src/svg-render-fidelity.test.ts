@@ -162,6 +162,14 @@ describe('wrapLabel', () => {
     expect(lines).toEqual(['smartwa', 'tch']);
   });
 
+  it('never cuts an emoji in half when it breaks a word', () => {
+    // Each emoji is two UTF-16 units; a line holds one and a half of them.
+    const lines = wrapLabel('😀😀😀', 21, (s) => [...s].length * 14, true);
+    expect(lines).toEqual(['😀', '😀', '😀']);
+    // A flag (two code points) and a joined family emoji stay whole too.
+    expect(wrapLabel('🇬🇧👨‍👩‍👧', 10, (s) => [...s].length * 14, true)).toEqual(['🇬🇧', '👨‍👩‍👧']);
+  });
+
   it('keeps an over-long word whole for an icon caption', () => {
     expect(wrapLabel('smartwatch', 50, (s) => s.length * 7)).toEqual(['smartwatch']);
   });

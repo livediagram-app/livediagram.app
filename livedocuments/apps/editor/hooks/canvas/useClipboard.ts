@@ -89,6 +89,8 @@ type ClipboardDeps = {
   // typing puts them on the canvas, not in the note.
   setEditingId: (id: string | null) => void;
   activeTab: Tab;
+  // Elements on a locked layer (docs/specs/006-document/layers.md): a delete leaves them, so a Cut copies none.
+  layerLockedIds?: ReadonlySet<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
@@ -117,6 +119,7 @@ export function useClipboard(deps: ClipboardDeps) {
     editingId,
     setEditingId,
     activeTab,
+    layerLockedIds,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -147,8 +150,9 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  // Copy and Cut both take what is selected.
-  const copySelection = () => {
+  // Copy and Cut both take what is selected; a Cut (`cut: true`) leaves out what its delete leaves (a locked
+  // element, or one on a locked layer), so a paste never doubles what stayed.
+  const copySelection = (opts?: { cut?: boolean }) => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
@@ -158,6 +162,11 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
+    if (opts?.cut === true) {
+      for (const el of activeTab.elements)
+        if (el.locked === true || layerLockedIds?.has(el.id)) idSet.delete(el.id);
+      if (idSet.size === 0) return;
+    }
     // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
     const withCharts = withAttached(activeTab.elements, idSet);
     const snapshot = activeTab.elements
@@ -218,7 +227,9 @@ export function useClipboard(deps: ClipboardDeps) {
     // reproduce what was copied, not the element as it has since
     // been edited (that's what the copy-time deep clone is for).
     const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...copied];
-    const { newElements } = duplicateElements(merged, clipIds, dx, dy);
+    // An uncopied end stays pinned only to what is on this tab, never to a clipboard element that did not land.
+    const onTab = new Set(activeTab.elements.map((el) => el.id));
+    const { newElements } = duplicateElements(merged, clipIds, dx, dy, onTab);
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
     if (newElements.length === 1) {

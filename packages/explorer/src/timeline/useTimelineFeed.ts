@@ -104,10 +104,11 @@ export function useTimelineFeed(
         setCursor(page.nextCursor);
         setLoadingMore(false);
       },
+      // A failed next page leaves what is shown and its cursor, so Show More asks again. `error` is the first
+      // page's alone: set here, it put the panel's whole Timeline behind "could not load" and a retry from page one.
       (e: unknown) => {
         if (isAbort(e)) return;
         setLoadingMore(false);
-        setError(true);
       },
     );
   }, [client, cursor, loadingMore, only]);

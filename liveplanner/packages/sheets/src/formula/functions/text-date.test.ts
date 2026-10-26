@@ -15,6 +15,11 @@ describe('text', () => {
     ['=LEFT(A1)', 'H'],
     ['=RIGHT(A1, 5)', 'World'],
     ['=RIGHT(A1, 0)', ''],
+    // An empty cell reads as 0; only an argument left out takes the default.
+    ['=LEFT(A1, H9)', ''],
+    ['=RIGHT(A1, H9)', ''],
+    ['=LEFT(A1,)', 'H'],
+    ['=RIGHT(A1, 0.5)', ''],
     ['=MID(A1, 7, 3)', 'Wor'],
     ['=LEN(A1)', 11],
     ['=UPPER(A1)', 'HELLO WORLD'],
@@ -56,6 +61,11 @@ describe('text', () => {
     ['=SPLIT("a,b;c", ",;")', 'a'],
     ['=SPLIT("a", "")', 'a'],
     ['=COUNTA(SPLIT("a,,b", ","))', 2],
+    // A part that reads as a number is one, as in Google Sheets; the rest stays text.
+    ['=SUM(SPLIT("3, 4.5,10%", ","))', 7.6],
+    ['=COUNT(SPLIT("1,a,2", ","))', 2],
+    ['=ISTEXT(SPLIT("a,1", ","))', true],
+    ['=COUNTA(SPLIT("1,,2", ",", TRUE, FALSE))', 3],
     ['=COUNTA(SPLIT("a,,b", ",", TRUE, FALSE))', 3],
     ['=COUNTA(SPLIT("a--b", "--", FALSE))', 2],
     ['=SPLIT(",", ",")', ''],
@@ -68,6 +78,8 @@ describe('text', () => {
     ['=RIGHT(A1, -1)', '#VALUE!'],
     ['=MID(A1, 0, 1)', '#VALUE!'],
     ['=SUBSTITUTE(A3, "-", "+", 0)', '#VALUE!'],
+    ['=SUBSTITUTE(A3, "-", "+", H9)', '#VALUE!'],
+    ['=FIND("o", A1, H9)', '#VALUE!'],
     ['=REPLACE(A1, 0, 1, "x")', '#VALUE!'],
     ['=REPLACE(F1, 1, 1, "x")', '#DIV/0!'],
     ['=FIND("z", A1)', '#VALUE!'],
@@ -145,6 +157,15 @@ describe('dates', () => {
     ['=WEEKDAY(A1, 3)', 3],
     ['=WEEKNUM(A1)', 41],
     ['=WEEKNUM(A1, 2)', 41],
+    // Excel's types 11 to 17 and 21 (8 October 2026 is a Thursday).
+    ['=WEEKDAY(A1, 11)', 4],
+    ['=WEEKDAY(A1, 14)', 1],
+    ['=WEEKDAY(A1, 17)', 5],
+    ['=WEEKNUM(DATE(2026,1,4), 11)', 1],
+    ['=WEEKNUM(DATE(2026,1,5), 11)', 2],
+    ['=WEEKNUM(DATE(2026,1,4), 17)', 2],
+    ['=WEEKNUM(DATE(2026,1,2), 15)', 2],
+    ['=WEEKNUM(DATE(2027,1,1), 21)', 53],
     ['=ISOWEEKNUM(A1)', 41],
     ['=ISOWEEKNUM(DATE(2027, 1, 1))', 53],
     ['=ISOWEEKNUM(DATE(2026, 1, 1))', 1],
@@ -187,6 +208,42 @@ describe('dates', () => {
       182 / 366,
       9,
     );
+  });
+  it('reads date and time text in the date functions, as Excel and Google Sheets do', () => {
+    expect(calc('=YEAR("2026-03-01")')).toBe(2026);
+    expect(calc('=MONTH("2026-03-01")')).toBe(3);
+    expect(calc('=DAY("8 October 2026")')).toBe(8);
+    expect(calc('=HOUR("14:30")')).toBe(14);
+    expect(calc('=MINUTE("2026-03-01 14:30")')).toBe(30);
+    expect(calc('=WEEKDAY("2026-10-08")')).toBe(5);
+    expect(calc('=EDATE("2026-01-31", 1)')).toBe(serialFromDate(2026, 2, 28));
+    expect(calc('=EOMONTH("2026-01-15", 0)')).toBe(serialFromDate(2026, 1, 31));
+    expect(calc('=YEAR("soon")')).toMatchObject({ e: '#VALUE!' });
+  });
+  it('wraps TIME past a day exactly', () => {
+    expect(calc('=TIME(25, 0, 0)=TIME(1, 0, 0)')).toBe(true);
+    expect(calc('=TIME(48, 0, 0)')).toBe(0);
+  });
+  it('counts the last day of February as the 30th on basis 0, as Excel does', () => {
+    const y = (a: string, b: string) => calc(`=YEARFRAC(${a}, ${b}, 0)`) as number;
+    expect(y('DATE(2024,2,29)', 'DATE(2025,2,28)')).toBeCloseTo(1, 9);
+    expect(y('DATE(2023,2,28)', 'DATE(2023,3,31)')).toBeCloseTo(31 / 360, 9);
+    expect(y('DATE(2023,2,28)', 'DATE(2023,3,30)')).toBeCloseTo(30 / 360, 9);
+    // Not the last day: no change.
+    expect(y('DATE(2024,2,28)', 'DATE(2024,3,28)')).toBeCloseTo(30 / 360, 9);
+  });
+  it('divides a span of a year or less by 366 only when it takes in a 29 February (basis 1)', () => {
+    const y = (a: string, b: string) => calc(`=YEARFRAC(${a}, ${b}, 1)`) as number;
+    expect(y('DATE(2023,7,1)', 'DATE(2024,6,30)')).toBeCloseTo(365 / 366, 9);
+    expect(y('DATE(2024,7,1)', 'DATE(2025,6,30)')).toBeCloseTo(364 / 365, 9);
+    expect(y('DATE(2025,1,1)', 'DATE(2026,1,1)')).toBeCloseTo(1, 9);
+  });
+  it('keeps EDATE and EOMONTH in range: never a 1900s date for a year before 100', () => {
+    expect(calc('=EDATE(0, -12)')).toMatchObject({ e: '#NUM!' });
+    expect(calc('=EOMONTH(1, -1850 * 12)')).toMatchObject({ e: '#NUM!' });
+    expect(calc('=EDATE(DATE(1900,3,15), -2)') as number).toBe(serialFromDate(1900, 1, 15));
+    expect(serialFromDate(50, 1, 1)).toBeLessThan(0);
+    expect(serialFromDate(1950, 1, 1)).toBe(18264);
   });
   it.each([
     ['=DATE(10000, 1, 1)', '#NUM!'],

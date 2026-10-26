@@ -468,8 +468,9 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
   with `json=1`.
 - **`-q`** prints `quiet(output)`, one ref or id a line; a list's footer goes to stderr.
 - **Lists** stop at `--limit` (default `LIST_DEFAULT_LIMIT`, at most `LIST_MAX_LIMIT`) and end with one stdout line
-  when cut: `… <n> more; --limit <m>, or narrow with <how>`. An empty list prints `no <things>` (with
-  `match "<query>"` when narrowed).
+  when cut: `… <n> more; --limit <m>, or narrow with <how>`. When `<m>` would pass the flag's own maximum, which
+  the flag refuses, it reads `… <n> more; narrow with <how> (--limit goes up to <max>)`. An empty list prints
+  `no <things>` (with `match "<query>"` when narrowed).
 - **Errors** go to stderr in `formatError`'s shape:
 
 ```text

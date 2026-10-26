@@ -3,6 +3,7 @@ import { canonicalJson, type ShapeElement, type Tab } from '@livedocuments/docum
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   pullFileText,
   tabHashes,
@@ -141,5 +142,26 @@ describe('a pull file whose pulledAt is not a time', () => {
       ok: false,
       message: 'not pulled by the CLI (no livedocumentsSync)',
     });
+  });
+});
+
+// What `pull` asks before it would overwrite a file (CLI28): a tab added or dropped, or one hashing other than
+// recorded.
+describe('isLocallyChanged', () => {
+  const same = { t1: { hash: 'h', settingsHash: 's' } };
+
+  it('is unchanged while every tab hashes as recorded', () => {
+    expect(isLocallyChanged(file(), same)).toBe(false);
+  });
+
+  it('is changed by an edited tab, its elements or its settings', () => {
+    expect(isLocallyChanged(file(), { t1: { hash: 'x', settingsHash: 's' } })).toBe(true);
+    expect(isLocallyChanged(file(), { t1: { hash: 'h', settingsHash: 'x' } })).toBe(true);
+  });
+
+  it('is changed by a tab added or dropped', () => {
+    expect(isLocallyChanged(file(), { ...same, t2: { hash: 'h', settingsHash: 's' } })).toBe(true);
+    expect(isLocallyChanged(file(), {})).toBe(true);
+    expect(isLocallyChanged(file(), { t2: { hash: 'h', settingsHash: 's' } })).toBe(true);
   });
 });

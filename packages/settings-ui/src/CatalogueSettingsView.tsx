@@ -230,7 +230,7 @@ function ReadyView({
             }),
           )
         : null,
-    [mode, catalogues],
+    [mode, withShared, catalogues],
   );
 
   // Rebuilt only when what it reads changes, so a search keystroke keeps every row's identity (and the view's memo).

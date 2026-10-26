@@ -1,6 +1,6 @@
 import type { Element, ElementId, Tab } from './index';
 import { bringManyToFront, sendManyToBack } from './layer-order';
-import { arrowReferencesAny } from './arrow-rebind';
+import { withAttachedArrows } from './arrow-rebind';
 import {
   DEFAULT_LAYER_ID,
   DEFAULT_LAYER_NAME,
@@ -169,11 +169,8 @@ function withoutLayerElements(tab: Tab, layerId: string): Element[] {
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
   if (doomed.size === 0) return tab.elements;
-  return tab.elements.filter((el) => {
-    if (doomed.has(el.id)) return false;
-    if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
-    return true;
-  });
+  const gone = withAttachedArrows(tab.elements, doomed);
+  return tab.elements.filter((el) => !gone.has(el.id));
 }
 
 // Merge a layer into its neighbour (docs/specs/006-document/layers.md): every element on `layerId`

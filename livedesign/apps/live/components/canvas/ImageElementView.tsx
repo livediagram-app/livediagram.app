@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { imageCornerPx, type ImageElement } from '@livedesign/design';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -64,6 +64,10 @@ function ImageElementViewImpl({
 }: ImageElementViewProps) {
   const { imageId } = element;
   const state = useImageBlobUrl(ownerId, imageId, { designId, shareCode });
+  // A picture whose bytes arrived but will not decode (a truncated data: URL, a corrupt upload) is unavailable too:
+  // left to the browser it drew its own broken-image glyph on a white box. Keyed to the source, so a new one retries.
+  const [undecodable, setUndecodable] = useState<string | null>(null);
+  const src = state.status === 'ready' ? state.src : null;
 
   // Corner radius follows the element's borderRadius so a circular avatar
   // ('full' → clamped to 50%) and a rounded hero ('lg') clip correctly;
@@ -106,7 +110,7 @@ function ImageElementViewImpl({
     );
   }
 
-  if (state.status === 'broken') {
+  if (state.status === 'broken' || (src !== null && undecodable === src)) {
     const tone = IMAGE_BROKEN_TONE[surface];
     const metrics = imagePlaceholderMetrics(element.width, element.height);
     return (
@@ -170,6 +174,7 @@ function ImageElementViewImpl({
         alt={element.alt ?? ''}
         // Decoded off the main thread, so a picture coming into view never stalls a pan.
         decoding="async"
+        onError={() => setUndecodable(state.src)}
         draggable={false}
         className="block h-full w-full select-none"
         style={{ objectFit: fit }}

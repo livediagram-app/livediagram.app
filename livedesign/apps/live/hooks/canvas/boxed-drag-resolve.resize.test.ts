@@ -126,6 +126,23 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
     const out = resize(pair(), ['a', 'b'], 'resize-se', 250, 0, { shiftHeld: false }).boundsById;
     expect(out.get('a')).toEqual({ x: 0, y: 0, width: 200, height: 50 });
   });
+
+  it('never lets a member stick out of the box through a hard shrink without Shift', () => {
+    for (const mode of ['resize-se', 'resize-nw'] as const) {
+      const sign = mode === 'resize-se' ? -1 : 1;
+      const out = resize(pair(), ['a', 'b'], mode, sign * 1000, sign * 1000, {
+        shiftHeld: false,
+      }).boundsById;
+      const a = out.get('a')!;
+      const b = out.get('b')!;
+      // Still side by side, a member never over another, every one at or above its minimum.
+      expect(a.x + a.width, mode).toBeLessThanOrEqual(b.x + 1e-9);
+      expect(Math.min(a.width, a.height, b.width, b.height)).toBeGreaterThanOrEqual(20 - 1e-9);
+      // The corner opposite the handle stays put.
+      if (mode === 'resize-se') expect([a.x, a.y]).toEqual([0, 0]);
+      else expect(b.x + b.width).toBeCloseTo(250);
+    }
+  });
 });
 
 // A text box that fits or wraps hugs its text through a resize

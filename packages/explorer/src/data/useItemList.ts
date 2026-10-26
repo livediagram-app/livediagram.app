@@ -55,10 +55,12 @@ export function useItemList({
   epoch?: number;
   enabled?: boolean;
 }): ItemListState {
-  const fullKey = `${key}#${epoch}`;
+  const [attempt, setAttempt] = useState(0);
+  // A retry is part of the key, so the failed read stops counting as current and the list shows as loading
+  // again until the new one lands.
+  const fullKey = `${key}#${epoch}@${attempt}`;
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [attempt, setAttempt] = useState(0);
   const loadRef = useRef(load);
   loadRef.current = load;
   const more = useRef<AbortController | null>(null);
@@ -83,7 +85,7 @@ export function useItemList({
         setLoaded({ key: fullKey, items: [], cursor: null, error: true, done: true });
       });
     return () => controller.abort();
-  }, [fullKey, enabled, attempt]);
+  }, [fullKey, enabled]);
 
   useEffect(() => () => more.current?.abort(), []);
 

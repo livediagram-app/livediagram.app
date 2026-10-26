@@ -20,6 +20,15 @@ const NOT_A_DOCUMENT = 'placeholder';
 
 const HOME: WorkspacePlace = { kind: 'explorer', node: { kind: 'home' } };
 
+// A path segment, percent-escapes undone; null for a malformed one (a lone `%`), which names no folder or document.
+function decoded(segment: string): string | null {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
+  }
+}
+
 const withQuery = (path: string, search: URLSearchParams) => {
   const query = search.toString();
   return query ? `${path}?${query}` : path;
@@ -48,8 +57,10 @@ export function explorerRouteOfFrame(
   if (path === WORKSPACE_FRAME_PAGE) return { pathname: '/explorer/home', search };
   if (!path.startsWith(`${WORKSPACE_FRAME_PAGE}/`)) return null;
   if (path.startsWith(FOLDER_ROOT)) {
+    const id = decoded(path.slice(FOLDER_ROOT.length));
+    if (id === null) return { pathname: '/explorer/home', search };
     const folder = new URLSearchParams(search);
-    folder.set('id', decodeURIComponent(path.slice(FOLDER_ROOT.length)));
+    folder.set('id', id);
     return { pathname: '/explorer/folder', search: folder };
   }
   return { pathname: path.slice(FRAME_PREFIX.length), search };
@@ -57,7 +68,7 @@ export function explorerRouteOfFrame(
 
 export function workspacePlaceOf(pathname: string, search: URLSearchParams): WorkspacePlace {
   if (pathname.startsWith(DOCUMENT_ROOT)) {
-    const id = decodeURIComponent(pathname.slice(DOCUMENT_ROOT.length).replace(/\/+$/, ''));
+    const id = decoded(pathname.slice(DOCUMENT_ROOT.length).replace(/\/+$/, ''));
     if (!id || id.includes('/') || id === NOT_A_DOCUMENT) return HOME;
     return {
       kind: 'document',

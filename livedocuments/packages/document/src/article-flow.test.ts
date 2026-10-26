@@ -42,6 +42,13 @@ describe('article writing: reading it', () => {
     expect(runs[0]!.text).toHaveLength(MAX_ARTICLE_BLOCK_TEXT);
   });
 
+  it('caps the text of a block without cutting an emoji in half', () => {
+    const runs = normaliseRuns([{ text: `x${'😀'.repeat(MAX_ARTICLE_BLOCK_TEXT)}` }]);
+    const text = runs[0]!.text;
+    expect(text).toHaveLength(MAX_ARTICLE_BLOCK_TEXT - 1);
+    expect(text.endsWith('😀')).toBe(true);
+  });
+
   it('reads each block type and drops defaults', () => {
     expect(
       parseArticleBlock({ id: 'a', type: 'paragraph', style: 'body', align: 'left', runs: [] }),

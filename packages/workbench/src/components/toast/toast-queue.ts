@@ -1,5 +1,5 @@
 // The toast queue's writes (docs/specs/004-interface-design/toasts.md "Timing"), pure so the provider
-// stays a thin shell around them: dedupe, upsert in place by key, and the four-toast limit.
+// stays a thin shell around them: dedupe, upsert in place by key, and the three-toast limit.
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'error';
 

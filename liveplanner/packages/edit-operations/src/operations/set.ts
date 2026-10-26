@@ -6,7 +6,6 @@ import type { EditRejection } from '@liveplanner/api-schema';
 import type { Element } from '@liveplanner/project';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
-import { layerLockOf } from '../locks';
 import { resolveSome } from '../selectors';
 import { type EditState, refuseLocked, writeFields } from '../state';
 import type { SetOperation } from '../types';
@@ -36,8 +35,8 @@ function setOne(
   const written = writeFieldsOnto(el, fields, operation);
   if ('code' in written) return written;
   if (sameValue(written.next, el)) return null;
-  const layerLock = layerLockOf(state.tab.layers, written.next.layerId);
-  if (layerLock) return refuseLocked(state, 'set', operation, written.next, layerLock);
+  // No field moves an element between layers (plan-elements.ts), so an element on a locked layer was already
+  // refused by its lock above.
   writeFields(state, written.next, operation, written.written);
   return null;
 }

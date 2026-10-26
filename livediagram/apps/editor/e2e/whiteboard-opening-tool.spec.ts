@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  test,
+  serverNewUrl,
+} from './fixtures';
 
 // The tool a whiteboard opens with (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard
 // shows"): an empty board puts the active pen in hand, a board with content opens on Select.
@@ -12,7 +19,7 @@ const marker1 = (page: Page) => dock(page).getByRole('button', { name: /^Marker 
 async function openNewWhiteboard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await dock(page).waitFor();

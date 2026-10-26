@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { columns, day, minute } from './listing';
+import { columns, day, LIST_MAX_LIMIT, minute, moreLine } from './listing';
 
 describe('the list helpers', () => {
   it('print dates in UTC, whatever the machine', () => {
@@ -16,5 +16,14 @@ describe('the list helpers', () => {
       ]),
     ).toEqual(['a    long name  x', 'abc  b          yy']);
     expect(columns([])).toEqual([]);
+  });
+
+  it('offer a --limit that shows the rest only while the flag would take it', () => {
+    expect(moreLine(20, 5, LIST_MAX_LIMIT, 'narrow with a query')).toBe(
+      '… 5 more; --limit 25, or narrow with a query',
+    );
+    expect(moreLine(20, 300, LIST_MAX_LIMIT, 'narrow with a query')).toBe(
+      `… 300 more; narrow with a query (--limit goes up to ${LIST_MAX_LIMIT})`,
+    );
   });
 });

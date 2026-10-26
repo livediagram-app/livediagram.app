@@ -63,3 +63,21 @@ export function claimReloadIn(
 export function claimReload(url: string, storage: Storage, now: number): boolean {
   return claimReloadIn(storage, workbench.reloadGuardKey, url, now, RELOAD_GUARD_WINDOW_MS);
 }
+
+/**
+ * Gives back a claim made at `at` that never reloaded (the chunk recovery found the work still
+ * unsaved), so a later failure on the page can still reload once. A newer claim is left alone.
+ */
+export function releaseReload(url: string, storage: Storage, at: number): void {
+  const page = String(url).split('#')[0] ?? '';
+  try {
+    const parsed: unknown = JSON.parse(storage.getItem(workbench.reloadGuardKey) || '{}');
+    if (typeof parsed !== 'object' || parsed === null) return;
+    const seen = { ...(parsed as Record<string, unknown>) };
+    if (seen[page] !== at) return;
+    delete seen[page];
+    storage.setItem(workbench.reloadGuardKey, JSON.stringify(seen));
+  } catch {
+    // Unreadable storage already refuses every claim.
+  }
+}

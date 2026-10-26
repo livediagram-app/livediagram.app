@@ -39,6 +39,7 @@ import {
   deniedParticipate,
   gateParticipate,
   gateRead,
+  grantOn,
   missingDocument,
   readBody,
   requireOwner,
@@ -286,6 +287,10 @@ async function listThreads(ctx: DocumentRouteContext, id: string): Promise<Respo
       console.warn('[comments] list skipped tab', { documentId: id, tabId, error: String(err) });
     }
   }
+  // A grant confined to a tab with no comments yet still reads that tab: an empty list, as a whole-canvas reader
+  // gets, rather than the refusal a caller with no grant at all gets.
+  const scope = whole || readable ? null : (grantOn(ctx, id)?.tabScope ?? null);
+  if (scope !== null && (await gateRead(ctx, id, doc.ownerId, doc.teamId, scope))) readable = true;
   if (!readable) return deniedOnTab(ctx, doc);
   console.info('[comments] listed', { documentId: id, status, tabsRead, threads: threads.length });
   const body: DocumentCommentsResponse = { threads };

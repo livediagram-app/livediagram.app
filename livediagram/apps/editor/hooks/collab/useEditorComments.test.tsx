@@ -82,6 +82,7 @@ describe('useEditorComments telemetry', () => {
   });
 
   it('does not count a persisted add or delete the server refused', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { result } = setup();
     await act(async () => {
       result.current.addComment('el', 'hi', () => Promise.reject(new Error('403')));
@@ -89,6 +90,23 @@ describe('useEditorComments telemetry', () => {
       await flush();
     });
     expect(trackMock).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('takes back a persisted add the server refused, so it never reads as posted', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = setup();
+    let id = '';
+    await act(async () => {
+      id = result.current.addComment('el', 'hi', () => Promise.reject(new Error('403')));
+      await flush();
+    });
+    expect(applyElementDelta.mock.calls).toMatchObject([
+      ['el', { kind: 'comment-add', comment: { id } }],
+      ['el', { kind: 'comment-remove', commentId: id }],
+    ]);
+    expect(warn).toHaveBeenCalledWith('[comments] comment not saved', { error: 'Error: 403' });
+    warn.mockRestore();
   });
 
   // docs/specs/024-agents/agent-presence.md "Comments": a session that may comment but not edit resolves and

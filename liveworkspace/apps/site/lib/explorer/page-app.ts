@@ -41,9 +41,27 @@ export function appHosts(): Record<string, AppName> {
   return hosts;
 }
 
+// Locally, each app owns a block of a hundred ports from its router's (the root AGENTS.md): its router takes the
+// first, its other apps and its E2E stack the rest (`:3102`, `:3115`). The page on any of them is the app's; read as
+// liveworkspace.app, it asked for a session token no app serves and showed "couldn't reach your account". Only the
+// page's own address is read this way: appOfHost (which vets return addresses) still knows each router's port alone.
+const PORT_BLOCK = 100;
+
+function appOfLocalPort(host: string): AppName | null {
+  const match = /^(?:localhost|127\.0\.0\.1):(\d+)$/.exec(host);
+  if (!match) return null;
+  const block = Math.floor(Number(match[1]) / PORT_BLOCK) * PORT_BLOCK;
+  return APP_NAMES.find((app) => LOCAL_PORTS[APP_ITEMS[app].site] === block) ?? null;
+}
+
 /** The app whose address `host` is (with or without `www.` or `staging.`), or null for liveworkspace's own. */
 export function appOfHost(host: string): AppName | null {
   return appHosts()[bareHost(host)] ?? null;
+}
+
+/** The app whose address a page on `host` is on: appOfHost's, or locally any port in an app's block. */
+export function appOfPageHost(host: string): AppName | null {
+  return appOfHost(host) ?? appOfLocalPort(bareHost(host));
 }
 
 let seen: { host: string; app: AppName | null } | null = null;
@@ -52,7 +70,7 @@ let seen: { host: string; app: AppName | null } | null = null;
 export function pageApp(): AppName | null {
   if (typeof window === 'undefined') return null;
   const host = window.location?.host ?? '';
-  if (!seen || seen.host !== host) seen = { host, app: appOfHost(host) };
+  if (!seen || seen.host !== host) seen = { host, app: appOfPageHost(host) };
   return seen.app;
 }
 

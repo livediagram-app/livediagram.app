@@ -170,7 +170,7 @@ This Browser opens the Sync Document gate instead (`ShareOfflineGate`,
 Every irreversible flow (delete a folder or an image gallery row) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
 
 - **Centre modal** — `../packages/ui/src/dialog/ConfirmDialog.tsx` (the Explorer's too; the editor's copy in `../packages/workbench/src/components/dialogs/ConfirmDialog.tsx` only adds the modal guard), wired in through the `useConfirm` hook (`../packages/workbench/src/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
-- **Anchored popover** — `../packages/ui/src/ConfirmPopover.tsx` (the Explorer's too): a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels and hands focus back to the trigger, Enter confirms, and a press anywhere but the popover, its trigger or a popover opened above it cancels.
+- **Anchored popover** — `../packages/ui/src/ConfirmPopover.tsx` (the Explorer's too): a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels and hands focus back to the trigger, Enter confirms (Enter on a focused button presses that button, so Enter on Cancel cancels), and a press anywhere but the popover, its trigger or a popover opened above it cancels.
 
 We never fall back to `window.confirm()`: the OS-default chrome reads as a non-livedocuments dialog and underplays the consequences.
 
@@ -301,6 +301,10 @@ Outside taps and Escape close it as before. A section's flyout opens in place in
 backdrop closes a dialog, but only when the press began on the backdrop: selecting text and
 releasing the drag past the panel's edge lands the click on the backdrop too, and must never throw
 away what was being edited (`Dialog`).
+
+**Escape closes the dialog on top alone.** A dialog opened over another (a confirm asked from inside
+Settings) takes Escape for itself: the press cancels the confirm and leaves Settings open, as a press
+on the confirm's backdrop does (`Dialog`).
 
 **Working dialogs rise as sheets on a phone.** A dialog you work in rather than answer, where
 the thing being edited sits behind it, opens on a phone as a sheet docked to the

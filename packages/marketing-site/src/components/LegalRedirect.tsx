@@ -17,7 +17,9 @@ export function LegalRedirect({
   lead?: string;
 }) {
   useEffect(() => {
-    window.location.replace(href);
+    // An old deep link's #section comes along (location.replace drops it), unless the new address names its own.
+    const { hash } = window.location;
+    window.location.replace(href.includes('#') || !hash ? href : `${href}${hash}`);
   }, [href]);
 
   return (

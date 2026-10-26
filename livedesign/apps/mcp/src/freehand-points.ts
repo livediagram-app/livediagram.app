@@ -54,8 +54,11 @@ function packed(el: Rec, where: string): Rec | string {
 
 // The elements with every freehand stroke given canvas points packed, or the first that cannot be. Any other
 // element, and a stroke already carrying `packedPoints`, passes through as given.
+// `name` names the element in a refusal when the caller knows it better than its place in `elements` (an op's own
+// element, its target's id): an op's one-element list made every refusal read "element 1".
 export function packFreehandPoints(
   elements: readonly unknown[],
+  name?: string,
 ): { elements: unknown[] } | { error: string } {
   const out: unknown[] = [];
   for (const [i, el] of elements.entries()) {
@@ -63,7 +66,7 @@ export function packFreehandPoints(
       out.push(el);
       continue;
     }
-    const where = typeof el.id === 'string' ? `element "${el.id}"` : `element ${i + 1}`;
+    const where = typeof el.id === 'string' ? `element "${el.id}"` : (name ?? `element ${i + 1}`);
     const made = packed(el, where);
     if (typeof made === 'string') return { error: made };
     out.push(made);

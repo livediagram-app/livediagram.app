@@ -366,10 +366,15 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A whiteboard's keys are its dock's, and only these
       // (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts"): the diagram tab's element and
       // mode keys have no palette to mirror there.
+      // A Participant's palette is the same on every mode, Draw included, its tile keys too (share-roles.md).
       if (live.whiteboard) {
         const action =
           WHITEBOARD_VIEW_KEYS[lower] ??
-          (live.isReadOnly ? undefined : WHITEBOARD_EDIT_KEYS[lower]);
+          (!live.isReadOnly
+            ? WHITEBOARD_EDIT_KEYS[lower]
+            : live.participant && live.canvasTool !== 'avatar'
+              ? PARTICIPANT_KEYS[lower]
+              : undefined);
         if (action) {
           e.preventDefault();
           action(live);

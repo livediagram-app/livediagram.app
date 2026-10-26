@@ -727,6 +727,17 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
     expect((await write(form({ heading: 'Crash Report' }))).status).toBe(200);
   });
 
+  it('frees a form switched on but past its Close On, as the editor does', async () => {
+    await publish();
+    const past = Date.now() - 60_000;
+    expect((await write(form({ closesAt: past }))).status).toBe(200);
+    expect((await write(form({ heading: 'Crash Report', closesAt: past }))).status).toBe(200);
+    expect(stored().name).toBe('Crash Report');
+    // Opening it again while changing more than its settings stays locked.
+    const reopened = await write(form({ heading: 'Bug Report' }));
+    expect(reopened).toMatchObject({ status: 409, body: { error: 'form_locked' } });
+  });
+
   it('refuses a tab that holds no form, and a body that is no form', async () => {
     const other = makeTestRouteContext('POST', '/api/projects/d1/tabs/board/form', {
       env: sql.env,

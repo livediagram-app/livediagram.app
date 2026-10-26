@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import router, { type Env } from './index';
@@ -301,6 +301,23 @@ describe('bare help-article paths', () => {
     const { env, live } = makeEnv();
     await dispatch('/new', env);
     expect(live.urls.length).toBe(1);
+  });
+
+  it("lists exactly the editor's route segments in the spec's live page routes row", async () => {
+    // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
+    // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's).
+    const { LIVE_ROUTE_SEGMENTS } = await import('@livediagram/api-schema');
+    const spec = readFileSync(
+      fileURLToPath(
+        new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
+      ),
+      'utf8',
+    );
+    const row = spec.split('\n').find((line) => line.startsWith('| live page routes:'));
+    expect(row).toBeDefined();
+    const listed = [...row!.matchAll(/`\/([a-z-]+)(?:\/\*)?`/g)].map((m) => m[1]!);
+    const routed = [...LIVE_ROUTE_SEGMENTS].filter((segment) => segment !== 'explorer');
+    expect(listed.filter((s) => s !== 'icon.svg').toSorted()).toEqual(routed.toSorted());
   });
 
   it('covers every help category the registry declares', async () => {

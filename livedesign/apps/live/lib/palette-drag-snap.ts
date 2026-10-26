@@ -66,8 +66,7 @@ export function paletteDragSnapAt({
   const snapped = { ...candidate, x: candidate.x + dx, y: candidate.y + dy };
   const guides = alignmentGuides(snapped, elements, NO_EXCLUDE);
   // Only for the axis distribution actually drove.
-  const distGuides = dist.guides.filter((g) =>
-    g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
-  );
+  // A guide comes back only for an axis distribution snapped, an exact one (zero delta) included.
+  const distGuides = dist.guides.filter((g) => (g.axis === 'x' ? !snap.snappedX : !snap.snappedY));
   return { dx, dy, guides, distGuides };
 }

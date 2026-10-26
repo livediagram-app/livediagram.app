@@ -486,6 +486,17 @@ describe('who may do what', () => {
       })
     ).body.item;
     const task = (await add({ title: 'Task' })).body.item;
+    // From a tab with a board, which shows every card, the link makes cards.
+    expect(
+      (
+        await call({
+          path: '/items?tabId=t1',
+          owner: 'v',
+          code: 'TAB1',
+          body: { type: 'task', fields: { title: 'From the board' } },
+        })
+      ).status,
+    ).toBe(201);
     // A tab with a board shows every item; this one holds only a Plan card for the bug.
     sql.sql.prepare(`UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'`).run(
       JSON.stringify({
@@ -513,6 +524,17 @@ describe('who may do what', () => {
       code: 'TAB1',
     });
     expect(listed.body.items.map((i) => i.id)).toEqual([bug.id]);
+    // Its tab shows no board, so a card it made would land on other tabs' boards: refused.
+    expect(
+      (
+        await call({
+          path: '/items?tabId=t1',
+          owner: 'v',
+          code: 'TAB1',
+          body: { type: 'task', fields: { title: 'Spam' } },
+        })
+      ).status,
+    ).toBe(403);
     expect(
       (await call({ method: 'GET', path: '/items?tabId=t2', owner: 'v', code: 'TAB1' })).status,
     ).toBe(404);

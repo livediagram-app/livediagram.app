@@ -120,6 +120,8 @@ describe('statistics', () => {
     ['=MINIFS(B1:B5, B1:B5, ">100")', 0],
     ['=MEDIAN(B1:B4)', 25],
     ['=MODE(1, 2, 2, 3)', 2],
+    ['=MODE(3, 5, 5, 3)', 3],
+    ['=MODE(1, 4, 4, 9, 9, 1, 1)', 1],
     ['=MIN(B1:B5)', 10],
     ['=MAX(B1:B5)', 50],
     ['=MIN(A4)', 0],
@@ -145,6 +147,16 @@ describe('statistics', () => {
     expect(calc('=STDEV(B1:B5)', DATA) as number).toBeCloseTo(15.8113883, 6);
     expect(calc('=STDEV.P(B1:B5)', DATA) as number).toBeCloseTo(14.1421356, 6);
     expect(calc('=CORREL(A1:A3, B1:B3)', DATA) as number).toBeCloseTo(1, 9);
+    // Text and logicals in the ranges are skipped; an error is the answer.
+    expect(calc('=CORREL(A1:A5, B1:B5)', DATA) as number).toBeCloseTo(1, 9);
+    const withErrors = { ...DATA, C1: '1', C2: '=1/0', C3: '3', D1: '=NA()' };
+    expect(calc('=CORREL(A1:A3, C1:C3)', withErrors)).toMatchObject({ e: '#DIV/0!' });
+    expect(calc('=CORREL(D1:D3, B1:B3)', withErrors)).toMatchObject({ e: '#N/A' });
+  });
+  it('counts TRUE and FALSE typed as arguments, never ones in a range', () => {
+    expect(calc('=COUNT(TRUE, FALSE, 1)')).toBe(3);
+    expect(calc('=COUNT(A5)', DATA)).toBe(0);
+    expect(calc('=COUNT(A1:A5)', DATA)).toBe(3);
   });
   it.each([
     ['=AVERAGE(A4)', '#DIV/0!'],

@@ -88,7 +88,7 @@ Templates whose scaffold stays put while their content moves ship with **pre-ass
 
 - **Image / PDF / SVG export** ([Canvas and palette](../008-canvas/canvas-and-palette.md)'s export dialog) skips hidden layers — render loops _and_ content bounds. The dialog's options panel gains a **"Hidden layers"** include-toggle alongside Isometric and Background pattern, rendered **only when at least one layer is hidden**, default off (what you see is what you export).
 - **Exports stack like the canvas.** Every export (SVG, PNG / PDF, snapshots, thumbnails, the MCP preview) paints each band in the same order the canvas does: frames first, then everything else in array order, **arrows interleaved with boxes**. They used to paint every box and then every arrow on top (the PNG path above every layer at once), so an arrow sent behind a box on the canvas came out over it.
-- **Mermaid export** ([Mermaid import & export](../020-import-export/mermaid.md)) skips hidden layers. Mermaid **import** lands on the active layer via the commit-boundary rule.
+- **Mermaid export** ([Mermaid import & export](../020-import-export/mermaid.md)) skips hidden layers, and so does the **Markdown export** (its elements and its connections, an arrow pinned to a hidden element included). Mermaid **import** lands on the active layer via the commit-boundary rule.
 - Server-rendered SVG snapshots ([Document SVG snapshots](document-snapshots.md) thumbnails / [Live image share link](../013-workspace/live-image-share.md) live image) skip hidden layers too, via the shared renderer.
 
 ## Telemetry

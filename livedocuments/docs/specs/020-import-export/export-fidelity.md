@@ -90,7 +90,9 @@ would be worse than the gap:
 ### Faces export as they look
 
 A box label breaks a word wider than its
-line between characters, as the canvas's `break-words` does; an icon caption keeps the word whole.
+line between characters, as the canvas's `break-words` does, in the SVG and the PNG alike, and so does a
+table cell's text; an icon caption keeps the word whole. A break falls between characters as a reader sees
+them, so an emoji is never cut in half.
 The one small
 known gap is the Callout body's indent, a few pixels off the canvas's.
 

@@ -30,6 +30,15 @@ export function parseDays(value: string | null): number | null {
   return n >= 1 && n <= HISTORY_DAYS ? n : null;
 }
 
+// A stored row that isn't JSON (cut short, hand-edited) is read as no row, never a 500: the next run rewrites it.
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 async function readSnapshot(env: Env, key: Read): Promise<string | null> {
   try {
     const row = await env.STATUS_DB.prepare('SELECT body FROM snapshots WHERE key = ?')
@@ -66,7 +75,8 @@ export async function handleRead(
   const cached = env.ENVIRONMENT !== 'development';
   if (cached) {
     const hit = await caches.default.match(cacheKey);
-    if (hit) return hit;
+    // The entry is a GET's answer; a HEAD gets its headers and status only, never the body.
+    if (hit) return request.method === 'HEAD' ? new Response(null, hit) : hit;
   }
 
   if (env.READ_RATE_LIMITER) {
@@ -79,7 +89,7 @@ export async function handleRead(
   if (read === 'latest') {
     out = body ?? JSON.stringify({ v: 1, at: null, services: {} } satisfies StatusLatest);
   } else {
-    const stored = body ? parseStatusHistory(JSON.parse(body)) : null;
+    const stored = body ? parseStatusHistory(parseJson(body)) : null;
     // The whole window is the stored text as it is; fewer days, or none stored, is built here.
     out =
       body && stored && days === stored.days

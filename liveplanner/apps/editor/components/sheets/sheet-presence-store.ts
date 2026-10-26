@@ -57,8 +57,10 @@ export class SheetPresence {
     this.notify();
   }
 
-  on(sheetId: string): [string, PeerSelection][] {
-    return [...this.peers].filter(([, p]) => p.sheetId === sheetId);
+  // The peers on this sheet of this tab. The tab is checked too: the room confines a tab-scoped session's
+  // presence by the tab it names, so a selection naming another tab's sheet is never drawn there.
+  on(sheetId: string, tabId: string): [string, PeerSelection][] {
+    return [...this.peers].filter(([, p]) => p.sheetId === sheetId && p.tabId === tabId);
   }
 
   // Say this person's selection (null: none), at most every PRESENCE_THROTTLE_MS, the last one always sent.

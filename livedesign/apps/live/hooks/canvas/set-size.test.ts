@@ -1,31 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_SIZE_PX, MIN_SIZE_PX } from './useShapeStyleSetters';
+import { MAX_SIZE_PX, MIN_SIZE_PX, typedSize } from './useShapeStyleSetters';
 
-// The typed-size rule (docs/specs/008-canvas/element-size.md), exercised as the pure function it is. The
-// hook itself needs a React tree and a commit handle; what is worth pinning is
-// the arithmetic, which is where a floorplan gets the wrong wall length.
+// The typed-size rule (docs/specs/008-canvas/element-size.md), exercised as the pure function setSizeSelected
+// calls. What is worth pinning is the arithmetic, which is where a floorplan gets the wrong wall length.
 
 type Box = { width: number; height: number; aspectLocked?: boolean };
 
-const clamp = (n: number): number =>
-  Math.round(Math.min(MAX_SIZE_PX, Math.max(MIN_SIZE_PX, Number.isFinite(n) ? n : MIN_SIZE_PX)));
-
-// Mirrors the body of setSizeSelected's map callback.
-function resize(el: Box, size: { width?: number; height?: number }): Box {
-  const locked = el.aspectLocked === true;
-  const ratio = el.height > 0 ? el.width / el.height : 1;
-  let width = size.width ?? el.width;
-  let height = size.height ?? el.height;
-  if (locked && ratio > 0) {
-    if (size.width !== undefined && size.height === undefined) {
-      height = Math.round(width / ratio);
-    } else if (size.height !== undefined && size.width === undefined) {
-      width = Math.round(height * ratio);
-    }
-  }
-  return { ...el, width: clamp(width), height: clamp(height) };
-}
+const resize = (el: Box, size: { width?: number; height?: number }): Box => ({
+  ...el,
+  ...typedSize(el, size),
+});
 
 describe('typed element size', () => {
   it('sets exactly what was typed', () => {
@@ -73,6 +58,18 @@ describe('typed element size', () => {
     const out = resize({ width: 100, height: 0, aspectLocked: true }, { width: 50 });
     expect(Number.isFinite(out.height)).toBe(true);
     expect(out.height).toBeGreaterThanOrEqual(MIN_SIZE_PX);
+  });
+
+  it('keeps the locked ratio when the typed side is clamped', () => {
+    // A runaway width on a locked 2:1 box stops at the cap with its ratio, not at 20000 x 15000.
+    expect(
+      resize({ width: 200, height: 100, aspectLocked: true }, { width: 30_000 }),
+    ).toMatchObject({ width: MAX_SIZE_PX, height: MAX_SIZE_PX / 2 });
+    // And a tiny one stops where the short side meets the floor, still 4:1.
+    expect(resize({ width: 400, height: 100, aspectLocked: true }, { width: 12 })).toMatchObject({
+      width: 32,
+      height: MIN_SIZE_PX,
+    });
   });
 
   it('rounds to whole pixels', () => {

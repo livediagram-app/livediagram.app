@@ -72,6 +72,8 @@ const SLOT_LABELS: Readonly<Record<string, string>> = {
   HeroBlankIllustration: 'Hero: Blank Illustration',
   HeroBlankPlan: 'Hero: Blank Plan',
   HeroFan: 'Hero: Template Fan',
+  // The wall of template cards round the hero from `xl`: liveplanner's kanban, livedesign's moodboard.
+  HeroBoard: 'Hero: Template Wall',
   Gallery: 'Template Gallery Cards',
   Templates: 'Category Template Cards',
   GalleryDraw: 'Gallery: Blank Canvas Link',

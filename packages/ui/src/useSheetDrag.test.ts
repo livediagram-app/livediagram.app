@@ -52,4 +52,18 @@ describe('useSheetDrag', () => {
     act(() => result.current.handleProps.onPointerUp(press(el, 600, 2500)));
     expect(onDismiss).toHaveBeenCalledOnce();
   });
+
+  it('opens at rest again in a host that stays mounted while closed (Dialog)', () => {
+    const { result, rerender } = renderHook(({ open }) => useSheetDrag(() => {}, open), {
+      initialProps: { open: true },
+    });
+    const el = handle();
+    act(() => result.current.handleProps.onPointerDown(press(el, 500, 0)));
+    act(() => result.current.handleProps.onPointerUp(press(el, 400, 500)));
+    expect(result.current.expanded).toBe(true);
+    rerender({ open: false });
+    rerender({ open: true });
+    expect(result.current.expanded).toBe(false);
+    expect(result.current.style.height).toBeUndefined();
+  });
 });

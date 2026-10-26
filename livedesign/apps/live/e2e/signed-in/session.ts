@@ -46,8 +46,10 @@ export async function installSession(page: Page, user: StubUser | null): Promise
 
 /**
  * A fresh account id. The stack's D1 outlives a test, and an account's synced preferences with it,
- * so a test that flips a setting takes an account nobody else uses.
+ * so a test that flips a setting takes an account nobody else uses. The stack's `/e2e/token` takes
+ * only `user_<letters and digits>`, so anything else in the name (a hyphen) is dropped.
  */
 export function freshUserId(name: string): string {
-  return `user_${name}${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
+  const slug = name.replace(/[^A-Za-z0-9]/g, '');
+  return `user_${slug}${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
 }

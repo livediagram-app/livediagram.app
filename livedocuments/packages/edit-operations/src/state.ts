@@ -191,17 +191,16 @@ export function moveElement(
     touched.shift = [(touched.shift?.[0] ?? 0) + shift[0], (touched.shift?.[1] ?? 0) + shift[1]];
 }
 
-// Adds a new element at a place in the element order: directly after `after`, or before `before`.
+// Adds a new element at a place in the element order: directly after `after`.
 export function insertElement(
   state: EditState,
   el: Element,
   operation: number,
-  at: { after: ElementId } | { before: ElementId },
+  at: { after: ElementId },
 ): void {
   putElement(state, el, operation);
   state.order.splice(state.order.lastIndexOf(el.id), 1);
-  const anchor = state.order.indexOf('after' in at ? at.after : at.before);
-  state.order.splice('after' in at ? anchor + 1 : anchor, 0, el.id);
+  state.order.splice(state.order.indexOf(at.after) + 1, 0, el.id);
   written(state, { added: false });
 }
 

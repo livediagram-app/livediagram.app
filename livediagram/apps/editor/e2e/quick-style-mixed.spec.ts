@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import { penColourHex, WHITEBOARD_INK } from '@livediagram/document';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  test,
+  serverNewUrl,
+} from './fixtures';
 
 // The quick style panel on a mixed whiteboard selection (docs/specs/008-canvas/quick-style-panel.md
 // "Multi-selection"), as a pasted or imported board selects: every row styles what it fits,
@@ -104,7 +111,7 @@ const BOARD = [
 
 async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

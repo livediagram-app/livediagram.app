@@ -106,6 +106,24 @@ describe('a day of the strip', () => {
     );
     expect(stripSummary(h, 'nope')).toBe('No checks stored for the last 5 days yet.');
   });
+
+  it('never calls a slow day an incident in the strip’s words', () => {
+    const slow = {
+      ...h,
+      services: { 'livediagram:api': { p: 100, w: 'us-uu', u: [] } },
+      incidents: [],
+    } as StatusHistory;
+    expect(stripSummary(slow, 'livediagram:api')).toBe(
+      '100% up over 5 days; every day with checks fully up.',
+    );
+    const both = {
+      ...h,
+      services: { 'livediagram:api': { p: 99.17, w: 'ud-us', u: [[1, 958]] } },
+    } as StatusHistory;
+    expect(stripSummary(both, 'livediagram:api')).toBe(
+      '99.17% up over 5 days; 1 day with incidents, the last on 22 October.',
+    );
+  });
 });
 
 describe('formatting', () => {

@@ -80,10 +80,9 @@ export function teamHeadline(details: TeamDetails): string {
 
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  return (
-    ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts.at(-1)?.[0] ?? '') : '')).toUpperCase() ||
-    '?'
-  );
+  // Code points, so a team named "🚀 Launch" shows its rocket, not half of it.
+  const first = (word: string | undefined) => (word ? Array.from(word)[0]! : '');
+  return (first(parts[0]) + (parts.length > 1 ? first(parts.at(-1)) : '')).toUpperCase() || '?';
 }
 
 type Asking =

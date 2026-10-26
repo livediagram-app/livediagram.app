@@ -154,6 +154,20 @@ describe('the Timeline view', () => {
     expect(cards().length).toBe(3);
   });
 
+  it('moves focus into the Filter panel when it opens and back to the button on Escape', async () => {
+    const index = createFakeIndex({ events: mixedApps() });
+    renderTimeline(index, { filter: 'all' });
+    await waitFor(() => expect(cards().length).toBe(3));
+    const button = screen.getByRole('button', { name: 'View and filter timeline' });
+    button.focus();
+    fireEvent.click(button);
+    const panel = screen.getByRole('dialog', { name: 'Timeline filters' });
+    expect(document.activeElement).toBe(panel);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Timeline filters' })).toBeNull();
+    expect(document.activeElement).toBe(button);
+  });
+
   it('opens an item in the Trash at the Trash', async () => {
     const index = createFakeIndex({
       events: [makeEvent(1, { type: 'trashed' }, { trashedAt: Date.now() })],

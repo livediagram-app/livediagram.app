@@ -17,15 +17,23 @@ export function reachContrast(fg: string, bg: string, min: number): string {
   const o = hexOklch(fg);
   const b = hexOklch(bg);
   if (!o || !b) return fg;
+  const walk = (step: number): string => {
+    let l = o.l;
+    let out = fg;
+    for (let i = 0; i < REACH_STEPS; i++) {
+      l = Math.min(1, Math.max(0, l + step));
+      out = oklchHex(l, o.c, o.h);
+      if (contrastRatio(out, bg) >= min || l === 0 || l === 1) break;
+    }
+    return out;
+  };
   const step = b.l >= 0.6 ? -REACH_STEP : REACH_STEP;
-  let l = o.l;
-  let out = fg;
-  for (let i = 0; i < REACH_STEPS; i++) {
-    l = Math.min(1, Math.max(0, l + step));
-    out = oklchHex(l, o.c, o.h);
-    if (contrastRatio(out, bg) >= min || l === 0 || l === 1) break;
-  }
-  return out;
+  const out = walk(step);
+  if (contrastRatio(out, bg) >= min) return out;
+  // A mid-tone backdrop just under the turn (#777777) sent white lighter, where it cannot go, and it stayed at 4.48:1:
+  // walked the other way, it reaches the floor on the far side of the backdrop (black reads 4.69:1 there).
+  const other = walk(-step);
+  return contrastRatio(other, bg) > contrastRatio(out, bg) ? other : out;
 }
 
 /** A label for a filled tile: white on a dark fill, a deep shade of the fill on a light one. When that misses the text

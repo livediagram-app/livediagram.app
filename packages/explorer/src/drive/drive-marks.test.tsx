@@ -1,11 +1,21 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
-import type { DriveConfigAnswer, DriveConnectionAnswer, DriveMarksAnswer } from '@liveworkspace/drive';
+import type {
+  DriveConfigAnswer,
+  DriveConnectionAnswer,
+  DriveMarksAnswer,
+} from '@liveworkspace/drive';
 import { DriveReconnectBanner, withDriveMarks } from './DriveMarks';
 import { DRIVE_MARKS_MIN_GAP_MS, useDriveMarks, type DriveMarksClient } from './useDriveMarks';
 
-const CONFIG: DriveConfigAnswer = { enabled: true, connected: true, clientId: 'c', pickerKey: null, appId: null };
+const CONFIG: DriveConfigAnswer = {
+  enabled: true,
+  connected: true,
+  clientId: 'c',
+  pickerKey: null,
+  appId: null,
+};
 const CONNECTION: DriveConnectionAnswer = {
   connected: true,
   status: 'ok',
@@ -26,7 +36,10 @@ const MARKS: DriveMarksAnswer = {
   ],
 };
 
-function fake(config: Partial<DriveConfigAnswer> = {}, connection: DriveConnectionAnswer = CONNECTION) {
+function fake(
+  config: Partial<DriveConfigAnswer> = {},
+  connection: DriveConnectionAnswer = CONNECTION,
+) {
   return {
     config: vi.fn(async () => ({ ok: true as const, data: { ...CONFIG, ...config } })),
     marks: vi.fn(async () => ({ ok: true as const, data: MARKS })),

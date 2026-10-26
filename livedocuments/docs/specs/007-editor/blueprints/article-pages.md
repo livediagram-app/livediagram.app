@@ -141,7 +141,8 @@ style? }`. Saved with the tab (one row in the document's store, `MAX_TAB_BYTES` 
   - Runs: non-string or empty text dropped; flags kept only when `true`; `sup` and `sub` together
     keep `sup`; `href` kept only through `isSafeArticleHref`; `color` / `hl` only as hex; `note`
     only as an id (`isArticleId`), `nk` only `'action'`. Neighbours of one format merge; text and
-    link addresses together capped at `MAX_ARTICLE_BLOCK_TEXT` over at most `MAX_ARTICLE_RUNS` runs.
+    link addresses together capped at `MAX_ARTICLE_BLOCK_TEXT` over at most `MAX_ARTICLE_RUNS` runs; the
+    cut never falls inside a surrogate pair, so an emoji is kept whole or left out.
   - `level` floored and capped to `ARTICLE_LIST_MAX_LEVEL`; `checked` only on a to-do; zone
     `width` / `height` rounded and clamped to `ARTICLE_ZONE_MIN..MAX`; `at` kept only with an id
     page and finite `x`, `y`; code text sliced to the cap.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplateTabs, validTemplateKinds, type TemplateKind } from '@livedocuments/templates';
-import { elementsIssue } from './element-values';
+import { elementsIssue, tabElementsIssue } from './element-values';
 
 const box = (extra: Record<string, unknown>) => ({
   id: 'b1',
@@ -16,6 +16,12 @@ const box = (extra: Record<string, unknown>) => ({
 describe('elementsIssue', () => {
   it('passes well-formed elements', () => {
     expect(elementsIssue([box({ label: 'A', textSize: 'lg', iconId: 'database' })])).toBeNull();
+  });
+
+  it('names the fields sharing a camelCase key\'s first word ("strokeColour" is near strokeColor)', () => {
+    expect(elementsIssue([box({ strokeColour: '#000' })])).toMatch(
+      /"strokeColour" is not a field of a shape; fields like it: strokeColor, strokeWidth/,
+    );
   });
 
   it('refuses a field the type does not have, naming fields like it', () => {
@@ -49,5 +55,24 @@ describe('elementsIssue', () => {
       const tabs = buildTemplateTabs({ id: 't', name: 'T' }, kind, () => crypto.randomUUID());
       for (const tab of tabs) expect(elementsIssue(tab.elements), kind).toBeNull();
     }
+  });
+});
+
+// create_document names what is wrong with an element, as add_tab and update_document do.
+describe('tabElementsIssue', () => {
+  it('names the element and the field a rule refuses', () => {
+    expect(tabElementsIssue([box({ id: 'svc', label: 42 })])).toBe(
+      'element "svc": "label" must be a string.',
+    );
+  });
+
+  it('names an id given twice', () => {
+    expect(tabElementsIssue([box({ id: 'svc' }), box({ id: 'svc' })])).toBe(
+      'element "svc": the id is used twice; give each element its own.',
+    );
+  });
+
+  it('passes valid elements', () => {
+    expect(tabElementsIssue([box({ id: 'a' }), box({ id: 'b' })])).toBeNull();
   });
 });

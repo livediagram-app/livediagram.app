@@ -1,11 +1,7 @@
 // What liveworkspace's three Drive pages decide (liveworkspace/docs/drive.md "Connecting", "Open with"), pure so every
 // outcome is tested: /drive/connect asks for a consent state and leaves for Google; /drive/connected takes Google's
 // answer to the service and sends the browser back where it came from; /drive/open is Drive's Open with.
-import {
-  withCloudSyncOpen,
-  withDriveOutcome,
-  type DriveResult,
-} from '@liveworkspace/drive/client';
+import { withCloudSyncOpen, withDriveOutcome, type DriveResult } from '@liveworkspace/drive/client';
 import type { DriveConnectAnswer, DriveOpenAnswer } from '@liveworkspace/drive';
 import type { AppName } from '@liveworkspace/sites';
 import { DRIVE_SETTINGS_PARAM } from './client';
@@ -48,18 +44,21 @@ export function safeReturn(
 const CONSENT_KEY = 'liveworkspace:drive-consent';
 
 type SessionLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+// The tab's storage, asked for inside the try: with site data blocked, merely reading `window.sessionStorage` throws.
+type Session = () => SessionLike;
 
-export function rememberConsent(storage: SessionLike, state: string, returnTo: string): void {
+export function rememberConsent(session: Session, state: string, returnTo: string): void {
   try {
-    storage.setItem(CONSENT_KEY, JSON.stringify({ state, returnTo }));
+    session().setItem(CONSENT_KEY, JSON.stringify({ state, returnTo }));
   } catch {
     // A cancel then comes back to the Explorer instead.
   }
 }
 
 /** The remembered return page, once, when the state is the one issued here; null otherwise. */
-export function takeConsent(storage: SessionLike, state: string | null): string | null {
+export function takeConsent(session: Session, state: string | null): string | null {
   try {
+    const storage = session();
     const raw = storage.getItem(CONSENT_KEY);
     storage.removeItem(CONSENT_KEY);
     if (!raw || !state) return null;
@@ -93,7 +92,10 @@ export function planConnected(
 ): ConnectedPlan {
   if (query.error) {
     // A cancel at Google, calmly: back where they started, which says so.
-    return { kind: 'leave', to: withDriveOutcome(remembered ?? defaultReturn(workspaceOrigin), 'cancelled') };
+    return {
+      kind: 'leave',
+      to: withDriveOutcome(remembered ?? defaultReturn(workspaceOrigin), 'cancelled'),
+    };
   }
   if (!query.code || !query.state) return { kind: 'invalid' };
   return { kind: 'redeem', code: query.code, state: query.state };
@@ -103,11 +105,18 @@ export type ConnectedView =
   | { kind: 'leave'; to: string }
   // Another Google account than the one Cloud Sync uses: the Switch Google Account? dialog.
   | { kind: 'switch'; returnTo: string; until: number }
-  | { kind: 'failed'; reason: 'invalid_state' | 'no_refresh_token' | 'refused' | 'offline'; returnTo: string };
+  | {
+      kind: 'failed';
+      reason: 'invalid_state' | 'no_refresh_token' | 'refused' | 'offline';
+      returnTo: string;
+    };
 
 /** What the service's answer to the code means for the page. `fallback` is the return page this tab remembered (or
  *  the Explorer), for an answer that names none. */
-export function connectedView(result: DriveResult<DriveConnectAnswer>, fallback: string): ConnectedView {
+export function connectedView(
+  result: DriveResult<DriveConnectAnswer>,
+  fallback: string,
+): ConnectedView {
   if (!result.ok) {
     return {
       kind: 'failed',
@@ -134,7 +143,12 @@ export function connectedView(result: DriveResult<DriveConnectAnswer>, fallback:
 /** Switch Account or Keep Current Account, answered: done, the pending switch gone (it lasts 30 minutes), or failed. */
 export function switchOutcome(result: DriveResult<unknown>): 'done' | 'expired' | 'failed' {
   if (result.ok) return 'done';
-  if (result.status === 409 || result.status === 410 || result.error === 'not_found' || result.error === 'invalid_state') {
+  if (
+    result.status === 409 ||
+    result.status === 410 ||
+    result.error === 'not_found' ||
+    result.error === 'invalid_state'
+  ) {
     return 'expired';
   }
   return 'failed';
@@ -158,7 +172,8 @@ export type OpenView =
 export function openView(result: DriveResult<DriveOpenAnswer>): OpenView {
   if (!result.ok) {
     // No connection, or one Google no longer honours: connect, and come back to the same file.
-    if (result.error === 'not_connected' || result.error === 'needs_reconnect') return { kind: 'allow_access' };
+    if (result.error === 'not_connected' || result.error === 'needs_reconnect')
+      return { kind: 'allow_access' };
     if (result.error === 'not_found') return { kind: 'not_ours' };
     return { kind: 'failed' };
   }

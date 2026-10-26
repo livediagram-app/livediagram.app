@@ -8,6 +8,7 @@ import {
   settledBox,
   test,
   type Seed,
+  serverNewUrl,
 } from './fixtures';
 
 // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): a synthesised board with
@@ -131,7 +132,7 @@ for (const [scheme, position] of [
     await page.emulateMedia({ colorScheme: scheme });
     await page.setViewportSize({ width: 1280, height: 800 });
     await placeDock(page, position);
-    await page.goto('/new?template=whiteboard');
+    await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
     await seedTab(page, BOARD);

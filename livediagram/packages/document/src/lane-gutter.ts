@@ -74,6 +74,16 @@ export function laneSizeOfElement(el: LaneLike): number {
   );
 }
 
+/**
+ * The heading thickness a lane draws at its own size: `laneSizeOfElement`, held a pixel short of the
+ * lane's span on the strip's axis so a lane shrunk below its heading still shows a body edge. Both
+ * renderers and the seam snap targets read it, so the strip, the export and the snap agree.
+ */
+export function laneDrawnSize(el: LaneLike, width: number, height: number): number {
+  const span = isLaneBand(laneEdgeOfElement(el)) ? height : width;
+  return Math.max(0, Math.min(laneSizeOfElement(el), span - 1));
+}
+
 /** An upright title's strip in element space, and where the title sits along it. */
 export type UprightTitleStrip = {
   x: number;

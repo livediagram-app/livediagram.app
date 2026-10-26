@@ -48,7 +48,10 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
   await expect(avatar.first()).toBeVisible();
   await expect(page.locator('[data-agent-focus-id="api"]')).toBeVisible();
   await avatar.first().hover();
-  await expect(page.getByText(/^Adding the payment flow · Online/)).toBeInViewport();
+  // The avatar's hidden description says the same, so look in the card itself.
+  await expect(
+    page.locator('[data-hint="hover-card"]').getByText(/^Adding the payment flow · Online/),
+  ).toBeInViewport();
   // The card fades in; the screenshot waits for it.
   await page
     .locator('[data-hint="hover-card"]')

@@ -49,7 +49,8 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const body = (await request.json().catch(() => ({}))) as RegisterBody;
+  // `?? {}` too: a body of `null` parses, and reading its fields would answer 500 instead of 400.
+  const body = ((await request.json().catch(() => null)) ?? {}) as RegisterBody;
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   const redirectUris = Array.isArray(body.redirectUris)
     ? body.redirectUris.filter((uri): uri is string => typeof uri === 'string')

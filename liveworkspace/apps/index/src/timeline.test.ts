@@ -152,7 +152,9 @@ describe('Remove from Timeline and the new count', () => {
     // Still on Ada's.
     expect(kinds((await feed(ada.auth)).events)).toContain('created B');
     expect(a.id).toBeTruthy();
-    for (const bad of [{}, { ids: [] }, { ids: [1] }, { ids: Array(101).fill('x') }]) {
+    // The last: a valid list in a body past the index's 512 KiB cap.
+    const oversized = { ids: [b.id], pad: 'x'.repeat(600 * 1024) };
+    for (const bad of [{}, { ids: [] }, { ids: [1] }, { ids: Array(101).fill('x') }, oversized]) {
       const r = await call('/timeline/dismiss', { method: 'POST', auth: cy.auth, body: bad });
       expect(r.status).toBe(400);
     }

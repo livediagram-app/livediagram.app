@@ -149,7 +149,13 @@ export const LOOKUP_FUNCTIONS: Record<string, FnDef> = {
     const key = scalarArg(args[0]!, f);
     if (isError(key)) return key;
     const keys = arrayArg(args[1]!, f);
-    const line = lineOf(keys) ?? { list: column(keys, 0), vertical: true };
+    // A table wider than it is tall is searched along its first row, else down its first column, as in Excel.
+    const d0 = dims(keys);
+    const line =
+      lineOf(keys) ??
+      (d0.cols > d0.rows
+        ? { list: row(keys, 0), vertical: false }
+        : { list: column(keys, 0), vertical: true });
     const i = sortedIndex(line.list, key);
     if (i < 0) return err('#N/A', 'No match was found');
     if (args[2] === undefined || args[2] === null) {

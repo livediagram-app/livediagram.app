@@ -177,6 +177,33 @@ describe('applyRoomOpToTabs', () => {
 // docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
 // instant, then each of their autosaves runs. Everybody must end up with
 // both marks.
+describe('applyRoomOpToTabs: a payload naming another tab', () => {
+  it("keeps the tab's id through a whole-tab op and a tab-meta patch, so a save can't land on another tab", () => {
+    const tabs = [tab(), tab({ id: 't2', name: 'Other', elements: [el('z')] })];
+    const whole = applyRoomOpToTabs(tabs, {
+      kind: 'tab',
+      tabId: 't1',
+      tab: { id: 't2', name: 'Hijack', elements: [el('x')] },
+    });
+    expect(whole.map((t) => t.id)).toEqual(['t1', 't2']);
+    expect(whole[1]).toBe(tabs[1]);
+    const added = applyRoomOpToTabs([tabs[1]!], {
+      kind: 'tab',
+      tabId: 't1',
+      tab: { id: 't2', name: 'New', elements: [] },
+    });
+    expect(added.map((t) => t.id)).toEqual(['t2', 't1']);
+    const meta = applyRoomOpToTabs(tabs, {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { id: 't2', name: 'Renamed', elements: [] } as Partial<Omit<Tab, 'elements'>>,
+    });
+    expect(meta[0]!.id).toBe('t1');
+    expect(meta[0]!.name).toBe('Renamed');
+    expect(meta[0]!.elements).toBe(tabs[0]!.elements);
+  });
+});
+
 describe('two people pressing one done check', () => {
   const check = (): ShapeElement => ({ ...el('card'), shape: 'done-check' }) as ShapeElement;
   const start = (): Tab[] => [tab({ elements: [check()] })];

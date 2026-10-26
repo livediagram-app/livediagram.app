@@ -190,17 +190,21 @@ function createRequestOf(
 }
 
 // A plan the index knows (the caller holds its grant) that nothing has started yet (a copy, or an item made in
-// the Explorer and opened before its content was written) starts on its first read, as its grant's person's.
-// Null when there is no grant to start it with, or the grant is a link visitor's.
+// the Explorer and opened before its content was written) starts on its first read, as the owner the grant names
+// (the index decides the owner, docs/specs/015-api/api.md "Storage"). A grant from before the index named it falls
+// back to its person, unless that person came in through a share link: a visitor, signed in or not, is never
+// recorded as the owner. Null when there is no grant to start it with, or no owner to start it as.
 async function startedProject(ctx: PlanRouteContext, id: string): Promise<ProjectDTO | null> {
   const found = await getProject(ctx.env, id);
   if (found) return found;
   const grant = ctx.grant;
-  if (!grant || grant.item !== id || linkCodeOf(grant.sub)) return null;
+  if (!grant || grant.item !== id) return null;
+  const ownerId = grant.owner ?? (linkCodeOf(grant.sub) || grant.shareCode ? null : grant.sub);
+  if (!ownerId) return null;
   const now = Date.now();
   await initPlan(ctx.env, id, {
     name: 'Untitled',
-    ownerId: grant.sub,
+    ownerId,
     teamId: grant.team,
     source: null,
     opensIn: null,
@@ -210,7 +214,7 @@ async function startedProject(ctx: PlanRouteContext, id: string): Promise<Projec
     createdAt: now,
   });
   console.info('[projects] started on open', { projectId: id });
-  ctx.waitUntil?.(notifyMilestone(ctx.env, grant.sub));
+  if (ownerId === grant.sub) ctx.waitUntil?.(notifyMilestone(ctx.env, ownerId));
   return getProject(ctx.env, id);
 }
 

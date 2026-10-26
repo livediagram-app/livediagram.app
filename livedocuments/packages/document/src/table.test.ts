@@ -82,6 +82,31 @@ describe('columns', () => {
   });
 });
 
+// A paste that grows the table leaves its widths, heights and styles as long as they were; a move after it carries
+// each one with its own column or row.
+describe('moving after a paste grew the table', () => {
+  it('carries a pinned width with its column', () => {
+    const grown = pasteIntoTable({ ...t(), colWidths: [100, null, null] }, 0, 0, [
+      ['a', 'b', 'c', 'd', 'e'],
+    ]);
+    const moved = moveTableColumn(grown, 0, 4);
+    expect(moved.cells[0]).toEqual(['b', 'c', 'd', 'e', 'a']);
+    expect(moved.colWidths?.[4]).toBe(100);
+    expect(moved.colWidths?.slice(0, 4).every((w) => w == null)).toBe(true);
+    // From a column the widths never reached: nothing moves onto the first column.
+    expect(moveTableColumn(grown, 4, 0).colWidths?.[1]).toBe(100);
+  });
+
+  it('carries a row height and a cell style with its row', () => {
+    const styled = setCellStyle({ ...t(), rowHeights: [40, null, null] }, 0, 0, { bold: true });
+    const grown = pasteIntoTable(styled, 3, 0, [['x'], ['y']]);
+    const moved = moveTableRow(grown, 0, 4);
+    expect(moved.rowHeights?.[4]).toBe(40);
+    expect(moved.cellStyles?.[4]?.[0]).toEqual({ bold: true });
+    expect(moved.cellStyles?.[0]?.[0] ?? null).toBeNull();
+  });
+});
+
 describe('normalizeTable', () => {
   it('pads a ragged grid to a rectangle', () => {
     const ragged = { ...t(), cells: [['a'], ['b', 'c', 'd'], []] };

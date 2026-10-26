@@ -8,7 +8,7 @@ import {
   galleryListing,
   type GalleryUpload,
 } from '../images/gallery';
-import { columns } from '../listing';
+import { columns, moreLine } from '../listing';
 import type { AgentProduct } from '../product';
 
 const KIB = 1024;
@@ -66,7 +66,7 @@ export function createImageVerbs({ cli }: Pick<AgentProduct, 'cli'>) {
             ]),
           )
         : ['no images; upload them in the editor']),
-      ...(more > 0 ? [`… ${more} more; --limit ${images.length + more}, or narrow the name`] : []),
+      ...(more > 0 ? [moreLine(images.length, more, IMAGE_LIST_MAX_LIMIT, 'narrow the name')] : []),
     ],
     quiet: ({ images }) => images.map((i) => i.id),
     cli: {

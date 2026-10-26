@@ -295,6 +295,26 @@ describe('Google’s push', () => {
   });
 });
 
+describe('open and import', () => {
+  it('answer 502 google_failed, never a 500, when Google, the index or a door fails unexpectedly', async () => {
+    await h.connect();
+    const object = asObject();
+    const boom = async () => {
+      throw Object.assign(new Error('upstream'), { name: 'DriveApiError', status: 503 });
+    };
+    deps = { ...deps, mirrors: () => ({ ...object, open: boom, importFile: boom }) };
+    for (const route of ['open', 'import']) {
+      const res = await call(`/api/drive/${route}`, {
+        method: 'POST',
+        bearer: await token(PERSON),
+        body: { fileId: 'file_1' },
+      });
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: 'google_failed' });
+    }
+  });
+});
+
 describe('the index’s and accounts’ calls', () => {
   it('takes the index’s signal with its key only', async () => {
     await h.connect();

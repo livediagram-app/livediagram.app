@@ -39,6 +39,8 @@ Behaviour:
   at once is not overruled — that IS the intent.
 - **Clamped to 8…20000px.** A zero or negative box is not a shape, and a stray
   extra digit should not produce a canvas nobody can pan out of.
+  With the lock on, the clamp stops both sides together, so the ratio survives
+  it: a locked 2:1 box typed 30000 wide becomes 20000×10000, not 20000×15000.
 - The boxes **follow the element**: a drag-resize, an undo, or the lock
   carrying the other dimension all update what is shown.
 

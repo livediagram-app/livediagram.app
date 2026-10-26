@@ -51,7 +51,8 @@ result for a click whose obvious meaning is "tell me about this person".
 - The person whose avatar you clicked is highlighted and scrolled into view, so
   the click still reads as "tell me about _them_".
 - The subtitle counts the room: "3 people across 2 tabs", or "Just you so far"
-  when nobody else has joined yet.
+  when nobody else has joined yet. Each person counts once: someone with two tabs
+  side by side is listed under both, and still counts as one person.
 - View-role visitors get the full modal: it mutates nothing, and following is
   already allowed for them ([Follow-me viewport](follow-me-viewport.md)).
 - Available wherever the presence stack is, which is only a shared or team

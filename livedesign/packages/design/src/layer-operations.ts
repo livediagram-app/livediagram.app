@@ -1,9 +1,10 @@
 import type { Element, ElementId, Tab } from './index';
 import { bringManyToFront, sendManyToBack } from './layer-order';
-import { arrowReferencesAny } from './arrow-rebind';
+import { withAttachedArrows } from './arrow-rebind';
 import {
   DEFAULT_LAYER_ID,
   DEFAULT_LAYER_NAME,
+  isLayerLocked,
   isLayerVisible,
   layerElementCounts,
   resolveLayerId,
@@ -169,11 +170,8 @@ function withoutLayerElements(tab: Tab, layerId: string): Element[] {
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
   if (doomed.size === 0) return tab.elements;
-  return tab.elements.filter((el) => {
-    if (doomed.has(el.id)) return false;
-    if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
-    return true;
-  });
+  const gone = withAttachedArrows(tab.elements, doomed);
+  return tab.elements.filter((el) => !gone.has(el.id));
 }
 
 // Merge a layer into its neighbour (docs/specs/006-design/layers.md): every element on `layerId`
@@ -239,7 +237,12 @@ function layerEdgeMove(tab: Tab, ids: ReadonlySet<ElementId>, edge: 'front' | 'b
   let ls = t.layers!;
   const edgeLayer = edge === 'front' ? ls[ls.length - 1]! : ls[0]!;
   const edgeBand = t.elements.filter((el) => resolveLayerId(el.layerId, ls) === edgeLayer.id);
-  const edgeIsForeign = edgeBand.some((el) => !selected.has(el.id));
+  // A hidden or locked edge layer is never a target, like the active layer's fallback: the selection would
+  // vanish or freeze. A fresh layer goes beyond it instead.
+  const edgeIsForeign =
+    edgeBand.some((el) => !selected.has(el.id)) ||
+    !isLayerVisible(edgeLayer) ||
+    isLayerLocked(edgeLayer);
   const allOnEdge = t.elements.every(
     (el) => !selected.has(el.id) || resolveLayerId(el.layerId, ls) === edgeLayer.id,
   );
@@ -256,10 +259,16 @@ function layerEdgeMove(tab: Tab, ids: ReadonlySet<ElementId>, edge: 'front' | 'b
   }
 
   // Re-stamp the selection, then splice it to the array edge so it also
-  // tops (resp. bottoms) its new band.
-  const restamped = t.elements.map((el) =>
-    selected.has(el.id) && el.layerId !== targetId ? { ...el, layerId: targetId } : el,
-  );
+  // tops (resp. bottoms) its new band. An element with no known layer, on a tab whose default layer is
+  // gone, belongs to the bottom layer: it is pinned there first, or a fresh bottom layer would take it too.
+  const orphansMove =
+    edge === 'back' && edgeIsForeign && !ls.some((l) => l.id === DEFAULT_LAYER_ID);
+  const restamped = t.elements.map((el) => {
+    if (selected.has(el.id)) return el.layerId !== targetId ? { ...el, layerId: targetId } : el;
+    if (orphansMove && !t.layers!.some((l) => l.id === el.layerId))
+      return { ...el, layerId: edgeLayer.id };
+    return el;
+  });
   const elements =
     edge === 'front' ? bringManyToFront(restamped, selected) : sendManyToBack(restamped, selected);
 

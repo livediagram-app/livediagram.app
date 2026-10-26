@@ -14,6 +14,20 @@ export const metadata: Metadata = {
   description:
     'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
   alternates: { canonical: '/terms' },
+  openGraph: {
+    title: 'Terms of Use · liveworkspace',
+    description:
+      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
+    url: '/terms',
+    siteName: 'liveworkspace',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Terms of Use · liveworkspace',
+    description:
+      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
+  },
 };
 
 const GiftIcon = lucideGlyph(lucideGift, 20);

@@ -3001,6 +3001,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editingId,
     setEditingId,
     activeTab,
+    layerLockedIds,
     commit,
     setSelectedId,
     setMultiSelectedIds,

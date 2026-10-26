@@ -11,7 +11,7 @@ import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
 import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
-import { pushAppEvents, pushPersonEvents } from './timeline';
+import { FUTURE_SLACK_MS, pushAppEvents, pushPersonEvents } from './timeline';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -81,14 +81,16 @@ export async function handleApp(
     const text = JSON.stringify(summary);
     if (new TextEncoder().encode(text).length > SUMMARY_MAX_BYTES)
       return badRequest('invalid_summary');
-    // A push that arrives late never moves updatedAt back.
+    // A push that arrives late never moves updatedAt back, so one from a clock running fast is taken as now: past
+    // it, no later push could bring the item down from the top of every list.
+    const updatedAt = Math.min(Math.floor(body.updatedAt), Date.now() + FUTURE_SLACK_MS);
     await env.INDEX_DB.prepare(
       'UPDATE items SET summary = ?, updated_at = MAX(updated_at, ?) WHERE id = ?',
     )
-      .bind(text, Math.floor(body.updatedAt), itemId)
+      .bind(text, updatedAt, itemId)
       .run();
     // A content save: the Drive mirror rewrites a personal item's file when its updatedAt moved on.
-    if (item.team_id === null && Math.floor(body.updatedAt) > item.updated_at && env.DRIVE) {
+    if (item.team_id === null && updatedAt > item.updated_at && env.DRIVE) {
       waitUntil(sendDriveSignals(env, [item.owner_id]));
     }
     return noContent();

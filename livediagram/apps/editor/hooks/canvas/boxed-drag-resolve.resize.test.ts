@@ -128,6 +128,30 @@ describe('resolveBoxedResize, a multi-selection with Shift', () => {
   });
 });
 
+describe('resolveBoxedResize, a multi-selection with a rotated member', () => {
+  // `b` is turned a quarter: 100 wide and 50 tall in its own frame, so it reads 50 wide and 100
+  // tall, drawn over x 225..275, y -25..75.
+  const pair = () => [box('a', 0, 0, 100, 50), box('b', 200, 0, 100, 50, { rotation: 90 })];
+
+  it('stands the union on the member as drawn', () => {
+    // Free, the far corner tracks the pointer: the union (0, -25, 275 x 100) doubles in width.
+    const out = resize(pair(), ['a', 'b'], 'resize-se', 275, 0, { shiftHeld: false }).boundsById;
+    const a = out.get('a')!;
+    expect(a).toEqual({ x: 0, y: 0, width: 200, height: 50 });
+  });
+
+  it('stretches a turned member along the axis the drag stretches on screen', () => {
+    const out = resize(pair(), ['a', 'b'], 'resize-se', 275, 0, { shiftHeld: false }).boundsById;
+    const b = out.get('b')!;
+    // Its own height reads horizontally, so a horizontal stretch doubles it; its width (vertical
+    // on screen) stays. It turns about its centre, which the union scale carries to (500, 25).
+    expect(b.width).toBeCloseTo(100);
+    expect(b.height).toBeCloseTo(100);
+    expect(b.x + b.width / 2).toBeCloseTo(500);
+    expect(b.y + b.height / 2).toBeCloseTo(25);
+  });
+});
+
 // A text box that fits or wraps hugs its text through a resize (docs/specs/023-draw-mode/
 // draw-mode.md "Text boxes"), in either editor mode: the frame's bounds set the width, the height
 // is the text's, and Shift scales the text instead.

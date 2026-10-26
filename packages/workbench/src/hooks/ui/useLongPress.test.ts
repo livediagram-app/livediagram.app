@@ -52,4 +52,18 @@ describe('useLongPress', () => {
     expect(fired).toHaveBeenCalledTimes(1);
     expect(fired).toHaveBeenCalledWith(50, 50);
   });
+
+  it('takes its window listeners off when unmounted mid-hold', () => {
+    const { fired, hook } = setup();
+    const off = vi.spyOn(window, 'removeEventListener');
+    act(() => hook.result.current.onPointerDown(press(10, 10)));
+    hook.unmount();
+    expect(off.mock.calls.map(([type]) => type).sort()).toEqual([
+      'pointercancel',
+      'pointermove',
+      'pointerup',
+    ]);
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+    expect(fired).not.toHaveBeenCalled();
+  });
 });

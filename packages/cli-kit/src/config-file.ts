@@ -34,7 +34,13 @@ export function parseConfig(text: string, path: string): ConfigFile {
     const pair = /^([a-z_]+)\s*=\s*(.+)$/.exec(line);
     if (!pair || !VALUE.test(pair[2]!)) throw fail();
     const [, key, rawValue] = pair;
-    const value: unknown = JSON.parse(rawValue!);
+    // The pattern lets any backslash escape (or a raw tab) through; one JSON does not read is the same usage error.
+    let value: unknown;
+    try {
+      value = JSON.parse(rawValue!);
+    } catch {
+      throw fail();
+    }
     if (table !== null) {
       if (key === 'host' && typeof value === 'string') config.profiles[table]!.host = value;
       return;
