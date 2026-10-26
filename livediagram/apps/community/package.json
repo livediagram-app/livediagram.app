@@ -18,7 +18,7 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:*",
-    "next": "^16.4.1",
+    "next": "^16.4.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

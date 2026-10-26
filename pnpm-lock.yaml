@@ -34,10 +34,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.9
         version: 3.9.10
@@ -64,10 +64,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.9
         version: 3.9.10
@@ -161,7 +161,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       ts-json-schema-generator:
         specifier: ^2.9.0
         version: 2.9.0
@@ -222,7 +222,7 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -254,11 +254,11 @@ importers:
         specifier: ^3.1.0
         version: 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@next/mdx':
-        specifier: ^16.4.1
-        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+        specifier: ^16.4.3
+        version: 16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -307,7 +307,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -387,8 +387,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workbench
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       polygon-clipping:
         specifier: 0.15.7
         version: 0.15.7
@@ -446,7 +446,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -484,8 +484,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/marketing-site
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -540,7 +540,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -587,8 +587,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
       '@modelcontextprotocol/sdk':
-        specifier: ^1.32.1
-        version: 1.32.1(zod@4.6.7)
+        specifier: ^1.32.2
+        version: 1.32.2(zod@4.6.7)
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
@@ -616,7 +616,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -656,7 +656,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -708,7 +708,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -745,7 +745,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -785,7 +785,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -822,7 +822,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -865,7 +865,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -884,7 +884,7 @@ importers:
         version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -909,7 +909,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -946,7 +946,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -970,7 +970,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1004,7 +1004,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1050,7 +1050,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1075,7 +1075,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1150,11 +1150,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1175,10 +1175,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.9
         version: 3.9.10
@@ -1278,7 +1278,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       ts-json-schema-generator:
         specifier: ^2.9.0
         version: 2.9.0
@@ -1348,7 +1348,7 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1377,8 +1377,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/ui
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1421,7 +1421,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1522,8 +1522,8 @@ importers:
         specifier: 4.22.0
         version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1578,7 +1578,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1613,11 +1613,11 @@ importers:
         specifier: ^3.1.0
         version: 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@next/mdx':
-        specifier: ^16.4.1
-        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+        specifier: ^16.4.3
+        version: 16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1666,7 +1666,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1704,8 +1704,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/marketing-site
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1760,7 +1760,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1804,8 +1804,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
       '@modelcontextprotocol/sdk':
-        specifier: ^1.32.1
-        version: 1.32.1(zod@4.6.7)
+        specifier: ^1.32.2
+        version: 1.32.2(zod@4.6.7)
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
@@ -1833,7 +1833,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1870,7 +1870,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1922,7 +1922,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1959,7 +1959,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1999,7 +1999,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2033,7 +2033,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2067,7 +2067,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2107,7 +2107,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2126,7 +2126,7 @@ importers:
         version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2151,7 +2151,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2179,7 +2179,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2207,7 +2207,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2235,7 +2235,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2281,7 +2281,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2306,7 +2306,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2384,11 +2384,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2409,10 +2409,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.9
         version: 3.9.10
@@ -2503,7 +2503,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       ts-json-schema-generator:
         specifier: ^2.9.0
         version: 2.9.0
@@ -2564,7 +2564,7 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2641,8 +2641,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       prosemirror-commands:
         specifier: ^1.7.2
         version: 1.7.2
@@ -2662,8 +2662,8 @@ importers:
         specifier: ^1.4.4
         version: 1.4.4
       prosemirror-view:
-        specifier: ^1.42.6
-        version: 1.42.6
+        specifier: ^1.42.7
+        version: 1.42.7
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2715,7 +2715,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2750,11 +2750,11 @@ importers:
         specifier: ^3.1.0
         version: 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@next/mdx':
-        specifier: ^16.4.1
-        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+        specifier: ^16.4.3
+        version: 16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2803,7 +2803,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2841,8 +2841,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/marketing-site
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2897,7 +2897,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2944,8 +2944,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
       '@modelcontextprotocol/sdk':
-        specifier: ^1.32.1
-        version: 1.32.1(zod@4.6.7)
+        specifier: ^1.32.2
+        version: 1.32.2(zod@4.6.7)
       '@resvg/resvg-wasm':
         specifier: ^2.6.2
         version: 2.6.2
@@ -2973,7 +2973,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3013,7 +3013,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3065,7 +3065,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3099,7 +3099,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3139,7 +3139,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3176,7 +3176,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3213,7 +3213,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3253,7 +3253,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3272,7 +3272,7 @@ importers:
         version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3297,7 +3297,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3331,7 +3331,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3374,7 +3374,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3399,7 +3399,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3471,11 +3471,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3496,10 +3496,10 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
       prettier:
         specifier: ^3.9.9
         version: 3.9.10
@@ -3596,7 +3596,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       ts-json-schema-generator:
         specifier: ^2.9.0
         version: 2.9.0
@@ -3657,7 +3657,7 @@ importers:
         version: 0.28.2
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3740,8 +3740,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workbench
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -3796,7 +3796,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -3834,11 +3834,11 @@ importers:
         specifier: ^3.1.0
         version: 3.1.1(@types/react@19.3.0)(react@19.3.1)
       '@next/mdx':
-        specifier: ^16.4.1
-        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+        specifier: ^16.4.3
+        version: 16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -3884,7 +3884,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -3922,8 +3922,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/marketing-site
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -3978,7 +3978,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -4034,8 +4034,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/telemetry
       '@modelcontextprotocol/sdk':
-        specifier: ^1.32.1
-        version: 1.32.1(zod@4.6.7)
+        specifier: ^1.32.2
+        version: 1.32.2(zod@4.6.7)
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -4060,7 +4060,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4100,7 +4100,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4161,7 +4161,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4201,7 +4201,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4241,7 +4241,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4272,7 +4272,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4291,7 +4291,7 @@ importers:
         version: link:../../../packages/oxlint-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4313,7 +4313,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4341,7 +4341,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4378,7 +4378,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4421,7 +4421,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4452,7 +4452,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4476,7 +4476,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4510,7 +4510,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4568,7 +4568,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4602,7 +4602,7 @@ importers:
         version: link:../../../packages/vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4677,11 +4677,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4693,7 +4693,7 @@ importers:
     dependencies:
       '@better-auth/oauth-provider':
         specifier: 1.7.12
-        version: 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))
+        version: 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4714,7 +4714,7 @@ importers:
         version: link:../../../packages/sites
       better-auth:
         specifier: 1.7.12
-        version: 1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
+        version: 1.7.12(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
       jose:
         specifier: ^6.2.12
         version: 6.2.13
@@ -4730,7 +4730,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tsx:
         specifier: ^4.20.6
         version: 4.23.15
@@ -4764,7 +4764,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4813,7 +4813,7 @@ importers:
         version: 6.2.13
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4859,7 +4859,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4896,7 +4896,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4951,7 +4951,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4982,7 +4982,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5080,8 +5080,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/ui
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5148,7 +5148,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -5188,7 +5188,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5234,7 +5234,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5259,7 +5259,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5296,7 +5296,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5330,7 +5330,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5351,7 +5351,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5385,7 +5385,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5410,7 +5410,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5432,7 +5432,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5463,7 +5463,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5509,7 +5509,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5528,7 +5528,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5549,7 +5549,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5583,7 +5583,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5611,7 +5611,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5639,7 +5639,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5660,7 +5660,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5675,7 +5675,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5721,7 +5721,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5745,7 +5745,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5763,7 +5763,7 @@ importers:
         version: link:../vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5799,8 +5799,8 @@ importers:
         specifier: workspace:*
         version: link:../vitest-config
       '@next/mdx':
-        specifier: ^16.4.1
-        version: 16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
+        specifier: ^16.4.3
+        version: 16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -5820,11 +5820,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -5861,7 +5861,7 @@ importers:
         version: 1.52.0
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5892,7 +5892,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5914,7 +5914,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5938,7 +5938,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5984,7 +5984,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -6007,8 +6007,8 @@ importers:
         specifier: workspace:*
         version: link:../render-png
       '@modelcontextprotocol/sdk':
-        specifier: ^1.32.1
-        version: 1.32.1(zod@4.6.7)
+        specifier: ^1.32.2
+        version: 1.32.2(zod@4.6.7)
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -6030,7 +6030,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6049,7 +6049,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6070,7 +6070,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6094,7 +6094,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6122,10 +6122,10 @@ importers:
         version: 1.89.0
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       oxlint-tsgolint:
-        specifier: ^7.0.2004
-        version: 7.0.2004
+        specifier: ^7.0.2005
+        version: 7.0.2005
     devDependencies:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
@@ -6153,7 +6153,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6183,7 +6183,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6195,7 +6195,7 @@ importers:
     devDependencies:
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6235,7 +6235,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -6256,7 +6256,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6284,7 +6284,7 @@ importers:
         version: 5.0.5(vitest@5.0.5)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -6309,7 +6309,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -6331,7 +6331,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6346,7 +6346,7 @@ importers:
         version: 26.6.5
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6368,7 +6368,7 @@ importers:
         version: link:../vitest-config
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6398,7 +6398,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -6425,7 +6425,7 @@ importers:
         version: 30.1.3(@noble/hashes@2.4.0)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -6476,11 +6476,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -6550,11 +6550,11 @@ importers:
         specifier: ^30.1.2
         version: 30.1.3(@noble/hashes@2.4.0)
       next:
-        specifier: ^16.4.1
-        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^16.4.3
+        version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       oxlint:
         specifier: ^1.88.0
-        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+        version: 1.89.0(oxlint-tsgolint@7.0.2005)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -7156,8 +7156,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@modelcontextprotocol/sdk@1.32.1':
-    resolution: {integrity: sha512-2DdE+SJDtzLEEWzY1ZjY7Q+VcPhcV1KisD3zI4u0XZyktsjHum1mwbMI+JaulUBi2OZk+KJAi2uPXzxichPkdw==}
+  '@modelcontextprotocol/sdk@1.32.2':
+    resolution: {integrity: sha512-SWsVtH/0vULSQStoZ6xxH2K09Li8fXYTMC64ZeogCdpZ3XSi1eCPOByV1OpuJxuI3OcmHhosDWYyii07tpPsLw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -7169,8 +7169,11 @@ packages:
   '@next/env@16.4.2':
     resolution: {integrity: sha512-nTUTFH7G5/J/fmpkjVLegOkqyKOP0CEsJcMsyO4UCYeN1su+YMW/MfaSErnJskL7XM+UDK6aTvslxsRCyya/sA==}
 
-  '@next/mdx@16.4.2':
-    resolution: {integrity: sha512-elDnhfH37V+dBiOTmhW8VFcAm6wrXU0LI+NYk5oGVBtrdfRk9FMLpAofTi9sgTazohoThiDVFJQpzKRgbB8SEg==}
+  '@next/env@16.4.3':
+    resolution: {integrity: sha512-a7tz1QCcWWkwC/rPJcPMJk/UNRu9CFhDd3OHYE5hddbJrs8BqRTalxI6GlKCWEGzRLHN+S/B7a4PAHCtm25aBQ==}
+
+  '@next/mdx@16.4.3':
+    resolution: {integrity: sha512-N86fgGEVCoB0ULnWlmRZcaZnZD5sLmBkZt4CAPxy0b04qpwimlCdhA6MnwdnJBqmByl2OEKHpQt/GpJRz3UUwQ==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
       '@mdx-js/react': '>=0.15.0'
@@ -7186,8 +7189,20 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@next/swc-darwin-arm64@16.4.3':
+    resolution: {integrity: sha512-4yq5EXBt+VDtAZwTyfijaFp5D2C5oz3Ikw5a2kiX2K9nw72vrZX2q5UuAlkPtUMO1tQz6JTKpaKWjS7OOefTDQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@next/swc-darwin-x64@16.4.2':
     resolution: {integrity: sha512-luPCMbOsCoaF+kXJEUjmjmOZg1lC3BflhmUu+ZmW4tBu2vW/4AXak8JBFvePizGkxVmNiAw/r9ra+6UviCWtWQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@next/swc-darwin-x64@16.4.3':
+    resolution: {integrity: sha512-1Rvkn/LUhnEF8WxnRkOrqGhbwXui1bkWFxONKIbN+r7C+9KHDSZ+iUoj4CzymVMWUyZIyx9szcb9+kbKhD500A==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -7198,8 +7213,20 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@next/swc-linux-arm64-gnu@16.4.3':
+    resolution: {integrity: sha512-dCKpXErGg3abUM6t5JTJV/ottVBTStJB5lRJTbgdUdQaQ+jNHiK56Hsc0YAEg/rinSh42hYG3HWiYmEMdilnxg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
   '@next/swc-linux-arm64-musl@16.4.2':
     resolution: {integrity: sha512-T1PNmfbPcxr5ndtWUL/3wQtLXsz808lq6sc2GrNT5k2oquF7UyqZddHSuAewHVsWsGXe6nsl9HoN1YNriVjuSg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@next/swc-linux-arm64-musl@16.4.3':
+    resolution: {integrity: sha512-WwYbhWkhYBvBtib1K4W0kL8MW2snBD2A5b3SN4vPpqalZbZs5+bQ1yzAdepVoOqrFfEW3dmREy4Zs1MrWcrFbw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -7210,8 +7237,20 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@next/swc-linux-x64-gnu@16.4.3':
+    resolution: {integrity: sha512-QymWvfUwDEC5/lpJOsxX5VAbyoR2D13+2Jsjz4be7gT4LPqEgdpkeLIR/HFfCLgKzoMhpJbp6I/JnogyNZHcaA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
   '@next/swc-linux-x64-musl@16.4.2':
     resolution: {integrity: sha512-yY2uh1YhX6ufuYy2FCbw1dqblbhI57GLYAJfCkqD9auTv6pLrH67Uccjc3QMKBeCYAG6lkgu08ExmX1bbjejjQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@next/swc-linux-x64-musl@16.4.3':
+    resolution: {integrity: sha512-Vmjd9D7DpA4Vv3cUlr82QWgJD/BQZmns801vtC5VWHg6jCIA4a5vMKpQnfrM2pyCrp2eV0ENdUg4PlN3bAc2Yw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -7222,8 +7261,20 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@next/swc-win32-arm64-msvc@16.4.3':
+    resolution: {integrity: sha512-lG1pPdPLk7gTyGb00n5JIMLdBJgjb+UEhSdZvFbhUMg0DyC6z4B7RnpSKF9VCd4imkLObVbXOFA0kFCpw7yFow==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
   '@next/swc-win32-x64-msvc@16.4.2':
     resolution: {integrity: sha512-AA4edyWHDko3NCSo0x6GomsdgFb0oR1J3MXU1b5xt6FRFg4AucrMPW3S0hCe/9onU0O1BbpGQBsqo1r0Gneu1g==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@next/swc-win32-x64-msvc@16.4.3':
+    resolution: {integrity: sha512-NmQC9RkJdnPXRaMxtkCzobB3teVjqF33oSOnwDfi+XYGWWYpt+xlGK3mtktSKLbdjwaWbJu2OkkMiRFGUUncKg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -7239,33 +7290,33 @@ packages:
   '@oxc-project/types@0.155.0':
     resolution: {integrity: sha512-SeE8JPwW1xs1tHeNycjUtUBdhorRa8o4jlvjwk49R7/Z291i+4DQa7JJIgOm/TaYQZx+QrPQbVJ/9c8dMIZN8Q==}
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2004':
-    resolution: {integrity: sha512-uJk3ttju7Lz+Nv8WG4CsLyewoL1qf/Ny8S8OksJ7Bm/F14Tc9gMfW6arM1PCc57IzH/X/I79YsCWTgxX1FKibQ==}
+  '@oxlint-tsgolint/darwin-arm64@7.0.2005':
+    resolution: {integrity: sha512-VqDZxcZVjlonNLuuvraVNgDQt+1ndwa4yJo8OqsK4HYh/61ba9IlMStCVfi/aaIqRoDhNbAKC8gdcTrXqnb+Ug==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2004':
-    resolution: {integrity: sha512-0BFfHTzDxNDFPcu0UZAXT6CyCJHAXM0dZveyDb4KEHa2qF/DSnOKOrmvK/wFuFol9kvijbGM9JfuOsor+zWXRw==}
+  '@oxlint-tsgolint/darwin-x64@7.0.2005':
+    resolution: {integrity: sha512-4kUfLRNYoVpv0Tm3jPYrvxyfOc/LmdvFC3pKZ4tL6K7lA7K/VS81SAtmxRzbYXYSyb3SBWhwsuX+df4neqzxxA==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2004':
-    resolution: {integrity: sha512-TAehQc+qdRXyDN3nl/r/3/oPrBVrbtrDeGMkFyG6mf+XphpoJ2lAMVFLclyvrVZCw02RbKROjyw8h72XwQQHcw==}
+  '@oxlint-tsgolint/linux-arm64@7.0.2005':
+    resolution: {integrity: sha512-rhUNcPsBlKvhXtrbhbBUidtRBRdJ8fbEHN9H5Q5N59gby18ruGuDA7KUxl7oRnUzp797uykYQhkBDm+0KpfK/Q==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxlint-tsgolint/linux-x64@7.0.2004':
-    resolution: {integrity: sha512-LPunZvm6ZbWPfHMAyfZf9ci3HHvNEzLejO8zdqO3GoVGoSEHqqufHUD7+OgeatVSaJP7uXDJ2HaNOHIoH7go4Q==}
+  '@oxlint-tsgolint/linux-x64@7.0.2005':
+    resolution: {integrity: sha512-tKs9yinDQZOHygM0e8EJnjTU3mzJtdfkOZP6Udu82iLMePUSHOhTJ9zzU/mSd1hQxURI4LTRRiFhfzC+PzwdNA==}
     cpu: [x64]
     os: [linux]
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2004':
-    resolution: {integrity: sha512-FVWplzDImWhiuawnIZVETaQecv4GWom6Jv4Fx2xj7hhXXDZ5okEgiw1gTCImHTIQsi2ycC5oSxVwrn69bMh7iw==}
+  '@oxlint-tsgolint/win32-arm64@7.0.2005':
+    resolution: {integrity: sha512-VYPnu1gjfbSv+ROhuyNfMs382D4zQU2ZRc8Uc3nuEZo1k2kf+1KfTrg4hrlWh73h9GI+dUWyo+DYCQzUBlPwcQ==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxlint-tsgolint/win32-x64@7.0.2004':
-    resolution: {integrity: sha512-7PsxuUx11Ry9DYTWcljTzRbmZY9B6O9fFFfZV+aodQEMy6pfRT3fhoQRv9PtGN/89z1pPz3nFKrsFm6WqNtX7w==}
+  '@oxlint-tsgolint/win32-x64@7.0.2005':
+    resolution: {integrity: sha512-ekU89cTGy9fpQzuvxIsFHrnoP8XoFjGIRgPEW6eqgY2NYjGy9pwpjF79o04WXRMJFKRrcaVqkZXUUBdLsqpQDw==}
     cpu: [x64]
     os: [win32]
 
@@ -8021,6 +8072,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  baseline-browser-mapping@2.11.33:
+    resolution: {integrity: sha512-yiVKDX+qCMRKBE084lXvq9EcwFUhKZ2nU8TK1EQQuOgPNR/lmbGxXOeDdlGUqC2Zz11Cs9rk1d/8NfgBmlkt0w==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   better-auth@1.7.12:
     resolution: {integrity: sha512-f1fEG0QdTslzbmFA+vOGFFW/XXCWkG4kBxLeH9n1vp1otTH9+ZzV6EJ6797GStWeiYYgS5Vnt9xqE12KwSyAAw==}
     peerDependencies:
@@ -8094,8 +8150,8 @@ packages:
   blake3-wasm@2.1.5:
     resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
 
-  body-parser@2.3.0:
-    resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
+  body-parser@2.4.0:
+    resolution: {integrity: sha512-Ifk1KcLrxaGt1occQagQNFNNOqRt1LFuehEnHHzB8Z6cRgIxRU1TBaiIsUiCdA+gy5PL7Y1IX31DNKkRmxtXjQ==}
     engines: {node: '>=18'}
 
   brace-expansion@5.0.12:
@@ -8116,6 +8172,9 @@ packages:
 
   caniuse-lite@1.0.30001818:
     resolution: {integrity: sha512-XJbgo4adscw7R4MZU4/qVFkoMyPaNUAWmdNY4o/k9x7fFwmv4frIlndI9lWuaxviW9ObiZel9LuncnQPn6hQ5A==}
+
+  caniuse-lite@1.0.30001819:
+    resolution: {integrity: sha512-LFUqIIAwpzsIuevnKnsR9qnStBcgzPShTX61lBwN9uFkkf8o8zLiebEjbW8AYtZiF+1YKDWfdt/pWDtMuG8Xwg==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -8518,8 +8577,8 @@ packages:
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
 
-  ip-address@10.7.4:
-    resolution: {integrity: sha512-DWBMKyeM25D70nrIiTkgQth59/G+naKOTep6huF9j+GmeK3DMD60Zvxg5d5qQnz+38AHgou6ean2LECX+lrKDg==}
+  ip-address@10.7.5:
+    resolution: {integrity: sha512-t2v0rkILYv9WXmSL7TpAaU3HXgaFYOPUcH3QHgwQ++gpJuH3bqyMy4Fvt/DJCTKwzH3Cf+bAp5W/mFL39KPLzA==}
     engines: {node: '>= 12'}
 
   ipaddr.js@1.9.1:
@@ -9016,6 +9075,27 @@ packages:
       sass:
         optional: true
 
+  next@16.4.3:
+    resolution: {integrity: sha512-OqxKTGi9u80FydydsMNYNjnuje9Au+kvHlt2GZ//ftdpDHm1dxKqAaENoOOTX5wKzn+9vaKUNIfZeyZUuLhCnA==}
+    engines: {node: '>=20.9.0'}
+    hasBin: true
+    peerDependencies:
+      '@opentelemetry/api': ^1.1.0
+      '@playwright/test': ^1.51.1
+      babel-plugin-react-compiler: '*'
+      react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+      react-dom: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+      sass: ^1.3.0
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@playwright/test':
+        optional: true
+      babel-plugin-react-compiler:
+        optional: true
+      sass:
+        optional: true
+
   node-fetch@2.6.13:
     resolution: {integrity: sha512-StxNAxh15zr77QvvkmveSQ8uCQ4+v5FkvNTj0OESmiHu+VRi/gXArXtkWMElOsOUNLtUEvI4yS+rdtOHZTwlQA==}
     engines: {node: 4.x || >=6.0.0}
@@ -9045,8 +9125,8 @@ packages:
     resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
     engines: {node: '>=12.20.0'}
 
-  on-finished@2.4.1:
-    resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
+  on-finished@2.4.2:
+    resolution: {integrity: sha512-ATWUv387i+nLD49EiDoOft5scf32Vsdz3ktrQJG9bi7jRFmaXTssvyvj1EmeKVVgvesbqUtvQQvaS2TpTukAZQ==}
     engines: {node: '>= 0.8'}
 
   once@1.4.0:
@@ -9068,8 +9148,8 @@ packages:
   orderedmap@2.1.1:
     resolution: {integrity: sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==}
 
-  oxlint-tsgolint@7.0.2004:
-    resolution: {integrity: sha512-vQ9WDF3fiZJvRdSDosNOflerOCOpwol6vWzVDxW76RcU19cjTh7engvkHLvmv+tzedR8fAiJUVUGr6IVZdkzXQ==}
+  oxlint-tsgolint@7.0.2005:
+    resolution: {integrity: sha512-6ccPGu4u4J9bwYPHXBFPee3RZrX3BboRdU7k14zRDDB1lvN3O7J/vPRFdaEfa1+CWx4xnQQOp4ctoaF66oO0uw==}
     hasBin: true
 
   oxlint@1.89.0:
@@ -9146,6 +9226,10 @@ packages:
     resolution: {integrity: sha512-YUbWYCgErwnMAVkjUnYa+KlMBzGpHwiIt/DE7f0G33AuX2LH9UcTk6KgWxd3zRU+pN3u/C+Xl3EnMLM4Hea7Sg==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.32:
+    resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
+    engines: {node: ^10 || ^12 || >=14}
+
   prettier@3.9.10:
     resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
@@ -9179,8 +9263,11 @@ packages:
   prosemirror-transform@1.12.2:
     resolution: {integrity: sha512-PE/aY0HEY4zczvmqrilgkUK/WautF0chvMqkmM/iN5/aPHvwrCWaQZjS6CIZp+K84YrvPFqrL+YArrfJX8xX7g==}
 
-  prosemirror-view@1.42.6:
-    resolution: {integrity: sha512-3g25f6hKV2bBxo3puH3EcYWmmVNSH0iWmNsMVT7sugDSpA025jgpOLarcDWr39SdzPjYMaiYtRdNtXialPSjEQ==}
+  prosemirror-transform@1.12.4:
+    resolution: {integrity: sha512-2/WuPum3pn+O/Vi2vzpi8210ICUe2kIPXdLYjQ09Pv5DtT5bcKWMJhAKPBwvpPjpp5iOYUVwVEr0gOM1BY1Mgw==}
+
+  prosemirror-view@1.42.7:
+    resolution: {integrity: sha512-aTIAUN4zdD+VS7gsv9Po9Sty81B6yl6D3HggCosry9DLYTmVo4omjcqICDIOPnPJmskRUsqLInxBjaH7I+BQ4Q==}
 
   protobufjs@7.6.6:
     resolution: {integrity: sha512-dYDWdjSl5RNb7SgPxGQcRU+GtvP7s2fpkrY0r432PcOIaZ0/rBcxEZnQN67iJhFuQiVw754JDoPruPCNdGsbjg==}
@@ -9836,12 +9923,12 @@ snapshots:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.0
 
-  '@better-auth/oauth-provider@1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))':
+  '@better-auth/oauth-provider@1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))':
     dependencies:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.0
       '@better-fetch/fetch': 1.3.2
-      better-auth: 1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
+      better-auth: 1.7.12(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
       better-call: 1.4.4(zod@4.6.7)
       jose: 6.2.13
       zod: 4.6.7
@@ -10203,7 +10290,7 @@ snapshots:
       '@types/react': 19.3.0
       react: 19.3.1
 
-  '@modelcontextprotocol/sdk@1.32.1(zod@4.6.7)':
+  '@modelcontextprotocol/sdk@1.32.2(zod@4.6.7)':
     dependencies:
       '@hono/node-server': 2.1.5(hono@4.13.13)
       ajv: 8.20.0
@@ -10227,7 +10314,9 @@ snapshots:
 
   '@next/env@16.4.2': {}
 
-  '@next/mdx@16.4.2(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))':
+  '@next/env@16.4.3': {}
+
+  '@next/mdx@16.4.3(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))':
     dependencies:
       source-map: 0.7.6
     optionalDependencies:
@@ -10237,25 +10326,49 @@ snapshots:
   '@next/swc-darwin-arm64@16.4.2':
     optional: true
 
+  '@next/swc-darwin-arm64@16.4.3':
+    optional: true
+
   '@next/swc-darwin-x64@16.4.2':
+    optional: true
+
+  '@next/swc-darwin-x64@16.4.3':
     optional: true
 
   '@next/swc-linux-arm64-gnu@16.4.2':
     optional: true
 
+  '@next/swc-linux-arm64-gnu@16.4.3':
+    optional: true
+
   '@next/swc-linux-arm64-musl@16.4.2':
+    optional: true
+
+  '@next/swc-linux-arm64-musl@16.4.3':
     optional: true
 
   '@next/swc-linux-x64-gnu@16.4.2':
     optional: true
 
+  '@next/swc-linux-x64-gnu@16.4.3':
+    optional: true
+
   '@next/swc-linux-x64-musl@16.4.2':
+    optional: true
+
+  '@next/swc-linux-x64-musl@16.4.3':
     optional: true
 
   '@next/swc-win32-arm64-msvc@16.4.2':
     optional: true
 
+  '@next/swc-win32-arm64-msvc@16.4.3':
+    optional: true
+
   '@next/swc-win32-x64-msvc@16.4.2':
+    optional: true
+
+  '@next/swc-win32-x64-msvc@16.4.3':
     optional: true
 
   '@noble/ciphers@2.4.0': {}
@@ -10264,22 +10377,22 @@ snapshots:
 
   '@oxc-project/types@0.155.0': {}
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2004':
+  '@oxlint-tsgolint/darwin-arm64@7.0.2005':
     optional: true
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2004':
+  '@oxlint-tsgolint/darwin-x64@7.0.2005':
     optional: true
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2004':
+  '@oxlint-tsgolint/linux-arm64@7.0.2005':
     optional: true
 
-  '@oxlint-tsgolint/linux-x64@7.0.2004':
+  '@oxlint-tsgolint/linux-x64@7.0.2005':
     optional: true
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2004':
+  '@oxlint-tsgolint/win32-arm64@7.0.2005':
     optional: true
 
-  '@oxlint-tsgolint/win32-x64@7.0.2004':
+  '@oxlint-tsgolint/win32-x64@7.0.2005':
     optional: true
 
   '@oxlint/binding-android-arm-eabi@1.89.0':
@@ -10836,7 +10949,9 @@ snapshots:
 
   baseline-browser-mapping@2.11.30: {}
 
-  better-auth@1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5):
+  baseline-browser-mapping@2.11.33: {}
+
+  better-auth@1.7.12(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5):
     dependencies:
       '@better-auth/core': 1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5)
       '@better-auth/drizzle-adapter': 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)
@@ -10856,7 +10971,7 @@ snapshots:
       nanostores: 1.5.5
       zod: 4.6.7
     optionalDependencies:
-      next: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      next: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
       vitest: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -10878,14 +10993,14 @@ snapshots:
 
   blake3-wasm@2.1.5: {}
 
-  body-parser@2.3.0:
+  body-parser@2.4.0:
     dependencies:
       bytes: 3.1.2
       content-type: 2.1.0
       debug: 4.4.3
       http-errors: 2.0.1
       iconv-lite: 0.7.3
-      on-finished: 2.4.1
+      on-finished: 2.4.2
       qs: 6.16.1
       raw-body: 3.0.2
       type-is: 2.1.0
@@ -10909,6 +11024,8 @@ snapshots:
       get-intrinsic: 1.3.0
 
   caniuse-lite@1.0.30001818: {}
+
+  caniuse-lite@1.0.30001819: {}
 
   ccount@2.0.1: {}
 
@@ -11166,14 +11283,14 @@ snapshots:
     dependencies:
       debug: 4.4.3
       express: 5.3.0
-      ip-address: 10.7.4
+      ip-address: 10.7.5
     transitivePeerDependencies:
       - supports-color
 
   express@5.3.0:
     dependencies:
       accepts: 2.0.0
-      body-parser: 2.3.0
+      body-parser: 2.4.0
       content-disposition: 2.0.1
       content-type: 2.1.0
       cookie: 0.7.2
@@ -11188,7 +11305,7 @@ snapshots:
       http-errors: 2.0.1
       merge-descriptors: 2.0.0
       mime-types: 3.0.2
-      on-finished: 2.4.1
+      on-finished: 2.4.2
       once: 1.4.0
       parseurl: 1.3.3
       proxy-addr: 2.0.8
@@ -11220,7 +11337,7 @@ snapshots:
       debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
-      on-finished: 2.4.1
+      on-finished: 2.4.2
       parseurl: 1.3.3
       statuses: 2.0.2
     transitivePeerDependencies:
@@ -11376,7 +11493,7 @@ snapshots:
 
   inline-style-parser@0.2.7: {}
 
-  ip-address@10.7.4: {}
+  ip-address@10.7.5: {}
 
   ipaddr.js@1.9.1: {}
 
@@ -12090,6 +12207,32 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
+  next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+    dependencies:
+      '@next/env': 16.4.3
+      '@swc/helpers': 0.5.23
+      baseline-browser-mapping: 2.11.33
+      caniuse-lite: 1.0.30001819
+      postcss: 8.5.32
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
+      styled-jsx: 5.1.6(react@19.3.1)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 16.4.3
+      '@next/swc-darwin-x64': 16.4.3
+      '@next/swc-linux-arm64-gnu': 16.4.3
+      '@next/swc-linux-arm64-musl': 16.4.3
+      '@next/swc-linux-x64-gnu': 16.4.3
+      '@next/swc-linux-x64-musl': 16.4.3
+      '@next/swc-win32-arm64-msvc': 16.4.3
+      '@next/swc-win32-x64-msvc': 16.4.3
+      '@playwright/test': 1.64.1
+      sharp: 0.35.5(@types/node@26.6.5)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@types/node'
+      - babel-plugin-macros
+
   node-fetch@2.6.13:
     dependencies:
       whatwg-url: 5.0.0
@@ -12104,7 +12247,7 @@ snapshots:
 
   obug@3.0.0: {}
 
-  on-finished@2.4.1:
+  on-finished@2.4.2:
     dependencies:
       ee-first: 1.1.1
 
@@ -12133,16 +12276,16 @@ snapshots:
 
   orderedmap@2.1.1: {}
 
-  oxlint-tsgolint@7.0.2004:
+  oxlint-tsgolint@7.0.2005:
     optionalDependencies:
-      '@oxlint-tsgolint/darwin-arm64': 7.0.2004
-      '@oxlint-tsgolint/darwin-x64': 7.0.2004
-      '@oxlint-tsgolint/linux-arm64': 7.0.2004
-      '@oxlint-tsgolint/linux-x64': 7.0.2004
-      '@oxlint-tsgolint/win32-arm64': 7.0.2004
-      '@oxlint-tsgolint/win32-x64': 7.0.2004
+      '@oxlint-tsgolint/darwin-arm64': 7.0.2005
+      '@oxlint-tsgolint/darwin-x64': 7.0.2005
+      '@oxlint-tsgolint/linux-arm64': 7.0.2005
+      '@oxlint-tsgolint/linux-x64': 7.0.2005
+      '@oxlint-tsgolint/win32-arm64': 7.0.2005
+      '@oxlint-tsgolint/win32-x64': 7.0.2005
 
-  oxlint@1.89.0(oxlint-tsgolint@7.0.2004):
+  oxlint@1.89.0(oxlint-tsgolint@7.0.2005):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.89.0
       '@oxlint/binding-android-arm64': 1.89.0
@@ -12163,7 +12306,7 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.89.0
       '@oxlint/binding-win32-ia32-msvc': 1.89.0
       '@oxlint/binding-win32-x64-msvc': 1.89.0
-      oxlint-tsgolint: 7.0.2004
+      oxlint-tsgolint: 7.0.2005
 
   parse-entities@4.0.2:
     dependencies:
@@ -12221,6 +12364,12 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
+  postcss@8.5.32:
+    dependencies:
+      nanoid: 3.3.20
+      picocolors: 1.1.1
+      source-map-js: 1.2.2
+
   prettier@3.9.10: {}
 
   pretty-format@27.5.1:
@@ -12242,7 +12391,7 @@ snapshots:
       prosemirror-keymap: 1.2.3
       prosemirror-model: 1.25.12
       prosemirror-state: 1.4.4
-      prosemirror-view: 1.42.6
+      prosemirror-view: 1.42.7
 
   prosemirror-inputrules@1.5.1:
     dependencies:
@@ -12262,17 +12411,21 @@ snapshots:
     dependencies:
       prosemirror-model: 1.25.12
       prosemirror-transform: 1.12.2
-      prosemirror-view: 1.42.6
+      prosemirror-view: 1.42.7
 
   prosemirror-transform@1.12.2:
     dependencies:
       prosemirror-model: 1.25.12
 
-  prosemirror-view@1.42.6:
+  prosemirror-transform@1.12.4:
+    dependencies:
+      prosemirror-model: 1.25.12
+
+  prosemirror-view@1.42.7:
     dependencies:
       prosemirror-model: 1.25.12
       prosemirror-state: 1.4.4
-      prosemirror-transform: 1.12.2
+      prosemirror-transform: 1.12.4
 
   protobufjs@7.6.6:
     dependencies:
@@ -12463,7 +12616,7 @@ snapshots:
       http-errors: 2.0.1
       mime-types: 3.0.2
       ms: 2.1.3
-      on-finished: 2.4.1
+      on-finished: 2.4.2
       range-parser: 1.3.0
       statuses: 2.0.2
     transitivePeerDependencies:
@@ -12782,7 +12935,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.31
+      postcss: 8.5.32
       rolldown: 1.2.15
       tinyglobby: 0.2.17
     optionalDependencies:

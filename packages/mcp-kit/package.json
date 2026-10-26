@@ -27,7 +27,7 @@
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "hono": "^4.13.13",
     "zod": "^4.6.7"
   },
