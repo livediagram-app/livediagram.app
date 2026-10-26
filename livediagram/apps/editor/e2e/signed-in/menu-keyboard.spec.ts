@@ -1,8 +1,9 @@
 import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession } from './session';
 
-// The account menu by keyboard, signed in (docs/specs/004-interface-design/menus.md): a menu button
-// whose menu is named by the account's name, takes focus on open, and gives it back on Escape.
+// The account menu by keyboard, signed in (docs/specs/004-interface-design/menus.md): a menu button named by the
+// account's name ("<name>, account menu") whose menu is named "Account" (@liveworkspace/account-menu, pinned by its
+// AppAccountMenu.test.tsx), takes focus on open on Settings, and gives it back on Escape.
 
 test.use({ colorScheme: 'dark' });
 
@@ -21,9 +22,10 @@ test('the account menu walks by keyboard and returns focus', async ({ page, page
 
   const menu = page.getByRole('menu');
   await expect(menu).toBeVisible();
-  await expect(menu).toHaveAccessibleName(/Ariel Keys/);
+  await expect(trigger).toHaveAccessibleName(/^Ariel.*, account menu$/);
+  await expect(menu).toHaveAccessibleName('Account');
   await expect(trigger).toHaveAttribute('aria-controls', (await menu.getAttribute('id'))!);
-  await expect(menu.getByRole('menuitem', { name: 'Account' })).toBeFocused();
+  await expect(menu.getByRole('menuitem', { name: /^Settings/ })).toBeFocused();
   await page.keyboard.press('s');
   await expect(menu.getByRole('menuitem', { name: 'Sign out' })).toBeFocused();
   await page.keyboard.press('Escape');
