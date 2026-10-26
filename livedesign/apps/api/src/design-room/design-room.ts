@@ -106,7 +106,7 @@ import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
 import { importMigratedDesign } from './design-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import { answerDesignRequest, type RouteIdentity } from './design-route';
+import { answerDesignRequest, isDesignCreate, type RouteIdentity } from './design-route';
 
 // One SQLite-backed Durable Object per design id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -534,16 +534,19 @@ export class DesignRoom extends DurableObject<Env> {
       this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the design's making (isDesignCreate).
     if (response.ok && identity.owner && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        DESIGN_OUTBOX,
-        designId,
-        identity.owner,
-        Date.now(),
-      );
+      if (!isDesignCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          DESIGN_OUTBOX,
+          designId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     return response;

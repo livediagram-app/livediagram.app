@@ -240,7 +240,11 @@ where its age puts it.
 
 ### Marking a design used
 
-The create body's `markUsed` (absent or `true`, or `false`) is read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. It changes no list: what Recent and Jump back in show is the index's record of opens, which the editor writes when it loads a design ([Explorer Home](../013-workspace/explorer-home.md)).
+The create body's `markUsed` (absent or `true`, or `false`) is read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. What Recent and Jump back in show is the index's record of opens ([Explorer Home](../013-workspace/explorer-home.md) "Making a design is a use"):
+
+- For an API client's create (one the worker makes the index's item for), absent or `true`, the worker records the open at the index for the caller beside the create, never waited on, so the design joins their Jump Back In at once; `false` leaves it to join at its first open or edit.
+- An editor's create (it sends the index's grant) is the editor's to record, as it records every open when it loads a design, and a re-commit of an id the index already holds is no making, so neither is recorded here.
+- The create itself is the design's making, not an edit: the design's room records no editor for `POST /api/designs` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that `markUsed: false` withheld.
 
 ### Designs in the Trash
 
