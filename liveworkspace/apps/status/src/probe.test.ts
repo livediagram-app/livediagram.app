@@ -121,19 +121,15 @@ describe('pooled', () => {
 });
 
 describe('probeTargets', () => {
-  it('sends liveworkspace’s own checks through the gateway binding, and every app’s straight out', async () => {
-    const viaBinding: string[] = [];
+  it('checks liveworkspace’s own services and every app’s straight out', async () => {
     const viaFetch: string[] = [];
-    const env = testEnv({
-      PLATFORM: {
-        fetch: async (r: Request) => (viaBinding.push(r.url), new Response('{}', { status: 200 })),
-      } as unknown as Fetcher,
-    });
-    const targets = probeTargets(env, async (r) => (viaFetch.push(r.url), new Response('{}')));
+    const targets = probeTargets(
+      testEnv(),
+      async (r) => (viaFetch.push(r.url), new Response('{}')),
+    );
     expect(targets).toHaveLength(27);
     await probeAll(targets);
-    expect(viaBinding).toHaveLength(6);
-    expect(viaBinding).toContain('https://lw.example/robots.txt');
+    expect(viaFetch).toContain('https://lw.example/robots.txt');
     expect(viaFetch).toContain('https://www.liveplanner.app/api/capabilities');
     expect(viaFetch).toContain('https://mcp.livedesign.app/health');
   });
@@ -147,7 +143,6 @@ describe('probeTargets', () => {
         fetch: async (r: Request) => (into.push(r.url), new Response('{}', { status: 200 })),
       }) as unknown as Fetcher;
     const env = testEnv({
-      PLATFORM: answer([]),
       LIVEDIAGRAM_ROUTER: answer(viaRouter),
       LIVEDIAGRAM_MCP: answer(viaMcp),
     });
@@ -155,10 +150,10 @@ describe('probeTargets', () => {
     const router = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
     expect(viaRouter).toContain(`${router}/api/capabilities`);
     expect(viaMcp).toEqual(['https://livediagram-mcp.liveworkspace-easing509.workers.dev/health']);
-    expect(viaFetch.some((u) => u.includes('livediagram'))).toBe(false);
+    expect(viaFetch.some((u) => new URL(u).host.includes('livediagram'))).toBe(false);
   });
 
-  it('checks staging’s addresses on staging, and this machine’s in development, without the binding', async () => {
+  it('checks staging’s addresses on staging, and this machine’s in development', async () => {
     const staging = probeTargets(testEnv({ ENVIRONMENT: 'staging' }), fetch);
     expect(staging.map((t) => t.url)).toContain('https://staging.liveplanner.app/api/capabilities');
     // Staging has no public MCP host, so 4 fewer checks.
@@ -168,9 +163,6 @@ describe('probeTargets', () => {
       testEnv({
         ENVIRONMENT: 'development',
         PLATFORM_ORIGIN: 'http://localhost:3000',
-        PLATFORM: {
-          fetch: () => Promise.reject(new Error('not in development')),
-        } as unknown as Fetcher,
       }),
       async (r) => (seen.push(r.url), new Response('{}')),
     );

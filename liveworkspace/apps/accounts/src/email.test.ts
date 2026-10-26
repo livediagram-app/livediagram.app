@@ -93,32 +93,32 @@ describe('sendCodeEmail', () => {
 describe('inviteResponseEmail', () => {
   it('links to the account’s settings, where admins turn these off', () => {
     const email = inviteResponseEmail(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+      'https://liveworkspace.app/',
       'Design',
       'Ada',
       true,
     );
     expect(email.unsubscribeUrl).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+      'https://liveworkspace.app/explorer?settings=notifications',
     );
     expect(email.html).toContain(
-      'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications"',
+      'href="https://liveworkspace.app/explorer?settings=notifications"',
     );
     expect(email.text).toContain(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?settings=notifications',
+      'https://liveworkspace.app/explorer?settings=notifications',
     );
   });
 
   it("opens the team's view in the Explorer", () => {
     const email = inviteResponseEmail(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+      'https://liveworkspace.app/',
       'Design',
       'Ada',
       true,
       'team_1',
     );
     expect(email.html).toContain(
-      'href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/team?id=team_1"',
+      'href="https://liveworkspace.app/explorer/team?id=team_1"',
     );
   });
 });

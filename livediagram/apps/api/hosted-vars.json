@@ -3,17 +3,17 @@
   "environments": {
     "production": {
       "APP_BASE_URL": "https://livediagram-router.liveworkspace-easing509.workers.dev",
-      "TELEMETRY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry",
-      "COMMUNITY_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community",
-      "MEDIA_URL": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media",
-      "INDEX_ORIGIN": "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://liveworkspace.app/api/community",
+      "MEDIA_URL": "https://liveworkspace.app/api/media",
+      "INDEX_ORIGIN": "https://liveworkspace.app"
     },
     "staging": {
       "APP_BASE_URL": "https://livediagram-router-staging.liveworkspace-easing509.workers.dev",
-      "TELEMETRY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry",
-      "COMMUNITY_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community",
-      "MEDIA_URL": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/media",
-      "INDEX_ORIGIN": "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://staging.liveworkspace.app/api/community",
+      "MEDIA_URL": "https://staging.liveworkspace.app/api/media",
+      "INDEX_ORIGIN": "https://staging.liveworkspace.app"
     }
   }
 }

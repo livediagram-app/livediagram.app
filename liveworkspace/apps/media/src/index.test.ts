@@ -12,7 +12,7 @@ import worker from './index';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
 
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media';
+const BASE = 'https://liveworkspace.app/api/media';
 
 let db: TestDb;
 beforeEach(() => {
@@ -101,7 +101,7 @@ describe('who may call', () => {
   });
 
   it('answers nothing outside its API, or at all when switched off', async () => {
-    const res = await worker.fetch(new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/other'), db.env);
+    const res = await worker.fetch(new Request('https://liveworkspace.app/api/other'), db.env);
     expect(res.status).toBe(404);
     const disabled = await call(
       '/app/images?owner=user_1',

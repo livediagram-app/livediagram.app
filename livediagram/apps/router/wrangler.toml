@@ -4,7 +4,7 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
 
 # Service bindings to the marketing and live apps.
@@ -44,7 +44,7 @@ service = "livediagram-community"
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
-# switch is on (liveworkspace/docs/one-explorer.md); production's (https://liveworkspace-gateway.liveworkspace-easing509.workers.dev) needs no var.
+# switch is on (liveworkspace/docs/one-explorer.md); production's (https://liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
 MARKETING_ORIGIN = "http://127.0.0.1:3101"
 EDITOR_ORIGIN = "http://127.0.0.1:3102"
@@ -104,7 +104,7 @@ service = "livediagram-community-staging"
 # production's router has no DEPLOY_ENV, so the header is impossible there.
 [env.staging.vars]
 DEPLOY_ENV = "staging"
-INDEX_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
-DRIVE_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
-WORKSPACE_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
-PREVIEWS_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
+DRIVE_ORIGIN = "https://staging.liveworkspace.app"
+WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
+PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

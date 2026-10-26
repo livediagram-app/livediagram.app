@@ -54,7 +54,7 @@ describe('LikeButton', () => {
     const [url, init] = fetchMock.mock.calls[0]!;
     // The Community service's, for this app's posts.
     expect(url).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community/posts/post123456/like?app=livediagram.app',
+      'https://liveworkspace.app/api/community/posts/post123456/like?app=livediagram.app',
     );
     expect(init?.method).toBe('PUT');
     expect((init?.headers as Record<string, string> | undefined)?.['X-Community-Key']).toMatch(

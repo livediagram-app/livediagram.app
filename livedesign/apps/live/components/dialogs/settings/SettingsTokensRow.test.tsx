@@ -15,7 +15,7 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
 }));
 vi.mock('@liveworkspace/workbench/lib/auth-config', () => ({
   manageTokensUrl:
-    'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/account/tokens',
+    'https://liveworkspace.app/account/tokens',
 }));
 vi.mock('@/components/chrome/auth-shared', () => ({
   useAuthHrefs: () => ({ signInHref: '/sign-in/?redirect_url=%2Fexplorer' }),
@@ -47,7 +47,7 @@ describe('SettingsTokensRow', () => {
   it('sends a signed-in person to liveworkspace.app to manage their tokens', () => {
     render(<SettingsTokensRow row={ROW} />);
     expect(screen.getByRole('link', { name: 'Manage API Tokens' }).getAttribute('href')).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/account/tokens',
+      'https://liveworkspace.app/account/tokens',
     );
   });
 

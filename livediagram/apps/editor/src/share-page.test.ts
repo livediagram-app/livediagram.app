@@ -79,7 +79,7 @@ describe('editor worker: the share page', () => {
     const res = await get('/document/shared?s=CODE1234', env);
     expect(assets).toEqual(['/document/placeholder']);
     expect(asked).toEqual([
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/card',
+      'https://liveworkspace.app/api/previews/share/CODE1234/card',
     ]);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     const edits = (await res.json()) as Record<string, string>;
@@ -93,11 +93,11 @@ describe('editor worker: the share page', () => {
 
   it('asks the previews origin it is given (staging)', async () => {
     const { env } = makeEnv(
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
+      'https://staging.liveworkspace.app',
     );
     await get('/document/shared?s=C', env);
     expect(asked).toEqual([
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/previews/share/C/card',
+      'https://staging.liveworkspace.app/api/previews/share/C/card',
     ]);
   });
 

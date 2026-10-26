@@ -15,7 +15,7 @@ function env(ip: boolean, email: boolean) {
 
 function request(body: unknown) {
   return new Request(
-    'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/x',
+    'https://liveworkspace.app/api/auth/x',
     {
       method: 'POST',
       headers: { 'cf-connecting-ip': '203.0.113.9' },
@@ -66,7 +66,7 @@ describe('overCodeLimit', () => {
 describe('the network a code request comes from', () => {
   const at = (headers: Record<string, string>) =>
     networkOf(
-      new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/x', {
+      new Request('https://liveworkspace.app/api/auth/x', {
         headers,
       }),
     );

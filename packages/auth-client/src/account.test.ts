@@ -17,7 +17,7 @@ import {
 } from './account';
 
 const CREDENTIALS = {
-  accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+  accountsUrl: 'https://liveworkspace.app/',
   clientId: 'liveplanner',
   clientSecret: 's3cret',
 };
@@ -47,7 +47,7 @@ describe('createTokenChecker', () => {
     await expect(check('lwt_abc')).resolves.toEqual(ACCOUNT);
     await expect(check('lwt_abc')).resolves.toEqual(ACCOUNT);
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/tokens/verify');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/tokens/verify');
     const headers = calls[0]!.init.headers as Record<string, string>;
     expect(headers.authorization).toBe(`Basic ${btoa('liveplanner:s3cret')}`);
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual({ token: 'lwt_abc' });
@@ -105,7 +105,7 @@ describe('mintAccountToken', () => {
       fetcher,
     );
     expect(minted).toMatchObject({ secret: 'lwt_x' });
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/tokens');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/tokens');
   });
 
   it('answers null at the token limit', async () => {
@@ -125,7 +125,7 @@ describe('settings', () => {
     await expect(
       readSettings(CREDENTIALS, { owner, app: 'livediagram.app' }, fetcher),
     ).resolves.toEqual(SETTINGS);
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/settings/read');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/settings/read');
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual({ owner, app: 'livediagram.app' });
   });
 
@@ -135,7 +135,7 @@ describe('settings', () => {
     await expect(
       writeSettings(CREDENTIALS, { owner, app: 'livediagram.app', patch }, fetcher),
     ).resolves.toEqual(SETTINGS);
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/settings/write');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/settings/write');
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual({
       owner,
       app: 'livediagram.app',
@@ -172,7 +172,7 @@ describe('createTeamFor', () => {
       fetcher,
     );
     expect(team).toMatchObject({ id: 't1', role: 'admin' });
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/teams');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/teams');
     expect(JSON.parse(String(calls[0]!.init.body))).toEqual({
       accessToken: 'jwt',
       name: 'Design',
@@ -209,7 +209,7 @@ describe('readProfiles', () => {
     expect(
       calls.map((c) => (JSON.parse(String(c.init.body)) as { ids: string[] }).ids.length),
     ).toEqual([100, 100, 50]);
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/profiles/read');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/profiles/read');
   });
 
   it('makes no call for no ids', async () => {
@@ -248,8 +248,8 @@ describe('recordSighting and claimMilestone', () => {
       await claimMilestone(CREDENTIALS, { userId: 'user_1', milestone: 'firstShare' }, fetcher),
     ).toBe(false);
     expect(calls.map((c) => c.url)).toEqual([
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/sightings',
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/milestones/claim',
+      'https://liveworkspace.app/api/account/internal/sightings',
+      'https://liveworkspace.app/api/account/internal/milestones/claim',
     ]);
   });
 
@@ -276,7 +276,7 @@ describe('reportActivity', () => {
   it('posts the save, and throws when refused', async () => {
     const { fetcher, calls } = fakeFetch(() => Response.json({ ok: true }));
     await reportActivity(CREDENTIALS, { userId: 'user_1', at: 5 }, fetcher);
-    expect(calls[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/activity');
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/activity');
     expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ userId: 'user_1', at: 5 });
     const refused = fakeFetch(() => Response.json({ error: 'invalid_user' }, { status: 400 }));
     await expect(reportActivity(CREDENTIALS, { userId: 'x' }, refused.fetcher)).rejects.toThrow(

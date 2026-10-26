@@ -14,6 +14,6 @@ export const e2eAuthEnabled = process.env.NEXT_PUBLIC_E2E_AUTH === '1';
 // staging build at staging.liveworkspace.app.
 export const accountsSiteUrl = (
   process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL ||
-  'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'
+  'https://liveworkspace.app'
 ).replace(/\/+$/, '');
 export const manageTokensUrl = `${accountsSiteUrl}/explorer?settings=tokens`;

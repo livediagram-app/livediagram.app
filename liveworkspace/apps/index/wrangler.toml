@@ -4,12 +4,11 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/index, on liveworkspace.app (liveworkspace/docs/index-service.md). Browsers reach it
 # through their own app's router, which forwards /api/index/* on the app's origin here.
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 # Secrets (wrangler secret put):
@@ -26,7 +25,7 @@ workers_dev = false
 ENVIRONMENT = "production"
 # The accounts origin: access and guest tokens are checked against `${ACCOUNTS_URL}/api/auth`, and
 # grants are issued as `${ACCOUNTS_URL}/api/index`.
-ACCOUNTS_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+ACCOUNTS_URL = "https://liveworkspace.app"
 # Every app's API resource: an access or guest token addressed to any of them is let in.
 INDEX_AUDIENCES = "https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
 # Where the index calls each app's internal routes.
@@ -63,15 +62,14 @@ service = "liveworkspace-drive"
 
 [env.staging]
 name = "liveworkspace-index-staging"
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
 # Staging's app origins and API resources: check them against each app's staging deploy before the first
 # deploy here.
-ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+ACCOUNTS_URL = "https://staging.liveworkspace.app"
 INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
 APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"

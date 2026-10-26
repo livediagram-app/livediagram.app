@@ -12,7 +12,7 @@ import { capabilities, fakeIo, NOW, TOKEN, type FakeIo } from '../testing/fake-i
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const CODE = 'c'.repeat(22);
-const PAIRING_URL = `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/workbench/pair?code=${CODE}`;
+const PAIRING_URL = `https://liveworkspace.app/workbench/pair?code=${CODE}`;
 const EXPIRES = NOW + 600_000;
 const STATUS_PATH = `/api/workbench/pairing-requests/${CODE}/status`;
 

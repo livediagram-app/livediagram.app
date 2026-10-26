@@ -88,7 +88,7 @@ export function testDb(overrides: Partial<Env> = {}): TestDb {
     env: {
       ENVIRONMENT: 'development',
       INDEX_DB: db as unknown as D1Database,
-      ACCOUNTS_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+      ACCOUNTS_URL: 'https://liveworkspace.app',
       INDEX_AUDIENCES:
         'https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api',
       INDEX_KEY_LIVEDIAGRAM: 'ld-key',

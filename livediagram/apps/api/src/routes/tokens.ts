@@ -22,7 +22,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   return json(
     {
       error: 'tokens_moved',
-      manageAt: `${(env.ACCOUNTS_URL ?? 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev').replace(/\/+$/, '')}/explorer?settings=tokens`,
+      manageAt: `${(env.ACCOUNTS_URL ?? 'https://liveworkspace.app').replace(/\/+$/, '')}/explorer?settings=tokens`,
     },
     { status: 410 },
   );

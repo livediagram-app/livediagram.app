@@ -43,7 +43,7 @@ describe("each app's origins", () => {
     expect(appOfOrigin('http://livediagram.app', 'production')).toBeNull();
     expect(
       appOfOrigin(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+        'https://liveworkspace.app',
         'production',
       ),
     ).toBeNull();

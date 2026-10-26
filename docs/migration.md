@@ -13,8 +13,7 @@ liveplanner, livedocuments and livedesign have no data from before accounts move
 
 Related: [migrating-from-clerk.md](../liveworkspace/docs/migrating-from-clerk.md),
 [livediagram/plans/0002-liveworkspace-accounts.md](../livediagram/plans/0002-liveworkspace-accounts.md),
-[stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md),
-[gateway.md](../liveworkspace/docs/gateway.md).
+[stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md).
 
 ## Rules that hold throughout
 
@@ -250,8 +249,7 @@ are none to carry.) The rehearsal should include a browser with a real old local
    then the checks in step 9.
 4. **Move the `livediagram.app` zone** to the liveworkspace account and run "When livediagram.app moves" in
    [stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md), and the email domain
-   move in [email.md](../liveworkspace/docs/email.md). If liveworkspace.app moves at the same time, also
-   [gateway.md](../liveworkspace/docs/gateway.md).
+   move in [email.md](../liveworkspace/docs/email.md).
 5. Point the Google clients' redirect URIs at the real hosts, and the MCP server's OAuth at liveworkspace sign-in.
 6. **Rollback** until step 10: point the zone back at the old account and lift the freeze. Nothing there changed.
 

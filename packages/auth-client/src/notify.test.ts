@@ -3,7 +3,7 @@ import { readTeamPeople, type TeamPerson } from './account';
 import { notificationRecipients, notifyClaimKey, reachedMilestone, teamTargets } from './notify';
 
 const CREDENTIALS = {
-  accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+  accountsUrl: 'https://liveworkspace.app/',
   clientId: 'liveplanner',
   clientSecret: 's3cret',
 };

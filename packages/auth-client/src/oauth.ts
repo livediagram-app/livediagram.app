@@ -20,7 +20,7 @@ export interface PkcePair {
 }
 
 export interface ClientCredentials {
-  // e.g. `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`
+  // e.g. `https://liveworkspace.app`
   accountsUrl: string;
   clientId: string;
   clientSecret: string;

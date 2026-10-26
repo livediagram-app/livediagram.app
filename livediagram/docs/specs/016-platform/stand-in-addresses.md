@@ -13,8 +13,7 @@ addresses instead:
 | `https://livediagram-mcp-staging.liveworkspace-easing509.workers.dev`    | `mcp-staging.livediagram.app`            |
 
 The router already puts every app under one origin ([Router app](router-app.md)), so a stand-in is the router's own
-address: nothing new sits in front of it. liveworkspace is on its own stand-in at the same time
-([liveworkspace/docs/gateway.md](../../../../liveworkspace/docs/gateway.md)).
+address: nothing new sits in front of it.
 
 ## Where the addresses are written
 

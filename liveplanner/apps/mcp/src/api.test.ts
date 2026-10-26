@@ -24,7 +24,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 const isEventsPost = (req: Request) =>
   req.url ===
-  'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry/events';
+  'https://liveworkspace.app/api/telemetry/events';
 
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {

@@ -84,7 +84,7 @@ function fakeHost(team: TeamDetails | null = details(), over: Partial<TeamsHost>
     resetInviteLink: vi.fn(async () => ({
       ok: true as const,
       value: {
-        url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/join?token=abc',
+        url: 'https://liveworkspace.app/join?token=abc',
         expiresAt: Date.now() + 7 * 86_400_000,
       },
     })),
@@ -181,7 +181,7 @@ describe('a team’s view', () => {
     const host = fakeHost(team, {
       resetInviteLink: vi.fn(async () => {
         team.inviteLink = {
-          url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/join?token=abc',
+          url: 'https://liveworkspace.app/join?token=abc',
           expiresAt: Date.now(),
         };
         return { ok: true as const, value: team.inviteLink };
@@ -196,7 +196,7 @@ describe('a team’s view', () => {
     await waitFor(() => expect(host.resetInviteLink).toHaveBeenCalledWith('t1'));
     fireEvent.click(await screen.findByRole('button', { name: 'Copy' }));
     await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/join?token=abc'),
+      expect(writeText).toHaveBeenCalledWith('https://liveworkspace.app/join?token=abc'),
     );
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy();
   });

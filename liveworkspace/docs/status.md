@@ -94,9 +94,10 @@ The wire shapes and a reader for them are in `@liveworkspace/status` (`wire.ts`)
 
 ## Where the checks go
 
-From the Worker, liveworkspace's own services go through a service binding to the gateway (`PLATFORM`,
-[gateway.md](gateway.md)): a Worker can't fetch another Worker's `workers.dev` address on the same account, and
-the gateway is where `liveworkspace.app` lives until the zone moves. Each app is fetched at its live address
+From the Worker, liveworkspace's own services are fetched at `PLATFORM_ORIGIN`, `https://liveworkspace.app` (or
+`staging.`), as a visitor's browser does. A Worker on a route can't fetch another Worker on the same zone unless it
+has the `global_fetch_strictly_public` compatibility flag, which sends the request out to the internet and back in
+through the zone's routes, so the status Worker has that flag. Each app is fetched at its live address
 (`https://www.<app>`, `https://mcp.<app>/health`), or its `staging.` one from staging, where the MCP servers aren't
 checked. An app standing in on a `workers.dev` address on this account (`STAND_INS` in `@liveworkspace/sites`,
 livediagram until livediagram.app moves; livediagram/docs/specs/016-platform/stand-in-addresses.md) is reached the
@@ -104,12 +105,6 @@ same way as liveworkspace's own services, through service bindings to its Worker
 address and `LIVEDIAGRAM_MCP` for its MCP server's. The bindings drop when the domain moves. Locally (`ENVIRONMENT =
 "development"`) everything is fetched on this machine's ports: the site on 3000 and
 each app's router and MCP Worker.
-
-When liveworkspace.app moves to this account, a Worker on a route can't fetch another Worker on the same zone either,
-unless it has the `global_fetch_strictly_public` compatibility flag, which sends the request out to the internet and
-back in through the zone's routes. So the move gives the status Worker that flag and drops the binding
-([gateway.md](gateway.md#when-liveworkspaceapp-moves)); the checks then read `https://liveworkspace.app` as a
-visitor's browser does.
 
 ## The database
 
@@ -149,8 +144,7 @@ corepack pnpm db:migrate:remote:staging             # staging: … liveworkspace
 corepack pnpm deploy:staging                        # wrangler deploy --env staging
 ```
 
-Then redeploy the gateway (`apps/gateway`, `corepack pnpm deploy` and `wrangler deploy --env staging`), which
-routes `/api/status*` here, and the site, whose page reads it. There are no secrets. The first run fills the page
+Then redeploy the site, whose page reads it. There are no secrets. The first run fills the page
 within the hour; until then it shows its live checks only.
 
 ## Performance
@@ -169,5 +163,5 @@ Measured locally (`wrangler dev`, D1's own `rows_read` and `rows_written`, Octob
   The worst case, every service down two days in three, stays under 24 KB (4 KB gzipped), tested in `api.test.ts`.
 - **The page**: one request on load and one every 5 minutes while visible, nothing per service.
 
-The edge cache is the Worker's `caches.default`. On `workers.dev` (the gateway, until the zone moves) that cache may
-not keep anything, so every read is the one D1 row; the snapshot is what keeps that cheap.
+The edge cache is the Worker's `caches.default`, on the `liveworkspace.app` zone. A miss is the one D1 row; the
+snapshot is what keeps that cheap.

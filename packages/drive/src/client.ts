@@ -1,6 +1,6 @@
 // The browser's side of the Drive service (liveworkspace/docs/drive.md "The service"): one typed method per browser
 // route, for Cloud Sync's row (@liveworkspace/settings-ui), the site's /drive pages and the Explorer's marks. A page
-// calls its own origin's `/api/drive` (liveworkspace.app's gateway, or an app's router, which forwards it), with the
+// calls its own origin's `/api/drive` (liveworkspace.app, or an app's router, which forwards it), with the
 // person's account access token. Nothing here throws: every answer is a result, so a row can say what went wrong.
 //
 // Browser-safe and dependency-free beyond the wire shapes: it never imports the server side.

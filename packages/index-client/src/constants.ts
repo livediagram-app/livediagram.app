@@ -38,7 +38,7 @@ export const FOLDER_PREVIEW_COUNT_CAP = 1000;
 // Where the index lives. Each app's router forwards `/api/index/*` on its own origin here, so a browser
 // calls its own origin.
 export const INDEX_API_PATH = '/api/index';
-export const INDEX_API_URL = `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${INDEX_API_PATH}`;
+export const INDEX_API_URL = `https://liveworkspace.app${INDEX_API_PATH}`;
 
 // An app's server names itself here and carries its key as `Authorization: Bearer <key>`.
 export const INDEX_APP_HEADER = 'X-Index-App';

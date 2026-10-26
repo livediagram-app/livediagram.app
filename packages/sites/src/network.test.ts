@@ -3,7 +3,7 @@ import { addressRange, expandIpv6, visitorAddress } from './network';
 import { WORKSPACE_CLIENT_IP_HEADER, WORKSPACE_PROXY_HEADER } from './workspace-proxy';
 
 const request = (headers: Record<string, string>) =>
-  new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/guest', { headers });
+  new Request('https://liveworkspace.app/api/auth/guest', { headers });
 
 describe('visitorAddress', () => {
   it("is the connection's own address for a direct visitor", () => {

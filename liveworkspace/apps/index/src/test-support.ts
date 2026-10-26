@@ -10,8 +10,8 @@ import worker from './index';
 import { testDb, type TestDb } from './test-sqlite-d1';
 import type { Env } from './env';
 
-export const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index';
-export const ISSUER = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth';
+export const BASE = 'https://liveworkspace.app/api/index';
+export const ISSUER = 'https://liveworkspace.app/api/auth';
 export const AUDIENCE = 'https://liveplanner.app/api';
 
 let accountsKey: CryptoKey;

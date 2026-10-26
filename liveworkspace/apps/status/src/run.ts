@@ -30,14 +30,6 @@ export function environmentOfWorker(env: Env): StatusEnvironment {
     : 'production';
 }
 
-// liveworkspace.app's own services go through the gateway's binding, where there is one (a Worker can't fetch another
-// Worker's workers.dev address on the same account); in development, and everything else, a plain fetch.
-function platformFetch(env: Env, fetchImpl: Fetch): Fetch {
-  const binding = env.PLATFORM;
-  if (!binding || environmentOfWorker(env) === 'development') return fetchImpl;
-  return (request) => binding.fetch(request);
-}
-
 // The workers.dev stand-ins on this account (STAND_INS), each origin with the binding that reaches it.
 function standInFetches(env: Env): Map<string, Fetch> {
   const bound = new Map<string, Fetch>();
@@ -55,7 +47,6 @@ function standInFetches(env: Env): Map<string, Fetch> {
 /** Every address one run checks, with the fetch that reaches it. */
 export function probeTargets(env: Env, fetchImpl: Fetch): ProbeTarget[] {
   const groups = statusGroups(environmentOfWorker(env));
-  const platform = platformFetch(env, fetchImpl);
   const standIns = standInFetches(env);
   return probedServices(groups).map((s) => {
     const url = resolveProbeUrl(s.check.probe, env.PLATFORM_ORIGIN);
@@ -63,9 +54,7 @@ export function probeTargets(env: Env, fetchImpl: Fetch): ProbeTarget[] {
       id: s.id,
       probe: s.check.probe,
       url,
-      fetch: s.check.probe.url.startsWith('/')
-        ? platform
-        : (standIns.get(new URL(url).origin) ?? fetchImpl),
+      fetch: standIns.get(new URL(url).origin) ?? fetchImpl,
     };
   });
 }

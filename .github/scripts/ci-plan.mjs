@@ -174,8 +174,8 @@ for (const spec of GROUPS) {
 }
 
 // The Workers among the affected workspaces. Tier 0: the services and apis everything else calls
-// (and the only ones with D1, whose migrations apply before their code); tier 2: the routers and the
-// gateway in front of the rest; tier 1: the sites between.
+// (and the only ones with D1, whose migrations apply before their code); tier 2: the routers in front
+// of the rest; tier 1: the sites between.
 function deployOf(p) {
   const toml = `${p.path}/wrangler.toml`;
   if (!existsSync(toml)) return null;
@@ -185,7 +185,7 @@ function deployOf(p) {
   const d1 = existsSync(`${p.path}/migrations`)
     ? (config.match(/^\[\[d1_databases\]\][^[]*?^binding\s*=\s*"([^"]+)"/ms)?.[1] ?? '')
     : '';
-  const tier = /^(router|gateway)$/.test(app)
+  const tier = app === 'router'
     ? 2
     : app === 'api' || (product === 'liveworkspace' && app !== 'site')
       ? 0

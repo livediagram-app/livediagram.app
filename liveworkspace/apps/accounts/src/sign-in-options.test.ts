@@ -5,7 +5,7 @@ import { signInOptions } from './sign-in-options.ts';
 const env = (extra: Partial<Env> = {}) =>
   ({
     TURNSTILE_SITE_KEY: 'site-key',
-    BASE_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+    BASE_URL: 'https://liveworkspace.app',
     ...extra,
   }) as Env;
 
@@ -16,7 +16,7 @@ describe('sign-in options', () => {
       turnstileSiteKey: 'site-key',
       google: false,
       nameMaxLength: 80,
-      accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+      accountsUrl: 'https://liveworkspace.app',
       googleOnApps: false,
     });
     expect(response.headers.get('cache-control')).toBe('public, max-age=300');

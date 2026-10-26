@@ -73,7 +73,7 @@ function route(
 }
 
 // The gallery reads the Community service; My Shares is this app's api.
-const SERVICE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/community';
+const SERVICE = 'https://liveworkspace.app/api/community';
 const isPosts = (url: string) => url.startsWith(`${SERVICE}/posts`);
 const isMine = (url: string) => url.startsWith('/api/community/mine');
 const queryOf = (url: string) => new URL(url, 'https://x.test').searchParams;

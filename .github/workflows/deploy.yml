@@ -5,7 +5,7 @@ name: Deploy (reusable)
 # the commit being deployed with the one this environment last deployed (the `deployed/<environment>`
 # tag), asks Turborepo which workspaces that reaches, dependencies included, and keeps the ones with a
 # wrangler.toml. They deploy in three tiers, each waiting for the one before: the services and apis
-# (D1 migrations first), then the sites, then the routers and the gateway in front. When every tier has
+# (D1 migrations first), then the sites, then the routers in front. When every tier has
 # succeeded, the tag moves to the deployed commit, so a failed or skipped Worker is retried next time.
 #
 # Deploys write code and plain vars only. Each Worker's secrets were set on it with `wrangler secret

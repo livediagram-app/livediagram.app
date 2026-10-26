@@ -21,7 +21,7 @@ not_found_handling = "404-page"
 run_worker_first = ["/*", "!/_next/*"]
 
 # A share link's preview names its design from liveworkspace's previews (liveworkspace/docs/previews.md), at
-# https://liveworkspace-gateway.liveworkspace-easing509.workers.dev unless PREVIEWS_ORIGIN says otherwise (staging below).
+# https://liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
 # as `livedesign-live-staging`. `main` is inheritable; the assets binding is
@@ -39,4 +39,4 @@ not_found_handling = "404-page"
 run_worker_first = ["/*", "!/_next/*"]
 
 [env.staging.vars]
-PREVIEWS_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

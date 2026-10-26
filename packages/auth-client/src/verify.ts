@@ -12,7 +12,7 @@ import {
 import { readTeamsClaim, type TeamClaim } from './account';
 
 export interface VerifierOptions {
-  // The accounts Worker's issuer, e.g. `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth`.
+  // The accounts Worker's issuer, e.g. `https://liveworkspace.app/api/auth`.
   issuer: string;
   // The resource this app's API was registered as, e.g. `https://livediagram-router.liveworkspace-easing509.workers.dev/api`.
   // A token minted for another app carries that app's audience and is refused here. A service

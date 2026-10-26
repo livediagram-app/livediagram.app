@@ -4,12 +4,11 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
 # The Google Drive mirror (liveworkspace/docs/drive.md): /api/drive on liveworkspace.app, and on each app's address
-# through its router. Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md);
-# put these back then:
-# routes = [{ pattern = "liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
+# through its router.
+routes = [{ pattern = "liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 # A pass writes up to DRIVE_PASS_MAX_WRITES files, each maybe with a thumbnail drawn by resvg: more CPU than the
@@ -41,11 +40,11 @@ ENVIRONMENT = "production"
 # The liveworkspace Google Cloud project's web client (liveworkspace/docs/drive.md "Google"); one client for
 # every environment while the app is in Testing. Empty: no Drive.
 GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
-# liveworkspace's origin (the gateway's, docs/gateway.md): the consent's redirect URI (<this>/drive/connected), the
+# liveworkspace's origin: the consent's redirect URI (<this>/drive/connected), the
 # files' lwOrigin, Google's push address (<this>/api/drive/push), and where a refused return page goes.
-DRIVE_PUBLIC_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+DRIVE_PUBLIC_URL = "https://liveworkspace.app"
 # The accounts origin: access tokens are checked against `${ACCOUNTS_URL}/api/auth`.
-ACCOUNTS_URL = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+ACCOUNTS_URL = "https://liveworkspace.app"
 # Every app's API resource: an access token addressed to any of them is let in (as the index does).
 INDEX_AUDIENCES = "https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
 # Where the service calls each app's export and import doors, and where an item opens.
@@ -71,16 +70,15 @@ new_sqlite_classes = ["DriveMirror"]
 
 [env.staging]
 name = "liveworkspace-drive-staging"
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "staging.liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app/api/drive*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
 # Production's client, which lists staging's addresses too.
 GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
-DRIVE_PUBLIC_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
-ACCOUNTS_URL = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+DRIVE_PUBLIC_URL = "https://staging.liveworkspace.app"
+ACCOUNTS_URL = "https://staging.liveworkspace.app"
 INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
 APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"

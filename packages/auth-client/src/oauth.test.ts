@@ -11,7 +11,7 @@ import {
 } from './oauth';
 
 const credentials = {
-  accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+  accountsUrl: 'https://liveworkspace.app',
   clientId: 'client-1',
   clientSecret: 's3cret',
 };
@@ -49,7 +49,7 @@ describe('authorizeUrl', () => {
       }),
     );
     expect(url.origin + url.pathname).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/authorize',
+      'https://liveworkspace.app/api/auth/oauth2/authorize',
     );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
@@ -83,7 +83,7 @@ describe('guestHandoffUrl', () => {
   it("names the app's client, where to come back and the state", () => {
     const url = new URL(
       guestHandoffUrl({
-        accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/',
+        accountsUrl: 'https://liveworkspace.app/',
         clientId: 'client-1',
         redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
         state: 'abcdefgh',
@@ -91,7 +91,7 @@ describe('guestHandoffUrl', () => {
       }),
     );
     expect(url.origin + url.pathname).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/guest',
+      'https://liveworkspace.app/api/auth/guest',
     );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       client_id: 'client-1',
@@ -152,7 +152,7 @@ describe('exchangeCode', () => {
     });
     const [url, init] = fetchImpl.mock.calls[0]!;
     expect(String(url)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/oauth2/token',
+      'https://liveworkspace.app/api/auth/oauth2/token',
     );
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
@@ -222,7 +222,7 @@ describe('closeAccount', () => {
     await closeAccount(credentials, 'at', fetchImpl);
     const [url, init] = fetchImpl.mock.calls[0]!;
     expect(String(url)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+      'https://liveworkspace.app/api/auth/delete-account',
     );
     expect(init?.method).toBe('POST');
     expect(new Headers(init?.headers).get('authorization')).toBe(

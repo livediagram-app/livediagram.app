@@ -8,7 +8,7 @@ import { addClient, addUser, testD1 } from './test-d1.ts';
 
 // POST /api/account/internal/invitations (internal-invitations.ts): what an app's Invites view lists.
 
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const BASE = 'https://liveworkspace.app';
 const CLIENT = `Basic ${btoa('livediagram:secret')}`;
 const T0 = Date.UTC(2026, 9, 1);
 

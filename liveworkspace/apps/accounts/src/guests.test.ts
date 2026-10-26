@@ -17,7 +17,7 @@ import { readProfiles, writeProfile } from './profiles.ts';
 import { readSettings, writeSettings } from './settings.ts';
 import { testD1 } from './test-d1.ts';
 
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const BASE = 'https://liveworkspace.app';
 const SECRET = 'test-secret-that-is-at-least-32-characters';
 const CLIENT_ID = 'liveplanner-client';
 const RESOURCE = 'https://liveplanner.app/api';

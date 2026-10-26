@@ -58,10 +58,7 @@ is a var on drive (wrangler.toml) and a secret on accounts. What the operator se
 | Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                             |
 | Drive UI MIME types | the four in [The file](#the-file), each with its extension                                     |
 
-The origins are the gateway's while liveworkspace.app is on another account (gateway.md):
-`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev` and `…-gateway-staging…`. liveworkspace.app's and
-each app's own domain are listed already, so the domain move needs no Google change; the Branding links move to
-liveworkspace.app then. The Picker's origins (every app's) and its API key come with Show folder.
+The origins are `https://liveworkspace.app` and `https://staging.liveworkspace.app`, and each app's own domain. The Picker's origins (every app's) and its API key come with Show folder.
 
 ## The file
 
@@ -312,7 +309,7 @@ and comes back to the same file.
 What the browser draws, beyond what the sections above pin (`@liveworkspace/settings-ui` `cloud-sync/`,
 `@liveworkspace/explorer` `drive/`, the site's `app/drive/*`; the browser client is `@liveworkspace/drive/client`).
 
-- **One client.** `createDriveClient({ getToken })` calls this origin's `/api/drive` (the gateway on liveworkspace.app,
+- **One client.** `createDriveClient({ getToken })` calls this origin's `/api/drive` (liveworkspace.app's route,
   the router's proxy on an app's address) with the person's account token, and answers every call as a result, never
   a throw. A host makes one only for an account: a guest's page asks nothing.
 - **The section appears** once `GET /api/drive/config` (asked each time Settings opens) says `enabled`. It sits in the
@@ -348,7 +345,7 @@ What the browser draws, beyond what the sections above pin (`@liveworkspace/sett
 
 ## The service
 
-`liveworkspace/apps/drive` (`liveworkspace-drive`, `-staging`), behind the gateway at `/api/drive`, and on each app's
+`liveworkspace/apps/drive` (`liveworkspace-drive`, `-staging`), on liveworkspace.app's `/api/drive` route, and on each app's
 own address through its router's workspace proxy (`/api/drive`, cookies dropped). The browser authenticates with an
 account access token, verified offline against accounts' keys (issuer `<accounts>/api/auth`, any app API audience),
 exactly as the index does.
@@ -396,8 +393,7 @@ last uploaded, the liveworkspace name it mirrors, the notice). Its alarm runs pa
 - Marks cover the mirrored rows and failed writes. An item not yet mirrored carries no mark until its first pass.
 - The Durable Object's RPC for consent is `connectGoogle` (`connect` is the runtime's own name).
 - Locally the service runs on port 3011 (`corepack pnpm dev:drive`). The site's dev server and each router's
-  `DRIVE_ORIGIN` forward `/api/drive` there. The gateway's `DRIVE` binding stays commented out until
-  `liveworkspace-drive` is deployed, and `/api/drive` answers `404` there until then.
+  `DRIVE_ORIGIN` forward `/api/drive` there.
 
 ## Contracts
 

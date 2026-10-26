@@ -151,7 +151,7 @@ describe('accountsAllowance', () => {
       return Response.json({ taken: 1 });
     }) as unknown as typeof fetch;
     const take = accountsAllowance(
-      { accountsUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', clientId: 'liveplanner', clientSecret: 's' },
+      { accountsUrl: 'https://liveworkspace.app', clientId: 'liveplanner', clientSecret: 's' },
       fetcher,
     );
     const input = {
@@ -165,7 +165,7 @@ describe('accountsAllowance', () => {
     expect(await take(input)).toBe(1);
     expect(calls).toEqual([
       {
-        url: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/account/internal/allowance',
+        url: 'https://liveworkspace.app/api/account/internal/allowance',
         body: { personId: 'user_a', kind: 'notify-email', max: 60, windowMs: 1, count: 2 },
       },
     ]);

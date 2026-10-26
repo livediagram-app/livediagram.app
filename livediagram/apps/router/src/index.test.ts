@@ -101,7 +101,7 @@ describe('production dispatch (service bindings)', () => {
       // Production's when no origin is named, and never the api worker.
       await dispatch('/api/drive/config', env);
       expect(fetchMock.mock.calls[1]![0].url).toBe(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/drive/config',
+        'https://liveworkspace.app/api/drive/config',
       );
       expect(api.urls).toEqual([]);
     } finally {
@@ -176,13 +176,13 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/telemetry?app=livediagram.app',
+        'https://liveworkspace.app/telemetry?app=livediagram.app',
       );
     }
     expect(marketing.urls).toEqual([]);
     const staging = await dispatch('/telemetry', { ...env, DEPLOY_ENV: 'staging' });
     expect(staging.headers.get('Location')).toBe(
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry?app=livediagram.app',
+      'https://staging.liveworkspace.app/telemetry?app=livediagram.app',
     );
   });
 
@@ -465,7 +465,7 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/previe
         },
       );
       expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/items/d1?v=5',
+        'https://liveworkspace.app/api/previews/items/d1?v=5',
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
@@ -510,7 +510,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
         expect(fetchMock.mock.lastCall![0].url).toBe(
-          `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`,
+          `https://liveworkspace.app${path}`,
         );
       }
       expect(live.urls).toEqual([]);
@@ -588,7 +588,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
           status: 307,
           headers: {
             Location:
-              'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent',
+              'https://liveworkspace.app/explorer/recent',
           },
         }),
       ),

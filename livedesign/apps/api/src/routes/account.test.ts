@@ -52,7 +52,7 @@ vi.mock('@liveworkspace/auth-client', async (original) => ({
 import { handleAccount } from './account';
 
 const SIGN_IN: Partial<Env> = {
-  ACCOUNTS_URL: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+  ACCOUNTS_URL: 'https://liveworkspace.app',
   ACCOUNTS_CLIENT_ID: 'client-1',
   ACCOUNTS_CLIENT_SECRET: 's3cret',
   API_RESOURCE: 'https://livedesign.app/api',

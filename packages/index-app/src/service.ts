@@ -3,7 +3,7 @@
 // app checks offline against the index's published keys; the item's content stays in its Durable Object.
 //
 // `createIndexService(app)` binds the three ways in to one app, all through INDEX_ORIGIN
-// (`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; locally `http://127.0.0.1:8793`):
+// (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`):
 //
 //   - a grant check (`verifyGrant`): the editor fetches its own grant and sends it as X-Index-Grant;
 //   - a grant fetched for a caller that has none (`requestGrant`): an API token or a workbench session, as that

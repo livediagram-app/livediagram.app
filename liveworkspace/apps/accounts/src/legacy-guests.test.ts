@@ -7,7 +7,7 @@ import type { Env } from './env.ts';
 import { readSettings, writeSettings } from './settings.ts';
 import { addClient, addUser, testD1 } from './test-d1.ts';
 
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const BASE = 'https://liveworkspace.app';
 const INDEX_URL = `${BASE}/api/index`;
 const SECRET = 'old-livediagram-guest-secret';
 const DIAGRAM = `Basic ${btoa('livediagram:secret')}`;

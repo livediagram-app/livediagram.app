@@ -19,9 +19,6 @@ apps/status        the hourly status checks and their history, /api/status* (sta
 The APIs are Workers on more specific routes of the same origin, so the pages call them as
 `/api/auth/…`, `/api/index/…` and so on, with no cross-site requests.
 
-Until the `liveworkspace.app` zone is on the liveworkspace Cloudflare account, those routes are a gateway
-Worker's on `workers.dev` instead, and every caller names its origin ([gateway.md](gateway.md)).
-
 ## Who it's for
 
 - Someone who heard of "liveworkspace" and wants to know what it is.

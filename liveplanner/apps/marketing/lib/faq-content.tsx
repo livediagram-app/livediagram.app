@@ -85,7 +85,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             There is no catch. liveplanner shows no ads, runs no third-party trackers and never
             sells your data. The{' '}
-            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">
+            <a href="https://liveworkspace.app/privacy">
               privacy policy
             </a>{' '}
             sets out what the service does with your data, and you can export your work whenever you
@@ -452,7 +452,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
-            <a href="https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/privacy">
+            <a href="https://liveworkspace.app/privacy">
               privacy policy
             </a>{' '}
             for the details.

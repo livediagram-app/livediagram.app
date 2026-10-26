@@ -3,17 +3,16 @@ name = "liveworkspace-site"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
 # Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). The APIs have more
 # specific routes, so they win: accounts (/api/auth/*, /api/account/* and the two .well-known documents),
 # the index, media, telemetry and the Community (/api/index*, /api/media*, /api/previews*, /api/telemetry*,
 # /api/community*).
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [
-#   { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
-#   { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
-# ]
+routes = [
+  { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
+  { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
+]
 workers_dev = false
 
 # Static assets only: the Next export in ./out. Headers come from public/_headers.
@@ -23,8 +22,7 @@ not_found_handling = "404-page"
 
 [env.staging]
 name = "liveworkspace-site-staging"
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 [env.staging.assets]

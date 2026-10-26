@@ -17,7 +17,7 @@ const DESCRIPTION =
   'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, and livedesign for logos, wireframes and photos. Completely free, shared by link, no trackers.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
+  metadataBase: new URL('https://liveworkspace.app'),
   title: TITLE,
   description: DESCRIPTION,
   // No canonical here: each page names its own, so a page without one never claims to be the home page.

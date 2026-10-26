@@ -30,19 +30,19 @@ describe('the apps, for the liveworkspace Explorer', () => {
   });
 
   it('builds the Explorer address, keeping the path, query and hash and naming where it came from', () => {
-    const origin = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+    const origin = 'https://liveworkspace.app';
     expect(explorerUrl('liveplanner', '', '', '', origin)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer?from=liveplanner',
+      'https://liveworkspace.app/explorer?from=liveplanner',
     );
     expect(explorerUrl('liveplanner', '/folder', '?id=f1', '#x', origin)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/folder?id=f1&from=liveplanner#x',
+      'https://liveworkspace.app/explorer/folder?id=f1&from=liveplanner#x',
     );
     // A stale `from` in the query gives way to the app redirecting.
     expect(explorerUrl('livediagram', 'search', 'q=a+b&from=liveplanner', '', origin)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/search?q=a+b&from=livediagram',
+      'https://liveworkspace.app/explorer/search?q=a+b&from=livediagram',
     );
     expect(explorerUrl(null, 'trash', '', '', origin)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/trash',
+      'https://liveworkspace.app/explorer/trash',
     );
   });
 });
@@ -65,7 +65,7 @@ describe("the site switcher's links on an Explorer page", () => {
   it("opens each site's Explorer at the same view, keeping the query", () => {
     expect(links('/explorer/timeline')).toEqual({
       liveworkspace:
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/timeline',
+        'https://liveworkspace.app/explorer/timeline',
       livediagram:
         'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/timeline',
       liveplanner: 'https://www.liveplanner.app/explorer/timeline',
@@ -80,7 +80,7 @@ describe("the site switcher's links on an Explorer page", () => {
       explorerSwitchHref('/explorer/folder', '?id=f1&q=tag%3Ax')!(site('livedesign.app')),
     ).toBe('https://www.livedesign.app/explorer/folder?id=f1&q=tag%3Ax');
     expect(explorerSwitchHref('/explorer/team', 'id=t1&folder=f2')!(PLATFORM_SITE)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/team?id=t1&folder=f2',
+      'https://liveworkspace.app/explorer/team?id=t1&folder=f2',
     );
   });
 
@@ -92,20 +92,20 @@ describe("the site switcher's links on an Explorer page", () => {
       )!(site('liveplanner.app')),
     ).toBe('https://www.liveplanner.app/explorer/search?q=roadmap');
     expect(explorerSwitchHref('/explorer', '?from=liveplanner')!(PLATFORM_SITE)).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer',
+      'https://liveworkspace.app/explorer',
     );
   });
 
   it("opens Home where the site's Explorer lacks the view", () => {
     // This Browser is each app's own; liveworkspace.app can't read it.
     expect(links('/explorer/offline')).toMatchObject({
-      liveworkspace: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer',
+      liveworkspace: 'https://liveworkspace.app/explorer',
       liveplanner: 'https://www.liveplanner.app/explorer/offline',
     });
     // The Library is where the app keeps one (liveworkspace.app shows the last app's).
     expect(links('/explorer/images')).toEqual({
       liveworkspace:
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/images',
+        'https://liveworkspace.app/explorer/images',
       livediagram: 'https://livediagram-router.liveworkspace-easing509.workers.dev/explorer/images',
       liveplanner: 'https://www.liveplanner.app/explorer',
       livedocuments: 'https://www.livedocuments.app/explorer/images',

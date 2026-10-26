@@ -29,7 +29,7 @@ export type Env = {
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
-  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; locally `http://127.0.0.1:8793`): the
+  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
   // and this app presents it to push a plan's summary and to act for an API token's account. Unset, the plan
@@ -42,7 +42,7 @@ export type Env = {
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
-  // `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://liveplanner.app/api`, and every access token must
   // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
   ACCOUNTS_URL?: string;
@@ -59,7 +59,7 @@ export type Env = {
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which serves every plan's previews
-  // (liveworkspace/docs/previews.md): its API's base URL (`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media`; locally
+  // (liveworkspace/docs/previews.md): its API's base URL (`https://liveworkspace.app/api/media`; locally
   // `http://localhost:8792/api/media`), unset for production's, and liveplanner's key there, a secret (wrangler
   // secret put MEDIA_KEY), the same value as the service's MEDIA_KEY_LIVEPLANNER. The service draws through the
   // export door with it (routes/internal-items.ts). Unset, the export door answers only the index and a purge

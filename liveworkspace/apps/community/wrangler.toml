@@ -4,12 +4,11 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram and liveworkspace answer on workers.dev stand-ins until their domains move (stand-in-addresses.md, gateway.md).
+# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/community, on liveworkspace.app (liveworkspace/docs/community.md). liveworkspace.app
 # hosts no Community pages: each app serves its own, which read from here.
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 # Secrets (wrangler secret put): each app's Worker key, sent as a bearer token on the app routes.
@@ -34,8 +33,7 @@ simple = { limit = 30, period = 60 }
 
 [env.staging]
 name = "liveworkspace-community-staging"
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "staging.liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app/api/community*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 [env.staging.vars]

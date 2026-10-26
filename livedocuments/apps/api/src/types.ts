@@ -30,7 +30,7 @@ export type Env = {
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every document is and who
-  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; locally `http://127.0.0.1:8793`): the
+  // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a
   // secret, the same both ways: the index presents it on this app's internal endpoints (`/api/internal/items/*`),
   // and this app presents it to push a document's summary and to act for an API token's account. Unset, the document
@@ -43,7 +43,7 @@ export type Env = {
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
-  // `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://livedocuments.app/api`, and every access token must
   // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
   ACCOUNTS_URL?: string;
@@ -60,7 +60,7 @@ export type Env = {
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
-  // images. Unset means production's, https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media; staging and local development name
+  // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
   // livedocuments' secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY);

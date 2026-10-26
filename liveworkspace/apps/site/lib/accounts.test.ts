@@ -102,11 +102,11 @@ describe("on an app's own address", () => {
     );
     expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
     expect(onAppAddress('http://localhost:3300')).toBe(true);
-    expect(onAppAddress('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
+    expect(onAppAddress('https://liveworkspace.app')).toBe(
       false,
     );
     expect(
-      onAppAddress('https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev'),
+      onAppAddress('https://staging.liveworkspace.app'),
     ).toBe(false);
     expect(onAppAddress('http://localhost:3000')).toBe(false);
   });
@@ -115,7 +115,7 @@ describe("on an app's own address", () => {
     expect(accountsApi('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
       '/api/workspace/auth',
     );
-    expect(accountsApi('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev')).toBe(
+    expect(accountsApi('https://liveworkspace.app')).toBe(
       '/api/auth',
     );
   });
@@ -127,7 +127,7 @@ describe("on an app's own address", () => {
     expect(
       signInHref(
         '/explorer/recent',
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+        'https://liveworkspace.app',
       ),
     ).toBe('/sign-in?return=%2Fexplorer%2Frecent');
   });
@@ -141,7 +141,7 @@ describe("on an app's own address", () => {
 
   it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
     const hop =
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/handoff?token=t';
+      'https://liveworkspace.app/api/auth/handoff?token=t';
     const fetched = at(
       'https://livediagram-router.liveworkspace-easing509.workers.dev',
       Response.json({ url: hop }),
@@ -165,7 +165,7 @@ describe("on an app's own address", () => {
     // A consent step still to come keeps the session where it is.
     expect(await afterSignIn('/consent?sig=s', `?handoff=${BIND}`)).toBe('/consent?sig=s');
     // liveworkspace.app itself has its session already.
-    const home = at('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev');
+    const home = at('https://liveworkspace.app');
     expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
     expect(home).not.toHaveBeenCalled();
   });

@@ -23,10 +23,10 @@ describe('statusRedirect', () => {
     expect(
       statusPageUrl(
         'liveplanner',
-        'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
+        'https://staging.liveworkspace.app',
       ),
     ).toBe(
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/status#liveplanner',
+      'https://staging.liveworkspace.app/status#liveplanner',
     );
     expect(statusPageUrl('livedesign', 'http://localhost:3000')).toBe(
       'http://localhost:3000/status#livedesign',

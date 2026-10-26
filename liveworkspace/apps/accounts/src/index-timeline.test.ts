@@ -34,7 +34,7 @@ import {
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 9, 23, 9, 17);
-const INDEX_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index';
+const INDEX_URL = 'https://liveworkspace.app/api/index';
 const ADA: Actor = { id: 'user_ada', email: 'ada@example.com', name: 'Ada' };
 const BEA: Actor = { id: 'user_bea', email: 'bea@example.com', name: 'Bea' };
 const CY: Actor = { id: 'user_cy', email: 'cy@example.com', name: 'Cy' };
@@ -225,7 +225,7 @@ describe('team events', () => {
       ADA,
       id,
       'secret',
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+      'https://liveworkspace.app',
       NOW,
     );
     if (!link.ok) throw new Error(link.error);

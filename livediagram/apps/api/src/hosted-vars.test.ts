@@ -63,16 +63,16 @@ describe('hosted profile', () => {
     const { shared, environments } = (await load()).readHostedProfile();
     expect(shared.TELEMETRY_ENABLED).toBe('true');
     expect(environments.production.MEDIA_URL).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/media',
+      'https://liveworkspace.app/api/media',
     );
     expect(environments.staging.MEDIA_URL).toBe(
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/media',
+      'https://staging.liveworkspace.app/api/media',
     );
     expect(environments.production.INDEX_ORIGIN).toBe(
-      'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+      'https://liveworkspace.app',
     );
     expect(environments.staging.INDEX_ORIGIN).toBe(
-      'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev',
+      'https://staging.liveworkspace.app',
     );
   });
 
@@ -119,10 +119,10 @@ describe('hosted-vars script', () => {
     expect(
       buildEnv({
         TELEMETRY_URL:
-          'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry',
+          'https://staging.liveworkspace.app/api/telemetry',
       }),
     ).toEqual([
-      'NEXT_PUBLIC_TELEMETRY_URL=https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/telemetry',
+      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry',
     ]);
   });
 
@@ -131,10 +131,10 @@ describe('hosted-vars script', () => {
     expect(
       buildEnv({
         COMMUNITY_URL:
-          'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community',
+          'https://staging.liveworkspace.app/api/community',
       }),
     ).toEqual([
-      'NEXT_PUBLIC_COMMUNITY_API=https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/api/community',
+      'NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community',
     ]);
   });
 

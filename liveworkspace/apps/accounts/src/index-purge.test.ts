@@ -11,7 +11,7 @@ import {
 import { createTeam, teamsClaim } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
 
-const INDEX_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index';
+const INDEX_URL = 'https://liveworkspace.app/api/index';
 
 type Sent = { url: string; auth: string | null; body: unknown };
 
@@ -122,7 +122,7 @@ describe('deleteAccount', () => {
   const close = () =>
     deleteAccount(
       new Request(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+        'https://liveworkspace.app/api/auth/delete-account',
         {
           method: 'POST',
           headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
@@ -159,7 +159,7 @@ describe('deleteAccount', () => {
     const disconnected: string[] = [];
     const res = await deleteAccount(
       new Request(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+        'https://liveworkspace.app/api/auth/delete-account',
         {
           method: 'POST',
           headers: { authorization: `Basic ${btoa('livediagram:secret')}` },

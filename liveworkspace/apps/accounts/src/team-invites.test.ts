@@ -36,7 +36,7 @@ import { flushServerEvents } from './telemetry.ts';
 // turned down staying on the list, and the admins hearing the answer.
 
 const SECRET = 'test-secret-test-secret-test-secret';
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const BASE = 'https://liveworkspace.app';
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = Date.UTC(2026, 9, 1);
 
@@ -75,7 +75,7 @@ describe('the join link', () => {
     const made = await makeInviteLink(db, ADA, id, SECRET, BASE, T0);
     if (!made.ok) throw new Error(made.error);
     expect(made.value.url).toMatch(
-      /^https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\?token=[\w-]{43}$/,
+      /^https:\/\/liveworkspace\.app\/join\?token=[\w-]{43}$/,
     );
     expect(made.value.expiresAt).toBe(T0 + INVITE_LINK_TTL_MS);
     // The admin sees the same link again later.
@@ -383,7 +383,7 @@ describe('the account API routes', () => {
     const id = await team();
     await call(`/teams/${id}/members`, 'POST', { email: BEA.email });
     const link =
-      /https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/join\/decline\?token=(\S+)/.exec(
+      /https:\/\/liveworkspace\.app\/join\/decline\?token=(\S+)/.exec(
         mail[0]!.text,
       );
     expect(link).not.toBeNull();
@@ -442,7 +442,7 @@ describe('counting team emails, teams and tokens', () => {
       } as unknown as SendEmail,
       BETTER_AUTH_SECRET: SECRET,
       TELEMETRY_URL:
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry',
+        'https://liveworkspace.app/api/telemetry',
       TELEMETRY_KEY_LIVEDESIGN: 'lds',
       TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
       TELEMETRY: {

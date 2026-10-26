@@ -9,7 +9,7 @@
 import type { AppName } from './index';
 
 /** Where liveworkspace.app lives when the router names no other (`WORKSPACE_ORIGIN`). */
-export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace.app';
 
 // Set on every request a router forwards, naming the app. A request that already carries it was forwarded once,
 // so a router that finds it refuses rather than forward again: a misconfigured origin can never loop.
@@ -328,7 +328,7 @@ async function forwardToWorkspace(
 // ---------- The index, on the app's address -------------------------------------------------------------------------
 
 /** Where liveworkspace's index lives when the router names no other (`INDEX_ORIGIN`). */
-export const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+export const PRODUCTION_INDEX_ORIGIN = 'https://liveworkspace.app';
 
 /**
  * `/api/index/*` on an app's address: the same request (method, body, Authorization, the share headers) at the
@@ -353,7 +353,7 @@ export function forwardToIndex(
 // ---------- Google Drive, on the app's address -----------------------------------------------------------------------
 
 /** Where liveworkspace's Google Drive mirror lives when the router names no other (`DRIVE_ORIGIN`). */
-export const PRODUCTION_DRIVE_ORIGIN = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+export const PRODUCTION_DRIVE_ORIGIN = 'https://liveworkspace.app';
 export const DRIVE_PATH = '/api/drive';
 
 /** Whether `pathname` is the Drive mirror's (`/api/drive` or under it). */
@@ -395,7 +395,7 @@ function carryVisitorAddress(request: Request, headers: Headers): void {
 // dependency-free, so they are written out here, and media's tests hold the two together.
 
 /** Where previews live when the router names no other (`PREVIEWS_ORIGIN`). */
-export const PRODUCTION_PREVIEWS_ORIGIN = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+export const PRODUCTION_PREVIEWS_ORIGIN = 'https://liveworkspace.app';
 export const PREVIEWS_PATH = '/api/previews';
 const SHARE_DOOR = /^\/api\/share\/([^/]+)\/(image\.svg|image\.png|card)$/;
 

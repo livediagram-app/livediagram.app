@@ -2,7 +2,7 @@
 //   POST   /api/drive/push        Google's change notifications: the channel token names the person
 //   POST   /app/changes           the index's change signal, `{ personId, at }`, with DRIVE_KEY_INDEX
 //   DELETE /app/people/<id>       accounts' account deletion, with DRIVE_KEY_ACCOUNTS
-// The /app routes are reached over service bindings only; the gateway and the routers forward /api/drive alone.
+// The /app routes are reached over service bindings only; the zone and the routers forward /api/drive alone.
 
 import { isDriveId } from '@liveworkspace/drive';
 import { carriesKey } from './auth';

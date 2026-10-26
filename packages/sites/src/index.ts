@@ -48,7 +48,7 @@ export const PLATFORM_SITE: Site = {
   name: 'liveworkspace',
   url: siteUrl(
     'liveworkspace.app',
-    'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+    'https://liveworkspace.app',
   ),
   pitch: 'One account across every app',
   accent: '#64748b',
@@ -60,7 +60,7 @@ export const PLATFORM_SITE: Site = {
 export function workspaceOriginFor(host: string): string {
   // `staging.<app>`, or a staging stand-in on workers.dev (`livediagram-router-staging.….workers.dev`).
   return /^staging\.|^[^.]+-staging\.[^.]+\.workers\.dev$/i.test(host)
-    ? 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev'
+    ? 'https://staging.liveworkspace.app'
     : PLATFORM_SITE.url;
 }
 

@@ -29,13 +29,13 @@ describe('liveworkspace.app as a sender', () => {
     expect(isTelemetryApp('liveworkspace.app')).toBe(false);
     expect(TELEMETRY_SENDERS).toContain('liveworkspace.app');
     expect(
-      isPlatformOrigin('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
+      isPlatformOrigin('https://liveworkspace.app'),
     ).toBe(true);
     expect(isPlatformOrigin('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
       false,
     );
     expect(
-      telemetryAppOfOrigin('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev'),
+      telemetryAppOfOrigin('https://liveworkspace.app'),
     ).toBeNull();
   });
 });

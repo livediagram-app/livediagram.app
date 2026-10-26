@@ -15,7 +15,7 @@ beforeAll(async () => {
   const jwk = { ...(await exportJWK(pair.publicKey)), kid: 'g1', alg: 'ES256' };
   publicJwk = jwk;
   verify = createGrantVerifier({
-    jwksUrl: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/jwks',
+    jwksUrl: 'https://liveworkspace.app/api/index/jwks',
     audience: 'liveplanner',
     issuer: GRANT_ISSUER,
     keys: createLocalJWKSet({ keys: [jwk] }),

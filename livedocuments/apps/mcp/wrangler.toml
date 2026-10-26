@@ -38,7 +38,7 @@ CONSENT_BASE_URL = "https://livedocuments.app"
 # value as the api worker's. It is livedocuments' Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md): unset, this
 # worker sends no telemetry. TELEMETRY_URL (a var, unset meaning production's
-# https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/telemetry) names the service. See apps/api/wrangler.toml.
+# https://liveworkspace.app/api/telemetry) names the service. See apps/api/wrangler.toml.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`

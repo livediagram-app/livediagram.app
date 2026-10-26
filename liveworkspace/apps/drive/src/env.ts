@@ -74,7 +74,7 @@ export function environmentOf(env: Pick<Env, 'ENVIRONMENT'>): DriveEnvironment {
   return value === 'staging' || value === 'development' ? value : 'production';
 }
 
-const DEFAULT_PUBLIC_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const DEFAULT_PUBLIC_URL = 'https://liveworkspace.app';
 
 /** liveworkspace's origin in this environment. */
 export function publicOrigin(env: Pick<Env, 'DRIVE_PUBLIC_URL'>): string {

@@ -11,7 +11,7 @@ import {
 } from './room-ticket';
 
 const claims = (item: string): GrantClaims => ({
-  iss: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev',
+  iss: 'https://liveworkspace.app',
   aud: 'livediagram',
   sub: 'user_1',
   item,
@@ -28,7 +28,7 @@ const service = {
   verifyGrant: async (_env: unknown, token: string | null | undefined, itemId: string) =>
     token === `grant-for-${itemId}` ? claims(itemId) : null,
 };
-const env = { INDEX_ORIGIN: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev', INDEX_KEY: 'k'.repeat(32) };
+const env = { INDEX_ORIGIN: 'https://liveworkspace.app', INDEX_KEY: 'k'.repeat(32) };
 
 describe('room tickets', () => {
   it('is the grant itself for everyone but a workbench session', async () => {

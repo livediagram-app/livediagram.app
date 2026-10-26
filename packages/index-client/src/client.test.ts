@@ -185,6 +185,6 @@ describe('createIndexAppClient', () => {
     );
     const app = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: doFetch });
     await expect(app.pushSummary('i1', {}, 1)).rejects.toMatchObject({ code: 'wrong_app' });
-    expect(seen[0]!.url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/app/items/i1/summary');
+    expect(seen[0]!.url).toBe('https://liveworkspace.app/api/index/app/items/i1/summary');
   });
 });

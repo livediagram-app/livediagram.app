@@ -73,7 +73,7 @@ describe('routeToPreviews', () => {
     ).toBeNull();
     const self = await routeToPreviews(
       new Request(
-        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/previews/items/I1',
+        'https://liveworkspace.app/api/previews/items/I1',
       ),
       undefined,
       doFetch,

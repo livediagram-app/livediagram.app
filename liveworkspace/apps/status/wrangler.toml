@@ -3,16 +3,18 @@ name = "liveworkspace-status"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: its checks of liveworkspace.app go out and come back in through the zone's routes
+# (docs/status.md "Where the checks go"); without it a fetch to a route on its own zone isn't routed to that Worker.
+compatibility_flags = ["global_fetch_strictly_public"]
 # Only its API, /api/status, on liveworkspace.app: the page at /status is the static site's (apps/site).
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 # No secrets. Every check is a public address (docs/status.md).
 [vars]
 ENVIRONMENT = "production"
-# liveworkspace.app's origin, where its own services are checked: the gateway's until the zone moves (docs/gateway.md).
-PLATFORM_ORIGIN = "https://liveworkspace-gateway.liveworkspace-easing509.workers.dev"
+# liveworkspace.app's origin, where its own services are checked.
+PLATFORM_ORIGIN = "https://liveworkspace.app"
 
 # Its own database: every check for 90 days, the daily rollups, the incidents and the two answers it serves.
 [[d1_databases]]
@@ -20,12 +22,6 @@ binding = "STATUS_DB"
 database_name = "liveworkspace-status"
 database_id = "9430bdaf-7819-41d4-8cb6-7aec451488b6"
 migrations_dir = "migrations"
-
-# liveworkspace.app's own services are checked through the gateway: a Worker can't fetch another Worker's
-# workers.dev address on the same account (docs/status.md "Where the checks go").
-[[services]]
-binding = "PLATFORM"
-service = "liveworkspace-gateway"
 
 # livediagram stands in on this account's workers.dev until livediagram.app moves (STAND_INS, @liveworkspace/sites;
 # livediagram/docs/specs/016-platform/stand-in-addresses.md), so its checks go through its Workers' bindings too.
@@ -49,23 +45,18 @@ crons = ["7 * * * *"]
 
 [env.staging]
 name = "liveworkspace-status-staging"
-# Until liveworkspace.app is on this account, the gateway routes here instead (docs/gateway.md); put these back then:
-# routes = [{ pattern = "staging.liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app/api/status*", zone_name = "liveworkspace.app" }]
 workers_dev = false
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
-PLATFORM_ORIGIN = "https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev"
+PLATFORM_ORIGIN = "https://staging.liveworkspace.app"
 
 [[env.staging.d1_databases]]
 binding = "STATUS_DB"
 database_name = "liveworkspace-status-staging"
 database_id = "2cdd405e-c958-4a25-b65d-878b83901230"
 migrations_dir = "migrations"
-
-[[env.staging.services]]
-binding = "PLATFORM"
-service = "liveworkspace-gateway-staging"
 
 [[env.staging.services]]
 binding = "LIVEDIAGRAM_ROUTER"

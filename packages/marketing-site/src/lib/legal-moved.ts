@@ -23,8 +23,8 @@ export interface LegalMovedPage {
   redirect: { href: string; heading: string; linkText: string; lead: string };
 }
 
-// For now liveworkspace.app answers on its workers.dev gateway.
-const LIVEWORKSPACE_URL = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+// The policies live on liveworkspace.app.
+const LIVEWORKSPACE_URL = 'https://liveworkspace.app';
 
 function moved(
   title: string,

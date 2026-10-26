@@ -11,7 +11,7 @@ import { closeAccountWorkbench } from './revoke.ts';
 import { WORKBENCH_SESSION_GRACE_MS } from './store.ts';
 import { memoryWorkbench, type MemoryWorkbench } from './test-store.ts';
 
-const BASE = 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev';
+const BASE = 'https://liveworkspace.app';
 const PLANNER = `Basic ${btoa('liveplanner:secret')}`;
 const DIAGRAM = `Basic ${btoa('livediagram:secret')}`;
 const CLIENTS: Record<string, string> = { [PLANNER]: 'liveplanner', [DIAGRAM]: 'livediagram' };
@@ -329,7 +329,7 @@ describe('tickets and sessions', () => {
     expect(unpaired.status).toBe(428);
     expect(await unpaired.json()).toMatchObject({
       error: 'pairing_required',
-      pairingUrl: expect.stringMatching(/^https:\/\/liveworkspace-gateway\.liveworkspace-easing509\.workers\.dev\/workbench\/pair\?code=/),
+      pairingUrl: expect.stringMatching(/^https:\/\/liveworkspace\.app\/workbench\/pair\?code=/),
     });
     await pair(t.secret);
     const minted = await mint(t.secret, { projectId: 'plan1', tabId: 't1' });
