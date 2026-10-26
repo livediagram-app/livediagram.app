@@ -30,9 +30,9 @@ import {
   gateEdit,
   gateGrant,
   gateRead,
+  grantOn,
   missingProject,
   requireOwner,
-  shareCodeOf,
   type PlanRouteContext,
 } from './context';
 
@@ -182,7 +182,7 @@ export function refreshAfterWrite(
         tokenId,
         tabId,
         personTag,
-        shareCode: shareCodeOf(ctx.request),
+        shareCode: grantOn(ctx, projectId)?.shareCode ?? null,
         name: author.name,
         color: author.color,
         // A changeset passed the edit gate.
@@ -227,11 +227,7 @@ function parseLimit(raw: string | null): number | null {
 }
 
 // Comment author ids never leave the server for a non-owner, conflicts included.
-function redactConflicts(
-  result: SubmitResult,
-  project: ProjectDTO,
-  viewer: string,
-): SubmitResult {
+function redactConflicts(result: SubmitResult, project: ProjectDTO, viewer: string): SubmitResult {
   if (viewer === project.ownerId) return result;
   const body = result.body as { conflicts?: ChangesetConflict[] };
   if (!Array.isArray(body?.conflicts)) return result;

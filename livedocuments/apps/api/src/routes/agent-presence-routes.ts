@@ -22,8 +22,8 @@ import {
   deniedOnTab,
   gateEdit,
   gateRead,
+  grantOn,
   missingDocument,
-  shareCodeOf,
   type DocumentRouteContext,
 } from './context';
 
@@ -119,7 +119,7 @@ async function presenceRoute(ctx: DocumentRouteContext): Promise<Response | null
       tokenId: token.id,
       tabId,
       personTag: await personTagFor(documentId, owner),
-      shareCode: shareCodeOf(request),
+      shareCode: grantOn(ctx, documentId)?.shareCode ?? null,
       name: participant?.name ?? 'Anonymous',
       color: participant?.color ?? '#94a3b8',
       role,

@@ -22,8 +22,8 @@ import {
   deniedOnTab,
   gateEdit,
   gateRead,
+  grantOn,
   missingProject,
-  shareCodeOf,
   type PlanRouteContext,
 } from './context';
 
@@ -117,7 +117,7 @@ async function presenceRoute(ctx: PlanRouteContext): Promise<Response | null> {
       tokenId: token.id,
       tabId,
       personTag: await personTagFor(projectId, owner),
-      shareCode: shareCodeOf(request),
+      shareCode: grantOn(ctx, projectId)?.shareCode ?? null,
       name: participant?.name ?? 'Anonymous',
       color: participant?.color ?? '#94a3b8',
       role,

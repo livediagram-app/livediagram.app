@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as roomClient from '../room-client';
+import type { ItemGrant } from '@liveworkspace/index-app';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDesigns } from './designs';
 import { resetProfiles, seedProfile } from '../test-profiles';
@@ -24,6 +25,7 @@ type Call = {
   token?: { id: string; readOnly?: boolean } | null;
   owner?: string | null;
   raw?: string;
+  grant?: ItemGrant;
 };
 
 function call({
@@ -33,12 +35,14 @@ function call({
   token = { id: 'tok_1' },
   owner = 'owner',
   raw,
+  grant,
 }: Call = {}) {
   return handleDesigns(
     makeTestRouteContext(method, `/api/designs/d1/tabs/${tab}/presence`, {
       env: sql.env,
       owner,
       token,
+      ...(grant ? { grant } : {}),
       ...(raw !== undefined ? { rawBody: raw } : body === undefined ? {} : { body }),
       waitUntil: (p) => void pending.push(p),
     }),
@@ -66,6 +70,24 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('PUT presence', () => {
+  it('names the link the grant came through, though the request sends no share header', async () => {
+    const res = await call({
+      body: { status: 'reading' },
+      grant: {
+        item: 'd1',
+        level: 'edit',
+        tab: null,
+        sub: 'guest_00000000-0000-4000-8000-000000000002',
+        team: null,
+        exp: 9_999_999_999,
+        shareCode: 'LINKCODE',
+        token: 'signed',
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(put).toHaveBeenCalledWith(sql.env, expect.objectContaining({ shareCode: 'LINKCODE' }));
+  });
+
   it('sets the owner’s presence with status, resolved focus and ttl, at the token’s level', async () => {
     const res = await call({
       body: { status: ' adding payment ', focus: ['web-app', 'web-app'], ttl: 60_000 },

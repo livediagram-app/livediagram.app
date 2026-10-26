@@ -30,9 +30,9 @@ import {
   gateEdit,
   gateGrant,
   gateRead,
+  grantOn,
   missingDocument,
   requireOwner,
-  shareCodeOf,
   type DocumentRouteContext,
 } from './context';
 
@@ -182,7 +182,7 @@ export function refreshAfterWrite(
         tokenId,
         tabId,
         personTag,
-        shareCode: shareCodeOf(ctx.request),
+        shareCode: grantOn(ctx, documentId)?.shareCode ?? null,
         name: author.name,
         color: author.color,
         // A changeset passed the edit gate.

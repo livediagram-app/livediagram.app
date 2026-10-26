@@ -30,9 +30,9 @@ import {
   gateEdit,
   gateGrant,
   gateRead,
+  grantOn,
   missingDesign,
   requireOwner,
-  shareCodeOf,
   type DesignRouteContext,
 } from './context';
 
@@ -76,8 +76,7 @@ async function handleSubmit(
   tabId: string,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, design.id, design.ownerId, design.teamId, tabId)))
-    return forbidden();
+  if (!(await gateEdit(ctx, design.id, design.ownerId, design.teamId, tabId))) return forbidden();
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ designId: design.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
@@ -182,7 +181,7 @@ export function refreshAfterWrite(
         tokenId,
         tabId,
         personTag,
-        shareCode: shareCodeOf(ctx.request),
+        shareCode: grantOn(ctx, designId)?.shareCode ?? null,
         name: author.name,
         color: author.color,
         // A changeset passed the edit gate.
@@ -227,11 +226,7 @@ function parseLimit(raw: string | null): number | null {
 }
 
 // Comment author ids never leave the server for a non-owner, conflicts included.
-function redactConflicts(
-  result: SubmitResult,
-  design: DesignDTO,
-  viewer: string,
-): SubmitResult {
+function redactConflicts(result: SubmitResult, design: DesignDTO, viewer: string): SubmitResult {
   if (viewer === design.ownerId) return result;
   const body = result.body as { conflicts?: ChangesetConflict[] };
   if (!Array.isArray(body?.conflicts)) return result;
