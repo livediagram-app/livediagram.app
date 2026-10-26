@@ -14,6 +14,12 @@ async function showView(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
 
+// Recent and Favourites have no sidebar entry (Home's Jump Back In and the panel link to them): opened by address.
+async function openView(page: Page, slug: 'recent' | 'favourites', name: string): Promise<void> {
+  await page.goto(`/explorer/${slug}`);
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+}
+
 const thisBrowserList = (page: Page) =>
   page.evaluate(
     (key) =>
@@ -82,13 +88,12 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
 
   // The open is recorded, so it is in Recent.
-  await page.goto('/explorer');
-  await showView(page, 'Recent');
+  await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Star it: Favourites lists it.
   await rowAction(page, 'Roadmap', 'Add to Favourites');
-  await showView(page, 'Favourites');
+  await openView(page, 'favourites', 'Favourites');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // File it in a new folder, made from the move dialog.
@@ -112,7 +117,7 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
   await rowAction(page, 'Roadmap', 'Restore');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeHidden();
-  await showView(page, 'Recent');
+  await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   expectNoPageErrors(pageErrors);

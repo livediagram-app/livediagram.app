@@ -21,11 +21,13 @@ describe('photo commands', () => {
     expect(items.some((i) => i.name === 'Photo: Image Size')).toBe(true);
   });
 
-  it('runs a command, opens a filter, and leaves other ids alone', () => {
+  it('runs a command, opens a filter, and leaves other ids alone', async () => {
     const h = harness(photoOf(2, 1), { a: solid(2, 1, [1, 2, 3, 255]) });
     expect(runPhotoCommand('zen', viewOf(h))).toBe(false);
     expect(runPhotoCommand('photo:flip-h', viewOf(h))).toBe(true);
-    expect(h.commits.at(-1)?.label ?? 'pending').not.toBe('');
+    // The flip commits once its tiles are done: wait for it, or its log lands after the file's teardown.
+    await h.s.settled();
+    expect(h.commits.at(-1)?.label).toBe('Flip Horizontal');
     runPhotoCommand('photo:filter:gaussian-blur', viewOf(h));
     expect(photoDialogs.get()).toEqual({ kind: 'filter', id: 'gaussian-blur' });
     photoDialogs.close();
