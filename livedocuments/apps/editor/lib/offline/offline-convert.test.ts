@@ -132,7 +132,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(indexClient.favourite).toHaveBeenCalledWith('d1');
   });
 
-  // Tags were removed (docs/specs/013-workspace/tags.md): a record written while they existed still syncs, its tag
+  // Tags were removed: a record written while they existed still syncs, its tag
   // ids ignored.
   it('syncs an older record that still carries tag ids, ignoring them', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({

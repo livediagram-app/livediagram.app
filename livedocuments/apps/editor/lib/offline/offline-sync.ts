@@ -114,7 +114,7 @@ export async function syncOfflineDocument(
     if (done.outcome === 'deleted') {
       // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
       // the document's index item, which the upload made. A failed star leaves the document synced without it.
-      // (Tag ids an older record still carries are ignored: docs/specs/013-workspace/tags.md.)
+      // (Tag ids an older record still carries are ignored.)
       if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
       return { id: rec.id, imageIds };
     }

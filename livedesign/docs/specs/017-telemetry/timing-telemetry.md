@@ -101,7 +101,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 
 ## Dashboard: the Timings section
 
-A **Timings** section on the dashboard's Health tab, after Exceptions (liveworkspace's shared views over livedesign's `catalogue/timings.ts`).
+A **Timings** section on the dashboard's Health tab, after Exceptions (liveworkspace's shared views over livedesign's `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/timings.ts`).
 
 - **Editor timings**: one card per editor metric (Design Load, Tab Switch, Save, Live Connect, Live
   Reconnect). Each card's big number is the **p75** for the selected window, with the median (p50) and

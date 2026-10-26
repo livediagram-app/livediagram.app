@@ -1,4 +1,4 @@
-// The returning-visitor note the editor used to leave for the landing page (docs/specs/019-marketing/returning-visitor.md).
+// The returning-visitor note the editor used to leave for the landing page.
 // Nothing writes or reads it now; its storage names stay so sign-out can clear what an
 // older visit left behind.
 

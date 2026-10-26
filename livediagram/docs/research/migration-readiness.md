@@ -4,7 +4,7 @@ Research to de-risk three features that let a user bring 100+ boards from other
 tools into livediagram and keep them mirrored in their own Google Drive. No
 product code. The decisions below turned the proposals into specs:
 [Board import](../specs/020-import-export/board-import.md),
-[Miro import](../specs/020-import-export/miro-import.md) and
+Miro import (not specified) and
 [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
 the Drive decision amended [Save Locations](../specs/006-document/save-locations.md).
 The Google Drive mirror built from section A ran in livediagram until it moved to liveworkspace, for every app
@@ -25,7 +25,7 @@ Taken by the operator on 2026-09-27, after the first version of this report.
 
 | Question           | Decision                                                                                                                                                      | Recorded in                                                                    |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
+| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | Miro import (not specified)                                                    |
 | Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
 | Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md)                      |
 | Drive bin          | Maps to the livediagram **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
@@ -378,7 +378,7 @@ decode [M9]. Unverified by us, but consistent with Miro's own "Unsupported" list
 
 ### B4. Importer
 
-Specified in [Miro import](../specs/020-import-export/miro-import.md), on the
+Specified in Miro import (not specified), on the
 shared stages of [Board import](../specs/020-import-export/board-import.md).
 
 ## C. Microsoft Whiteboard import

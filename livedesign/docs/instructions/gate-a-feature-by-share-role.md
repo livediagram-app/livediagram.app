@@ -12,7 +12,7 @@ something it cannot.
 2. **Name it in the Share roles spec.** If the feature is something a Participant may do, add it to the May column
    of "What a Participant changes"; if it is explicitly not, to the Never column.
 3. **Pick the server gate.** A REST write uses `gateEdit`, or `gateParticipate` for a Participant's write; a room op
-   is gated by `gateClientOp` (`apps/api/src/room-op-gate.ts`) on its kind from `apps/api/src/room-messages.ts`: a
+   is gated by `gateClientOp` (`apps/api/src/room-op-gate.ts`) on its kind from `packages/api-schema/src/room-messages.ts`: a
    presence op (`PRESENCE_OP_KINDS`) passes from anyone (a Viewer's reaction is dropped), and every other op needs
    edit, except a Participant's `el` op, which goes through the participant content rule. A Participant's element change goes through `applyParticipantOp` in
    `packages/design/src/participant-content.ts`: a new field a Participant may write is added to that file's lists

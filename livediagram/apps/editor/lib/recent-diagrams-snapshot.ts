@@ -1,4 +1,4 @@
-// The returning-visitor note the editor used to leave for the landing page (docs/specs/019-marketing/returning-visitor.md):
+// The returning-visitor note the editor used to leave for the landing page:
 // a list of your recent diagrams in localStorage and their snapshot SVGs in Cache Storage. Nothing writes or reads
 // it now, but a browser that kept one still holds an account's diagram names and previews, so signing out (and
 // deleting the account) clears whatever is left.

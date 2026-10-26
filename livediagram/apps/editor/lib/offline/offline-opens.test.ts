@@ -4,7 +4,7 @@ import { localOpensOf, nextLocalOpens, offlineListOpens, offlineRecordOpen } fro
 import { memBackend, testRecord as rec } from './offline-test-utils';
 
 // This browser's own opens of the documents stored only here
-// (docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens"): the UTC days with an
+// (docs/specs/013-workspace/explorer-home.md "Opens"): the UTC days with an
 // open, inside the 90-day use window, and the last open, kept on the document's record.
 
 const DAY = 24 * 60 * 60 * 1000;

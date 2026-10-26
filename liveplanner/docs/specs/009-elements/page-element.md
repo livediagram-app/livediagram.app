@@ -77,7 +77,7 @@ touched.
 - **420 × 594** — √2, the A-series ratio, at a size that reads as a page next
   to a 120px square without dominating the canvas.
 - **Body top-left**, not centred. Centred prose is the single strongest tell
-  that something is a label pretending to be a document.
+  that something is a label pretending to be a page.
 - **A wide margin** (`padding: 'lg'`), like a word processor's. Text running
   to the edge of a sheet is the other half of "this isn't paper".
 - **A white body, a hairline border and a soft shadow**, so it reads as paper
@@ -110,11 +110,11 @@ page when it outgrows it rather than the page growing without bound.
 
 ## Out of scope
 
-- **Pagination.** One element is one page-shaped surface, not a document that
+- **Pagination.** One element is one page-shaped surface, not a page that
   flows onto a second sheet. A canvas is not a word processor, and the moment
   it pretends to be, every missing word-processor feature becomes a bug.
 - **Tables, images or embeds inside the body.** The runs model is a flat text
   algebra; block content inside it is a different data structure and a much
   larger feature. Put an image element next to the page.
-- **Import / export as a document format.** It exports exactly like any shape:
+- **Import / export as a page format.** It exports exactly like any shape:
   its plain-text mirror in Markdown, its box in PNG / SVG.

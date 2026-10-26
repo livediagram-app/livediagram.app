@@ -40,7 +40,7 @@ the content (an emoji glyph, or a word on a tone-coloured pill whose font size f
 and "OUT OF SCOPE" both fit).
 
 There is no SVG `<filter>` for the shadow: a filter needs a `defs` id, and the export packs every element into one
-document where those ids collide. The shadow is an offset rounded rect at low opacity instead, which renders the same
+SVG where those ids collide. The shadow is an offset rounded rect at low opacity instead, which renders the same
 everywhere, headless included. The PNG drawer hands a sticker to its SVG before its own shape drawing
 (`export-tab-canvas-draw.ts`).
 
