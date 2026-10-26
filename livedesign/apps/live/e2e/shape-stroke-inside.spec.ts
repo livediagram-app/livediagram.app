@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, seedTab, startBlankDesign } from './fixtures';
+import { expect, test, expectNoPageErrors, seedTab, openBlankPage } from './fixtures';
 
 // A shape drawn to its box edge keeps its stroke inside the box, as a square's CSS border does
 // (docs/specs/008-canvas/canvas-and-palette.md, Shape primitives). The proof is pixels: the ring
@@ -72,20 +72,32 @@ async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
 test('a shape drawn to its box edge paints no stroke outside it', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await startBlankDesign(page);
-  // Three to a row, 60px apart: wider than both margins, so no neighbour is in the ring.
+  await openBlankPage(page);
+  // Three to a row, 60px apart: wider than both margins, so no neighbour is in the ring. All on the Logo page,
+  // which is centred on the canvas origin (1024 x 1024): a shape past a page's edge is clipped by it, and content
+  // off every page is put onto a new page that fits it, which moves and rescales the view mid-measurement.
   await seedTab(
     page,
     EDGE_KINDS.map((shape, i) => ({
       id: `s-${shape}`,
       type: 'shape',
       shape,
-      x: 100 + (i % 3) * 220,
-      y: 100 + Math.floor(i / 3) * 160,
+      x: -320 + (i % 3) * 220,
+      y: -200 + Math.floor(i / 3) * 160,
       width: 160,
       height: 100,
     })),
   );
+
+  // At 100%, as drawn: a page fitted to the screen is scaled down, and a box edge between device pixels
+  // blurs both sides of it.
+  await page.getByRole('button', { name: 'Fit to screen' }).first().focus();
+  await page.keyboard.press('ArrowDown');
+  await page
+    .getByRole('menu', { name: 'Zoom level' })
+    .getByRole('menuitemradio', { name: '100%' })
+    .click();
+  await expect(page.getByRole('button', { name: 'Fit to screen' }).first()).toHaveText('100%');
 
   const outside: Record<string, number> = {};
   for (const shape of EDGE_KINDS) {
