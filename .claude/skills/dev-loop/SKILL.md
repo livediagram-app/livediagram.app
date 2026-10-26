@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds each ready one in its own worktree (three at a time) and opens one PR per item, moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a Question). Run with `/loop 1h /dev-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (three agents at a time, small cards batched on a lighter model) and opens one PR per item, moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a Question). Run with `/loop 1h /dev-loop`.
 ---
 
 # Dev loop: one pass
@@ -82,9 +82,16 @@ Everything else is ready, including small open choices with an obvious default (
 default and says so in the PR). Use review-loop's "What counts as important" as the bar. Don't hold a card for
 anything below it.
 
-For more than a couple of cards, send them to `Explore` agents grouped by area (at most four in parallel), as
-review-loop step 3 does. Ask each for: where the code lives (every app it reaches), whether it's done already,
-blockers, and the files it would touch. Keep the file lists, since step 3 needs them.
+**Size each ready card**, because effort costs tokens and should match the work:
+
+- **Small:** copy, a label, an order or position, a style tweak, or one component's behaviour, with no data
+  model, API, MCP, schema or sharing change. Most Low-priority Bugs are Small.
+- **Standard:** everything else.
+
+Do the readiness check yourself with `git grep` for Small cards (a couple of greps each). Send Standard cards to
+`Explore` agents only when there are more than two, grouped by area (at most four in parallel), as review-loop
+step 3 does. Ask each for: where the code lives (every app it reaches), whether it's done already, blockers, and
+the files it would touch. Keep the file lists, since step 3 needs them.
 
 Then, in one `change_items` batch:
 
@@ -93,15 +100,22 @@ Then, in one `change_items` batch:
   when an open one already covers it.
 - **Ready:** don't move it yet (step 3 moves each one when its agent starts).
 
-## 3. Build: one agent per card, three at a time
+## 3. Build: agents by size, three at a time
 
 Work through the ready cards in Priority order, with **at most three agents running at once**. When one finishes,
 start the next. Two cards whose file lists overlap never run at the same time: hold the later one until the
 earlier one's agent has finished.
 
-For each card, when its turn comes:
+- **Standard cards:** one agent per card, on the default model.
+- **Small cards:** one agent with `model: "sonnet"` takes up to four of them, one after another, each still on its
+  own branch with its own PR. Its brief holds every card's section and Answers.
 
-1. Move it to **In Progress**.
+Check the machine first: if `uptime`'s one-minute load is above `sysctl -n hw.ncpu`, other sessions are busy, so
+run one agent at a time this pass.
+
+For each agent, when its turn comes:
+
+1. Move its card (or cards) to **In Progress**.
 2. Spawn a background `general-purpose` agent with `isolation: "worktree"`, using the brief below.
 
 Keep your own context light: read the agents' reports, not their transcripts.
@@ -125,10 +139,16 @@ its number, title, description and every comment **verbatim**, with author and d
   Shared code goes in `packages/` (AGENTS.md and docs/structure.md set the order).
 - **Tests:** cover every new branch. In each touched package, run typecheck, oxlint, `prettier --check` on
   changed files, and `test:coverage` where it has thresholds. Run one package at a time with `--maxWorkers=2`,
-  because three agents share this machine. Build every touched Next app.
-- **Verify in a real browser** for anything visible, following the `verify` skill: click every new control, and
-  shoot desktop, an emulated phone (390x844, `isMobile`, `hasTouch`) and a ~450px desktop window, with before
-  and after shots. Your own servers go on 3600+.
+  because three agents share this machine. Build a Next app only when you changed its pages, MDX or build
+  config; CI builds the rest.
+- **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
+  in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
+  rely on tests for the others.
+  - **Standard:** click every new control, and shoot desktop, an emulated phone (390x844, `isMobile`,
+    `hasTouch`) and a ~450px desktop window, with before and after shots.
+  - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
+    obvious from the after shot alone.
+  - Your own servers go on 3600+. Reuse one dev server for every shot; don't build for screenshots.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
