@@ -5,8 +5,7 @@ demo recordings.
 
 ## Screenshots
 
-None yet. The shots this folder held were of livediagram, which livedesign was forked from, so they went.
-Take new ones of the live app at [livedesign.app](https://livedesign.app) into `desktop/` and `mobile/`,
+Screenshots are taken of the live app at [livedesign.app](https://livedesign.app) into `desktop/` and `mobile/`,
 each captioned here with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 

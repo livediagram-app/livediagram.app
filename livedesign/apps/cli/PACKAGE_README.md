@@ -16,7 +16,13 @@ livedesign --help
 
 ## Sign in
 
-Create an API token in livedesign (Settings › API Tokens), then either set it for a command:
+```bash
+livedesign auth login            # approve the CLI in your browser
+livedesign auth login --device   # on a machine without a browser: enter a code on another device
+```
+
+For CI and agents, create an API token on [liveworkspace.app](https://liveworkspace.app/explorer?settings=tokens)
+(livedesign's Settings › Account › API Tokens › Manage API Tokens takes you there), then either set it for a command:
 
 ```bash
 export LIVEDESIGN_TOKEN=lwt_...
@@ -28,7 +34,8 @@ or store it for this machine:
 printf %s "$TOKEN" | livedesign auth login --with-token
 ```
 
-The CLI never prompts. Another livedesign server, such as local development, is reached with `--host https://…` or `LIVEDESIGN_HOST`.
+The CLI never prompts when its input or output is not a terminal. Another livedesign server, such as local development, is
+reached with `--host https://…` or `LIVEDESIGN_HOST`.
 
 ## Start
 

@@ -5,8 +5,8 @@ stores, GitHub, Product Hunt, and similar. Pick the one whose limit matches the
 field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
-Built from [`facts.md`](facts.md). No em dashes. Don't promise team workspaces,
-email, or CRDT editing: not shipped yet.
+Built from [`facts.md`](facts.md). No em dashes. Don't promise conflict-free
+(CRDT) editing or a paid tier (see "Do not claim" in the fact sheet).
 
 ---
 
@@ -40,7 +40,7 @@ For directory cards and "short pitch" fields.
 
 > livediagram is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
-> cursors, comments, 17 templates, and undo that never touches anyone else's
+> cursors, comments, 82 templates, and undo that never touches anyone else's
 > work. MIT-licensed and free forever. [46 words]
 
 ---
@@ -55,9 +55,9 @@ For Product Hunt, app store short descriptions, README intros.
 > cursors, selection rings, comment threads, and a laser pointer.
 >
 > Build with ten core shapes, sticky notes, images, freehand sketching with
-> shape recognition, and arrows you can curve, bend, and label. Start from 17
-> templates, recolor everything with 18 themes, and step back any slip with
-> undo. Share view or edit links any time.
+> shape recognition, and arrows you can curve, bend, and label. Start from 82
+> templates, recolor everything with 30 themes, and step back any slip with
+> undo. Share links as an editor, participant or viewer any time.
 >
 > It is MIT-licensed and free for everyone, with no paid tier. [106 words]
 
@@ -79,17 +79,17 @@ For longer listing bodies and "about this project" sections.
 >
 > The canvas is deep enough for real work: ten core shapes, sticky notes, text,
 > images, and arrows you can draw straight, curved, or angled, with draggable
-> handles, configurable thickness and arrowheads, and optional labels. A Pencil
-> tool does freehand sketching with optional shape recognition that snaps your
-> scribbles into clean rectangles, circles, and diamonds. Multi-select, groups,
-> and a format painter keep large diagrams manageable. Start from 17 templates,
-> recolor the whole canvas with 18 themes, and organize work into tabs and
-> nested folders.
+> handles, configurable thickness and arrowheads, and optional labels. A
+> Freehand pen sketches, and a Shape Pen snaps your scribbles into clean
+> rectangles, circles, and diamonds. Multi-select, groups, and a format painter
+> keep large diagrams manageable. Start from 82 templates, recolor the whole
+> canvas with 30 themes, and organize work into tabs, nested folders and team
+> spaces.
 >
 > Nothing is lost: every change saves on its own, and undo and redo step back
-> and forth through your recent edits. Share view-only or editable
-> links and revoke them whenever you like. Export any tab to Markdown, PDF, PNG,
-> or JSON.
+> and forth through your recent edits. Share links as an editor, participant
+> or viewer and revoke them whenever you like. Export any tab to JSON, Mermaid,
+> Markdown, Excalidraw, PNG, SVG, or PDF.
 >
 > livediagram is MIT-licensed and free for everyone, with no paid tier and no
 > plan for one. [247 words]
@@ -123,9 +123,8 @@ detailed GitHub / Product Hunt write-up.
 > Build with ten core shapes, sticky notes, text, and images. Connect them with
 > arrows you can draw straight, curved, or angled, each with draggable curve and
 > elbow handles, configurable thickness and arrowhead size, and optional labels.
-> The Pencil tool handles freehand sketching, with an optional shape-recognition
-> mode that converts rough scribbles into clean rectangles, circles, diamonds,
-> and lines. Marquee select, shift-click, groups, and a format painter keep big
+> The Freehand pen handles sketching, and the Shape Pen converts rough
+> scribbles into clean rectangles, circles, diamonds, and lines. Marquee select, shift-click, groups, and a format painter keep big
 > diagrams under control. Lock elements you don't want to move, and link any
 > element to another tab or an external URL.
 >
@@ -133,18 +132,19 @@ detailed GitHub / Product Hunt write-up.
 >
 > Open one of 82 templates (mind map, flowchart, Gantt, SWOT, retrospective,
 > org chart, timeline, fishbone, user journey, and more) or start
-> blank. Recolor an entire diagram, every shape and arrow, with one of 18 themes
+> blank. Recolor an entire diagram, every shape and arrow, with one of 30 themes
 > in a single click. Group related work into tabs within a document, link across
 > them, copy a tab into another document, and file everything into nested
-> folders.
+> folders, personal or in a team space.
 >
 > #### Nothing gets lost
 >
 > Every change saves on its own as you work, and undo and redo step back and
 > forth through your recent edits without touching anyone else's work.
-> Share view-only or editable links per document and revoke them whenever you
-> want. Anyone you share with can make their own copy. Export any tab to
-> Markdown, PDF, PNG, or JSON, and import the JSON back as a new tab.
+> Share links per document as an editor, participant or viewer, and revoke them
+> whenever you want. Anyone you share with can make their own copy. Export any
+> tab to JSON, Mermaid, Markdown, Excalidraw, PNG, SVG, or PDF, and import the
+> JSON back as a new tab.
 >
 > #### Free, open, and yours
 >

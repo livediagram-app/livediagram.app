@@ -10,9 +10,9 @@ split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 
-Most of these predate the Explorer moving to liveworkspace.app, the telemetry dashboard moving with it, and Pages
-and Plan leaving livediagram, so the Explorer, telemetry and editor-chrome shots show surfaces that have since
-changed. Retake a shot before using it for a claim about those.
+Most of these show an older Explorer, telemetry page and editor chrome: today the Explorer and the telemetry
+dashboard are liveworkspace.app's, and livediagram has no Pages or Plan modes. Retake a shot before using it for a
+claim about those surfaces.
 
 ### Desktop (`desktop/`)
 
@@ -45,8 +45,8 @@ changed. Retake a shot before using it for a claim about those.
 
 ### Mobile (`mobile/`)
 
-Stale too: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a
-menu button) and show the old Explorer and Palette buttons.
+These need retaking too: they show Explorer and Palette buttons, where the phone now has the Toolbar layout (the
+palette as one strip across the top, the Explorer behind a menu button).
 
 | File                | Shows                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------- |

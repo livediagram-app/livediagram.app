@@ -1443,7 +1443,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
+    description: 'Each team as a space beside My Work, with its shared folders, and New Team.',
     keywords:
       'teams team spaces shared workspace library manage teams liveworkspace membership group',
     category: 'Explorer',

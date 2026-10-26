@@ -4,9 +4,9 @@ One-word tags for directory listings, app stores, GitHub topics, and Product
 Hunt. Ranked by how tightly they fit the product, then split by platform so you
 can paste the right set into each field.
 
-Built from [`facts.md`](facts.md). No tag may imply an unshipped feature (team
-workspaces, transactional email, CRDT / conflict-free editing): that means no
-`teams`, `sync`, `crdt`, or `email`.
+Built from [`facts.md`](facts.md). No tag may imply something the fact sheet
+says not to claim (conflict-free editing, a paid tier): that means no `crdt`
+or `conflict-free`.
 
 ## Ranked by fit
 
@@ -30,8 +30,8 @@ workspaces, transactional email, CRDT / conflict-free editing): that means no
   [Purpose](../../docs/specs/001-project-vision/purpose.md) positions livediagram _against_
   general-purpose whiteboards (Miro / FigJam). Fine as a tag for reach; don't
   lead with it in prose.
-- **Skip** `teams`, `sync`, `crdt`, `email`. They imply features that aren't
-  shipped yet.
+- **Skip** `crdt` and `conflict-free`: same-element edits are last-writer-wins
+  by design.
 - Reserve the tech tags (`nextjs`, `cloudflare`, `typescript`) for developer
   surfaces (GitHub, dev directories). They mean nothing to a general audience.
 

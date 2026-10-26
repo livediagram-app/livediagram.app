@@ -6,13 +6,13 @@ import { LockedTab } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Locking a Tab',
   description:
-    'Lock a tab to make its whole canvas read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
+    'Lock a tab to make everything on it read-only, so its elements cannot be moved, edited, erased, or deleted by accident. Unlock it to edit again.',
   path: '/help/tabs/locking-tabs/',
 });
 
-<ArticleLayout title="Locking a Tab" description="Make an entire canvas read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
+<ArticleLayout title="Locking a Tab" description="Make an entire tab read-only in one step, so a finished tab stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
 
-When a whole canvas is finished, locking the tab protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
+When a whole tab is finished, locking it protects everything on it at once, rather than locking elements one by one. A locked tab becomes read-only: you can still look at it and switch to it, but nothing on it changes until you unlock it.
 
 <Figure caption="A locked tab shows a padlock before its name in the tab bar.">
   <LockedTab />
@@ -22,11 +22,11 @@ When a whole canvas is finished, locking the tab protects everything on it at on
 
 Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press the padlock button, **Lock Tab**, in the row of quick actions along the top. The same button reads **Unlock Tab** afterwards (and shows as pressed), so it toggles the tab back to editable. A locked tab shows a small **padlock** before its name in the bar, so you can tell at a glance which boards are frozen.
 
-The lock is part of the canvas, so it applies to everyone who opens it, not just you. Anyone with edit access can unlock it again.
+The lock is saved with the tab, so it applies to everyone who opens it, not just you. Anyone with edit access can unlock it again.
 
 ## What a locked tab protects
 
-While a tab is locked, its whole canvas is read-only:
+While a tab is locked, everything on it is read-only:
 
 - Elements **can't be moved, resized, restyled, or edited**, and nothing new can be added or pasted onto the tab.
 - The [eraser](/help/selection-modes/eraser/) skips everything on the tab.
@@ -37,12 +37,12 @@ Locking clears your current selection. You can still look around, pan and zoom, 
 
 ## When to use it
 
-- Freeze a signed-off or presented canvas so a later edit can't disturb it.
+- Freeze a signed-off or presented tab so a later edit can't disturb it.
 - Protect a reference or template tab you copy from but never change.
 - Hand a canvas to collaborators with the finished tabs locked, leaving only the working tabs open.
 
 <Tip>
-  To protect just a few elements rather than a whole canvas, lock them individually instead. See
+  To protect just a few elements rather than a whole tab, lock them individually instead. See
   [locking elements](/help/canvas/locking/). To stop someone editing anything at all, share a
   [view-only link](/help/collaboration/sharing/) instead.
 </Tip>

@@ -7,7 +7,7 @@ developer docs stay in [`docs/`](../docs/).
 
 Every claim here must map to a shipped feature. If a feature changes, fix the
 copy in the same change, the same way [Marketing site](../docs/specs/019-marketing/marketing-site.md)
-governs the landing page. When in doubt about what is true today, read
+governs the landing page. When in doubt about what is true, read
 [Build phase](../docs/specs/005-project-roadmap/prototype-scope.md).
 
 ## Layout
@@ -29,9 +29,8 @@ marketing/
   does, not how amazing it is.
 - **No em dashes.** Use commas, colons, or parentheses.
 - **The hook is "no sign-in wall"**: open a link, draw, share. Lead with it.
-- **Don't overclaim.** Team workspaces, transactional email, and CRDT editing
-  are not shipped yet (see "What's still ahead" in the fact sheet). Never imply
-  they are.
+- **Don't overclaim.** The fact sheet's "Do not claim" list (conflict-free
+  editing, a paid tier) is off limits in every format.
 - **Free means free.** MIT-licensed, no paid tier, no plan for
   one. Say so where the format allows.
 - **Brand color** is sky blue, `#0EA5E9` ("livediagram blue"). See
