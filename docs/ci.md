@@ -42,6 +42,8 @@ result.
   - **Editor unit tests:** a product's editor, when reached, in three shards under coverage.
   - **Build:** the affected workspaces' builds (and what they build on), the CLI's `npm pack --dry-run`
     when the CLI is reached, and the staging wrangler config check.
+  - **Coverage report** (pull requests only): writes the coverage report into the pull request's
+    description (below). Not part of the CI check.
   - **CI:** one job that fails when any of the above failed, and passes when nothing needed to run.
     It's the check to require on `main`.
 - **E2E** (`e2e.yml`, calling `e2e-product.yml` per product), on every pull request and push to
@@ -58,9 +60,31 @@ result.
 
 Not carried over yet: CodeQL, which needs GitHub Advanced Security on this private repository (until then
 GitHub refuses its upload; the workflow is in git history, removed in the commit "CI: CodeQL out until
-Advanced Security is on"), the coverage report written into each pull request's description (it needs
-Codecov set up for this repository, and its fixed upload count doesn't fit runs that upload only the
-groups they reach), the CLI publishing and the MCP Registry listing.
+Advanced Security is on"), and the CLIs' npm publishing and MCP Registry listing, which the owner is
+setting up. Each product's CLI still builds and packs on every run that reaches it (Build).
+
+## Coverage report
+
+Each pull request gets a coverage report in its description, below a `---` separator between two hidden
+markers (`<!-- liveworkspace:coverage-report:start -->` and `…:end -->`). A description edit notifies no
+one, where a comment emails every watcher. Each run replaces only that section and keeps the author's
+text around it; an unchanged report writes nothing.
+
+- **Where the numbers come from:** CI's own lcov files, not a coverage service, so it works on a
+  private repository. The Tests job (`test:coverage` workspaces) and each editor shard keep their
+  `lcov.info` files as artifacts, `coverage-<group>-tests` and `coverage-<group>-editor-<shard>`, for 30
+  days. Codecov still receives its uploads, but the report doesn't depend on them.
+- **What it shows:** patch coverage (the lines the pull request adds, from `git diff` against its
+  base, matched to the lcov lines of the merge commit the run tested), and one row per product the
+  run reached: `main`, the pull request and the change, plus how many lines aren't covered.
+- **The base:** for each artifact the pull request's run kept, the newest run on `main` that kept the
+  same one (a run on `main` keeps only the groups it reached), so a product is compared like with
+  like. A product with no run on `main` within 30 days shows `n/a`.
+- **How it runs:** the `coverage-report` job in `ci.yml`, after Tests and the editor shards,
+  `.github/scripts/coverage-report.mjs`. It informs and never gates: it isn't part of the **CI** check
+  and its failure never fails a pull request. `COVERAGE_REPORT_DRY_RUN=1` with `BASE_DIR` prints a
+  report from local artifact folders; its pure parts are tested by `node --test
+.github/scripts/*.test.mjs`, which the platform's Checks run.
 
 ## Before a push
 

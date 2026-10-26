@@ -191,39 +191,15 @@ setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke
 
 ### Coverage report
 
-Tests and each Editor unit tests job upload their `lcov` reports to
-[Codecov](https://app.codecov.io/gh/livedesign-app/livedesign.app), which merges the four uploads
-of a commit into one report (`codecov.yml`). It informs; it never gates: its statuses are
-informational, and the enforced bar stays the thresholds above. The upload authenticates with
-GitHub's OIDC token (`id-token: write`), so no Codecov secret exists; a pull request from a fork
-uploads tokenless. A failed upload logs its error and leaves the job green, so a Codecov outage never
-holds back a merge.
+Tests and each Editor unit tests job upload their `lcov` reports to Codecov with GitHub's OIDC token
+(no Codecov secret). It informs; it never gates: its statuses are informational, the enforced bar
+stays the thresholds above, and a failed upload leaves the job green.
 
-The pull request's coverage report is ours, not Codecov's (`comment: false`): the organisation's
-free Developer plan is Codecov's team tier, which writes a fixed, patch-only comment whatever
-`codecov.yml` asks for. After CI succeeds, `coverage-report.yml` runs
-`scripts/coverage-report.mjs`, which waits until Codecov has processed all four uploads of the
-head commit (riding out up to three dropped connections; every failure names the URL and the network
-cause), reads its numbers from Codecov's public API and writes the report into the pull request's
-description, never a comment: a comment emails every watcher, a description edit notifies no one.
-
-The report sits at the bottom of the description, below a `---` separator, between two hidden
-markers (`<!-- livedesign:coverage-report:start -->` and `…:end -->`). Each run reads the
-description just before writing and replaces only that section, so the author's text around it is
-kept; an unchanged report writes nothing. A description without the section gets it appended; one
-whose closing marker was edited away has everything from the opening marker replaced. The report holds:
-
-- the patch coverage (the changed lines), and the project coverage with its change;
-- Codecov's impacted file tree graph, linked to the pull request's file tree on Codecov (its
-  public graph token, read from Codecov's API, embeds the image);
-- one row per area (Editor, API, MCP, Help and marketing, Packages), `main` against the pull
-  request, never a list of files, which an editor change would fill with hundreds;
-- Codecov's coverage diff: coverage, files, lines, hits, misses and partials, `+` marking what got
-  better and `-` what got worse.
-
-It runs from `main`'s copy of the workflow and script and never checks out the pull request's code,
-so it writes to a pull request from a fork too. `workflow_dispatch` with a pull request number runs
-it by hand; `COVERAGE_REPORT_DRY_RUN=1` prints the report instead of writing it.
+The pull request's coverage report is the monorepo's own, written into the description from CI's
+lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
+coverage, and a row per product the run reached against `main`. It replaces the
+`coverage-report.yml` and `scripts/coverage-report.mjs` this product carried in its own repository,
+which no longer run.
 
 ## Before a push
 

@@ -185,11 +185,8 @@ function deployOf(p) {
   const d1 = existsSync(`${p.path}/migrations`)
     ? (config.match(/^\[\[d1_databases\]\][^[]*?^binding\s*=\s*"([^"]+)"/ms)?.[1] ?? '')
     : '';
-  const tier = app === 'router'
-    ? 2
-    : app === 'api' || (product === 'liveworkspace' && app !== 'site')
-      ? 0
-      : 1;
+  const tier =
+    app === 'router' ? 2 : app === 'api' || (product === 'liveworkspace' && app !== 'site') ? 0 : 1;
   const hosted = existsSync(`${p.path}/scripts/hosted-vars.mjs`) ? product : '';
   return {
     name: p.name,

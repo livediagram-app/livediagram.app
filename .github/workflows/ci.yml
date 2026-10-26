@@ -89,6 +89,11 @@ jobs:
       - name: Lint and type check
         run: pnpm turbo run lint typecheck --continue --concurrency=2 ${{ matrix.filters }}
 
+      # CI's own scripts (.github/scripts), on the platform's run.
+      - name: CI script tests
+        if: matrix.group == 'platform'
+        run: node --test .github/scripts/*.test.mjs
+
       # The files the change touched, each product's with its own ignore file (format-check.sh).
       - name: Format check
         env:
@@ -144,6 +149,19 @@ jobs:
           flags: ${{ matrix.group }}
           fail_ci_if_error: false
 
+      # The lcov files the coverage report reads (docs/ci.md "Coverage report"): a pull request's for its
+      # report, main's as the base the next pull requests compare with, so kept 30 days.
+      - name: Keep the coverage for the report
+        if: matrix.coverage != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.group }}-tests
+          path: |
+            **/coverage/lcov.info
+            !**/node_modules/**
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
@@ -180,6 +198,14 @@ jobs:
           disable_search: true
           fail_ci_if_error: false
 
+      - name: Keep the coverage for the report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.group }}-editor-${{ matrix.shard }}
+          path: ${{ matrix.dir }}/coverage/lcov.info
+          if-no-files-found: ignore
+          retention-days: 30
+
   build:
     name: Build (${{ matrix.group }})
     needs: plan
@@ -213,6 +239,55 @@ jobs:
       # rather than at a deploy.
       - name: Staging config check
         run: pnpm turbo run staging:check --continue ${{ matrix.filters }}
+
+  # The pull request's coverage report, in its description (docs/ci.md "Coverage report"): patch coverage
+  # and each reached product against main, from the lcov files the jobs above kept. Informational: it is
+  # not part of the CI check, and a failure here never fails a pull request.
+  coverage-report:
+    name: Coverage report
+    needs: [plan, tests, editor-tests]
+    if: >-
+      always() && github.event_name == 'pull_request' && needs.tests.result == 'success' &&
+      needs.editor-tests.result != 'failure' && needs.editor-tests.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      # The history, for the diff against the base.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Download this run's coverage
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-*
+          path: coverage-head
+
+      # The run tested the merge commit (HEAD here), so the diff runs to it: its line numbers are the
+      # lcov files' own.
+      - name: Write the report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          DIFF_HEAD: HEAD
+          HEAD_DIR: coverage-head
+        run: |
+          mkdir -p coverage-head
+          node .github/scripts/coverage-report.mjs
 
   # One check to require on main, whatever ran: it fails when any job above failed or was cancelled,
   # and passes when the change reached nothing.
