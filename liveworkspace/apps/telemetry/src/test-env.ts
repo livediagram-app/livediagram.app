@@ -1,6 +1,7 @@
 // A test Env: an in-memory stand-in for D1 that records every insert and answers the summary's
 // query from what was inserted, plus the assets binding.
 
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { Env } from './env';
 
 export type Row = {
@@ -53,7 +54,9 @@ export function testEnv(overrides: Partial<Env> = {}): Env & { rows: Row[] } {
   };
   type Stmt = { sql: string; args: unknown[] };
   const db = {
+    // D1 refuses a compound SELECT of more than five terms; this stand-in runs no SQL, so it checks the text.
     prepare: (sql: string) => {
+      assertD1Compound(sql);
       const bound = (args: unknown[]) => ({
         sql,
         args,

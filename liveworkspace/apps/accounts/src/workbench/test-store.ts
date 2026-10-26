@@ -3,6 +3,7 @@
 // Durable Object round trip would be). Not a .test.ts file, so vitest doesn't collect it.
 import { createHash } from 'node:crypto';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
+import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import {
   WorkbenchCore,
   type SqlExec,
@@ -13,6 +14,7 @@ import {
 function nodeSql(db: DatabaseSync): SqlExec {
   return {
     exec(query: string, ...bindings: unknown[]) {
+      assertD1Compound(query);
       const statement = db.prepare(query);
       const args = bindings.map((b) => (typeof b === 'boolean' ? Number(b) : b) as SQLInputValue);
       if (statement.columns().length === 0) {

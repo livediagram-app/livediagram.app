@@ -196,7 +196,12 @@ Where each is set, so a setting lives with what it changes, never in one central
      Existing State**, an [option list](#option-lists) with a row per status the project has that is not chosen, listed exactly as
      the column picker's Existing Statuses (the same statuses, order, colour swatch, "On Sprint, Roadmap" or "Not on
      any board", and card count of the card types chosen in step 1; named "Add {State}"), one to a row, with
-     **Add All**. At 12 columns adding stops ("A board holds up to 12 columns."). **Back** returns to step 1 with
+     **Add All**. When there is no existing state to use (a new plan, or every state the project has is already
+     chosen), **Suggested States** shows in its place: the [suggested statuses](#suggested-statuses) left once the
+     columns chosen and the project's states are set aside, one to a row, each added as a new state with one press
+     where it keeps the order a board runs (before the first later suggestion already chosen, else at the end, so Done
+     stays last whatever order they are pressed in),
+     with **Add All** for two or more. At 12 columns adding stops ("A board holds up to 12 columns."). **Back** returns to step 1 with
      nothing lost. **Next: Layout** (needs a column) goes on; Create Board is not offered before the Layout step.
   3. **Layout** (starting from the board as it is, so pressing straight through keeps its preset's layout): "How the
      board is laid out. It starts as the board is now; every choice can change later from its cog." Then
@@ -237,7 +242,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     as it is typed ("Uses the existing To Do status"); a name this board already has as a column says "This board
     already has To Do" and adds nothing; any other name makes a column with a status of its own (its name and a
     short suffix), so it starts empty. Without existing statuses it is the plain field, labelled **Name a New
-    Status** ("In Review"), and nothing else shows: the picker is then what it always was.
+    Status** ("In Review"), with **Suggested Statuses** under it (below) when any are left.
   - **Existing Statuses**: under the field and a hairline, a small uppercase heading with the count, then a row per
     status: a colour swatch (the colour the first board using it gives its column; a hollow ring when none does),
     its name, a quiet line saying where it is used ("On Sprint, Roadmap", or "Not on any board"), and a pill with
@@ -246,6 +251,11 @@ Where each is set, so a setting lives with what it changes, never in one central
     field blank, **Add All** (by the heading) adds them all, in order, as one change (up to the 12-column limit).
     When the typed text narrows the list to nothing: the shared empty state, "No states match “{text}”", with "Add
     Column makes it a new state." ([Empty states](../004-interface-design/empty-states.md)).
+  - **Suggested Statuses**: only while there are no existing statuses to list, under the field and a hairline, a
+    small uppercase heading, then the [suggested statuses](#suggested-statuses) this board has no column for and
+    the project has no status of, one to a row; a press adds that one as a new status, and **Add All** (by the
+    heading, with two or more) adds them all, in order, as one change (up to the 12-column limit). None left, the
+    section does not show. Telemetry: `Plan` · `Changed` · `ColumnAddedSuggested`.
   - A status picked from the list (or matched by name) keeps its status and its name, so the cards already in it
     show in the new column. Each add is one board change, undone in one step. Telemetry: `Plan` · `Changed` ·
     `ColumnAdded` for a new status, `ColumnAddedExisting` for an existing one (a row, a matched name, Add All).
@@ -257,6 +267,18 @@ Where each is set, so a setting lives with what it changes, never in one central
     selected; Add All closes them.
   - **Light and dark**: it wears the editor's popover surface (white, slate-900 in dark), the highlight in the
     brand tint; row colour changes are instant under reduced motion.
+- <a id="suggested-statuses"></a>**Suggested statuses**: where a board's columns are chosen and the project has no
+  state to offer, so the person need not invent the usual ones, up to five common statuses are suggested, in the
+  order a board runs: **Backlog** ("Ideas and work for later"), **To Do** ("Ready to start"), **In Progress**
+  ("Being worked on"), **In Review** ("Waiting for a check") and **Done** ("Finished"), Done last as a board's done
+  column usually ends it. A suggestion is left out once its name (as names compare) is a column the board has (or
+  Setup Board has chosen) or a status the project already has, so a suggestion never makes a near-duplicate. Each
+  is an [option list](#option-lists) row of actions: a plus glyph, its name, its quiet line, named "Add {Name}". Added,
+  a suggestion is a new status of its own (its name and a short suffix), as a typed name is; it marks no done
+  column. Only someone who may edit the board sees them, as only they set up a board or add its columns: a
+  Participant and a Viewer never do (a Viewer reads the placeholder's "Someone who can edit it will set it up.").
+  Telemetry: `Plan` · `Changed` · `ColumnAddedSuggested`, once a press (Add All too), in Setup Board and the column
+  picker alike.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
 - **One name, one status**: a project never has two statuses of the same name (compared as the column picker
@@ -517,9 +539,10 @@ own keys move between them. In the Setup Board and Setup Sheet dialogs it wears 
 
 - the board menu and cog: **Swimlanes** (Group Rows By), **Supported Cards** (Card Types), **Card Layout** (Card
   Size), a Gantt chart's Card Types and Swimlanes;
-- **Setup Board**: Card Types, Use an Existing State, and the Layout step's Swimlanes and Card Display;
+- **Setup Board**: Card Types, Use an Existing State, Suggested States, and the Layout step's Swimlanes and Card Display;
 - **Add a Card**'s card types; a card type's **States**; the **Card Types** panel's rows (each with its own Edit and
-  Duplicate, so the same box and rows without a marker); the column picker's Existing Statuses;
+  Duplicate, so the same box and rows without a marker); the column picker's Existing Statuses and Suggested
+  Statuses;
 - a column's settings: **+ Add Column After** and **Delete Status** are rows, icon left (Move Left, Move Right and
   Remove Column sit on its toolbar); the board's **Columns** section lists its columns one to a row.
 

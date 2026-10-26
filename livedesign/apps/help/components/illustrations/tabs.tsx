@@ -1,7 +1,7 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
 // tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
-// the Add to Folder / Add to Design / Import / Export dialogs, cross-tab links, a locked tab,
-// and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
+// the Organise in Tab Folder / Add to Design / Import / Export dialogs, cross-tab links, a locked
+// tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 
@@ -436,7 +436,7 @@ export function TabMenu() {
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = ['Add to Folder', 'Add to Design', null, 'Import', 'Export', 'Clear'];
+  const rows = ['Organise in Tab Folder', 'Add to Design', null, 'Import', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -611,7 +611,8 @@ export function TabFolderStates() {
   );
 }
 
-/** The Add to Folder dialog: a No Folder tile, a tile per folder, and a New Folder tile. */
+/** The Organise in Tab Folder dialog: a No Folder tile, a tile per folder, and a New Folder
+ *  tile. */
 export function AddToFolderMenu() {
   const W = 420;
   const H = 210;
@@ -619,7 +620,7 @@ export function AddToFolderMenu() {
   const dy = 18;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={174} title="Add to Folder" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={174} title="Organise in Tab Folder" sceneW={W} sceneH={H}>
         <Label x={dx + 16} y={dy + 48} size={10} tone="muted">
           File this tab into a folder on the tab bar.
         </Label>
@@ -797,7 +798,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Add to Folder', 'Add to Design', null, 'Import', 'Export', 'Clear']}
+        rows={['Organise in Tab Folder', 'Add to Design', null, 'Import', 'Export', 'Clear']}
         highlight="Import"
       />
     </Scene>

@@ -4719,6 +4719,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -4750,6 +4753,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -4790,6 +4796,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
       '@liveworkspace/fake-google':
         specifier: workspace:*
         version: link:../../../packages/fake-google
@@ -4876,6 +4885,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -5835,6 +5847,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../api-kit
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5

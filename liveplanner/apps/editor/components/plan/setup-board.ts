@@ -2,6 +2,7 @@
 // person has chosen its card types and its columns, as one change. Pure.
 import {
   PLAN_COLUMNS_MAX,
+  suggestionIndex,
   type CardSize,
   type PlanBoardSetup,
   type SwimlaneBy,
@@ -34,6 +35,28 @@ export function columnFromName(
   const nameKey = trimmed.toLowerCase();
   if (chosen.some((c) => setupColumnKey(c) === key || c.name.trim().toLowerCase() === nameKey))
     return null;
+  return next;
+}
+
+// The chosen columns with suggested statuses `names` added as new states, each where suggestionIndex puts it (so
+// they keep the order a board runs, Done last, whatever order they are pressed in), up to `max` columns.
+export function withSuggested(
+  chosen: readonly SetupColumn[],
+  names: readonly string[],
+  max: number,
+): SetupColumn[] {
+  const next = [...chosen];
+  for (const name of names) {
+    if (next.length >= max) break;
+    next.splice(
+      suggestionIndex(
+        next.map((c) => c.name),
+        name,
+      ),
+      0,
+      { kind: 'new', name },
+    );
+  }
   return next;
 }
 

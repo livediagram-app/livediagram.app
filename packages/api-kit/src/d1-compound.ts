@@ -1,5 +1,6 @@
-// D1 refuses a compound SELECT of more than five terms ("too many terms in compound SELECT"), where SQLite's own
-// default, and so the tests' node:sqlite, allows 500. Measured on the production database, 2026-10-26.
+// D1 refuses a compound SELECT of more than five terms at one level ("too many terms in compound SELECT"), where
+// SQLite's own default, and so the tests' node:sqlite, allows 500. Measured on the production database, 2026-10-26.
+// Cloudflare holds SQLite in a Durable Object to the same query limits as D1.
 export const D1_COMPOUND_MAX = 5;
 
 /**

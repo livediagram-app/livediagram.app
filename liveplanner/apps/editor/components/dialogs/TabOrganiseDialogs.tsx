@@ -70,8 +70,8 @@ function OrganiseDialogFrame({
 // The No Folder tile: a folder struck out.
 const NoFolderIcon = lucideGlyph(lucideFolderX, 20);
 
-// Add to Folder (docs/specs/006-project/tab-folders.md): a tile per existing tab folder, a No Folder tile
-// (the loose end of the bar), and the create-in-place New Folder tile.
+// Organise in Tab Folder (docs/specs/006-project/tab-folders.md): a tile per existing tab folder,
+// a No Folder tile (the loose end of the bar), and the create-in-place New Folder tile.
 // Picking commits immediately and closes — one-level folders need no browse.
 export function AddTabToFolderDialog({
   folderNames,
@@ -88,7 +88,7 @@ export function AddTabToFolderDialog({
 }) {
   return (
     <OrganiseDialogFrame
-      title="Add to Folder"
+      title="Organise in Tab Folder"
       sub="File this tab into a folder on the tab bar. Same name means same folder."
       onClose={onClose}
     >

@@ -161,3 +161,43 @@ describe('BoardColumnsSection', () => {
     expect(screen.queryByRole('button', { name: /^Open .* settings$/ })).toBeNull();
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Suggested statuses": with no existing status left to add, the common ones.
+describe('BoardColumnsSection suggested statuses', () => {
+  const lone: PlanBoardSetup = { ...kanban, columns: [statusColumn('todo', 'To Do')] };
+  delete (lone as { doneColumnId?: string }).doneColumnId;
+  const only = { statusNames: new Map([['todo', 'To Do']]) };
+
+  it('adds one at the end as a new status, its own part in telemetry', () => {
+    const { statuses, updateBoard } = show(lone, only);
+    fireEvent.click(screen.getByRole('button', { name: 'Add In Progress' }));
+    expect(statuses()).toHaveLength(2);
+    expect(statuses()?.[1]).toMatch(/^in-progress~/);
+    expect(updateBoard.mock.lastCall?.[1].columns[1]?.name).toBe('In Progress');
+    expect(track).toHaveBeenCalledWith('ColumnAddedSuggested');
+  });
+
+  it('adds them all in order with Add All, as one change', () => {
+    const { updateBoard } = show(lone, only);
+    fireEvent.click(screen.getByRole('button', { name: 'Add All' }));
+    expect(updateBoard).toHaveBeenCalledTimes(1);
+    expect(updateBoard.mock.lastCall?.[1].columns.map((c) => c.name)).toEqual([
+      'To Do',
+      'Backlog',
+      'In Progress',
+      'In Review',
+      'Done',
+    ]);
+  });
+
+  it('suggests nothing while the project has a status the board lacks', () => {
+    show(kanban);
+    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+  });
+
+  it('shows no suggestion to someone who may not edit (a Participant or a Viewer)', () => {
+    show(lone, { ...only, canEdit: false });
+    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Backlog' })).toBeNull();
+  });
+});

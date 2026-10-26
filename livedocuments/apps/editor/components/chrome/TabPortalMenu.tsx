@@ -358,7 +358,7 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<FolderMenuIcon />}
-            label="Add to Folder"
+            label="Organise in Tab Folder"
             onClick={() => setView('folder')}
           />
           <MenuActionRow

@@ -3,18 +3,20 @@
 // Setup Board's two steps (docs/specs/026-plan/plan-board.md "Setup Board"): the card types the board is for, then
 // its columns (existing statuses to pick, new ones to name, in order). Drawn in the board's own colours.
 import { useId, useState } from 'react';
-import { missingBoardStatuses, type ItemTypeDef } from '@liveplanner/items';
+import { missingBoardStatuses, suggestedStatuses, type ItemTypeDef } from '@liveplanner/items';
 import { CountBadge, PlusIcon } from '@liveplanner/ui';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import { matchStatus } from './column-status-picks';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars, type PlanPalette } from './plan-palette';
-import { columnFromName, setupColumnKey, type SetupColumn } from './setup-board';
+import { columnFromName, setupColumnKey, withSuggested, type SetupColumn } from './setup-board';
 import { usePlan } from './PlanContext';
 import { SetupColumnList } from './SetupColumnList';
 import { AddCardTypeButton } from './AddCardTypeButton';
 import { OptionRows } from './OptionRows';
 import { StatusSwatch, cardCount, usedOn } from './ExistingStatusList';
+import { SuggestedStatusList } from './SuggestedStatusList';
+import { trackSetup } from './track-board-setup';
 
 const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
 
@@ -144,6 +146,10 @@ export function SetupColumnsStep({
     statusNames,
     { items: plan?.items?.values() ?? [], types: plan?.types, boards: plan?.statusBoards },
   );
+  // With no existing state to use, the common ones (spec "Suggested statuses"), less any name already chosen or known.
+  const suggestions = existing.length
+    ? []
+    : suggestedStatuses([...chosen.map((c) => c.name), ...statusNames.values()]);
   const full = chosen.length >= max;
   const typed = columnFromName(name, chosen, statusNames);
   const reuses = name.trim() ? matchStatus(name, { columns: [] }, statusNames) : null;
@@ -226,6 +232,21 @@ export function SetupColumnsStep({
                 : ' '}
         </p>
       </div>
+
+      <SuggestedStatusList
+        heading="Suggested States"
+        suggestions={suggestions}
+        palette={palette}
+        disabled={full}
+        onPick={(n) => {
+          trackSetup('ColumnAddedSuggested');
+          onChange(withSuggested(chosen, [n], max));
+        }}
+        onPickAll={(names) => {
+          trackSetup('ColumnAddedSuggested');
+          onChange(withSuggested(chosen, names, max));
+        }}
+      />
 
       {existing.length > 0 ? (
         <div className="flex flex-col gap-2.5">
