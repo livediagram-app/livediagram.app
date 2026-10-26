@@ -1,13 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { CANVAS, darkVisitor, freshDarkPage, seedDesign, shareLink } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -48,15 +41,6 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
-  test('the New Design wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/new');
-    await page.getByText('New Design', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expectCentred(page, 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   // One editor screen per test: each 4x audit is CPU-bound, so four of them in one test left it at the
   // mercy of whatever else the runner was doing within one 30-second budget.
   test('the editor with its default panels', async ({ page, pageErrors, baseURL }) => {
@@ -82,8 +66,12 @@ test.describe('Optical alignment audit', () => {
 
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
+    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx): named "Share <the design>",
+    // headed "Share This Design", its composer ending in Create Pass.
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Design' }).waitFor();
+    const dialog = page.getByRole('dialog', { name: /^Share / });
+    await dialog.getByRole('heading', { name: 'Share This Design' }).waitFor();
+    await dialog.getByRole('button', { name: 'Create Pass' }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });
@@ -105,8 +93,9 @@ test.describe('Optical alignment audit', () => {
 // holding one is judged by its cap band, not its ink. Participant names are random, so this is pinned here
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
+  // /new asks nothing: it makes a design and opens the editor in place (docs/specs/007-editor/new-design-route.md).
   await page.goto('/new');
-  await page.getByText('New Design', { exact: false }).first().waitFor();
+  await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');
