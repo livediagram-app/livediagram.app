@@ -229,23 +229,10 @@ it by hand; `COVERAGE_REPORT_DRY_RUN=1` prints the report instead of writing it.
 
 ## Before a push
 
-A **pre-push hook** runs what CI's Checks and Tests would fail on, for what the push changes, so
-a deterministic failure surfaces in seconds on the machine rather than minutes later on CI.
-
-- `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`,
-  which points `core.hooksPath` at the tracked `.githooks/` directory. It skips, saying so, when
-  `CI` is set or outside a git work tree.
-- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`, which takes the files changed since
-  the merge base with `origin/main` and runs, stopping at the first failure:
-  1. `prettier --check` on the changed files Prettier formats;
-  2. `turbo run lint typecheck test --affected`, against that merge base, for the workspaces the
-     change touches and their dependants;
-  3. the help app's suite whenever a changed file sits outside `apps/` and `packages/`, since
-     its guards (repo paths and spec links in docs and code) read the whole repository and
-     `--affected` assigns a root file to no workspace.
-- Nothing changed since the merge base: it prints that and passes.
-- The hook is a fast shift-left, not the gate: CI still runs everything, and the E2E suite stays
-  in CI.
+The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
+changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
+It replaces the hook this product carried in its own repository, whose `.githooks/` and
+`scripts/git-hooks/` are no longer installed.
 
 The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
 inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.

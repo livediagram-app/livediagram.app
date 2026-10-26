@@ -6,7 +6,7 @@
 #   BASE=<sha or empty> PRODUCT=<livediagram|…, or empty for the platform> bash .github/scripts/format-check.sh
 #
 # A product's files are checked from its own folder, so its .prettierignore applies; the platform's
-# from the root (packages/, liveworkspace/, docs/, .github/ and the root's own files).
+# from the root (packages/, liveworkspace/, docs/, scripts/, .github/ and the root's own files).
 set -euo pipefail
 
 EXTENSIONS='\.(ts|tsx|js|jsx|mjs|json|md|yml|yaml)$'
@@ -20,10 +20,10 @@ if [ -n "${PRODUCT:-}" ]; then
 else
   if [ -z "${BASE:-}" ]; then
     exec pnpm exec prettier --check "packages/**/*.{ts,tsx,js,jsx,json,md,yml,yaml}" \
-      "liveworkspace/**/*.{ts,tsx,js,jsx,json,md,yml,yaml}" "docs/**/*.md" \
+      "liveworkspace/**/*.{ts,tsx,js,jsx,json,md,yml,yaml}" "docs/**/*.md" "scripts/**/*.mjs" \
       "*.{json,md,yml,yaml}" ".github/**/*.{yml,yaml,mjs}"
   fi
-  files="$(git diff --name-only --diff-filter=ACMR "${BASE}...HEAD" -- packages liveworkspace docs .github \
+  files="$(git diff --name-only --diff-filter=ACMR "${BASE}...HEAD" -- packages liveworkspace docs scripts .github \
     ':(glob)*.json' ':(glob)*.md' ':(glob)*.yml' ':(glob)*.yaml' |
     grep -E "${EXTENSIONS}" | grep -vx 'pnpm-lock.yaml' || true)"
 fi

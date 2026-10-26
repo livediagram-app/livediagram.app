@@ -51,6 +51,10 @@ result.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
   opens or updates that product's issue, **Canvas performance budget: <product>**.
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
+- **Dependency updates** (`dependabot.yml`): Dependabot, weekly, for the npm tree (one lockfile for every
+  product) and the actions. Minor and patch bumps come grouped, dev apart from production; each major
+  comes on its own. It carries the products' own rules, such as livediagram's hold on the
+  `@huggingface/transformers` major.
 
 Not carried over yet: CodeQL, which needs GitHub Advanced Security on this private repository (until then
 GitHub refuses its upload; the workflow is in git history, removed in the commit "CI: CodeQL out until
@@ -58,10 +62,31 @@ Advanced Security is on"), the coverage report written into each pull request's 
 Codecov set up for this repository, and its fixed upload count doesn't fit runs that upload only the
 groups they reach), the CLI publishing and the MCP Registry listing.
 
+## Before a push
+
+A **pre-push hook** runs, for what a push changes, what CI's Checks and Tests jobs would fail on, so a
+deterministic failure shows up on the machine in minutes rather than on CI later.
+
+- `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`, which
+  points `core.hooksPath` at the tracked `.githooks/` (for every worktree of the repository). It skips,
+  saying so, when `CI` is set or outside a git work tree.
+- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs`. It takes the merge base with
+  `origin/main`, asks CI's planner (`ci-plan.mjs`) which groups the change reaches, and runs each
+  group's steps as `ci.yml` does: lint and type check, the format check, `test`, `test:coverage`, then
+  each reached editor's suite once (unsharded). It stops at the first failing step.
+- It checks only a push of the checked-out `HEAD`; a push of any other commit, a tag or a deletion
+  passes and is left to CI. Nothing changed since the merge base also passes.
+- One run at a time on the machine: a push made while another's checks are running skips its own and
+  says so, since parallel runs overload it.
+- It finds `pnpm` (which turbo needs) through corepack shims in the temp directory when `pnpm` isn't on
+  `PATH`. `git push --no-verify` skips it; CI still runs everything, E2E included.
+- A change to something every workspace leans on (`.github/`, the root config) reaches everything, as
+  on CI, so that push runs the whole repository's checks; turbo's cache replays what hasn't changed.
+
 ## Deploys
 
 Every Worker deploys from here, to the liveworkspace Cloudflare account its `wrangler.toml` pins:
-each product's api, sites, MCP and router, and the platform's services, site and gateway.
+each product's api, sites, MCP and router, and the platform's services and site.
 
 - **Staging** follows `main` (`deploy-staging.yml`): when CI passes for a push to `main`, that commit
   deploys to every Worker's `[env.staging]`. A run for a commit `main` has already moved past is skipped,
@@ -83,7 +108,7 @@ failed one is retried by the next deploy. With no tag yet, everything deploys.
 
 **Order.** Three tiers, each waiting for the one before: the services and apis (with D1, migrations
 apply before the code: `wrangler d1 migrations apply`), then the sites and MCP Workers, then the routers
-and the gateway in front of them. A failing tier stops the ones after it.
+in front of them. A failing tier stops the ones after it.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
 product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's

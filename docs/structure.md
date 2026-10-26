@@ -49,7 +49,6 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
-│  ├─ apps/gateway             the workers.dev stand-in for liveworkspace.app's routes, until the zone moves
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
 │  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
@@ -454,5 +453,5 @@ So the sharing work should start just after the switch. The switch needs:
 - **CI and deploys in the root `.github/`** ([ci.md](ci.md)), running only what a change reaches.
   The `.github/` folders under each product are inert here, and livediagram.app keeps deploying from
   its current repo until the switch.
-- **The pre-push hook** rewritten for the new paths. It assumed `apps/…` at the root, so it isn't
-  installed here yet.
+- **The pre-push hook** rewritten for the new paths: done, at the root, driven by CI's planner
+  ([ci.md](ci.md#before-a-push)). The products' own `.githooks/` are no longer installed.

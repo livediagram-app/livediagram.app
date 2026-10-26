@@ -1,0 +1,45 @@
+# Dependency updates for the whole monorepo (docs/ci.md "Dependency updates"). GitHub reads only this
+# root file; the products' own .github/dependabot.yml are inert here, and this one carries their rules.
+version: 2
+updates:
+  # One entry covers every product and package: Dependabot reads pnpm-lock.yaml, which resolves the
+  # whole workspace.
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      # Non-majors are batched so a normal week is two PRs, not twenty: a lockfile change reaches most
+      # workspaces, so each PR runs most of CI. Dev and production stay apart because they carry
+      # different risk: a bad dev bump breaks CI, a bad production one ships.
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types: ['minor', 'patch']
+      production-dependencies:
+        dependency-type: 'production'
+        update-types: ['minor', 'patch']
+      # Majors are deliberately left out of both groups, so each one arrives as its own PR. A Next or
+      # React major is real work and should not ride along with a batch of patches.
+    ignore:
+      # transformers 4.x ships an onnxruntime-web wasm over the 25 MiB Workers Static Assets limit, so
+      # livediagram's editor cannot deploy with it. Revisit when the runtime fits (the build's
+      # asset-size gate will say).
+      - dependency-name: '@huggingface/transformers'
+        update-types: ['version-update:semver-major']
+
+  # Keeps the actions in the workflows and the composite actions current. Same class of drift as the
+  # npm tree, and easy to forget because nothing here has a lockfile.
+  - package-ecosystem: 'github-actions'
+    # '/' scans .github/workflows; composite actions under .github/actions need naming.
+    directories: ['/', '/.github/actions/*']
+    schedule:
+      interval: 'weekly'
+    commit-message:
+      prefix: 'chore(actions)'
+    groups:
+      github-actions:
+        patterns: ['*']
