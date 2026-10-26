@@ -38,9 +38,7 @@ describe('which app the person came from', () => {
     });
     // The account menu's Explorer on liveworkspace.app: every app's work, whatever app this browser used last.
     localStorage.setItem(LAST_APP_KEY, 'liveplanner');
-    expect(
-      arrival('?from=nope', 'https://liveworkspace.app/'),
-    ).toEqual({ app: null, via: null });
+    expect(arrival('?from=nope', 'https://liveworkspace.app/')).toEqual({ app: null, via: null });
     expect(arrival('', '')).toEqual({ app: null, via: null });
     expect(readLastApp()).toBe('liveplanner');
     localStorage.setItem(LAST_APP_KEY, 'nope');

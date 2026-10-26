@@ -48,9 +48,7 @@ describe('authorizeUrl', () => {
         resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
       }),
     );
-    expect(url.origin + url.pathname).toBe(
-      'https://liveworkspace.app/api/auth/oauth2/authorize',
-    );
+    expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/oauth2/authorize');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
@@ -90,9 +88,7 @@ describe('guestHandoffUrl', () => {
         resource: 'https://api.livediagram.app',
       }),
     );
-    expect(url.origin + url.pathname).toBe(
-      'https://liveworkspace.app/api/auth/guest',
-    );
+    expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/guest');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       client_id: 'client-1',
       redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
@@ -151,9 +147,7 @@ describe('exchangeCode', () => {
       scope: 'openid email',
     });
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe(
-      'https://liveworkspace.app/api/auth/oauth2/token',
-    );
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/oauth2/token');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
     );
@@ -221,9 +215,7 @@ describe('closeAccount', () => {
     const fetchImpl = tokenResponse({ deleted: true });
     await closeAccount(credentials, 'at', fetchImpl);
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe(
-      'https://liveworkspace.app/api/auth/delete-account',
-    );
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/delete-account');
     expect(init?.method).toBe('POST');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,

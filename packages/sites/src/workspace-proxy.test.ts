@@ -175,19 +175,10 @@ describe('forwarding', () => {
 describe('redirects stay on the app', () => {
   it.each([
     ['/explorer/recent', '/explorer/recent'],
-    [
-      'https://liveworkspace.app/explorer/recent?x=1',
-      '/explorer/recent?x=1',
-    ],
-    [
-      'https://liveworkspace.app/api/account/people',
-      '/api/workspace/account/people',
-    ],
+    ['https://liveworkspace.app/explorer/recent?x=1', '/explorer/recent?x=1'],
+    ['https://liveworkspace.app/api/account/people', '/api/workspace/account/people'],
     // Elsewhere on liveworkspace (the account pages): left for the browser to go there.
-    [
-      'https://liveworkspace.app/account/teams',
-      'https://liveworkspace.app/account/teams',
-    ],
+    ['https://liveworkspace.app/account/teams', 'https://liveworkspace.app/account/teams'],
     ['https://www.liveplanner.app/project/p1', 'https://www.liveplanner.app/project/p1'],
     ['/sign-in?return=%2Fexplorer', '/sign-in?return=%2Fexplorer'],
   ])('%s → %s', (location, expected) => {
@@ -199,8 +190,7 @@ describe('redirects stay on the app', () => {
       new Response(null, {
         status: 307,
         headers: {
-          Location:
-            'https://liveworkspace.app/explorer/recent',
+          Location: 'https://liveworkspace.app/explorer/recent',
         },
       }),
     );
@@ -295,9 +285,7 @@ describe("signing in on the app's own address", () => {
       { app: 'livediagram', fetch: doFetch },
     );
     const sent = doFetch.mock.calls[0]![0] as Request;
-    expect(sent.url).toBe(
-      'https://liveworkspace.app/api/auth/get-session',
-    );
+    expect(sent.url).toBe('https://liveworkspace.app/api/auth/get-session');
     expect(sent.headers.get('Cookie')).toBe('__Secure-better-auth.session_token=tok.sig');
 
     await routeToWorkspace(
@@ -391,11 +379,7 @@ describe("signing in on the app's own address", () => {
       '/sign-in?sig=s',
     );
     expect(
-      locationOnApp(
-        'https://liveworkspace.app/sign-up?sig=s',
-        PRODUCTION_WORKSPACE_ORIGIN,
-        routes,
-      ),
+      locationOnApp('https://liveworkspace.app/sign-up?sig=s', PRODUCTION_WORKSPACE_ORIGIN, routes),
     ).toBe('/sign-up?sig=s');
     expect(
       locationOnApp('https://accounts.google.com/o/oauth2', PRODUCTION_WORKSPACE_ORIGIN, routes),
@@ -423,9 +407,7 @@ describe('forwardToIndex', () => {
       },
     );
     await forwardToIndex(request, new URL(request.url), PRODUCTION_INDEX_ORIGIN, doFetch);
-    expect(seen[0]!.url).toBe(
-      'https://liveworkspace.app/api/index/items?app=livediagram',
-    );
+    expect(seen[0]!.url).toBe('https://liveworkspace.app/api/index/items?app=livediagram');
     expect(seen[0]!.method).toBe('POST');
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
     expect(seen[0]!.headers.has('Cookie')).toBe(false);
@@ -477,9 +459,7 @@ describe('each router names its environment’s liveworkspace.app', () => {
         'utf8',
       );
       expect(originIn(varsOf(toml, 'env.local.vars'))).toBe('http://localhost:3000');
-      expect(originIn(varsOf(toml, 'env.staging.vars'))).toBe(
-        'https://staging.liveworkspace.app',
-      );
+      expect(originIn(varsOf(toml, 'env.staging.vars'))).toBe('https://staging.liveworkspace.app');
       // Production's top-level vars leave it unset: routeToWorkspace falls back to PRODUCTION_WORKSPACE_ORIGIN.
       expect(originIn(varsOf(toml, 'vars'))).toBeUndefined();
     },

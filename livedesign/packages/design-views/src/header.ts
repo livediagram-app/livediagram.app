@@ -45,9 +45,11 @@ export function headerSegments(facts: HeaderFacts): string {
   if (facts.finish) segments.push(`finish=${facts.finish}`);
   if (facts.pages) {
     const { pages, kinds } = facts.pages;
-    const byKind = Object.entries(kinds).map(([kind, n]) => `${n} ${kind}`);
+    // A kind with no count (the wire type allows one) is left out rather than printed.
+    const counted = Object.entries(kinds).filter((entry): entry is [string, number] => !!entry[1]);
+    const byKind = counted.map(([kind, n]) => `${n} ${kind}`);
     // The pages whose kind is not chosen yet: counted among the pages, not by kind.
-    const blank = pages - Object.values(kinds).reduce((sum, n) => sum + (n ?? 0), 0);
+    const blank = pages - counted.reduce((sum, [, n]) => sum + n, 0);
     if (blank > 0) byKind.push(`${blank} blank`);
     segments.push(`${plural(pages, 'page', 'pages')}: ${byKind.join(', ')} (view pages)`);
   }

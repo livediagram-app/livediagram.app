@@ -348,4 +348,21 @@ describe('an arrow end attached to nothing', () => {
   it('still adds an arrow between elements on the tab', () => {
     applied(run([arrow('x3', 'n1', 'n8')]));
   });
+
+  const offArrow = (id: string, on: string) =>
+    add({
+      id,
+      type: 'arrow',
+      from: { kind: 'on-arrow', arrowId: on, t: 0.5 },
+      to: { kind: 'pinned', elementId: 'n8', anchor: 'w' },
+    });
+
+  it('is refused when it hangs off something that is not an arrow', () => {
+    const r = refused(run([offArrow('x4', 'n1')]));
+    expect(r.details?.[0]).toMatch(/from: "n1" is not an arrow on the tab/);
+  });
+
+  it('still adds an arrow hung off an arrow on the tab', () => {
+    applied(run([offArrow('x5', 'a7')]));
+  });
 });

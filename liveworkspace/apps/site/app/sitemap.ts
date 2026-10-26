@@ -12,7 +12,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Status: every app's services, checked live (liveworkspace/docs/site.md "Status").
     { url: 'https://liveworkspace.app/status', changeFrequency: 'daily', priority: 0.4 },
     // Google Drive sync, the platform's help article (liveworkspace/docs/site.md "Help").
-    { url: 'https://liveworkspace.app/help/google-drive', changeFrequency: 'monthly', priority: 0.4 },
+    {
+      url: 'https://liveworkspace.app/help/google-drive',
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
     { url: 'https://liveworkspace.app/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://liveworkspace.app/terms', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://liveworkspace.app/licences', changeFrequency: 'monthly', priority: 0.2 },

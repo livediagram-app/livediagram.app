@@ -20,12 +20,7 @@ describe('statusRedirect', () => {
   });
 
   it('follows the router’s workspace origin: staging’s, or the local site', () => {
-    expect(
-      statusPageUrl(
-        'liveplanner',
-        'https://staging.liveworkspace.app',
-      ),
-    ).toBe(
+    expect(statusPageUrl('liveplanner', 'https://staging.liveworkspace.app')).toBe(
       'https://staging.liveworkspace.app/status#liveplanner',
     );
     expect(statusPageUrl('livedesign', 'http://localhost:3000')).toBe(

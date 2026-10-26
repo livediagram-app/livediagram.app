@@ -220,14 +220,7 @@ describe('team events', () => {
 
   it('notes a join by link', async () => {
     const id = await team();
-    const link = await makeInviteLink(
-      db,
-      ADA,
-      id,
-      'secret',
-      'https://liveworkspace.app',
-      NOW,
-    );
+    const link = await makeInviteLink(db, ADA, id, 'secret', 'https://liveworkspace.app', NOW);
     if (!link.ok) throw new Error(link.error);
     const token = new URL(link.value.url).searchParams.get('token');
     await joinByInviteLink(db, CY, token, NOW);

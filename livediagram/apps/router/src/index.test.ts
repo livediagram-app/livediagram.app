@@ -100,9 +100,7 @@ describe('production dispatch (service bindings)', () => {
       expect(req.headers.get('Cookie')).toBeNull();
       // Production's when no origin is named, and never the api worker.
       await dispatch('/api/drive/config', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe(
-        'https://liveworkspace.app/api/drive/config',
-      );
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/drive/config');
       expect(api.urls).toEqual([]);
     } finally {
       vi.unstubAllGlobals();
@@ -526,9 +524,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(
-          `https://liveworkspace.app${path}`,
-        );
+        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -604,8 +600,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         new Response(null, {
           status: 307,
           headers: {
-            Location:
-              'https://liveworkspace.app/explorer/recent',
+            Location: 'https://liveworkspace.app/explorer/recent',
           },
         }),
       ),

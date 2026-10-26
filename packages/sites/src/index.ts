@@ -46,10 +46,7 @@ export function siteUrl(id: SiteId, live: string, local = LOCAL): string {
 export const PLATFORM_SITE: Site = {
   id: 'liveworkspace.app',
   name: 'liveworkspace',
-  url: siteUrl(
-    'liveworkspace.app',
-    'https://liveworkspace.app',
-  ),
+  url: siteUrl('liveworkspace.app', 'https://liveworkspace.app'),
   pitch: 'One account across every app',
   accent: '#64748b',
   deep: '#334155',

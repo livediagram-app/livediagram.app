@@ -28,14 +28,10 @@ describe('liveworkspace.app as a sender', () => {
     expect(isTelemetrySender('all')).toBe(false);
     expect(isTelemetryApp('liveworkspace.app')).toBe(false);
     expect(TELEMETRY_SENDERS).toContain('liveworkspace.app');
-    expect(
-      isPlatformOrigin('https://liveworkspace.app'),
-    ).toBe(true);
+    expect(isPlatformOrigin('https://liveworkspace.app')).toBe(true);
     expect(isPlatformOrigin('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
       false,
     );
-    expect(
-      telemetryAppOfOrigin('https://liveworkspace.app'),
-    ).toBeNull();
+    expect(telemetryAppOfOrigin('https://liveworkspace.app')).toBeNull();
   });
 });

@@ -48,9 +48,9 @@ describe('design ls', () => {
     expect(designLs.text!(await designLs.run!(ctx, designLs.input.parse({})))).toEqual([
       'no designs',
     ]);
-    expect(
-      designLs.text!(await designLs.run!(ctx, designLs.input.parse({ query: 'x' }))),
-    ).toEqual(['no designs match "x"']);
+    expect(designLs.text!(await designLs.run!(ctx, designLs.input.parse({ query: 'x' })))).toEqual([
+      'no designs match "x"',
+    ]);
   });
 
   it('refuses a limit out of range', () => {

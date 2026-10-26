@@ -22,8 +22,7 @@ import type {
 export type DriveCallError = DriveErrorCode | 'offline' | 'signed_out' | 'failed';
 
 export type DriveResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; status: number; error: DriveCallError };
+  { ok: true; data: T } | { ok: false; status: number; error: DriveCallError };
 
 export type DriveClientOptions = {
   // The service's browser routes; this origin's `/api/drive` by default.
@@ -45,7 +44,11 @@ const KNOWN_ERRORS = new Set<string>([
   'google_failed',
 ] satisfies DriveErrorCode[]);
 
-export function createDriveClient({ baseUrl = DRIVE_API_PATH, getToken, fetch: doFetch }: DriveClientOptions) {
+export function createDriveClient({
+  baseUrl = DRIVE_API_PATH,
+  getToken,
+  fetch: doFetch,
+}: DriveClientOptions) {
   const base = baseUrl.replace(/\/+$/, '');
 
   async function call<T>(path: string, method = 'GET', body?: unknown): Promise<DriveResult<T>> {
@@ -73,7 +76,8 @@ export function createDriveClient({ baseUrl = DRIVE_API_PATH, getToken, fetch: d
     if (res.status === 204) return { ok: true, data: undefined as T };
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
     if (res.ok) return { ok: true, data: (parsed ?? {}) as T };
-    const code = typeof parsed?.error === 'string' && KNOWN_ERRORS.has(parsed.error) ? parsed.error : 'failed';
+    const code =
+      typeof parsed?.error === 'string' && KNOWN_ERRORS.has(parsed.error) ? parsed.error : 'failed';
     return { ok: false, status: res.status, error: code as DriveCallError };
   }
 
@@ -85,7 +89,8 @@ export function createDriveClient({ baseUrl = DRIVE_API_PATH, getToken, fetch: d
     /** A signed consent state for a return page, and Google's consent address. */
     state: (returnTo: string) => call<DriveStateAnswer>('/state', 'POST', { returnTo }),
     /** Google's code and the state it came back with. */
-    connect: (code: string, state: string) => call<DriveConnectAnswer>('/connect', 'POST', { code, state }),
+    connect: (code: string, state: string) =>
+      call<DriveConnectAnswer>('/connect', 'POST', { code, state }),
     /** Confirm a pending switch to another Google account. */
     confirmSwitch: () => call<unknown>('/account-switch', 'POST', {}),
     /** Cancel a pending switch: the connection stays as it was. */

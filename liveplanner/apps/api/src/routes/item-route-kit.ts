@@ -81,8 +81,7 @@ export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): P
     !!doc &&
     ((await gateEdit(ctx, caller.projectId, doc.ownerId, doc.teamId)) ||
       (!!tabId && (await gateEdit(ctx, caller.projectId, doc.ownerId, doc.teamId, tabId))));
-  if (!caller.editor)
-    console.info('[items] items.retire.refused', { projectId: caller.projectId });
+  if (!caller.editor) console.info('[items] items.retire.refused', { projectId: caller.projectId });
   return caller.editor;
 }
 

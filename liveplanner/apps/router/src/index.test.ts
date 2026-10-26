@@ -203,9 +203,7 @@ describe('local-dev dispatch (origin proxy)', () => {
       expect(req.headers.get('Cookie')).toBeNull();
       // Production's when no origin is named, and never the api worker.
       await dispatch('/api/drive/config', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe(
-        'https://liveworkspace.app/api/drive/config',
-      );
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/drive/config');
       expect(api.urls).toEqual([]);
     } finally {
       vi.unstubAllGlobals();

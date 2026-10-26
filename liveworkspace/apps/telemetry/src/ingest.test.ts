@@ -3,14 +3,11 @@ import { handleIngest, rateKey } from './ingest';
 import { testEnv } from './test-env';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  new Request(
-    'https://liveworkspace.app/api/telemetry/events',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain', ...headers },
-      body: typeof body === 'string' ? body : JSON.stringify(body),
-    },
-  );
+  new Request('https://liveworkspace.app/api/telemetry/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain', ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
 
 const fromPage = (origin: string) => ({ Origin: origin, 'CF-Connecting-IP': '203.0.113.9' });
 const created = { category: 'Document', action: 'Created' };

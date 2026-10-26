@@ -78,9 +78,7 @@ describe('editor worker: the share page', () => {
     const { env, assets } = makeEnv();
     const res = await get('/document/shared?s=CODE1234', env);
     expect(assets).toEqual(['/document/placeholder']);
-    expect(asked).toEqual([
-      'https://liveworkspace.app/api/previews/share/CODE1234/card',
-    ]);
+    expect(asked).toEqual(['https://liveworkspace.app/api/previews/share/CODE1234/card']);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     const edits = (await res.json()) as Record<string, string>;
     expect(edits.title).toBe('Payments flow');
@@ -92,13 +90,9 @@ describe('editor worker: the share page', () => {
   });
 
   it('asks the previews origin it is given (staging)', async () => {
-    const { env } = makeEnv(
-      'https://staging.liveworkspace.app',
-    );
+    const { env } = makeEnv('https://staging.liveworkspace.app');
     await get('/document/shared?s=C', env);
-    expect(asked).toEqual([
-      'https://staging.liveworkspace.app/api/previews/share/C/card',
-    ]);
+    expect(asked).toEqual(['https://staging.liveworkspace.app/api/previews/share/C/card']);
   });
 
   it("never asks about a document's own address, which only its owner can open", async () => {

@@ -98,8 +98,8 @@ const describePatch = (input: PageBackgroundInput) =>
 // A page's kind in words: a page whose kind is not chosen yet is a blank page.
 const kindWord = (kind: PageKind | null): string => kind ?? 'blank';
 
-function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
-  const kind = page ? pageKindOf(page) : null;
+function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'>): string {
+  const kind = pageKindOf(page);
   // "A logo page", "A blank page" (one whose kind is not chosen yet).
   const aKind = `A ${kindWord(kind)}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
@@ -146,7 +146,7 @@ export function applyPageChanges(
       const stop = (code: PagesRefusal['code'], message: string): never => {
         throw new Stop({ code, message, change: i });
       };
-      const take = (out: PageEdit<Tab>, page?: Pick<Page, 'kind'>): Tab => {
+      const take = (out: PageEdit<Tab>, page: Pick<Page, 'kind'>): Tab => {
         if ('refused' in out) stop(CODE[out.refused], messageFor(out.refused, current, page));
         return (out as { tab: Tab }).tab;
       };

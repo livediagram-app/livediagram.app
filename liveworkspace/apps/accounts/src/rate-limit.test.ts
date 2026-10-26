@@ -14,14 +14,11 @@ function env(ip: boolean, email: boolean) {
 }
 
 function request(body: unknown) {
-  return new Request(
-    'https://liveworkspace.app/api/auth/x',
-    {
-      method: 'POST',
-      headers: { 'cf-connecting-ip': '203.0.113.9' },
-      body: typeof body === 'string' ? body : JSON.stringify(body),
-    },
-  );
+  return new Request('https://liveworkspace.app/api/auth/x', {
+    method: 'POST',
+    headers: { 'cf-connecting-ip': '203.0.113.9' },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
 }
 
 describe('overCodeLimit', () => {

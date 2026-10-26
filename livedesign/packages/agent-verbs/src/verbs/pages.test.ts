@@ -199,6 +199,41 @@ describe('page ls and page set', () => {
     expect(pageSet.text!(out)[1]).toBe('1  logo  logo  -960,-540 1920x1080');
   });
 
+  it('lists a page whose kind is not chosen yet as blank', async () => {
+    const blank = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, kind: null }] };
+    const { ctx } = setUp(undefined, () => Response.json(blank));
+    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
+    expect(pageSet.text!(out)[1]).toBe('1  blank  logo  -960,-540 1920x1080  Cover');
+  });
+
+  it('refuses a page ls with no tab to read', async () => {
+    const doc = tabsOfA[`/designs/${DOC_A}`].design;
+    const api = fakeApi({
+      ...library,
+      [`/designs/${DOC_A}`]: {
+        design: { ...doc, tabs: doc.tabs.map((t) => ({ ...t, outOfScope: true })) },
+      },
+    });
+    const refused = await pageLs.run!(contextOf(api), pageLs.input.parse({ doc: DOC_A })).catch(
+      (e: unknown) => e,
+    );
+    expect(refused).toMatchObject({ status: 404, code: 'tab_needed' });
+  });
+
+  it('answers a refusal of no one change as a 400 in the api’s words', async () => {
+    const { ctx } = setUp(undefined, () =>
+      Response.json({ error: 'tab_locked', message: 'The tab is locked.' }, { status: 409 }),
+    );
+    const refused = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' })).catch(
+      (e: unknown) => e,
+    );
+    expect(refused).toMatchObject({
+      status: 400,
+      code: 'tab_locked',
+      message: 'The tab is locked.',
+    });
+  });
+
   it('takes a JSON list of changes, on the tab named', async () => {
     const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"logo"}]');
     await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tab: 'Details', changes: 'c.json' }));

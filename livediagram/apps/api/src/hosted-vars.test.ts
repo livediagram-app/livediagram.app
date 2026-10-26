@@ -62,18 +62,10 @@ describe('hosted profile', () => {
   it('turns telemetry on and points each environment at its media service', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     expect(shared.TELEMETRY_ENABLED).toBe('true');
-    expect(environments.production.MEDIA_URL).toBe(
-      'https://liveworkspace.app/api/media',
-    );
-    expect(environments.staging.MEDIA_URL).toBe(
-      'https://staging.liveworkspace.app/api/media',
-    );
-    expect(environments.production.INDEX_ORIGIN).toBe(
-      'https://liveworkspace.app',
-    );
-    expect(environments.staging.INDEX_ORIGIN).toBe(
-      'https://staging.liveworkspace.app',
-    );
+    expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
+    expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
+    expect(environments.production.INDEX_ORIGIN).toBe('https://liveworkspace.app');
+    expect(environments.staging.INDEX_ORIGIN).toBe('https://staging.liveworkspace.app');
   });
 
   it('names only vars the worker reads', async () => {
@@ -118,24 +110,18 @@ describe('hosted-vars script', () => {
     // The frontends send to the same telemetry service as the api.
     expect(
       buildEnv({
-        TELEMETRY_URL:
-          'https://staging.liveworkspace.app/api/telemetry',
+        TELEMETRY_URL: 'https://staging.liveworkspace.app/api/telemetry',
       }),
-    ).toEqual([
-      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry',
-    ]);
+    ).toEqual(['NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry']);
   });
 
   it('points the Community pages at the same Community service as the api', async () => {
     const { buildEnv } = await load();
     expect(
       buildEnv({
-        COMMUNITY_URL:
-          'https://staging.liveworkspace.app/api/community',
+        COMMUNITY_URL: 'https://staging.liveworkspace.app/api/community',
       }),
-    ).toEqual([
-      'NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community',
-    ]);
+    ).toEqual(['NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community']);
   });
 
   it('rejects a malformed profile rather than deploying half of it', async () => {

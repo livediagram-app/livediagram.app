@@ -114,12 +114,8 @@ describe('the welcome', () => {
     await account('user_ada', T0, true, 'liveworkspace.app');
     await account('user_bea', T0, true, 'liveworkspace.app');
     await sendWelcomes(db, env, send, ['user_ada'], T0);
-    expect(sent[0]!.html).toContain(
-      'href="https://liveworkspace.app/#apps"',
-    );
-    expect(sent[0]!.text).toContain(
-      'Pick an app: https://liveworkspace.app/#apps',
-    );
+    expect(sent[0]!.html).toContain('href="https://liveworkspace.app/#apps"');
+    expect(sent[0]!.text).toContain('Pick an app: https://liveworkspace.app/#apps');
     expect(sent[0]!.html).not.toContain('livediagram.app/new');
     // Later in the series, the first app they opened.
     await recordSighting(db, 'user_bea', 'liveplanner.app', T0 + 1);
@@ -129,9 +125,7 @@ describe('the welcome', () => {
     const ada = sent.find(
       (e) => e.to === 'user_ada@example.com' && e.subject !== 'Welcome to liveworkspace',
     )!;
-    expect(ada.html).toContain(
-      'https://liveworkspace.app/#apps',
-    );
+    expect(ada.html).toContain('https://liveworkspace.app/#apps');
   });
 
   it('keeps the app signed up through over the first one opened', async () => {
@@ -245,8 +239,7 @@ describe('the series', () => {
 describe('telemetry', () => {
   const posted: { app: string; events: { type: string }[] }[] = [];
   const telemetry = {
-    TELEMETRY_URL:
-      'https://liveworkspace.app/api/telemetry',
+    TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
     TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
     TELEMETRY_KEY_LIVEDESIGN: 'lds',
     TELEMETRY: {
@@ -303,13 +296,9 @@ describe('the emails', () => {
       'https://staging.livedesign.app',
     );
     const email = lifecycleEmail(env, 'week2', { home: null });
-    expect(email.html).toContain(
-      'https://liveworkspace.app/explorer',
-    );
+    expect(email.html).toContain('https://liveworkspace.app/explorer');
     expect(email.text).toContain('Manage your notifications');
-    expect(email.unsubscribeUrl).toBe(
-      'https://liveworkspace.app/explorer?settings=notifications',
-    );
+    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/explorer?settings=notifications');
     expect(email.html).toContain(
       'href="https://liveworkspace.app/explorer?settings=notifications" style="color:#334155;text-decoration:underline">Manage your notifications',
     );
@@ -325,9 +314,7 @@ describe('the emails', () => {
           home: null,
         },
       ).unsubscribeUrl,
-    ).toBe(
-      'https://staging.liveworkspace.app/explorer?settings=notifications',
-    );
+    ).toBe('https://staging.liveworkspace.app/explorer?settings=notifications');
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }

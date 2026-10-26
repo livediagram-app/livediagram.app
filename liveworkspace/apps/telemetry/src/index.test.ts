@@ -25,7 +25,10 @@ describe('telemetry worker', () => {
             events: [
               app === 'liveworkspace.app'
                 ? { category: 'UI', action: 'Toggled', type: 'ExplorerViewList' }
-                : { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
+                : {
+                    category: app === 'liveplanner.app' ? 'Project' : 'Document',
+                    action: 'Created',
+                  },
             ],
           }),
         }),

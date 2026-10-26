@@ -6,7 +6,12 @@
 // is re-recorded with Drive's state, so a change liveworkspace didn't take (a lost conflict) is undone by the next
 // outbound pass rather than lingering.
 
-import { DRIVE_FOLDER_MIME, DRIVE_PROP_FOLDER_ID, DRIVE_PROP_ITEM_ID, DRIVE_PROP_ORIGIN } from '../constants';
+import {
+  DRIVE_FOLDER_MIME,
+  DRIVE_PROP_FOLDER_ID,
+  DRIVE_PROP_ITEM_ID,
+  DRIVE_PROP_ORIGIN,
+} from '../constants';
 import { stripDriveName } from '../formats';
 import type { DriveChange, DriveFile } from '../server/drive-client';
 import {
@@ -43,7 +48,13 @@ export type InboundDecision =
   | { kind: 'adopt'; row: DriveRow }
   | { kind: 'apply'; effects: InboundEffect[]; record: DriveRow; types: InboundType[] };
 
-function blankRow(kind: DriveRow['kind'], id: string, app: DriveRow['app'], file: DriveFile, localName: string): DriveRow {
+function blankRow(
+  kind: DriveRow['kind'],
+  id: string,
+  app: DriveRow['app'],
+  file: DriveFile,
+  localName: string,
+): DriveRow {
   return {
     kind,
     id,
@@ -75,7 +86,8 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
   if (!ours(file, snapshot)) return { kind: 'ignore', reason: 'not-ours' };
   const folderId = file.appProperties[DRIVE_PROP_FOLDER_ID];
   if (folderId) {
-    if (snapshot.rows.has(rowKey('folder', folderId))) return { kind: 'ignore', reason: 'duplicate' };
+    if (snapshot.rows.has(rowKey('folder', folderId)))
+      return { kind: 'ignore', reason: 'duplicate' };
     const folder = snapshot.folders.get(folderId);
     if (folder) {
       // Adopted as Drive has it; outbound then brings Drive in line with liveworkspace.
@@ -96,16 +108,23 @@ function planUnrecorded(change: DriveChange, snapshot: MirrorSnapshot): InboundD
   if (itemId) {
     // Another file mirrors that item: this one is a copy the person opened with liveworkspace. Never applied,
     // re-tagged or adopted; Open with offers Import as a copy.
-    if (snapshot.rows.has(rowKey('item', itemId))) return { kind: 'ignore', reason: 'foreign-copy' };
+    if (snapshot.rows.has(rowKey('item', itemId)))
+      return { kind: 'ignore', reason: 'foreign-copy' };
     // Only the reconnect listing adopts an item's file (planAdoption), where every claimant is seen at once.
     return { kind: 'ignore', reason: 'unrecorded-item' };
   }
   return { kind: 'ignore', reason: 'unrecorded' };
 }
 
-const driveIsLater = (change: DriveChange, localChangedAt: number) => Date.parse(change.time) > localChangedAt;
+const driveIsLater = (change: DriveChange, localChangedAt: number) =>
+  Date.parse(change.time) > localChangedAt;
 
-function planItem(change: DriveChange, row: DriveRow, file: DriveFile, snapshot: MirrorSnapshot): InboundDecision {
+function planItem(
+  change: DriveChange,
+  row: DriveRow,
+  file: DriveFile,
+  snapshot: MirrorSnapshot,
+): InboundDecision {
   const state = fileState(file);
   const nameChanged = state.name !== row.name;
   const parentChanged = state.parentId !== row.parentId;
@@ -127,7 +146,12 @@ function planItem(change: DriveChange, row: DriveRow, file: DriveFile, snapshot:
   let restored = false;
   if (trashedChanged) {
     if (state.trashed && live) {
-      return { kind: 'apply', effects: [{ kind: 'trash-item', id: row.id }], record, types: ['Trash'] };
+      return {
+        kind: 'apply',
+        effects: [{ kind: 'trash-item', id: row.id }],
+        record,
+        types: ['Trash'],
+      };
     }
     if (!state.trashed && trashed) {
       effects.push({ kind: 'restore-item', id: row.id });
@@ -168,7 +192,12 @@ function planItem(change: DriveChange, row: DriveRow, file: DriveFile, snapshot:
   return { kind: 'apply', effects, record, types };
 }
 
-function planFolder(change: DriveChange, row: DriveRow, file: DriveFile, snapshot: MirrorSnapshot): InboundDecision {
+function planFolder(
+  change: DriveChange,
+  row: DriveRow,
+  file: DriveFile,
+  snapshot: MirrorSnapshot,
+): InboundDecision {
   const state = fileState(file);
   const nameChanged = state.name !== row.name;
   const parentChanged = state.parentId !== row.parentId;
@@ -176,11 +205,22 @@ function planFolder(change: DriveChange, row: DriveRow, file: DriveFile, snapsho
   if (!nameChanged && !parentChanged && !trashedChanged) return { kind: 'echo' };
   const folder = snapshot.folders.get(row.id);
   const driveName = stripDriveName(file.name, LOCAL_NAME_MAX);
-  const record: DriveRow = { ...row, ...state, md5: null, headRevisionId: null, localName: driveName ?? row.localName };
+  const record: DriveRow = {
+    ...row,
+    ...state,
+    md5: null,
+    headRevisionId: null,
+    localName: driveName ?? row.localName,
+  };
   if (!folder) return { kind: 'apply', effects: [], record, types: [] };
 
   if (trashedChanged && state.trashed) {
-    return { kind: 'apply', effects: [{ kind: 'bin-folder', id: row.id }], record, types: ['Trash'] };
+    return {
+      kind: 'apply',
+      effects: [{ kind: 'bin-folder', id: row.id }],
+      record,
+      types: ['Trash'],
+    };
   }
   const effects: InboundEffect[] = [];
   const types: InboundType[] = [];
@@ -196,7 +236,8 @@ function planFolder(change: DriveChange, row: DriveRow, file: DriveFile, snapsho
     if (!localChanged || driveIsLater(change, folder.updatedAt)) {
       const target = localFolderForParent(snapshot, state.parentId);
       if (target === undefined) {
-        if (folder.parentId !== null) effects.push({ kind: 'move-folder', id: row.id, parentId: null });
+        if (folder.parentId !== null)
+          effects.push({ kind: 'move-folder', id: row.id, parentId: null });
         types.push('UnknownFolder');
         record.notice = 'unseen_folder';
         record.noticeParentId = state.parentId;
@@ -217,10 +258,16 @@ export function planInbound(change: DriveChange, snapshot: MirrorSnapshot): Inbo
   const row = snapshot.rowsByFile.get(change.fileId);
   if (!row) return planUnrecorded(change, snapshot);
   // A folder liveworkspace deleted: its Drive folder is binned this pass, whatever Drive last said.
-  if (row.kind === 'folder' && folderDeletedHere(snapshot, row.id)) return { kind: 'ignore', reason: 'deleted-here' };
+  if (row.kind === 'folder' && folderDeletedHere(snapshot, row.id))
+    return { kind: 'ignore', reason: 'deleted-here' };
   if (change.removed || !change.file) {
     if (row.kind === 'item' && snapshot.trash.has(row.id)) {
-      return { kind: 'apply', effects: [{ kind: 'purge-item', id: row.id }], record: row, types: ['Purge'] };
+      return {
+        kind: 'apply',
+        effects: [{ kind: 'purge-item', id: row.id }],
+        record: row,
+        types: ['Purge'],
+      };
     }
     // Deleted for good while the item is live, or access lost: never a reason to delete a live item. Forget the
     // file; outbound re-creates it. Also Drive emptying its bin of an item purged here.
@@ -250,13 +297,19 @@ export function orderChanges(changes: DriveChange[], snapshot: MirrorSnapshot): 
 /** After a (re)connect, the files the service made earlier, all at once: the rows to record instead of making
  *  second files. An item claimed by more than one file (its file and a copy opened with liveworkspace) is left to
  *  neither, so a copy is never taken for the original; the next write makes a fresh file for it. */
-export function planAdoption(files: DriveFile[], snapshot: MirrorSnapshot): { adopt: DriveRow[]; ambiguous: string[] } {
+export function planAdoption(
+  files: DriveFile[],
+  snapshot: MirrorSnapshot,
+): { adopt: DriveRow[]; ambiguous: string[] } {
   const claims = new Map<string, DriveFile[]>();
   const adopt: DriveRow[] = [];
   for (const file of files) {
     if (!ours(file, snapshot)) continue;
     if (file.appProperties[DRIVE_PROP_FOLDER_ID]) {
-      const decision = planUnrecorded({ fileId: file.id, removed: false, time: '', file }, snapshot);
+      const decision = planUnrecorded(
+        { fileId: file.id, removed: false, time: '', file },
+        snapshot,
+      );
       if (decision.kind === 'adopt') adopt.push(decision.row);
       continue;
     }
@@ -273,7 +326,15 @@ export function planAdoption(files: DriveFile[], snapshot: MirrorSnapshot): { ad
       continue;
     }
     const file = claimants[0]!;
-    adopt.push(blankRow('item', itemId, known.app, file, stripDriveName(file.name, LOCAL_NAME_MAX) ?? known.name));
+    adopt.push(
+      blankRow(
+        'item',
+        itemId,
+        known.app,
+        file,
+        stripDriveName(file.name, LOCAL_NAME_MAX) ?? known.name,
+      ),
+    );
   }
   return { adopt, ambiguous };
 }

@@ -22,9 +22,7 @@ function envWith(handler: (req: Request) => Response): { env: Env; calls: Reques
 
 afterEach(() => vi.unstubAllGlobals());
 
-const isEventsPost = (req: Request) =>
-  req.url ===
-  'https://liveworkspace.app/api/telemetry/events';
+const isEventsPost = (req: Request) => req.url === 'https://liveworkspace.app/api/telemetry/events';
 
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {

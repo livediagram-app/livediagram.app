@@ -30,11 +30,8 @@ describe('accountsSiteUrl', () => {
       'https://liveworkspace.app/explorer?settings=tokens',
     );
     const staging = await load({
-      NEXT_PUBLIC_ACCOUNTS_SITE_URL:
-        'https://staging.liveworkspace.app/',
+      NEXT_PUBLIC_ACCOUNTS_SITE_URL: 'https://staging.liveworkspace.app/',
     });
-    expect(staging.accountsSiteUrl).toBe(
-      'https://staging.liveworkspace.app',
-    );
+    expect(staging.accountsSiteUrl).toBe('https://staging.liveworkspace.app');
   });
 });

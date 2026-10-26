@@ -177,5 +177,9 @@ describe('photo pages', () => {
     expect(refusedOf({ pages: [{ op: 'add', kind: 'photo', width: 8000, height: 8000 }] })).toMatch(
       /at most/,
     );
+    // A photo sized by one side alone still needs the other.
+    expect(refusedOf({ pages: [{ op: 'add', kind: 'photo', height: 50 }] })).toMatch(
+      /"width" is a photo's size/,
+    );
   });
 });

@@ -236,7 +236,6 @@ describe('delete-own', () => {
     expect((await threadOf('a'))!.comments.map((c) => c.id)).toEqual(['c2']);
     expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(404);
   });
-
 });
 
 // docs/specs/013-workspace/timeline.md §4.3: a tab deleted whole takes every comment's words with it,

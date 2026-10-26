@@ -163,4 +163,24 @@ describe('a photo page (docs/specs/031-photo/photo-pages.md "Agents")', () => {
     ]);
     expect(out.text).not.toMatch(/layouts photo/);
   });
+
+  it('says "layer" for a photo of one layer', () => {
+    const tab = {
+      id: 'tab-photo',
+      name: 'Photo',
+      opensIn: 'pages',
+      pages: [{ id: 'page-ph', orientation: 'landscape', size: 'photo', kind: 'photo' }],
+      elements: [],
+      photos: {
+        'page-ph': {
+          width: 800,
+          height: 600,
+          layers: [
+            { id: 'ly-00000001', name: 'Background', layerKind: 'pixel', pixels: { tiles: {} } },
+          ],
+        },
+      },
+    } as unknown as Tab;
+    expect(pagesOf(tab).text).toContain('photo 800x600 px, 1 layer ·');
+  });
 });

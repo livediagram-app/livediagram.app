@@ -19,13 +19,13 @@ action, so nobody re-types it and neither place lies.
 
 ## Domain language
 
-| Term              | Means                                                                                         | Never called              |
-| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------- |
-| **linked board**  | A board whose setup `collects` a kind of canvas record                                        | synced board, auto board  |
+| Term              | Means                                                                                        | Never called              |
+| ----------------- | -------------------------------------------------------------------------------------------- | ------------------------- |
+| **linked board**  | A board whose setup `collects` a kind of canvas record                                       | synced board, auto board  |
 | **Actions board** | The linked board that collects actions: the project's first board with `collects: 'actions'` | action list, to-do board  |
-| **linked card**   | A card made for one canvas record, carrying its **link**                                      | mirror, copy, shadow card |
-| **link**          | The card's `linked` field: which record it is for, and where that record was last seen        | source, reference, ref    |
-| **Won't Do**      | An action's third status: decided against, closed without being done                          | cancelled, rejected       |
+| **linked card**   | A card made for one canvas record, carrying its **link**                                     | mirror, copy, shadow card |
+| **link**          | The card's `linked` field: which record it is for, and where that record was last seen       | source, reference, ref    |
+| **Won't Do**      | An action's third status: decided against, closed without being done                         | cancelled, rejected       |
 
 ## The Actions board
 

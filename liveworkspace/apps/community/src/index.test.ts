@@ -377,11 +377,7 @@ describe('the public routes', () => {
 
   it('answer nothing outside its API: liveworkspace.app hosts no Community pages', async () => {
     for (const path of ['/community', '/community/post/', '/api/communityx']) {
-      const res = await worker.fetch(
-        new Request(`https://liveworkspace.app${path}`),
-        db.env,
-        ctx,
-      );
+      const res = await worker.fetch(new Request(`https://liveworkspace.app${path}`), db.env, ctx);
       expect(res.status).toBe(404);
     }
   });

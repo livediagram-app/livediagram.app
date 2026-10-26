@@ -205,6 +205,12 @@ describe('adding', () => {
     expect(r.message).toContain('A logo page takes the layouts');
   });
 
+  it('refuses a layout on a blank page, which takes none', () => {
+    const r = refusal(tabOf({ pages: [page('p1')] }), [{ op: 'layout', page: 1, layout: 'title' }]);
+    expect(r.code).toBe('layout_unknown');
+    expect(r.message).toBe('A blank page takes no layouts: add a logo or wireframe page for one.');
+  });
+
   it('refuses past the page limit', () => {
     const full = tabOf({
       pages: Array.from({ length: MAX_PAGES }, (_, i) => mark(`p${i}`)),

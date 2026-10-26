@@ -107,12 +107,8 @@ describe("on an app's own address", () => {
     );
     expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
     expect(onAppAddress('http://localhost:3300')).toBe(true);
-    expect(onAppAddress('https://liveworkspace.app')).toBe(
-      false,
-    );
-    expect(
-      onAppAddress('https://staging.liveworkspace.app'),
-    ).toBe(false);
+    expect(onAppAddress('https://liveworkspace.app')).toBe(false);
+    expect(onAppAddress('https://staging.liveworkspace.app')).toBe(false);
     expect(onAppAddress('http://localhost:3000')).toBe(false);
   });
 
@@ -120,21 +116,16 @@ describe("on an app's own address", () => {
     expect(accountsApi('https://livediagram-router.liveworkspace-easing509.workers.dev')).toBe(
       '/api/workspace/auth',
     );
-    expect(accountsApi('https://liveworkspace.app')).toBe(
-      '/api/auth',
-    );
+    expect(accountsApi('https://liveworkspace.app')).toBe('/api/auth');
   });
 
   it('links to the app’s own sign-in there, which keeps the address on the app', () => {
     expect(signInHref('/explorer/recent', 'https://liveplanner.app')).toBe(
       '/api/auth/sign-in?return_to=%2Fexplorer%2Frecent',
     );
-    expect(
-      signInHref(
-        '/explorer/recent',
-        'https://liveworkspace.app',
-      ),
-    ).toBe('/sign-in?return=%2Fexplorer%2Frecent');
+    expect(signInHref('/explorer/recent', 'https://liveworkspace.app')).toBe(
+      '/sign-in?return=%2Fexplorer%2Frecent',
+    );
   });
 
   it('keeps the hand-off’s binding for the tab, and only one that looks like a hash', () => {
@@ -145,8 +136,7 @@ describe("on an app's own address", () => {
   });
 
   it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
-    const hop =
-      'https://liveworkspace.app/api/auth/handoff?token=t';
+    const hop = 'https://liveworkspace.app/api/auth/handoff?token=t';
     const fetched = at(
       'https://livediagram-router.liveworkspace-easing509.workers.dev',
       Response.json({ url: hop }),

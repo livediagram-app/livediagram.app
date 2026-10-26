@@ -3,9 +3,7 @@ import { LOCAL_PORTS, PLATFORM_SITE, SITES, siteUrl, workspaceOriginFor } from '
 
 describe('workspaceOriginFor', () => {
   it("is staging's site from a staging app, else the platform's", () => {
-    expect(workspaceOriginFor('staging.liveplanner.app')).toBe(
-      'https://staging.liveworkspace.app',
-    );
+    expect(workspaceOriginFor('staging.liveplanner.app')).toBe('https://staging.liveworkspace.app');
     expect(
       workspaceOriginFor('livediagram-router-staging.liveworkspace-easing509.workers.dev'),
     ).toBe('https://staging.liveworkspace.app');

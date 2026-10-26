@@ -15,6 +15,13 @@ const facts = (over: Partial<HeaderFacts> = {}): HeaderFacts => ({
 });
 
 describe('headerLine (R16, VW8)', () => {
+  it('counts pages by kind, the rest blank, leaving out a kind with no count', () => {
+    const pages = { pages: 4, kinds: { logo: 2, wireframe: 0, photo: undefined } };
+    expect(headerLine(facts({ pages, threads: { open: 0, total: 0 } }))).toBe(
+      'tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · 4 pages: 2 logo, 2 blank (view pages) · rev 41',
+    );
+  });
+
   it('names the tab, its buckets, threads and revision', () => {
     expect(headerLine(facts())).toBe(
       'tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41',
