@@ -44,9 +44,8 @@ under the pointer as a category is switched.
   **Library**.
 - **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
   Popular entry; the bar leaves it out (`barCategoriesFor`).
-- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Workshop). They were
-  once one button named Draw, but more than half of what it held was words and comments (Page, Text, Note,
-  Annotation, Pointer note, Callout, Comment, Action), so the name no longer said what was inside. Write holds the
+- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Workshop). One button
+  named Draw would hold more words and comments than strokes, so its name would not say what was inside. Write holds the
   words and the notes about the canvas; Draw holds only what is made by a stroke or a drag: the pens, Polygon, Arrow
   and Line.
 - **Diagram splits Build into Diagrams and Layout**: **Diagrams** holds the structures that grow as you type (Mind
@@ -277,8 +276,8 @@ category's strip already holds all of it (the whole category swipes, and the thr
 ## The strip's order and dividers
 
 The strip shows a category **in its own order**, always: the first tiles that fit, the rest behind
-More. **Using a tile never reorders it** (an earlier version brought each used tile to the front,
-which moved things under the pointer after every add; it is gone, its stored list with it).
+More. **Using a tile never reorders it**: bringing each used tile to the front would move things under the pointer after
+every add.
 
 **Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
 
@@ -355,18 +354,13 @@ on screen sideways as well as vertically, whatever the trigger's position.
 
 ## One layout
 
-There is no layout choice. An earlier version offered a second layout, **Floating**, as the
-desktop default: the Palette as a draggable corner panel, the Explorer as a corner panel, Layers
-minimising into its cluster button, and Draw mode's tools inside the Palette panel. It was retired
-because every new feature had to be built and kept working twice, and the strip had become the
-better layout. Its parts went with it:
+There is no layout choice: one layout, the strip, so every feature is built and kept working once.
 
-- The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
-  (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
-- Settings has no Panel Layout row, and the Diagram tour no layout picker (it was on the tour's welcome card, itself gone since 25 October 2026)
-  ([Diagram tour ("Start Diagram Tour")](editor-tour.md)).
-- The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
-  that names them is ignored ([Panel docking](panel-docking.md)).
+- There is no `panelLayout` preference ([User preferences](user-preferences.md)). A stored value
+  (`'floating'`, `'toolbar'`, `'minimal'`) is ignored and left as it is.
+- Settings has no Panel Layout row, and the [Diagram tour](editor-tour.md) no layout picker.
+- The Palette, the Explorer and Layers are not corner panels, so a stored panel placement that names them is ignored
+  ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
   types, so the history still reads ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 

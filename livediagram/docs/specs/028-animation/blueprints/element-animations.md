@@ -290,8 +290,7 @@ Animation). Tiles are `AnimationPreviewTile`s: a 46 × 30 stage holding the mini
 `useFrozenAnimations` at `previewFrame(set, value)` (one `getAnimations({ subtree: true })` pass on mount: pause, set
 `currentTime` to frame × duration) and played on pointer enter; moving values (`MOVES`, `ICON_MOVES`) add a dashed
 ghost at rest. The miniatures set the variables the canvas would, scaled as for a 120 × 80 element. The kept tile
-shows a Shape miniature and the old label. The old static glyphs (`AnimationKindGlyph`, `FlowKindGlyph`,
-`IconAnimKindGlyph`, `ProgressAnimKindGlyph`) are gone.
+shows a Shape miniature and the old label. There are no static kind glyphs.
 
 ## Accessibility
 

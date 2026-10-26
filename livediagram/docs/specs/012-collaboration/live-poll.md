@@ -29,8 +29,7 @@ them to each session on hello, so:
 - **A host who refreshes can still end it**: the poll carries its starter's
   collab key (`hostKey`).
 
-This used to be memory-only in the clients, and all three were accepted costs
-("present-at-trigger-time only"). Ending the poll still removes every trace of
+None of this is memory-only in the clients. Ending the poll removes every trace of
 it, from the room too.
 
 ## Op vocabulary

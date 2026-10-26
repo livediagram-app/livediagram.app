@@ -1,6 +1,6 @@
 # Deployment
 
-All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
+All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered**: a green CI run does not ship on its own.
 
 There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livediagram.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects and KV and liveworkspace's staging services. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 

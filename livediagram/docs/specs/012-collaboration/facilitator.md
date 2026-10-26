@@ -32,7 +32,7 @@ upgrade the api resolves the visitor's role and forwards only
 `X-Verified-Role: edit | view`
 ([`document-room-routes.ts`](../../../apps/api/src/routes/document-room-routes.ts)):
 
-> Presence identity is no longer forwarded: the DO assigns each session a fresh
+> Presence identity is not forwarded: the DO assigns each session a fresh
 > ephemeral id for its broadcast presence / cursor ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6), so the real
 > owner id never reaches the room and a joiner can't spoof another peer's
 > presence (there's no real id to claim).
@@ -211,8 +211,7 @@ does not resolve is the person who is still connected and has wandered off with
 something selected, and the session stops on an element nobody can touch.
 
 So the facilitator can free it: right-click the locked element, and the one
-thing there is to do is offered. Right-clicking a locked element used to open
-nothing at all, and it still opens nothing for everybody else — the element is
+thing there is to do is offered. For everybody else, right-clicking a locked element opens nothing — the element is
 still locked, and a full element menu would be a menu of dead rows with one
 live one, so this is a small menu of its own (`LockedElementMenu`).
 

@@ -1,37 +1,32 @@
 # Diagram tour ("Start Diagram Tour")
 
 A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
-spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
-October 2026 it was the **welcome tour**, offered whatever mode a tab was in; it is now about diagramming alone,
-and the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-tour.md) and the
-[Workshop tour](../012-collaboration/workshop-tour.md)). It superseded the guided-tour **sample diagram**
-([Guided tour sample ("Take the guided tour"), RETIRED](guided-tour-sample.md)), which taught through
-annotation markers on the canvas; the sample's template, builder, and /new card were removed once this tour
-proved the better introduction.
+spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. It is about diagramming alone;
+the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-tour.md) and the
+[Workshop tour](../012-collaboration/workshop-tour.md)).
 
 ## Domain language
 
 | Term             | Means                                                                                           |
 | ---------------- | ----------------------------------------------------------------------------------------------- |
 | **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram Tour** in Settings' Tours category |
-| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                 |
+| **welcome tour** | A name kept only in code identifiers and telemetry tokens                                       |
 | **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)        |
 
 ## Where it appears
 
 - **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
-  the avatar and Plan tours) is started from one button in the editor's bottom bar, immediately left of Settings:
+  the avatar tour) is started from one button in the editor's bottom bar, immediately left of Settings:
   a contained chip with a play glyph in a small accent disc, reading **Start Diagram Tour** (`TourOfferButton`,
   `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
   wherever its neighbours drop their words, it shows the glyph alone and keeps **Start Diagram Tour** as its
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
-  own: no banner, no card, no toolbar beside an element. This replaced the offer banners ("Getting started with
-  Diagrams?") in October 2026, which people found they had to keep turning down.
+  own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
-  tour first, then a tool in hand or a surface on the tab (the Avatar tour, the Dashboards tour), then the tab's
-  mode (Diagram, Draw, Workshop, Pages, Plan, Forms). Between two of the same rank, the one published last wins. With
+  tour first, then a tool in hand or a surface on the tab (the Avatar tour), then the tab's
+  mode (Diagram, Draw, Workshop). Between two of the same rank, the one published last wins. With
   no tour on offer the button is not drawn.
 - **Only in Diagram mode.** This tour is on offer, and runs, only while the open tab is in Diagram mode, to an
   Editor, once the editor is ready: hydrated, no welcome overlay, no start on screen ([Template
@@ -82,9 +77,8 @@ proved the better introduction.
 
 ## Handoff
 
-None. Until October 2026 a brand-new user's first create set a sessionStorage flag (`livediagram:v2:tour-pending`)
-that the editor read to show the offer banner; with the button as the one way in there is nothing to hand over, and
-`/new` no longer waits for the document count on create. The Settings rerun crosses no navigation, so it is a window
+None: with the button as the one way in there is nothing to hand over from `/new`, which does not wait for the
+document count on create. The Settings rerun crosses no navigation, so it is a window
 event (`livediagram:tour-relaunch`, `lib/diagram-tour.ts`).
 
 ## The steps
@@ -121,11 +115,10 @@ words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: 
 7. **Outro** (card): "You're ready to diagram": a help-article illustration, a **Learn More** link to the help
    centre (new tab, no underline), and a **Start** button that completes the tour.
 
-Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
-the tour on diagramming; each mode now has a tour of its own, on the Start Tour button while the person is in it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
-welcome tour; it describes the whole app rather than diagramming, so the Diagram tour left it out. A **Search**
-step (opening the Cmd/Ctrl+K panel) once followed Theme & Canvas until it was cut to keep the tour short; the
-search panel has its own help article.
+Left out: **Tab Mode** (the editor mode switch's menu), to keep the tour on diagramming, since each mode has a tour
+of its own on the Start Tour button while the person is in it; and **The Explorer** (the document browser behind the
+top-left menu button), which describes the whole app rather than diagramming. There is no **Search** step, to keep the tour
+short; the search panel has its own help article.
 
 Each step popover shows the step count, a title, the copy, and Back / Next plus a Skip control, with a row of
 dots in which the current step's is drawn long. The right and left arrow keys are Next and Back, and Escape skips

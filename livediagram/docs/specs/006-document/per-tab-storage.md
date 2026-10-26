@@ -1,28 +1,20 @@
 # Per-tab storage
 
-Move from the single-row `diagrams.data` JSON blob (which serialises every
-tab on every save) to a normalised `documents` + `tabs` split where each
-tab is its own row. The autosave path then only ships the tab that
-actually changed.
-
-Driven by the observation that today, every keystroke broadcasts a
-`tabs` op AND PUTs the whole document — including unchanged tabs — to
-D1. Cost grows linearly with the document's tab count.
+Each tab of a document is its own row, so a save ships and writes only the tab that changed: one write per editorial
+commit, scoped to that tab, and a many-tab document opens by fetching only the tab on screen. The cost of a save does
+not grow with the document's tab count.
 
 ## Goals
 
-- One DB write per editorial commit, scoped to the changed tab.
-- Per-tab snapshot fetch (open one tab, hydrate one row) so the
-  initial view of a many-tab document is fast.
-- Foundation for "this tab is shared across documents" reuse — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011 / item #13). The link table sits over the same tab body rows described here.
+- One write per editorial commit, scoped to the changed tab.
+- Per-tab fetch (open one tab, hydrate one row) so the first view of a many-tab document is fast.
+- A tab can sit in more than one document ([Tab ↔ document many-to-many](tab-document-many-to-many.md)): the link
+  table sits over the same tab body rows described here.
 
-## Non-goals (V1)
+## Non-goals
 
-- ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-document placement.
-- Per-element rows / CRDT. Each tab still serialises its `elements`
-  array as JSON within its row; the granularity stops at the tab.
-- Online migration. The cutover is one D1 migration; the editor app
-  hydrates the new schema on the next save.
+- Per-element rows or a CRDT. Each tab serialises its `elements` array as JSON within its row; the granularity stops
+  at the tab.
 
 ## Data model
 
@@ -33,9 +25,8 @@ CREATE TABLE tabs (
   -- Same JSON shape as the Tab type minus { id, name } (which live
   -- on the row). Holds elements + per-tab metadata: theme,
   -- backgroundColor, backgroundPattern, backgroundOpacity,
-  -- patternColor, locked. `templateChosen` is intentionally ephemeral
-  -- client state (see migration 0009), stripped before persistence,
-  -- never stored here.
+  -- patternColor, locked. `templateChosen` is ephemeral client
+  -- state, stripped before persistence, never stored here.
   data        TEXT    NOT NULL,
   updated_at  INTEGER NOT NULL
 );
@@ -139,8 +130,8 @@ renders immediately rather than showing a spinner over real content.
   plain requests, which land when the page lives on. Two events on the same way out send the content once.
 - A text edit still open when the page goes (a label, an arrow label, a table cell, a one-line field) is part of
   what goes. It commits on blur, and a reload or a closed tab fires none, so on `beforeunload` and `pagehide` the
-  flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`); a label typed and left open used to
-  come back as its first letter.
+  flush first commits the open edit (`../packages/workbench/src/lib/open-edit.ts`, `useCommitOnLeave`), so a label typed and left open
+  comes back whole.
 - A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
   ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
 
@@ -156,19 +147,12 @@ at once, as before.
 
 ### A refused save stops; a failed save doesn't
 
-The autosave used to treat every rejection as one thing: set the status to
-`error`, toast "Couldn't save your changes. Check your connection.", and try
-again on the next edit. That's right for a blip, a 5xx, or a dropped
-connection — the next attempt may well work (and it now comes without waiting for
-the next edit, see Retrying a failed save).
+A blip, a 5xx or a dropped connection is a failure: the next attempt may well work, so it is retried (see Retrying
+a failed save).
 
-It's wrong for a **403**. The server isn't failing, it's refusing: the share
-link was revoked, we were removed from the team, or the role changed under us.
-No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
-and the only feedback blamed a connection that was fine — so someone could
-edit for an hour against a document that would never take a single write. Live
-telemetry showed the shape of it: **297 `Http403` in one day** against a
-baseline in single digits, which is one long session failing over and over.
+A **403** is a refusal: the share link was revoked, the person was removed from the team, or the role changed under
+them. No retry can succeed, and a toast blaming the connection would be wrong, so someone could edit for an hour
+against a document that will never take a single write.
 
 So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
 
@@ -193,7 +177,7 @@ whatever still differs from the last saved state, so nothing is sent twice
 
 A save that never answers counts as failed too. Each tab's saves run one after another, so a request
 left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
-used to hold back every later save of that tab. A tab save and a document meta save now give up
+would hold back every later save of that tab. A tab save and a document meta save give up
 after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
 `apps/editor/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
 above sends the newest content on a fresh connection.
@@ -223,8 +207,8 @@ anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 
 A **413** (`payload_too_large`) is the server refusing a tab over its row cap
 ([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
-neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
-"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves, and retrying it
+unchanged never lands.
 
 So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
 
@@ -311,14 +295,6 @@ tab id seen elsewhere (a share link) can name only a new tab here, shared with n
 documents ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is this document's own copy under the same id: the save writes that
 copy, and this document's object sends it on to the others. Putting an existing tab into another document is the `link`
 route, never a save.
-
-## Cutover (historical)
-
-How this rolled out, recorded here so future schema changes can repeat the pattern:
-
-1. Migration 0005 created the `tabs` table + a same-migration backfill SQL step that split every existing `diagrams.data` JSON into N rows of `tabs` (one per array element), assigning `order_index` from the array position.
-2. `diagrams.data` was kept in place for one release window so a deployed-but-not-yet-shipped client didn't 500.
-3. Migration 0006 dropped `diagrams.data`.
 
 ## Risk
 

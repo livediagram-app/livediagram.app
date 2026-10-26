@@ -57,8 +57,8 @@ is the only way the editor links to a help article. It:
   its slug (e.g. `share-link-expiry`), or an explicit token where two
   articles share a slug ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Help). It fits `TELEMETRY_TYPE_PATTERN`
   (`[A-Za-z0-9 ._-]{1,40}`, no slashes) - the full nested slug would not -
-  and it is the same id the help centre reports for that page. It used to
-  be the bare last path segment, which two pairs of articles share.
+  and it is the same id the help centre reports for that page. The bare last path segment
+  would not do: two pairs of articles share one.
 
 This follows the reuse-over-duplication and no-god-files principles: every
 surface links the same way, and no surface hand-rolls an `<a href="/help/...">`.
@@ -80,11 +80,10 @@ is.
 
 Grouped by priority; each links the keyed article.
 
-> **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity (since removed), Comments, and AI (since removed) panels previously each had a bare-glyph
-> `HelpArticleLink` in their header. These were removed: the editor header
-> already has a prominent global Help icon, and a `?` on every panel made the
-> canvas chrome noisy. Contextual links now live only in dialogs, in-panel
+> **Floating-panel headers carry no help icon.** The Explorer, Palette and
+> Comments panels carry no bare-glyph `HelpArticleLink` in their header: the editor
+> header already has a prominent global Help icon, and a `?` on every panel would make the
+> canvas chrome noisy. Contextual links live only in dialogs, in-panel
 > settings (the Settings dialog's rows), and **empty-state messages** (the
 > empty-canvas card keeps its link). The articles themselves
 > (`explorerPanel`, `palette`, `comments`)

@@ -1,20 +1,21 @@
 # Within reach: blueprint
 
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
-surfaces that use the rule own their own blueprints ([Explorer Home, data](../../013-workspace/blueprints/explorer-home.md),
-[Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md),
-[Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)); this one is the allocation they share.
+surfaces that use the rule own their own blueprints (the [Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)'s
+shape slots in livediagram; the shared Explorer's Home is liveworkspace's,
+[one-explorer.md](../../../../../liveworkspace/docs/one-explorer.md)); this one is the allocation they share.
 
 Scope, by file:
 
-| File                                           | Role                                                     |
-| ---------------------------------------------- | -------------------------------------------------------- |
-| `../packages/api-schema/src/within-reach.ts`   | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
-| `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
-| `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
+| File                                              | Role                                                                                                |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` (`@liveworkspace/api-schema/within-reach`) |
+| `../packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                                                           |
+| `packages/api-schema/src/index.ts`                | Re-exports the module as part of `@livediagram/api-schema`                                          |
+| `apps/editor/lib/whiteboard-shape-slots.ts`       | The whiteboard dock's shape slots, allocated by `withinReach`                                       |
 
-`@livediagram/api-schema` is the home because it is already the one package both the api worker and the editor app
-import (`D48`).
+The rule lives in the monorepo's `@liveworkspace/api-schema` so every product's surfaces share it, and
+`@livediagram/api-schema` re-exports it, the one package livediagram's apps already import (`D48`).
 
 ## Domain and naming
 

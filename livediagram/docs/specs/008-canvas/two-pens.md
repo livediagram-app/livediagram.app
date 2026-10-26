@@ -10,8 +10,8 @@ The Pencil splits into two palette tiles in the **Draw** category:
 - **Shape Pen** (`6`) — a rough circle, square, triangle or line converts to
   the real shape on release.
 
-The **"recognise shapes" toggle in the pen's mode banner is gone**, along with
-the `recogniseShapes` user preference that backed it.
+There is **no "recognise shapes" toggle** in the pen's mode banner, and no `recogniseShapes` user preference
+behind one.
 
 ## Why
 
@@ -26,8 +26,7 @@ IS the setting. Nothing is remembered, so nothing can surprise you.
 
 It also costs nothing in reach. Both live in the Draw category
 ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)), one click from the category
-picker, so picking the other pen is the same gesture as flipping the toggle
-used to be.
+picker, so picking the other pen is the same reach as a toggle would be.
 
 ## How it works
 
@@ -52,17 +51,10 @@ between the two tiles.
 
 `S` is still the legacy Select alias (pre-`V`), and taking it would break
 muscle memory for a shortcut people already have. `6` is the one gap in the
-numeric tool row and sits beside the pencil's `7`. (`S` later went to the Toolbar strip's Search
-where that is shown, at the user's request; it stays Select everywhere else.)
+numeric tool row and sits beside the pencil's `7`. (Where the Toolbar strip shows Search, `S` is Search; it is Select everywhere else.)
 
-## Removed
+## No recognition toggle
 
-- `RecogniseShapesToggle` (in `TopCenterChrome`)
-- `onToggleRecogniseShapes` and its `usePreferenceHandlers` entry
-- the `recogniseShapes` / `onToggleRecogniseShapes` Canvas props
-- the `UI·Toggled·RecogniseShapesOn/Off` telemetry pair
-
-`recogniseShapes` stays in the `UserPreferences` type as an accepted-but-ignored
-field: it is already persisted in existing users' stored preferences, and dropping it from
-the type would make a stored preference fail to parse rather than simply do
+There is no Recognise Shapes switch, prop or telemetry: the Shape Pen is the recognition. `recogniseShapes` is in
+the `UserPreferences` type as an accepted-but-ignored field, so a stored preference that carries it parses and does
 nothing.

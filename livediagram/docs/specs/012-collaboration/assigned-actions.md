@@ -308,9 +308,9 @@ the tab has threads or actions. Comments and actions keep working from the eleme
 
 The panel follows the refreshed Collaborate cards ([Participant responses](participant-responses.md), [Q&A board](qa-board.md) "The look"): soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
 
-- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
+- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero.
 - **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
-- **Kind chips.** Under the segmented control, three small chips: **All** (the word), **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side. Comments and Actions show only their glyph and count, so the row fits a narrow panel; their name is the chip's accessible name ("Comments 12") and its tooltip; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
+- **Kind chips.** Under the segmented control, three small chips: **All** (the word), **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side. Comments and Actions show only their glyph and count, so the row fits a narrow panel; their name is the chip's accessible name ("Comments 12") and its tooltip; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow.
 - **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.
 - **Action rows** lead with a **round check**. Pressing it completes the action (or, in Resolved, reopens it) in place, through the same `completeAction` / `reopenAction` the card and popover use, with a brief pop; the row then moves to the other side. Read-only visitors see the check as a static status disc. The body is the action name (up to two lines, struck through once done) over a quiet meta line: the element label and the relative time. The assignee sits on the right: a **You** chip in brand for your own, otherwise an initials avatar with the name on its hover card.
 - **Comment rows** lead with a bubble disc tinted in the latest author's colour, carrying the thread's comment count. The body is the element label over the latest comment, prefixed with its author's first name ("Priya: Agreed, let's queue it"), clamped to two lines, and the relative time sits top-right.
@@ -362,9 +362,9 @@ notifyActionAssigned?: boolean; // someone assigns me an action
 - Server-side it is one of the shared settings in `@liveworkspace/settings`, kept by liveworkspace
   accounts in the `all` scope, so turning it off in any app turns it off here. The notify dispatcher
   reads it through `NotificationPrefs` (`apps/api/src/liveworkspace/notification-prefs.ts`).
-- Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
-  `NotificationRow`: "Someone assigns me an action", gated with the others
-  on `emailEnabled`, flipping through the same `setFlag` round-trip.
+- Client-side it is a switch in Settings › Notifications › Email ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)),
+  **Someone Assigns Me an Action** (`emailSwitch('notifyActionAssigned', ...)` in `settings-catalogue.ts`), gated with
+  the others on `emailEnabled`.
 
 This is the recipient-side kill switch the dialog checkbox cannot be: the
 checkbox is the assigner's courtesy, the preference is the assignee's
@@ -400,7 +400,7 @@ carries the events:
   `Action`/`Deleted`;
 - `Action`/`Opened` (the popover opened, from the tile, badge, or a
   panel row);
-- the profile toggle flip emits `UI`/`Toggled`/`NotifyActionAssigned{On,Off}`,
+- the Settings switch emits `UI`/`Toggled`/`NotifyActionAssigned{On,Off}`,
   fired before persisting like every settings flip ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md));
 - `UI`/`Opened`/`ActionSignInNudge` when a signed-out user opens the
   dialog and sees the Myself-only picker with the sign-in nudge.

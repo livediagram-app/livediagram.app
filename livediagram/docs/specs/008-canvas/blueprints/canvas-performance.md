@@ -139,7 +139,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   checks): 50-90 ms a frame at the reference speed.
 - The drag's snap guides (alignment, equal spacing, arrow-endpoint markers) live in a
   `SnapGuideStore` per editor (`useSnapGuideState`), not in the editor's state: a dense board
-  changes them on most frames of a drag, and each change used to render the whole editor.
+  changes them on most frames of a drag, and in the editor's state each change would render the whole editor.
   `useEditorDrag` writes it through the rAF-coalesced `scheduleGuides` / `scheduleSnapTargets`;
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.
@@ -218,9 +218,9 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   drag's release) commits first and the Map's rebuild and image parse follow as their own render
   (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
   128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
-  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer no longer yields a new
+  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer does not yield a new
   array per render.
-- Pan and zoom never redraw the markup; they move only the viewport rectangle, as today.
+- Pan and zoom never redraw the markup; they move only the viewport rectangle.
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.

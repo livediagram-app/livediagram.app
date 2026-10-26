@@ -25,7 +25,7 @@ Skip, Back and closing card, driven by the same engine. Where this spec is silen
 - **It stays on offer once taken.** Taken or skipped, the button still offers it; pressing again reruns it. A press
   starts the first step; a press while another tour is on screen does nothing.
 - **Taken, on every device.** However a run ends, the synced `workshopTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only: it no longer hides the
+  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only: it does not hide the
   button.
 - **Rerun from Settings**: the **Workshop Tour** switch in Settings' **Tours** category, beside **Diagram Tour** and
   built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight

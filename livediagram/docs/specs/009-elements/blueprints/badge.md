@@ -3,17 +3,17 @@
 Derived from [The badge](../badge.md) and [The step number](../step-number.md). Defaults in
 [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                                                                                    | Role                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/chip.ts`                                                                                         | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
-| `packages/document/src/attachment.ts`                                                                                   | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
-| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                    | `'badge'`, `'step'`                                                      |
-| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                      | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
-| `packages/document/src/shape-factory.ts`                                                                                | Sizes and starting content                                               |
-| `packages/document/src/colors.ts`                                                                                       | Both in `SELF_PAINTING_SHAPES`                                           |
-| `packages/document/src/layers.ts`                                                                                       | `paintTier`: an attached chip paints in the top tier                     |
-| `packages/document/src/duplicate.ts`                                                                                    | `attachedTo` follows a copied host, else the copy is detached            |
-| `packages/document/src/svg-render-chip.ts`                                                                              | `svgChip`: the headless body                                             |
+| File                                                                                                                      | Role                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/document/src/chip.ts`                                                                                           | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
+| `packages/document/src/attachment.ts`                                                                                     | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
+| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                      | `'badge'`, `'step'`                                                      |
+| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                        | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
+| `packages/document/src/shape-factory.ts`                                                                                  | Sizes and starting content                                               |
+| `packages/document/src/colors.ts`                                                                                         | Both in `SELF_PAINTING_SHAPES`                                           |
+| `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                     |
+| `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached            |
+| `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                             |
 | `apps/editor/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
 | `apps/editor/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
 | `apps/editor/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
@@ -43,8 +43,8 @@ writes (with `prev = []`), and on the output of `buildTemplate` and `buildPageLa
 
 For each chip in `next`, in order:
 
-1. **Fit (badge only).** `badgeSize(label, textSize)`: height from the text size (sm or scale 22, md 28, lg 36,
-   a number px × 1.6), font `round(h * 0.48)`, width `max(h, ceil(len * font * 0.6) + round(h * 0.9))`. A badge
+1. **Fit (badge only).** `badgeSize(label, textSize)`: font `labelFontPx(textSize ?? 'sm')` (sm 14, scale 16, md 22,
+   lg 32, a number px as itself), height `round(font * 1.7)`, width `max(h, ceil(len * font * 0.6) + round(h * 0.6))`. A badge
    whose size differs is resized about its centre.
 2. **Number (step only).** A step whose label is empty and that is new in this commit (its id not in `prev`) takes
    `nextStepNumber(next)`: one more than the highest whole-number label among the tab's steps, else `"1"`.
@@ -186,25 +186,25 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 
 ## Testing
 
-| Rule                                                | Test file                                                                                                |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Points, rotation, snap, attach, detach, follow (I1) | `packages/document/src/attachment.test.ts`                                                               |
-| Host deleted removes, unknown host detaches (I2)    | same                                                                                                     |
-| Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                     |
-| Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                |
-| Paint tier                                          | `packages/document/src/layers.test.ts`                                                                   |
-| Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                     |
+| Rule                                                | Test file                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Points, rotation, snap, attach, detach, follow (I1) | `packages/document/src/attachment.test.ts`                                                                   |
+| Host deleted removes, unknown host detaches (I2)    | same                                                                                                         |
+| Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                         |
+| Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                    |
+| Paint tier                                          | `packages/document/src/layers.test.ts`                                                                       |
+| Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                         |
 | Face, menu section                                  | `apps/editor/components/canvas/ChipFace.test.tsx`, `apps/editor/components/palette/ChipMenuSection.test.tsx` |
-| Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                          |
-| Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                        |
+| Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                              |
+| Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                            |
 
 ## Constants and configuration
 
-| Name                   | Value               | Provenance / safe range |
-| ---------------------- | ------------------- | ----------------------- |
-| `ATTACH_SNAP_PX`       | 16                  | Spec; 8 to 24           |
-| `BADGE_LABEL_MAX`      | 24                  | Spec                    |
-| `STEP_LABEL_MAX`       | 3                   | Spec                    |
-| `BADGE_HEIGHT_PX`      | sm 22, md 28, lg 36 | D181                    |
-| `STEP_SIZE_PX`         | 28                  | Spec (D182)             |
-| `STEP_SEQUENCE_BEAT_S` | 0.4                 | D183; 0.25 to 0.8       |
+| Name                   | Value                                               | Provenance / safe range |
+| ---------------------- | --------------------------------------------------- | ----------------------- |
+| `ATTACH_SNAP_PX`       | 16                                                  | Spec; 8 to 24           |
+| `BADGE_LABEL_MAX`      | 24                                                  | Spec                    |
+| `STEP_LABEL_MAX`       | 3                                                   | Spec                    |
+| Badge height           | sm 24, scale 27, md 37, lg 54 (`round(font * 1.7)`) | D181                    |
+| `STEP_SIZE_PX`         | 28                                                  | Spec (D182)             |
+| `STEP_SEQUENCE_BEAT_S` | 0.4                                                 | D183; 0.25 to 0.8       |

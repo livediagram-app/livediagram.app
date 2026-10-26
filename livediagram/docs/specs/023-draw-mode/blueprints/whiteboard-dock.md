@@ -361,10 +361,9 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
 - The dock does no layout measurement at rest: flyout placement, the hint and a slot drag measure
   once, on opening or on the drag's start; re-anchoring measures one button per scroll event while
   a flyout is open, and the flyout measures again only when that moves its `revision`.
-- Widest dock: 858 px (seven pins) with 44 px buttons. Measured at 970 px in Chromium and WebKit
-  (1600 px desktop) while the dock had a History group; that group's pill and gap (100 + 12 px,
-  from its classes) are gone, and the buttons are 36 px since 2026-10-03, so the widest dock is
-  now narrower still; neither width has been re-measured in a browser. At the toolbar UI scale
+- Widest dock: under 858 px (seven pins, 36 px buttons, no History group), by arithmetic from the last browser
+  measurement (970 px in Chromium and WebKit at a 1600 px desktop with 44 px buttons and a History group); not
+  re-measured in a browser. At the toolbar UI scale
   it is that width times the scale.
 - Measured in a browser: a dock group is the strip card's height, 46 px at 1x and 54.78 px at
   1.25x.

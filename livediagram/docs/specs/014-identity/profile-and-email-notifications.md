@@ -1,195 +1,135 @@
 # Account settings & email notifications
 
-**Status: shipped.** A signed-in user's account surface: their avatar, name,
-email, and join date, plus the two account actions that once had no home of
-their own, **delete my account** and **email notification preferences**.
-Builds on the email integration ([Transactional & lifecycle email](transactional-email.md)) and the synced preference store
+A signed-in person's account surface: their avatar, name, email and join date, plus the two account actions,
+**delete my account** and **email notification preferences**. Builds on the email integration
+([Transactional & lifecycle email](transactional-email.md)) and the synced preference store
 ([User preferences](../007-editor/user-preferences.md)).
 
-Like [Transactional & lifecycle email](transactional-email.md) the email half is **entirely gated on the `EMAIL` binding** (Cloudflare Email Service's `send_email`): when
-email is off, the notification toggles are absent (they'd do nothing) and no
-notification email is ever sent.
+Like [Transactional & lifecycle email](transactional-email.md) the email half is **entirely gated on the `EMAIL`
+binding** (Cloudflare Email Service's `send_email`): when email is off, the notification switches are absent (they'd
+do nothing) and no notification email is ever sent.
 
 ## 1. Where it lives
 
-**In the Settings dialog** ([User preferences](../007-editor/user-preferences.md)), under **Account** and its **Notifications** sub-category.
+**In the Settings dialog** ([User preferences](../007-editor/user-preferences.md)), under **Account** and its
+**Notifications** sub-category (`SettingsAccountRows.tsx`, rows in `settings-catalogue.ts`). One place for every
+preference, so the email switches are found where every other setting is.
 
-It began as its own Explorer section at `/explorer/profile`, which made sense
-when Settings held a handful of editor toggles. Once every preference in the
-product moved into Settings, a separate account page was a second place to
-look for the same kind of thing, and the email toggles in particular were
-findable only by someone who already knew the page existed. The page was
-retired and its three parts redistributed:
+- **Identity** (avatar, name, email, joined) is the `identity` row in the **Account** category. Read from the
+  liveworkspace account on the client, never written: names and emails belong to the liveworkspace account, so it is
+  a card, not a form. The avatar is the account's Google picture when it signed in with Google, over its initial
+  (which shows when there is none or it fails to load); a person who turns **Show My Google Picture** off in
+  Settings › Profile still sees their own picture here and in the header, but presence, cursors and everything others
+  see show the initial. A guest sees a card explaining that they are working as a guest. The picture's rules are
+  liveworkspace's (liveworkspace/docs/accounts.md "Profile pictures"): only account sessions are sent anyone's
+  picture, never a guest or a link visitor.
+- **Email notifications** are the seven switches in **Notifications > Email** (§3). Absent unless email is
+  configured AND the reader is signed in, since a guest has no address to send to; a guest sees one row saying to
+  sign in to choose.
+- **Delete account** is the `deleteAccount` row in **Account > Danger Zone**, which opens `DeleteAccountDialog`
+  (type your email to confirm).
 
-- **Identity** (avatar, name, email, joined) is the `identity` row in the
-  **Account** category. Read from the liveworkspace account on the client, never written: names
-  and emails belong to the liveworkspace account, so it is a card, not a form. The
-  avatar is the account's Google picture when it signed in with Google, over its initial (which shows
-  again when there is none or it fails to load); a person who turns **Show My Google Picture** off in
-  Settings › Profile still sees their own picture here and in the header, but presence, cursors and
-  everything others see go back to the initial. A guest sees a card explaining that they are working as a
-  guest. The picture's rules are liveworkspace's (liveworkspace/docs/accounts.md "Profile pictures"):
-  only account sessions are sent anyone's picture, never a guest or a link visitor.
-- **Email notifications** are the six rows in **Notifications > Email**
-  (§3). Absent unless email is configured AND the reader is signed in, since
-  a guest has no address to send to.
-- **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
+### The old profile address
 
-### `/explorer/profile` still resolves, deliberately
-
-The route survives as a client-side redirect to
-`/explorer?settings=notifications`, and **must keep doing so**: every
-notification email ever sent carries that URL both as its "Manage your
-notifications" link and as its `List-Unsubscribe` header ([Transactional & lifecycle email](transactional-email.md)). Those
-messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
-the one dead link a product cannot ship. New mail links at the deep link
-directly.
+`/explorer/profile` is one of the shared Explorer's retired addresses: liveworkspace's Explorer opens Settings on
+Notifications in its place (`RETIRED_TARGETS.profile`). It must keep doing so: every notification email carries a
+"Manage your notifications" link and a `List-Unsubscribe` header, and those messages sit in inboxes indefinitely.
+New mail links at `/explorer?settings=notifications` directly (`apps/api/src/email/templates.ts`).
 
 ### Reaching it
 
-- **Header account menu** - `AuthControls`' dropdown has an **Account** item
-  deep-linking `/explorer?settings=account`, so it is reachable from anywhere
-  the header chrome renders (editor + explorer).
-- **Search** - every row is findable from the app-wide search panel, which
-  opens Settings on the matching row ([User preferences](../007-editor/user-preferences.md)).
+- **Header account menu**: `AuthControls`' dropdown has an **Account** item that opens Settings on Account, so it is
+  reachable from anywhere the header chrome renders.
+- **Search**: every row is findable from the app-wide search panel, which opens Settings on the matching row
+  ([User preferences](../007-editor/user-preferences.md)).
 
-### Delete account moves here
+### Deleting an account
 
-Account self-deletion already exists end to end (`DELETE /api/account`,
-[Transactional & lifecycle email](transactional-email.md) §; `DeleteAccountDialog`, the type-your-email confirmation). It used
-to hang off the header dropdown; now that there is a dedicated account home,
-the **Delete account** trigger lives on the profile page's Danger zone and is
-**removed from the header menu** (one home for destructive account actions,
-no drift). The dialog component itself is unchanged and simply reused — the
-confirmation flow (type your email, then wipe livediagram's data and close the
-liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email](transactional-email.md) describes.
-Account deletion is immediate and total within livediagram: it removes the account's documents
-**including every one in its [Trash](../013-workspace/trash.md)**, which the
-dialog and the Danger Zone row both say.
+The confirmation flow (type your email, then wipe what livediagram keeps, then close the liveworkspace account, then
+end the session) is [Auth + guest access](auth-and-guest-access.md#deleting-an-account)'s, and what is wiped is
+[API](../015-api/api.md#owner-keyed-data) "Owner-keyed data". Closing the liveworkspace account closes it in every
+app, so the dialog says the person's work in every app goes, the Trash included. Teams, memberships and their heirs
+are liveworkspace's to settle when the account closes ([Teams](../013-workspace/teams.md)).
 
-**Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
-account's memberships are removed so no ghost member (or dead sole admin)
-lingers. If the user was the **last joined member**, the team is deleted
-outright. Otherwise their **team-library documents transfer to an heir** — the
-longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared documents](../013-workspace/team-shared-documents.md)'s "deleting a team must never destroy
-members' work"), and the heir is **promoted to admin** when the deleted user
-was the only one. The user's own `shared_with` references (rows for OTHER
-people's documents they visited) are wiped too.
+## 2. Capabilities carry `emailEnabled`
 
-## 2. Capabilities gains `emailEnabled`
-
-`GET /api/capabilities` (the fail-closed feature probe the client already
-uses for the photo reader) gains `emailEnabled: boolean`, true only when
-`emailEnabled(env)` (i.e. the `EMAIL` binding is present). `CapabilitiesResponse`
-and `useCapabilities()` carry it through. The profile page hides the Email
-notifications section entirely when it's false: with no email backend the
-toggles would be inert, and a deployment without email should not advertise a
-setting it can't honour.
+`GET /api/capabilities` (the fail-closed feature probe) carries `emailEnabled: boolean`, true only when
+`emailEnabled(env)` (the `EMAIL` binding is present). `CapabilitiesResponse` and `useCapabilities()` carry it
+through. Settings hides the email switches entirely when it is false: with no email backend the switches would be
+inert, and a deployment without email should not advertise a setting it can't honour.
 
 ## 3. Email notification preferences
 
-Per-user flags, stored in the **same preferences** as the editor flags
-([User preferences](../007-editor/user-preferences.md)), which liveworkspace keeps — reusing that synced store rather than minting
-a parallel one (it already round-trips to the server and localStorage
-and survives the sign-up migration). They are account/email settings that
-happen to share [User preferences](../007-editor/user-preferences.md)'s storage. All but `notifyDocumentJoin` are in
-the `all` scope every liveworkspace app shares, so a switch flipped here is
-flipped in every app (`notifyInviteResponse` governs liveworkspace's own
-invite-answer email):
+Per-person flags, stored in the **same preferences** as the editor flags
+([User preferences](../007-editor/user-preferences.md)), which liveworkspace keeps. All but `notifyDocumentJoin` are
+in the `all` scope every liveworkspace app shares, so a switch flipped here is flipped in every app:
 
-```ts
-// added to UserPreferences (docs/specs/007-editor/user-preferences.md)
-notifyDocumentJoin?: boolean;     // someone first opens one of my shared documents
-notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
-notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
-```
+| Key                    | Label                             | When it emails                                                   |
+| ---------------------- | --------------------------------- | ---------------------------------------------------------------- |
+| `notifyDocumentJoin`   | Someone Joins My Canvas           | A new person opens one of your shared canvases                   |
+| `notifyComments`       | Someone Comments on My Canvas     | Someone leaves a comment on a canvas you own                     |
+| `notifyMentions`       | Someone Mentions Me in a Comment  | A teammate @mentions you in a comment                            |
+| `notifyActionAssigned` | Someone Assigns Me an Action      | A teammate assigns you an action on an element                   |
+| `notifyInviteResponse` | Someone Responds to a Team Invite | Someone you invited accepts or declines (liveworkspace sends it) |
+| `notifyTips`           | Tips and Check-Ins                | Occasional getting-started tips, and a nudge after a long gap    |
+| `notifyMilestones`     | Milestones                        | A note when you hit one, like sharing your first canvas          |
 
-Both **default on** (undefined === true): the user asked to be told, so the
-toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
-profile page reads/writes them through the existing
-`readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
-a flip persists to the server immediately and syncs across devices. Each flip emits
-`UI` / `Toggled` / `NotifyDocumentJoin{On,Off}` /
-`NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
+Every switch **defaults on** (undefined === true): an opt-**out**. Settings reads and writes them through the
+`readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so a flip persists to the server at once
+and syncs across devices. Each flip emits `UI` / `Toggled` / `Notify<Key>{On,Off}` telemetry
+([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
 
-The api worker decides whether to send a notification by reading the
-recipient's preferences server-side: `getNotificationPrefs(env, ownerId)`
-(`apps/api/src/liveworkspace/notification-prefs.ts`) makes one accounts read
-of both scopes, falling back to all defaults (→ notify) when nothing is kept
-or liveworkspace can't be reached. A missing key means
-the default (on), so a user who has never touched the toggle still gets
-notified.
+The api worker decides whether to send by reading the recipient's preferences server-side: `getNotificationPrefs`
+(`apps/api/src/liveworkspace/notification-prefs.ts`) makes one accounts read of both scopes, falling back to all
+defaults (notify) when nothing is kept or liveworkspace can't be reached. A missing key means the default (on).
 
 ## 4. The notifications
 
-They are **transactional** (sent whenever email is on AND the recipient
-hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
-request's critical path — same contract as every [Transactional & lifecycle email](transactional-email.md) send. Recipients'
-addresses come only from liveworkspace, which answers each account's
-verified address (`getOwnerEmails`, [Transactional & lifecycle email](transactional-email.md) §3), never from a client header.
+They are **transactional** (sent whenever email is on AND the recipient hasn't opted out), best-effort in
+`waitUntil`, and never on the request's critical path, the same contract as every
+[Transactional & lifecycle email](transactional-email.md) send. They go through the shared notifier
+(`createNotifier` from `@liveworkspace/auth-client`, wired in `apps/api/src/email/notifications.ts`). Recipients'
+addresses come only from liveworkspace, which answers each account's verified address, never from a client header.
 
-### a. Someone joins my document — `notifyDocumentJoin`
+### Someone joins my canvas (`notifyDocumentJoin`)
 
-The signal is **a new person opening one of my shared documents for the first
-time**: the share-resolve path (`GET /api/share/<code>`) already records a
-visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
-identifies and isn't the owner. `recordSharedAccess` now reports whether the
-row was **new** (first visit) vs a repeat. On a new visit by a **verified**
-visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDocumentJoin(env, liveDoc, joinerName)`. A guest identity is
-free to make, so every fresh one would be another first visit;
-a guest visit is still recorded in `shared_with` and counted as
-`Document·Joined`, but never emails. `notifyDocumentJoin`:
+The signal is **a signed-in person opening one of my canvases through a share link for the first time**: the index's
+`joined` notice, which the canvas's Durable Object runs (`DocumentRoom.joined`). A guest identity is free to make, so
+a guest's first visit never emails. The notifier:
 
 - no-ops unless `emailEnabled(env)`;
-- resolves the owner's verified address from liveworkspace (so it only fires
-  for a signed-in owner with a verified address — a guest-owned document has
-  no address and is silently skipped);
-- no-ops when the owner's `notifyDocumentJoin` pref is `false`;
-- no-ops unless it wins the per-document throttle: at most one join email per
-  document per 15 minutes (a claim in the document's own `notify_claims`, `JOIN_NOTIFY_THROTTLE_MS`;
-  the new-comment email's rule on its own column);
-- otherwise sends the **document-joined** email: "Someone just opened
-  _{document name}_", with a CTA back to the document.
+- resolves the owner's verified address from liveworkspace (a guest-owned canvas has no address and is skipped);
+- no-ops when the owner's `notifyDocumentJoin` is `false`;
+- no-ops unless it wins the per-canvas throttle: at most one join email per canvas per 15 minutes
+  (`JOIN_NOTIFY_THROTTLE_MS`, a claim in the canvas's own `notify_claims`);
+- otherwise sends the **document-joined** email: "Someone just opened _{canvas name}_", with a link back to it.
 
-The document **name** is the recipient owner's _own_ content going back to
-them, so including it does not widen the [Transactional & lifecycle email](transactional-email.md) §7 content rule (which is
-about not leaking _other_ users' content). The joiner's display name is
-included when known (the owner already sees it in live presence and the
-Shared-with-you list); it's HTML-escaped like the team name.
+The canvas **name** is the owner's own content going back to them, so including it does not widen the
+[Transactional & lifecycle email](transactional-email.md) §7 content rule (which is about not leaking _other_ people's
+content). The joiner's display name is included when known (the owner already sees it in live presence); it is
+HTML-escaped. The notification is on by default, so the email says so rather than claiming the owner turned it on,
+and points at the notification settings. Only the first visit notifies, so an active collaborator doesn't generate a
+mail per reload; live-room reconnects are deliberately not wired.
 
-The notification is on by default (an opt-out), so the email says so rather
-than claiming the owner turned it on, and points at the notification settings.
+### Someone responds to a team invite (`notifyInviteResponse`)
 
-Only the first visit notifies — repeat opens by the same person are silent,
-so an active collaborator doesn't generate a mail per reload. This is the
-only server-observable "join" signal; live-room reconnects in the Durable
-Object are deliberately **not** wired (they'd be far too chatty).
-
-### b. Someone responds to a team invite — `notifyInviteResponse`
-
-Team invitations are liveworkspace's ([Teams](../013-workspace/teams.md)), and so is the email
-telling a team's admins an invite was accepted or declined: liveworkspace sends
-it and counts it. livediagram keeps the switch in Settings, in the shared `all`
-scope liveworkspace reads, and sends nothing itself.
+Team invitations are liveworkspace's ([Teams](../013-workspace/teams.md)), and so is the email telling a team's admins
+an invite was accepted or declined: liveworkspace sends it and counts it. livediagram keeps the switch in Settings, in
+the shared `all` scope liveworkspace reads, and sends nothing itself.
 
 ## 5. Privacy / security
 
-- Signed-in only; every recipient address comes from verified server state,
-  never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
-  `X-Owner-Email` and [Transactional & lifecycle email](transactional-email.md) §7).
-- The only user-influenced strings in a notification body (a document name, a
-  joiner name) are HTML-escaped, and each is
-  either the recipient's own content or already known to the recipient.
-- Off by default at the deployment level (no `EMAIL` binding → no sends, no
-  UI), and off per-notification when the recipient opts out. No required SaaS call
-  ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)): the toggles just hide.
+- Signed-in only; every recipient address comes from verified server state, never a client header
+  ([Transactional & lifecycle email](transactional-email.md) §7).
+- The only user-influenced strings in a notification body (a canvas name, a joiner name) are HTML-escaped, and each
+  is either the recipient's own content or already known to the recipient.
+- Off at the deployment level with no `EMAIL` binding (no sends, no switches), and off per notification when the
+  recipient opts out. No required SaaS call
+  ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)): the switches just hide.
 
-## 6. Out of scope (for now)
+## 6. Out of scope
 
-A global "all email off" master switch, notification batching/digests, in-app
-(non-email) notifications, and editing name/avatar from the profile page
-(identity belongs to the liveworkspace account). The page reads identity; it doesn't write it.
+A global "all email off" master switch, notification batching or digests, in-app (non-email) notifications, and
+editing name or avatar here (identity belongs to the liveworkspace account).

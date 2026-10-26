@@ -149,8 +149,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
 - `useRichTextFormatActions.applyTitleCaptionPreset` applies it to the whole label (one block apply, caret parked at
   the end); `BlockTypePicker` shows the entry below a separator only when `onApplyTitleCaption` is passed (the label
   toolbar), so the note toolbar never offers it. Telemetry rides the label editor's generic `TextFormat`.
-- Read-back fix: `data-rt-heading="3"` now reads back as heading 3 (it was dropped, so a character typed inside a
-  Heading 3 lost the level).
+- Read-back: `data-rt-heading="3"` reads back as heading 3, so a character typed inside a Heading 3 keeps the level.
 - Tests: `packages/document/src/title-caption.test.ts`, `apps/editor/components/rich-text/rich-text-dom.test.ts`
   ("round-trips a muted caption run and every heading level"), `apps/editor/components/rich-text/BlockTypePicker.test.tsx`.
 

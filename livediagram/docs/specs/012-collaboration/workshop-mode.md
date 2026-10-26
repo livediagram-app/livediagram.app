@@ -26,11 +26,9 @@ sketching.
 | **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                |
 
 - The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
-- It was called **Workshop** until October 2026. "Workshop" was jargon for what a team calls running a
-  workshop, and it blurred the mode with the **facilitator**, the person holding the baton, who is unrelated
-  to who is in the mode. "Workshop" names the activity everyone on the tab shares, as Diagram and Draw do. The
-  facilitator keeps its name: a workshop has a facilitator. Every stored trace of the old name reads as
-  Workshop ([Editor modes](../007-editor/editor-modes.md) "Naming in the interface").
+- "Workshop" names the activity everyone on the tab shares, as Diagram and Draw do. It is not the
+  **facilitator**, the person holding the baton, who is unrelated to who is in the mode: a workshop has a
+  facilitator. A stored trace of an older name reads as Workshop ([Editor modes](../007-editor/editor-modes.md) "Naming in the interface").
 - "Session" and "Collaborate" are not the mode's name: both already name other things (the
   Session strip, Session buttons and the share session; the Collaborate elements and menu
   rows).

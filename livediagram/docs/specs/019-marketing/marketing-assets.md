@@ -9,7 +9,7 @@ for directory listings, app stores, launch posts, and social, plus media
   host, contribute).
 - `apps/marketing` is the live landing **site** at `/` (see
   [16-marketing-site](marketing-site.md)); `marketing/` is the **off-site**
-  copy and assets used to list and promote the product elsewhere.
+  copy and assets that list and promote the product elsewhere.
 
 ## Golden rule: claims map to shipped features
 

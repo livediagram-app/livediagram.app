@@ -1,72 +1,30 @@
 # Dedicated route for new-document creation
 
-Split the welcome / template-picker flow off the editor into its own
-route at `/new`. The editor route is editor-only; `/new` handles "I
-want to create a document" end-to-end.
-
-> **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
-> removed — the editor app serves at clean routes. So today the editor is
-> `/document/<id>` (not `/live/document/<id>`), `/new` is `/new`, and
-> there is no bare `/live` entry point (`/` is the marketing home). The
-> historical `/live...` URLs below describe the pre-cleanup scheme; map
-> each to its `/live`-stripped form. The placeholder-rewrite mechanism
-> and the `/new` split itself are unchanged.
-
-## Motivation
-
-`/live` currently serves two distinct experiences from one component:
-
-1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
-   State: load document, autosave, room broadcast, etc.
-2. **Welcome / Create new** — `/live` with no params. State:
-   `templatePickerMode`, `welcomeOpen`, `loadedExistingDocument`,
-   `nameConfirmed`, and the `commitDocumentId()` flow that mints a
-   UUID + rewrites the URL via `history.replaceState`.
-
-The overlap is the source of recurring state bugs:
-
-- The "Empty Canvas" flash on `New Canvas` clicks (multiple
-  iterations to land cleanly).
-- `templatePickerMode = 'welcome'` showing on existing-document tabs.
-- Hydration spinner hangs because the no-params path raced with the
-  identity-API roundtrip.
-- The `effectiveTemplatePickerMode` derived patch papering over
-  conflicts between welcome and per-tab template states.
-
-Each fix touched a different gate. Splitting the two surfaces lets
-each one own a clean state model without conditional gates.
+Creating a document has its own route, `/new`, apart from the editor. The editor route (`/document/<id>`,
+`/document/shared?s=<code>`) is editor-only; `/new` handles "I want to create a document" end-to-end. Each surface
+owns its own state model, so neither needs gates for the other's states (a welcome screen showing on an existing
+document, a mint racing the identity round trip).
 
 ## Goals
 
-- A dedicated `/new` route that owns the welcome / template /
-  identity-mint flow end-to-end.
-- `/live` becomes editor-only. Hydration only handles `?d=` /
-  `?s=` URLs and never has to consider "do I mint an id?".
-- Visiting `/live` with no params redirects to `/new` instead
-  of trying to be both surfaces at once.
-- "New Canvas" buttons (Explorer + NotFound CTA) navigate to
-  `/new`. Existing share / open flows stay on `/live`.
+- `/new` owns the welcome, mode choice and create flow end-to-end.
+- The editor route only hydrates a document id or a share code and never has to consider minting an id.
+- "New Canvas" buttons (the Explorer, the not-found card) navigate to `/new`. Share and open flows stay on the editor
+  route.
 
 ## Non-goals
 
-- Changing the visitor `?s=<code>` flow. Visitors still land on
-  `/document/shared?s=<code>` and confirm their name there —
-  the `identityOnlyScreenOpen` mini-flow stays in the editor route
-  because it's about the visitor's session, not about creating a
-  new document.
-- Splitting the per-tab "Pick a template" flow (the templates
-  variant of the existing picker that fires when you open an empty
-  tab on an existing document). That stays in `/live` because the
-  document is already loaded.
-- Changing what gets persisted at "Submit" time. The new route
-  still POSTs `/api/documents` with the chosen template tab seeded,
-  same as the current `commitDocumentId()` path.
+- The visitor `?s=<code>` flow: visitors land on `/document/shared?s=<code>` and confirm their name there; the
+  identity confirmation (`identityOnlyScreenOpen`) stays on the editor route because it is about the visitor's
+  session, not about creating a document.
+- An empty tab on an existing document: its templates are on its mode's start, on the editor route, because the
+  document is already loaded ([Template starts](start-diagramming.md)).
+- What is persisted on create: `/new` POSTs `/api/documents` with the chosen tab seeded.
 
 ## Route map
 
 | Route                   | Purpose                               | State                                                                                                                   |
 | ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `/live`                 | Bare entry point                      | Redirect → `/new` (or `/document/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.          |
 | `/document/<id>`        | Editor for an existing owned document | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/document/shared?s=<>` | Visitor view of a shared document     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
 | `/new`                  | Welcome / create-new flow             | Identity, template, theme picker. POSTs the document + navigates to `/document/<id>`.                                   |
@@ -88,8 +46,8 @@ Editor URLs use a path segment rather than a query string. `output:
 4. In `next dev`, Next.js resolves the dynamic segment natively so the
    same URL works without going through the worker.
 
-The hard cutover dropped the legacy `?d=<id>` query scheme — old
-bookmarks pointing at `/live?d=<id>` no longer work.
+There is no `?d=<id>` query scheme; `/live/*` carries only the editor app's `_next` assets
+([Router app](../016-platform/router-app.md)).
 
 ### Not-found slot renders the editor
 
@@ -164,7 +122,7 @@ knowing about when adding another.
 
 ### Owner creates a new document
 
-1. User clicks **New Canvas** in the Explorer (or lands on `/live`).
+1. User clicks **New Canvas** in the Explorer.
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately — no spinner.
 4. User picks a mode, which creates the document at once, where new documents go by default
@@ -181,8 +139,7 @@ knowing about when adding another.
 ### Owner opens an existing document
 
 1. Explorer list row click → `window.location.assign('/document/<id>')`.
-2. Editor route hydrates as today. The welcome / templates / identity
-   modes never load.
+2. The editor route hydrates the document. The welcome and create flow never load.
 
 ### Visitor follows a share link
 
@@ -202,47 +159,28 @@ knowing about when adding another.
 ### Canvas not found
 
 1. URL is `/document/<id>` but the API returns 404.
-2. NotFound surface renders as today, but its "Create new document"
-   CTA now navigates to `/new`.
+2. The not-found surface renders; its "Create new document" CTA navigates to `/new`.
 
-## State changes in `/live`
+## Editor route state
 
-Removed from the editor route:
+The editor route has no welcome state and mints no id. When the pathname's id segment is the build-time placeholder
+and no `?s=` code is set, it redirects to `/new` (via `window.location.assign`) and shows the spinner until the
+navigation completes. It keeps:
 
-- `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
-  derivation.
-- `welcomeOpen` (the chrome-hide trigger for the New Canvas modal).
-- `commitDocumentId()` and every call site (`createShareLink`,
-  `skipTemplatePicker`, `chooseTemplate`).
-- The "no URL params" branch of hydration. If the pathname's id
-  segment resolves to the build-time placeholder and no `?s=` code
-  is set, the editor route redirects to `/new` (via
-  `window.location.assign`) and renders the spinner until the
-  navigation completes.
-
-Kept on the editor route:
-
-- The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
-  `identityOnlyScreenOpen`). The per-tab template picker (Quick Start) that also lived here was removed: an empty
-  tab's templates are on its mode's start.
-- Everything else: autosave, room, tab management,
-  document metadata, share dialog, etc.
+- The visitor identity confirmation (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
+  `identityOnlyScreenOpen`).
+- Everything else: autosave, room, tab management, document metadata, the Share dialog.
 
 ## `/new` state
 
-The new route owns:
+The route owns:
 
-- The participant-identity bootstrap (same `livediagram:v2:self-id`
-  localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
-- `templatePickerMode = 'welcome'` (only).
-- The mode choice (as the mode's blank template) locally until the user commits.
-- The "name confirmed" persistence (same
-  `livediagram:v2:name-confirmed` localStorage key).
-- On commit: mint a UUID, POST `/api/documents` with the
-  templated tab(s) inline, navigate to `/document/<id>`.
-- On Skip: mint a UUID, POST an empty-tab document, navigate to
-  `/document/<id>` so the user lands on the editor with a
-  fresh document already persisted.
+- The participant-identity bootstrap (the `livediagram:v2:self-id` localStorage key, `apiLoadSelf` / `apiSaveSelf`).
+- The mode choice (as the mode's blank template) until the user commits.
+- The "name confirmed" persistence (the `livediagram:v2:name-confirmed` localStorage key).
+- On commit: mint a UUID, POST `/api/documents` with the templated tab(s) inline, navigate to `/document/<id>`.
+- On Skip: mint a UUID, POST an empty-tab document, navigate to `/document/<id>` so the user lands on the editor
+  with a fresh document already persisted.
 
 ## Escape backs out
 
@@ -362,9 +300,8 @@ answered. It does not ask where the document goes or what it is called:
 - **Skip** commits the documented defaults straight away: the **Blank** template and the **Default** theme, with
   its start closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
 - A bottom-left **Open Existing Canvas** button navigates to `/explorer`. The
-  `/new` route therefore does **not** render an Explorer panel of its own (it
-  used to float one as the escape hatch); the button is the single, unambiguous
-  way out, which is less confusing.
+  `/new` route therefore does **not** render an Explorer panel of its own; the
+  button is the single, unambiguous way out.
 - The **Create** button shows an inline spinner and disables while the
   create is in flight (`busy` prop, fed from the page's `submitting`
   state), so a slow network gives feedback and can't double-submit; a mode card chosen meanwhile creates nothing.
@@ -447,7 +384,7 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - No tour is queued on this path, nor on any other: since 25 October 2026 tours start only from
+  - No tour is queued on this path, nor on any other: tours start only from
     the footer's Start Tour button ([Diagram tour ("Start Diagram Tour")](editor-tour.md) "Handoff"),
     so no create waits for the document count.
   - **The wizard must never paint on this path, not even for a frame.**
@@ -492,9 +429,7 @@ default document name) without walking the wizard:
   nothing moves) until React has rendered the preset. Read by
   `wizardPresetMode` and `wizardPresetQuery` in `apps/editor/lib/new-document-params.ts`. The
   marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
-- **`?welcome=1`** is no longer read. It marked the marketing hero's launch window, which grew
-  into a blank canvas the editor then held through its load; the launch window and that quiet
-  landing were removed together, so an old `/new?blank=1&welcome=1` link opens as `?blank=1` does.
+- **`?welcome=1`** is not read: a `/new?blank=1&welcome=1` link opens as `?blank=1` does.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
   combinable with every param above. `useCtaAttribution` reads it once,
@@ -551,9 +486,7 @@ it cannot tell the difference from a direct visit.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
   do after a direct `/document/<id>` visit.
-- **Nothing crosses the handoff but the URL and `sessionStorage`.** (Until
-  25 October 2026 the tour's pending flag, `markTourPending`, was one of them;
-  it went with the tour offers.)
+- **Nothing crosses the handoff but the URL and `sessionStorage`.**
 - A failed create never hands off: the retryable error card shows instead.
 
 ### The opening screen
@@ -625,10 +558,9 @@ measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemet
 
 ## Themes
 
-With the theme step retired, the picker no longer shows themes at all. Themes are
-picked from the Tab Style dialog, which renders the same `ThemeBrowser` the theme
-step used. The create path still carries a theme id (`onPick`,
-`commitNewDocument`, `buildTemplatedTab` take a `string`), now always the
+The picker shows no themes. Themes are
+picked from the Tab Style dialog's `ThemeBrowser`. The create path carries a theme id (`onPick`,
+`commitNewDocument`, `buildTemplatedTab` take a `string`), always the
 caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 ## API impact
@@ -639,7 +571,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 ## Tests / sanity-check checklist
 
-- `/live` with no params → redirects to `/new`, no flash.
+- `/document/placeholder` with no `?s=` → redirects to `/new`, no flash.
 - `/new` → welcome card on first paint.
 - Pick a mode → Create → editor loads on `/document/<id>`, on the mode's start.
 - Close the welcome via the header X → back to the page that opened `/new`
@@ -663,8 +595,8 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 - `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
 - `/new?mode=workshop&q=retro` → the wizard, Workshop chosen; on the new document Start a Workshop
   opens with its search reading "retro".
-- `/new?mode=pages` (or `illustrate`, `infographic`) → the wizard, Diagram chosen: Pages mode was removed, and its
-  old ids read as Diagram (`parseEditorMode`).
+- `/new?mode=pages` (or `illustrate`, `infographic`) → the wizard, Diagram chosen: livediagram has no Pages mode, and
+  those ids read as Diagram (`parseEditorMode`).
 - `/new?mode=sideways` → the plain wizard, no card chosen.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.

@@ -4,7 +4,7 @@ A monospace, syntax-highlighted code snippet element in the palette's **Componen
 
 ## Model: a data shape, not a new element kind
 
-`ShapeKind` includes **`code-block`** (the [Timeline rail](timeline-rail.md) "data shape" route), with two optional fields on `ShapeElement`:
+`ShapeKind` includes **`code-block`** (the [Timeline](timeline-rail.md) "data shape" route), with two optional fields on `ShapeElement`:
 
 ```ts
 code?: string; // the snippet, capped at 4000 chars in validate.ts

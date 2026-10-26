@@ -1,7 +1,7 @@
 # Import image pipeline
 
-Every importer that brings a board in from another tool (Excalidraw today; draw.io, Miro and
-Microsoft Whiteboard next) meets the same problem: the source file carries image bytes, and a
+Every importer that brings a board in from another tool (Excalidraw, draw.io and Microsoft Whiteboard) meets the
+same problem: the source file carries image bytes, and a
 livediagram image element carries an `imageId` that points into the owner's gallery
 ([Image element + per-owner gallery](../009-elements/images.md)). The import image pipeline is the
 one browser-side path that turns those bytes into a stored image, so every importer migrates
@@ -28,7 +28,7 @@ images arrive, and when some cannot, see how many and why, never a failed import
 
 An importer hands the pipeline an **image source**: bytes it found in the file, either as a
 `data:` URL (Excalidraw's `files` map, draw.io's embedded styles) or as a `Blob` with a MIME type
-(Miro and Whiteboard archives). It may add a **display hint**, the size of the element the image
+(Whiteboard archives). It may add a **display hint**, the size of the element the image
 will fill, used only to pick a sensible raster size for SVG.
 
 The pipeline returns, per source, either a **stored image** (`imageId`, natural width and height,

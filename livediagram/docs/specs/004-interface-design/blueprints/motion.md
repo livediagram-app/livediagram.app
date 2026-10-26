@@ -82,10 +82,10 @@ drifting.
   `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
+- **JS cascades** call `cascadeDelayMs`: the shared Explorer's `Timeline` (`@liveworkspace/explorer`).
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
-- `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
+- `ToolbarStripRail` takes the shared step, with no `--stagger-step` override of its own.
 
 ### Exit holds
 

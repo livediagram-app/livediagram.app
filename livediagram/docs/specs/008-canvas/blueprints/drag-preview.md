@@ -5,8 +5,8 @@ drags for collaborators.
 
 ## Files
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| File                                                    | Role                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `apps/editor/lib/drag-preview.ts`                       | The preview store: local and peer overlays, `useDragPreview`, `applyOverlay`   |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`             | Writes ticks to the preview; reads through the virtual tab; commits on release |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
@@ -16,7 +16,7 @@ drags for collaborators.
 | `apps/editor/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
-| `packages/api-schema/src/room-messages.ts`            | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
+| `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                             |
 | `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                 |
 | `apps/editor/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops              |
 
@@ -72,7 +72,7 @@ drags for collaborators.
 - The drag effect running with no drag while a preview remains (a route that neither committed nor
   cancelled) commits it, matching the old behaviour where every tick was a write.
 - Cancel (Escape, a pinch or second touch, unmount): `cancelPreview()`; nothing was written, so
-  nothing is restored (a cancelled pinch used to leave a half-applied move). Escape no longer calls
+  nothing is restored, so a cancelled pinch never leaves a half-applied move. Escape does not call
   `cancelToCheckpoint`.
 - A gesture that changed nothing (a click) commits nothing and logs nothing.
 

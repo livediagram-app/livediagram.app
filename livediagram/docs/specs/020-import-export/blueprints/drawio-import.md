@@ -629,7 +629,7 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
 ### 21. The Explorer source (`useDrawioFileImport`, `DrawioImportPanel`, `DrawioImportDialog`)
 
 - `IMPORT_SOURCES` gains `{ id: 'drawio', name: 'draw.io', icon: <DrawioSourceIcon /> }` after
-  Excalidraw; `useExplorerImport` maps it to `useDrawioImportLauncher(importDocuments)`.
+  Excalidraw; `useImportDialogs` (`app/import/useImportDialogs.tsx`) maps it to `useDrawioImportLauncher`.
 - The flow mirrors the Microsoft Whiteboard panel, on the same shared `ImportDropZone` and
   `ImportChecklist`: pick (files: `multiple`, no `accept` filter, as Drive saves have no
   extension; a folder: `pickExport('folder')`; drop: files and folders through `readDrop`, each

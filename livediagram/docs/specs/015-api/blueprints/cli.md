@@ -2,7 +2,7 @@
 
 Derived from [CLI](../cli.md), with the OAuth server of [MCP server](../mcp-server.md) §3 and its tool contracts
 (§4), the token surface of [Public API and API tokens](../public-api-and-tokens.md) §3.4 to §3.7, the room and
-routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#api-tokens), the
+routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md#the-levels), the
 words of [Domain language](../../003-system-architecture/domain-language.md#agents) and the `Cli` category of
 [Telemetry](../../017-telemetry/telemetry.md). The write path, the operation vocabulary, the views, the lint and
 agent presence are other blueprints' and are consumed through the interfaces they name:
@@ -74,7 +74,7 @@ Scope, by file:
 | `apps/cli/src/update-check.ts` (planned)                                                                                                       | The npm check                                                                                                                                                                                                                                                                                                                                                         |
 | liveworkspace/apps/site/app/telemetry/livediagram/cli-commands.ts, liveworkspace/apps/site/app/telemetry/livediagram/catalogue/cli-commands.ts | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                         |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                                                             | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                      |
-| `apps/api/src/routes/tokens.ts`                                                                                                                | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                                                                                                                                                                                                                                           |
+| `apps/api/src/routes/tokens.ts`                                                                                                                | `GET` and `DELETE /api/tokens/current` (the presented token, revoked with `revokePresentedToken`); every other `/api/tokens` route answers 410 with `manageAt`, since tokens are made and revoked on liveworkspace.app                                                                                                                                                |
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                                                                       | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                                                                                                                                                                                                                                                     |
 | `apps/api/src/index.ts`                                                                                                                        | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                                                                                                                                                                                                                                              |
 | `apps/api/src/openapi/{manifest,document}.ts`                                                                                                  | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                       |
@@ -111,7 +111,7 @@ Scope, by file:
 | Pull file           | `PullFile`, `<slug>.livediagram.json`                                   | One document on disk, with each tab's revision                           |
 | Preview             | `tab render`, `graph render`                                            | A PNG or SVG file of a tab or a graph                                    |
 | Loopback login      | `loginWithBrowser`                                                      | OAuth with PKCE and a `127.0.0.1` redirect                               |
-| Device login        | `loginWithDevice`, `DeviceGrant`                                        | The RFC 8628 grant; the person approves at `/oauth/device`               |
+| Device login        | `loginWithDevice` (`../packages/cli-kit/src/oauth.ts`)                  | The RFC 8628 grant; the person approves at `/oauth/device`               |
 | User code           | `userCode`, `formatUserCode`, `normaliseUserCode`                       | The 8-letter code the person types                                       |
 | Built-in CLI client | `CLI_CLIENT_ID` `livediagram-cli`, `CLI_CLIENT_NAME` `livediagram CLI`  | The public client the server vouches for                                 |
 | Room stream         | `openRoomStream`                                                        | The CLI's listening socket for `wait` and `watch`                        |
@@ -541,7 +541,7 @@ More: livediagram <resource> --help, livediagram guide <topic>
   `More: livediagram <resource> <verb> --help`.
 - **Verb** (`livediagram <resource> <verb> --help`), within `HELP_VERB_MAX_TOKENS`: the description; `Usage:` built
   from `cli.positionals` and the flags; `Flags`, one line each with the zod `.describe()` text; `Examples`, the two
-  of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, kept in `WRITE_FLAG_TEXT`.
+  of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, kept with `writeFlags` (`packages/agent-verbs/src/write.ts`).
 - **Guide** (`livediagram guide`) lists the six topics one line each; `guide <topic>` prints the topic, within
   `GUIDE_TOPIC_MAX_TOKENS` (CLI49). The `edit` topic shows `element connect <doc> <a> <b>` and says why `->` is
   never typed unquoted. The `workbench` topic is the
@@ -584,8 +584,8 @@ false, an absent `documentFormat` as equal to its own.
   resolution and the read gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `ctx.token.role`, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
-- `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, owner, ctx.token.id)` and the
-  `recordTokenRevoked` Timeline entry `/api/tokens/:id` writes.
+- `DELETE /api/tokens/current` → 204 after `revokePresentedToken(env, secret)`, which revokes the token at
+  liveworkspace, so it stops in every app (and its workbench pairings with it).
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
 
@@ -616,9 +616,10 @@ max-age=300` (CLI72).
 
 ### OAuth server (apps/mcp)
 
-- **Clients.** `lookupClient(env, clientId)` returns `BUILT_IN_CLIENTS[clientId]` first, then the KV registration.
-  `BUILT_IN_CLIENTS = { [CLI_CLIENT_ID]: { clientName: CLI_CLIENT_NAME, redirectUris: CLI_REDIRECT_URIS } }` with
-  `CLI_REDIRECT_URIS = ['http://127.0.0.1/callback', 'http://[::1]/callback']` (CLI35). Registration mints random
+- **Clients.** `builtInClient(clients, clientId)` (`../packages/mcp-kit/src/oauth-clients.ts`) answers a shipped
+  client first, then the KV registration. `apps/mcp/src/oauth.ts` ships `cliClients(CLI_CLIENT_ID, CLI_CLIENT_NAME)`,
+  whose redirect URIs are `CLI_REDIRECT_URIS = ['http://127.0.0.1/callback', 'http://[::1]/callback']`
+  (`../packages/api-kit/src/oauth.ts`, CLI35). Registration mints random
   hex ids, so it can never take `livediagram-cli`.
 - **Redirects.** `redirectUriAllowed(registered, uri)`: exact match, or, when the registered URI's host passes
   `isLoopbackHostname` and its scheme is `http:`, the same scheme, hostname and path with any port (RFC 8252 §7.3).
@@ -659,7 +660,7 @@ url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never
   s), honouring `slow_down` (never past 60 s), until the code's
   `expires_in` (`DEVICE_CODE_TTL_S` when absent) has passed: a poll that would land after it is not sent, and the
   login ends with the expired-code error, as for `expired_token`.
-- `loginWithToken`: stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else
+- `--with-token` (`apps/cli/src/commands/local.ts`): stdin must not be a terminal (exit 2 otherwise); reads to end, trims, `isApiTokenFormat`, else
   exit 1.
 - All three end in `GET {apiBase}/tokens/current` with the new token, then `store.put(profile, credential)`, then
   the replaced token's revoke (Credentials).
@@ -842,8 +843,8 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   anti-phishing line still shows the redirect host the server read. `clientId` on the session lookup is not a
   secret and decides nothing but the telemetry type.
 - **The device grant.** User codes have 20⁸ (2.6 × 10¹⁰) values, live 10 minutes, are single use, and their lookup
-  is rate limited per IP, an IPv6 caller by its /64 (`DEVICE_LOOKUP_RATE_MAX`, keyed by `clientRateKey`); `device_authorization` is limited like registration
-  (`DEVICE_AUTH_RATE_PER_HOUR`). Only the built-in client may start one. The page names the client from the server
+  is rate limited per IP, an IPv6 caller by its /64 (`LOOKUP_LIMIT`, keyed by `clientRateKey`); `device_authorization` is limited like registration
+  (`START_LIMIT`; both in `../packages/mcp-kit/src/oauth-device.ts`). Only the built-in client may start one. The page names the client from the server
   and warns: "Only enter a code shown by a terminal you are using." The token travels from the page to the trusted
   `MCP_ORIGIN` only, as the consent page's does.
 - **Hosts.** A profile for another host reaches its own host only (I5); telemetry goes to that host's api; the update
@@ -854,7 +855,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 - **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
   package's `files` allowlist is the bundle, the wasm, the font, the licences and the README; no install scripts;
   no native addon: the keychain is the platform's own tool.
-- **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateComment`,
+- **Roles.** The CLI enforces nothing the api does not; every refusal is the api's gate (`gateRead`,
   `gateParticipate`, `gateEdit`), mapped to exit 4.
 
 ## Performance and limits
@@ -865,7 +866,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   `render.svg`, `EXPORT_CONCURRENCY` at a time, under the token's 120 reads a minute.
 - **Start-up.** One ESM file; `@liveworkspace/render-png`, the wasm and the font are loaded only by `tab render`,
   `graph render`, `pull --svg` and `export` with `png`. `--help` evaluates no handler module beyond the catalogue.
-- **Package.** At most `CLI_PACKAGE_MAX_BYTES` unpacked (the wasm is 2.5 MB, the font 0.3 MB).
+- **Package.** About 8 MiB unpacked at most (CLI54; the wasm is 2.5 MB, the font 0.3 MB).
 - **Room stream.** One socket; no frames sent; reconnect backoff bounded by `ROOM_RECONNECT_MAX_MS`.
 - **Read copies.** At most `READ_COPY_MAX_BYTES` on disk; one tab is at most `MAX_TAB_BYTES` (1.9 MB), so even the
   largest tabs keep several copies.
@@ -1031,7 +1032,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Any token role mints a room ticket                                                            | `apps/api/src/index.test.ts` (choke point)                                                                                                                                      |
 | One catalogue: parity of verbs and tools                                                      | `packages/agent-verbs/src/catalogue.test.ts`; `apps/mcp/src/verb-parity.test.ts`, `packages/agent-verbs/src/verbs/mcp-tools.test.ts`                                            |
 | Descriptions are facts                                                                        | `packages/agent-verbs/src/catalogue.test.ts` (the MCP's §4.15 checks over every verb)                                                                                           |
-| Bundle: one ESM file, wasm, font, Node 22, size                                               | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                             |
+| Bundle: one ESM file, wasm, font, Node 22, size                                               | CI `npm pack --dry-run`                                                                                                                                                         |
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out                             | `apps/cli/src/update-check.test.ts` (planned)                                                                                                                                   |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts`                                                                                                                                                |
 | Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/editor/lib/mcp-consent-session.test.ts`                                                          |
@@ -1061,11 +1062,9 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `REQUEST_TIMEOUT_MS`               | 30000                  | CLI46                                       | 10000 to 120000    |
 | `CAPABILITIES_CACHE_TTL_MS`        | 3600000                | CLI8                                        | 600000 to 86400000 |
 | `HELD_RETRY_INTERVAL_MS`           | 2000                   | CLI25                                       | 500 to 10000       |
-| `WAIT_HELD_MAX_S`                  | 3600                   | `WAIT_MAX_TIMEOUT_S`, CLI25                 | 600 to 86400       |
+| `WAIT_HELD_MAX_S`                  | 3600                   | `packages/agent-verbs/src/write.ts`, CLI25  | 600 to 86400       |
 | `READ_COPY_REVS_PER_TAB`           | 3                      | CLI76                                       | 1 to 10            |
 | `READ_COPY_MAX_BYTES`              | 33554432               | About 16 of the largest tabs, CLI76         | 8 MiB to 256 MiB   |
-| `WAIT_DEFAULT_TIMEOUT_S`           | 600                    | CLI61                                       | 60 to 3600         |
-| `WAIT_MAX_TIMEOUT_S`               | 3600                   | CLI61                                       | 600 to 86400       |
 | `WAIT_SETTLE_MS`                   | 2000                   | One editor burst, CLI80                     | 500 to 10000       |
 | `ROOM_RECONNECT_MIN_MS`            | 1000                   | CLI32                                       | 500 to 5000        |
 | `ROOM_RECONNECT_MAX_MS`            | 30000                  | CLI32                                       | 10000 to 120000    |
@@ -1081,9 +1080,9 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `DEVICE_SLOW_DOWN_S`               | 5                      | RFC 8628 §3.5                               | fixed by RFC       |
 | `USER_CODE_LENGTH`                 | 8                      | RFC 8628 §6.1 example, CLI36                | 8 to 10            |
 | `USER_CODE_ALPHABET`               | `BCDFGHJKLMNPQRSTVWXZ` | RFC 8628 §6.1                               | fixed              |
-| `DEVICE_AUTH_RATE_PER_HOUR`        | 20                     | `/oauth/register`'s per-IP cap              | 5 to 100           |
-| `DEVICE_LOOKUP_RATE_MAX`           | 30 per 600 s per IP    | CLI36                                       | 10 to 100          |
-| `CLI_PACKAGE_MAX_BYTES`            | 8388608                | CLI54                                       | 4 MiB to 16 MiB    |
+| `START_LIMIT`                      | 20 per 3600 s per IP   | `/oauth/register`'s per-IP cap              | 5 to 100           |
+| `LOOKUP_LIMIT`                     | 30 per 600 s per IP    | CLI36                                       | 10 to 100          |
+| Package size                       | 8388608 unpacked       | CLI54                                       | 4 MiB to 16 MiB    |
 
 Environment the CLI reads: `LIVEDIAGRAM_TOKEN`, `LIVEDIAGRAM_HOST`, `LIVEDIAGRAM_PROFILE`, `LIVEDIAGRAM_TELEMETRY`,
 `DO_NOT_TRACK`, `LIVEDIAGRAM_NO_UPDATE_CHECK`, `LIVEDIAGRAM_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.

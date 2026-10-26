@@ -1,6 +1,6 @@
 # Path tool
 
-Status: specified
+Status: shipped
 
 The **Path tool** is a vector pen for whiteboards, in the manner of Figma's and Illustrator's pen
 tools: click to place corner points, drag to pull out curves, and edit every point and handle

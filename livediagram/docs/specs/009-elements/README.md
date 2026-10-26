@@ -9,7 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./link-cards.md - when working on Link cards: Bookmark element: URL via the element link, server-side unfurl for title/favicon/OG image
 - ./progress.md - when working on Progress elements: Horizontal bar + donut ring shapes showing a 0–100 percentage, with fill animations (fill/pulse/stripes)
 - ./shape-markers.md - when working on Shape markers: Status glyph inside a shape (traffic-light dots + checkbox), left of the label; Markers context-menu band
-- ./timeline-rail.md - when reading how the old Timeline rail became the Timeline concept graphic, or the composite-component pattern it set
+- ./timeline-rail.md - when working on the Timeline concept graphic, how its point fields become milestones, or the composite-component pattern
 - ./rating.md - when working on Rating: 1–5 star rating element with a Rating context-menu category (score picker + star-specific animations)
 - ./pie-chart.md - when working on Data charts (pie + bar + line): Data palette category + pie chart element: editable label/value rows + chart-specific slice animations
 - ./code-block.md - when working on Code block: Monospace syntax-highlighted snippet as a `code-block` data shape (`code` + `codeLanguage` fields): fixed dark editor-card identity, lazy hand-rolled tokenizer chunk (10 languages), double-click Edit code dialog + context-menu Code section; headless render is plain mono

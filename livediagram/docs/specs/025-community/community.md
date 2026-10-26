@@ -201,14 +201,14 @@ only two paths; everything else is served straight from the assets.
 - **A post that is missing, removed or hidden** answers 404 with the same shell, which still shows its friendly
   not-found, so a dead link never indexes as a page.
 - **The sitemap** (`/community/sitemap.xml`, listed in the origin's robots.txt beside the marketing and help ones):
-  every public post at its canonical address with its last-updated date, newest first, from the api's
-  `GET /api/community/sitemap`, which reads only ids and dates and caps the list at `COMMUNITY_SITEMAP_MAX` (5,000; one
-  sitemap may hold 50,000). The api answers it with an hour's caching; switched off, the sitemap is empty.
-- **When the api cannot answer** (no `API` binding, an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
+  every public post at its canonical address with its last-updated date, newest first, from the Community service's
+  sitemap, which reads only ids and dates and caps the list at `COMMUNITY_SITEMAP_MAX` (5,000; one sitemap may hold
+  50,000). The worker answers it with an hour's caching; switched off, the sitemap is empty.
+- **When the service cannot answer** (an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
   post page is the shell exactly as built and the sitemap answers 503 with `Retry-After`. Nothing about the page
   depends on the worker: it only adds what crawlers read.
-- **Cost**: each post page view makes one extra api read (one post's metadata) before the HTML is sent,
-  since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow api can
+- **Cost**: each post page view makes one extra Community service read (one post's metadata) before the HTML is sent,
+  since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow service can
   add.
 
 ## Viewing a post's document
@@ -291,12 +291,12 @@ too.
   clear its reports and let the same document be published again). It stays visible to its author alone: marked
   **Hidden after reports** in the Share dialog, with no Edit Listing or Remove, and marked **Hidden** in My Shares.
   It still counts toward the author's post limit. Deleting the document deletes the post.
-- A hidden post no longer stands in the way of a share password: its link is closed for good.
+- A hidden post does not stand in the way of a share password: its link is closed for good.
 - An author is not told their post was hidden beyond what the Share dialog and My Shares show.
 - **Legal takedowns**: with no moderation tooling, a post that must come down for legal reasons is removed directly in
   the database by whoever runs the service.
 
-Hiding takes effect at once at the api. What browsers and caches may still hold is short: a post, a list or a card
+Hiding takes effect at once at the Community service. What browsers and caches may still hold is short: a post, a list or a card
 image for at most 30 seconds, the home page's six for a minute.
 
 ## My Shares
@@ -389,7 +389,7 @@ While it is off:
   turning it back on restores everything as it was.
 - It disappears from every interface: the **Community** link in the Explorer footer row and the site footer, the landing page's
   section, the Community section of the Share dialog and the editor's Public badge. Visiting `/community` sends
-  you to the home page. A listed post no longer stands in the way of a share password.
+  you to the home page. A listed post does not stand in the way of a share password.
 - The apps learn it from the capabilities endpoint after they load, so a Community link can show for a moment before
   it goes. Until the endpoint answers (or if it cannot be reached) they assume the Community is on: only an explicit
   `false` hides it.

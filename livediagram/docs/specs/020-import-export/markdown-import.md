@@ -37,7 +37,7 @@ Input is treated as a hierarchical outline:
 
 **Limits.** A list nests at most `MAX_LIST_DEPTH` (24) levels; a deeper item becomes a sibling of
 the deepest, so every item is kept and the layout's recursion stays shallow (12 000 ever-deeper
-lines used to overflow the stack). A table larger than a table element holds (`MAX_TABLE_ROWS`,
+lines do not overflow the stack). A table larger than a table element holds (`MAX_TABLE_ROWS`,
 `MAX_TABLE_COLS`, `MAX_TABLE_CELLS`, `packages/document`) keeps its first columns, then as many of
 its first rows as fit; the rest is left out. One import keeps at most `MAX_MARKDOWN_IMPORT_NODES`
 (2 000) nodes, headings, list items, prose lines and tables together, the first in document order;
@@ -107,12 +107,10 @@ and the whole ellipsis menu is hidden for view-only visitors. Emits
 tab — a format picker + an explicit "this overwrites the tab" warning is
 clearer than silently growing the tab list, and Undo makes it safe.)
 
-## Still useful after Mermaid? — yes, both, in distinct roles
+## Beside Mermaid
 
-Mermaid ([Mermaid import & export](mermaid.md)) landed as the connection-preserving
-text format, which raised the question of whether Markdown import/export
-still earns its place. Reviewed against the code, both do — they solve a
-_different_ problem from Mermaid, so they stay:
+Mermaid ([Mermaid import & export](mermaid.md)) is the connection-preserving text format. Markdown import and export
+solve a _different_ problem:
 
 - **Markdown import — keep.** It ingests an **outline** (headings + nested
   lists) from tools that emit exactly that (XMind, Obsidian/Logseq,
@@ -138,8 +136,7 @@ _different_ problem from Mermaid, so they stay:
   **Mermaid** ([Mermaid import & export](mermaid.md)) — serialise a tab to `flowchart`
   text and parse it back into the same graph by id. Markdown export
   stays the human _summary_ (see above), not a byte-for-byte
-  reconstruction. (This role used to belong to the `.lvd` text DSL,
-  the removed text-DSL spec, now removed in favour of Mermaid.)
+  reconstruction. (Mermaid is the text form for a structured graph; there is no `.lvd` text DSL.)
 - **Not in scope here:** an inline ` ```mermaid ` fenced block _inside_ a
   Markdown file → an edge graph (Mermaid import is its own format /
   dialog path today, not a Markdown code-fence pass), and Excalidraw

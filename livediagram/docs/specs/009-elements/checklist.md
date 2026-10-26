@@ -4,7 +4,7 @@ Checkable to-do rows as a first-class element. It gives agile/retro boards and a
 
 ## Model: a data shape
 
-`ShapeKind` includes **`checklist`** (the [Timeline rail](timeline-rail.md) data-shape route), with one optional field on `ShapeElement`:
+`ShapeKind` includes **`checklist`** (the [Timeline](timeline-rail.md) data-shape route), with one optional field on `ShapeElement`:
 
 ```ts
 checklistItems?: { text: string; done: boolean }[];

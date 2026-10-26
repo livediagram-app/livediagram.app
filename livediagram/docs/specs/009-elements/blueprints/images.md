@@ -104,8 +104,7 @@ change (D46).
    box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[QB2]`
 6. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
    `naturalHeight` about the element's centre, disabled when either is absent. `[QB3]`
-7. **Activity.** Retired: the Set / Cleared image entries went with the Activity panel
-   (removed 2026-10-03). `[QB4]`
+7. **Activity.** None: there is no Activity panel. `[QB4]`
 
 ### Upload (`POST /api/images`)
 
@@ -199,7 +198,7 @@ A null or `data:` id references nothing.
   with `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image
   that does not fit is skipped and later smaller ones may still fit (D44). Only ids
   `servableImageIds` returns are read (from the document's `image_owners` and `image_grants`). The
-  snapshot is drawn in the document's Durable Object (`renderDocumentImage`). No client: no embed. `[QB7]`
+  snapshot is drawn in the document's Durable Object (`exportImage` → `drawDocument`, `apps/api/src/thumbnail.ts`), when liveworkspace's previews ask the export door. No client: no embed. `[QB7]`
 
 ### Availability
 

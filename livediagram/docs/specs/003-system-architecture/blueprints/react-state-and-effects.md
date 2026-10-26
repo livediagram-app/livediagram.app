@@ -28,8 +28,8 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | Site                                                                              | Reads                               | Becomes                                                                           |
 | --------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
 | `apps/editor/app/oauth/consent/page.tsx`, `apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
-| `apps/editor/app/new/page.tsx` (`initialPlacement`)                               | `location.search`                   | `useSyncExternalStore` (`placementContextFromSearch`), like the bypass            |
-| `ShareDialog`, `TeamInviteLinkDialog`, `CommunityPublishedConfirmation`           | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
+| `apps/editor/app/new/page.tsx` (`placedFromUrl`)                                  | `location.search`                   | `useSyncExternalStore` (`placementParamsFromSearch`), like the bypass             |
+| `CommunityPublishedConfirmation`                                                  | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
 | `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
 | `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |

@@ -41,4 +41,5 @@ Follow the references below only as needed; never upfront.
 - ./org-chart.md - when implementing or changing person nodes, the org chart variant or how they grow
 - ./sequence-diagram.md - when implementing or changing the sequence diagram element, its rows or its picture
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
-- ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
+- ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel, cycle, hub, onion, chevrons or Timeline, their rows, layouts or Concept animations
+- ./timeline-rail.md - when implementing or changing the Timeline, its layout, its export or how point fields become milestones

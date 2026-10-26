@@ -16,8 +16,7 @@ categories a palette offers, under what names and holding which tiles, is now
 per editor mode: see [Editor modes, "The palette per
 mode"](../007-editor/editor-modes.md#the-palette-per-mode).
 
-**The Tools tab is gone.** Every group it held became a top-level palette
-category of its own, and a tab with no categories left is not a tab.
+**There is no Tools tab.** Every tool group is a top-level palette category of its own.
 
 The full set, in band order: **Popular**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
@@ -69,9 +68,7 @@ mistake in a smaller way.
 
 ## Why Popular has no band
 
-Popular is not a _kind_ of thing: it draws from every category at once (it
-replaced Favourites, which had the same shape;
-[Palette Favourites](palette-favourites.md)). Filing it under "Common" would
+Popular is not a _kind_ of thing: it draws from every category at once. Filing it under "Common" would
 claim a peer relationship with Shapes and Write that it does not have.
 
 So it sits **full width above the first heading**, with no band of its own. The
@@ -94,23 +91,18 @@ frames at 18px do not distinguish an image from an avatar.
 `palette-tile-defs.test.tsx` requires a blurb on every tile in every
 row-rendered section, so a new one can't ship as a bare row.
 
-## The User element was deleted
+## No User element
 
-The actor / stick-figure tile is gone from the palette and from the "Add to
-canvas" search catalogue. Nothing can create one any more.
+There is no actor / stick-figure tile in the palette or the "Add to canvas" search catalogue: nothing creates one.
 
-The `actor` **shape kind itself is kept** in the model, the renderer and the
-wire schema. Removing it would coerce every existing actor element to a square
-on next load (`coerceShape`'s fallback) — silent data loss for anyone who used
-it — and would be a breaking change for API and MCP callers. So: gone from
-everywhere you can add one, still renders wherever one already exists. Ripping
-the kind out for real needs a migration and a wire-schema version, which is a
-separate piece of work.
+The `actor` **shape kind is kept** in the model, the renderer and the wire schema: removing it would coerce every
+existing actor element to a square on next load (`coerceShape`'s fallback), silent data loss, and would break API
+and MCP callers. So it renders wherever one exists, and nothing adds one.
 
 ## The body scrolls when it has to
 
-A long category (Components runs to ten rows) used to run off the bottom of a
-short window with no way to reach the last few. The panel body's height is now
+A long category (Components runs to ten rows) must not run off the bottom of a
+short window. The panel body's height is
 capped at the space between its top edge and the bottom chrome — the zoom dock
 and the tab bar, both measured rather than assumed, since the dock hides in Zen
 mode — and only then does it scroll. A category that fits shows no scrollbar
@@ -120,9 +112,7 @@ and still animates its height on switch.
 
 Flattening put every element one click away but spread them over ten
 categories, so "where does Checklist live now" needed an answer that isn't
-"open each one". That answer used to be a search box at the top of Favourites;
-it went with Favourites ([Palette Favourites](palette-favourites.md)). The
-editor's **Search** panel answers it now: it searches every tile by caption,
+"open each one". The editor's **Search** panel answers it: it searches every tile by caption,
 label, blurb and description, and picking a result arms the same placement the
 palette uses ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The
 Icons, Stickers and Technology tabs still search their own catalogues
@@ -158,34 +148,22 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
-**Collaborate is Workshop's, as six categories.** Since [Workshop mode](../012-collaboration/workshop-mode.md#the-palette),
-only Workshop's layout offers the Collaborate elements, and it offers each group below as its
+**Collaborate is Workshop's, as six categories.** Only Workshop's layout ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)) offers the Collaborate elements, and it offers each group below as its
 own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
-`collab-mode`, `collab-navigate`), so the parent category and its group browser are gone. Diagram
+`collab-mode`, `collab-navigate`), with no parent category; five of them sit behind the bar's Session category
+([Toolbar layout](../007-editor/toolbar-layout.md)). Diagram
 keeps only the Comment panel and the Action card, in its Write category. Search still finds every
-Collaborate tile from any mode. What follows is how the groups came to be; they are unchanged as
-categories.
+Collaborate tile from any mode.
 
-**Renamed from Behaviours to Collaborate.** The category is what you open to run a
-session with the room, and "Collaborate" names that job where "Behaviours" named the
-mechanism. The rename is display-only: the id stays `behaviour` (persisted in the
-strip's state, palette layouts and telemetry types such as `BehaviourSearch`), and
-the help article keeps its `/help/palette/behaviour/` URL, for the same reason as the
-merge below. Its groups are unchanged; none of them is called Collaborate, so the name
-is not repeated one level down.
+**Named Collaborate.** The category is what you open to run a session with the room, and "Collaborate" names that
+job. The internal id is `behaviour` (persisted in the strip's state, palette layouts and telemetry types such as
+`BehaviourSearch`), and the help article is at `/help/palette/behaviour/`. No group is called Collaborate, so the
+name is not repeated one level down.
 
-**Collaborate was merged into Behaviour**, and the survivor is named
-**Behaviours** (32 tiles in 6 groups). The two were split on a real
-distinction — Behaviour is "pressing this does something to your session",
-Collaborate is "the canvas is collecting an answer from everybody" — and it
-turned out to be a line to memorise rather than one to navigate by. You reach
-for both while running a session, and nothing told a user hunting for the Done
-check why it sat apart from the estimate card. [The Done check](../012-collaboration/done-check.md)
-saw this coming: it filed the Done check under Behaviour, noted it was
-arguably a Collaborate element by this spec's own rule, and said so.
-
-What is left is one honest test for the category: **does this element's content
-arrive at runtime rather than being drawn by the author?**
+**One category, one test**: **does this element's content arrive at runtime rather than being drawn by the
+author?** Pressing something that acts on your session and the canvas collecting an answer from everybody are
+both what you reach for while running a session, so they are one category ([The Done check](../012-collaboration/done-check.md)
+is filed with the estimate card, not apart from it).
 
 | Group              | Holds                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -196,31 +174,21 @@ arrive at runtime rather than being drawn by the author?**
 | **Selection Mode** | one button per mode (8)                                                                                                           |
 | **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
 
-**There is no Session group.** It held the Timer, the Dot vote and the Poll —
-a group named after the machinery that runs them rather than the job they do.
-A poll and a dot vote ARE asking the room, so they belong with the estimate
-card and the temperature check, which is where somebody wanting to put a
-question to everybody actually looks; a timer is facilitation, so it belongs
-with the Reveal, the Done check and the Picker. With all three rehoused the
-group had nothing left in it, and an empty group is not a group.
+**There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE
+asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a
+question to everybody looks; a timer is facilitation, so it sits with the Reveal, the Done check and the Picker.
 
 They remain one shape kind with a `session` config ([Session button](../012-collaboration/session-button.md)) —
 this is a palette grouping, not a model change.
 
-The **Comment panel** is in **Record**. It sat loose above the groups at
-first, on the reasoning that it is the one you reach for outside a facilitated
-session and a group of one would be a click in front of the category's
-most-used tile. But a comment thread is a thing you leave behind on the canvas
-for somebody to find later, which is exactly what the agenda, the decision
-record and the roll call are — and one row floating above six category tiles
-read as an oversight rather than as a shortcut. Every tile is in a group now.
+The **Comment panel** is in **Record**: a comment thread is a thing you leave behind on the canvas for somebody to
+find later, which is exactly what the agenda, the decision record and the roll call are. Every tile is in a group.
 
 Order is **room-first**: the three groups a facilitator opens mid-session come
 before the three you set up once and forget.
 
-Data-side, the merge is a `section` change: the Collaborate tiles moved to
-`section: 'tools'` with `toolGroup: 'behaviour'`, so `tilesForCategory` and the
-tab body needed no special case and the `'collaborate'` section is gone.
+Data-side, the Collaborate tiles are `section: 'tools'` with `toolGroup: 'behaviour'`, so `tilesForCategory` and
+the tab body need no special case.
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category ([The Build palette category](build-category.md)),

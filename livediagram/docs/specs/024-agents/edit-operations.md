@@ -49,7 +49,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`, `pyramidVariant`;
   `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
-  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
+  takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does, so a `textSize=xl` is never stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 

@@ -43,7 +43,7 @@ purpose is showing you the room's state, showing you only yourself.
 
 ## The waiting list is live
 
-`doneSplit(responses, participantKeys)` derives who is waiting from **who is in
+`doneSplit(responses, participantIds)` (`packages/document/src/responses.ts`) derives who is waiting from **who is in
 the room now**, not from everyone who was ever in it.
 
 This is the decision that makes the card work. A card that waited on somebody

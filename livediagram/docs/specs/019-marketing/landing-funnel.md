@@ -84,7 +84,7 @@ The slots:
 
 - `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
   pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so its `HeaderBlank` no longer fires.
+  bar has no Start Blank, so its `HeaderBlank` does not fire.
 - `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession` (**retired** in
   October 2026 with the Start Blank menu, [Start Blank](marketing-site.md#start-blank); the slots
   stay so their stored history still reads): the menu's five rows beside Choose Template: Blank Diagram
@@ -96,18 +96,16 @@ The slots:
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
 - `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
   Explorer Home rather than `/new`, so they are not funnel sources.
-- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
+- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero has no buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
-  canvas became Drawing's whiteboard: it is the same button in the same place,
-  so its series carries on. On a feature page, `Hero` is the category hero's
+  (`/new?browse=brainstorm`). On a feature page, `Hero` is the category hero's
   Start drawing.
-- `HeroBuild` (**retired** with the hero's stage in October 2026; the slot stays so its history still
+- `HeroBuild` (**retired** with the hero's stage; the slot stays so its history still
   reads): the **Build yours** button on each of the hero's mode windows, opening the template
   step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
 - `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
-- `HeroBlank<Blank>` (**retired** with the Start Blank menu in October 2026; the slots stay so their history
+- `HeroBlank<Blank>` (**retired** with the Start Blank menu; the slots stay so their history
   still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
   header's `Header<Blank>` (`HeroBlankDraw` is Blank Diagram, `/new?blank=1`).
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
@@ -116,7 +114,7 @@ The slots:
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
   `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**
-  when the gallery's search moved to the hero in October 2026) was the blank-canvas link shown when a
+  with the gallery's search) was the blank-canvas link shown when a
   gallery search matched nothing.
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
@@ -171,8 +169,7 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 ### The Dashboard tab
 
 A **Calls to Action** chart stack (CTA Arrivals and Documents from CTAs, headed by
-Documents from CTAs) sits beside the funnel in the Pages section; it left the
-Dashboard's Visitors group in October 2026.
+Documents from CTAs) sits beside the funnel in the Pages section, not on the Dashboard.
 
 ## Out of scope
 

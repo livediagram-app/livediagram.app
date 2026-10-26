@@ -8,9 +8,7 @@ The Icons and Technology tabs browse the same way the Tools tab does: a grid of
 category tiles, click one to open it, a breadcrumb back, and a search box that
 cuts across every category at once.
 
-The category **filter dropdowns** those two tabs used ("Filter icons by
-category", "Filter technology icons by provider") are gone, along with their
-"All" entry.
+Those two tabs have no category **filter dropdowns** and no "All" entry.
 
 ## Why
 

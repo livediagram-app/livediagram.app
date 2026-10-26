@@ -40,19 +40,15 @@ Each tool has a purpose-built pane (`components/panels/session-studio/`: `TimerP
 `PollPane`), described under its section below and in [Live poll (ephemeral pulse-check)](live-poll.md)
 for the poll. A pane shows the tool's **set-up** while it is idle and its **live** controls once it
 runs. The panes open from the [Session strip](#the-session-strip) in the bottom bar, one popover per
-tool. The tab menu (the tab's ⋯ and the canvas right-click menu) has **no** session tools: its
-Collaborate row, a flyout with a Timer · Vote · Poll switcher (the Session Studio), was removed once
-the strip gave each tool its own button.
+tool. The tab menu (the tab's ⋯ and the canvas right-click menu) has **no** session tools: the strip
+gives each tool its own button.
 
 ## One UI per tool, in three places
 
 A session tool's controls are ONE component, rendered in the Session strip's
 popover, in the element's `…` quick menu, and in that element's right-click
-**Session** category. They used to be three separate implementations of the
-same question — a dial in the tab menu's Studio, eight stacked "N minutes" rows in the
-popover, a number field in the context menu — and they drifted exactly as you
-would expect: different controls, different wording, and for polls a different
-answer cap.
+**Session** category. One implementation, not three: three would drift into different controls, different wording, and for polls a
+different answer cap.
 
 The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`,
 `PollComposerBody`), which is what lets one component serve both jobs: in the
@@ -188,7 +184,7 @@ that lands before an op is applied can persist a map missing a dot. They
 converge within a round-trip and the next save writes the converged map, so
 this is a much smaller window than the one it replaces rather than none at all.
 Ending a vote persists the host's final state. Server-side merge of the map is
-[Collaboration race hardening](collab-race-hardening.md) phase 3.
+[Collaboration race hardening](collab-race-hardening.md#the-store-does-not-overwrite-multi-writer-fields).
 
 - Controlled from the [Session strip](#the-session-strip)'s **Vote** button: the dot budget is picked as a **row of dots** (tap the fifth for
   five each, `VOTE_DOTS_RANGE` 1-10, the same range as the Session button),
@@ -257,9 +253,8 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   static winner rings are suppressed so attention lands on the single
   focused pick.
 - **The walkthrough position is SHARED** (`vote.reviewIndex`), and only the
-  host moves it. It used to be per-participant local state — "everyone
-  reviews at their own pace" — but that meant a facilitator saying "look at
-  this one" had no way to actually put the room on it, which is the whole
+  host moves it. Per-participant local state would leave a facilitator saying "look at
+  this one" no way to actually put the room on it, which is the whole
   point of walking results together. Followers get the readout and the
   focus; the Previous / Next / Done buttons and the Vote panel's clickable
   rows are hidden for them rather than rendered as no-ops.

@@ -163,8 +163,7 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `MenuAccordionSection` | Header `menuitem` + `aria-expanded`; content `role="group"` `aria-labelledby` the header                     | Disclosure `button`                |
 | `MenuHeader`           | Its title span carries the id and `data-menu-label` (M2); the header is `aria-hidden`                        | Unchanged                          |
 | `MenuGroupSeparator`   | `role="separator"` exposed                                                                                   | Unchanged                          |
-| `MenuCheckRow`         | `menuitemcheckbox`, `tabIndex -1`                                                                            | Same                               |
-| `ElementMenuItem`      | `menuitem` (its unused `active` prop and `ElementMenuLabel` are gone)                                        | `button`                           |
+| `ElementMenuItem`      | `menuitem`                                                                                                   | `button`                           |
 | `FlyoutMobileHeader`   | Its Close is the panel's last item in reading order, drawn first (`order-first`)                             | Same, a button                     |
 
 Collapsed accordion content is `inert` and `aria-hidden` in every kind (Chromium keeps inert content in its tree).

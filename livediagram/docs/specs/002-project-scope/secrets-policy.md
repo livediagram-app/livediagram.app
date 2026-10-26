@@ -31,14 +31,14 @@ The deploy workflow also **syncs** the sign-in values and one more of the worker
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps other deployments viable (see [03](open-source-and-business-model.md)).
 
-| Secret                                          | Worker          | Absent means                                                                                                                                      |
-| ----------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | No identities at all: no sign-in and no guest tokens, so nobody can own a document on the server ([04](../014-identity/auth-and-guest-access.md)) |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                 |
-| `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`       | api             | The photo import reads handwriting in the browser instead ([Note reader](../021-event-storming/note-reader.md))                                   |
-| `TELEMETRY_KEY`                                 | api **and** mcp | No server-side telemetry reaches the liveworkspace service ([Telemetry](../017-telemetry/telemetry.md))                                           |
-| `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                      |
-| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export canvases as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))        |
+| Secret                                          | Worker          | Absent means                                                                                                                                                                                                                 |
+| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | No identities at all: no sign-in and no guest tokens, so nobody can own a document on the server ([04](../014-identity/auth-and-guest-access.md))                                                                            |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                            |
+| `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`       | api             | The photo import reads handwriting in the browser instead ([Note reader](../021-event-storming/note-reader.md))                                                                                                              |
+| `TELEMETRY_KEY`                                 | api **and** mcp | No server-side telemetry reaches the liveworkspace service ([Telemetry](../017-telemetry/telemetry.md))                                                                                                                      |
+| `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                                                                 |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export canvases as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                                                   |
 | `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and on the liveworkspace telemetry service, as `TELEMETRY_KEY_LIVEDIAGRAM`). A mismatch is silent — the service simply drops the batch — so verify with `wrangler secret list` on each rather than assuming. `MEDIA_KEY` likewise matches the media service's `MEDIA_KEY_LIVEDIAGRAM`; a mismatch there is loud, as every image route answers 503. Generate it with `openssl rand -hex 32`.
@@ -92,7 +92,7 @@ NEXT_PUBLIC_API_BASE=
 
 ## Photo bytes never leave the browser
 
-The event-storming photo import ([Event storming](../021-event-storming/event-storming.md) Phase 8) finds the stickies in a
+The event-storming photo import ([Event storming](../021-event-storming/event-storming.md#import-a-photo-of-the-wall) finds the stickies in a
 photograph of a physical wall **in the browser**, with classical computer
 vision. The photograph itself is never uploaded: only the CROPS — one sticky
 each — go to `POST /api/ai/read-notes` so the model can read the handwriting,

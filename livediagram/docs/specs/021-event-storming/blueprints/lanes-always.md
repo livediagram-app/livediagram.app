@@ -1,6 +1,6 @@
 # Always on a lane: blueprint
 
-Derived from [Event storming](../event-storming.md) (Phase 6, "Always on a lane"), with
+Derived from [Event storming](../event-storming.md#timeline-lanes) "Always on a lane"), with
 [Snap override (free drag)](../../008-canvas/snap-override.md) and the paste / duplicate / nudge
 lines of [Canvas and palette](../../008-canvas/canvas-and-palette.md). The spec decides; this file
 adds engineering precision. Defaults applied where the spec is silent are ledgered in

@@ -46,8 +46,8 @@ have cloud documents and offline documents side by side.
   (`apps/editor/lib/offline/offline-ids.ts`), and every id registered or removed is told
   to the other tabs on the `livediagram-offline` BroadcastChannel (`{ kind: 'add' |
 'remove', id }`), which apply it at once. Without it, a tab that missed a Take
-  Offline kept saving that document to the server (where it no longer is), and a tab
-  that missed a Sync Canvas or purge kept "saving" into a record that was gone.
+  Offline would keep saving that document to the server, and a tab
+  that missed a Sync Canvas or purge would keep "saving" into a record that is gone.
 - **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
   the order, the folder) finds its record missing while the tab still
   lists the id, the id is forgotten (and the other tabs told) and the write fails with
@@ -75,7 +75,7 @@ have cloud documents and offline documents side by side.
   This editor drops that content when it reads a tab (`migrateStoredTab`) and saves without it, so it has to be
   copied somewhere first. Version 3 adds a second object store, `retired-parts` (keyPath `id`), and the upgrade
   transaction copies into it, untouched, every document record whose tabs hold anything
-  `hasRetiredContent` (`@liveworkspace/migration/split`) says livediagram no longer reads, or that keeps Plan cards
+  `hasRetiredContent` (`@liveworkspace/migration/split`) says livediagram does not read, or that keeps Plan cards
   or sheets on the record itself (a non-empty `items` or `sheets`, beside `itemsRev`, `itemsNextKey` and
   `itemTypes`), keyed by the document id. Because it runs inside the version-change transaction, no read of any record can come before it, in this tab
   or another one. Each starting state is handled: no database yet (both stores made empty), version 1 (each
@@ -222,8 +222,7 @@ wherever the document is listed: This Browser's page and Home's Jump Back In.
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
-  as whose an item is, or as fine or failing. Until October 2026 it was amber, livedocuments'
-  accent and the warning tone. One pill for every editor and the Explorer
+  as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
 - **What it means, on hover and focus.** Its hover card reads "This Browser" over
@@ -481,11 +480,9 @@ The editor already has a **single persistence boundary**: `apps/editor/lib/api-c
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
 
-- **Dispatch per call, not a backend pair.** This was first drafted as two
-  implementations of one interface, an `ApiBackend` and a `LocalBackend`. What
-  shipped is smaller: each load / save / delete in `lib/api/*` opens with
+- **Dispatch per call, not a backend pair.** Each load / save / delete in `lib/api/*` opens with
   `if (await isOfflineId(id))` and hands off to `lib/offline/offline-store.ts`,
-  otherwise it does what it always did. There is no second class to keep in
+  otherwise it calls the api. There is no second class to keep in
   step with the first, and an endpoint that offline has no answer for simply
   never grows the branch.
 - Offline ids are client-generated (`crypto.randomUUID`) and registered in a
@@ -571,8 +568,8 @@ Track adoption without content, reusing the closed vocabulary:
 ## Implementation map
 
 - `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
-  new `LocalBackend` (IndexedDB) beside the existing API calls; per-document
-  dispatch via a local index.
+  `lib/offline/offline-store.ts` (IndexedDB, `OfflineBackend` in `offline-backend.ts`) beside the API calls;
+  per-document dispatch via a local index.
 - New Canvas wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.

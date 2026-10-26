@@ -3,9 +3,7 @@
 livediagram is a web app where teams build **diagrams together, in real time**.
 
 This is the root of the spec tree: every other spec is a decision taken inside
-the boundaries set here. That only works if it stays true, so it carries a
-[record of the boundaries that have moved](#boundaries-that-have-moved) rather
-than quietly describing a product that no longer exists.
+the boundaries set here, so when a boundary moves this document moves with it, in the same change.
 
 ## What it is
 
@@ -92,30 +90,19 @@ never arrives.
   point: the test for a new drawing affordance is whether it helps produce a
   diagram someone would keep, not whether a whiteboard has one.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
-  Mode is a per-document choice, not the default posture (see below).
+  Mode is a per-document choice, not the default posture (see "Boundaries worth stating").
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the
   core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
-## Boundaries that have moved
+## Boundaries worth stating
 
-This section exists because this document sat unrevised for four months while
-126 specs landed, and by the end it disclaimed things the product shipped. A
-boundary nobody maintains is not a boundary. When one moves, it gets recorded
-here in the same change, with the spec that moved it.
-
-- **"Not a presentation or slide tool"**: reversed by
-  [Presentation mode](../012-collaboration/presentation-mode.md). Presentation mode is full-screen slide
-  decks with their own panel and presenting HUD. That is a presentation tool,
-  and the product is better for it, because the session that built the diagram
+- **Presenting is part of it.** [Presentation mode](../012-collaboration/presentation-mode.md) presents a document
+  as full-screen slide decks with their own panel and presenting HUD, because the session that built the diagram
   usually ends by showing it.
-- **"Not an offline-first desktop app"**: narrowed by
-  [Offline Mode](../006-document/offline-mode.md). Still not a desktop app, and cloud is still the
-  default, but a document can now be kept only in this browser's IndexedDB and
-  converted back and forth. Offline is a supported mode, not merely an
-  unsupported state.
-- **"Freehand is not the primary medium"**: still true, and now load-bearing
-  rather than obvious. Three drawing tools shipped without displacing structured
-  elements; the bullet above states the test that keeps it that way.
+- **Offline is a supported mode.** [Offline Mode](../006-document/offline-mode.md) keeps a document only in this
+  browser's IndexedDB, converted back and forth. It is still not a desktop app, and cloud is the default.
+- **Freehand is not the primary medium.** The drawing tools sit beside structured elements without displacing
+  them; the test in "What it is _not_" keeps it that way.
 
 ## Why it matters
 
@@ -125,7 +112,7 @@ general-purpose whiteboards that don't produce clean, structured output (Miro,
 FigJam). livediagram exists to be the **fast, focused, multiplayer-from-the-start**
 option for teams whose primary need is producing diagrams together.
 
-"Focused" is the load-bearing word and the hardest to keep. The surface is now
+"Focused" is the load-bearing word and the hardest to keep. The surface is
 large, and the honest check on any new feature is not "is this good?" but "does
 a team building a diagram together need this in the room?".
 

@@ -20,7 +20,6 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./hide-from-recent.md - when working on Hide from Recent / Show in Recent: per person, on the index's opens, left out of Recent, Jump Back In and `/new`'s card (index)
 - ./recent-folder-chip.md - when working on the location chip on rows of lists that span places (index)
 - ./folder-content-previews.md - when working on a folder card's mosaic: the index's `GET /folders/previews` and livediagram's canvas preview (index)
-- ./tags.md - tags (removed from the Explorer)
 - ./favourites.md - when working on favourites (index)
 - ./explorer-details-view.md - when working on the per-tab stats a canvas pushes to the index for the Details view (index)
 - ./timeline.md - when working on the Timeline: what the index records, the `edited` events livediagram reports, the view (index)

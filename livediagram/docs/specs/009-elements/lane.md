@@ -114,7 +114,7 @@ the alignment guides already make butting one under another easy, and a
 container that repositioned its neighbours would be the same "silently re-flowed
 what I arranged" problem [The mind node](mind-node.md) avoids for mind nodes.
 
-Their borders no longer double up when flush, because a lane's outline is a
+Their borders do not double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
 

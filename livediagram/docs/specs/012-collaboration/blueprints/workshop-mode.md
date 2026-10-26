@@ -25,9 +25,9 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 (the Tools category's is `'tools'`); their six categories are
 `collab-ask` "Ask", `collab-tools` "Tools", `collab-record` "Record", `collab-react` "React",
 `collab-mode` "Selection Mode" and `collab-navigate` "Navigate" (`COLLABORATE_CATEGORY_GROUPS` in
-`palette-tile-defs.tsx` maps each to its `tileGroup`). The `behaviour` category, its group browser
-(`PaletteGroupBrowser`, `BEHAVIOUR_GROUPS`, `PaletteBehaviourTab`) and the `BehaviourGroup` /
-`BehaviourSearch` telemetry types are retired.
+`palette-tile-defs.tsx` maps each to its `tileGroup`). Five of them (all but Ask) sit behind the bar's Session
+category (`session-category.tsx`), a `PaletteCategoryBrowser` whose opens and searches send the `BehaviourGroup` /
+`BehaviourSearch` telemetry types.
 
 ## Constants and configuration
 
@@ -36,8 +36,8 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 | `WORKSHOP.landing`                 | `'popular'`                                                                                                                                                                                                                                                                                                                                                                                                                            | spec "The palette"                |
 | `WORKSHOP` Popular tiles           | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                                                      | spec "The palette"                |
 | `WORKSHOP` categories              | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`), `draw` (less `tools:shape-pen`, `tools:polygon`), `build` (less `tools:lane`, `tools:timeline`), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`, `icons`, `stickers`, `media` (Diagram's: no embeds, D8)                                                                                           | spec "The palette"; D3            |
-| `DIAGRAM` categories               | as today less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                                    | spec "What Diagram gives up"      |
-| `sessionStripTools`                | `workshop` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; else `null`                                                                                                                                                                                                                                                                                                                                | spec "The Session strip per mode" |
+| `DIAGRAM` categories               | Diagram's own, less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                              | spec "What Diagram gives up"      |
+| `sessionStripTools`                | `workshop` or an event-storming board (`esBoard`) → `{ timer, vote, poll }` all true; else `null`                                                                                                                                                                                                                                                                                                                                      | spec "The Session strip per mode" |
 | `TEMPLATE_MODES` additions         | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, `affinity-map`, `prioritization-matrix`, `risk-matrix`, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`, `blank-session` → `'workshop'` | spec "Templates"                  |
 | `BLANK_TEMPLATE_FOR_MODE.workshop` | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                                                      | spec "Templates"                  |
 | `POPULAR_BY_MODE.workshop`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights`, `pub-quiz` (D5)                                                                                                                                                                                                                                                                                                                              | templates-by-mode spec            |
@@ -46,8 +46,7 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 
 - **No new state.** The mode is `Tab.opensIn = 'workshop'`, written by the existing switch,
   Shift+D on an empty tab, a start's switch and template overrides. Everything else derives from the mode.
-- **Gates:** `hasBoardLook`, `hasPageLook`, `hasPlanInput` are all `false` for `workshop`; it
-  takes Diagram's look and input. `useModeDefaultTool` starts it on Select (Hand on a phone), as
+- **Gates:** `hasBoardLook` is `false` for `workshop`; it takes Diagram's look and input. `useModeDefaultTool` starts it on Select (Hand on a phone), as
   Diagram.
 - **Palette:** `paletteLayoutFor('workshop')` returns `WORKSHOP`; Draw keeps borrowing
   `DIAGRAM`. A switch re-lands the palette on the new layout's `landing` (existing behaviour).
@@ -67,15 +66,17 @@ keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'pages' | 'plan' | 'workshop';
-export function sessionStripTools(mode: EditorMode): readonly SessionStripTool[] | null;
-export const PALETTE_LAYOUTS: { diagram; pages; plan; workshop };
+export type EditorMode = 'diagram' | 'draw' | 'workshop'; // EDITOR_MODE_CATALOGUE, packages/document/src/editor-mode.ts
+export function sessionStripTools(
+  mode: string | undefined,
+  esBoard?: boolean,
+): SessionStripTools | null;
+export const PALETTE_LAYOUTS: { diagram; workshop };
 export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type derived from EditorMode
 ```
 
 - Every `Record<EditorMode, …>` gains a `workshop` entry (the compiler enforces it):
-  `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `POPULAR_BY_MODE`,
-  `useTemplateModeFilter` events and counts, marketing `modeCounts`.
+  `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `POPULAR_BY_MODE`.
 - Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (`packages/explorer/src/lens/dimensions.ts`), settings
   icons, help `featureColours`, marketing `HeroMode` and `TemplateGallery` `CHOICES`.
 - OpenAPI `EditorMode` enum regenerated (`pnpm --filter @livediagram/api gen:openapi`).

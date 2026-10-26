@@ -1,12 +1,11 @@
 # Board import
 
 One shape for every "bring a board from another tool" import: a source file,
-folder or connected board becomes a [board scene](board-scene.md), the scene
+folder or paste becomes a [board scene](board-scene.md), the scene
 lands as the contents of a tab, its images go through the
 [Import image pipeline](import-image-pipeline.md), and the user always gets a
-result plus an honest report. [Miro import](miro-import.md) and
-[Microsoft Whiteboard import](whiteboard-import.md) are built on it, as the
-[Excalidraw](excalidraw-import-export.md) and [draw.io](drawio-import.md) importers already are. Evidence for the platform facts below:
+result plus an honest report. The [Microsoft Whiteboard](whiteboard-import.md),
+[Excalidraw](excalidraw-import-export.md) and [draw.io](drawio-import.md) importers are built on it. Evidence for the platform facts below:
 [Migration readiness](../../research/migration-readiness.md).
 
 ## Where it lives
@@ -15,7 +14,7 @@ result plus an honest report. [Miro import](miro-import.md) and
   Mermaid and Excalidraw, with a **single undo step** per import. No new
   surface is added.
 - Each importer is its own module in `apps/editor/lib/` (beside
-  `excalidraw-import.ts`) that parses its source into a board scene; the one
+  `excalidraw-scene.ts`) that parses its source into a board scene; the one
   landing (`apps/editor/lib/board-scene/`) and the shared image stage
   (`apps/editor/lib/import-images/`) do the rest. Lazy-loaded by `useTabImport`
   like the other importers. Nothing here is needed by the MCP worker, so it
@@ -27,8 +26,7 @@ Every stage returns `{ ok: true, value } | { ok: false, error }` and never
 throws. Only the parse stage has to be pure.
 
 1. **Read** (browser): an `ImportSource` becomes a raw payload. A source is a
-   picked or dropped file, or a connected board fetched from the other tool's
-   API with a user token held by the tab.
+   picked or dropped file (or folder), or a paste.
 2. **Parse** (pure): payload to a [board scene](board-scene.md) (`BoardScene`:
    items, assets, a title and the parser's notes). No network. Input the parser
    does not recognise is a named rejection, never a partial guess.
@@ -102,7 +100,7 @@ rule) rather than a second one.
   looks complete is the failure this rule exists to prevent.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): one
   `Tab·Imported·<Format>` per import, like every other importer (for example
-  `Miro`, `MicrosoftWhiteboard`, `Excalidraw`). Counts and names
+  `MicrosoftWhiteboard`, `Excalidraw`). Counts and names
   never leave the browser.
 
 ## Bulk readiness

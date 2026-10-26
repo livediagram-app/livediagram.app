@@ -4,9 +4,8 @@ Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text — the
 lingua franca of diagram-as-code, sitting in countless READMEs, issues, and AI
 outputs. Unlike the Markdown outline import ([Markdown import](markdown-import.md)), Mermaid carries the full
 **connection graph** (which node points at what), so a round-trip preserves the
-diagram's structure, not just its labels. This is the format the old `.lvd`
-text DSL (the removed text-DSL spec, now removed) was trying to be, except Mermaid is a real
-standard people already have.
+diagram's structure, not just its labels. Mermaid is livediagram's text form for a diagram: human-editable, connection-preserving and round-trip, in a
+standard people already have, so there is no bespoke text DSL.
 
 ## Scope: flowcharts, state diagrams, ER diagrams
 
@@ -303,8 +302,7 @@ text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
 
 The **image formats** (PNG / SVG / PDF) get their own second screen too
 (`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
-that used to sit permanently on the export grid now live behind the format
-card, since they only affect image output — so the main grid is just the six
+live behind the format card, not on the export grid, since they only affect image output — so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 
 Naming: the JSON export/import card is titled **"JSON"** (was "File" /
@@ -312,27 +310,17 @@ Naming: the JSON export/import card is titled **"JSON"** (was "File" /
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-`Tab`/`Imported`/`Mermaid` and `Document`/`Exported`/`Mermaid`, added to the
-existing import/export type lists, replacing the removed `Text` type.
+`Tab`/`Imported`/`Mermaid` and `Document`/`Exported`/`Mermaid`, in the
+import/export type lists (there is no `Text` type).
 
-## Removed: the `.lvd` text DSL (the removed text-DSL spec)
+## Markdown ([Markdown import](markdown-import.md))
 
-The text DSL is deleted — `packages/document/src/text-dsl/`, its
-`@livediagram/document/text-dsl` subpath export, `export-tab-text`'s DSL branch,
-the Text cards in both dialogs, and the removed text-DSL spec. It was a bespoke format nobody
-outside livediagram speaks; Mermaid does the same job (human-editable,
-connection-preserving, round-trip) with a format the world already uses.
-
-## Markdown ([Markdown import](markdown-import.md)) — reassessed
-
-After Mermaid landed, the Markdown import/export was re-evaluated against the
-code. **Decision: keep both** — they solve a different problem from Mermaid.
+Markdown import and export sit beside Mermaid because they solve a different problem.
 Markdown import ingests an _outline_ (headings + nested lists, from XMind /
 Obsidian / notes) and lays out that hierarchy as a themed tree; Markdown export
 is a flat, human-readable _summary_ to paste into a doc. Mermaid is the
 connection-faithful text round-trip; Markdown is the outline-in / readable
-summary-out. Full reasoning in [Markdown import](markdown-import.md) ("Still useful
-after Mermaid?").
+summary-out. Full reasoning in [Markdown import](markdown-import.md) ("Beside Mermaid").
 
 ## Node boxes and text
 
@@ -342,7 +330,7 @@ labels and set in one text size for the whole graph (`md`, the templates' size, 
 scales text to fill each box: fitted boxes with scaling text made a short
 heading huge beside a long one set small (`labelBoxSize` in `graph-authoring.ts`).
 The clustered layout **keeps those sizes** rather than stretching each box to
-its widest peer, so one long label no longer inflates every box.
+its widest peer, so one long label does not inflate every box.
 
 An **unlabelled circle is a dot**: 28 px, solid in the theme's accent through
 the `solid` colour preset (resolved when the import applies the tab's theme).
@@ -364,6 +352,5 @@ clears the header ([MCP server](../015-api/mcp-server.md) §4.7 "Groups keep the
 lines clear", the same layout).
 
 A subgraph's frame carries its title as a **header**: top-left, bold, at the
-nodes' size, in the band the clustered layout reserves above the members (it
-used to be centred and scaled to fill the frame, a giant word across the nodes
+nodes' size, in the band the clustered layout reserves above the members (never centred and scaled to fill the frame, a giant word across the nodes
 inside).

@@ -53,7 +53,7 @@ A picker shows up to three groups, always in this order, each under a small head
    | Violet      | Violet    |
    | Pink        | Pink      |
    - The **strong tone** is for lines, text, markers, accents, the laser and chart
-     slices. It is the marker stock set ([Draw mode](../023-draw-mode/draw-mode.md#the-colour-picker)) plus
+     slices. It is the marker stock set ([Draw mode](../023-draw-mode/draw-mode.md#pens)) plus
      Grey: each colour is tuned for the surface it is drawn on, darker on light paper and lighter on dark, so
      it is at least 4.5:1 on that surface.
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
@@ -98,7 +98,7 @@ one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps i
 
 - Where a line or text has to read on both appearances (a marker, the element menu's line and text rows),
   the editor warns when a colour is under 3:1 on either and offers a readable version beside the warning
-  ([Draw mode](../023-draw-mode/draw-mode.md#the-colour-picker)). Elsewhere it does not.
+  ([Draw mode](../023-draw-mode/draw-mode.md#pens)). Elsewhere it does not.
 - Quick Style's custom swatch popover holds the same editor
   ([Quick Style Panel](../008-canvas/quick-style-panel.md#custom-swatches)).
 - There is **no system colour well** anywhere in the editor; the custom colour editor is the only one.

@@ -34,7 +34,7 @@ when the surface respects it (fixed stationery, no resize, verbs not
 styling). That branch is presentation only — every other template kind
 is still invisible to the editor once its elements are on the canvas.
 
-## Phase 1 (shipped): the starter
+## The starter
 
 - `TemplateKind` `'event-storming'`, title **Event Storming**, an
   `extra` in the **Technical** category.
@@ -58,7 +58,7 @@ is still invisible to the editor once its elements are on the canvas.
 - Preview tile: one orange sticky on a faint dashed timeline arrow
   (`template-preview-4.tsx`).
 
-## Phase 2 (shipped): the sticky grammar in the palette
+## The sticky grammar in the palette
 
 The notation's note kinds, each an ordinary sticky with a pinned
 semantic colour:
@@ -164,7 +164,7 @@ semantic colour:
   note falls through to ordinary active-layer stamping. Each kind still
   carries a `stage` in the catalogue: it is real domain vocabulary
   (which pass of the workshop the note belongs to) and reads in the
-  palette, but it no longer decides structure.
+  palette, but it does not decide structure.
 - **Mechanics:** each tile arms the ordinary sticky draw gesture with
   the kind's fill riding the intent (`PendingDraw` sticky variant gains
   `fill?: string`, the session/provider precedent), and `buildDrawnBoxed`
@@ -177,28 +177,21 @@ semantic colour:
   colour is a user choice riding the intent, not a new kind (the same
   reasoning as Video's provider, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-## Phase 3 (superseded): ONE board, ONE layer
+## One board, one layer
 
-The board shipped with a layer per workshop stage (Big Picture / Process /
-Software Design) and a bottom-centre chip bar toggling their visibility.
-**That has been withdrawn: an event-storming board now has exactly one
-layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
+An event-storming board has exactly one layer, `layer:es:board` (`eventStormingLayers()`), and no stage view bar.
 
 - **Why.** Layers paint as separate BANDS, so two notes on different
-  stages could never be stacked against each other — "bring to front" did
-  nothing across a band, with nothing on screen to explain why. A
+  stages could never be stacked against each other: "bring to front" would
+  do nothing across a band, with nothing on screen to explain why. A
   workshop surface is one wall of paper: the notation already says what
-  each note IS, so the stage it belongs to doesn't need its own plane.
-  The chip bar was also permanent chrome on a board whose whole premise
-  is distraction-free capture, and it earned its place only by driving
-  the layers it has now lost.
+  each note IS, so the stage it belongs to doesn't need its own plane, and
+  permanent chrome has no place on a board whose whole premise is
+  distraction-free capture.
 - **Identity is a FIRST-CLASS field**: `Tab.kind = 'event-storming'`
-  (`TabKind` in `@livediagram/document`). It used to be inferred from layer
-  ids, and that broke twice — first as a checklist (all three stage
-  layers, so deleting one stripped the board), then as a single layer a
-  facilitator can delete from the Layers panel — each time taking the
-  palette, the stationery and the note menu with it, with nothing on
-  screen to explain why. A kind TUNES presentation; it does not fork
+  (`TabKind` in `@livediagram/document`), never inferred from layer ids: a
+  facilitator can delete a layer from the Layers panel, and that must not take
+  the palette, the stationery and the note menu with it. A kind TUNES presentation; it does not fork
   persistence, realtime, comments or export, so the editor stays one
   editor. The template declares it through `templateCanvasOverrides`, so
   the picker, /new and the MCP worker all land it in one commit.
@@ -220,19 +213,10 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   write, so it resolves legacy signals first — branding a pre-`kind`
   workshop board `diagram` would take its palette, stationery and note
   menu away permanently, with no later load able to tell.
-- **What went with it:** `EventStormingViewBar`,
-  `useEventStormingViews`, `applyEventStormingStage`,
-  `eventStormingStageOf`, `eventStormingStageLayerId`,
-  `EVENT_STORMING_STAGES` and the `UI / Used / EventStorming*`
-  telemetry. _(The timeline-rail layer + element and its toggle were
-  built and retired earlier, for the same reason: chrome that didn't earn
-  its place. Boards created while it existed keep `layer:es:rail` as
-  ordinary data.)_
-- **Stages are not gone as an idea** — every note kind still carries its
-  `stage`, and a future revisit can surface it as a FILTER (dimming,
-  not a plane) without reintroducing bands.
+- Older boards may carry a stage layer or `layer:es:rail` as ordinary layer data; nothing reads them as chrome.
+- **Every note kind carries its `stage`**, as data a filter (dimming, not a plane) could read without bands.
 
-## Phase 4 (shipped): workshop stationery
+## Workshop stationery
 
 The notes behave like the physical kit:
 
@@ -288,7 +272,7 @@ The notes behave like the physical kit:
   drop goes through the same builder as a tap, so fill, silhouette,
   tilt, fixed size and stage routing all apply identically.
 
-## Phase 5 (shipped): insert a note between two notes
+## Insert a note between two notes
 
 **Hold Alt** and drag a note over the **gap between two notes** and the
 board offers to INSERT it there: every element at or right of that point
@@ -324,8 +308,8 @@ placed, and that is where making room in the middle earns its keep.
 - **A single sticky only.** A multi-selection drag, and a drag of a
   shape / icon / arrow, behave exactly as they do today whatever is
   held: the gesture is about the note grammar. This is true of the
-  palette path too — a shape dragged in from the palette no longer
-  inserts, which it did while arming was automatic.
+  palette path too: a shape dragged in from the palette does not
+  insert.
 - **Precedence.** An open slot IS the placement, so it wins over
   Cmd/Ctrl free placement (snapping is irrelevant while a slot is open).
   Shift wins the other way: drag-duplicate already owns that gesture, so
@@ -342,7 +326,7 @@ placed, and that is where making room in the middle earns its keep.
 **Why here and nowhere else.** An event-storming wall is a
 left-to-right timeline of domain events, so "this happened before that"
 is the entire information content of the x axis. Adding a step in the
-middle is the commonest edit in a session, and it used to cost a manual
+middle is the commonest edit in a session, and without help it costs a manual
 re-shuffle of everything downstream — the one operation a
 low-threshold-capture board cannot afford to be slow. On an ordinary
 board x means nothing in particular, so the same gesture would be a
@@ -427,7 +411,7 @@ board's behaviour changes at all.
   points are deliberately not told apart: the question the dashboard
   answers is "does anyone use this gesture".
 
-## Phase 6 (shipped): timeline lanes
+## Timeline lanes
 
 **Timeline lanes** is what an event-storming board IS, not a mode it can be
 put into. The board carries an infinite stack of horizontal lanes — one note tall, evenly pitched, running in
@@ -435,18 +419,11 @@ both directions — and a note being dragged **snaps its centre onto a lane**. A
 lane is a ROW, and rows are all it claims: **x is answered by the notes already
 on the board**, not by a grid.
 
-**X used to be a half-note lattice, and that was wrong** (found by the operator
-on a real board, fixed before the feature was used in anger). Columns every
-100px could only express gaps that were multiples of a half note, but the
-board's own gutter was 72 at the time — the event-storming template built its
-starter row with it, and the insertion ripple opened a slot by it — so every row the product
-itself laid out was permanently off-lattice: a note dragged in the lane above
-one landed 28px to its right, then 44px to its left, and the x tolerance was
-half a cell, which every x is within, so there was no leaving it where you put
-it either. The lattice only ever agreed with a board whose notes were touching,
-which is the one arrangement a wall rarely has.
+**X is not a lattice.** Columns at a fixed pitch can only express gaps that are multiples of the pitch, so a row the
+product itself lays out (the template's starter row, the insertion ripple) would sit off it, and a note dragged in the
+lane above would land beside where it was aimed. X is placed relative to the neighbours instead.
 
-Phase 5 made the x axis a grammar the board KNOWS ("between" is a place you can
+Insertion makes the x axis a grammar the board KNOWS ("between" is a place you can
 drop something). Lanes do the same for y: each lane is a row of the story
 (events along the top, the commands that caused them underneath, the policies
 that reacted below that), each column a moment. On an ordinary diagram neither
@@ -582,129 +559,57 @@ nothing already on the board moves in any of them:
    (on one labelled wall, 21 lanes for a photograph spanning 11 instead of 13).
 
 A photo with nothing in common with the board lines its top ROW up with the
-board's top, clear to its right (it used to line up the photograph's top edge,
-so a photo of a wall with bare paper above the notes landed lanes too low).
+board's top, clear to its right (not the photograph's top edge, which would land a photo of a wall with bare
+paper above the notes lanes too low).
 
-**Rulings** (each one an operator input, and what changed):
+**Rules** (each one tried on real walls):
 
-- **2026-09-26 — "slide row-mates along the lane; cascade only across rows"**:
-  of two placements shown on a labelled wall, notes of one photo row that
-  overlap slide right along their lane (13 lanes), rather than every overlap
-  pushing the note and everything below down a lane (21 lanes, rows broken into
-  staircases). The cascade stays for notes of different rows, which is what
-  keeps a dense photo's row order.
-- **2026-09-26 — "event-storming stickies always land on lanes"** (fourteen
-  decisions, all final): the lanes stop being an aid a note can ignore and
-  become where a workshop note IS. Drag y has no tolerance for a workshop note;
-  Cmd/Ctrl stays the one way off a lane; x is untouched. Arrow keys move a whole
-  lane. Paste lands at the pointer when it is over the canvas and staggered on
-  the original otherwise; duplicate staggers on the same lane; several notes
-  keep their layout with a lane per row; a single note on an occupied spot
-  takes the next free slot along its lane. Photo import keeps row order with a
-  cascade and lines up columns within a quarter note. MCP-created notes and
-  file imports land on lanes. Older boards are settled once, as one undoable
-  step, and marked. Nothing already on the board is ever pushed; Alt stays the
-  way to make room. This retires "a note parked between lanes stays there" and
-  "a note off-lane on an older board stays until it is next dragged".
-
-- **2026-09-25 — "a couple of ways move the snapping lanes up and down, which
-  is not expected"**: the stack was anchored on the TOP EDGE of the board's
-  top-most note, so it moved whenever that note changed: a note placed higher
-  (free placement, or parked between lanes), the top note moved, deleted or
-  re-kinded (a 180-tall policy tops out 10px lower than a square), an import,
-  a paste, an undo, a peer, a layer hidden. The stack is now fixed at world
-  y = 0, which also retires the per-gesture freeze below.
-- **2026-09-17 — "dragging in the higher lanes drags the whole timeline"**:
-  the stack is derived from the board top-most note, and the board re-commits
-  on every move — so a note dragged up into the higher lanes became the new
-  top-most note on each tick and re-anchored the stack to itself, the timeline
-  chasing the sticky. A gesture now FREEZES the stack when it begins
-  (`laneTimelineRef`), the preview carries the frozen `originY`, and the
-  overlay draws its bands from it rather than from the live board. Asserted by
-  a test that drags the top-most note up three lanes and reads the origin back
-  unchanged.
-- **2026-09-17 — "the reader failed, so the import should still land"**: a
-  failed READ (quota, a spike, the model gone) used to throw the whole import
-  away, even though the DETECTOR had already succeeded in the browser. Now the
-  notes land blank, the toast names the specific reason, and the bar itself
-  says WHY (“the model key has used up its quota”, “the model is busy right
-  now”, …) followed by “type the words in yourself” — because a generic
-  “could not finish” tells the author nothing about whether retrying will
-  help. Detection failures still land nothing, read failures land the layout.
-- **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
-  not a mode. The switch, the command-palette verb, the canvas-menu verb, the
-  two telemetry events and the whole field are GONE; the lane
-  stack is derived from the board (anchored on its top-most note), so there is
-  nothing to store, nothing to migrate and nothing to fall out of step. An
-  event-storming board IS a board of lanes.
-- **2026-09-17 — "a multi-selection should still snap"**: dragging several
-  notes now places the selection as one block against its own outline (left
-  edge to a left-edge offer, right edge to a right-edge one) and moves every
-  note by the one delta, so notes that were already aligned stay aligned.
-- **2026-09-25 — "when both happen, the lanes above and below no longer snap"**:
-  own-row rhythm slots outranked every cross-lane offer, and with a slot every
-  216px and a 100px radius almost every x had one in reach, so a note beside a
-  row could never line up with the note above or below it. The own row now
-  outranks the lanes next door only up to one empty place from a neighbour;
-  beyond that the lanes above and below come first (the operator’s variant 2,
-  one sticky in between).
-- **2026-09-25 — "snap to the sticky that is dragged from, not the box as a whole"**:
-  a selection is no longer placed by its outline. The note the drag began on
-  takes the offers, as it would alone, and the rest follow by the same delta.
-- **2026-09-17 — "a palette tile stays armed after a drag creates a note"**:
-  landing a palette drag now disarms the tile it armed (), so
-  the next click on the canvas does not silently mint a second note.
-
-- **2026-09-16 — "the lattice does not match my rows"**: x was a half-note
-  lattice (100px columns) which could not express the board's own 72px gutter,
-  so a note dragged above a row landed 28px right, then 44px left. Replaced with
-  neighbour-relative placement.
-- **2026-09-16 — "two events next to each other do not suggest the gap"**: the
-  neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
-  nothing was offered. Capture radius widened to half a note and the target
-  footprint is now DRAWN before the drop.
-- **2026-09-17 — "I am missing the diagonal"**: across lanes the board only
-  offered the column exactly above/below a note (and the brick). A note placed
-  diagonally — one place along from its neighbour in the row above — is just as
-  ordinary, and had to be eyeballed. Each edge column is now offered at one
-  rhythm step either side as well. One step, not four: past the neighbours a
-  note could actually touch, the row above stops having an opinion.
-- **2026-09-17 — "that would make things a lot simpler, right?"** (operator’s
-  own simplification, and it was): across lanes, EDGES line up — same
-  silhouette on the left edge, different silhouettes on either edge — and the
-  brick survives only between two squares. Along a row the gutter is always 16
-  and every step is a square note plus a gutter, so a row offers the same
-  places whichever sticky is being placed, including the place that keeps room
-  for an event not yet written. The measured gutter (`prevailingNoteGap`, its
-  floor and its bucketing) is GONE: a constant said the same thing with none of
-  the ways to be wrong.
-- **2026-09-16 — "the gaps are too wide, should be 16"**: `ES_NOTE_GAP` is now
-  **16**, and it is the one number the whole board works to — the lane rhythm,
-  the event-storming template row and the insertion ripple all read it, so a row
-  the template lays out and a row the author drags out have the same rhythm.
-  `MIN_MEASURED_GUTTER` dropped to 8 with it, since the floor has to sit under
-  the gutter or a board could never measure its own.
-- **2026-09-16 — "as close behind each other as possible gives irregular
-  stuff"**: a row built that way came out with gaps of 72, 16, 4, 60, 72, 72.
-  Placing a note "right behind" another means sliding it back until it touches,
-  and the hand ends up INSIDE the previous note — 124px from the next slot,
-  past the 100px capture radius — so the note stayed where it was dropped. An
-  overlapping footprint now resolves to THIS row rhythm at any distance, and
-  the row own slots outrank the columns and bricks offered by the row next door
-  (those were winning on raw distance and leaving gaps of 36 and 12 behind).
-  Building the row again from the operator own aims gives 72 every time.
-- **2026-09-16 — "two events can only be placed without the gap, or with a very
-  big gap"**: the gutter was the MEDIAN of every gap on the board, so a handful
-  of accidental near-touching pairs (16px, left behind while dragging) pulled a
-  board whose deliberate gaps were all 72 down to 44 — and the whole rhythm
-  followed it. The gutter is now the most REPEATED gap, ignoring anything under
-  `MIN_MEASURED_GUTTER` (24px: a seam, not a gutter), ties going to the board
-  default.
-- **2026-09-16 — "too many snapping points"**: same-lane offers were a single
-  gutter each side, while the alignment and distribution rungs quietly added
-  touching, on-top and half-way positions. Same lane is now the rhythm only
-  (whole steps), the half-pitch is gone from a single lane, and every other x
-  rung stands down on a lanes board. The brick survives across lanes only.
+- **Row-mates slide along the lane; only different rows cascade.** Notes of one photo row that overlap slide right
+  along their lane, rather than every overlap pushing the note and everything below down a lane (on one labelled
+  wall, 13 lanes instead of 21, rows kept whole instead of broken into staircases). The cascade is for notes of
+  different rows, which keeps a dense photo's row order.
+- **Event-storming notes always land on lanes.** The lanes are where a workshop note IS, not an aid a note can
+  ignore. Drag y has no tolerance for a workshop note; Cmd/Ctrl is the one way off a lane; x is untouched. Arrow
+  keys move a whole lane. Paste lands at the pointer when it is over the canvas and staggered on the original
+  otherwise; duplicate staggers on the same lane; several notes keep their layout with a lane per row; a single
+  note on an occupied spot takes the next free slot along its lane. Photo import keeps row order with a cascade and
+  lines up columns within a quarter note. MCP-created notes and file imports land on lanes. An older board is
+  settled once, as one undoable step, and marked. Nothing already on the board is ever pushed; Alt is the way to
+  make room.
+- **The lane stack is fixed at world y = 0.** Anchored on anything on the board (its top-most note, say), the
+  lanes would move whenever that note changed, was dragged, deleted, re-kinded, imported over, pasted, undone, moved
+  by a peer or hidden with its layer.
+- **A failed read still lands the layout.** When the DETECTOR succeeded in the browser but the READ failed (quota,
+  a spike, the model gone), the notes land blank, the toast names the specific reason, and the bar says WHY (“the
+  model key has used up its quota”, “the model is busy right now”, …) followed by “type the words in yourself”,
+  because a generic “could not finish” tells the author nothing about whether retrying will help. A detection
+  failure lands nothing.
+- **Lanes are not a mode.** There is no switch, command-palette verb, canvas-menu verb, telemetry or stored field
+  for them: an event-storming board IS a board of lanes.
+- **A multi-selection snaps by the note in hand.** The note the drag began on takes the offers, as it would alone,
+  and the rest follow by the same delta, so notes that were already aligned stay aligned.
+- **The lanes above and below get their say.** The own row outranks the lanes next door only up to one empty place
+  from a neighbour; beyond that the lanes above and below come first (one sticky in between).
+- **A palette drag disarms its tile** when it lands, so the next click on the canvas does not silently mint a
+  second note.
+- **x is neighbour-relative**, not a lattice: a fixed lattice of columns cannot express the board's own gutter.
+- **A suggested slot is wide and drawn**: the capture radius is half a note (`ES_CANDIDATE_RADIUS_X`), and the
+  target footprint is DRAWN before the drop, so a wide capture reads as help rather than as the board moving
+  things about.
+- **The diagonal is offered.** Across lanes, each edge column is offered at one rhythm step either side as well as
+  exactly above or below: one step, not four, since past the neighbours a note could touch the row above has no
+  opinion.
+- **Edges line up across lanes**: same silhouette on the left edge, different silhouettes on either edge; the brick
+  survives only between two squares.
+- **The gutter is a constant**, `ES_NOTE_GAP` = 16 (`packages/document/src/event-storming-lanes.ts`), the one number
+  the whole board works to: the lane rhythm, the event-storming template row and the insertion ripple all read it,
+  so a row the template lays out and a row the author drags out have the same rhythm. Along a row every step is a
+  square note plus a gutter, so a row offers the same places whichever sticky is being placed, including the place
+  that keeps room for an event not yet written. Nothing measures the board's gaps.
+- **An overlapping footprint resolves to the row rhythm** at any distance, and the row's own slots outrank the
+  columns and bricks offered by the row next door, so "right behind" another note lands one gutter behind it.
+- **Same lane is the rhythm only** (whole steps): no half-pitch on a single lane, and every other x rung (touching,
+  on-top, half-way) stands down on a lanes board. The brick survives across lanes only.
 
 - **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
   200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
@@ -731,12 +636,12 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
   delta; a shape, an icon, an arrow or an image dragged without one drags exactly
   as it does on every other tab. The Alt insertion still wants exactly one
   note, which is its own rule.
-- **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
+- **Precedence** (top rung wins): an open insertion slot (Alt, [Insert a note between two notes](#insert-a-note-between-two-notes)) → free
   placement (Cmd/Ctrl, [Snap override (free drag)](../008-canvas/snap-override.md)) → the lane (y) and
   the neighbours (x) → the ordinary alignment / distribution snap for whichever
   axis is left. Shift-duplicate ([Shift-drag duplicate](../008-canvas/shift-drag-duplicate.md))
   suppresses the slot, and the clone still lands on a lane.
-- **The preview never touches the document** (the Phase 5 rule): the lit lane
+- **The preview never touches the document** (the rule of [Insert a note between two notes](#insert-a-note-between-two-notes)): the lit lane
   is published on a module-level store and rendered as an overlay; the drop is
   the first thing that writes.
 - **One snap computation per gesture.** The palette path and the note-drag path
@@ -744,14 +649,12 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
   that answer. A preview that disagrees with the drop is a lie ([Palette drag ghost + drop preview](../010-palette/palette-drag-ghost.md)).
 - **A rippled row keeps its own rhythm.** The Alt insertion opens by the
   incoming note plus the row's own gap, on a lanes board exactly as on any
-  other. It used to round that up to a whole number of columns; that rounding
-  was the lattice bug in another costume, shifting a row off the very spacing
-  it was measured from.
+  other, with no rounding to a whole number of columns, which would shift a row
+  off the very spacing it was measured from.
 - **Never exported.** Lanes are a drag-time aid, not board content: the SVG /
-  PNG export draws none of them. Mermaid / Markdown / Excalidraw ignore the
-  field entirely.
-- **Telemetry:** none of its own. Lanes are not a mode (see above), so the
-  `Canvas / Used / TimelineLanesOn` / `…Off` events went with the switch.
+  PNG export draws none of them, and Mermaid / Markdown / Excalidraw have nothing to carry.
+- **Telemetry:** none of its own. Lanes are not a mode (see above), so there are
+  no `Canvas / Used / TimelineLanesOn` / `…Off` events.
 - **The template lands on the lanes.** The event-storming template lays its
   starter row on the lane nearest the centre it is built at, so a fresh board
   starts on the lanes every drag snaps to (`buildEventStorming`).
@@ -781,7 +684,7 @@ overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.
 
-## Phase 7 (shipped, re-ruled): next-note buttons
+## Next-note buttons
 
 The SELECTED note offers a button on each side that has a **next note**: the note the notation most likely puts there. Click it and that note is
 added beside this one, on the row's rhythm, open for typing. The two notes are
@@ -824,8 +727,7 @@ then just two notes: the board keeps no relation between them.
 - **The buttons earn their place.** At most two, only on the SELECTED note
   (never on a note merely pointed at, and not while the note is open for
   typing: they come back when typing ends and the note is still selected), and each names its act ("Add a command
-  before this domain event"). [Event storming](event-storming.md) retired the four quick-connect pluses on
-  this board as chrome; these are different in kind, because each one is a
+  before this domain event"). This board has no quick-connect pluses, which would be chrome; these are different in kind, because each one is a
   sentence of the notation rather than a generic "connect something here".
 - **No affordance where the add would be refused**: a view-only session, a
   locked tab or note, a hidden or locked active layer, or any drag in hand.
@@ -841,30 +743,18 @@ then just two notes: the board keeps no relation between them.
 `apps/editor/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
 the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
 
-**Rulings:**
+**Rules:**
 
-- **2026-09-25 — "remove the drag-together feature and break the connectors
-  between the different types"**: anchor DOCKING is retired. It stored a
-  relation on the docked note (`esDock = { hostId, side }`), drew two dots in
-  the seam, docked a note dragged near a compatible face, undocked it when
-  pulled away, and made a host carry its docked notes when it moved. All of
-  that is gone: a note moves alone, a drag is placed by the lanes only, the
-  ripple treats every note as its own, the photo import lands notes unrelated,
-  and the export draws no dots. Relations already stored are dropped where a
-  stored tab enters the editor (`dropLegacyDocks`, beside
-  `migrateLegacyGroups` in the api worker's `rowToTab`, the offline store's tab
-  load and a file import), so no board keeps one. The buttons that added a
-  note already docked stay, and add an ordinary note.
-- **2026-09-25 — "I like the tab, and hovering it should show the ghost
-  preview"**: of four designs shown in the editor (paper tab, named pill,
-  chevron, ghost preview), the tab won, with the ghost as its hover state. The
-  tab is proportional to the note and quieter than the first draft, and the
-  buttons show on the selected note only; hovering a note no longer shows
-  them. A first cut at a tenth of the height was wider than the 16px gutter
-  and lay on the neighbouring note (blue on blue beside a command), so the
-  tab is 6% wide and centred in the gutter.
+- **No docking.** A note moves alone, a drag is placed by the lanes only, the ripple treats every note as its own,
+  the photo import lands notes unrelated, and the export draws no dots between notes or connectors between types. A
+  docking relation a stored tab may carry (`esDock = { hostId, side }`) is dropped where the tab enters the editor
+  (`dropLegacyDocks`, in `migrateStoredElements`, which every stored-tab entry point runs through
+  `migrateStoredTab`). The buttons add an ordinary note.
+- **A tab, with the ghost as its hover.** The button is a paper tab, proportional to the note and quiet, 6% wide
+  and centred in the 16px gutter so it never lies on the neighbouring note; hovering it shows the ghost preview of
+  the note it adds. The buttons show on the selected note only.
 
-## Phase 8 (shipped): import a photo of the wall
+## Import a photo of the wall
 
 Photograph a piece of the physical wall — stickies, possibly overlapping,
 possibly a region already partly on the board — and the board reads the notes
@@ -877,7 +767,7 @@ of the next piece of wall adds only what is new — that is what "incremental"
 means here.
 
 A real workshop always happens on a physical wall first. Getting it onto the
-board used to cost a transcription afternoon, which is the one thing a
+board by hand costs a transcription afternoon, which is the one thing a
 low-threshold capture surface can least afford.
 
 - **Detection and reconciliation are ours; only the reading is the model's.**
@@ -917,9 +807,8 @@ low-threshold capture surface can least afford.
   eighteen. Every one of those lands as a draft the author can fix, or as
   nothing at all.
 
-  _(The "no detection preview: the draft on the canvas IS the review" ruling is
-  REVERSED by Phase 9: a photo review overlay now shows every detected box
-  before anything lands, and the on-canvas draft is what follows it.)_
+  A photo review overlay shows every detected box before anything lands, and the on-canvas draft follows it
+  ([Review the detection, draw the misses](#review-the-detection-draw-the-misses)).
 
 - **Existing notes are untouchable.** An import only ever ADDS. A matched note
   is never moved, resized, re-kinded or re-worded — if the photo says something
@@ -933,20 +822,14 @@ low-threshold capture surface can least afford.
   crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
-- **Gated on the model key ([Note reader](note-reader.md)).** No model key = no photo
-  UI anywhere, and a deployment without one loses nothing else. The reader resolves
-  its provider from the key that is set, `GOOGLE_AI_STUDIO_API_KEY` or the generic
-  `AI_API_KEY` ([Note reader](note-reader.md), "Whose model? The key says.") — any
-  OpenAI-compatible endpoint, which is Gemini on the hosted site and can be a local
-  llama.cpp on a laptop.
+- **Detection needs no key ([Note reader](note-reader.md)).** The stickies are found in the browser, always. Only
+  the handwriting reading may use a server model, and only when the deployment has a model key
+  (`GOOGLE_AI_STUDIO_API_KEY` or the generic `AI_API_KEY`, [Note reader](note-reader.md), "Whose model? The key
+  says."): any OpenAI-compatible endpoint, which is Gemini on the hosted site and can be a local llama.cpp on a
+  laptop. Without one, the editor reads the crops in the browser.
 
-  _(Phase 9 makes the READER pluggable and adds an in-browser OCR reader, so
-  this gating is re-ruled there: detection is always in-browser and needs no
-  key; only the handwriting reading may use a server model, and only when one
-  is configured.)_
-
-- **Placement composes the other two phases.** New notes land on the lanes. That is why photo import was built third: doing it first would have
-  meant building its placement twice.
+- **Placement composes the lanes and insertion.** New notes land on the lanes, through the same placement the
+  board uses everywhere.
 - **A review step, then one undoable commit.** The dialog shows each note found
   over the photo and in a list, badged NEW / ON BOARD, with the text and kind
   editable and every note tickable. "Add N notes" commits the included ones
@@ -993,7 +876,7 @@ low-threshold capture surface can least afford.
     image), and only then is the note size measured.
   - A blob is only cut into several notes when it is long against the note size
     AND against its own other side, and only when it is SOLID: a sprawling patch
-    of wall that squeaked past the floor used to be diced into dozens of notes
+    of wall that squeaks past the floor is never diced into dozens of notes
     that were never there.
 
   **What is still outstanding, explicitly.** The working image is SCALED TO
@@ -1015,14 +898,14 @@ low-threshold capture surface can least afford.
   photo" against the board as it now is), applying a matched note's text
   difference, and reading arrows / connections out of the photo.
 
-## Phase 9 (in progress): review the detection, draw the misses
+## Review the detection, draw the misses
 
 The photo import gains a **review overlay**, a **pluggable reader** (a server
 model when one is configured, an in-browser model when not), an **animated
 detection reveal**, and the detector is hardened against real handwriting.
 Decisions from the operator:
 
-- **THE PHOTOGRAPH IS THE REVIEW** (reverses Phase 8's "no preview" ruling).
+- **THE PHOTOGRAPH IS THE REVIEW**.
   The picture fills the screen with its aspect ratio intact and EVERYTHING
   floats on it: there is no sidebar and no footer strip. A list of notes beside
   the photo asks the author to match thirty rows against thirty pieces of paper
@@ -1051,7 +934,7 @@ Decisions from the operator:
   ways out — **Add N notes** and **Cancel** — float over the dimmed margin
   below it, never over a note's words. Nothing lands until Add, which hands the
   ticked boxes, the boxes the author drew and the words as edited to the one
-  place a draft is written (Phase 8's `esDraft` machinery).
+  place a draft is written (the `esDraft` machinery of [Import a photo of the wall](#import-a-photo-of-the-wall)).
 
   **The photograph zooms and pans** the way a photo viewer does: the scroll
   wheel (and a trackpad pinch) zooms about the pointer, two fingers on a touch
@@ -1230,11 +1113,9 @@ Decisions from the operator:
   a toast. Crops keep the ORIGINAL resolution up to `CROP_MAX_EDGE_PX` (1024).
   See `docs/research/vision/handwriting-readers.md` for the measurements.
 
-  _(This REVERSES Phase 9's first ruling, "the reader is Tesseract.js in WASM".
-  Tesseract was measured on hand-picked clear crops; across a whole wall it read
-  ONE note in twenty-four and invented words on every blank crop, because it is
-  a printed-text engine and a marker scrawl on coloured paper is a different
-  problem. It is gone.)_
+  The reader is not a printed-text OCR engine (Tesseract and the like): across a whole wall such an engine reads
+  about one note in twenty-four and invents words on blank crops, because a marker scrawl on coloured paper is a
+  different problem.
 
 - **Detector hardening.** A morphological close (dilate then erode by ~a pen
   stroke) runs over the paper mask before connected components, so a note
@@ -1528,34 +1409,6 @@ The plans live in `plans/0010-event-storming-photo-review.md`,
 `plans/0011-event-storming-photo-surface-and-shade.md` and
 `plans/0009-event-storming-photo-precision.md`.
 
-## Phase 10 (planned): a higher-quality import through the author's own AI
-
-The default photo import is and stays FREE for everyone: detection in the
-browser, reading by the deployment's reader or the in-browser one, no key,
-no sign-up. Phase 10 adds an OPTION on top, for an author who already runs an
-AI coding agent (Claude Code, pi, anything that speaks MCP) and would rather
-spend their own model on a hard wall — a night shot, a whiteboard of three
-hundred small notes.
-
-- **An MCP tool, `add_photo_notes`.** The agent looks at the photograph with
-  its own vision model and calls the tool with the notes it sees: for each, its
-  KIND, its WORDS, and where it sits (a box as fractions of the photo). The
-  tool reconciles them against the board exactly as the photo import does
-  (`reconcilePhoto`: a note the board already has is "already here", never
-  moved or re-worded) and lands the new ones through the one builder
-  (`buildDraftNotes`) as a DRAFT on an event-storming tab. The author sees the
-  ordinary draft bar in the editor — **Add** or **Discard** — because a draft is
-  derived from the tab's elements; nothing new to learn, nothing lands
-  without the author.
-- **The photograph never goes to livediagram.** The agent holds it; only the
-  notes it read cross the wire, as they would if the author typed them.
-- **Discoverable, never required.** The help centre's photo-import article
-  and the MCP prompt list mention it; the editor does not nag. No tier, no
-  flag: whoever has an agent can use it, whoever does not loses nothing.
-- **A CLI is the same tool without an agent**: `livediagram import-wall
-<photo>` with the author's own key (a flash-class vision model) or a local
-  one, tiled for small notes, writing the same draft through the API.
-
 ## Agents
 
 An agent builds a board through the MCP's graph input with `style: "storm"` ([MCP server](../015-api/mcp-server.md)
@@ -1585,7 +1438,7 @@ An agent builds a board through the MCP's graph input with `style: "storm"` ([MC
   `event-storming`, born settled, the board layer), the same as the template. A `replace` onto an existing board
   lands the notes on its lanes as any arrival does; onto an ordinary tab the notes arrive but the tab stays ordinary.
 
-## Domain learnings (session log)
+## Domain learnings
 
 One-liners captured as they were learned — product truths for this tab
 kind, kept current every session. Each should stay true on its own.
@@ -1627,8 +1480,7 @@ kind, kept current every session. Each should stay true on its own.
   two entry points.
 - Tile ids are forever: palette layouts and search address them by id, so
   promotion between palette homes keeps the historical prefix.
-- Chrome must earn its keep or be removed: the timeline rail (layer,
-  element, view chip) was built, judged, and retired in one session.
+- Chrome must earn its keep or be removed: the board has no timeline rail or stage view chips.
 - On this board the palette IS the notation: its category and tool
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
@@ -1784,24 +1636,6 @@ kind, kept current every session. Each should stay true on its own.
   where "one note per face" actually lives.
 - Healing after a delete had three call sites and two jobs before it had one
   name — that is exactly how the fourth call site forgets one of them.
-
-## Still ahead (phased, see the plan)
-
-Board structure (swimlanes, pivotal events). Vertical insertion, for
-boards that run top to bottom: the geometry is axis-parameterised in
-shape and horizontal in fact.
-
-**A per-board colour legend (`esColourLegend`).** Every wall invents its own
-convention — the operator's uses pink for hotspots and green for read models,
-neither of which is the catalogue's. The photo import currently resolves that
-with one global decision (pink is hotspot) plus the draft's Change Kind verb;
-the honest version is a legend on the board itself, which the detector reads
-instead of the catalogue and which the author sets once per wall. It is also
-what would let a board say "we don't use policies" and have the reader stop
-looking for them.
-
-Each phase lands with its own spec update here — this file stays the source of
-truth for what the type IS at any moment.
 
 ## Counts
 

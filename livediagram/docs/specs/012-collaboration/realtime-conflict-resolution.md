@@ -50,9 +50,9 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
 - The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
   whole-`tab` op for a new tab or a bulk change. A meta field that was
   _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
-  travels by name in the `tab-meta` op's `clear` list. It used to force a
-  whole-`tab` op too, and Clear Timer / Clear Vote then replaced every element
-  on every receiver ([Collaboration race hardening](collab-race-hardening.md)).
+  travels by name in the `tab-meta` op's `clear` list, so a clear (Clear Timer, Clear Vote) never needs a
+  whole-`tab` op that would replace every element on every receiver
+  ([Collaboration race hardening](collab-race-hardening.md)).
 
 ### Same-element edits converge
 
@@ -92,20 +92,13 @@ view-role sender), and whether a client may originate it at all. The wire payloa
 itself stays `unknown`, so this shares the vocabulary without coupling the room
 to the editor's op shapes.
 
-It used to live in the room worker while the editor kept its own list of the
-kinds it sends and handles, in another app, with nothing comparing them — and
-the mutation branch is the FALL-THROUGH, so a presence kind nobody classified
-became a logged, ordered, replayed mutation. That is how `viewport` ([Follow-me viewport](follow-me-viewport.md))
-shipped: published on every pan at 10 Hz, roughly 26 seconds of one person
-scrolling filled all 256 log slots with camera positions and pushed the replay
-floor past every real mutation, so the next peer whose socket blipped was told to
-`resync` and re-hydrate every tab. A view-only visitor also could not be
-followed, since the role gate drops non-presence ops. Two tests now bracket it:
-the room's suite compares the presence and mutation lists directly (a mutation
-kind in the presence set hands read-only visitors a write path), and
-`room-op-vocabulary.test.ts` in the editor checks the third list — every kind the
-editor actually sends or handles — against the schema, which is the direction
-that let `viewport` through.
+One list in the schema, not one per app: the mutation branch is the FALL-THROUGH, so a presence kind nobody
+classified would become a logged, ordered, replayed mutation (a `viewport` published on every pan at 10 Hz would
+fill the op log with camera positions and push the replay floor past every real mutation, and a view-only visitor
+could not be followed, since the role gate drops non-presence ops). Two tests bracket it: the room's suite compares
+the presence and mutation lists directly (a mutation kind in the presence set hands read-only visitors a write
+path), and `room-op-vocabulary.test.ts` in the editor checks every kind the editor actually sends or handles
+against the schema.
 
 - The DO keeps a bounded in-memory op log. On reconnect a client sends
   `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
@@ -123,16 +116,14 @@ that let `viewport` through.
   outage longer than the attempts (a laptop asleep, wifi gone a while) does not
   end live collaboration for the rest of the session.
 - **The cursor must include the client's own ops.** The relay skips the
-  sender, so a client used to learn seqs only from other people's ops: a
-  reconnect asked for its own ops back, and a session that had heard nothing
-  asked for the whole log. Re-applying ops is harmless for element ops (by id),
-  but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so every replayed dot counted twice. The
-  room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
+  sender, so from other people's ops alone a reconnect would ask for its own ops back. Re-applying ops is harmless
+  for element ops (by id), but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so a
+  replayed dot would count twice. The room sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
   a different epoch, which the `sync` / `catchup` exchange reconciles). An op
   frame may carry a `ref` (a positive integer the client picks); the room echoes
   it on that op's `cursor` frame, which is how a save knows the room has
-  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md) phase 6).
+  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md#the-room-has-a-saves-deltas-before-the-save-is-written)).
 - **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
   map as of their autosave, without dots still in flight, so the receiver keeps
   its own map unless the round itself changed (`mergeRemoteTab`).
@@ -142,17 +133,14 @@ that let `viewport` through.
   through the same pure `applyRoomOpToTabs` the receiver uses, and a save
   that lands re-folds any op that arrived while it was in flight. The save
   diff compares tab content when identity differs, so a remote-only change
-  is not mistaken for a local one. This replaced a `remoteUpdateRef` flag
-  that skipped the autosave's next run: a peer's op arriving within the
-  600 ms debounce cancelled the local save outright, and the stale baseline
-  made the next save re-broadcast peers' elements in their older form.
+  is not mistaken for a local one, and no remote op cancels a pending local save.
 
 **The stored tabs stay the system of record.** Tab content is persisted by clients (each
 editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
 cache, not a second writer. Two later additions put the room on the
 persistence path without making it hold the document: the tab PUT merges the
 room's collaboration ledger in before writing
-([Collaboration race hardening](collab-race-hardening.md) phase 3), and Q&A board writes are performed
+([Collaboration race hardening](collab-race-hardening.md#the-store-does-not-overwrite-multi-writer-fields)), and Q&A board writes are performed
 by the room itself, one at a time ([Q&A board](qa-board.md)).
 
 ### A malformed op
@@ -163,7 +151,7 @@ tab with its elements, an `el` an element op (an add or update an element with a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
 element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, an `article` a flow, a `document-meta`
 a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
-and logged (`[room] malformed op dropped`), so it can no longer stop every editor in the room, or each one that
+and logged (`[room] malformed op dropped`), so it cannot stop every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
 this build does not apply passes, to be ignored as before.
 
@@ -206,30 +194,26 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    ([Agent changesets](../024-agents/agent-changesets.md#held-elements)), so
    people outrank agents.
 
-## Considered and dropped: a full field-level CRDT
+## Not a field-level CRDT
 
-A third mechanism was built out and then removed: a Yjs CRDT so two people
-editing _different fields of the same element_ at the same instant (one moves a
-box while another recolours it) would both survive, merged field-by-field.
-
-It was dropped because the cost outweighed the benefit:
+There is no CRDT (Yjs or the like) merging two people's edits to _different fields of the same element_ at the
+same instant (one moves a box while another recolours it) field by field. The cost outweighs the benefit:
 
 - **The benefit is narrow.** The selection lock (decision 3) makes two people
   grabbing the same element at once rare, though it does not prevent it, and the
   fields many people write at once already merge as deltas. So the case the CRDT
   uniquely rescues is uncommon. And it can't help when two people change the
   _same_ field — someone's value still has to win.
-- **The cost is paid by everyone, always.** It pulled in a third-party CRDT
-  library (~60 KB gzipped) that shipped in the editor bundle regardless of use,
-  added a permanent second sync path to maintain alongside the element-op path,
-  and made the room hold a live copy of the whole document in memory: a second
+- **The cost is paid by everyone, always.** It would pull a third-party CRDT
+  library (~60 KB gzipped) into the editor bundle regardless of use,
+  add a permanent second sync path to maintain alongside the element-op path,
+  and make the room hold a live copy of the whole document in memory: a second
   copy beside the stored tabs, which the room otherwise never holds.
-- **It was unverified.** It was never exercised with two live clients, so
-  keeping it meant carrying risk that a future change flips it on and corrupts
-  documents.
+- **Dormant code is a risk.** A merge path not exercised with two live clients is one a future change could flip
+  on and corrupt documents with.
 
-If same-element field-level merge ever becomes a real need, revisit it then —
-verified end-to-end and turned on properly, not carried as dormant code.
+If same-element field-level merge becomes a real need, it is built verified end-to-end and turned on, not carried
+dormant.
 
 ## Implementation map
 

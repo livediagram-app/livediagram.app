@@ -86,10 +86,9 @@ own named policy. The boot script contains no `</script` anywhere (a test holds 
 
 ### Third-party origins
 
-None. Every layout calls `trustedTypesBootScript(prefix)` with no origins. Google's two (`accounts.google.com`,
-`apis.google.com`) were let through for livediagram's own Google Drive mirror, which is gone. Sign-in used to
-load Clerk's script (from the origin in its publishable key) and Cloudflare Turnstile for its sign-up CAPTCHA; it now
-happens on the accounts site (liveworkspace.app), a full-page redirect, so no sign-in script runs on our pages.
+None. Every layout calls `trustedTypesBootScript(prefix)` with no origins: Google Drive sync is liveworkspace's, and
+sign-in happens on the accounts site (liveworkspace.app), a full-page redirect, so no Google, sign-in or CAPTCHA
+script runs on our pages.
 
 ## Interfaces and contracts
 

@@ -266,22 +266,14 @@ the hosted profile, which the deploy sends with `--var` on every run and then re
 off the editor worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
 
-**This prediction came true, and it cost a security control.** `AI_ALLOWED_ORIGINS` was
-documented as production-set but was measurably unset when probed — `POST /api/ai` with no
-`Origin` answered `400 invalid mode` rather than `403 origin_not_allowed` — so the endpoint,
-which fronts a live OpenAI key, accepted requests from any origin. Whether it was never set
-or set once and wiped by a deploy is now unknowable, which is the point: a dashboard var
-leaves no trace either way, and no amount of reading the repo would have revealed it.
-`AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The image gallery
-caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
-hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
-and the deploy's verify step is the probe that fails when one is not live. (The caps have since moved to liveworkspace's media service, which keeps them for every app; the hosted profile now carries the media service's URL instead.)
-`AI_REQUIRE_SIGN_IN` is deliberately unset in **both** environments (the editor offers AI to
-guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
-September 2026, which made staging refuse AI to guests that production serves: exactly the
-drift this environment exists to catch, so it was removed.
+So `AI_ALLOWED_ORIGINS` (which guards the note reader, `POST /api/ai/read-notes`) is declared in production's
+`[vars]` and staging's, and the deploy's verify step is the probe that fails when a hosted-profile value is not live.
+The image caps are liveworkspace's media service's, which keeps them for every app; the hosted profile carries the
+media service's URL. `AI_REQUIRE_SIGN_IN` is deliberately unset in **both** environments (the note reader serves
+guests; see the comment above production's `AI_ALLOWED_ORIGINS`), since a difference there is exactly the drift this
+environment exists to catch.
 
-The general lesson, worth more than the specific fix: **an optional guard that fails open is
+The rule: **an optional guard that fails open is
 untestable from the source tree.** Every file can read as though a protection is active while
 production runs without it. Where a guard is config-gated, the audit step is a probe against
 the deployment, not a code review, and for the hosted profile that probe runs on every deploy.

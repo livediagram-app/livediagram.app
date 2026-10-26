@@ -55,7 +55,7 @@ Drop an entry once an upstream release makes it redundant.
 
 ### Merging to `main` deploys
 
-A merge to `main` that passes CI **deploys automatically to staging** —
+A merge to `main` that passes CI **deploys automatically to staging**:
 [staging.livediagram.app](https://staging.livediagram.app), a complete copy of the
 platform with its own Durable Objects and index ([Staging environment](../specs/016-platform/staging-environment.md)).
 Nobody presses anything. Within a few minutes your change is running somewhere public.
@@ -99,7 +99,7 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium, the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3102` / `:8687`):
 
@@ -129,7 +129,7 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 
 The optical audit also opens the help centre, the Community and the marketing site: build them (`pnpm --filter @livediagram/help --filter @livediagram/community --filter @livediagram/marketing build`), or point `E2E_HELP_URL`, `E2E_COMMUNITY_URL` and `E2E_MARKETING_URL` at their dev servers.
 
-Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
+Keep the suite tiny: add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 
 ## PRs
 

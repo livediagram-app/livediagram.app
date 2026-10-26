@@ -1,5 +1,4 @@
-// Default folders (docs/specs/013-workspace/default-folders.md, blueprint
-// docs/specs/013-workspace/blueprints/default-folders.md): where a person's new documents land when
+// Default folders (docs/specs/013-workspace/default-folders.md): where a person's new documents land when
 // no place is chosen, keyed by what the document is made as. liveworkspace's index resolves and stores them; the
 // editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
 //

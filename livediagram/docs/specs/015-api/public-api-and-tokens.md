@@ -50,7 +50,7 @@ collaborator to the owner's id:
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
-- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /documents/<id>/log` returned each entry's
+- **Change-log / Activity** (moot: there is no change-log endpoint): a `GET /documents/<id>/log` would return each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
@@ -169,7 +169,7 @@ source changes.
 ### 3.4 Access — full read + write, with an optional read-only flag
 
 > **Specified, not built:** the read-only flag becomes a token level (view, participate or edit), one vocabulary with
-> share links ([Share roles](../013-workspace/share-roles.md#api-tokens)). Read-only tokens become view tokens; the
+> share links ([Share roles](../013-workspace/share-roles.md#later)). Read-only tokens become view tokens; the
 > rest become edit tokens.
 
 A token grants its owner's **full** access — read AND write, the same surface
@@ -230,8 +230,7 @@ Tokens are created, viewed and revoked in the **Settings dialog**
 sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
 "Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
-Explorer page for them: the former `/explorer/tokens` route and its sidebar
-entry are gone, with no redirect (few people had used it).
+Explorer page for them and no `/explorer/tokens` route.
 
 The category holds one row, the **token manager** (`kind: 'tokens'`), laid
 out top to bottom:
@@ -295,7 +294,7 @@ same way the rest of the signed-in surface is. A token can only ever be minted
 by, and act as, a signed-in account. Creation returns the secret **once**
 (shown in the manager to copy, never retrievable again); the row then shows only
 the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage-d1))
+`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage))
 so rotation isn't a surprise.
 
 **Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
@@ -445,7 +444,7 @@ hardening landed first:
    even though §4 already makes a leaked id worthless, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the document `ownerId` already
+     harvest; moot, as there is no change log), the same way comment authors and the document `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,

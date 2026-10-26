@@ -30,9 +30,8 @@ table of its own for them.
   (`splitSettings`), in `apps/api/src/liveworkspace/settings.ts`. A shared
   key changed here changes in every app, and Settings marks those rows
   with a quiet "All apps" note.
-  The editor settings that became shared in October 2026 were this app's own
-  before, so a value may still sit in this app's scope: `joinSettings` uses it
-  until `all` has one, and the first change writes `all` and drops the old copy.
+  A shared setting may also have a value in this app's own scope: `joinSettings` uses it
+  until `all` has one, and the first change writes `all` and drops the app's copy.
 - **Owners.** An account's settings are kept under its account id. A
   guest's are kept under `guest_<their guest id>`, so a guest who
   clears localStorage but keeps the same guest id still recovers them.
@@ -269,9 +268,8 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
-  // was until October 2026). True once a run has ended (completed or skipped; until 25 October 2026
-  // also declined, when it hid the offer). It no longer hides the footer's Start Tour button: it only
+  // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md). True once a run has ended
+  // (completed or skipped). It does not hide the footer's Start Tour button: it only
   // feeds Settings' Tours › "Diagram Tour" row (inverted); turning it on and closing
   // Settings reruns the tour when it is on offer. Missing / undefined === not seen.
   tourSeen?: boolean;
@@ -284,8 +282,8 @@ type UserPreferences = {
   // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started
-  // (until 25 October 2026: whose offer was answered, Play or Cancel). Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
+  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
+  // Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
@@ -375,7 +373,7 @@ Missing key === undefined === default behaviour. Concretely:
 - `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
   Shape Pen recognises, Freehand does not, and no stored flag
   changes either.
-- `panelLayout` and `minimalPanels`, which older blobs still carry, are
+- `panelLayout` and `minimalPanels`, if a stored blob carries them, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
@@ -422,24 +420,16 @@ Missing key === undefined === default behaviour. Concretely:
   feature working (see the data model). Emits `UI`/`Toggled`/
   `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
-- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
-  hover preview went with the Activity panel (removed 2026-10-03). A value
-  still stored under either is ignored on read and dropped on the next
-  write; Undo and Redo always show in the bottom-right cluster.
-  `illustrateModeEnabled` (and its older name `infographicModeEnabled`) and
-  `planModeEnabled` went with the Settings › Experimental category (removed
-  2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
-  every mode is always offered, and a stored `false` is dropped the same way.
-  Pages mode's own preferences (`pagesTourSeen`, `pagesTourKinds`, `contentsPlacement` and the logo guide
-  switches) went with Pages mode
-  ([Editor modes](editor-modes.md#pages-moved-to-livedocuments)): a value still stored under one is ignored.
-  `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
-  Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
-  never asks where a document goes, so a stored place is dropped the same way and new documents follow the
-  [default folders](../013-workspace/default-folders.md).
-  `aiAssistanceEnabled` and `aiSuggestedPrompts` went with the in-editor AI assistant (removed 2026-10-23;
-  connected AI tools work through the [MCP server](../015-api/mcp-server.md)): a value still stored under
-  either is ignored.
+- **Retired keys.** `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) drops these on
+  read, so the next write stores the blob without them: `activityPanelEnabled` and `activityRevertHoverPreview` (there
+  is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
+  `infographicModeEnabled` and `planModeEnabled` (every mode is always offered,
+  [Editor modes](editor-modes.md#every-mode-always-offered)), `skipLocationStep` (the New Document wizard never asks
+  where a document goes, [New document route](new-document-route.md#one-step-wizard)), and `aiAssistanceEnabled` and
+  `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
+  [MCP server](../015-api/mcp-server.md)). Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
+  `contentsPlacement`, the logo guide switches) are read by nothing here
+  ([Editor modes](editor-modes.md#stored-tabs-from-other-products-modes)).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -494,10 +484,9 @@ that is the only control.
   It is the answer to "I half-remember a setting about layer previews" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
-- **One setting, one control.** The Palette / Layers / Activity / AI / Map
-  gear popovers that used to carry a subset each are gone: once every
-  preference had a row in the dialog, those were five second homes for
-  settings that already had one. A handful of preferences DO keep a second,
+- **One setting, one control.** Panels have no gear popovers of settings: every
+  preference has a row in the dialog, and a popover would be a second home for
+  a setting that already has one. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
@@ -628,9 +617,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
   email stand-in card, the API Tokens manager), the message ends with a
-  **Sign In** link to `/sign-in/` that returns to the current page. Preferences whose
-  day-to-day home used to be a panel's own gear popover live here now, and
-  only here - see **UI placement** below.
+  **Sign In** link to `/sign-in/` that returns to the current page. Preferences a panel
+  would otherwise carry in a gear popover live here, and only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds one per editor mode whose settings apply only to
@@ -696,9 +684,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Grouped rows.** Each section of a category is **one card** (`SettingsGroup`),
   iOS grouped-list style: its rows are cells inside it, split by hairlines,
   rather than a card per row. A cell holds the **label** with a **short
-  description** under it (one or two lines; the long paragraphs that used to
-  sit as a footnote under each row's own card made the dialog impossible to
-  skim) and the **control** beside them; a **Learn more** link and an
+  description** under it (one or two lines, so the dialog stays skimmable) and the **control** beside them; a **Learn more** link and an
   **"Also in ..."** line close the description. Labels are **Title Case**.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
@@ -766,11 +752,10 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Diagram Tour** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
+  **Diagram Tour** (the [Diagram tour](editor-tour.md)) is inverted
   against the stored `tourSeen`. Turning it on from off and closing the dialog relaunches the tour in place
   on a Diagram tab where it is on offer (`livediagram:tour-relaunch`); on a tab in another mode it does
-  nothing, and the button offers it on a Diagram tab. (Until 25 October 2026 closing with the switch on also
-  marked the per-tab pending flag the offer needed; the flag is gone.) **Workshop Tour** is inverted against
+  nothing, and the button offers it on a Diagram tab. **Workshop Tour** is inverted against
   `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)) and **Avatar Tour** against `avatarTourSeen`
   ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
@@ -787,8 +772,7 @@ and the dialog stays as the one complete, browsable index of them.
   one `toggleGroup` row: the label and description over a row of **chips**, one
   per switch, ticked and tinted while on, each its own preference with its own
   telemetry. Chips rather than a grid of switches, so short names fit without
-  truncating. None is in use today: the one there was, Pages mode's logo guides,
-  went with Pages mode.
+  truncating. None is in use.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
@@ -815,7 +799,7 @@ and the dialog stays as the one complete, browsable index of them.
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
   keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
-  standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
+  standard kinds through the package's `bindRow` (`../packages/settings-ui/src/bind.ts`), which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders, Cloud Sync).
   liveworkspace.app renders the same view over this app's derived catalogue
@@ -843,7 +827,7 @@ and the dialog stays as the one complete, browsable index of them.
   editor's own row for the key when it has one (so the change is counted and synced as here), and
   its Profile's Name and Colour is edited in place, never a link away: the shared editor
   (`ProfileEditor` in `@liveworkspace/settings-ui`), which reads and patches the profile over the
-  same door (`/api/workspace/account/profile`, `bearerProfileHost`). A saved name or colour is the
+  same door (`/api/workspace/account/profile`, `requestProfileHost`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
   a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
@@ -876,19 +860,15 @@ and the dialog stays as the one complete, browsable index of them.
   button to the browser. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
-  a full keyboard and off on a tablet; it used to sit in Controls, and
-  before that at the foot of the Shortcuts dialog. Below it, the shortcut
-  catalogue renders as collapsible groups, the same content the old dialog
-  listed. The
+  a full keyboard and off on a tablet. Below it, the shortcut
+  catalogue renders as collapsible groups. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
 
-- **Per-tool surfaces**: none today. The pencil's ModeBanner used to
-  carry a `recogniseShapes` toggle; [Two pens instead of a pen and a mode](../008-canvas/two-pens.md) replaced it with two
-  palette tiles, so no preference is set from a tool's own chrome any
-  more. The Highlighter's Colour and Width ([Highlighter](../008-canvas/highlighter.md)) are set from
+- **Per-tool surfaces**: none. Shape recognition is a choice of pen, not a toggle
+  ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), so no preference is set from a tool's own chrome. The Highlighter's Colour and Width ([Highlighter](../008-canvas/highlighter.md)) are set from
   the Quick style panel while its tile is armed, and are session-local editor state setting the next
   stroke rather than a persisted preference.
 

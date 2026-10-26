@@ -24,10 +24,6 @@ it ties two cards to one poster.
 That matters because every other route to a name is one refactor away from
 being reintroduced. The two that had to be closed deliberately:
 
-- **The change log** (since removed with the Activity panel, 2026-10-03, which
-  closes this leak for good). Adding a card committed the element WITHOUT a log
-  entry: an entry saying "Priya edited Idea Box" beside six anonymous cards is a
-  five-second deanonymisation.
 - **The selection lock.** Adding a card does not select the element, so the
   [Editor app](../007-editor/editor-app.md) concurrent-selection highlight doesn't put a coloured ring and a name
   on the box at the moment somebody types into it.

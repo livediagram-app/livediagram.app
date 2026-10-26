@@ -29,7 +29,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The tab pill's mode icon    | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                                   |
 | Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Workshop's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                              |
 | A template's opening mode   | `templateOpensIn(overrides)`, `apps/editor/app/document/[id]/useTemplateFlow.ts`                                                                                                                              |
-| The tool a mode starts with | `modeDefaultTool(mode, mobile)`, `useModeDefaultTool`, `PLAN_LEFT_OUT_TOOLS`, `apps/editor/hooks/editor/useModeDefaultTool.ts`                                                                                |
+| The tool a mode starts with | `modeDefaultTool(mobile)`, `useModeDefaultTool`, `apps/editor/hooks/editor/useModeDefaultTool.ts`                                                                                                             |
 | A new tab's seed            | `newTabSeed(source)`, `newTabOpening(creatorMode, mode?)`, `apps/editor/lib/new-tab-seed.ts`                                                                                                                  |
 | A text box's sizing         | `TextElement.sizing?: TextSizing` (`'fit' \| 'wrap'`), absent = a fixed box                                                                                                                                   |
 | Ink by name                 | `INK_PEN_COLOUR` (`'ink'`), a `PenColourName`, drawn in `PEN_INK`                                                                                                                                             |
@@ -41,20 +41,20 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 
 ## Constants and configuration
 
-| Constant                   | Value                                                                         | Where / provenance                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Workshop                                                       | `editor-mode.ts`; spec "The mode switch"                                           |
-| `LEGACY_EDITOR_MODES`      | `{ pages, illustrate, infographic, plan: 'diagram', facilitate: 'workshop' }` | `editor-mode.ts`; spec "Pages moved to livedocuments", "Plan moved to liveplanner" |
-| `DEFAULT_EDITOR_MODE`      | `'diagram'`                                                                   | Spec: `opensIn` absent = Diagram                                                   |
-| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`                                          | Per-person era; never read or written now                                          |
-| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark                                               | `pen-colours.ts`; spec "Ink is one colour"                                         |
-| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                                                     | Written on a migrated board with no pattern                                        |
-| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond                                             | The shapes a migrated board inks                                                   |
-| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`                                                     | `editor-mode-copy.ts`; spec "The mode switch"                                      |
-| `MODE_TINT`                | sky, orange, violet, pink, emerald                                            | `mode-menu-copy.ts`; spec "The mode switch"                                        |
-| `MODE_TOOLS`               | 4-5 tool names per mode                                                       | `mode-menu-copy.ts`; the preview's chips                                           |
-| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)                                         | `ModeMenu`; shown from 640 px (`sm`)                                               |
-| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                                                                | The stored kind read as a Draw-opening tab                                         |
+| Constant                   | Value                                                                         | Where / provenance                                              |
+| -------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Workshop                                                       | `editor-mode.ts`; spec "The mode switch"                        |
+| `LEGACY_EDITOR_MODES`      | `{ pages, illustrate, infographic, plan: 'diagram', facilitate: 'workshop' }` | `editor-mode.ts`; spec "Stored tabs from other products' modes" |
+| `DEFAULT_EDITOR_MODE`      | `'diagram'`                                                                   | Spec: `opensIn` absent = Diagram                                |
+| Retired mode store key     | `livediagram:v2:editor-mode:<tabId>`                                          | Per-person era; never read or written now                       |
+| `PEN_INK`                  | `#1c1917` light, `#e2e8f0` dark                                               | `pen-colours.ts`; spec "Ink is one colour"                      |
+| `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                                                     | Written on a migrated board with no pattern                     |
+| `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond                                             | The shapes a migrated board inks                                |
+| Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`                                                     | `editor-mode-copy.ts`; spec "The mode switch"                   |
+| `MODE_TINT`                | sky, orange, violet, pink, emerald                                            | `mode-menu-copy.ts`; spec "The mode switch"                     |
+| `MODE_TOOLS`               | 4-5 tool names per mode                                                       | `mode-menu-copy.ts`; the preview's chips                        |
+| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)                                         | `ModeMenu`; shown from 640 px (`sm`)                            |
+| `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                                                                | The stored kind read as a Draw-opening tab                      |
 
 A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
 (`Record<EditorMode, …>`, so the typecheck names the missing icon).
@@ -222,7 +222,7 @@ export function editorModeShortcut(
     description and `MODE_TOOLS` chips; no button (choosing is the row's alone).
 - Placement: only on a start panel's rail (`StartFromTemplates`), never in `ToolbarExplorerButton`,
   the `TabPortalMenu`, the `TabBar` or the `Explorer`.
-- `TabModeIcon({ tab, style? })`: the tab's mode's `EDITOR_MODE_ICON`, 12 px, `aria-hidden`;
+- `TabModeIcon({ tab, style? })`: the tab's mode's `EDITOR_MODE_ICONS` entry, 12 px, `aria-hidden`;
   `TabPill` passes `style={{ color: legibleTabAccent(tab, isDark) }}`.
 - `templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined`.
 - Wire: `Tab.opensIn` and `TextElement.sizing` are in the OpenAPI schema
@@ -304,7 +304,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   The same for everyone: power user mode does not change it.
 - The tab pill leads with `TabModeIcon` (in place of the accent dot), tinted with the tab's
   accent.
-- No switch beside the menu button and no Mode section in the tab menu (both retired 2026-10-18).
+- No switch beside the menu button and no Mode section in the tab menu.
 - No other cue marks the mode (spec "No further cue").
 
 ## Accessibility
@@ -323,7 +323,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 ## Web Experience
 
 - CLS: the switch fills its row on the start's rail, so nothing beside it moves on a switch, and the menu card at
-  the top left no longer holds it, so it never changes width with the tab.
+  the top left does not hold it, so it never changes width with the tab.
 - INP: a switch is one commit; no fetch, no remount of the canvas.
 - LCP: unaffected; the mode resolves synchronously on first render from the tab.
 

@@ -6,16 +6,16 @@ spec decides; this file adds engineering precision. Defaults are ledgered in [DE
 
 Scope, by file:
 
-| File                                                | Role                                                                     |
-| --------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
-| `packages/document/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
-| `packages/document/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
-| `apps/editor/lib/themes.ts`, `themes-taxonomy.ts`     | Drop the legacy lookup and Charcoal's taxonomy rows                      |
-| `apps/api/src/tab-row.ts`                           | `rowToTab` runs `migrateStoredTab`                                       |
-| `apps/api/src/thumbnail.ts`                         | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
-| `apps/editor/lib/offline/offline-store.ts`            | `offlineLoadTab` runs `migrateStoredTab`                                 |
-| `apps/editor/lib/import-merge.ts`                     | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
+| File                                                | Role                                                                        |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| `packages/document/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`           |
+| `packages/document/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call    |
+| `packages/document/src/themes-data.ts`, `themes.ts` | No legacy theme table; no `'charcoal'` `ThemeId`                            |
+| `apps/editor/lib/themes.ts`, `themes-taxonomy.ts`   | No legacy lookup; no Charcoal taxonomy rows                                 |
+| `apps/api/src/tab-row.ts`                           | `rowToTab` runs `migrateStoredTab`                                          |
+| `apps/api/src/thumbnail.ts`                         | `drawDocument` and `renderTabSvg` run `migrateStoredTab` on the parsed body |
+| `apps/editor/lib/offline/offline-store.ts`          | `offlineLoadTab` runs `migrateStoredTab`                                    |
+| `apps/editor/lib/import-merge.ts`                   | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first        |
 
 ## Domain and naming
 
@@ -136,8 +136,8 @@ a tab with nothing to migrate.
 | Charcoal no longer resolves or is offered              | `packages/document/src/default-scheme.test.ts`                     |
 | api read path                                          | `apps/api/src/tab-row.test.ts`                                     |
 | Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                   |
-| Offline read path                                      | `apps/editor/lib/offline/offline-store.test.ts`                      |
-| Import path                                            | `apps/editor/lib/import-merge.test.ts`                               |
+| Offline read path                                      | `apps/editor/lib/offline/offline-store.test.ts`                    |
+| Import path                                            | `apps/editor/lib/import-merge.test.ts`                             |
 
 ## Constants and configuration
 

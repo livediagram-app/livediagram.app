@@ -367,7 +367,7 @@ are images, losses, failures or new documents.
 `POST /api/documents` and by the editor): `DOCUMENT_DATE_MIN` = 1 January 2000 UTC,
 `DOCUMENT_DATE_SKEW_MS` = one day; rules per [the api spec](../../015-api/api.md#document-dates).
 The worker refuses invalid dates with 400 "invalid document dates" before any write; a genuine
-create stores them (`upsertDocumentMeta`, and `seedTabs(env, id, tabs, savedAt)` keeps
+create stores them (`initDocument`, and `seedTabs(env, id, tabs, savedAt)` keeps
 `saved_at`); a re-commit is modified now. The OpenAPI manifest's request schema lists `createdAt`
 and `savedAt` (integers). `apiCreateDocument` sends `savedAt` when given.
 

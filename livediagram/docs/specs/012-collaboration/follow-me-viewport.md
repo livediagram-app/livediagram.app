@@ -58,7 +58,7 @@ recognise itself in a peer's message.
 - **Start** from the Collaborators modal ([Collaborator enhancements](collaborator-enhancements.md)):
   click any avatar in a tab's presence stack, then **Follow** on that person's
   row. The stack is where you go to find out who is here; the modal is where
-  you act on it. (Clicking the avatar used to start following directly.)
+  you act on it. Clicking an avatar never starts following directly.
 - **You land on their view at once.** Viewports go out on change only, so the person followed publishes theirs
   again whenever the set of people following them changes (`useShowFollowersMyView`): one frame per follow. Without
   it, a follower who joined after the presenter's last pan read "Following Alex" over a view of their own until

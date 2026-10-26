@@ -5,8 +5,7 @@ how to change it. It is started from the footer's Start Tour button while an ele
 walks through the real element the person selected, not a sample.
 
 It sits beside the mode tours (the [Diagram tour](editor-tour.md) and its siblings) and [Show Me](show-me.md) (started
-from a button on one surface). Like the mode tours it never offers itself: until 25 October 2026 a small toolbar
-beside the selection offered it the first time a person selected an element of that kind; now the one way in is the
+from a button on one surface). Like the mode tours it never offers itself: the one way in is the
 Start Tour button ([Diagram tour](editor-tour.md) "Where it appears").
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
@@ -61,7 +60,7 @@ Settings' **Tours** category holds element tours in their own section, **Show Me
 how many are on (`1 of 1 On`). Opened, it shows the section's line, then **Show Me on Every Element**, one switch
 over them all (on while any is not yet taken; off marks every kind taken, on forgets every run), with one switch per
 toured kind nested beneath it, named for the element alone: **Sankey Diagram**, linking the Sankey Diagram article.
-On means "not yet taken": switching one on forgets its run. It no longer decides whether the tour is offered, since
+On means "not yet taken": switching one on forgets its run. It does not decide whether the tour is offered, since
 the Start Tour button offers it whenever such an element is selected. The accordion opens on its own when Settings is
 opened on one of its rows (a search result) or on the section. Power user mode's readout lists the switch over them
 all as **Show Me on Every Element**.
@@ -470,7 +469,7 @@ Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour
 - **Settings row**: `UI` · `Toggled` · `<Kind>TourSeenOn` | `<Kind>TourSeenOff`; the switch over them all
   `ElementToursSeenOn` | `ElementToursSeenOff`.
 
-The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined until 25 October 2026, started and started
+The dashboard charts them as one **Element Tours** stack on the Visitors tab (offered, declined (older rows), started and started
 per element, steps, completed, skipped), as Show Me's is one stack.
 
 ## Adding an element tour

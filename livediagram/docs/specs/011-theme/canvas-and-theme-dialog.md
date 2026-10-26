@@ -83,10 +83,8 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
   and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
   rather than the colourful looks clumping on one page. `apps/editor/lib/tab-looks.test.ts` locks both rules.
-- **Retired looks.** Carnival (Rainbow, Flexible, Poppins, Confetti at 50%) was replaced by Spectrum: its confetti
-  backdrop fought the diagram, and the party feel was already covered by Doodle. Because a look is not stored, a tab
-  that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
-  migrates.
+- **Retired looks.** A look is not stored, so a tab whose four settings match no current look (a retired one,
+  Carnival say) keeps them and reads as its own mix (no card selected); nothing migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
   Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
@@ -300,8 +298,8 @@ TabStyleTourCompleted` / `TabStyleTourSkipped`.
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
 `track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')` (a Mashup press, `track('Tab', 'Changed', 'Mashup')`);
-the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (the Apply to All actions, and their
-`FinishToAll` and `ResetElements` events, are gone)
+the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (there are no Apply to All actions, and no
+`FinishToAll` or `ResetElements` events)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## Reuse notes

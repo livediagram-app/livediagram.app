@@ -118,10 +118,8 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
-  `dismissQuickTour` returns at once: no tour offers itself since 25 October 2026 (tours start
-  from the footer's Start Tour button), so there is nothing to dismiss. Until then it waited
-  only when /new's tour handoff flag was in sessionStorage, rather than sitting out a 5-second
-  timeout after every reload or by-URL visit, which cost the suite minutes. `seedTab` returns once the seeded elements have
+  `dismissQuickTour` returns at once: no tour offers itself (tours start
+  from the footer's Start Tour button), so there is nothing to dismiss. `seedTab` returns once the seeded elements have
   finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
 - **No model downloads.** The photo-import tests stub the handwriting reader
   and serve the boundary model's weights from the app itself; nothing pulls
@@ -237,8 +235,8 @@ A spec does what a person does on liveworkspace.app through the stand-in's test-
 wrapped by `e2e/accounts-stub.ts`: `POST /e2e/accounts/__seed/team` (a team and its admin),
 `…/__seed/member` (someone joining) and `…/__seed/token` (an API token; its `secret` is the `lwt_…` a
 CLI or agent sends). A spec makes the team before minting the token its requests send, so that token
-names the team. Making a team, inviting and making tokens in livediagram's own UI are gone (they
-link to liveworkspace.app), so no spec covers them here.
+names the team. Making a team, inviting and making tokens are liveworkspace.app's (livediagram links to them), so no spec covers
+them here.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.

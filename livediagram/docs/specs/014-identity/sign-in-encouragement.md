@@ -54,10 +54,8 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 
-Until 25 October 2026 it also stepped aside while a tour's offer or last card was up, since those were banners in
-the same place at the bottom (`data-tour-card-open` on the body). Tours now start from the footer's Start Tour
-button and every card is drawn in the tour's popover ([Diagram tour](../007-editor/editor-tour.md) "Where it
-appears"), so there is nothing to step aside for.
+A tour needs no such rule: tours start from the footer's Start Tour button and every card is drawn in the tour's
+popover ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), never in the banner's band.
 
 The delay is per editor session (per page load); it isn't persisted
 across reloads. Opening document after document in quick succession
@@ -136,8 +134,7 @@ host passes `surface` to `SignInBanner`; the type carries it as a suffix:
 - `UI` / `Closed` / `SignInBannerExplorer` | `SignInBannerEditor`: the banner
   was dismissed.
 
-Before September 2026 these were sent without the surface (`SignInReasons`,
-`SignInBanner`); those rows age out with the 60-day retention. The Assign
+Older rows sent without the surface (`SignInReasons`, `SignInBanner`) age out with the 60-day retention. The Assign
 Action dialog's guest nudge is its own event, `UI` / `Opened` /
 `ActionSignInNudge` ([Assigned actions](../012-collaboration/assigned-actions.md)). The dashboard's Sign-In Prompts stack charts
 each of these by surface ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).

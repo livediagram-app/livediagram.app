@@ -251,7 +251,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
 
 ### Quick style panel on a whiteboard
 
-- `EditorView` no longer hides `QuickStylePanel` on a whiteboard.
+- `EditorView` shows `QuickStylePanel` on a whiteboard.
 - `useQuickStyle` on a whiteboard maps its view through `onWhiteboard(view, selected, ink)`
   (`apps/editor/lib/quick-style-whiteboard.ts`): slot 0 of stroke and text shows the board ink, slot 0
   of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and

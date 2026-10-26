@@ -199,16 +199,12 @@ stays the thresholds above, and a failed upload leaves the job green.
 
 The pull request's coverage report is the monorepo's own, written into the description from CI's
 lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
-coverage, and a row per product the run reached against `main`. It replaces the
-`coverage-report.yml` and `scripts/coverage-report.mjs` this product carried in its own repository,
-which no longer run.
+coverage, and a row per product the run reached against `main`.
 
 ## Before a push
 
 The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
 changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
-It replaces the hook this product carried in its own repository, whose `.githooks/` and
-`scripts/git-hooks/` are no longer installed.
 
 The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
 inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.

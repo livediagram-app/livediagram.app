@@ -80,9 +80,9 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Your First Diagram, Sharing Your Canvas, Keyboard
-   Shortcuts, Templates, Exporting Diagrams, Editor Modes). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
-   and a test checks every entry names a real article.
+   link straight to the articles most readers come for (Your first diagram, Sharing, Keyboard shortcuts, Templates,
+   Exporting, Editor modes). The list is `HOME.popular` in `apps/help/lib/home-sections.ts`, and the shared suite
+   (`help-site.test.ts`) checks every entry names a real article.
 2. **Start here.** A full-width card: livediagram's own Getting Started scene (drawing a first diagram: pick a starting point, add shapes and arrows, share the link) beside
    the first four Getting Started guides as numbered steps and a link to the rest, then About livediagram and
    Tips and Tricks as two wide cards.
@@ -92,7 +92,8 @@ Top to bottom:
 6. **Still stuck?** A dark closing band: the contact form and GitHub issues as buttons, beside the
    Troubleshooting card.
 
-The sections and their categories are `HOME_SECTIONS` in `lib/home-sections.ts`. Every category in the registry
+The layout is `HOME` in `apps/help/lib/home-sections.ts` (`sections`, `startHere`, `stillStuck`, `popular`), drawn by
+the shared help site (`@liveworkspace/help-site`). Every category in the registry
 appears in exactly one section (Contact as the closing band's second half), so a new category cannot be left off
 the home page without a test failing.
 

@@ -36,9 +36,7 @@ draws them.
   Service Blueprint, which matches through its search words, comes earlier in the rail. With no name beginning so,
   there is no Best Match and the groups lead as before.
 - **There is no way out to a bigger picker.** Each start holds every listed template of its mode, the mode switch
-  reaches the others, and a search finds a template in any mode; the start is the whole catalogue. (Its
-  **Something Else** row and **Browse More Templates** button opened the Quick Start, a modal of every template, which
-  was removed: [New document route](new-document-route.md).)
+  reaches the others, and a search finds a template in any mode; the start is the whole catalogue. There is no modal of every template ([New document route](new-document-route.md)).
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
   in the search box moves to the first card it found. Among the cards the arrow keys move between them: Left and Right
@@ -155,8 +153,7 @@ not an empty result: the start finds it in Workshop, shows it, and choosing it t
 
 A template picked here on a document `/new` just made goes to that template's default folder, unless the document
 was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default folders](../013-workspace/default-folders.md) "A template
-picked after creation"). The move loads only at the pick (`useTemplatePickMove`, a dynamic import of
-`move-on-template-pick.ts`).
+picked after creation"). The move is `useTemplatePickMove` (`apps/editor/components/start/useTemplatePickMove.ts`).
 
 ## The tours wait
 

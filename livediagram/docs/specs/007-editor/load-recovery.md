@@ -215,7 +215,7 @@ the server, which the rest of this spec covers.
   offline banner says it instead. Viewers never see it (they save nothing).
 - **A document that did not load is never written.** The load-error and Not
   found paths still hand the editor the document id, and its empty default tab
-  used to look like an unsaved change: on reconnect it was saved into the real
+  would look like an unsaved change, saved on reconnect into the real
   document as a second "Tab 1". The autosave treats both states as read-only.
 - **Reconnecting saves at once.** A failed save waiting on its retry timer (5 s
   to 60 s) is retried as soon as the browser comes back online.

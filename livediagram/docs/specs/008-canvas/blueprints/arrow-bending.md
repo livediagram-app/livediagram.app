@@ -126,7 +126,7 @@ scales a free arrow.
 - An editable arrow line shows the `grab` cursor; locked, read-only and format-painter lines keep
   their existing cursor.
 - A selected free arrow shows the shape selection ring and handles; its ring edge shows `move`.
-- The "+" add-point handles are gone; the curve, bend-point and elbow handles are unchanged.
+- There are no "+" add-point handles; the curve, bend-point and elbow handles are as above.
 
 ## Accessibility
 

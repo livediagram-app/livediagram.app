@@ -156,77 +156,20 @@ choice is document-wide, applying to every share link's image.
 
 ### Where thumbnails appear
 
-The thumbnail shows on **every** Explorer surface that lists a document:
-the full-page `/explorer` rows (Recent / My Work / folders / Search results /
-This Browser), the team library page, the "Shared With Me" list, and the
-in-editor Explorer. A single shared `DocumentThumbnail`
-component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
-the **viewer's** owner id (never the document's) plus, for a shared row,
-its share code — so the authed fetch authorises the same way the document
-itself does (owner / team membership / share code). A stranger with none
-of those gets a 404 and the row falls back to its icon.
+Every Explorer surface the editor draws (its in-editor panel and the workspace frame) is the shared Explorer,
+[`@liveworkspace/explorer`](../../../../packages/explorer/README.md) (liveworkspace/docs/one-explorer.md); its list,
+card and details views, its phone layout, its view toggle and its actions menu are the platform's. livediagram
+supplies the picture: `renderDocumentThumbnail` (`apps/editor/lib/explorer-thumbnail.tsx`) draws each box with the
+shared `DocumentThumbnail` component (`components/panels/DocumentThumbnail.tsx`), which also backs the tab-organise
+dialogs and the Community card preview. Every app's items have their previews at the same address
+(`/api/previews/items/<id>`, liveworkspace's previews service through this site's router), so under All another app's
+item shows its own picture too. The fetch carries the page's Bearer plus, for a shared item, its share code, so it is
+authorised the same way the document itself is; a stranger gets a 404 and the box falls back to its icon.
 
-### List / card view
-
-The browse views (Recent / My Work / folders / Search results / This Browser)
-have a **List / Card / Details** toggle in the header's actions, left of Help and
-Create, which always sit further right (device-local preference,
-`livediagram:explorer-view`). **Card is the default**:
-a diagram is a picture, and a wall of names in one typeface makes you read
-every line to find the one you would have recognised on sight. Somebody who
-prefers the density of rows knows where the toggle is; somebody opening the
-Explorer for the first time does not know there is anything to look for, so
-the unchosen view is the one that shows them their work. Card view renders the
-same folders + documents as a responsive grid of cards (1 / 2 / 3 columns
-by width), each with a large snapshot and every column the list shows
-(name, owner, visibility badge, updated time, actions menu). List and
-card share one badge module (`document-badges.tsx`) and one actions-menu
-module (`document-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
-emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
-
-**On a phone** (the `phone:` breakpoint: narrower than `sm`, or a touch screen under 500px tall)
-List and Details are not offered: they are for larger screens. The browse views and the team
-library always show cards, and the toggle is hidden so it takes no room in the header. The saved
-choice is left alone, so the same device shows it again once the window is wide enough.
-
-**The actions menu** (the ⋯ on a row or card, and on a Timeline document
-card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
-naming the document with its visibility badge, because a menu opens away
-from its trigger and on a grid of near-identical cards the menu itself
-has to say which one it belongs to; then **Open on its own, under a
-separator**, unless the row is the document already open in this editor
-(the verb people reach for first sits first, and the current document's
-row doesn't offer a no-op); then **one full-width row per verb, icon on
-the left** (Rename, Duplicate, Change Folder, Favourite,
-History, Hide from Recent, Open Team, Take Offline / Sync); then
-**Delete last, under a separator** (styled as every other row: a delete is never red). It was an icon-over-
-label tile grid, two columns and then three: eight verbs in a grid read
-in two directions with labels wrapping under their icons, and a list of
-verbs scans down in one. The rows are `MenuActionRow` in its `plain`
-(sentence-case, 13px) form rather than the uppercase category-header
-form the note menu uses, because here the rows are the whole menu. A
-shared-with-you document's menu (Open, Dismiss) is the same shape.
-**The editor's Explorer rows use this same menu** (both the
-personal rows and a team library's rows). The panel used to carry its
-own toolbar-and-accordion menu with a Share section; sharing is the
-editor header's job, and a menu that looked like no other in the app was
-one people had to learn twice. A row that can't offer a verb (the panel
-has no star or history) simply doesn't pass its handler, and the menu
-leaves that tile out.
-
-The snapshot preview paints its letterbox in the document's own
-background colour (parsed client-side from the SVG's background rect)
-instead of a generic slate, so a card reads as a continuation of the
-document rather than a framed cut-out. The client also strips the
-snapshot's fixed `width`/`height` (keeping the `viewBox`) before handing
-it to the `<img>`, so the vector scales to the card's size crisply
-rather than rasterising at its intrinsic size and upscaling.
-
-The same toggle is on the **team library** ([Team shared documents](../013-workspace/team-shared-documents.md)) — its shared
-documents + folders reuse the same `CardView`, sharing the
-`livediagram:explorer-view` preference so a card-view user gets cards
-there too. Team cards hide the visibility badge (every card is a team
-document, so a per-card badge is noise — the team list omits it as well).
+The snapshot paints its letterbox in the document's own background colour (parsed client-side from the SVG's
+background rect) instead of a generic slate, so a card reads as a continuation of the document rather than a framed
+cut-out. The client also strips the snapshot's fixed `width`/`height` (keeping the `viewBox`) before handing it to the
+`<img>`, so the vector scales to the box crisply rather than rasterising at its intrinsic size and upscaling.
 
 ## Scope
 

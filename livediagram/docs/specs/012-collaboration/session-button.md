@@ -31,7 +31,7 @@ Putting the tools ON the canvas makes the canvas self-facilitating. A retro temp
 
 Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote, the question and answers for a poll.
 
-**It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
+**It does not choose the tool.** The section has no Timer / Vote / Poll tile grid, which would ask a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and a grid would cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
 ### A stopwatch is its own tool, not a timer mode
 
@@ -59,10 +59,7 @@ on", never a silent restart.
 ### One answer cap, not two
 
 The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the
-Session strip's poll composer uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
-and the two drifted the instant the poll cap went to 10: the composer offered ten
-answers while this menu silently stopped at six, with no hint which number was
-real. Two constants for one idea will always produce that, so there is one now,
+Session strip's poll composer uses: two constants for one idea would drift, so there is one,
 declared beside `PollStyle` in `@livediagram/document` for the same reason that
 union lives there — a `SessionButtonConfig` is a `Tab` field, and api-schema
 depends on document rather than the reverse.
@@ -158,7 +155,7 @@ disabled button, why it is disabled.
 
 ## The Timer element IS the timer
 
-A session element whose tool is `timer` no longer renders a button that starts
+A session element whose tool is `timer` does not render a button that starts
 a timer somewhere else. It renders the timer.
 
 It is the **same timer as the pill in the top chrome**, in every sense worth
@@ -202,9 +199,9 @@ Session category.
 | **Vote**  | Dots each (1, 2, 3, 5, 8)                                           |
 | **Poll**  | The question, the answer style, and — for Choices — the list itself |
 
-The answer-style picker is `PollAnswerStyleRow`, shared by this menu and the
-right-click Session section: both configure the same button, so a style named
-differently in one of them would describe two products. Each row previews the
+The answer-style picker is `PollStyleTiles` (`apps/editor/components/panels/session-studio/PollStyleTiles.tsx`),
+shared by every place a poll is composed, the right-click Session section included: they configure the same button,
+so a style named differently in one of them would describe two products. Each tile previews the
 answers the style produces ("Yes No Abstain"), following the estimate card's
 scale picker — the name of a shape is not the thing being chosen between.
 

@@ -356,7 +356,7 @@ The table line prints its label first when it has one. Every text a summary prin
 | `legend`                | `items=<legendItems.length>`                                                          |
 | `rating`                | `rating=<rating>/5`                                                                   |
 | `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `points=<railCount>`                                                                  |
+| `timeline-rail`         | `milestones=<conceptRows.length>`                                                     |
 | `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
 | `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
 

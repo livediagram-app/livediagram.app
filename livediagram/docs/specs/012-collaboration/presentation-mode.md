@@ -22,9 +22,8 @@ A finished canvas shows everything at once, which is great for reference and bad
 - **An element can be on any number of slides.** Membership is a list, not a partition, so a title that belongs on every slide simply appears in every slide's list.
 - **Slide order is the deck's own order**, independent of tab order, element array order, and z-order. Reordering slides never restacks anything on the canvas.
 
-- A stored slide that names a page (`pageId`, from before Pages moved to livedocuments) or a Plan card (`itemId`,
-  from before Plan moved to liveplanner) has nothing to show now: it is dropped on read, and the deck keeps the
-  rest.
+- A stored slide that names a page (`pageId`) or a Plan card (`itemId`), both other products' content, has nothing
+  to show: it is dropped on read, and the deck keeps the rest.
 
 ```ts
 type Slide = {

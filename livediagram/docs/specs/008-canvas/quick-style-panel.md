@@ -22,8 +22,8 @@ notation carry itself.
 
 ## What it is not
 
-A right-hand **Editor panel** once held every per-element setting. It was removed: it duplicated the
-context menu, grew with every feature, and covered the canvas it was meant to serve. Per-element
+There is no right-hand **Editor panel** of every per-element setting: it would duplicate the
+context menu, grow with every feature, and cover the canvas it was meant to serve. Per-element
 formatting lives in the right-click context menus ([Editor app](../007-editor/editor-app.md),
 [Canvas and palette](canvas-and-palette.md)).
 
@@ -196,8 +196,8 @@ The seven colours are **theme-relative**:
   theme change re-derives a bound colour from the new theme's same slot, so a shape on "green" stays
   green in the new theme's tone. Arrows, which otherwise always snap back to the theme stroke on a
   theme change, keep a bound colour the same way. The binding is dropped the moment the colour is set
-  any other way (the context menu's pickers, a preset, reset to theme), because the slot no longer
-  describes it.
+  any other way (the context menu's pickers, a preset, reset to theme), because the slot does not
+  describe it any more.
 - **Then More colours**, every colour row's last target: a swatch button opening the full colour
   picker ([Colour picker](../004-interface-design/colour-picker.md#quick-style)) with the row's own
   colours as its Theme Palette, the standard colours (strong on Stroke and Text colour, by name; soft

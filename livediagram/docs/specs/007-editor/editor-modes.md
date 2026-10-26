@@ -42,9 +42,7 @@ where it is and changes only how the next mark is made.
   starts](start-diagramming.md) "Changing mode"), so a tab begun in the wrong mode changes before anything is made.
   Once a tab has content it keeps its mode: to work on that content another way, make a new tab in the other mode.
 - **Nowhere else.** No switch sits beside the menu (hamburger) button, the tab menu holds no Mode section, and the
-  tab bar and the Explorer offer none. The top-chrome chip and the tab menu's Mode rows were retired on 2026-10-18:
-  changing a full tab's mode was a hangover from before new tabs opened in a chosen mode,
-  and it confused more than it helped.
+  tab bar and the Explorer offer none. Changing a full tab's mode would confuse more than it helps, since a new tab opens in a chosen mode.
 - **A dropdown chip** (`ModeMenuChip`, placed by `StartModeSwitch`): a full-width row at the top of the rail,
   showing the current mode's icon, its name and a chevron, on the faint tint the editor's menu-like controls use.
   A press opens the **mode menu** below it, hanging from its left edge. Choosing a row switches and closes the menu;
@@ -114,9 +112,8 @@ where it is and changes only how the next mark is made.
 - **The tab says what it opens in** because its mode is stored: a tab opens in its mode for
   everyone, including a person opening it for the first time. The Whiteboard template, Quick
   Start entry and whiteboard imports set it to `draw`.
-- **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
-  (`livediagram:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
-  left in place and ignored.
+- **Nothing is remembered per person.** A per-browser mode key (`livediagram:v2:editor-mode:<tab>`) is not read:
+  the tab's own mode wins. Such keys are left in place and ignored.
 - **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
   **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new
   tab): made from a Draw tab it is a Draw tab, from a Workshop tab a Workshop tab, and from an event-storming board, always Diagram, a Diagram tab. The
@@ -134,8 +131,7 @@ where it is and changes only how the next mark is made.
 - **A new document opens in Diagram** unless its maker chose otherwise: a new document's Mode step on `/new` picks
   its mode's blank, so the document opens in that mode ([New document route](new-document-route.md)). An import that
   sets its own mode wins.
-- **No Mode in the tab menu.** The tab menu offers no mode choice; it was retired with the top chrome's chip
-  (above).
+- **No Mode in the tab menu.** The tab menu offers no mode choice, as the top chrome has no mode chip (above).
 - **The tab pill shows the tab's mode.** Each tab pill leads with the icon of its mode (the same
   glyph the mode switch uses), tinted with the tab's theme accent. An
   event-storming board is always Diagram, so it shows the Diagram icon.
@@ -151,8 +147,8 @@ element in the same colour.
 - **Each mode's default canvas.** The canvas colour is the tab's in every mode; the pattern behind it suits the
   mode. Diagram shows the tab's pattern (the theme's dot grid until someone picks another). Draw shows the person's
   own board pattern (graph paper until chosen, [Draw mode](../023-draw-mode/draw-mode.md#board-background)).
-  A pattern someone picked shows in every mode but Draw. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`MODE_PATTERNS`,
-  `resolveViewBackdrop`).
+  A pattern someone picked shows in every mode but Draw. None is stored, so exports, thumbnails and other people's modes keep the tab's own (`resolveViewBackdrop`,
+  `apps/editor/lib/view-backdrop.ts`).
 - **Off-white light canvas.** The Default theme's light canvas is the board's
   off-white (`#fbfaf7`); its dark canvas stays `#0d121a`.
 - **Ink is one colour everywhere.** **Ink**, the drawing colour (`#1c1917`
@@ -306,8 +302,7 @@ and sets targets.
   tile's own fixed divider is. An entry may be an **opener** instead of a tile (`palette-openers`): it stands for a whole category, or
   one group of a catalogue, and on the strip opens it in a popover under itself, drawn with a chevron as the
   catalogue groups are ([Toolbar layout](toolbar-layout.md) "More"); in the Palette panel it moves the palette to
-  that category. An opener places nothing and is not a search result. It replaced the per-browser **Favourites**
-  ([Palette Favourites](../010-palette/palette-favourites.md), removed).
+  that category. An opener places nothing and is not a search result.
   - **Diagram**: Square, Circle, Diamond, Text, Arrow, Frame, Mind node, Flowchart node, Sankey, Table, the
     **AWS** opener (Technology's AWS marks), Entity.
   - **Workshop**: Square, Sticky note, Text, Frame, Arrow, then, behind a divider, the session kit as four openers: **Ask**, **Tools**,
@@ -322,51 +317,35 @@ Every mode of the catalogue is offered to everyone: the mode switch and the temp
 mode filter always list all three, and a tab always opens in its stored mode. Shift+D, on an empty tab, steps through
 all three.
 
-Plan had a switch in **Settings › Experimental** while it was new. It graduated on 2026-10-06, and the
-**Experimental** category went with it. Its `planModeEnabled` preference is a retired key ([User
-preferences](user-preferences.md) "Retired keys"). Its `UI` · `Toggled` · `PlanMode{On,Off}` events are retired from
-the dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
+## Stored tabs from other products' modes
 
-## Plan moved to liveplanner
+Boards of cards, Sheets, dashboards and forms are liveplanner's (https://liveplanner.app); slides, articles,
+infographics and other page layouts are livedocuments' (https://livedocuments.app), and logos, wireframes and photo
+pages livedesign's. livediagram has neither mode, and reads a stored tab that carries one as a Diagram tab:
 
-Plan mode (boards of cards, Sheets, dashboards and forms, each on a Board, Sheet, Dashboard or Form tab) was a fourth
-mode until it moved out into its own product, liveplanner (https://liveplanner.app). livediagram no longer has it:
-
-- A stored tab whose mode is Plan (`opensIn: 'plan'`), or whose kind is Board, Sheet, Dashboard or Form, reads as an
-  ordinary Diagram tab (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and
-  `opensIn` go, with its Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps
-  the data it last read and loses its `chartSource`. The tab is saved without them the next time it is saved.
-  That is why nothing on the old site is ever read this way: the migration splits each old document's Plan tabs
-  out to liveplanner from the raw rows first, and a browser's Local only documents are split before the editor
-  reads them ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6).
-- The help articles about Plan, boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
+- A tab whose mode is `'plan'`, or whose kind is Board, Sheet, Dashboard or Form, reads as an ordinary Diagram tab
+  (`dropRetiredPlan`, run from `migrateStoredTab` beside `dropRetiredPages`): its `kind` and `opensIn` go, with its
+  Plan-only fields, and so do its Plan board and Sheet elements. A chart that read a Sheet keeps the data it last read
+  and loses its `chartSource`. The tab is saved without them the next time it is saved.
+- A tab whose mode is `'pages'` (or `'illustrate'`, `'infographic'`) reads as a Diagram tab (`parseEditorMode`,
+  through `LEGACY_EDITOR_MODES`), so its ordinary elements open on the canvas. `dropRetiredPages`
+  (`packages/document/src/retired-pages.ts`) drops what only pages read: the tab's `pages`, `articles` and
+  `pageOrientation`, and the elements that only make sense on a page (a tab window, an article's margin note). It
+  runs wherever a tab is read, returns the same object when there is nothing to drop, and the tab is saved without
+  them the next time it is saved.
+- The migration to the other products ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6) splits such
+  tabs out from the raw rows, and a browser's Local only documents before the editor reads them, so content still
+  wanted elsewhere is never read this way. Its own upgrade is `migrateStoredTabKeepingRetired` (beside
+  `migrateStoredTab` in `packages/document/src/stored-tab.ts`): every other stored-tab upgrade, without
+  `dropRetiredPages` and `dropRetiredPlan`, so a tab reaches liveplanner, livedocuments and livedesign with that
+  content intact. livediagram never reads its own tabs through it.
+- An ordinary element keeps what a page layout gave it, and livediagram draws and exports it without offering the
+  controls that set it: a text's **wordmark type** (its tracking, weight, case and arc,
+  `packages/document/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours. A path of
+  several contours moves and restyles as a whole; its points are not edited one by one.
+- The help articles about boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
   liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.
-- Workshop's Q&A board and the diagram [card](../009-elements/card.md) are not Plan, and stay.
-
-## Pages moved to livedocuments
-
-Pages mode (slides, articles, infographics, logos and wireframes laid out on pages) was a fifth mode until it moved
-out into its own product, livedocuments (https://livedocuments.app). livediagram no longer has it:
-
-- A stored tab whose mode is Pages (`opensIn: 'pages'`, or its older names `'illustrate'` and `'infographic'`)
-  reads as a Diagram tab (`parseEditorMode`, through `LEGACY_EDITOR_MODES`), so a former Pages tab opens with its
-  ordinary elements on the canvas.
-- The stored-tab migration drops what only Pages read (`dropRetiredPages`, `packages/document/src/retired-pages.ts`):
-  the tab's `pages`, `articles` and `pageOrientation`, and the elements that only made sense on a page (a tab
-  window, an article's margin note). It runs wherever a tab is read, and the tab is saved without them the next
-  time it is saved. Content still wanted elsewhere is moved before this can run: the migration splits Pages tabs
-  out to livedocuments (and logo, wireframe and photo pages to livedesign) from the old site's raw rows, and a
-  browser's Local only documents are split before the editor reads them
-  ([docs/migration.md](../../../../docs/migration.md), steps 3 and 6). The same object comes back when there is nothing to drop.
-  The migration's own upgrade is `migrateStoredTabKeepingRetired` (beside `migrateStoredTab` in
-  `packages/document/src/stored-tab.ts`): every other stored-tab upgrade, without `dropRetiredPages` and
-  `dropRetiredPlan`, so a tab reaches liveplanner, livedocuments and livedesign in today's shape with its Pages and
-  Plan content intact. livediagram never reads its own tabs through it.
-- A former Pages tab's ordinary elements keep what Pages gave them, and livediagram still draws and exports it, though
-  it no longer offers the controls that set it: a text's **wordmark type** (its tracking, weight, case and arc,
-  `packages/document/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours (Combine's
-  union, subtraction, intersection and exclusion, or Mirror's merged twin). A path of several contours moves and
-  restyles as a whole; its points are not edited one by one.
+- Workshop's Q&A board and the diagram [card](../009-elements/card.md) are livediagram's own.
 
 ## Existing whiteboards
 

@@ -138,9 +138,9 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 10. **Relay** `relayChangeset(env, documentId, changesetRoomOp(record))` to the submitting document's room only,
     awaited with `ROOM_RELAY_TIMEOUT_MS`; a failure logs `[changeset] relay-failed` and the answer stays 200.
     Other documents linking the tab are protected by the merge on save.
-11. **After**, off the response path (`ctx.waitUntil`): `recordTabSave` and the new-comment email exactly as a
-    save does (CS29), and the `Agent` telemetry. The agent presence refresh of the
-    [agent presence blueprint](agent-presence.md) joins here when agent presence is built.
+11. **After**, off the response path (`ctx.waitUntil`, `apps/api/src/changesets/after.ts`): the new-comment email
+    exactly as a save does (CS29), and the `Agent` telemetry; the Timeline hears of the edit from the canvas. The
+    agent presence refresh (`refreshAgentPresence`, [agent presence blueprint](agent-presence.md)) joins here.
 
 The write applies, before step 8, the server rules a save applies: `migrateIncomingTab` on a replace's elements,
 `capStoredName` on a created tab's name, `preferNewerQaAll` against the stored elements, and
@@ -229,8 +229,8 @@ rename sends (tabs in order, with their folders), through `/mutation`; a failure
 
 ### Rooms for every server-stored document
 
-- `roomStubFor(env, documentId)` returns a stub for every document; the `shareable`/`teamId` gate goes. Its
-  callers (`fetchRoomLedger`, `relayElementDelta`, `broadcastDocumentTrashed`, `relayChangeset`,
+- `roomStubFor(env, documentId)` (`apps/api/src/room-client.ts`) returns a stub for every document, with no `shareable`/`teamId` gate. Its
+  callers (`fetchRoomLedger`, `relayElementDelta`, `relayChangeset`, `relayDocumentRename`,
   `readRoomSelections`) take the document id; `relayTabRename` is a rename's.
 - The editor opens its room when `hydrated && documentId && documentServerStored`, where
   `documentServerStored = fetched.ownerId !== OFFLINE_OWNER_ID` (set in `useIdentityBootstrap`, false for a

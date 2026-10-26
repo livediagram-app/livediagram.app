@@ -2,7 +2,7 @@
 
 ## Overview
 
-The model half of the event-storming photo import ([Event storming](event-storming.md) Phase 8).
+The model half of the event-storming photo import ([Event storming](event-storming.md#import-a-photo-of-the-wall).
 The stickies are FOUND in the browser by classical computer vision; `POST /api/ai/read-notes`
 is asked only to read the handwriting on the crops that came out of that. It is the only
 model call the api worker makes: livediagram has no in-editor AI assistant (connected AI

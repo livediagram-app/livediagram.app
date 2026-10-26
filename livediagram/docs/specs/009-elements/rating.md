@@ -38,5 +38,5 @@ render/copy/export branches.
   `track('Element', 'Changed', 'Rating' | 'RatingAnim')` on edits.
 
 Follows the composite-component pattern established by the timeline rail
-([Timeline rail](timeline-rail.md)): a dedicated `ShapeKind` + small `ShapeElement` fields + a bespoke
+([Timeline](timeline-rail.md)): a dedicated `ShapeKind` + small `ShapeElement` fields + a bespoke
 `*View` + a borderless variant + a context-menu category.

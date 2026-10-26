@@ -22,8 +22,8 @@ inside a category that has to be opened first.
 The four attachments are offered only on boxed elements, as before; arrows take none. With nothing to offer (an
 arrow that takes no quick style) the bar is not drawn.
 
-They had their own categories, **Collaborate** (Assign Action, Add Comment) and **Resources** (Add Link, Add Note), at
-the foot of the menu. Those categories are gone: the quick bar is their one place in the menu.
+There are no **Collaborate** (Assign Action, Add Comment) or **Resources** (Add Link, Add Note) categories at the foot
+of the menu: the quick bar is their one place in the menu.
 
 ## Share roles
 

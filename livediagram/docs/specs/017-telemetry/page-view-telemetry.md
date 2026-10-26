@@ -115,20 +115,18 @@ existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
-- **editor** (`apps/editor`) and **help centre** (`apps/help`): already emitting.
+- **editor** (`apps/editor`) and **help centre** (`apps/help`).
 - **Community** (`apps/community`): page views through the shared `PageViewBoot`, alongside its own
   [Community](../025-community/community.md) events.
-- **marketing** (`apps/marketing`) and, until it moved to liveworkspace in October 2026,
-  **the dashboard**: new emitters. Their _only_ event is the page view: they mount the shared
+- **marketing** (`apps/marketing`): its _only_ event is the page view: it mounts the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel
   ([Landing funnel](../019-marketing/landing-funnel.md)) measures what those pages lead to
   without changing that: each CTA's link names its button, and the editor
   sends the `Cta` events.
 
-This changes [Telemetry + public transparency dashboard](telemetry.md)'s "never the static marketing site" rule: the marketing
-site now reports page views, and nothing else. It is still first-party, sent to
-our own api, anonymous, cookie-free and opt-out-able, and the "0 third-party
+So the marketing site reports page views, and nothing else. They are first-party, sent to
+the liveworkspace telemetry service, anonymous, cookie-free and opt-out-able, and the "0 third-party
 trackers" claim stays literally true. The privacy policy and What We Collect
 article say so.
 
@@ -140,12 +138,11 @@ segment using the same live route-segment list the router routes by (shared
 from `@livediagram/api-schema`, so the dashboard and router can't disagree
 about which app serves a path). Top to bottom:
 
-- **Views by app** now lives on **Dashboard** as the **Page Views by App**
+- **Views by app** is on **Dashboard** as the **Page Views by App**
   chart stack ([Telemetry + public transparency dashboard](telemetry.md)): a head plotting each app's line with the combined
   count, opening into one card per app (the shared metric card, matching a set
-  of paths rather than one type). The per-card "N% of page views" line went
-  with the move, since catalogue charts are fixed definitions and the share
-  depends on the selected window; each app's count sits in the head's legend.
+  of paths rather than one type). Each app's count sits in the head's legend; a card carries no
+  "N% of page views" line, since catalogue charts are fixed definitions and the share depends on the selected window.
 - **Top pages.** The ten most-viewed pages across every app, then each app's
   own top ten, as ranking cards, each row labelled with the raw path (not
   title-cased) with its share bar and 30-day sparkline, balanced across two
@@ -153,13 +150,8 @@ about which app serves a path). Top to bottom:
   numbers of pages, and grid rows stretched each short card to the tallest
   beside it.
 
-Removed in September 2026: an **Insights** row (landing, wizard, explorer,
-sign-up and help rates plus pages per visitor, each counted from the day page
-views began), a **Rising pages** card (biggest gain over the
-last 7 days against the 7 before), and the **All pages** list of every page
-(Search still reaches any single page; the Raw tab that also did was removed). The ten most-viewed
-pages were briefly a stack opening into the per-app lists; a set of rankings
-read side by side on the page is not a stack.
+There is no Insights row, Rising pages card or All pages list: Search reaches any single page. The ten most-viewed
+pages are rankings read side by side on the page, not a stack.
 
 The page-view helpers live in liveworkspace/apps/site/app/telemetry/_shared/page-views.ts, pure and
 tested apart from the view.

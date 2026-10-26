@@ -50,7 +50,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 
 ## Token levels
 
-What an agent may do follows its token's [level](../013-workspace/share-roles.md#api-tokens), through the same gates
+What an agent may do follows its token's [level](../013-workspace/share-roles.md#the-levels), through the same gates
 as a share link: reading needs read access; comments, session answers and presence need the participation gate
 (`gateParticipate`); changesets need the edit gate. A participate token comments, takes part and sets presence and
 submits no changesets; a view token reads and writes nothing, comments and presence included.

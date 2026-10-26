@@ -84,17 +84,19 @@ states the cap on each name field.
 The editor shortens at its own mutation points, so what the author sees is
 already the stored name without waiting on a round trip:
 
-- `useSelectionEditing` — the auto-name path (the case that prompted this).
+- `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- `useDocumentListActions.renameDocument` and `useTeamLibrary.renameDocument`.
+- The ms-whiteboard importer's board name (`lib/ms-whiteboard/board-identity.ts`).
 - `EditorView`'s header rename.
-- The `/new` wizard's document-name field.
+
+A rename from the Explorer is the shared Explorer's ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)); the
+server cap applies to it like any other.
 
 An Offline Mode document never reaches the server until it syncs, so for it
 these editor points are the enforcement until it does; the sync is a create,
 so the server cap applies to it like any other.
 
-The text inputs (`NameEditor`, `InlineRenameInput`, the wizard field) also
+The text inputs (`NameEditor`, `InlineRenameInput`, `TabNameInBox`) also
 carry `maxLength={NAME_MAX_LENGTH}`. That is a **third** line of defence, not
 the enforcement: it makes the limit visible while typing instead of silently
 eating the end of what someone wrote.

@@ -31,15 +31,15 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Canvas wizard creates for the mode chosen:
 
-| Template         | Kind id         | Opens in | What it makes                                                                                  |
-| ---------------- | --------------- | -------- | ---------------------------------------------------------------------------------------------- |
-| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").                                                          |
-| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").                                                  |
-| Blank Workshop   | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Workshop" (was "Blank Session", "Untitled Session"). |
+| Template         | Kind id         | Opens in | What it makes                                        |
+| ---------------- | --------------- | -------- | ---------------------------------------------------- |
+| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").                |
+| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").        |
+| Blank Workshop   | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Workshop". |
 
-The Plan templates (Blank Plan, Blank Spreadsheet, the forms and the twenty-two Plan templates, Kanban Board among
-them) moved to liveplanner with Plan mode ([Editor modes](editor-modes.md) "Plan moved to liveplanner"). A link, an
-agent or a seed naming one is answered as any unknown kind is (`retired-templates.test.ts`).
+Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
+([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one is
+answered as any unknown kind is (`retired-templates.test.ts`).
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.

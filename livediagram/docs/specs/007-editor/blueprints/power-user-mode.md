@@ -71,7 +71,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Shortcut used    | `recordShortcut(counters)`, `onShortcutUsed`             | A key the editor shortcut handler claimed (D4)                 |
 | Role pill        | `RolePill`                                               | Title-bar pill: Editing / Viewing, owner in its Tooltip        |
 | Role status icon | `RoleStatusIcon`                                         | Minimal chrome's pencil / eye, first in the status bar         |
-| View preview     | `viewPreview`, `setViewPreview`                          | Local read-only preview for someone who may edit               |
+| View preview     | `viewPreview`, `toggleViewPreview` (`useViewPreview`)    | Local read-only preview for someone who may edit               |
 | Touch device     | `useCoarsePointer()` (`(hover: none)`)                   | Keeps More and the bin                                         |
 | Quick switch     | `oppositeAppearanceSetting(appearance)`                  | The explicit setting opposite the painted appearance           |
 

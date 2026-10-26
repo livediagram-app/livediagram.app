@@ -4,7 +4,7 @@ A wide, semi-transparent freehand marker, picked from the palette's **Draw** cat
 
 ## History
 
-It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel and a Mode Button that handed it out). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's do.
+It is a **Draw tile**, not a held canvas tool: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes stay ways of working on the canvas rather than ways of adding to it. There is no Highlighter selection mode, Mode Button or Highlighter Panel; its Colour and Strength are in the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's are.
 
 ## Model
 

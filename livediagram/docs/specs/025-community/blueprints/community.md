@@ -2,57 +2,55 @@
 
 Derived from [Community](../community.md). Implementation detail only; design decisions live in the spec.
 
-## 0. Since the listings moved to liveworkspace
+## 0. The platform's part
 
-The listings now live in liveworkspace's Community service ([its doc](../../../../../liveworkspace/docs/community.md)),
-and the sections below that describe tables, queries and the public routes describe the service. Where they name
-livediagram's old identifiers, read them as:
+The posts, their tags, likes, copies and reports, the counts, the gallery's reads (list, search, facets, featured,
+sitemap), likes, reports and auto-hide are liveworkspace's Community service, one store for every app keyed by
+`app` ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)). This file does not
+re-document them; where it names the service's limits or rules, the service's doc is the authority. The pages read
+the service straight (`communityServiceUrl('livediagram.app', path, ...)` against `NEXT_PUBLIC_COMMUNITY_API`); the
+shared vocabulary is `@liveworkspace/community` (`packages/community/src/post.ts`, `query.ts`, `network.ts`),
+re-exported by `@livediagram/api-schema`.
 
-| Before (livediagram api)                                                   | Now                                                                                                                                                                                                           |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `community_posts`, `_post_tags`, `_likes`, `_copies`, `_reports`           | the service's `posts`, `post_tags`, `likes`, `copies`, `reports`, keyed by `app`; migration liveworkspace/apps/community/migrations/0001_community.sql. Dropped here by `0100_community_to_liveworkspace.sql` |
-| apps/api/src/db/community.ts, db/community-engagement.ts, community-row.ts | liveworkspace/apps/community/src/posts.ts, liveworkspace/apps/community/src/engagement.ts, liveworkspace/apps/community/src/rows.ts                                                                           |
-| apps/api/src/community-network.ts                                          | packages/community/src/network.ts (`@liveworkspace/community`, re-exported by api-schema)                                                                                                                     |
-| apps/api/src/community-copy.ts                                             | `apps/api/src/community-service.ts` (`countCommunityCopy`, copier hashed as `sha256('community-copier:' + owner)`)                                                                                            |
-| apps/api/src/edge-cache.ts                                                 | liveworkspace/apps/community/src/http.ts                                                                                                                                                                      |
-| `COMMUNITY_RATE_LIMITER` on the api                                        | the service's `COMMUNITY_RATE_LIMITER` (30 per 60 s per network)                                                                                                                                              |
-| `PUBLIC_POST`                                                              | here: the canvas's `community_post` row and its check with the index (`apps/api/src/document-room/community-post.ts`); there: `state = 'listed' AND document_state = 'public'`                                |
-| `GET /api/community/{posts,featured,facets,sitemap}`, likes, reports       | `liveworkspace.app/api/community/...?app=livediagram.app`, read from the pages with `communityServiceUrl`                                                                                                     |
-
-What stays here: `community_post` (one row per canvas: `share_code`, `author_id`, `post_id`, `title`, `anonymous`,
-`hidden_at`, `sent_state`, `checked_at`), the owner routes `GET`/`PUT`/`DELETE /api/documents/:id/community`
-(forwarding to the service's app routes with `COMMUNITY_KEY`), `GET /api/community/mine`, the community link's doors,
-and the sync (the canvas's alarm asks the index every `COMMUNITY_CHECK_MS` and sends the service what changed).
-Vars: `COMMUNITY_URL` (default `https://liveworkspace.app/api/community`), secret `COMMUNITY_KEY`; the pages'
-`NEXT_PUBLIC_COMMUNITY_API` and their Worker's `COMMUNITY_URL`. Without `COMMUNITY_KEY`, `communityEnabled` is false.
+What is livediagram's: the canvas's `community_post` row (one per canvas: `share_code`, `author_id`, `post_id`,
+`title`, `anonymous`, `hidden_at`, `sent_state`, `checked_at`), the owner routes `GET`/`PUT`/`DELETE
+/api/documents/:id/community` (forwarding to the service's app routes with `COMMUNITY_KEY`), `GET
+/api/community/mine`, the community link's doors, copy counting (`countCommunityCopy`), and the sync (the canvas's
+alarm asks the index every `COMMUNITY_CHECK_MS` and sends the service what changed). Then the editor's Share dialog
+section and publish dialog, the Public badge and Community bar, and the Community pages (`apps/community`). Vars:
+`COMMUNITY_URL` (default `COMMUNITY_API_URL`, `https://liveworkspace.app/api/community`), secret `COMMUNITY_KEY`;
+the pages' `NEXT_PUBLIC_COMMUNITY_API` and their Worker's `COMMUNITY_URL`. Without `COMMUNITY_KEY`
+(`communityServiceConfigured`), the Community is off.
 
 ## 1. Domain and naming
 
-| Spec term      | Identifier                                                                                            |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
-| post           | `CommunityPost` (DTO), table `community_posts`, id column `id`                                        |
-| author         | `CommunityAuthor` (`{ name, color, picture }`), column `author_id`                                    |
-| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb, type }[]`)   |
-| tag            | `string` after `normaliseCommunityTag`; table `community_post_tags`                                   |
-| like           | table `community_likes`, column `like_count`                                                          |
-| copy count     | table `community_copies`, column `copy_count`                                                         |
-| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS` (`{ id, label, type }[]`), `community_reports`    |
-| hidden         | `CommunityPostState = 'listed' \| 'hidden'`, column `hidden_by = 'reports'`                           |
-| community link | `share_links.purpose = 'community'` (`SharePurpose = 'share' \| 'community'`)                         |
-| community key  | header `X-Community-Key`, localStorage `livediagram:v2:community-key`                                 |
-| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`, `COMMUNITY_SORTS` (`{ id, label, type }[]`)           |
-| Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
+| Spec term      | Identifier                                                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| post           | `CommunityPost` (DTO); a `posts` row at the service; the canvas's `community_post` row                                                            |
+| author         | `CommunityAuthor` (`{ name, color, picture }`), column `author_id`                                                                                |
+| category       | `CommunityCategory` (union of ids), `COMMUNITY_CATEGORIES` (ordered `{ id, label, blurb, type }[]`)                                               |
+| tag            | `string` after `normaliseCommunityTag`                                                                                                            |
+| like           | `likeCount` (the service counts them)                                                                                                             |
+| copy count     | `copyCount` (the service counts them; `countCommunityCopy` reports one)                                                                           |
+| report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS` (`{ id, label, type }[]`)                                                                     |
+| hidden         | `CommunityPostState = 'listed' \| 'hidden'`; the canvas's `community_post.hidden_at`                                                              |
+| community link | an index share link (view, never expiring, public) whose code is `community_post.share_code`; `SharePurpose = 'share' \| 'community'` on the wire |
+| community key  | header `X-Community-Key` (`COMMUNITY_KEY_HEADER`), localStorage `livediagram:v2:community-key` (`COMMUNITY_KEY_STORAGE`)                          |
+| sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`, `COMMUNITY_SORTS` (`{ id, label, type }[]`)                                                       |
+| Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not                                             |
 
-Shared vocabulary lives in `packages/api-schema`, exported from the package index, so the worker, the editor and the
-Community app cannot disagree: packages/community/src/post.ts holds the post (categories, reasons, limits, `normaliseCommunityTag`,
-`validateCommunityPostInput`, DTOs, `communityPostPath`, `communityImagePath`), and packages/community/src/query.ts the search
+Shared vocabulary lives in `@liveworkspace/community`, re-exported by `@livediagram/api-schema`, so the worker, the
+editor, the Community app and the service cannot disagree: `../packages/community/src/post.ts` holds the post
+(categories, reasons, limits, `normaliseCommunityTag`, `validateCommunityPostInput`, DTOs), `../packages/community/src/query.ts` the search
 grammar and list query (sorts, the `#tag` / `category:` / `sort:` / `is:mine` words, `parseCommunityListQuery`,
 `communityQueryParams`). Each category, report reason and sort carries `type`, its PascalCase telemetry value
-(`Architecture`, `PersonalInfo`, `Loved`, ...), so no caller derives one.
+(`Architecture`, `Personal`, `Loved`, ...), so no caller derives one. This app's paths are
+`packages/api-schema/src/community-paths.ts` (`COMMUNITY_HOME_PATH`, `communityPostPath`, `communityImagePath`,
+`COMMUNITY_KEY_STORAGE`).
 
 ## 2. Constants and configuration
 
-All in packages/community/src/post.ts.
+All in `../packages/community/src/post.ts`; the service enforces the ones past publishing.
 
 | Constant                           | Value         | Provenance            | Safe range |
 | ---------------------------------- | ------------- | --------------------- | ---------- |
@@ -75,49 +73,49 @@ All in packages/community/src/post.ts.
 | `COMMUNITY_FEATURED_WINDOW_MS`     | 90 days       | spec "Featured"       | 30..365 d  |
 | `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
-The service's Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<network>` from
-`communityNetwork`), production and staging; the api no longer has one.
+Rate limits on likes, reports and reads are the service's. The canvas's `COMMUNITY_CHECK_MS` is 10 minutes
+(`apps/api/src/document-room/community-post.ts`).
 Worker var `COMMUNITY_ENABLED` (optional; `false`, `0` or `off` switches the Community off, anything else or unset
 leaves it on), read per request by `communityEnabled(env)` (`apps/api/src/community-enabled.ts`) and reported as
 `communityEnabled` by `GET /api/capabilities`. Moderation needs no var: it is reports alone.
 
-Switched off: `handleCommunity` and the owner routes answer 404 before anything else, and `communityLinkAccess`
-answers `'closed'`, which closes the grant, the share resolve and the card image in one place; the share-password
-guard skips the post check. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
+Switched off (or with no `COMMUNITY_KEY`): `handleCommunity` and the owner routes answer 404 before anything else, and
+`openCommunityCode` answers null, so the canvas's room reports its post's link as not open, which closes the grant
+(`gateGrant`) and the share resolve in one place. The apps ask through `useCommunityEnabled(apiBase)` / `fetchCommunityEnabled`
 (`packages/ui/src/community/useCommunityEnabled.ts`; one request per api base per page, on unless an explicit
 `false`; `useCommunityEnabled(apiBase, ask)` skips the request and answers on while `ask` is false). Each asks only
 when its answer can matter, so a page view that never reaches them makes no request: `ProductNavLinks` (the Explorer footer row) filters its
 Community link, asking as it mounts; `CommunityFooterLink` renders
 nothing, asking once the footer comes near the viewport (`useNearViewport`); `ShareDialogWithCommunity` falls back to
 the plain `ShareDialog`; `EditorView` drops the Public badge (it asks only while a post is listed and not in an embed);
-`CommunityShowcase` never asks: it renders nothing on a 404 from `featured`, which the worker answers while the
-Community is off, and it fetches `featured` only once the section comes near the viewport; the Community app's
+`CommunityShowcase` never asks: it renders nothing when `featured` fails, and it fetches `featured` only once the section comes near the viewport; the Community app's
 `CommunityGate` replaces the location with `/`.
 
 ## 3. Data and persistence
 
-The posts, their tags, likes, copies and reports are the liveworkspace Community service's
-(`../liveworkspace/apps/community/migrations/0001_community.sql`, liveworkspace/docs/community.md): one row per published
-document per app, with `anonymous`, `network_hash` on likes and copies, and the counts recomputed (liveworkspace/apps/community/src/engagement.ts:
-`SUM(MIN(n, COMMUNITY_COUNTED_PER_NETWORK))` over the rows grouped by network) with the change that moves them, so they
-cannot drift.
+The posts, tags, likes, copies and reports are the service's
+([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
 
 What the canvas keeps is its own post's link, in its Durable Object's SQLite (`community_post` in
-`apps/api/src/document-room/document-schema.ts`; `apps/api/src/document-room/community-post.ts`): at most one row with the
-share code of its link (an index share link, view, never expiring), the post's id at the service, its `title`,
+`apps/api/src/document-room/document-schema.ts`; `apps/api/src/document-room/community-post.ts`): at most one row with
+the share code of its link (an index share link, view, never expiring), the post's id at the service, its `title`,
 `anonymous`, `hidden_at`, the listing state last sent and when it last checked. A grant through that link is a
 content-only pass (`apps/api/src/routes/context.ts`).
 
-- Where the canvas stands is the index's (its Trash, its team, its share password, its owner). While it has a post, the
-  canvas asks the index from its own alarm, every `COMMUNITY_CHECK_MS`, and sends the service what changed; the same check
-  hears whether the service hid the post after reports.
+- Where the canvas stands is the index's (its Trash, its team, its share password, its owner). While it has a post,
+  the canvas asks the index from its own alarm, every `COMMUNITY_CHECK_MS`, and sends the service what changed
+  (`communityStateOf`: `gone`, `away`, `closed` or `public`); the same check hears whether the service hid the post
+  after reports.
+- `openCommunityCode(env, post, meta)`: the code that opens the canvas as its post right now, or null (switched off,
+  hidden, or the canvas no longer its author's own or in a team).
 - Field classification: `author_id` is an owner credential (never on the wire); everything else on the row is public
   post content or sync state.
 - A hidden post is final: nothing restores it, edits it or deletes it except deleting its canvas.
-- Account deletion and guest to account: the service stops counting the deleted account's copies, and a guest's copies
-  become the account's (`apps/api/src/community-service.ts`).
-- Snapshots: `snapshotKeys(documentId)` (`apps/api/src/db/documents.ts`) holds the Community thumbnail and share card
-  beside the canvas's own; all are deleted when the index purges the canvas.
+- Account deletion and guest to account: the service stops counting the deleted account's copies
+  (`forgetCommunityCopier`), and a guest's copies become the account's (`mergeCommunityCopier`), both in
+  `apps/api/src/community-service.ts`; a copier is sent as a one-way hash (`copierHash`).
+- Pictures: the card image (`communityImagePath`, `/api/share/:code/image.svg`) is liveworkspace's previews, drawn
+  through the export door from the redacted board ([liveworkspace/docs/previews.md](../../../../../liveworkspace/docs/previews.md)).
 - Snapshot/restore and Google Drive sync carry no Community state; a copy is never published.
 
 ## 4. Interfaces and contracts
@@ -166,75 +164,70 @@ type CommunityListQuery = {
 };
 ```
 
-Routes (all JSON; errors `{ error: <code> }`):
+Routes on this api (all JSON; errors `{ error: <code> }`):
 
-| Method + path                                         | Who              | Success                                                                 | Rejections                                                                                                                                                                                                  |
-| ----------------------------------------------------- | ---------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/documents/:id/community`                    | owner            | `{ post: CommunityOwnPost \| null }` (null for a previous owner's post) | 400 no identity, 404 missing, 403 not owner                                                                                                                                                                 |
-| `PUT /api/documents/:id/community`                    | owner, signed in | 201 new / 200 update `{ post }`                                         | 400 no identity, 401 `sign_in_required`, 403, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_limit`, 409 `already_published`, 409 `post_hidden`, 400 `invalid_<field>` |
-| `DELETE /api/documents/:id/community`                 | owner            | 204                                                                     | 400 no identity, 404 (also when not published, or a previous owner's post), 403, 409 `post_hidden`                                                                                                          |
-| `GET /api/community/posts?q&category&tag&sort&offset` | anyone           | `{ posts, nextOffset: number \| null }`                                 | 400 `invalid_query`                                                                                                                                                                                         |
-| `GET /api/community/mine?q&offset`                    | signed in        | 200 `CommunityMineResponse` (hidden included)                           | 400 `invalid_query`, 401                                                                                                                                                                                    |
-| `GET /api/community/featured`                         | anyone           | 200 `CommunityFeaturedResponse` (up to six)                             | none                                                                                                                                                                                                        |
-| `GET /api/community/facets`                           | anyone           | `{ categories: Record<id, n>, tags: {tag, count}[], total }`            | none                                                                                                                                                                                                        |
-| `GET /api/community/posts/:id`                        | anyone           | `{ post, related: CommunityPost[] }`                                    | 404 missing or not public (hidden, trashed, team, owner changed, password set)                                                                                                                              |
-| `PUT /api/community/posts/:id/like`                   | community key    | `{ likeCount, liked: true }`                                            | 400 `community_key_required`, 404, 429                                                                                                                                                                      |
-| `DELETE /api/community/posts/:id/like`                | community key    | `{ likeCount, liked: false }`                                           | as above                                                                                                                                                                                                    |
-| `POST /api/community/posts/:id/report`                | community key    | 204 (also for a repeat)                                                 | 400 `community_key_required` / `invalid_reason` / `invalid_note`, 404, 429                                                                                                                                  |
+| Method + path                         | Who                  | Success                                                                                      | Rejections                                                                                                                                                                                                                                                              |
+| ------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/documents/:id/community`    | owner                | `{ post: CommunityOwnPost \| null }` (null for a previous owner's post)                      | 404 missing or not the owner's                                                                                                                                                                                                                                          |
+| `PUT /api/documents/:id/community`    | owner, signed in     | 201 new / 200 update `{ post }`                                                              | 401 `sign_in_required`, 404, 409 `team_document`, 409 `share_password_set`, 409 `empty_document`, 409 `post_hidden`, 400 `invalid_<field>`, 503 `index_unavailable`; the service's refusals (`post_limit`, `already_published`, ...) pass through by code, a 5xx as 502 |
+| `DELETE /api/documents/:id/community` | owner                | 204                                                                                          | 404 (also when not published, or a previous owner's post), 409 `post_hidden`                                                                                                                                                                                            |
+| `GET /api/community/mine?q&offset`    | signed in            | 200 `CommunityMineResponse` (hidden included)                                                | 400 `invalid_query`, 401, 502 `community_unavailable`                                                                                                                                                                                                                   |
+| `GET /api/share/:code`                | anyone with the code | `{ document, role: 'view', tabId: null, community: { postId, author } }` for the post's link | 404 while the post is not open                                                                                                                                                                                                                                          |
 
-- Every `/api/community/*` route, and the owner routes above, answer 404 while the Community is switched off.
-- `liked` is filled from `X-Community-Key` when present and valid, else false.
-- `mine` reads the same search words as the list (the public list ignores `is:mine`) and sends
-  `Cache-Control: private, no-store`; `featured` sends `public, max-age=60`. Both answer 404 while the Community is off.
-- List responses without a community key send `Cache-Control: public, max-age=30`; with one, `private, no-store`.
-- Query parsing is `parseCommunityListQuery(URLSearchParams)` (api-schema): unknown sort → `new`, unknown category or
-  bad tag → `invalid_query`, offset clamped to `[0, COMMUNITY_MAX_OFFSET]` and to multiples of nothing (any int).
+The gallery's reads (posts, featured, facets, a post with its related), likes and reports are the service's routes
+(`liveworkspace.app/api/community/...?app=livediagram.app`), called by the pages; their shapes are the DTOs above.
+
+- Every route above answers 404 while the Community is switched off.
+- `mine` reads the same search words as the list and asks the service for the signed-in author
+  (`owner=<accountUserId>`), passing the page's community key (`communityKeyHeaders`) so its hearts show as that
+  browser left them; `Cache-Control: private, no-store`.
+- Query parsing is `parseCommunityListQuery(URLSearchParams)`: unknown sort → `new`, unknown category or bad tag →
+  `invalid_query`, offset clamped to `[0, COMMUNITY_MAX_OFFSET]`.
 - Validation is `validateCommunityPostInput(input)` → `{ ok: true, value } | { ok: false, error }`, trimming title and
   description, collapsing description runs of 3+ newlines to 2, normalising and de-duplicating tags.
-- Share resolve (`GET /api/share/:code`) for a community link answers
-  `{ document, role: 'view', tabId: null, community: { postId, author: CommunityAuthor } }`; a hidden post's community
-  link answers 404. `ShareResolveResponse.community` is optional on the DTO.
-- Owner-side share routes: `PUT /api/documents/:id/share-password` with a non-empty password on a document whose post
-  is listed answers 409 `community_published`; a hidden post does not block it.
-- `PUT` and `DELETE /api/documents/:id/community` on a hidden post answer 409 `post_hidden`.
-
-Live share links: the live `ShareLink` type gains `purpose` but the owner list never contains community links.
+- A share password and a post exclude each other: the owner's `PUT` refuses one while a password is set
+  (`client.listShareLinks(id).passwordSet`), and the community link is made `public`, so a password set later closes
+  it (404) rather than asking visitors for one.
 
 ## 5. Behaviour and state
 
-Post state machine: (none) → `listed` (publish) → `hidden` (auto: reports; final). `listed` → (none) on unpublish;
-either state → (none) only when the document is deleted. Trash is orthogonal: a trashed document's
-post is invisible in every public read whatever its state.
+Post state machine (kept by the service): (none) → `listed` (publish) → `hidden` (auto: reports; final). `listed` →
+(none) on unpublish; either state → (none) only when the document is deleted. Where the canvas stands (Trash, team,
+share password, owner) is sent to the service as its `documentState` by the sync, and only a `public` canvas's post is
+in any public read.
 
-Guards:
+Guards (`apps/api/src/routes/community-owner-routes.ts` unless named):
 
-- G1 publish: `ctx.accountUserId` non-null and `ownsDocument` and `teamId === null`.
-- G2 publish: `getDocumentSharePassword` empty.
-- G3 publish (new post only): `firstTabElementCount > 0` (`apps/api/src/db/tabs.ts`: counted, not rendered); author
-  has fewer than `COMMUNITY_POSTS_PER_AUTHOR`.
-- G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL AND d.owner_id = cp.author_id AND
-d.share_password IS NULL` (the service's `posts.ts`; here the canvas's check with the index, `apps/api/src/document-room/community-post.ts`).
-- G5 like/report: valid community key, post passes G4.
+- G1 publish: `ctx.accountUserId` non-null and equal to the canvas's owner (`ownsDocument`), and `teamId === null`.
+- G2 publish: no share password (`client.listShareLinks(id).passwordSet` false).
+- G3 publish (new post only): `firstTabElementCount > 0` (`apps/api/src/db/tabs.ts`: counted, not rendered); the
+  per-author cap `COMMUNITY_POSTS_PER_AUTHOR` is the service's (it answers `post_limit`).
+- G4 public reads: the service's (a `listed` post whose canvas is `public`); the canvas's own door is
+  `openCommunityCode` (`apps/api/src/document-room/community-post.ts`).
+- G5 like/report: the service's (a valid community key, a post passing G4).
 - G6 hidden is final: owner `PUT` / `DELETE` on a hidden post answer 409 `post_hidden`.
-- G7 previous owner (`apps/api/src/routes/community-owner-routes.ts`): a post whose `author_id` is not the document's
-  owner (it came with the document from a team library) reads as none; `PUT` deletes it, logging
-  `[community] replaced a previous owner post`, and publishes afresh; `DELETE` answers 404.
-- Auto-hide (after each new report row): if `state = 'listed'` and `COUNT(DISTINCT reporter_key) >= 3` and
-  `COUNT(DISTINCT network_hash) >= 3` then `state = 'hidden', hidden_by = 'reports'`.
+- G7 previous owner: a post the service does not report as the caller's `own` (it came with the canvas from a team
+  library) reads as none; `PUT` publishes afresh and the canvas's row is replaced, the previous link revoked;
+  `DELETE` answers 404.
+- Auto-hide after reports is the service's
+  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)); the canvas hears it on its next
+  check and records `hidden_at`.
 
-Community link behaviour (keyed off `link.purpose === 'community'`):
+Community link behaviour (keyed off the canvas's `community_post.share_code`):
 
-- `apps/api/src/routes/share.ts`: skip `recordSharedAccess`, `Document·Joined` and `notifyDocumentJoin`; add
-  `community`. A hidden post's link answers 404 to everyone.
-- `routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`.
-- `DocumentGrant` gains `community: boolean` (the room's ticket mint reads it). A community grant is refused by every
-  door that has not opted in with `COMMUNITY_CONTENT` (`apps/api/src/routes/context.ts`), the comment listing
-  included. The tab GET opts in through `gateGrant` and reads the grant's `community` flag on a non-owner read, with
-  no second share-link lookup, to redact the tab (`redactTabForCommunity`, `apps/api/src/community-redact.ts`).
-- `routes/documents.ts` copy: when `scope.community` (grant from a community code), after the copy succeeds
-  `INSERT OR IGNORE community_copies` for the caller and recompute `copy_count` (waitUntil).
-- Visitor-opened and visitor-copied timeline events are not recorded for a community visit or copy (strangers' names
-  do not belong in the author's feed).
+- `apps/api/src/routes/share.ts`: the resolve answers `role: 'view'`, `tabId: null` and the post's `community`
+  listing; while the post is not open it answers 404 to everyone.
+- `apps/api/src/routes/document-room-routes.ts`: ticket mint and WebSocket upgrade refuse with 403 `community_link`
+  (`isCommunityCode`).
+- `DocumentGrant` carries `community: boolean`. A community grant is refused by every door that has not opted in with
+  `COMMUNITY_CONTENT` (`gateGrant`, `apps/api/src/routes/context.ts`), the comment listing included. The document GET
+  and the tab GET opt in; the document is redacted with `redactDocumentForCommunity` and the tab with
+  `redactTabForCommunity` (`apps/api/src/community-redact.ts`).
+- Copy: the api's copy door (`apps/api/src/routes/document-index-routes.ts`) names a copy through the post's link
+  after the post (`communityPostTitle`) and counts it (`countCommunityCopy`, with the copier's network) before the
+  index copies; the index's copy (`copy` in `apps/api/src/routes/internal-items.ts`) takes the source through
+  `exportCopy`, which drops comments and the people on actions for a community copy, and counts a copy the api door
+  did not.
 
 Shared UI (`packages/ui/src/community/`): `CommunityPostTile` (the card, used by the Community app and the landing
 page's `CommunityShowcase`), `CommunityAuthorBadge`, `communitySharedAgo` (the shared-ago line), `useCommunityEnabled`
@@ -245,12 +238,12 @@ skeleton, `EmbedFrame` and `PostStates`), and `CommunityHelpLink` (`packages/ui/
 a help-glyph link keyed by `COMMUNITY_HELP` in `packages/help-registry/src/community.ts`, `sharing` or `finding`,
 each an article href and its telemetry id, sent as `UI·Opened·<id>`).
 
-Snapshot and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
+Picture and redaction (api): the export door (`exportImage` in `apps/api/src/document-room/document-room.ts`,
 `drawDocument` in `apps/api/src/thumbnail.ts`) draws from the redacted board when asked with the open post's code;
 liveworkspace's previews keep that picture apart from the owner's (`liveworkspace/docs/previews.md`);
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
-document a community grant reads. `communityNetwork` (packages/community/src/network.ts) maps an address to its
-IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
+document a community grant reads. `clientRateKey(request)` is the copier's network the api passes with a copy;
+the service maps it (`communityNetwork`, `../packages/community/src/network.ts`).
 
 Editor (`apps/editor`):
 
@@ -292,23 +285,24 @@ Community app (`apps/community`):
 - `apps/community/lib/query-state.ts`: the URL query to and from the gallery's filters (pure, tested), via
   `parseCommunityListQuery` / `communityQueryParams`.
 - `apps/community/lib/api.ts`: `fetchPosts`, `fetchMine`, `fetchFacets`, `fetchPost`, `likePost`, `unlikePost`,
-  `reportPost`, with `NEXT_PUBLIC_API_BASE ?? '/api'`; `apps/community/lib/useLike.ts` is the optimistic like with rollback.
+  `reportPost`: every read, like and report straight to the service (`communityServiceUrl` over `communityApi()`),
+  My Shares to this api (`NEXT_PUBLIC_API_BASE ?? '/api'`); `apps/community/lib/useLike.ts` is the optimistic like with rollback.
 - Gallery (`apps/community/components/gallery/`): `GalleryView` over `useGallery`; `CommunityHero`, `SearchBox`
   (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row, so typed text never
   runs under them) holding Clear Search, the My Shares toggle (`aria-pressed`, where sign-in exists), `CategoryMenu`,
   `TagFilter` and `SortMenu` in its right edge, each a `SearchControlMenu` (one trigger, keyboard menu and check-marked rows; a pick closes it or, for Tags, leaves it open) over the shared `SearchControlButton` (icon only below `lg`),
   the menus sharing `MENU_PANEL` and `menuRadioRowClass` (`../packages/ui/src/menu/menu-classes.ts`, also used by the editor mode menus); then `PostGrid` of `PostCard`,
   `LoadMore`, `GalleryStates`. Clear Search keeps the sort and `is:mine`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
-  `communitySearchSort` and their setters (api-schema) read and write them; the worker's list reads them through
-  `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);
-  a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
+  `communitySearchSort` and their setters (api-schema) read and write them; the service's list reads them through
+  `parseCommunityListQuery` (a word wins over the old parameter); a legacy `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the
   toolbar layer (`--z-toolbar`): above the grid, below the sticky header and its menus.
 - My Shares: `is:mine` (`COMMUNITY_MINE_TOKEN`) in `q` switches `useGallery` to `fetchMine`, with the signed-in session
   from `AccountSession` (mounted only when My Shares is on: `POST /api/auth/token` on the same origin, skipped without the
   signed-in hint);
   `apps/community/lib/session.ts` holds
   `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
-  past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
+  past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `LoadError` ("We couldn't load the
+  Community.") with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
   titled, falling back to the card image after 15 s), `PostMeta`, `PostActions`, `ReportDialog` (on the shared `Dialog` shell from `@livediagram/ui`, a phone sheet below `sm`), `RelatedPosts`.
   Links come from `apps/community/lib/links.ts`: Open Canvas `openDocumentHref` (`/document/shared?s=<code>`), Make
@@ -317,81 +311,71 @@ Community app (`apps/community`):
 
 ## 6. Errors and edge cases
 
-| Case                                    | Handling                                                                                                          |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why                                    |
-| Password set on a published document    | 409 `community_published`; Share dialog explains                                                                  |
-| Empty document                          | 409 `empty_document`; "Add something to your first tab before sharing: it is the picture on your Community card." |
-| 51st post                               | 409 `post_limit`                                                                                                  |
-| Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                                                      |
-| A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                                               |
-| My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads                              |
-| Owner revokes all share links           | Community link untouched (filtered)                                                                               |
-| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                                                          |
-| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                                               |
-| Like twice / unlike twice               | Idempotent; counts recomputed                                                                                     |
-| Report twice from one browser           | 204, row unchanged                                                                                                |
-| Storage blocked in the Community app    | In-memory key; likes work for the page's life                                                                     |
-| Embed frame fails                       | Falls back to the card image with Open Canvas                                                                     |
-| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                                                     |
-| Search with only stop characters        | Treated as no search                                                                                              |
-| Offset past the end                     | Empty `posts`, `nextOffset: null`                                                                                 |
-| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author                                       |
+| Case                                    | Handling                                                                                                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why                                                                                                          |
+| Password set on a published document    | The Share dialog locks the password control ("Remove it from the Community to set a password."); a password set another way closes the community link (404) and the sync sends `closed` |
+| Empty document                          | 409 `empty_document`; "Add something to your first tab before sharing: it is the picture on your Community card."                                                                       |
+| 51st post                               | 409 `post_limit` (the service's)                                                                                                                                                        |
+| Two first publishes at once             | The canvas's Durable Object runs one write at a time; the service answers 409 `already_published` to a second create                                                                    |
+| A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                                                                                                                     |
+| My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads                                                                                                    |
+| Owner revokes all share links           | The community link is the post's; removing it in the Share dialog closes the post until it is published again                                                                           |
+| Document trashed                        | The sync sends `away`; hidden everywhere; post page 404; restore lists it again                                                                                                         |
+| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                                                                                                                     |
+| Like twice / unlike twice               | Idempotent (the service's)                                                                                                                                                              |
+| Report twice from one browser           | 204, nothing changes (the service's)                                                                                                                                                    |
+| Storage blocked in the Community app    | In-memory key; likes work for the page's life                                                                                                                                           |
+| Embed frame fails                       | Falls back to the card image with Open Canvas                                                                                                                                           |
+| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                                                                                                                           |
+| Search with only stop characters        | Treated as no search                                                                                                                                                                    |
+| Offset past the end                     | Empty `posts`, `nextOffset: null`                                                                                                                                                       |
+| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author                                                                                                             |
 
 ## 7. Security and trust
 
-- Content-only pass: `resolveDocumentGrant` marks a community grant; `canReadDocument` and `gateGrant`
-  (`apps/api/src/routes/context.ts`) refuse it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the
-  document GET (and its views), the tab GET (and its views), the thumbnail, images, copy and the room ticket (which
-  then refuses with 403 `community_link`). Every other door (comments, comment pictures, changesets, timeline, Q&A
-  board, and any new one) refuses by default.
+- Content-only pass: `resolveDocumentGrant` marks a community grant; `gateGrant` (`apps/api/src/routes/context.ts`)
+  refuses it unless the door passes `COMMUNITY_CONTENT`. Doors that pass it: the document GET (and its views), the tab
+  GET (and its views), images, the copy and the room ticket (which then refuses with 403 `community_link`). Every other
+  door (comments, comment pictures, changesets, timeline, Q&A board, and any new one) refuses by default.
 - `redactElementsForCommunity` / `redactTabDataForCommunity` (`apps/api/src/community-redact.ts`): comment threads
   dropped; each action keeps its text and status, its assignee, team, assigner id and assigner name blanked. Applied
-  to the tab GET for a community visit and to `copyDocument(..., redactForCommunity)`, which rebuilds the copy's
-  activity index from the redacted data instead of copying the source's rows.
-- No `recordVisitorOpened` / `recordVisitorCopied` for a community visit or copy.
-- A hidden post's link: `resolveDocumentGrant` and the live image route answer nothing to anyone.
+  to the tab GET for a community visit and to the copy's source (`exportCopy` in
+  `apps/api/src/document-room/document-content.ts`), so the copy is built from the redacted data.
+- The share resolve for a community link records nothing for the visitor's Shared and sends no join email.
+- A hidden post's link: the grant and the share resolve answer nothing to anyone; the card image is closed by
+  liveworkspace's previews.
 - `?copy=1` (`useAutoCopyParam`) copies only when the session came in through a community link.
 
 - Trust boundary: the Community app is a public, unauthenticated surface. It never sends an owner's credential; the community
   key grants nothing but a like and a report.
 - Publishing requires a verified account identity (G1), so every public post is tied to an account.
-- No owner id leaves the worker in any Community DTO; authors are participant display identities only.
+- No owner id leaves the worker in any Community DTO; authors are participant display identities only; a copier
+  reaches the service only as `copierHash`.
 - The community link is read-only (view role), cannot open the room, and cannot read comments.
-- Abuse: the service's `COMMUNITY_RATE_LIMITER` per network (`communityNetwork`) for likes and reports (publishing,
-  under the api's `/api/documents/:id/community`, stays on the api's per-owner limiter); the service's app routes
-  need the app's key, compared in constant time; auto-hide needs three distinct
-  networks; like and copy counts take at most `COMMUNITY_COUNTED_PER_NETWORK` rows per `network_hash`; reports are
-  never cleared and a hidden post cannot be removed to clear them.
-- `network_hash` = first 32 hex of SHA-256(`<postId>:<network>`): not comparable across posts.
-- LIKE patterns escape `%`, `_` and `\` with `ESCAPE '\'`.
+- Abuse: likes, reports and reads are rate limited by the service, per network; the owner routes stay on the api's
+  per-owner limiter; every call to the service's app routes carries `COMMUNITY_KEY`. Auto-hide, the per-network count
+  caps (`COMMUNITY_COUNTED_PER_NETWORK`) and report hashing are the service's
+  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
 
 ## 8. Performance and limits
 
-- List: one indexed query, `LIMIT 25 OFFSET ?` (one extra row decides `nextOffset`), joined to `documents` (PK) and
-  `participants` (PK). Search adds up to five `LIKE` predicates on `search_text`, acceptable at expected sizes (well
-  under 100k posts); revisit with FTS5 beyond that.
-- Facets: two aggregate queries over listed, untrashed posts.
-- Card images reuse `/api/share/:code/image.svg` (R2-cached under `thumb-community/<id>`); a community link's image
-  sends `public, max-age=30` with no stale window (`COMMUNITY_IMAGE_CACHE`, `apps/api/src/routes/share.ts`), so a
-  hidden post's image goes within 30 seconds.
+- List, search, facets, featured and their indexes are the service's
+  ([liveworkspace/docs/community.md](../../../../../liveworkspace/docs/community.md)).
+- Card images are liveworkspace's previews of `/api/share/:code/image.svg`
+  ([liveworkspace/docs/previews.md](../../../../../liveworkspace/docs/previews.md)); the canvas draws through the
+  export door only when asked.
 - Bodies are capped by the worker's existing `MAX_BODY_BYTES`; inputs by the constants above.
-- Featured: the window's likes come off `idx_community_likes_created`, named with `INDEXED BY` because the planner
-  otherwise walks the whole likes table in primary-key order to suit the `GROUP BY`.
-- Tag and text filters walk the listed posts newest first (by `idx_community_posts_new`), checking each; fine at the
-  expected sizes, with FTS5 the next step (as for search).
 - Sync: a canvas with a post asks the index from its own alarm, every `COMMUNITY_CHECK_MS`, and sends the service
   what changed: one index request, at most one service request and one write to its `community_post` row; a canvas
   with no post does nothing.
 - Hot paths outside the Community: the canvas's `community_post` holds one row at most, so reading it is constant
-  time; the tab save adds one indexed lookup (`document_tabs_by_tab`) only for a tab new to the document;
-  the read gate adds the post check only for a Community link.
-- Bundles (measured against main at merge time, gzipped first load): the editor about +4 KB (+0.3%), the Explorer
-  about +7 KB (+0.5%), the landing page +5.7 KB (the section itself), help +0.9 KB, the status page +0.6 KB. Kept
-  small by keeping the Community vocabulary off other pages: the authors and paths have their own modules
-  (`community-authors.ts`, `community-paths.ts`), and the editor loads its Community message table only for the
-  rare `community_published` answer. The Community bar stays in the editor's main chunk on purpose: splitting it out
-  made the bundler duplicate two Explorer modules (+11 KB there for 1.5 KB saved).
+  time; the read gate adds the post check only for a Community link; a copy through a post adds one service call,
+  off the response path for the index's copy.
+- Bundles: kept small by keeping the Community vocabulary off other pages: the paths have their own module
+  (`community-paths.ts`), and the editor loads its Community message table only for the rare `community_published`
+  answer. The Community bar stays in the editor's main chunk on purpose: splitting it out made the bundler duplicate
+  two Explorer modules.
 
 ## 9. Presentation and UX
 
@@ -461,9 +445,8 @@ Community cards (liveworkspace/apps/site/app/telemetry/livediagram/catalogue/com
 Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,
-`[community] replaced a previous owner post`, `[community] auto-hidden`, `[community] rejected <code>` (including
-`post_hidden`), `[community] publish retried after an id collision`, `[community] copy count failed`, and
-`[tabs] refused a save onto another document's tab` (the tab id guard).
+`[community] rejected <code>` (including `post_hidden` and the service's refusals), `[community] link not removed`
+and `[community] copy count failed`. The service's own logs (auto-hide and the rest) are liveworkspace's.
 
 Browser warnings: `[community] capabilities unavailable; assuming on` (`useCommunityEnabled`), `[community] featured
 load failed` (`CommunityShowcase`), `[community] switched off; leaving for the home page` (`CommunityGate`),

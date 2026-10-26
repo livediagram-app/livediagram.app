@@ -255,7 +255,7 @@ zoom)`, `onDropFile(file, at)`.
 ### Explorer entry and dialog
 
 - `IMPORT_SOURCES` (`app/import/import-sources.tsx`) gains `{ id: 'excalidraw', name: 'Excalidraw',
-icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useExplorerImport` maps it to
+icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useImportDialogs` (`app/import/useImportDialogs.tsx`) maps it to
   `useExcalidrawImportLauncher(importScenes).openExcalidrawImport` and renders its dialog.
 - `ExcalidrawSourceIcon` (`packages/explorer/src/library/import-source-icons.tsx` (repo root)): 20 px, an original glyph
   (a hand-drawn box and a pencil, white on a `#6965db` tile); `aria-hidden`.

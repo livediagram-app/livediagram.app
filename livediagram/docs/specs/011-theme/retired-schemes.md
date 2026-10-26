@@ -49,8 +49,7 @@ pattern colour still equal to the retired theme's becomes the new theme's.
 
 ## Custom themes
 
-Custom themes (a person's own saved schemes) were removed, and their saved definitions deleted with them. A tab saved
-on one stored `theme: 'custom:<uuid>'`, and a `.livediagram.json` file exported then carries the same id. On load such
+There are no custom themes (a person's own saved schemes). A tab that stores `theme: 'custom:<uuid>'`, and a `.livediagram.json` file exported then carries the same id. On load such
 a tab becomes a Default tab:
 
 - `theme` becomes Default (`brand`).

@@ -83,10 +83,10 @@ never rewritten. Named colours are a map read built once, since the parse runs f
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches. Server-made images (thumbnails, the MCP's inline renders) have no viewer and draw what is stored.
 
-## The match prompt is gone
+## No match prompt
 
-The prompt that offered to switch the editor's mode to suit a tab's theme ("This tab uses a light theme") is removed,
-and so is the theme browser's "Turn on Dark mode" switch: no theme needs a particular mode any more.
+Nothing offers to switch the editor's mode to suit a tab's theme, and the theme browser has no "Turn on Dark mode"
+switch: no theme needs a particular mode.
 
 ## Retired: Autumn and Jewel
 

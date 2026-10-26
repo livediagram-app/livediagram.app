@@ -19,8 +19,8 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing document — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. livediagram has no model of its own to proxy to (the
-in-editor AI assistant was removed). The user already has a capable model in front of them; the
+load-bearing decision. livediagram has no model of its own to proxy to (there is no
+in-editor AI assistant). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the diagram **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
@@ -629,7 +629,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 The flow layout reduces crossings: after ranking, a few up-and-down barycentre
 passes reorder each rank, and a new order is kept only when it crosses fewer
 edges ([Layout cleanup](../008-canvas/layout-cleanup.md)), so graph input, whose
-nodes all start at one point, no longer lays out in arbitrary input order. It
+nodes all start at one point, does not lay out in arbitrary input order. It
 also gives long edges a lane, places each node by its neighbours instead of
 centring its rank, and has every edge to a later rank leave and land on the
 faces that point along the flow (the same page). An arrow that still crosses an

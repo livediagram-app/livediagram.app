@@ -1,212 +1,137 @@
 # Workbench embeds: blueprint
 
-> **Moved to the platform (October 2026).** The store (`workbench-store*.ts`), the routes
-> (`routes/workbench*.ts`, routes/workbench-access.ts (gone)), the pairing page (`app/workbench/pair`) and their tests
-> are gone from this app: pairing, tickets, sessions, revocation and the sweep are liveworkspace's
-> ([Workbenches](../../../../../liveworkspace/docs/workbench.md)), in the accounts Worker, and `/api/workbench/*` is
-> forwarded there unchanged. A `lvw_` bearer is checked with liveworkspace (`auth/workbench-session.ts`,
-> `@liveworkspace/auth-client` `createWorkbenchSessionChecker`) and confined here as below; ending access closes
-> rooms through `POST /api/internal/items/:id/workbench-close`. Read "Pairing", "The ticket mint", "Redemption",
-> "Ending access", "Routes", "Data and persistence" and the pairing page's copy as the platform's now.
-
 Derived from [Workbench embeds](../workbench-embeds.md), with the frame headers of [Embeds](../embeds.md), the token
 choke point of [API](../../015-api/api.md#auth) and [Public API and API tokens](../../015-api/public-api-and-tokens.md),
 the whole-tab save rule of [Agent changesets](../../024-agents/agent-changesets.md#whole-tab-saves-and-tab-renames),
 the person tag of [Agent presence](../../024-agents/agent-presence.md), the levels of
-[Share roles](../share-roles.md#api-tokens), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
-[Document views](../../024-agents/document-views.md). The device-grant wait it models the pairing wait on is
-`loginWithDevice` in `apps/cli/src/auth/oauth.ts`. The spec decides; this file only adds engineering precision.
+[Share roles](../share-roles.md#the-levels), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
+[Document views](../../024-agents/document-views.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `WBn`.
 
-**Levels today.** [Share roles](../share-roles.md) is specified, not built: a token carries `read_only`
-(`resolveApiToken` returns `readOnly`). A workbench level is `'view' | 'edit'` today, read from `read_only`, stored
-and sent as `role` with the share-roles `CHECK` so the participate level slots in with no migration (WB1).
+**The platform's part.** Pairing, tickets, sessions, revocation, the sweep, the pairing page and every
+`/api/workbench/*` route are liveworkspace's, in its accounts Worker
+([Workbenches](../../../../../liveworkspace/docs/workbench.md)). The router sends `/api/workbench/*` there, and this
+api forwards a request that reaches it directly (the CLI against `wrangler dev`) unchanged, as livediagram, before
+identity (`index.ts`, `routeToWorkspace`). This file holds what livediagram does with what the platform hands it: a
+`lvw_` bearer checked with liveworkspace and confined here, the frameable page that binds and hosts the editor or the
+Explorer, the messages, the selection reference, and the CLI's two commands.
 
 **Two scopes.** Every ticket, session and pairing carries a `WorkbenchScope`, `document` or `workspace`
 ([Two scopes](../workbench-embeds.md#two-scopes)). Everything below is the document scope unless it says otherwise;
-[The workspace scope](#the-workspace-scope) holds the workspace scope's own behaviour, and each later section adds
-its workspace rows beside the document scope's.
+[The workspace scope](#the-workspace-scope) holds the workspace scope's own behaviour.
 
 It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cli.md),
 [Share roles](share-roles.md), [Agent changesets](../../024-agents/blueprints/agent-changesets.md)):
 
-| Name                                                                 | What it is                                                               |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `RouteContext.workbench: WorkbenchContext \| null`                   | The presenting workbench session; null for every other caller            |
-| `workbenchRouteVerdict(method, segments, session)`                   | The confinement allow-list, shared by the api choke point and the editor |
-| `parseWorkbenchOrigin(input)`                                        | The one origin rule, shared by the api, the CLI and the page             |
-| `WORKBENCH_SESSION_PREFIX` `lvw_`, `isWorkbenchSessionFormat`        | The third bearer kind                                                    |
-| `workbenchStore(env, personId).endAccess(target, reason)`            | Unpair and token revocation: rows gone, rooms closed                     |
-| `WorkbenchScope = 'document' \| 'workspace'`, `WORKBENCH_SCOPES`     | The scope of a ticket, session and pairing                               |
-| `pairingCoversScope(pairingScope, asked)`                            | Whether a pairing lets a mint of that scope through                      |
-| `workspaceFramePath(place)`, `workspacePlaceOf(pathname, search)`    | The workspace frame's addresses, both ways                               |
-| `assignAppLocation(href)`, `setAppNavigationInterceptor(fn)`         | The app's one way to leave a page, which a workspace frame takes over    |
-| `WORKBENCH_ENDED_CLOSE` 4006                                         | The room's close code for a session whose pairing or token ended         |
-| `selectionReference(input)`                                          | The selection reference text, in `@livediagram/document-views`           |
-| `EditorSurface = 'app' \| 'embed' \| 'workbench'`                    | The editor's surface, replacing the `embed` boolean                      |
-| `POST /api/workbench/tickets`, `/sessions`, `/pairing-requests`, ... | The routes, below                                                        |
+| Name                                                              | What it is                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `RouteContext.workbench: WorkbenchContext \| null`                | The presenting workbench session; null for every other caller            |
+| `workbenchRouteVerdict(method, segments, session)`                | The confinement allow-list, shared by the api choke point and the editor |
+| `parseWorkbenchOrigin(input)`                                     | The one origin rule, shared by the CLI and the page                      |
+| `WORKBENCH_SESSION_PREFIX` `lvw_`, `isWorkbenchSessionFormat`     | The third bearer kind                                                    |
+| `WorkbenchScope = 'document' \| 'workspace'`, `WORKBENCH_SCOPES`  | The scope of a ticket, session and pairing                               |
+| `workspaceFramePath(place)`, `workspacePlaceOf(pathname, search)` | The workspace frame's addresses, both ways                               |
+| `assignAppLocation(href)`, `setAppNavigationInterceptor(fn)`      | The app's one way to leave a page, which a workspace frame takes over    |
+| `WORKBENCH_ENDED_CLOSE` 4006                                      | The room's close code for a session whose pairing or token ended         |
+| `selectionReference(input)`                                       | The selection reference text, in `@livediagram/document-views`           |
+| `EditorSurface = 'app' \| 'embed' \| 'workbench'`                 | The editor's surface                                                     |
 
 ## Scope, by file
 
-| File                                                                                                                                                                               | Role                                                                                                                                                                                                                |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/wrangler.toml`                                                                                                                                                           | The `WORKBENCH` Durable Object binding and its SQLite class; `ws_tickets.workbench_pairing` stays in the baseline                                                                                                   |
-| `packages/api-schema/src/workbench.ts` (new, + test)                                                                                                                               | Constants; wire types of every route; `parseWorkbenchOrigin`; `isWorkbenchSessionFormat`; `WorkbenchRole`, `capWorkbenchRole`; `WORKBENCH_ERROR_CODES`; `WORKBENCH_ROUTES`, `workbenchRouteVerdict`                 |
-| `packages/api-schema/src/workbench-messages.ts` (new, + test)                                                                                                                      | The ten message types, `WORKBENCH_MESSAGE_TYPES`, `parseWorkbenchMessage`                                                                                                                                           |
-| `packages/api-schema/src/room-messages.ts`                                                                                                                                         | `WORKBENCH_ENDED_CLOSE = 4006`                                                                                                                                                                                      |
-| `packages/api-schema/src/page-views.ts`                                                                                                                                            | `LIVE_ROUTE_SEGMENTS` gains `workbench`, so the router sends `/workbench/pair` to the editor app                                                                                                                    |
-| `packages/api-schema/src/index.ts`                                                                                                                                                 | Re-exports the two new modules                                                                                                                                                                                      |
-| apps/api/src/workbench-store.ts (gone), `workbench-store-do.ts`, packages/index-app/src/workbench.ts (gone) (+ test)                                                               | The person's workbench store and every query on it (Data and persistence)                                                                                                                                           |
-| `apps/api/src/auth/workbench-session.ts` (new, + test)                                                                                                                             | `resolveWorkbenchSession`: the store a secret names, one read                                                                                                                                                       |
-| `apps/api/src/auth/workbench-confinement.ts` (new, + test)                                                                                                                         | `workbenchRefusal(ctx-like, method, segments, headers)`: the choke point's verdict to a `Response`                                                                                                                  |
-| apps/api/src/routes/workbench.ts (gone)                                                                                                                                            | `handleWorkbench(ctx)`: dispatch of `segments[2]` to the three modules below                                                                                                                                        |
-| apps/api/src/routes/workbench-ticket-route.ts (gone) (new, + test)                                                                                                                 | `POST /api/workbench/tickets`                                                                                                                                                                                       |
-| apps/api/src/routes/workbench-session-routes.ts (gone) (new, + test)                                                                                                               | `POST /api/workbench/sessions`, `DELETE /api/workbench/sessions/current`                                                                                                                                            |
-| apps/api/src/routes/workbench-pairing-routes.ts (gone) (new, + test)                                                                                                               | `/api/workbench/pairing-requests*`, `/api/workbench/pairings*`                                                                                                                                                      |
-| apps/api/src/routes/workbench-access.ts (gone)                                                                                                                                     | `ownerDocumentAccess`: the owner's own access to a document, shared by the mint and redemption (WB3)                                                                                                                |
-| apps/api/src/routes/workbench-test-fixtures.ts (gone)                                                                                                                              | The route suites' shared real-SQLite arrangement (not a suite)                                                                                                                                                      |
-| `apps/api/src/routes/context.ts`                                                                                                                                                   | `RouteContext.workbench`; `WorkbenchContext`                                                                                                                                                                        |
-| `apps/api/src/index.ts`                                                                                                                                                            | `lvw_` resolution beside `lwt_`; confinement; level refusal; rate limiter; `case 'workbench'`; exports the `WorkbenchStore` class                                                                                   |
-| `apps/api/src/routes/document-room-routes.ts`                                                                                                                                      | Ticket mint under a session: `account` true, owner's person tag, role capped at the session's level, `workbenchPairing`; upgrade forwards `X-Verified-Workbench-Pairing`                                            |
-| `../packages/index-app/src/room-ticket.ts`                                                                                                                                         | `RoomTicketWorkbench`: the ticket sealed to the session's pairing and cap                                                                                                                                           |
-| `apps/api/src/document-room/document-room.ts`, `room-session.ts`                                                                                                                   | Attachment `workbenchPairing` from the header; `/close-sessions` closes a `workbench` match with 4006                                                                                                               |
-| `../packages/api-kit/src/room-access.ts`                                                                                                                                           | `AccessCloseMatch` gains `{ match: 'workbench'; pairingId }`; parse and match                                                                                                                                       |
-| `apps/api/src/room-access-client.ts`                                                                                                                                               | `closeWorkbenchSessions(env, documentId, pairingId)`                                                                                                                                                                |
-| `apps/api/src/routes/images.ts`                                                                                                                                                    | Under a session, `GET /api/images/:id` takes the document path only, with `d` the session's document                                                                                                                |
-| `apps/api/src/routes/tokens.ts`                                                                                                                                                    | The self-revoke ends the token's access in the person's store after liveworkspace revokes it                                                                                                                        |
-| `apps/api/src/db/account.ts`, `apps/api/src/db/account-owner-columns.test.ts`                                                                                                      | `deleteAccount` closes the person's workbench store                                                                                                                                                                 |
-| `apps/api/src/responses.ts`                                                                                                                                                        | `workbenchConfined()`, `pairingRequired(body)`                                                                                                                                                                      |
-| `apps/api/src/types.ts`, `apps/api/wrangler.toml`                                                                                                                                  | `WORKBENCH_TICKET_RATE_LIMITER` (namespace `1010`, 30 per 60 s), production and `[env.staging]`                                                                                                                     |
-| `apps/api/src/openapi/manifest.ts`, `document.ts`, `schemas.generated.ts`                                                                                                          | Eleven operations under segment `workbench`, tag `Workbench`; the 428 and 401 bodies                                                                                                                                |
-| `packages/document-views/src/selection-reference.ts` (new, + test), `index.ts`                                                                                                     | `selectionReference(input)`                                                                                                                                                                                         |
-| `apps/editor/app/embed/workbench/page.tsx`                                                                                                                                         | The static route; metadata title `Workbench \| livediagram`, `robots: { index: false }`; renders `WorkbenchPage`                                                                                                    |
-| `apps/editor/app/embed/workbench/WorkbenchPage.tsx`                                                                                                                                | Runs the page machine; renders a status or, once bound, `WorkbenchAuthBridge` around `EditorPage surface="workbench"`                                                                                               |
-| `apps/editor/app/embed/workbench/workbench-machine.ts` (new, + test)                                                                                                               | The page's states and transitions, pure                                                                                                                                                                             |
-| `apps/editor/app/embed/workbench/workbench-fragment.ts` (new, + test)                                                                                                              | `takeTicketFromAddress(location, history)`: reads `#ticket=`, clears the fragment                                                                                                                                   |
-| `apps/editor/app/embed/workbench/useWorkbenchHandshake.ts`                                                                                                                         | Redeem, document check, hello, ack wait, revoke on failure                                                                                                                                                          |
-| `apps/editor/app/embed/workbench/useWorkbenchRenewal.ts` (new, + test)                                                                                                             | Renew timing, ticket redemption, provider swap, old session revoked                                                                                                                                                 |
-| `apps/editor/app/embed/workbench/WorkbenchStatus.tsx`                                                                                                                              | The status screens and their copy                                                                                                                                                                                   |
-| `apps/editor/lib/workbench/workbench-port.ts` (new, + test)                                                                                                                        | `createWorkbenchPort(origin, win)`: send to the bound origin, accept from it, unknown types logged once                                                                                                             |
-| `apps/editor/lib/api/workbench.ts` (new, + test)                                                                                                                                   | `apiRedeemWorkbenchTicket`, `apiEndWorkbenchSession`, `apiReadPairingRequest`, `apiAnswerPairingRequest`, `apiListWorkbenchPairings`, `apiUnpairWorkbench`                                                          |
-| `apps/editor/lib/api/core.ts`                                                                                                                                                      | `setWorkbenchConfinement(session \| null)`; `apiFetch` refuses locally what `workbenchRouteVerdict` refuses, throwing `WorkbenchConfinedError`                                                                      |
-| `apps/editor/lib/api/workbench-confinement.ts` (new, + test)                                                                                                                       | `confinementRefusal(url, init)` and the confinement state, re-exported by `core.ts`: the verdict, the log once per route                                                                                            |
-| `apps/editor/lib/api/images.ts`                                                                                                                                                    | `fetchImage` always sets `d` to the session's document under confinement                                                                                                                                            |
-| `apps/editor/lib/api/room.ts`                                                                                                                                                      | `RoomHandlers.onWorkbenchEnded` on close 4006, the connector stops                                                                                                                                                  |
-| `apps/editor/lib/user-preferences.ts`                                                                                                                                              | `writeUserPreferences` skips `apiPutPreferences` under confinement                                                                                                                                                  |
-| `apps/editor/components/providers/workbench-session-context.ts`                                                                                                                    | `WorkbenchSession`, `WorkbenchSessionContext`, `useWorkbenchSession()`                                                                                                                                              |
-| `apps/editor/components/providers/WorkbenchAuthBridge.tsx` (new, + test)                                                                                                           | A nested `DeferredAuthContext.Provider` with the session's identity; registers the `lvw_` token provider in a layout effect                                                                                         |
-| `../packages/workbench/src/components/providers/deferred-auth.tsx`                                                                                                                 | `DEFERRED_AUTH_PENDING` (`authLoaded: false`, signed out)                                                                                                                                                           |
-| `apps/editor/components/providers/AuthProvider.tsx`                                                                                                                                | `WORKBENCH_ROUTE = '/embed/workbench'`: the accounts and E2E bridges stand down there and the state holds `DEFERRED_AUTH_PENDING`                                                                                   |
-| `apps/editor/hooks/persistence/useAccountBootstrap.ts`                                                                                                                             | Reads `useWorkbenchSession()` first; under a session no migration, no timeout, no provider, the session's identity returned                                                                                         |
-| `apps/editor/app/document/[id]/editor-page.tsx`                                                                                                                                    | `LivePage({ surface })`; `Session·Opened·Workbench`; status branches for the workbench                                                                                                                              |
-| `apps/editor/app/embed/page.tsx`                                                                                                                                                   | `<EditorPage surface="embed" />`                                                                                                                                                                                    |
-| `apps/editor/app/document/[id]/editor-surface.ts` (new, + test)                                                                                                                    | `EditorSurface`, `surfaceFlags(surface)`: `embedMode`, `workbenchMode`, `appChrome`                                                                                                                                 |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                                                                                  | `useEditorState({ surface })`; every gate in the Surface table; `useWorkbenchMessages`, `useTabRevisions`                                                                                                           |
-| `apps/editor/app/document/[id]/useIdentityBootstrap.ts`, `seed-fetched-document.ts`                                                                                                | The workbench branch (Behaviour, "The editor in a workbench")                                                                                                                                                       |
-| `apps/editor/app/document/[id]/workbench-bootstrap.ts` (new, tested by `useIdentityBootstrap.test.ts`)                                                                             | `loadWorkbenchDocument`: the workbench branch of the bootstrap, apart from the 570-line host                                                                                                                        |
-| `apps/editor/app/document/[id]/useWorkbenchEnd.ts` (new, + test)                                                                                                                   | The editor finding its document trashed ends the page (`end('trashed')`)                                                                                                                                            |
-| `apps/editor/app/document/[id]/useRoomConnection.ts` (+ `useRoomConnection.workbench.test.tsx`)                                                                                    | `onWorkbenchEnded`: close 4006 ends the session, and 4005 under a session reads as revoked (WB31) instead of reloading                                                                                              |
-| `apps/editor/app/document/[id]/useTabRevisions.ts` (new, + test)                                                                                                                   | The last known `rev` per tab: loads, saves, changesets                                                                                                                                                              |
-| `apps/editor/lib/api/tabs.ts`, `apps/editor/app/document/[id]/useAutosave.ts`                                                                                                      | `apiSaveTab` returns the saved `rev`; the autosave notes it in `useTabRevisions`                                                                                                                                    |
-| `apps/editor/app/document/[id]/useWorkbenchMessages.ts` (new, + test)                                                                                                              | `ready`, `tab`, `selection` (settled), `reveal`, `theme`                                                                                                                                                            |
-| `apps/editor/app/document/[id]/EditorView.tsx`                                                                                                                                     | Header, Explorer, banners, Open in livediagram, read-only line                                                                                                                                                      |
-| `apps/editor/components/chrome/WorkbenchChrome.tsx` (new, + test)                                                                                                                  | `WorkbenchOpenLink` (the **Open in livediagram** link in the tab bar) and `WorkbenchReconnectLine`                                                                                                                  |
-| `apps/editor/components/chrome/TabBar.tsx`, `ChromeControls.tsx` (+ `TabBar.workbench.test.tsx`)                                                                                   | `workbenchLink`: the link at the bar's right end, and no Appearance control in a workbench                                                                                                                          |
-| `apps/editor/components/canvas/useCanvasChromePanels.tsx`, `CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`                                                           | `explorerHidden`: no menu button, so no Explorer                                                                                                                                                                    |
-| `apps/editor/components/dialogs/settings/settings-catalogue.ts`, `SettingsDialog.tsx`                                                                                              | `visibleCategories(aiCapable, { workbench })`: the workbench hides `documents`, `account` (with `notifications`, nested under it), `tokens` and the Appearance choice; the dialog reads no placement defaults there |
-| `apps/editor/lib/editor-commands.ts`                                                                                                                                               | No share, delete, move, take offline or copy commands in a workbench                                                                                                                                                |
-| `apps/editor/components/panels/ImagePicker.tsx` (+ test), `apps/editor/hooks/canvas/useEditorImages.ts` (+ test)                                                                   | `uploadOnly`: no Gallery or Search tab and no gallery read; `galleryHidden`: no recent-images read                                                                                                                  |
-| `../packages/ui/src/appearance/appearance-store.ts` (+ test), bound in `packages/ui/src/appearance/appearance-store.ts`                                                            | `setAppearanceOverride(appearance \| null)`: wins over the setting, never stored                                                                                                                                    |
-| apps/editor/app/workbench/pair/page.tsx (gone), `PairWorkbench.tsx` (new, + test)                                                                                                  | The pairing page; `OAUTH_PRIMARY` from `apps/editor/app/oauth/oauth-shell.tsx`                                                                                                                                      |
-| `apps/editor/components/dialogs/settings/SettingsTokenPairings.tsx` (new, + test)                                                                                                  | A token card's paired workbenches with **Unpair**                                                                                                                                                                   |
-| `apps/editor/components/dialogs/settings/SettingsTokensRow.tsx`                                                                                                                    | The API Tokens row loads every pairing and lists them (tokens themselves are run on liveworkspace.app)                                                                                                              |
-| `apps/editor/hooks/persistence/useWorkbenchPairings.ts` (new, + test)                                                                                                              | List, group by token, unpair                                                                                                                                                                                        |
-| `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (new)                                                                                                                       | The pairing page (pending), the device page (entry, consent) and a paired-workbench row, light and dark, to WCAG 2.2 AA                                                                                             |
-| `apps/editor/src/worker.ts` (+ test)                                                                                                                                               | Unchanged code; the test pins `/embed/workbench` frameable and `/workbench/pair` `DENY`                                                                                                                             |
-| `packages/agent-verbs/src/verbs/workbench.ts` (new, + test), `catalogue.ts`, `index.ts`                                                                                            | `workbench.open`, `workbench.pair` (local); resource `workbench`; `workbenchOriginOf`, `workbenchNameOf`: the refusals both verbs share                                                                             |
-| `apps/cli/src/commands/workbench-pair.ts` (new, + test)                                                                                                                            | `pairWorkbench(io, api, input, json, log)`: request, print, open, wait                                                                                                                                              |
-| `apps/cli/src/main.ts`                                                                                                                                                             | Dispatches `workbench.pair` beside the other local verbs                                                                                                                                                            |
-| `apps/cli/src/io.ts`                                                                                                                                                               | `CliIo.stdoutIsTTY`, shared with the repository link's picker: whether a person reads stdout (WB25)                                                                                                                 |
-| `apps/cli/src/output/failure-of.ts`                                                                                                                                                | `isNetworkFailure`, shared by `failureOf`, the telemetry and the pairing wait                                                                                                                                       |
-| `apps/cli/src/commands/workbench-open.test.ts`                                                                                                                                     | `workbench open` as the CLI exits                                                                                                                                                                                   |
-| `packages/agent-verbs/src/guides/index.ts`, `skill.ts`                                                                                                                             | Topic `workbench`; `GUIDE_TOPIC_MAX_TOKENS`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`; the skill's `[livediagram]` line                                                                              |
-| `docs/specs/015-api/cli.md`                                                                                                                                                        | The two command rows, the guide topic and the skill's pointer                                                                                                                                                       |
-| liveworkspace/apps/site/app/telemetry/livediagram/cli-commands.ts                                                                                                                  | Rows `WorkbenchOpen`, `WorkbenchPair`                                                                                                                                                                               |
-| liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts, `connections.ts`, `event-explanations.ts`                                                            | `WORKBENCH_SESSIONS` (`Session·Opened·Workbench`), `WORKBENCHES_PAIRED` (`Token·Linked·Workbench`) in API Token Activity                                                                                            |
-| `apps/editor/e2e/workbench-embed.spec.ts`, `apps/editor/e2e/workbench-support.ts`, `apps/editor/e2e/fixtures/fake-workbench.html`, `playwright.config.ts`, `scripts/e2e-stack.mjs` | Project `workbench` (dark), opt-in `E2E_WORKBENCH=1` like `E2E_DRIVE`                                                                                                                                               |
-| `docs/specs/015-api/api.md`                                                                                                                                                        | Segment row `workbench`; four Owner-keyed data rows; rate-limiting row; Auth's third bearer                                                                                                                         |
-| `docs/specs/017-telemetry/telemetry.md`                                                                                                                                            | The three types                                                                                                                                                                                                     |
-| `docs/development/local-development.md`, `README.md`                                                                                                                               | `APP_BASE_URL` builds workbench and pairing URLs; the rate-limiter binding; the e2e flag                                                                                                                            |
-| `apps/help/app/**`, `packages/help-registry`                                                                                                                                       | The workbench help article, registered per `docs/instructions/register-a-help-article.md` (plan phase 8)                                                                                                            |
-
-The workspace scope adds or changes, by file:
-
-| File                                                                                                                                                       | Role                                                                                                                                     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| packages/index-app/src/workbench.ts (gone) (+ test)                                                                                                        | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable item on tickets and sessions; `wb_session_rooms`         |
-| `packages/api-schema/src/workbench.ts`                                                                                                                     | `WorkbenchScope`, `WORKBENCH_SCOPES`, `pairingCoversScope`; the scoped wire types; `workbenchRouteVerdict` by scope (`WORKSPACE_ROUTES`) |
-| `packages/api-schema/src/workbench-messages.ts`                                                                                                            | `livediagram:place`, `livediagram:open`; the workspace `ready`                                                                           |
-| apps/api/src/workbench-store.ts (gone), `workbench-store-do.ts`                                                                                            | The person's workbench store: scope and folder on every row; requests per scope; approval widens a pairing; `noteSessionRoom`            |
-| `apps/api/src/auth/workbench-session.ts`, `workbench-confinement.ts`                                                                                       | `WorkbenchContext.scope`, `folderId`; ambient headers and the view-level share-link list by scope                                        |
-| apps/api/src/routes/workbench-ticket-route.ts (gone), `workbench-session-routes.ts`, `workbench-pairing-routes.ts`                                         | The scoped mint, redemption, requests and pairings                                                                                       |
-| apps/api/src/routes/workbench-access.ts (gone)                                                                                                             | `ownerReachesFolder` beside `ownerDocumentAccess`                                                                                        |
-| `apps/api/src/routes/document-room-routes.ts`                                                                                                              | A workspace session's room ticket records its document (the store's `noteSessionRoom`)                                                   |
-| `apps/api/src/routes/images.ts`                                                                                                                            | The document scope's image rule only; a workspace session reads as its person                                                            |
-| `apps/editor/lib/workbench/workspace-place.ts` (new, + test)                                                                                               | `WorkspacePlace`, `workspacePlaceOf`, `workspaceFramePath`, `framePathOfAppHref`, `appHrefOfPlace`, `placeView`                          |
-| `apps/editor/lib/workbench/workbench-frame-path.ts` (new, + test)                                                                                          | `WORKBENCH_FRAME_PAGE` `/embed/workbench/explorer`, `isWorkspaceFramePath`: the rewrite the editor worker and the e2e stack share        |
-| `../packages/workbench/src/lib/app-location.ts` (new, + test)                                                                                              | `assignAppLocation`, `setAppNavigationInterceptor`; every `window.location.assign` the Explorer makes goes through it                    |
-| `../packages/workbench/src/hooks/navigation/useAppNavigation.ts`                                                                                           | `push` and `replace` ask the interceptor first                                                                                           |
-| `apps/editor/app/embed/workbench/explorer/page.tsx` (new)                                                                                                  | The static workspace frame page; renders `WorkbenchPage`                                                                                 |
-| `apps/editor/app/embed/workbench/WorkbenchPage.tsx`, `workbench-machine.ts`, `workbench-fragment.ts`, `useWorkbenchHandshake.ts`, `useWorkbenchRenewal.ts` | The address's scope; the scope check at redemption and renewal; the workspace frame once mounted                                         |
-| `apps/editor/app/embed/workbench/WorkspaceFrame.tsx` (new, + test)                                                                                         | The mounted workspace frame: the place from the address, the Explorer or the editor, Back, `place`, `open`                               |
-| `apps/editor/app/embed/workbench/useWorkspaceNavigation.ts` (new, + test)                                                                                  | The interceptor, the link capture, New document in place, `livediagram:open`                                                             |
-| `apps/editor/app/embed/workbench/create-in-place.ts` (new, + test)                                                                                         | `createDocumentInPlace(ownerId, { folderId, teamId, templateKind })`                                                                     |
-| `apps/editor/lib/new-document-content.ts` (new)                                                                                                            | `newDocumentContent`: a new document's tabs, card types and example cards, extracted from `/new` so the frame makes the same document    |
-| `apps/editor/app/embed/workbench/ExplorerHost.tsx`                                                                                                         | The shared Explorer for the person in the frame; it gets no `teamsHost`, so no team administration happens in the frame                  |
-| `apps/cli/src/dispatch/globals.ts`                                                                                                                         | `GLOBAL_FLAGS`: the flags every command takes, which the spec's command table may name (`folder ls [--json]`)                            |
-| `apps/editor/app/embed/workbench/useWorkspacePlaceMessages.ts` (new, + test)                                                                               | `ready` (workspace) once and `place` on every move                                                                                       |
-| `apps/editor/components/providers/workbench-session-context.ts`                                                                                            | `WorkbenchSession.scope`, `shareCode`, `frame` (the workspace frame's hooks for the editor)                                              |
-| `apps/editor/app/embed/workbench/WorkspaceFrame.tsx`                                                                                                       | Renders `ExplorerHost` for an Explorer place, the editor for a document                                                                  |
-| `apps/editor/app/document/[id]/workbench-bootstrap.ts`                                                                                                     | A workspace document: its share code, its level per the person's access                                                                  |
-| `apps/editor/app/document/[id]/useWorkbenchMessages.ts`, `useWorkbenchEnd.ts`                                                                              | The workspace frame: `place` in place of `ready`; `trashed` returns to the Explorer                                                      |
-| `apps/editor/components/chrome/WorkbenchChrome.tsx`                                                                                                        | `WorkbenchBackButton`, the top-left card; `WorkbenchOpenLink` takes an `href`                                                            |
-| `apps/editor/components/chrome/ToolbarMenuCard.tsx` (new), `ToolbarExplorerButton.tsx`                                                                     | The top-left card both buttons share                                                                                                     |
-| `apps/editor/components/canvas/CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`                                                                | `workbenchBack`: Back in the menu button's place, first of the controls                                                                  |
-| apps/editor/app/workbench/pair/PairWorkbench.tsx (gone)                                                                                                    | The workspace request's copy                                                                                                             |
-| `apps/editor/components/dialogs/settings/SettingsTokenPairings.tsx`                                                                                        | Each pairing's scope                                                                                                                     |
-| `apps/editor/src/worker.ts`, `scripts/e2e-stack.mjs`                                                                                                       | `/embed/workbench/explorer/**` and `/embed/workbench/document/**` served by the frame page                                               |
-| `apps/editor/e2e/workbench-workspace.spec.ts` (new), `workbench-support.ts`                                                                                | The workspace end to end                                                                                                                 |
-| `packages/agent-verbs/src/verbs/workbench.ts`, `folder.ts` (new, + tests), `catalogue.ts`                                                                  | `workbench.open --workspace [--folder]`, `workbench.pair --workspace`; `folder.ls`, `folder.create`; resource `folder`                   |
-| `apps/cli/src/commands/workbench-pair.ts`, `apps/cli/package.json`, `apps/cli/src/config/version.ts`                                                       | The scope on the pairing request; the minor version                                                                                      |
-| liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts, `event-explanations.ts`, `cli-commands.ts`                                   | `WorkbenchWorkspace`; `FolderLs`, `FolderCreate`                                                                                         |
+| File                                                                                                                                                                     | Role                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/workbench.ts` (+ test)                                                                                                                          | Constants; the wire types of the platform's routes; `parseWorkbenchOrigin`; `isWorkbenchSessionFormat`; `WorkbenchRole`, `capWorkbenchRole`; `WORKBENCH_ERROR_CODES`; `pairingCoversScope`; `workbenchAmbientHeaders`; `workbenchRouteVerdict` over `WORKBENCH_ROUTES` and `WORKSPACE_ROUTES` |
+| `packages/api-schema/src/workbench-messages.ts` (+ test)                                                                                                                 | The message types, `WORKBENCH_MESSAGE_TYPES`, `parseWorkbenchMessage`                                                                                                                                                                                                                         |
+| `packages/api-schema/src/room-messages.ts`                                                                                                                               | `WORKBENCH_ENDED_CLOSE = 4006`                                                                                                                                                                                                                                                                |
+| `apps/api/src/auth/workbench-session.ts` (+ test)                                                                                                                        | `resolveWorkbenchSession`: asks liveworkspace about a secret (`createWorkbenchSessionChecker`, cached per isolate); `noteWorkbenchRoom`: tells liveworkspace a workspace session joined a room                                                                                                |
+| `apps/api/src/auth/workbench-confinement.ts` (+ test)                                                                                                                    | `workbenchRefusal(workbench, method, segments, headers)`: the choke point's verdict to a `Response`                                                                                                                                                                                           |
+| `apps/api/src/routes/context.ts`                                                                                                                                         | `RouteContext.workbench`; `WorkbenchContext`                                                                                                                                                                                                                                                  |
+| `apps/api/src/index.ts` (+ `index.workbench-workspace.test.ts`)                                                                                                          | `/api/workbench/*` forwarded; `lvw_` resolution after the access token and `lwt_`; confinement; the write key                                                                                                                                                                                 |
+| `apps/api/src/routes/document-room-routes.ts`                                                                                                                            | Room ticket under a session: the owner's person tag, the level capped at the session's, the pairing sealed in; a workspace session's room noted; the upgrade forwards `X-Verified-Workbench-Pairing`                                                                                          |
+| `../packages/index-app/src/room-ticket.ts`                                                                                                                               | The ticket's workbench seal: `{ pairing, cap }`                                                                                                                                                                                                                                               |
+| `apps/api/src/document-room/document-room.ts`                                                                                                                            | Attachment `workbenchPairing` from the header; `/close-sessions` closes a `workbench` match with 4006                                                                                                                                                                                         |
+| `../packages/api-kit/src/room-access.ts`                                                                                                                                 | `AccessCloseMatch` `{ match: 'workbench'; pairingId }`; parse and match                                                                                                                                                                                                                       |
+| `apps/api/src/routes/images.ts`                                                                                                                                          | Under a document-scope session, `GET /api/images/:id` takes the document path only, with `d` the session's document                                                                                                                                                                           |
+| `apps/api/src/openapi/manifest.ts`                                                                                                                                       | The forwarded routes under segment `workbench`, tag `Workbench`                                                                                                                                                                                                                               |
+| `packages/document-views/src/selection-reference.ts` (+ test)                                                                                                            | `selectionReference(input)`                                                                                                                                                                                                                                                                   |
+| `apps/editor/app/embed/workbench/page.tsx`                                                                                                                               | The static route; metadata title `Workbench \| livediagram`, `robots: { index: false }`; renders `WorkbenchPage`                                                                                                                                                                              |
+| `apps/editor/app/embed/workbench/explorer/page.tsx`                                                                                                                      | The static workspace frame page; renders `WorkbenchPage`                                                                                                                                                                                                                                      |
+| `apps/editor/app/embed/workbench/WorkbenchPage.tsx` (+ test)                                                                                                             | Runs the page machine; renders a status or, once bound, `WorkbenchAuthBridge` around the editor or the workspace frame                                                                                                                                                                        |
+| `apps/editor/app/embed/workbench/workbench-machine.ts` (+ test)                                                                                                          | The page's states and transitions, pure (`workbenchTransition`, `sessionFitsAddress`, `renewalFits`)                                                                                                                                                                                          |
+| `apps/editor/app/embed/workbench/workbench-fragment.ts` (+ test)                                                                                                         | `takeTicketFromAddress(location, history)`: reads `#ticket=`, clears the fragment, gives the address's scope                                                                                                                                                                                  |
+| `apps/editor/app/embed/workbench/useWorkbenchHandshake.ts` (+ test)                                                                                                      | Redeem, address check, hello, ack wait, end on failure                                                                                                                                                                                                                                        |
+| `apps/editor/app/embed/workbench/useWorkbenchRenewal.ts` (+ test)                                                                                                        | Renew timing, ticket redemption, provider swap, old session ended                                                                                                                                                                                                                             |
+| `apps/editor/app/embed/workbench/WorkbenchStatus.tsx`                                                                                                                    | The status screens and their copy, per scope                                                                                                                                                                                                                                                  |
+| `apps/editor/app/embed/workbench/WorkspaceFrame.tsx` (+ test)                                                                                                            | The mounted workspace frame: the place from the address, the Explorer or the editor, Back, `place`, `open`                                                                                                                                                                                    |
+| `apps/editor/app/embed/workbench/ExplorerHost.tsx`                                                                                                                       | The shared Explorer (`@liveworkspace/explorer`) for the person in the frame, with livediagram's hosts                                                                                                                                                                                         |
+| `apps/editor/app/embed/workbench/useWorkspaceNavigation.ts` (+ test)                                                                                                     | The interceptor, the link capture, New document in place, `livediagram:open`                                                                                                                                                                                                                  |
+| `apps/editor/app/embed/workbench/create-in-place.ts` (+ test)                                                                                                            | `createDocumentInPlace`: a new document in the place's folder or team                                                                                                                                                                                                                         |
+| `apps/editor/app/embed/workbench/useWorkspacePlaceMessages.ts` (+ test)                                                                                                  | `ready` (workspace) once and `place` on every move                                                                                                                                                                                                                                            |
+| `apps/editor/lib/workbench/workbench-port.ts` (+ test)                                                                                                                   | `createWorkbenchPort(origin, win)`: send to the bound origin, accept from it, unknown types logged once                                                                                                                                                                                       |
+| `apps/editor/lib/workbench/workspace-place.ts` (+ test)                                                                                                                  | `WorkspacePlace`, `workspacePlaceOf`, `workspaceFramePath`, `framePathOfAppHref`, `appHrefOfPlace`                                                                                                                                                                                            |
+| `apps/editor/lib/workbench/workbench-frame-path.ts` (+ test)                                                                                                             | `WORKSPACE_FRAME_PAGE`, `isWorkspaceFramePath`: the rewrite the editor worker and the e2e stack share                                                                                                                                                                                         |
+| `../packages/workbench/src/lib/app-location.ts`                                                                                                                          | `assignAppLocation`, `setAppNavigationInterceptor`                                                                                                                                                                                                                                            |
+| `../packages/workbench/src/hooks/navigation/useAppNavigation.ts`                                                                                                         | `push` and `replace` ask the interceptor first                                                                                                                                                                                                                                                |
+| `apps/editor/lib/api/workbench.ts` (+ test)                                                                                                                              | `apiRedeemWorkbenchTicket`, `apiEndWorkbenchSession`, `apiListWorkbenchPairings`, `apiUnpairWorkbench`                                                                                                                                                                                        |
+| `apps/editor/lib/api/core.ts`, `workbench-confinement.ts` (+ test)                                                                                                       | `setWorkbenchConfinement(session \| null)`; `apiFetch` refuses locally what `workbenchRouteVerdict` refuses, throwing `WorkbenchConfinedError`                                                                                                                                                |
+| `apps/editor/lib/api/images.ts`                                                                                                                                          | `fetchImage` sets `d` to the session's document under confinement                                                                                                                                                                                                                             |
+| `apps/editor/lib/api/room.ts`                                                                                                                                            | `RoomHandlers.onWorkbenchEnded` on close 4006; the connector stops                                                                                                                                                                                                                            |
+| `apps/editor/lib/user-preferences.ts`                                                                                                                                    | `writeUserPreferences` skips `apiPutPreferences` under confinement                                                                                                                                                                                                                            |
+| `apps/editor/components/providers/workbench-session-context.ts`                                                                                                          | `WorkbenchSession` (`scope`, `shareCode`, `frame`), `WorkbenchSessionContext`, `useWorkbenchSession()`                                                                                                                                                                                        |
+| `apps/editor/components/providers/WorkbenchAuthBridge.tsx` (+ test)                                                                                                      | A nested `DeferredAuthContext.Provider` with the session's identity; registers the `lvw_` token provider in a layout effect                                                                                                                                                                   |
+| `../packages/workbench/src/components/providers/deferred-auth.tsx`                                                                                                       | `DEFERRED_AUTH_PENDING` (`authLoaded: false`, signed out)                                                                                                                                                                                                                                     |
+| `apps/editor/components/providers/AuthProvider.tsx`                                                                                                                      | `WORKBENCH_ROUTE = '/embed/workbench'`: the accounts and E2E bridges stand down there                                                                                                                                                                                                         |
+| `apps/editor/hooks/persistence/useAccountBootstrap.ts`                                                                                                                   | Reads `useWorkbenchSession()` first; under a session the session's person, settled at once                                                                                                                                                                                                    |
+| `apps/editor/app/document/[id]/editor-surface.ts` (+ test)                                                                                                               | `EditorSurface`, `surfaceFlags(surface)`: `embedMode`, `workbenchMode`, `appChrome`                                                                                                                                                                                                           |
+| `apps/editor/app/document/[id]/editor-page.tsx`                                                                                                                          | `surface`; `Session·Opened·Workbench`; status branches for the workbench                                                                                                                                                                                                                      |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                                                                                        | Every gate in the Surface table; `useWorkbenchMessages`, `useTabRevisions`                                                                                                                                                                                                                    |
+| `apps/editor/app/document/[id]/useIdentityBootstrap.ts`, `workbench-bootstrap.ts`                                                                                        | `loadWorkbenchDocument`: the workbench branch of the load                                                                                                                                                                                                                                     |
+| `apps/editor/app/document/[id]/useWorkbenchEnd.ts` (+ test)                                                                                                              | The editor finding its document trashed ends the page (`end('trashed')`)                                                                                                                                                                                                                      |
+| `apps/editor/app/document/[id]/useRoomConnection.ts` (+ `useRoomConnection.workbench.test.tsx`)                                                                          | Close 4006 ends the session; 4005 under a session reads as revoked (WB31)                                                                                                                                                                                                                     |
+| `apps/editor/app/document/[id]/useTabRevisions.ts` (+ test)                                                                                                              | The last known `rev` per tab: loads, saves, changesets                                                                                                                                                                                                                                        |
+| `apps/editor/app/document/[id]/useWorkbenchMessages.ts` (+ test)                                                                                                         | `ready` (or `place`), `tab`, `selection` (settled), `reveal`, `theme`                                                                                                                                                                                                                         |
+| `apps/editor/components/chrome/WorkbenchChrome.tsx` (+ test)                                                                                                             | `WorkbenchOpenLink`, `WorkbenchReconnectLine`, `WorkbenchBackButton`                                                                                                                                                                                                                          |
+| `apps/editor/components/chrome/TabBar.tsx`, `ChromeControls.tsx` (+ `TabBar.workbench.test.tsx`)                                                                         | `workbenchLink` at the bar's right end; no Appearance control in a workbench                                                                                                                                                                                                                  |
+| `apps/editor/components/chrome/ToolbarMenuCard.tsx`                                                                                                                      | The top-left card Back shares with the Explorer menu button                                                                                                                                                                                                                                   |
+| `apps/editor/components/canvas/CanvasChrome.tsx`, `Canvas.types.ts`, `EditorCanvasHost.tsx`, `useCanvasChromePanels.tsx`                                                 | `explorerHidden`; `workbenchBack`: Back in the menu button's place, first of the controls                                                                                                                                                                                                     |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts`                                                                                                          | `visibleCategories(aiCapable, { workbench })`: the workbench hides `documents`, `account`, `tokens` and the Appearance choice                                                                                                                                                                 |
+| `apps/editor/lib/editor-commands.ts`                                                                                                                                     | No share, delete, move, take offline or copy commands in a workbench                                                                                                                                                                                                                          |
+| `apps/editor/components/panels/ImagePicker.tsx`, `apps/editor/hooks/canvas/useEditorImages.ts` (+ tests)                                                                 | `uploadOnly`, `galleryHidden`: no gallery or recent-images read                                                                                                                                                                                                                               |
+| `../packages/ui/src/appearance/appearance-store.ts` (+ test)                                                                                                             | `setAppearanceOverride(appearance \| null)`: wins over the setting, never stored                                                                                                                                                                                                              |
+| `apps/editor/components/dialogs/settings/SettingsTokenPairings.tsx`, `SettingsTokensRow.tsx`                                                                             | The paired workbenches under the API Tokens row, with **Unpair**                                                                                                                                                                                                                              |
+| `apps/editor/hooks/persistence/useWorkbenchPairings.ts` (+ test)                                                                                                         | List, group by token, unpair (the platform's routes)                                                                                                                                                                                                                                          |
+| `apps/editor/src/worker.ts` (+ test)                                                                                                                                     | `/embed/workbench/**` frameable; the workspace frame paths served by its page                                                                                                                                                                                                                 |
+| `packages/agent-verbs/src/verbs/workbench.ts` (+ test), `catalogue.ts`                                                                                                   | `workbench.open`, `workbench.pair` (local); resource `workbench`; `workbenchOriginOf`, `workbenchNameOf`                                                                                                                                                                                      |
+| `apps/cli/src/commands/workbench-pair.ts` (+ test), `workbench-open.test.ts`                                                                                             | `pairWorkbench(io, api, input, json, log)`: request, print, open, wait                                                                                                                                                                                                                        |
+| `apps/cli/src/main.ts`, `io.ts`, `output/failure-of.ts`                                                                                                                  | Dispatch of `workbench.pair`; `CliIo.stdoutIsTTY`; `isNetworkFailure`                                                                                                                                                                                                                         |
+| `packages/agent-verbs/src/guides/index.ts`, `src/skill.ts`                                                                                                               | Topic `workbench`; the skill's `[livediagram]` line                                                                                                                                                                                                                                           |
+| `apps/editor/e2e/workbench-embed.spec.ts`, `workbench-workspace.spec.ts`, `workbench-support.ts`, `fixtures/fake-workbench.html`, `signed-in/workbench-contrast.spec.ts` | End to end, project `workbench` (dark), opt-in `E2E_WORKBENCH=1`; the contrast audit                                                                                                                                                                                                          |
+| `apps/help/app/developers/workbenches/**`                                                                                                                                | The workbench help articles                                                                                                                                                                                                                                                                   |
 
 ## Domain and naming
 
-| Term                | Identifier                                                            | Meaning                                                                    |
-| ------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Workbench           | the frame's parent, known by its origin                               | A developer tool that frames the editor beside an agent                    |
-| Workbench name      | `name` (pairing, request), `hello-ack.name`                           | The tool's display name ("Acme Editor"), shown in copy, never enforced     |
-| Origin              | `WorkbenchOrigin` (branded string), `parseWorkbenchOrigin`            | `scheme://host[:port]`, the enforced identity of a workbench               |
-| Pairing request     | `wb_pairing_requests` row, `PairingRequestStatus`                     | One ask to pair a token with an origin, answered once                      |
-| Pairing code        | `code` (`?code=`)                                                     | The request's public handle in the pairing URL                             |
-| Pairing             | `wb_pairings` row, `WorkbenchPairing`                                 | A token and an origin its owner approved                                   |
-| Unpair              | `DELETE /api/workbench/pairings/:id`                                  | Removing a pairing and ending its sessions                                 |
-| Workbench ticket    | `wb_tickets` row; the routed secret                                   | Single-use, one-minute credential that opens one session                   |
-| Workbench session   | `wb_sessions` row; `lvw_` secret; `WorkbenchContext`                  | The frame acting as the person on one document                             |
-| Session level       | `WorkbenchRole` (`role` on the wire)                                  | `view` or `edit` (participate reserved), the token's level on the document |
-| Confinement         | `WORKBENCH_ROUTES`, `workbenchRouteVerdict`, `403 workbench_confined` | What a session may reach                                                   |
-| Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`                 | The frameable page that binds and hosts the editor                         |
-| Binding             | `hello` / `hello-ack`                                                 | Proof that the parent is the minting origin                                |
-| Renewal             | `livediagram:renew` / `livediagram:ticket`                            | A fresh ticket redeemed before the session expires                         |
-| Workbench message   | `WorkbenchMessage`, `type` `livediagram:*`, `v: 1`                    | One `postMessage` between the page and its workbench                       |
-| Selection reference | `selectionReference()`, `SelectionReference { text, count }`          | The text a workbench attaches to the person's message                      |
-| Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench'`                     | Where the editor runs; `workbench` is a distinct surface                   |
-| Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused`       | Why a page stopped editing                                                 |
-| Scope               | `WorkbenchScope` `document`, `workspace`; `scope` on rows and wire    | What a ticket, session or pairing reaches: one document, or the workspace  |
-| Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`                    | The Explorer inside a workbench, under a workspace session                 |
-| Place               | `WorkspacePlace`, `livediagram:place`                                 | Where a workspace frame is: an Explorer view, or a document                |
-| Frame address       | `workspaceFramePath(place)`                                           | A place's path inside the frame, walked by the frame's own history         |
-| Explorer surface    | `ExplorerSurface` `'app' \| 'workbench'`                              | Where the Explorer runs; `workbench` drops the app's surroundings          |
+| Term                | Identifier                                                      | Meaning                                                                           |
+| ------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Workbench           | the frame's parent, known by its origin                         | A developer tool that frames the editor beside an agent                           |
+| Workbench name      | `name` (pairing, request), `hello-ack.name`                     | The tool's display name ("Acme Editor"), shown in copy, never enforced            |
+| Origin              | `parseWorkbenchOrigin`                                          | `scheme://host[:port]`, the enforced identity of a workbench                      |
+| Pairing             | `WorkbenchPairing`                                              | A token and an origin its owner approved (liveworkspace's)                        |
+| Unpair              | `apiUnpairWorkbench`                                            | Removing a pairing and ending its sessions                                        |
+| Workbench ticket    | `#ticket=` in the frame URL                                     | Single-use, one-minute credential that opens one session (liveworkspace mints it) |
+| Workbench session   | `lvw_` secret; `WorkbenchContext`                               | The frame acting as the person                                                    |
+| Session level       | `WorkbenchRole` (`role` on the wire)                            | The token's level on the document, never above the person's own access            |
+| Confinement         | `workbenchRouteVerdict`, `403 workbench_confined`               | What a session may reach                                                          |
+| Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`           | The frameable page that binds and hosts the editor                                |
+| Binding             | `hello` / `hello-ack`                                           | Proof that the parent is the minting origin                                       |
+| Renewal             | `livediagram:renew` / `livediagram:ticket`                      | A fresh ticket redeemed before the session expires                                |
+| Workbench message   | `type` `livediagram:*`, `v: 1`                                  | One `postMessage` between the page and its workbench                              |
+| Selection reference | `selectionReference()`, `{ text, count }`                       | The text a workbench attaches to the person's message                             |
+| Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench'`               | Where the editor runs; `workbench` is a distinct surface                          |
+| Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused` | Why a page stopped editing                                                        |
+| Scope               | `WorkbenchScope` `document`, `workspace`                        | What a ticket, session or pairing reaches: one document, or the workspace         |
+| Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`              | The Explorer inside a workbench, under a workspace session                        |
+| Place               | `WorkspacePlace`, `livediagram:place`                           | Where a workspace frame is: an Explorer view, or a document                       |
+| Frame address       | `workspaceFramePath(place)`                                     | A place's path inside the frame, walked by the frame's own history                |
 
 Banned: "workspace" for a document-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
 access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link
@@ -218,176 +143,91 @@ Don't allow).
 
 ### Invariants
 
-- **I1** A workbench session never reaches a document other than its own: such a request answers 404, decided at
-  the choke point before any route runs.
-- **I2** A workbench session never reaches a route outside `WORKBENCH_ROUTES`: `403 workbench_confined`.
+- **I1** A document-scope session never reaches a document other than its own: such a request answers 404, decided
+  at the choke point before any route runs.
+- **I2** A session never reaches a route outside its scope's allow-list: `403 workbench_confined`.
 - **I3** A session's level never exceeds its token's, and every gate re-evaluates the owner's access now (the gates
   run with the owner's identity on every request).
 - **I4** `ctx.accountUserId` is null and `ctx.token` is null under a session; `resolveOwner()` and `verifiedUserId`
   are the owner. So administration (`accountUserId` only) is unreachable and `405 use_changesets` never fires.
-- **I5** No ticket is minted for an origin its token is not paired with.
-- **I6** No pairing is answered except by the token's owner in a signed-in session; a token and a workbench session can
-  neither read a request's page view nor answer it.
-- **I7** Secrets (ticket, session) are stored as SHA-256 hex only; logs carry the session id's first 8 characters
-  and the token id, never a secret, a code or an origin path.
+- **I5** Logs carry the session id's first 8 characters (`sessionPrefixOf`), never a secret.
 - **I8** The workbench page mounts no editor and sends no `livediagram:*` message other than `hello` (and `ended`
   `refused`, to the session's origin) before a valid `hello-ack`.
-- **I9** The editor in a workbench never runs the guest migration, never writes the participant record, and never
+- **I9** The editor in a workbench never runs the guest handoff, never writes the participant record, and never
   writes preferences to the api.
-
-### Pairing
-
-```text
-            mint (unpaired) / POST pairing-requests
- (none) ───────────────────────────────────────────▶ pending ──Allow──▶ approved ─▶ pairing row
-                                                        │ └──Don't allow──▶ declined
-                                                        └──now ≥ expires_at──▶ expired (read as such)
-```
-
-1. **Ask from a mint.** `POST /api/workbench/tickets` for an origin with no pairing for the token
-   calls `livePairingRequest(tokenId, origin)` (`status = 'pending' AND expires_at > now`); none creates one with
-   `name` null. The answer is `428 pairing_required { pairingUrl, expiresAt }`. Log `[workbench] pairing-requested`.
-2. **Ask from `workbench pair`.** `POST /api/workbench/pairing-requests { origin, name? }` returns
-   `{ status: 'paired', pairing }` when the pairing exists, else the live request (created when none, with `name`;
-   an existing request takes the given `name` when one is given, WB2) as
-   `{ status: 'pending', pairingUrl, code, expiresAt, interval }`. One live request per token and origin, enforced by
-   a partial unique index; a pending row past its expiry is deleted before the insert.
-3. **Read.** `GET /api/workbench/pairing-requests/:code` (signed-in session, owner only) returns the page's view:
-   `{ origin, name, tokenName, expiresAt, status }`, `status` read as `expired` when pending past its expiry.
-4. **Answer.** `POST .../:code/approve` in one batch: the request's `status` from `pending` to `approved`
-   (`UPDATE ... WHERE status = 'pending' AND expires_at > now`) and `INSERT OR IGNORE` the pairing (`name` from the
-   request). `POST .../:code/decline` sets `declined` and records nothing else. A request already answered answers
-   `409 pairing_answered`; one expired `410 pairing_expired`. Logs `[workbench] paired`, `[workbench] pairing-declined`.
-5. **Wait.** `GET /api/workbench/pairing-requests/:code/status` (the requesting token only, by the code, WB45) returns
-   `{ status, expiresAt, interval }`; the CLI polls it every `interval` seconds.
-6. **Paired.** Mints for that token and origin now pass the pairing check.
-7. **Unpair.** `DELETE /api/workbench/pairings/:id` (signed-in session, the token's owner) runs
-   the person's store's `endAccess({ pairingId }, 'unpaired')`.
-8. **Token revoked.** `DELETE /api/tokens/current`, and the store's own check of its tokens with liveworkspace, run
-   `endAccess({ tokenId }, 'revoked')`: pairings, pending requests, tickets and sessions of the token go.
-
-A request row stays after its answer until the sweep, so the waiting CLI reads the answer; it is never answered
-twice (the `status = 'pending'` guard).
-
-### The ticket mint (`POST /api/workbench/tickets`)
-
-In order; the first failure answers:
-
-1. Bearer is a workbench session: `403 workbench_confined` (choke point). No `ctx.token` (a signed-in session or a
-   guest): `403 token_required`.
-2. `WORKBENCH_TICKET_RATE_LIMITER` keyed `workbench-ticket:<tokenId>`: over, `429 rate_limited`. The write limiter
-   (`token:<tokenId>`) applies too, as for every token write.
-3. Body through `readBody`; `documentId` a string of 1 to 64 characters, `tabId` absent or the same, else
-   `400 bad_request` (`invalid documentId`, `invalid tabId`). `origin` through `parseWorkbenchOrigin`: refused,
-   `400 invalid_origin`.
-4. Pairing: no row for `(token_id, origin)`, step 1 of Pairing, `428 pairing_required`.
-5. `getDocumentMeta`; absent, `missingDocument` (404, or 410 `document_trashed`). The grant is
-   `resolveDocumentGrant(env, id, owner, null, ownerId, null, teamId, owner)`: the owner's own access, never a share
-   code (WB3). None, 404. A `tabId` the document does not link, 404.
-6. Level: `grant.role`, lowered to `view` when the token is read-only.
-7. Insert the ticket (`expires_at = now + WORKBENCH_TICKET_TTL_MS`) and answer
-   `201 { url, documentId, tabId, expiresAt }` (`tabId` null when none was given, WB44), `url` =
-   `${appBaseUrl(env)}/embed/workbench?d=${encodeURIComponent(documentId)}#ticket=${ticket}` (WB4). Log
-   `[workbench] ticket-minted`.
-
-### Redemption (`POST /api/workbench/sessions`)
-
-Credential-free: an `Authorization` other than `lvw_` is ignored; `lvw_` is confined (WB5).
-
-1. Body `{ ticket }`, `ticket` matching `WORKBENCH_TICKET_PATTERN`, else `400 bad_request` (`invalid ticket`).
-2. Consume, in the store the ticket names: `UPDATE wb_tickets SET used_at = ? WHERE ticket_hash = ? AND used_at IS
-NULL AND expires_at > ? RETURNING ...`. No row: `SELECT used_at` classifies `used`, `expired` or `unknown`, logged
-   `[workbench] session-refused`, answered `401 invalid_ticket { reason }`.
-3. The token must be live and the pairing present (joined in step 2's `RETURNING` query through `token_id` and
-   `pairing_id`); else `401 invalid_ticket { reason: 'unknown' }`.
-4. The document: `getDocumentMeta`; absent, `missingDocument`; the owner's grant as in the mint, none, 404. The
-   level is the ticket's `role` lowered by the grant (`edit` only when both are `edit`).
-5. Insert the session: `id` a UUID, the secret `lvw_` + 43 base64url characters (32 random bytes), its hash,
-   `expires_at = min(now + WORKBENCH_SESSION_TTL_MS, token.expires_at)` (WB6).
-6. `person`: the owner's `participants` row as `{ id, name, color }`; no row gives `name` and `color`
-   null (WB7). Answer `201 WorkbenchSessionResponse`. Log `[workbench] session-opened`.
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)
 
-Resolved where `lwt_` is, only when no account access token verified:
+Resolved only when neither an account access token nor an API token did:
 
-1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`: one `readSession`
-   call on the store the secret names, the session by its hash with its token's state. No row → `unknown`; token revoked or expired → `revoked`;
-   `s.expires_at <= now` → `expired`. Refused: log `[workbench] bearer-refused { reason, sessionPrefix }`, answer
-   `401 invalid_session` with `WWW-Authenticate: Bearer error="invalid_token"`.
-2. `ctx.workbench = { sessionId, ownerId, tokenId, pairingId, documentId, tabId, origin, level }`, `level` lowered to
-   `view` when the token is read-only; `accountUserId` null; `resolveOwner = () => ownerId`;
-   `verifiedUserId = ownerId`; `ctx.token = null`.
-3. A request carrying `X-Share-Code`, `X-Owner-Id` or `X-Share-Password` beside `lvw_`: `403 workbench_confined`
-   (WB8).
+1. A bearer starting `lvw_` that fails `isWorkbenchSessionFormat` is refused as `malformed`. One that passes goes to
+   `resolveWorkbenchSession(env, bearer)`, which asks liveworkspace with the api's client credentials
+   (`createWorkbenchSessionChecker` from `@liveworkspace/auth-client`), keeping the answer per isolate: a live
+   session for up to a minute, never past its expiry; a refused one ten seconds. Refused (`unknown`, `revoked`,
+   `expired`, `malformed`): log `[workbench] bearer-refused { reason, sessionPrefix }`, answer `401 invalid_session`
+   with `WWW-Authenticate: Bearer error="invalid_token"`. liveworkspace unreachable (`AccountsUnavailable`):
+   `503 accounts_unavailable`, `Retry-After: 5`, so a good session is never called bad.
+2. `ctx.workbench = { sessionId, ownerId, tokenId, pairingId, scope, documentId, folderId, tabId, origin, level,
+expiresAt, teams }` (an item session names its document; a workspace session its folder or none);
+   `accountUserId` null; the caller's id, `verifiedUserId` and the teams claim are the owner's; `ctx.token` null.
+3. `workbenchRefusal`: a header of `workbenchAmbientHeaders(scope)` beside `lvw_` (the document scope:
+   `X-Share-Code`, `X-Owner-Id`, `X-Share-Password`): `403 workbench_confined` (WB8).
 4. `workbenchRouteVerdict(method, segments, ctx.workbench)`: `'allow'`, `'other-document'` → 404 `not_found`,
-   `'confined'` → `403 workbench_confined`, logged `[workbench] confined { method, route, sessionPrefix }` with
+   `'confined'` → `403 workbench_confined`, logged `[workbench] confined { scope, method, route, sessionPrefix }` with
    `route` from `apiRouteLabel`.
-5. Level: a `view` session's `POST`, `PUT` or `DELETE` is refused `403 workbench_read_only`, except
-   `POST /api/documents/:doc/room-ticket` and `DELETE /api/workbench/sessions/current` (WB9).
-6. Rate limits: writes key `workbench:<sessionId>` on `WRITE_RATE_LIMITER` (WB10); reads are unmetered, as a
-   signed-in editor's are.
+5. Level: a `view` session's `POST`, `PUT`, `DELETE` or `PATCH` is refused `403 workbench_read_only`, except
+   `POST /api/documents/:doc/room-ticket` and `DELETE /api/workbench/sessions/current` (WB9), and so is the
+   share-link list `GET /api/documents/:doc/share` (WB54), logged `[workbench] read-only-refused`.
+6. Rate limits: writes key `workbench:<sessionId>` on the write limiter (WB10); reads are unmetered, as a signed-in
+   editor's are.
 
-`WORKBENCH_ROUTES` (`:doc` is the session's document; a document route naming any other id is `other-document`):
+`WORKBENCH_ROUTES` (`:doc` is the session's document; a document route naming any other id is `other-document`; `:p`
+any one segment but `usage`, `invites`, `invite-link`, `invite-decline`):
 
-| Method           | Path under `/api`                                                                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                              |
-| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`, `shape-libraries`                                                                   |
-| POST             | `images`                                                                                                                                                                       |
-| GET              | `images/:id` (the route then requires `?d=:doc`)                                                                                                                               |
-| GET, PUT         | `documents/:doc`                                                                                                                                                               |
-| GET, PUT, DELETE | `documents/:doc/tabs/:tabId`                                                                                                                                                   |
-| PUT              | `documents/:doc/tabs/:tabId/name`                                                                                                                                              |
-| POST             | `documents/:doc/tabs/:tabId/changesets`, `documents/:doc/changesets/:changesetId/revert`                                                                                       |
-| GET              | `documents/:doc/changesets`, `documents/:doc/changesets/:changesetId`, `documents/:doc/comments`                                                                               |
-| GET              | `documents/:doc/tabs/:tabId/render.svg`                                                                                                                                        |
-| POST             | `documents/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                            |
-| DELETE           | `documents/:doc/tabs/:tabId/comments/:commentId`                                                                                                                               |
-| POST             | `documents/:doc/tabs/:tabId/qa`, `documents/:doc/room-ticket`                                                                                                                  |
-| GET, POST        | `documents/:doc/items`                                                                                                                                                         |
-| POST             | `documents/:doc/items/bulk`, `items/:itemId`, `items/:itemId/move`, `items/tally`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
-| DELETE           | `documents/:doc/items/:itemId`, `documents/:doc/items/:itemId/comments/:commentId`                                                                                             |
-| PUT              | `documents/:doc/item-types`                                                                                                                                                    |
-| DELETE           | `workbench/sessions/current`                                                                                                                                                   |
+| Method           | Path under `/api`                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:p`, `icons`, `schema`, `schema/:p` |
+| GET              | `participants/:owner` (the session's owner only), `preferences`, `shape-libraries`          |
+| POST             | `images`                                                                                    |
+| GET              | `images/:p` (the route then requires `?d=:doc`)                                             |
+| GET, PUT         | `documents/:doc`                                                                            |
+| GET, PUT, DELETE | `documents/:doc/tabs/:p`                                                                    |
+| PUT              | `documents/:doc/tabs/:p/name`                                                               |
+| POST             | `documents/:doc/tabs/:p/changesets`, `documents/:doc/changesets/:p/revert`                  |
+| GET              | `documents/:doc/changesets`, `documents/:doc/changesets/:p`, `documents/:doc/comments`      |
+| GET              | `documents/:doc/tabs/:p/render.svg`                                                         |
+| POST             | `documents/:doc/tabs/:p/comments`, `.../comments/:p/reply`, `.../resolve`, `.../reopen`     |
+| DELETE           | `documents/:doc/tabs/:p/comments/:p`                                                        |
+| POST             | `documents/:doc/tabs/:p/qa`, `documents/:doc/room-ticket`                                   |
+| DELETE           | `workbench/sessions/current`                                                                |
 
-Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
-`community`, `thumbnail`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),
-`folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
-`account`, `ai`, `drive`, `oauth`, every write to `preferences`, `participants`,
-`shape-libraries`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every
-`workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
-`share/:code` are called without credentials by the editor and never see `lvw_`.
+Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `shared-tabs`, `share*`, `community`,
+`tabs/:p/presence` (an agent's door), `tokens`, `account`, `ai`, `oauth`, every write to `preferences`,
+`participants` and `shape-libraries`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every `workbench/*`
+route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and `share/:code`
+are called without credentials by the editor and never see `lvw_`.
 
 ### Route effects under a session
 
-- `document-room-routes.ts` mint: `account: ctx.accountUserId !== null || ctx.workbench !== null`; `personTag` from
-  `ctx.accountUserId ?? ctx.workbench?.ownerId`; `role: capWorkbenchRole(grant.role, ctx.workbench?.level)`;
-  `workbenchPairing: ctx.workbench?.pairingId ?? null`. The upgrade sets `X-Verified-Workbench-Pairing` on every
-  path (empty when none), as every other trust header.
-- `images.ts` `GET /api/images/:id`: under `ctx.workbench` the owner shortcut is skipped and `d` must equal the
-  session's document (else 404); the document path decides as for a share visitor.
+- `document-room-routes.ts` mint: the room ticket carries the owner's person tag, the level
+  `capWorkbenchRole(grant.level, workbench.level)` and the seal `{ pairing: pairingId, cap: level }`. The upgrade
+  sets `X-Verified-Workbench-Pairing` on every path (empty when none), as every other trust header.
+- `images.ts` `GET /api/images/:id`: under a document-scope session the owner shortcut (and the sha header shortcut)
+  is skipped and `d` must equal the session's document (else 404); the document path decides as for a share visitor.
 - The tab `PUT`, comments, changesets and revert see `ctx.token === null`: a person's editor. A changeset a session
   submits (only Undo's revert in practice) is a person's, never held.
 - Changesets submitted by the owner's agent while the frame selects: the room's `/selections` marks the frame's
   socket `mine` through the person tag, so it never holds against the owner's agent, and the CLI's `selected`
   reads it.
 
-### Ending access (the store's `endAccess`)
+### When access ends
 
-`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired`, `revoked` or `closed` (the account closed).
-
-1. Read the target's pairings with every document any of their sessions names or joined (`wb_session_rooms`).
-2. Delete the target's pairings (sessions, tickets and rooms cascade); for a token, also its pairing requests, and
-   it is marked revoked.
-3. Close: `closeWorkbenchSessions(env, documentId, pairingId)` per pair, 10 at a time, best-effort (the delete is
-   the change).
-4. Log `[workbench] session-ended { reason, documentId, tokenId, sessionPrefix }` per session read in step 1, and
-   `[workbench] unpaired { tokenId, pairingId, rooms, unreached }` for each pairing.
-
-The room closes every socket whose attachment `workbenchPairing` equals the id with `WORKBENCH_ENDED_CLOSE`, reason
-`workbench-ended`. The page's own `DELETE .../sessions/current` deletes its row and closes nothing (renewal keeps
-the socket, WB11).
+Unpair, a token revoked and an account closed are liveworkspace's to decide
+([Workbenches](../../../../../liveworkspace/docs/workbench.md) "Ending access"). Its answer reaches livediagram two
+ways: the next `lvw_` request resolves `revoked` (401 `invalid_session`, within the checker's minute), and the room's
+`/close-sessions` with `{ match: 'workbench', pairingId }` closes every socket whose attachment `workbenchPairing`
+equals the id with `WORKBENCH_ENDED_CLOSE`, reason `workbench-ended`. The page's own
+`DELETE /api/workbench/sessions/current` ends its session and closes nothing (renewal keeps the socket, WB11).
 
 ### The workbench page (`/embed/workbench`)
 
@@ -439,43 +279,45 @@ getToken: async () => currentSecret, signOut: noop, deleteAccount: null }` and r
 `AuthProvider` on `pathname.startsWith('/embed/workbench')` renders neither bridge and holds
 `DEFERRED_AUTH_PENDING`, so nothing above the page ever reads as a settled guest, sign-in configured or not.
 
-`useAccountBootstrap` reads `useWorkbenchSession()` first in both variants. With a session: no
-`settleGuestMigration`, no `subscribeGuestMigration` pending, no 5 s timeout, no provider registration; it returns
-`{ isSignedIn: true, authLoaded: true, accountUserId: person.id, accountDisplayName: person.name }`.
+`useAccountBootstrap` reads `useWorkbenchSession()` first. With a session: no guest handoff, no timeout, no provider
+registration; it returns the session's person as a settled account (`workbenchResult`).
 
-`useIdentityBootstrap`, when `workbenchMode`:
+`useIdentityBootstrap`, when `workbenchMode`, runs `loadWorkbenchDocument` (`workbench-bootstrap.ts`):
 
-- The id is `workbench.documentId`; `?s=` and `documentIdFromPath` are not read.
+- The id is the session's `documentId`; the address is not read.
 - `self` from `apiLoadSelf(person.id)`, else `{ id, name: person.name ?? randomName(), color: person.color ??
-randomColor() }`; `apiSaveSelf` never runs (I9).
-- The owner branch runs (`apiLoadDocument`); `isOwner` is set as today but `apiListShareLinks` is not called;
-  `setSessionRole(workbench.level)`; the identity screen never opens.
-- `refreshDocumentList` and `refreshSharedList` are not called on any path; `recordOpen` is false.
-- When the session carries `tabId`, that tab is made active after seeding.
+randomColor() }`; the participant record is never written (I9).
+- With no share code, the owner's load (`apiLoadDocument`, level `edit`); with one (a workspace frame opening a
+  document shared with the person, WB53), the link's load (`apiLoadShared`), its password gate asking when the link
+  has one and its code riding every later request. A document whose id differs from the session's reads as not
+  found.
+- `setSessionRole(capWorkbenchRole(role, level))`: never above the token, never above the person's own access. The
+  identity screen never opens; no share-link prefetch, no document list, no open record.
+- A tab-scoped link opens its tab; else the session's `tabId`, when it names a tab of the document, opens first.
 
 The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface === 'app'`):
 
-| Gate                                                                                                                   | File                                  | In a workbench                                            |
-| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                                           | `EditorView.tsx`                      | Not rendered                                              |
-| `CommunityBar`, Community badge request                                                                                | `EditorView.tsx`                      | Not rendered, not requested                               |
-| TabBar, palette, toolbars, Quick style, panels, search                                                                 | `EditorView.tsx`                      | Rendered as in the app                                    |
-| `EmbedChrome`                                                                                                          | `EditorView.tsx`                      | Not rendered; `WorkbenchChrome` instead                   |
-| Explorer (popover)                                                                                                     | `useCanvasChromePanels.tsx`           | Not rendered; status screens use `EmbedShell`             |
-| Photo-import note reading on the server                                                                                | `useCapabilities` consumer            | `aiEnabled` read as false                                 |
-| Sign-in banner, theme-mode banner, power-user offer                                                                    | `EditorView.tsx`, `usePowerUserOffer` | Off                                                       |
-| Settings categories `documents`, `account`, `tokens`; the Appearance choice                                            | `settings-catalogue.ts`               | Hidden                                                    |
-| Share, delete, move, take offline, copy commands                                                                       | `editor-commands.ts`                  | Absent                                                    |
-| TabBar "copy to another document"                                                                                      | `EditorView.tsx` `otherDocuments`     | `[]`                                                      |
-| Image picker gallery                                                                                                   | `ImagePicker.tsx`, `useEditorImages`  | Upload only; `apiListImages` never called                 |
-| Shape library writes (save to My shapes)                                                                               | their hosts                           | Absent; reads stay                                        |
-| `useDriveFollow`, `useFolders`, `useFavourites`, `useTeams`, `useTeamPeople`, `useTeamLibrariesSweep`, `useShareLinks` | `useEditorState.ts`                   | `enabled: false`                                          |
-| `useCommentMentions`, `useAssigneeOptions`                                                                             | `hooks/collab`                        | Candidates from presence only; no team read, no notify    |
-| Identity screen                                                                                                        | `useEditorState.ts` `joinScreenOpen`  | Never                                                     |
-| `defaultPan`, `useModeDefaultTool` embed arguments                                                                     | `useEditorState.ts`                   | As the app (`false`)                                      |
-| Element indicators, comment badges                                                                                     | `EditorView.tsx`                      | As the app                                                |
-| `DocumentTrashedCard`                                                                                                  | `editor-page.tsx`                     | `restorable={false}`                                      |
-| `LoadErrorCard`, `NotFound`                                                                                            | `editor-page.tsx`                     | `embed` forms (no recovery card; create-new in a new tab) |
+| Gate                                                                         | File                                  | In a workbench                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------- |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill) | `EditorView.tsx`                      | Not rendered                                              |
+| `CommunityBar`, Community badge request                                      | `EditorView.tsx`                      | Not rendered, not requested                               |
+| TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`                      | Rendered as in the app                                    |
+| `EmbedChrome`                                                                | `EditorView.tsx`                      | Not rendered; `WorkbenchChrome` instead                   |
+| Explorer (popover)                                                           | `useCanvasChromePanels.tsx`           | Not rendered; status screens use `EmbedShell`             |
+| Photo-import note reading on the server                                      | `useCapabilities` consumer            | `aiEnabled` read as false                                 |
+| Sign-in banner, theme-mode banner, power-user offer                          | `EditorView.tsx`, `usePowerUserOffer` | Off                                                       |
+| Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`               | Hidden                                                    |
+| Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                  | Absent                                                    |
+| TabBar "copy to another document"                                            | `EditorView.tsx` `otherDocuments`     | `[]`                                                      |
+| Image picker gallery                                                         | `ImagePicker.tsx`, `useEditorImages`  | Upload only; `apiListImages` never called                 |
+| Shape library writes (save to My shapes)                                     | their hosts                           | Absent; reads stay                                        |
+| `useTokenTeams`, `useDocumentList`                                           | `useEditorState.ts`                   | Off: no teams, no document list                           |
+| `useCommentMentions`, `useAssigneeOptions`                                   | `hooks/collab`                        | Candidates from presence only; no team read, no notify    |
+| Identity screen                                                              | `useEditorState.ts` `joinScreenOpen`  | Never                                                     |
+| `defaultPan`, `useModeDefaultTool` embed arguments                           | `useEditorState.ts`                   | As the app (`false`)                                      |
+| Element indicators, comment badges                                           | `EditorView.tsx`                      | As the app                                                |
+| `DocumentTrashedCard`                                                        | `editor-page.tsx`                     | `restorable={false}`                                      |
+| `LoadErrorCard`, `NotFound`                                                  | `editor-page.tsx`                     | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
 `apiPutPreferences` under confinement. Appearance: `livediagram:theme` calls `setAppearanceOverride(scheme)`; before
@@ -560,105 +402,60 @@ the person's own selection never holds the agent's writes. The skill's descripti
 
 ### The workspace scope
 
-#### Pairing per scope
-
-- `pairingCoversScope(pairing, asked)`: `workspace` covers both scopes, `document` covers `document` only.
-- A mint or `pair` whose pairing does not cover the asked scope is unpaired for it: Pairing step 1 with the asked
-  scope, `428 pairing_required` (or `pending` from `pair`). One live request per token, origin and scope (the partial
-  unique index gains `scope`), so a document request and a workspace request never share a code and the page never
-  shows one question while answering another.
-- Approving a request records the pairing at the request's scope. A `workspace` approval on an origin already paired
-  for `document` widens that pairing in place (`scope = 'workspace'`, same id, same name unless the request names
-  one); a `document` approval never narrows a `workspace` pairing (WB50). The pairing's open sessions keep their
-  own scope: widening opens nothing by itself.
-- `POST /api/workbench/pairing-requests { origin, name?, scope? }` answers `{ status: 'paired', pairing }` only when
-  the pairing covers `scope` (absent: `document`).
-
-#### The workspace mint
-
-`POST /api/workbench/tickets` reads `scope` first: absent or `document`, the document mint above, unchanged; any
-other value `400 invalid_value` (`invalid scope`). For `workspace`, in order after steps 1 and 2 of the mint:
-
-1. A `documentId` or a `tabId` in the body: `400 invalid_value` (`a workspace ticket names no document`). A
-   document mint without `documentId` is `400 invalid_value` too (`invalid documentId`), as the spec words it
-   (WB49). `folderId` absent, or a string of 1 to 64 characters, else `400 invalid_value` (`invalid folderId`).
-2. Origin as in step 3 of the mint.
-3. Pairing: `pairingCoversScope(pairing.scope, 'workspace')` false, `428 pairing_required` with a workspace request.
-4. `folderId`: `ownerReachesFolder(env, ownerId, folderId)`: a personal folder of the owner, or a team folder of a
-   team the owner is a joined member of; else `404 not_found` (WB52).
-5. Level: `edit`, lowered to `view` when the token is read-only. There is no document to cap it: each request is
-   capped by the routes, with the owner's identity, at the person's own access now.
-6. Insert the ticket (`scope 'workspace'`, `document_id` null, `folder_id`) and answer
-   `201 { url, scope: 'workspace', folderId, expiresAt }` (`folderId` null when none was asked), `url` =
-   `${appBaseUrl(env)}/embed/workbench/explorer${folderId ? '/folder/' + encodeURIComponent(folderId) : ''}#ticket=${ticket}`.
-   Log `[workbench] ticket-minted { scope, documentId: null, folderId, tokenId, role }`.
-
-#### Workspace redemption
-
-As Redemption, with step 4 skipped for a workspace ticket (no document to check; a folder gone since is the
-Explorer's own not-found). The session row copies `scope` and `folder_id`. The answer is the scoped
-`WorkbenchSessionResponse`: `{ scope: 'workspace', documentId: null, folderId, tabId: null, ... }`.
-
 #### The choke point by scope
 
-`ctx.workbench` gains `scope` and `folderId`; `documentId` is null in the workspace scope. `resolveOwner()`,
+`ctx.workbench` carries `scope` and `folderId`; `documentId` is null in the workspace scope. `resolveOwner()`,
 `verifiedUserId`, `accountUserId` (null) and `token` (null) are as in the document scope (I4), so a workspace session
 is a person's editor and every route re-gates it with the owner's identity at the owner's access now.
 
-1. **Ambient headers.** The document scope refuses `X-Share-Code`, `X-Owner-Id` and `X-Share-Password`. The
-   workspace scope refuses `X-Owner-Id` only: a document shared with the person is reached by its link, as the
-   Explorer opens it, so the link's code and password travel with the request (WB53).
-2. **The verdict.** `workbenchRouteVerdict(method, segments, session)` with `session.scope === 'workspace'` walks
-   `WORKSPACE_ROUTES`, below; no route is `other-document` (every document is the person's to try, the route
-   decides). Refused: `403 workbench_confined`, logged `[workbench] confined { scope, method, route, sessionPrefix }`.
-3. **Level.** As step 5 of the document scope. A `view` session is refused the share-link list
-   (`GET documents/:doc/share`) too, `403 workbench_read_only`, in both scopes: as for a read-only token, the list is
-   a credential, not content (WB54).
+1. **Ambient headers.** The workspace scope refuses `X-Owner-Id` only: a document shared with the person is reached
+   by its link, as the Explorer opens it, so the link's code and password travel with the request (WB53).
+2. **The verdict.** `workbenchRouteVerdict` with `scope === 'workspace'` walks `WORKSPACE_ROUTES`, minus
+   `WORKSPACE_CLOSED`; no route is `other-document` (every document is the person's to try, the route decides).
+3. **Level.** As step 5 of the document scope, the share-link list included (WB54).
 4. **Rate limits.** As the document scope's: writes on `workbench:<sessionId>`.
 
 `WORKSPACE_ROUTES` (`:p` any one segment, `**` any rest, including none):
 
-| Method                 | Path under `/api`                                                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only) |
-| GET                    | `share/**` (the person opening a link shared with them)                                                                     |
-| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence`                                          |
-| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**`    |
-| GET, POST, PUT, DELETE | `images/**`, `shape-libraries/**`                                                                                           |
-| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                 |
-| DELETE                 | `workbench/sessions/current`                                                                                                |
+| Method                 | Path under `/api`                                                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)                                 |
+| GET                    | `share/**` (the person opening a link shared with them)                                                                                                     |
+| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence` (`WORKSPACE_CLOSED`)                                                     |
+| GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**`, `images/**`, `shape-libraries/**` |
+| GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                                                 |
+| DELETE                 | `workbench/sessions/current`                                                                                                                                |
 
-Everything else is `confined`, among it (Never the account): `account`, `tokens/**`,
-`workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
-`teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
-(team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a signed-in session,
-so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
-`events` and `unfurl` are called without credentials and never see `lvw_`.
+The Explorer's lists are the index's, which the frame reaches through `/api/index` with the person's identity
+([one-explorer.md](../../../../../liveworkspace/docs/one-explorer.md)); the folder, team and trash shapes above stay
+on the list so an older caller is confined the same way. Everything else is `confined`, among it (never the account):
+`account`, `tokens/**`, `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`,
+`oauth/**`, team writes and invitations, `community/**` and `documents/:p/community/**` (Community publishing needs a
+signed-in session, so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and
+`telemetry/**`.
 
 #### Route effects under a workspace session
 
-- `document-room-routes.ts` mint: as the document scope (`account` true, the owner's person tag, the role capped at
-  the session's level, `workbenchPairing`), and the store's `noteSessionRoom(sessionId, documentId)` so ending access
-  finds the room (WB55).
-- `images.ts` `GET /api/images/:id`: the document scope's rule (no owner shortcut, `d` the session's document) holds
-  for the document scope only; a workspace session reads as its person (the owner shortcut, the gallery).
-- `endAccess`: step 1 reads the (pairing, document) pairs from `wb_sessions.item_id` and from `wb_session_rooms` joined
-  to the sessions, so a workspace session's rooms close with 4006 like a document session's.
+- `document-room-routes.ts` mint: as the document scope, and `noteWorkbenchRoom(env, workbench, documentId)` tells
+  liveworkspace the session joined that room (once per session and document per isolate, best effort, off the
+  response's path), so ending the session's access closes it too (WB55).
+- `images.ts` `GET /api/images/:id`: the document scope's rule holds for the document scope only; a workspace session
+  reads as its person.
 
 #### The workspace frame (`/embed/workbench/explorer...`)
 
 **Addresses** (`apps/editor/lib/workbench/workspace-place.ts`, WB56). `WorkspacePlace` is
-`{ kind: 'explorer'; node: SelectedNode }` or `{ kind: 'document'; documentId; tabId: string | null; shareCode:
+`{ kind: 'explorer'; node: ExplorerView }` or `{ kind: 'document'; documentId; tabId: string | null; shareCode:
 string | null }`. `workspaceFramePath(place)`:
 
-| Place           | Frame path                                                       |
-| --------------- | ---------------------------------------------------------------- |
-| `home`          | `/embed/workbench/explorer`                                      |
-| `folder` `<id>` | `/embed/workbench/explorer/folder/<id>`                          |
-| any other view  | `/embed/workbench` + the view's `explorerPathFor` path and query |
-| a document      | `/embed/workbench/document/<id>[?s=<code>][&tab=<tabId>]`        |
+| Place           | Frame path                                                    |
+| --------------- | ------------------------------------------------------------- |
+| `home`          | `/embed/workbench/explorer`                                   |
+| `folder` `<id>` | `/embed/workbench/explorer/folder/<id>`                       |
+| any other view  | `/embed/workbench` + the view's `explorerPath` path and query |
+| a document      | `/embed/workbench/document/<id>[?s=<code>][&tab=<tabId>]`     |
 
-`workspacePlaceOf(pathname, search)` is its inverse; an address it cannot read is `home`. One static page,
+`workspacePlaceOf(pathname, search)` is its inverse; an address it cannot read is `home`; `explorerRouteOfFrame` gives the Explorer the `/explorer` route a frame path stands for, so nothing inside it learns where it runs. One static page,
 `app/embed/workbench/explorer/page.tsx`, backs every frame path: the editor worker (`isWorkspaceFramePath`) and the e2e
 stack serve `/embed/workbench/explorer/**` and `/embed/workbench/document/**` from it, and the App Router reads the
 real address. Every frame path is under `/embed`, so frameable.
@@ -679,9 +476,8 @@ other phase is the document scope's.
    document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
    with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livediagram:open`.
 3. The place (`workspacePlaceOf(usePathname(), useSearchParams())`) renders:
-   - an Explorer view: `ExplorerShell` (its surface read from the session, `useExplorerSurface`) around `ExplorerPane`,
-     the pane keyed by the view's path and its `id` and `folder`, as each /explorer page remounts it; unmounted while
-     a document is open, so the editor's shortcuts and panels are the only ones listening, and read again on Back;
+   - an Explorer view: `ExplorerHost`, the shared `Explorer` for the person (below); unmounted while a document is
+     open, so the editor's shortcuts and panels are the only ones listening, and read again on Back;
    - a document: `EditorPage surface="workbench"` keyed by the document id and share code, under a nested
      `WorkbenchSessionContext` whose `documentId`, `shareCode` and `tabId` are the place's, with `frame` set
      (`back`, `backTitle`, `reportDocumentPlace`) and `end('trashed')` turned into the return to the Explorer. The
@@ -696,7 +492,7 @@ other phase is the document scope's.
 
 **New document in place** (`createDocumentInPlace`, WB58): the `/new` href's `folder` or `team`, else the place's
 folder (a folder view) or team, else none (the person's default folder answers, as `/new` without a place does);
-`template=<kind>` builds that template's tabs as `/new` does (`buildTemplatedTabs`, `withTemplateSheets`), anything
+`template=<kind>` builds that template's tabs as `/new` does, anything
 else (`blank`, `start`, `mode`, `q`, none) a blank document of the default mode; `apiCreateDocument` with the
 template's untitled name and `creationIntentOf`; then the document place, pushed. A refused create shows the
 Explorer's toast "Couldn’t create the canvas. Try again." and stays; logged `[workbench] create-failed { status }`.
@@ -714,27 +510,22 @@ Back. The status screens put the same card at `EmbedShell`'s top left. The docum
 (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk the same entries.
 
 **Open in livediagram**: on a document, the existing link with the place's app href (`/document/<id>[?s=]`); on an
-Explorer view, the same control at the right end of the Explorer's bottom bar linking to `explorerPathFor(node)`.
+Explorer view, the same control in the frame's header, linking to the view's `/explorer` address.
 
 **`trashed`** in the workspace scope: the session the frame lends the editor turns `useWorkbenchEnd`'s
 `end('trashed')` into Back (the page never ends), with the toast "That canvas is in the Trash." (WB60).
 
-#### The Explorer in a workbench (`ExplorerSurface = 'workbench'`)
+#### The Explorer in a workbench
 
-`useExplorerSurface()` reads `useWorkbenchSession()?.scope === 'workspace'`. The Surface table, Explorer side:
-
-| Gate                                                                    | File                                    | In a workbench                                              |
-| ----------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| App header (brand, product nav, `AuthControls`)                         | `ExplorerShell.tsx`                     | Not rendered; the lens field in a slim bar instead (WB61)   |
-| Home hero                                                               | `ExplorerShell.tsx`                     | Rendered as in the app                                      |
-| Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`   | Absent; Search stays; Open in livediagram at the right end  |
-| Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`  | Never opens                                                 |
-| Search panel's settings rows                                            | `ExplorerShell.tsx`                     | `[]`                                                        |
-| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                     | Not rendered                                                |
-| `useTokens`, `useDriveFollow`, `useAfterDriveChange`                    | `useExplorerState.ts`                   | `enabled: false`                                            |
-| Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views | Absent (WB62)                                               |
-| Timeline token cards' Revoke, Drive cards                               | `timeline/*`                            | Absent                                                      |
-| Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                            | Through `assignAppLocation` / `useAppNavigation`: the frame |
+`ExplorerHost` renders the shared `Explorer` (`@liveworkspace/explorer`) with `app="livediagram"`, the index client,
+and the hosts livediagram lends it everywhere: addresses (`itemHref`, `newDocumentHref`, `explorerHelpHref`), Share
+(`explorerShareHost`), Inbox, the Library (Image Gallery, Shape Libraries, Import from), thumbnails, the template
+families for the lens, default folder options, and the telemetry callbacks (`trackOrganise` and the Timeline, Home
+and lens reports). It passes no team administration host, so no team is made, joined or administered in the frame
+(WB62), and no Settings: the app's surroundings (brand, product nav, account controls, Settings, Appearance) are not
+rendered, the lens field sits in a slim bar of its own (WB61). Its `onNavigate`, `onCreate` and `onOpenItem` go
+through `useAppNavigation`, so every move lands on the frame's interceptor. It waits for the person (the session's)
+before asking the index anything ("Opening your Explorer…").
 
 #### The CLI, workspace scope
 
@@ -766,36 +557,35 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 ## Interfaces and contracts
 
-### Routes
+### The platform's routes
 
-| Method | Path                                            | Caller                   | Success                                        | Rejections                                                                                                                                                                                        |
-| ------ | ----------------------------------------------- | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/workbench/tickets`                        | token                    | 201 `WorkbenchTicketResponse`                  | 401 `invalid_token`, 403 `token_required`, 403 `workbench_confined`, 400 `bad_request`, 400 `invalid_origin`, 428 `pairing_required`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited` |
-| POST   | `/api/workbench/sessions`                       | anyone holding a ticket  | 201 `WorkbenchSessionResponse`                 | 400 `bad_request`, 401 `invalid_ticket` `{ reason }`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited`                                                                                 |
-| DELETE | `/api/workbench/sessions/current`               | workbench session        | 204                                            | 401 `invalid_session`, 403 `not_a_workbench_session`                                                                                                                                              |
-| POST   | `/api/workbench/pairing-requests`               | token                    | 200 `WorkbenchPairingRequestCreated`           | 401 `invalid_token`, 403 `token_required`, 400 `bad_request`, 400 `invalid_origin`, 429 `rate_limited`                                                                                            |
-| GET    | `/api/workbench/pairing-requests/:code/status`  | the requesting token     | 200 `WorkbenchPairingStatusResponse`           | 403 `token_required`, 404 `not_found`                                                                                                                                                             |
-| GET    | `/api/workbench/pairing-requests/:code`         | signed in, owner         | 200 `{ request: WorkbenchPairingRequestView }` | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
-| POST   | `/api/workbench/pairing-requests/:code/approve` | signed in, owner         | 200 `{ pairing: WorkbenchPairing }`            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
-| POST   | `/api/workbench/pairing-requests/:code/decline` | signed in, owner         | 204                                            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
-| GET    | `/api/workbench/pairings` (WB46)                | signed in                | 200 `WorkbenchPairingsResponse`                | 401 `sign_in_required`                                                                                                                                                                            |
-| DELETE | `/api/workbench/pairings/:id`                   | signed in, token's owner | 204                                            | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
-
-The status and name of each rejection the spec leaves unnamed are WB43. Any `lvw_` request (choke point): 401 `invalid_session`, 403 `workbench_confined`, 403 `workbench_read_only`, 404
-`not_found` (another document). `invalid_origin`, `pairing_required`, `invalid_ticket`, `invalid_session`,
-`workbench_confined`, `workbench_read_only`, `token_required`, `not_a_workbench_session`, `pairing_answered` and
-`pairing_expired` are `WORKBENCH_ERROR_CODES` in `packages/api-schema/src/workbench.ts`, as `CHANGESET_ERROR_CODES` are (WB26). `:code` must match `^[A-Za-z0-9_-]{22}$`,
-else 404. 401 `sign_in_required` is answered to tokens and sessions too (`accountUserId` null).
+`POST /api/workbench/tickets`, `POST /api/workbench/sessions`, `DELETE /api/workbench/sessions/current`,
+`/api/workbench/pairing-requests*` and `/api/workbench/pairings*` are liveworkspace's; their behaviour, rejections
+and limits are in [Workbenches](../../../../../liveworkspace/docs/workbench.md). livediagram calls four of them: the
+page redeems (`apiRedeemWorkbenchTicket`, credential-free) and ends its own session (`apiEndWorkbenchSession`);
+Settings lists pairings and unpairs (`apiListWorkbenchPairings`, `apiUnpairWorkbench`). The CLI mints and pairs. The
+OpenAPI manifest lists them under segment `workbench`, tag `Workbench`, as the routes a token reaches through this
+api. Any `lvw_` request to this api's own routes (the choke point): 401 `invalid_session`, 403
+`workbench_confined`, 403 `workbench_read_only`, 404 `not_found` (another document), 503 `accounts_unavailable`.
+`WORKBENCH_ERROR_CODES` in `packages/api-schema/src/workbench.ts` names every token (WB26).
 
 ### Wire types (`packages/api-schema/src/workbench.ts`)
 
 ```ts
-export type WorkbenchRole = 'view' | 'participate' | 'edit';
-export type WorkbenchTicketRequest = { documentId: string; tabId?: string; origin: string };
+export type WorkbenchRole = AccessLevel; // 'view' | 'participate' | 'edit'
+export type WorkbenchTicketRequest =
+  | { scope?: 'document'; documentId: string; tabId?: string; origin: string }
+  | { scope: 'workspace'; folderId?: string; origin: string };
 export type WorkbenchTicketResponse = {
   url: string;
   documentId: string;
   tabId: string | null;
+  expiresAt: number;
+};
+export type WorkbenchWorkspaceTicketResponse = {
+  url: string;
+  scope: 'workspace';
+  folderId: string | null;
   expiresAt: number;
 };
 export type WorkbenchPairingRequired = {
@@ -804,62 +594,7 @@ export type WorkbenchPairingRequired = {
   expiresAt: number;
 };
 export type WorkbenchSessionRequest = { ticket: string };
-export type WorkbenchPerson = {
-  id: string;
-  name: string | null;
-  color: string | null;
-};
-export type WorkbenchSessionResponse = {
-  session: string;
-  documentId: string;
-  tabId: string | null;
-  origin: string;
-  role: WorkbenchRole;
-  expiresAt: number;
-  person: WorkbenchPerson;
-};
-export type InvalidTicket = { error: 'invalid_ticket'; reason: 'expired' | 'used' | 'unknown' };
-export type WorkbenchPairing = {
-  id: string;
-  tokenId: string;
-  origin: string;
-  name: string | null;
-  pairedAt: number;
-};
-export type WorkbenchPairingsResponse = { pairings: WorkbenchPairing[] };
-export type WorkbenchPairingRequestCreate = { origin: string; name?: string };
-export type PairingRequestStatus = 'pending' | 'approved' | 'declined' | 'expired';
-export type WorkbenchPairingRequestCreated =
-  | { status: 'paired'; pairing: WorkbenchPairing }
-  | { status: 'pending'; pairingUrl: string; code: string; expiresAt: number; interval: number };
-export type WorkbenchPairingStatusResponse = {
-  status: PairingRequestStatus;
-  expiresAt: number;
-  interval: number;
-};
-export type WorkbenchPairingRequestView = {
-  origin: string;
-  name: string | null;
-  tokenName: string | null;
-  expiresAt: number;
-  status: PairingRequestStatus;
-};
-```
-
-The workspace scope widens these types (the document scope's shapes stay, so today's callers read them unchanged):
-
-```ts
-export type WorkbenchScope = 'document' | 'workspace';
-export type WorkbenchTicketRequest =
-  | { scope?: 'document'; documentId: string; tabId?: string; origin: string }
-  | { scope: 'workspace'; folderId?: string; origin: string };
-export type WorkbenchWorkspaceTicketResponse = {
-  url: string;
-  scope: 'workspace';
-  folderId: string | null;
-  expiresAt: number;
-};
-// WorkbenchSessionResponse: the document scope's fields, discriminated by scope.
+export type WorkbenchPerson = { id: string; name: string | null; color: string | null };
 export type WorkbenchSessionResponse = {
   session: string;
   origin: string;
@@ -870,23 +605,41 @@ export type WorkbenchSessionResponse = {
   | { scope: 'document'; documentId: string; folderId: null; tabId: string | null }
   | { scope: 'workspace'; documentId: null; folderId: string | null; tabId: null }
 );
-// WorkbenchPairing, WorkbenchPairingRequestView: + scope: WorkbenchScope.
-// WorkbenchPairingRequestCreate: + scope?: WorkbenchScope (absent: 'document').
+export type InvalidTicket = { error: 'invalid_ticket'; reason: 'expired' | 'used' | 'unknown' };
+export type WorkbenchPairing = {
+  id: string;
+  tokenId: string;
+  origin: string;
+  name: string | null;
+  scope: WorkbenchScope;
+  pairedAt: number;
+};
+export type WorkbenchPairingsResponse = { pairings: WorkbenchPairing[] };
+export type WorkbenchPairingRequestCreate = {
+  origin: string;
+  name?: string;
+  scope?: WorkbenchScope;
+};
+export type PairingRequestStatus = 'pending' | 'approved' | 'declined' | 'expired';
+export type WorkbenchPairingRequestCreated =
+  | { status: 'paired'; pairing: WorkbenchPairing }
+  | { status: 'pending'; pairingUrl: string; code: string; expiresAt: number; interval: number };
+export type WorkbenchPairingStatusResponse = {
+  status: PairingRequestStatus;
+  expiresAt: number;
+  interval: number;
+};
 ```
 
-`invalid_value` joins `WORKBENCH_ERROR_CODES`; its body is `{ error: 'invalid_value', message }`.
+`parseWorkbenchOrigin(input)`: at most `WORKBENCH_ORIGIN_MAX_LENGTH` characters; parsed with `URL`; `protocol`
+`https:`, or `http:` with `hostname` one of `localhost`, `127.0.0.1`, `[::1]`; `username`, `password`, `search`,
+`hash` empty; `pathname` `/` and the input not ending in `/` (WB27); the input equal to `url.origin` (so no default
+port, no upper case, no trailing dot is accepted that the browser would rewrite). `*` and `null` fail the parse.
 
-`parseWorkbenchOrigin(input: string): { ok: true; origin: WorkbenchOrigin } | { ok: false }`: at most
-`WORKBENCH_ORIGIN_MAX_LENGTH` characters; parsed with `URL`; `protocol` `https:`, or `http:` with `hostname` one of
-`localhost`, `127.0.0.1`, `[::1]`; `username`, `password`, `search`, `hash` empty; `pathname` `/` and the input
-not ending in `/` (WB27); the input equal to `url.origin` (so no default port, no upper case, no trailing dot is
-accepted that the browser would rewrite). `*` and `null` fail the parse.
+`capWorkbenchRole(role, ceiling?)`: the lower of the two on the ladder `view < participate < edit`; no ceiling gives
+`role`.
 
-`capWorkbenchRole(role, ceiling?)`: the lower of the two on the ladder `view < participate < edit`; no ceiling
-gives `role`. Today both inputs are `view` or `edit`, so a room ticket never carries `participate` before share
-roles teach `consumeWsTicket` to read it.
-
-`pairingUrl` is `${appBaseUrl(env)}/workbench/pair?code=${code}`.
+`pairingCoversScope(pairing, asked)`: `workspace` covers both scopes, `document` covers `document` only.
 
 ### Workbench messages (`packages/api-schema/src/workbench-messages.ts`)
 
@@ -977,163 +730,89 @@ of each within the CLI budgets; examples `livediagram workbench open "Home scree
 matches `session.workbenchPairing === pairingId`. `WORKBENCH_ENDED_CLOSE = 4006`, reason `workbench-ended`.
 `RoomHandlers.onWorkbenchEnded` fires on it and the connector does not reconnect.
 
-### OpenAPI
-
-Eleven `RouteSpec` entries, segment `workbench`, tag `Workbench`, `auth`: `clerk` (the manifest's name for Bearer-only) for the token and signed-in routes,
-`public` for the redemption; `tokenUsable: true` for the ticket mint, the pairing request and its status only.
-Request and response schemas from the types above; 428, 401 and 409/410 bodies inline. `route-parity.test.ts`
-covers them by dispatch probe.
-
 ## Data and persistence
 
-A person's workbench is their own Durable Object, `WORKBENCH` (apps/api/src/workbench-store.ts (gone), the class in
-`workbench-store-do.ts`), built on the shared store in `@liveworkspace/index-app` (packages/index-app/src/workbench.ts (gone)).
-It is reached by the person's id (`idFromName`), and holds in its own SQLite:
+livediagram stores nothing of a workbench. Pairings, tickets, sessions and their rooms are liveworkspace's
+([Workbenches](../../../../../liveworkspace/docs/workbench.md)).
 
-- `wb_pairing_requests`: code, token, origin, name, scope, status, created, expires, answered. One live (`pending`)
-  request per token, origin and scope (a partial unique index).
-- `wb_pairings`: id, token, origin, name, scope, created. One per token and origin.
-- `wb_tickets`: the SHA-256 of the ticket, token, pairing, scope, item, folder, tab, origin, role, created,
-  expires, used. Cascades with its pairing.
-- `wb_sessions`: id, the SHA-256 of the secret, token, pairing, scope, item, folder, tab, origin, role, created,
-  expires. Cascades with its pairing.
-- `wb_session_rooms`: the documents a workspace session joined (WB55). Cascades with its session.
-- `wb_tokens`: what the store knows of the person's tokens (name, read-only, expiry, revoked), noted from
-  liveworkspace's verify answer when a token pairs or mints. Never the secret.
-- `wb_meta`: whose store it is, and its last sweep.
+| Field                              | Class     | Notes                                                                                 |
+| ---------------------------------- | --------- | ------------------------------------------------------------------------------------- |
+| The checker's answers              | memory    | Per isolate: a live session up to a minute (never past expiry), a refusal ten seconds |
+| Room attachment `workbenchPairing` | ephemeral | Per socket, survives hibernation                                                      |
+| The page's secret, session, origin | memory    | Never in storage                                                                      |
 
-A store is made by its first write; a read of a store never written makes nothing.
-
-**Reaching a store without the person.** Redeeming a ticket and presenting a session happen with no one signed in,
-so both secrets end in a dot and the store's id (64 hex): a ticket is `<16 random bytes base64url>.<store id>`
-(`WORKBENCH_TICKET_PATTERN`), a session `lvw_<32 random bytes base64url>.<store id>`. The suffix is no credential:
-the store keeps only the secret's hash, so a suffix pointed at another store finds nothing there. A pairing code is
-16 random bytes with no suffix: the pairing page is the signed-in person's and the CLI's poll is the token's, so
-both know whose store to ask.
-
-| Field                              | Class      | Notes                                                                                                                                            |
-| ---------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `wb_pairing_requests.code`         | handle     | 16 random bytes base64url, stored in the clear: it grants nothing without the owner's session and is served again while the request lives (WB29) |
-| `*.origin`                         | identity   | Normalised by `parseWorkbenchOrigin`                                                                                                             |
-| `*.name`                           | display    | 1 to 40 characters, trimmed; never enforced                                                                                                      |
-| `wb_tickets.ticket_hash`           | credential | SHA-256 hex of the ticket                                                                                                                        |
-| `wb_sessions.secret_hash`          | credential | SHA-256 hex of the `lvw_` secret                                                                                                                 |
-| `wb_sessions.id`                   | handle     | UUID; its first 8 characters are the logged prefix                                                                                               |
-| `*.role`                           | grant      | `view` or `edit` written today (WB1)                                                                                                             |
-| Room attachment `workbenchPairing` | ephemeral  | Per socket, survives hibernation                                                                                                                 |
-| The page's secret, session, origin | memory     | Never in storage                                                                                                                                 |
-
-- **A token revoked on liveworkspace.app.** While any session lives, the store's alarm asks liveworkspace every five
-  minutes (`WORKBENCH_TOKEN_CHECK_MS`) whether the tokens behind live sessions still work, and ends the access of any
-  that don't. Listing pairings (Settings) asks about their tokens first, so a revoked token's pairing drops off at
-  once.
-- **Retention.** Daily (`WORKBENCH_SWEEP_MS`), the alarm checks every paired token and deletes tickets and pairing
-  requests past expiry, sessions expired more than `WORKBENCH_SESSION_GRACE_MS` ago (WB30), pairings of tokens no
-  longer live, and tokens nothing hangs off. A store left with nothing deletes itself.
-- **Account deletion.** `deleteAccount` closes the store: every pairing ends (its rooms closed), then the store is
-  deleted. It runs on `DELETE /api/account` and when the index says the account closed, wherever it was closed.
-- **Owner migration.** Account-only: a guest never has a store.
-- **Document purge.** A ticket lapses in a minute, and every request of a session is gated on the document's grant, which
-  a purged document never gets again; pairings are per origin and stay.
-- **Snapshot and restore.** None: these rows are credentials, not content; restoring a document from the Trash
-  revives no session.
+- **Account deletion.** liveworkspace drops the person's workbench when the account closes; `deleteAccount` here does
+  nothing for it (a guest has none).
+- **Document purge.** Every request of a session is gated on the document's grant, which a purged document never
+  gets again.
+- **Snapshot and restore.** None: restoring a document from the Trash revives no session.
 
 ## Errors and edge cases
 
 - **E1** Origin with a path, query, fragment, credentials, `*`, `null`, `http` on a non-loopback host, or a default
-  port written out (`https://x:443`): `400 invalid_origin` at the api, exit 1 at the CLI.
-- **E2** Two unpaired mints for one token and origin within the TTL: both 428 with the same `pairingUrl`.
-- **E3** A pending request past its expiry when a new one is asked: deleted, a new code issued.
-- **E4** Approve after Don't allow, or twice: `409 pairing_answered`; nothing changes.
-- **E5** Approve after expiry: `410 pairing_expired`; the CLI reads `expired`.
-- **E6** Another signed-in account opens the pairing URL: `404`; the page says it cannot find the request.
-- **E7** A token approving its own request (`lwt_` on approve): `401 sign_in_required`.
-- **E8** Token revoked while a request is pending: the request is deleted; the CLI's next poll gets 404, exit 4.
-- **E9** Token revoked while the pair page is open: approve answers 404.
-- **E10** A ticket redeemed twice: the second `401 invalid_ticket { reason: 'used' }`.
-- **E11** A ticket redeemed after 60 s: `401 invalid_ticket { reason: 'expired' }`.
-- **E12** Unpaired between mint and redemption: tickets cascade, `unknown`.
-- **E13** The owner loses access between mint and redemption (left the team): 404 at redemption.
-- **E14** The owner loses access mid-session: every gate refuses (404 or 403 per route); the room closes them as a
+  port written out (`https://x:443`): exit 1 at the CLI; the platform refuses it `400 invalid_origin`.
+- **E2** The owner loses access mid-session: every gate refuses (404 or 403 per route); the room closes them as a
   member's sessions (4005, person tag); the page reads 4005 under a workbench as `revoked` (WB31).
-- **E15** The document is trashed mid-session: close 4004 and 410 on saves; `ended(trashed)`, the deleted card
+- **E3** The document is trashed mid-session: close 4004 and 410 on saves; `ended(trashed)`, the deleted card
   without Restore.
-- **E16** The document is purged: sessions cascade; next request 401 `invalid_session`, `ended(revoked)`.
-- **E17** A view token's session tries to save: 403 `workbench_read_only`; the editor is read-only from the start, so
+- **E4** The session ends on the platform (unpair, revoke, purge): next request 401 `invalid_session`, or close 4006;
+  `ended(revoked)`.
+- **E5** liveworkspace cannot answer about a session: `503 accounts_unavailable`; the editor's save retries as for any 503.
+- **E6** A view token's session tries to save: 403 `workbench_read_only`; the editor is read-only from the start, so
   only a crafted request meets it.
-- **E18** The frame is reloaded: the fragment is gone, `refused('no-ticket')`.
-- **E19** Frame opened directly in a tab (not framed): `unbound`, session revoked.
-- **E20** Framed by another origin that forwarded the URL: `hello` never reaches it (target origin), `unbound` after
+
+- **E7** The frame is reloaded: the fragment is gone, `refused('no-ticket')`.
+- **E8** Frame opened directly in a tab (not framed): `unbound`, session revoked.
+- **E9** Framed by another origin that forwarded the URL: `hello` never reaches it (target origin), `unbound` after
   5 s, session revoked.
-- **E21** The workbench answers `hello-ack` with a bad `name`: invalid, ignored, logged; the wait continues to the
+- **E10** The workbench answers `hello-ack` with a bad `name`: invalid, ignored, logged; the wait continues to the
   deadline.
-- **E22** Renewal never answered: `ended(expired)` at `expiresAt`, read-only, "Reconnect in <name> to keep
+- **E11** Renewal never answered: `ended(expired)` at `expiresAt`, read-only, "Reconnect in <name> to keep
   editing."
-- **E23** A renewal ticket for another document or origin: refused, logged `renew-failed { reason: 'mismatch' }`,
+- **E12** A renewal ticket for another document or origin: refused, logged `renew-failed { reason: 'mismatch' }`,
   the new session deleted.
-- **E24** Session expiry capped by the token's expiry: the page renews earlier by the same lead; the token's own
+- **E13** Session expiry capped by the token's expiry: the page renews earlier by the same lead; the token's own
   expiry ends it for good.
-- **E25** Unsaved edits when the session ends: the autosave's last attempt fails 401; edits stay on screen, read-only;
+- **E14** Unsaved edits when the session ends: the autosave's last attempt fails 401; edits stay on screen, read-only;
   the line says to reconnect. Before the renew lead the autosave runs as usual, so at most one debounce window is
   at risk.
-- **E26** `reveal` with refs from another tab: not found, skipped, logged.
-- **E27** A selection of more than 20 elements: 20 items and the `… and n more` tail.
-- **E28** A selected element with no label (a line, a freehand stroke): ref and kind only.
-- **E29** Unknown message type, or `v: 2`: ignored, `[workbench] message-ignored <type>` once per type.
-- **E30** Rate limit on the mint: 429, the CLI exits 6.
-- **E31** `APP_BASE_URL` unset on a deployment: the URLs use `DEFAULT_BASE_URL`; the deployment spec says to set it.
-- **E32** A host without sign-in: no tokens, so no mint; the page can only reach `refused('no-ticket')` or
-  `refused('ticket')`; the pair page says pairing is not available.
-- **E33** Two frames of one pairing on one document: two sessions, two sockets, one person tag; presence shows the
-  person once per socket as for two browser tabs.
-- **E34** The pair page opened in a frame: the editor worker sends `X-Frame-Options: DENY`; nothing renders.
-- **E35** A workspace mint on a document pairing: `428 pairing_required` with a workspace request, its own code.
-- **E36** A document mint on a workspace pairing: paired; the ticket is a document ticket.
-- **E37** A document request and a workspace request pending together for one token and origin: two codes; approving
-  either records its scope; approving both leaves `workspace`.
-- **E38** `scope: 'workspace'` with a `documentId` or `tabId`, or `scope: 'document'` (or none) without a
-  `documentId`: `400 invalid_value`; an unknown `scope`: `400 invalid_value`.
-- **E39** A `folderId` that is not the owner's, a team folder of a team they left, or no folder: `404`, CLI exit 3.
-- **E40** A workspace session on `/embed/workbench?d=`, or a document session on `/embed/workbench/explorer`:
-  `refused('mismatch')`, the session revoked.
-- **E41** A workspace frame reloaded on a document or folder path: the fragment is gone, `refused('no-ticket')`.
-- **E42** A workspace session presenting `X-Owner-Id`: `403 workbench_confined`; `X-Share-Code`: allowed, the route
-  decides by the link.
-- **E43** The open document is trashed in the workspace frame: back to the Explorer, the session lives on.
-- **E44** The started folder is deleted before the frame loads: the Explorer's folder not-found, as a stale link.
-- **E45** A view workspace session tries New document: `403 workbench_read_only`, the Explorer's create-failed toast;
-  the Explorer offers no create while `role` is `view` (its own read-only state, `prefs`-free).
-- **E46** `livediagram:open` with an id the person cannot reach: the Explorer's or the editor's not-found; logged.
-- **E47** Unpair or revoke while a workspace frame has a document open: the room closes with 4006 (the session's
-  rooms are recorded), the frame ends `revoked`.
+- **E15** `reveal` with refs from another tab: not found, skipped, logged.
+- **E16** A selection of more than 20 elements: 20 items and the `… and n more` tail.
+- **E17** A selected element with no label (a line, a freehand stroke): ref and kind only.
+- **E18** Unknown message type, or `v: 2`: ignored, `[workbench] message-ignored <type>` once per type.
+- **E19** Rate limit on the mint: 429, the CLI exits 6.
+
+- **E20** `APP_BASE_URL` unset on a deployment: the frame URLs the platform builds use the default base; the deployment spec says to set it.
+- **E21** A host without sign-in: no tokens, so no mint; the page can only reach `refused('no-ticket')` or `refused('ticket')`.
+- **E22** Two frames of one pairing on one document: two sessions, two sockets, one person tag; presence shows the person once per socket as for two browser tabs.
+- **E23** A workspace session on `/embed/workbench?d=`, or a document session on `/embed/workbench/explorer`: `refused('mismatch')`, the session ended.
+- **E24** A workspace frame reloaded on a document or folder path: the fragment is gone, `refused('no-ticket')`.
+- **E25** A workspace session presenting `X-Owner-Id`: `403 workbench_confined`; `X-Share-Code`: allowed, the route decides by the link.
+- **E26** The open document is trashed in the workspace frame: back to the Explorer, the session lives on.
+- **E27** The started folder is deleted before the frame loads: the Explorer's folder not-found, as a stale link.
+- **E28** A view workspace session tries New document: `403 workbench_read_only`, the create-failed toast.
+- **E29** `livediagram:open` with an id the person cannot reach: the Explorer's or the editor's not-found; logged.
+- **E30** Unpair or revoke while a workspace frame has a document open: the room closes with 4006 (the session's rooms are noted with liveworkspace), the frame ends `revoked`.
 
 ## Security and trust
 
-- **Pairing is the gate on minting** (I5): a leaked token mints nothing for an origin its owner never approved, and
-  approval needs the owner's own signed-in session (I6), which no token, session or guest header carries.
-- **The pair page cannot be clickjacked**: `/workbench/pair` keeps `DENY`; Allow is a button on a page the person
-  opened themselves from the CLI or the workbench.
 - **What the page shows is what is enforced**: the origin is printed beside the name; the name is display only.
-- **A ticket is a bearer**, single use (`used_at` guard in one statement), 60 s, hashed, only in the fragment; the
-  fragment is cleared before the first request; `Referrer-Policy: strict-origin-when-cross-origin` and fragments
-  never reach a `Referer` anyway.
-- **A session is a bearer** in the page's memory only, hashed at rest, confined (I1, I2), level-capped (I3),
-  re-gated on every request with the owner's identity, ended by unpair and revoke within one request or one room
-  close.
+- **A ticket is a bearer**, single use, 60 s, only in the fragment; the fragment is cleared before the first request;
+  `Referrer-Policy: strict-origin-when-cross-origin` and fragments never reach a `Referer` anyway.
+- **A session is a bearer** in the page's memory only, confined (I1, I2), level-capped (I3), re-gated on every
+  request with the owner's identity, and its end seen within a minute (the checker) or one room close.
 - **Ambient headers refused** beside `lvw_` (WB8), so a session cannot borrow a share code's or a guest's access.
-- **Images** under a session never take the owner shortcut, so a session cannot read the owner's gallery by id.
+- **Images** under a document-scope session never take the owner shortcut, so a session cannot read the owner's
+  gallery by id.
 - **Clickjacking of the frame**: the editor mounts only for the minting origin (I8); a hostile parent of another
-  origin gets no `hello` and a revoked session.
+  origin gets no `hello` and an ended session.
 - **Message trust**: messages accepted only from `window.parent` at the bound origin; every field validated and
   bounded; labels sent in the reference are JSON-quoted, so a label cannot forge a line.
-- **Rate limits**: mint and pairing-request creation 30 a minute per token, one bucket (`WORKBENCH_TICKET_RATE_LIMITER`, WB42);
-  redemption on the anonymous write key per network; session writes on `workbench:<sessionId>`; status polls on
-  the token read limiter.
-- **No secret in logs** (I7); `[workbench]` logs carry ids, prefixes, reasons and counts.
-- **The workspace scope is a second approval**: no document pairing ever answers a workspace mint (E35); widening is
-  only by Allow on a workspace request, whose page says so.
-- **Never more than the token** in the workspace scope: `accountUserId` and `token` are null, so every signed-in-only route
-  (team administration, Community publishing, Drive, the account) refuses as it refuses the token, and
+- **Rate limits**: session writes on `workbench:<sessionId>`; the mint, pairing and redemption limits are the
+  platform's.
+- **No secret in logs** (I5); `[workbench]` logs carry ids, prefixes, reasons and counts.
+- **Never more than the token** in the workspace scope: `accountUserId` and `token` are null, so every signed-in-only
+  route (team administration, Community publishing, the account) refuses as it refuses the token, and
   `WORKSPACE_ROUTES` refuses them first with `workbench_confined`; a view session is read-only at the choke point and
   never lists share links (WB54).
 - **Share links in the workspace scope** are the person's own: a code reaches only what the code reaches for anyone,
@@ -1141,22 +820,15 @@ both know whose store to ask.
 
 ## Performance and limits
 
-- Each `lvw_` request: one call to the person's store, which hashes the secret and does one indexed `SELECT`
-  (`secret_hash` unique) joined to `wb_tokens` by primary key; well under a millisecond inside the store among a
-  thousand sessions (packages/index-app/src/workbench.test.ts (gone) holds the budget). No write (WB32). The autosave's
-  cadence (one save per debounce) adds one such call per save.
-- `workbenchRouteVerdict`: a walk over at most 40 patterns of at most 8 segments, constant per request.
-- Mint: four indexed reads (pairing, document meta, grant, tab link) and one insert. Redemption: one update, one
-  read, one insert, one participant read.
-- `endAccess` for a token: at most the token's pairings (a handful) times their documents; rooms closed
-  10 at a time, 3 s each at most.
+- Each `lvw_` request: at most one call to liveworkspace a minute per session per isolate (the checker's cache); the
+  autosave's cadence adds nothing beyond it.
+- `workbenchRouteVerdict`: a walk over at most 30 patterns of at most 8 segments, constant per request.
 - `selectionReference`: `buildViewModel` over the tab, O(n log n) for refs; a 5,000-element tab builds in well under
   `VIEW_SLOW_MS`; run once per settled selection, never per pointer move.
-- Messages: a selection message is under 4 KiB (20 items of at most 60-character labels).
-- Pairing polls: one `GET` per 5 s per waiting CLI, at most 120 in the ten minutes.
-- Workspace: the verdict walks at most 12 patterns; the frame's Explorer reads what `/explorer` reads, once per
-  frame view and again on Back from a document; a room ticket adds one `INSERT OR IGNORE`; a `place` message is
-  under 1 KiB and sent only when it changes.
+- Messages: a selection message is under 4 KiB (20 items of at most 60-character labels); a `place` message is under
+  1 KiB and sent only when it changes.
+- Workspace: a room ticket adds one best-effort note to liveworkspace per session and document per isolate; the
+  frame's Explorer reads what `/explorer` reads, once per frame view and again on Back from a document.
 
 ## Presentation and UX
 
@@ -1177,24 +849,6 @@ the words "Open in livediagram" (the glyph alone on a phone, as its neighbours),
 `target="_blank" rel="noopener noreferrer"`, shown while `mounted` and `ended` (WB34). In a workbench the tab bar
 offers no Appearance control (WB15). The Reconnect line is `WorkbenchReconnectLine`.
 
-### The pairing page (`/workbench/pair?code=`)
-
-Built on `OauthShell`, like the device page; states and copy:
-
-| State                       | Heading                             | Body and actions                                                                                                                                                                                                                                                                                                                                                                                                          |
-| --------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Accounts off                | "Workbenches aren’t available"      | "This deployment doesn’t have accounts enabled, so there’s nothing to pair."                                                                                                                                                                                                                                                                                                                                              |
-| Loading                     | none                                | "Loading…"                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Signed out                  | "Sign in to approve this workbench" | **Sign in** → `/sign-in/?redirect_url=<this path and query>`                                                                                                                                                                                                                                                                                                                                                              |
-| No code, unknown, not yours | "We couldn’t find this request"     | "It may belong to another account. Check you’re signed in as the person who runs the workbench."                                                                                                                                                                                                                                                                                                                          |
-| Pending                     | "Allow this workbench?"             | "Allow **<name>** at `<origin>` to open your documents with the token **<token name>**?" (spec); with no name: "Allow a workbench at `<origin>` to open your documents with the token **<token name>**?"; no token name: "an unnamed token". Below: "It opens one canvas at a time, as you, inside that tool. You can unpair it any time in Settings, under API Tokens." **Allow** (primary), **Don't allow** (secondary) |
-| Working                     | as Pending                          | **Allow** reads "Allowing…", both disabled                                                                                                                                                                                                                                                                                                                                                                                |
-| Failed                      | as Pending                          | `role="alert"` "Something went wrong. Please try again."                                                                                                                                                                                                                                                                                                                                                                  |
-| Allowed                     | "Workbench allowed"                 | "Return to <name or ‘your workbench’>; it carries on by itself."                                                                                                                                                                                                                                                                                                                                                          |
-| Declined                    | "Workbench not allowed"             | "Nothing was paired. Your terminal will stop waiting."                                                                                                                                                                                                                                                                                                                                                                    |
-| Expired                     | "This request has expired"          | "Run livediagram workbench pair again to ask anew." (command in monospace)                                                                                                                                                                                                                                                                                                                                                |
-| Already answered            | "This request was already answered" | "Run livediagram workbench pair again if you need to ask anew."                                                                                                                                                                                                                                                                                                                                                           |
-
 ### The workspace frame
 
 | Where                               | Copy                                                                                                                                    |
@@ -1209,22 +863,14 @@ Built on `OauthShell`, like the device page; states and copy:
 The Explorer's own views, empty states and not-found keep their copy. The slim bar at the top holds the lens field
 only, `h-12`, the header's colours.
 
-### The pairing page, a workspace request
-
-| State   | Body                                                                                                                                                                                                                                     |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pending | "Allow **<name>** at `<origin>` to open **your whole workspace**, and to create, move, share and trash canvases and folders in it, with the token **<token name>**?" (spec); with no name: "Allow a workbench at `<origin>` to open ..." |
-| Pending | Below: "It works in your Explorer and your canvases, as you, inside that tool. You can unpair it any time in Settings, under API Tokens." (WB66)                                                                                         |
-
-Every other state is the document request's.
-
 ### Settings > API tokens
 
 The API Tokens row (whose tokens are run on liveworkspace.app) shows, under its link there, one "Paired workbenches"
-list for the account (none: nothing, WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its scope ("One canvas at a time" or
-"Whole workspace", WB67), "Paired <relative time>", and an
-**Unpair** text button. Unpair opens a confirm popover: "Unpair <name>? Its open diagrams stop
-editing until you allow it again." with **Unpair** and **Cancel** (WB36). After Unpair the row leaves the list.
+list for the account (none: nothing, WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its
+scope ("One canvas at a time" or "Whole workspace", WB67), "Paired <relative time>", and an **Unpair** text button.
+Unpair opens a confirm popover: "Unpair <name>? Its open diagrams stop editing until you allow it again." with
+**Unpair** and **Cancel** (WB36). After Unpair the row leaves the list. The pairing page itself (Allow, Don't allow)
+is liveworkspace's.
 
 ## Accessibility
 
@@ -1232,181 +878,119 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
 - The Reconnect line: `role="status"`, `aria-live="polite"`, visible text, never colour alone.
 - **Open in livediagram**: accessible name "Open in livediagram (opens in a new tab)"; at least 24 by 24 px; the
   editor's focus ring.
-- The pairing page: focus moves to the heading on each state change; **Allow** and **Don't allow** are native
-  buttons; the origin and the token name are text, readable by a screen reader in full; it is drawn by `OauthShell`,
-  whose primary fill (`OAUTH_PRIMARY`: white on `brand-700` in light, about 5.9:1, and the solid brand control in
-  dark) the device and consent pages share.
 - Settings rows: **Unpair** named "Unpair <name> at <origin>"; the confirm popover is the existing accessible one.
 - The workspace frame: the Explorer's own semantics and focus order; Back is a native button, at least 24 by 24 px,
-  first of the editor's controls in the focus order, after the canvas itself, and the Header region for F6; a move inside the frame moves focus to the new view's heading (the Explorer's
-  pane heading, or the editor's canvas as on a load), and announces nothing more.
+  first of the editor's controls in the focus order, after the canvas itself, and the Header region for F6; a move
+  inside the frame moves focus to the new view's heading (the Explorer's pane heading, or the editor's canvas as on a
+  load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
-- The contrast audit, `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (every surface needs a signed-in person,
-  which only the signed-in export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
-  (pending), the device page (code entry and consent) and the paired-workbench row, each in both schemes.
+- The contrast audit, `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (it needs a signed-in person, which only
+  the signed-in export renders), holds the device page (code entry and consent) and the paired-workbench row, each in
+  both schemes.
 
 ## Web Experience
 
-- `/embed/workbench` LCP is the status text, painted from the static HTML; the editor chunk is preloaded
-  (`import('../../document/[id]/editor-page')` started on mount) while redeem and binding run, so `mounted` does not
-  wait on it. The editor replaces the status screen whole: no shift inside either (CLS).
+- `/embed/workbench` LCP is the status text, painted from the static HTML; the editor chunk loads while redeem and
+  binding run, so `mounted` does not wait on it. The editor replaces the status screen whole: no shift inside either
+  (CLS).
 - INP: the selection message is built after the settle, off the input event; message handling is O(refs).
-- `/workbench/pair` is a small static page; its one request runs after auth settles; layout is the device page's.
-- The workspace frame's LCP is its status text, from the static HTML; the Explorer and the editor chunks start
-  loading on mount while redeem and binding run. A move inside the frame is a client render with no page load;
-  the frame's own status line stands while a chunk loads, and nothing above the pane shifts between views (CLS);
-  a move is one push and a render, off the input event (INP).
+- The workspace frame's LCP is its status text, from the static HTML; the Explorer and the editor chunks start loading
+  on mount while redeem and binding run. A move inside the frame is a client render with no page load; nothing above
+  the pane shifts between views (CLS); a move is one push and a render, off the input event (INP).
 
 ## Observability
 
-| Fingerprint                                                                                    | Where                |
-| ---------------------------------------------------------------------------------------------- | -------------------- |
-| `[workbench] pairing-requested { tokenId, originHost, via: 'mint' \| 'pair', reused }`         | api                  |
-| `[workbench] paired { tokenId, pairingId }`                                                    | api                  |
-| `[workbench] pairing-declined { tokenId }`                                                     | api                  |
-| `[workbench] unpaired { tokenId, pairingId, reason, rooms, unreached }`                        | api                  |
-| `[workbench] ticket-minted { documentId, tokenId, role }`                                      | api                  |
-| `[workbench] mint-refused { reason, tokenId }` (`invalid_origin`, `not_found`, `rate_limited`) | api (warn)           |
-| `[workbench] session-opened { documentId, tokenId, sessionPrefix, role }`                      | api                  |
-| `[workbench] session-refused { reason, documentId?, tokenId? }`                                | api (warn)           |
-| `[workbench] session-ended { reason, documentId, tokenId, sessionPrefix }`                     | api                  |
-| `[workbench] bearer-refused { reason, sessionPrefix? }`                                        | api (warn)           |
-| `[workbench] confined { method, route, sessionPrefix }`                                        | api (warn)           |
-| `[workbench] read-only-refused { method, route, sessionPrefix }`                               | api (warn)           |
-| `[room-access] closed { match: 'workbench', closed }`                                          | room (existing line) |
-| `workbench sweep: deleted <n> rows`                                                            | api cron             |
-| `[workbench] handshake-ok { originHost }`, `[workbench] handshake-failed { framed }`           | page                 |
-| `[workbench] renewed`, `[workbench] renew-failed { reason }`                                   | page                 |
-| `[workbench] message-ignored { type }`, `[workbench] message-invalid { type }`                 | page (once per type) |
-| `[workbench] ended { reason }`, `[workbench] redeem-failed { status, reason? }`                | page                 |
-| `[workbench] request-confined { method, route }`, `[workbench] reveal-missed { count }`        | editor               |
-| `workbench open <minted <documentId>                                                           | pairing-required     | refused <status | share-link | invalid_origin>>` | CLI `debugLog` |
-| `workbench pair <pending                                                                       | paired               | approved        | declined   | expired           | gone           | slow-down <s> | network-retry <n> | browser <opened | not-opened | skipped> | refused <invalid_origin | invalid_name>>` | CLI `debugLog` |
+| Fingerprint                                                                                                                                                                                                    | Where                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `[workbench] bearer-refused { reason, sessionPrefix? }`                                                                                                                                                        | api (warn)           |
+| `[workbench] confined { scope, method, route, sessionPrefix }`                                                                                                                                                 | api (warn)           |
+| `[workbench] read-only-refused { scope, method, route, sessionPrefix }`                                                                                                                                        | api (warn)           |
+| `[workbench] liveworkspace unreachable`, `[workbench] room note failed`                                                                                                                                        | api                  |
+| `[room-access] closed { match: 'workbench', closed }`                                                                                                                                                          | room                 |
+| `[workbench] handshake-ok { originHost }`, `[workbench] handshake-failed { framed }`                                                                                                                           | page                 |
+| `[workbench] renewed`, `[workbench] renew-failed { reason }`                                                                                                                                                   | page                 |
+| `[workbench] message-ignored { type }`, `[workbench] message-invalid { type }`                                                                                                                                 | page (once per type) |
+| `[workbench] ended { reason }`, `[workbench] redeem-failed { status, reason? }`                                                                                                                                | page                 |
+| `[workbench] place { view }`, `[workbench] open { kind }`, `[workbench] create-failed { status }`                                                                                                              | workspace frame      |
+| `[workbench] request-confined { method, route }`, `[workbench] reveal-missed { count }`                                                                                                                        | editor               |
+| `workbench open <minted <documentId> \| pairing-required \| refused <status \| share-link \| invalid_origin>>`                                                                                                 | CLI `debugLog`       |
+| `workbench pair <pending \| paired \| approved \| declined \| expired \| gone \| slow-down <s> \| network-retry <n> \| browser <opened \| not-opened \| skipped> \| refused <invalid_origin \| invalid_name>>` | CLI `debugLog`       |
 
-Every api fingerprint above carries `scope` (`document` or `workspace`), as the spec asks; the workspace frame adds
-`[workbench] place { view }`, `[workbench] open { kind }` and `[workbench] create-failed { status }` (page), and
-`track('Session', 'Opened', 'WorkbenchWorkspace')` once per workspace frame.
-
-`originHost` is the origin's host only (no scheme or port, WB37). The fingerprints beyond the spec's list name
-decision points it leaves unlogged (WB47). Telemetry: `track('Session', 'Opened',
-'Workbench')` once per mount (the Allow is liveworkspace.app's and sends no app event); `Cli·Used·WorkbenchOpen`
-and `Cli·Used·WorkbenchPair` after exit 0. Dashboard: `WORKBENCH_SESSIONS` beside `EMBEDS_VIEWED` ("Workbench
-Sessions", "A document opened inside a developer tool's frame, signed in."), `WORKBENCHES_PAIRED` in
-`API_TOKEN_ACTIVITY` ("Workbenches Paired", "A token's owner allowed a developer tool to open their documents."),
-and the two CLI rows.
+`originHost` is the origin's host only (no scheme or port, WB37). The pairing, mint, session and sweep logs are the
+platform's. Telemetry: `track('Session', 'Opened', 'Workbench')` once per document-scope mount and
+`track('Session', 'Opened', 'WorkbenchWorkspace')` once per workspace frame; `Cli·Used·WorkbenchOpen` and
+`Cli·Used·WorkbenchPair` after exit 0 ([Telemetry](../../017-telemetry/telemetry.md)).
 
 ## Testing
 
-| Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Test                                                                                                                       |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Origin shapes: every accepted and refused form of the spec and E1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `packages/api-schema/src/workbench.test.ts`                                                                                |
-| Allow-list: every row allowed, every listed confined route refused, another document `other-document`                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `packages/api-schema/src/workbench.test.ts` (table-driven)                                                                 |
-| Message parse: each type, bounds, unknown, `v: 2`, invalid fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `packages/api-schema/src/workbench-messages.test.ts`                                                                       |
-| The store: tables, indexes, cascades from `wb_pairings`, routed secrets, the alarm's token check and sweep                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | packages/index-app/src/workbench.test.ts (gone)                                                                            |
-| Account deletion and the owner-keyed ledger                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/api/src/db/account-owner-columns.test.ts`                                                                            |
-| Unpaired mint 428 with a URL; second mint same request; expired request replaced                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | apps/api/src/routes/workbench-ticket-route.test.ts (gone)                                                                  |
-| Mint refusals: token required, confined, origin, body, 404, 410, tab not linked, 429; share code ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `workbench-ticket-route.test.ts`                                                                                           |
-| Mint level: edit token edit, read-only token view; owner's team access counts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `workbench-ticket-route.test.ts`                                                                                           |
-| Pairing request create, reuse, name update, `paired` when paired                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | apps/api/src/routes/workbench-pairing-routes.test.ts (gone)                                                                |
-| Approve and decline: owner only, token refused 401, other account 404, 409 twice, 410 expired                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `workbench-pairing-routes.test.ts`                                                                                         |
-| Status poll: requesting token only; statuses; expired read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `workbench-pairing-routes.test.ts`                                                                                         |
-| Pairings list and Unpair: owner only, sessions and tickets gone, rooms closed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `workbench-pairing-routes.test.ts`, packages/index-app/src/workbench.test.ts (gone)                                        |
-| Token revoke (by id and current) ends pairings, requests and sessions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `apps/api/src/routes/tokens.test.ts`, packages/index-app/src/workbench.test.ts (gone)                                      |
-| Redemption: single use, `used`, `expired`, `unknown`, token revoked, access lost, expiry capped by token                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | apps/api/src/routes/workbench-session-routes.test.ts (gone)                                                                |
-| Session resolution: reasons, `ctx` shape (clerk null, token null, owner), ambient headers refused                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/api/src/auth/workbench-session.test.ts`, `apps/api/src/index.test.ts`                                                |
-| Confinement at the choke point: 403, 404 for another document, view session writes 403, room-ticket allowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/api/src/auth/workbench-confinement.test.ts`, `index.test.ts`                                                         |
-| A session's tab PUT succeeds (no `use_changesets`); its revert is a person's                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/api/src/routes/tab-put-route.test.ts`, `apps/api/src/routes/changesets.test.ts`                                      |
-| Room ticket: account true, owner's person tag, role capped, pairing carried; upgrade header always set                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `apps/api/src/routes/document-room-routes.test.ts`                                                                         |
-| The frame's selection reads `mine`; never holds against the owner's agent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `apps/api/src/routes/changesets.test.ts` (held), `document-room.test.ts` (`/selections`)                                   |
-| Close match `workbench`: only that pairing's sockets, code 4006                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `../packages/api-kit/src/room-access.test.ts`, `document-room.test.ts`                                                     |
-| Images: no owner shortcut, `d` must be the session's document                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `apps/api/src/routes/images.test.ts`                                                                                       |
-| Sweep deletes what is due and nothing else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | packages/index-app/src/workbench.test.ts (gone)                                                                            |
-| OpenAPI parity and schemas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                            |
-| Selection reference: header, refs, kind words, labels quoted and cut, cap and tail, none, element order, kind-ref-label words                                                                                                                                                                                                                                                                                                                                                                                                                                              | `packages/document-views/src/selection-reference.test.ts`                                                                  |
-| Fragment read and cleared before any request                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/editor/app/embed/workbench/workbench-fragment.test.ts`                                                               |
-| Page machine: every transition of the phase table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/app/embed/workbench/workbench-machine.test.ts`                                                                |
-| Port: target origin on every send; foreign origin and source dropped; unknown logged once                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `apps/editor/lib/workbench/workbench-port.test.ts`                                                                         |
-| Renewal timing, swap, mismatch, expiry to `ended`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/app/embed/workbench/useWorkbenchRenewal.test.ts` (fake timers)                                                |
-| Bridge publishes before children fetch; accounts bridge stands down; pending default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `apps/editor/components/providers/WorkbenchAuthBridge.test.tsx`                                                            |
-| Bootstrap: no migration, no participant write, no lists, no share-link read, session level, `tabId`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `apps/editor/app/document/[id]/useIdentityBootstrap.test.ts`, `apps/editor/hooks/persistence/useAccountBootstrap.test.tsx` |
-| Client confinement throws without fetching; preferences write local only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/user-preferences.test.ts`                                             |
-| Surface flags and every gate of the Surface table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/app/document/[id]/editor-surface.test.ts`, `EditorView.test.tsx` (new), `settings-catalogue.test.ts`          |
-| Messages from the editor: ready once, tab, settle 250 ms, dedupe, reveal, theme                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `apps/editor/app/document/[id]/useWorkbenchMessages.test.ts`                                                               |
-| Tab revisions from load, save and changeset                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/editor/app/document/[id]/useTabRevisions.test.ts`                                                                    |
-| Appearance override wins and is never stored                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `../packages/ui/src/appearance/appearance-store.test.ts`                                                                   |
-| Close 4006 stops the connector                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | `apps/editor/lib/api/room.test.ts`                                                                                         |
-| Pair page states and copy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | apps/editor/app/workbench/pair/PairWorkbench.test.tsx (gone)                                                               |
-| Settings pairings and Unpair confirm                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `SettingsTokenPairings.test.tsx`, `useWorkbenchPairings.test.ts`                                                           |
-| Worker: `/embed/workbench` frameable, `/workbench/pair` DENY                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/editor/src/worker.test.ts`                                                                                           |
-| CLI open: URL and JSON, 428 exit 4 with the fix, share URL exit 2, origin exit 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `packages/agent-verbs/src/verbs/workbench.test.ts`, `apps/cli/src/commands/workbench-open.test.ts`                         |
-| CLI pair: URL first on stdout, no browser when piped, approved 0, declined 4, expired 4, 429 slow down, 404, network retries                                                                                                                                                                                                                                                                                                                                                                                                                                               | `apps/cli/src/commands/workbench-pair.test.ts` (fake io)                                                                   |
-| CLI help budgets for the new resource and verbs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `apps/cli/src/help/help.test.ts`                                                                                           |
-| Guide `workbench` and the skill's `[livediagram]` pointer; every topic, the frontmatter and the body within budget                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `packages/agent-verbs/src/catalogue.test.ts`                                                                               |
-| Telemetry catalogue rows and CLI command rows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `apps/telemetry` catalogue suites, `metric-series.test`                                                                    |
-| End to end, dark, a fake workbench page on `http://127.0.0.1:<port>` framing the editor app on `http://localhost:<port>`: unpaired mint 428; the pair page (signed in through the test bridge) Allow; mint; the frame binds, the editor mounts without header or Explorer; drawing saves; a selection arrives as one settled message with the reference; `reveal` outlines; `theme` switches; renewal swaps the session; Unpair turns the frame read-only with the Reconnect line; a page on another origin framing the same URL mounts nothing and shows the unbound copy | `apps/editor/e2e/workbench-embed.spec.ts` (project `workbench`, `colorScheme: 'dark'`, `E2E_WORKBENCH=1`)                  |
+| Rule                                                                                                                                                                                                                                                                                       | Test                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Origin shapes: every accepted and refused form of the spec and E1                                                                                                                                                                                                                          | `packages/api-schema/src/workbench.test.ts`                                                                                            |
+| Allow-lists by scope: every row allowed, every listed confined route refused, another document `other-document`, ambient headers by scope, `pairingCoversScope`                                                                                                                            | `packages/api-schema/src/workbench.test.ts` (table-driven)                                                                             |
+| Message parse: each type, bounds, unknown, `v: 2`, invalid fields                                                                                                                                                                                                                          | `packages/api-schema/src/workbench-messages.test.ts`                                                                                   |
+| Session resolution: the checker's answer, refusals, 503 when liveworkspace cannot answer, the room note                                                                                                                                                                                    | `apps/api/src/auth/workbench-session.test.ts`                                                                                          |
+| Confinement at the choke point: 403, 404 for another document, view writes 403, room-ticket and own end allowed, share-link list refused                                                                                                                                                   | `apps/api/src/auth/workbench-confinement.test.ts`                                                                                      |
+| Workspace choke point: each allowed route class reaches its route, each account class 403, `X-Owner-Id` refused, `X-Share-Code` passes                                                                                                                                                     | `apps/api/src/index.workbench-workspace.test.ts`                                                                                       |
+| Room ticket: owner's person tag, level capped, pairing sealed; upgrade header always set                                                                                                                                                                                                   | `apps/api/src/routes/document-room-routes.test.ts`                                                                                     |
+| Close match `workbench`: only that pairing's sockets, code 4006                                                                                                                                                                                                                            | `../packages/api-kit/src/room-access.test.ts`, `document-room.test.ts`                                                                 |
+| Images: no owner shortcut, `d` must be the session's document                                                                                                                                                                                                                              | `apps/api/src/routes/images.test.ts`                                                                                                   |
+| Selection reference: header, refs, kind words, labels quoted and cut, cap and tail, none, element order                                                                                                                                                                                    | `packages/document-views/src/selection-reference.test.ts`                                                                              |
+| Fragment read and cleared before any request; the address's scope                                                                                                                                                                                                                          | `apps/editor/app/embed/workbench/workbench-fragment.test.ts`                                                                           |
+| Page machine: every transition of the phase table, mismatch both ways                                                                                                                                                                                                                      | `apps/editor/app/embed/workbench/workbench-machine.test.ts`                                                                            |
+| Handshake and the page's states                                                                                                                                                                                                                                                            | `useWorkbenchHandshake.test.ts`, `WorkbenchPage.test.tsx`                                                                              |
+| Port: target origin on every send; foreign origin and source dropped; unknown logged once                                                                                                                                                                                                  | `apps/editor/lib/workbench/workbench-port.test.ts`                                                                                     |
+| Renewal timing, swap, mismatch, expiry to `ended`                                                                                                                                                                                                                                          | `apps/editor/app/embed/workbench/useWorkbenchRenewal.test.ts` (fake timers)                                                            |
+| Bridge publishes before children fetch; accounts bridge stands down; pending default                                                                                                                                                                                                       | `apps/editor/components/providers/WorkbenchAuthBridge.test.tsx`                                                                        |
+| Bootstrap: no participant write, no lists, session level, `tabId`, a link's load                                                                                                                                                                                                           | `apps/editor/app/document/[id]/useIdentityBootstrap.test.ts`, `apps/editor/hooks/persistence/useAccountBootstrap.test.tsx`             |
+| Client confinement throws without fetching                                                                                                                                                                                                                                                 | `apps/editor/lib/api/workbench-confinement.test.ts`                                                                                    |
+| Surface flags and the Settings categories                                                                                                                                                                                                                                                  | `apps/editor/app/document/[id]/editor-surface.test.ts`, `settings-catalogue.test.ts`                                                   |
+| Messages from the editor: ready once, tab, settle 250 ms, dedupe, reveal, theme                                                                                                                                                                                                            | `apps/editor/app/document/[id]/useWorkbenchMessages.test.ts`                                                                           |
+| Tab revisions from load, save and changeset                                                                                                                                                                                                                                                | `apps/editor/app/document/[id]/useTabRevisions.test.ts`                                                                                |
+| Trashed ends the page; 4005 and 4006 under a session                                                                                                                                                                                                                                       | `useWorkbenchEnd.test.ts`, `useRoomConnection.workbench.test.tsx`                                                                      |
+| Appearance override wins and is never stored                                                                                                                                                                                                                                               | `../packages/ui/src/appearance/appearance-store.test.ts`                                                                               |
+| Settings pairings and Unpair                                                                                                                                                                                                                                                               | `useWorkbenchPairings.test.ts`                                                                                                         |
+| Frame addresses both ways; app hrefs to frame paths; the frame-path rewrite                                                                                                                                                                                                                | `workspace-place.test.ts`, `workbench-frame-path.test.ts`                                                                              |
+| Interceptor: links, `assignAppLocation`, new-tab fallback                                                                                                                                                                                                                                  | `useWorkspaceNavigation.test.ts`                                                                                                       |
+| New document in place: folder, team, template, blank, refused                                                                                                                                                                                                                              | `create-in-place.test.ts`                                                                                                              |
+| The frame: Explorer on Home and on a folder, document with Back, trashed back to the Explorer, `place` on moves, `open`                                                                                                                                                                    | `WorkspaceFrame.test.tsx`, `useWorkspacePlaceMessages.test.ts`                                                                         |
+| Back's card and the Open link; the tab bar has no Back                                                                                                                                                                                                                                     | `WorkbenchChrome.test.tsx`, `TabBar.workbench.test.tsx`                                                                                |
+| Worker: `/embed/workbench` frameable, frame paths served by the frame page                                                                                                                                                                                                                 | `apps/editor/src/worker.test.ts`                                                                                                       |
+| CLI open and pair: URL and JSON, 428 exit 4 with the fix, share URL exit 2, origin exit 1; pair's URL first on stdout, no browser when piped, the endings                                                                                                                                  | `packages/agent-verbs/src/verbs/workbench.test.ts`, `apps/cli/src/commands/workbench-open.test.ts`, `workbench-pair.test.ts` (fake io) |
+| Guide `workbench` and the skill's `[livediagram]` pointer within budget                                                                                                                                                                                                                    | `packages/agent-verbs/src/catalogue.test.ts`                                                                                           |
+| End to end, dark, a fake workbench page framing the editor: the frame binds, the editor mounts without header or Explorer; drawing saves; a settled selection message; `reveal`; `theme`; renewal; Unpair turns the frame read-only with the Reconnect line; another origin mounts nothing | `apps/editor/e2e/workbench-embed.spec.ts` (project `workbench`, `E2E_WORKBENCH=1`)                                                     |
+| End to end, the workspace: Explorer Home with no header or account; a folder; New document in the frame; `place`; Back; `open`                                                                                                                                                             | `apps/editor/e2e/workbench-workspace.spec.ts`                                                                                          |
 
-The workspace scope's tests:
-
-| Rule                                                                                                                                                                                                                                                                                                               | Test                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `pairingCoversScope`; `WORKSPACE_ROUTES`: every allowed class allowed, every confined class refused, ambient headers by scope                                                                                                                                                                                      | `packages/api-schema/src/workbench.test.ts` (table-driven)                                              |
-| `place`, `open`, workspace `ready`: shapes, bounds, invalid fields                                                                                                                                                                                                                                                 | `packages/api-schema/src/workbench-messages.test.ts`                                                    |
-| Scopes on every row; the CHECKs; the rooms table cascades with its session                                                                                                                                                                                                                                         | packages/index-app/src/workbench.test.ts (gone)                                                         |
-| Requests per scope; approval widens, never narrows; `paired` only when covering                                                                                                                                                                                                                                    | `workbench-pairing-routes.test.ts`, packages/index-app/src/workbench.test.ts (gone)                     |
-| Workspace mint: 428 on a document pairing, 201 on a workspace one, document mint on a workspace pairing, `invalid_value` cases, folder reach (personal, team member, stranger 404), view token view                                                                                                                | `workbench-ticket-route.test.ts`                                                                        |
-| Workspace redemption: the scoped answer, no document check                                                                                                                                                                                                                                                         | `workbench-session-routes.test.ts`                                                                      |
-| Choke point, workspace: each allowed route class reaches its route, each account class 403 `workbench_confined`, `X-Owner-Id` refused, `X-Share-Code` passes, view writes and share-link list 403                                                                                                                  | `apps/api/src/auth/workbench-confinement.test.ts`, `apps/api/src/index.workbench-workspace.test.ts`     |
-| Room ticket under a workspace session records its room; ending access closes it                                                                                                                                                                                                                                    | `document-room-routes.test.ts`, packages/index-app/src/workbench.test.ts (gone)                         |
-| Frame addresses both ways; app hrefs to frame paths                                                                                                                                                                                                                                                                | `apps/editor/lib/workbench/workspace-place.test.ts`                                                     |
-| Interceptor: links, `assignAppLocation`, `useAppNavigation`, new-tab fallback                                                                                                                                                                                                                                      | `apps/editor/lib/app-location.test.ts`, `useWorkspaceNavigation.test.ts`                                |
-| New document in place: folder, team, template, blank, refused                                                                                                                                                                                                                                                      | `create-in-place.test.ts`                                                                               |
-| The address's scope; mismatch both ways; renewal scope check                                                                                                                                                                                                                                                       | `workbench-fragment.test.ts`, `workbench-machine.test.ts`, `useWorkbenchRenewal.test.ts`                |
-| The frame: Explorer on Home and on a folder, document with Back, trashed back to the Explorer, `place` on moves, `open`                                                                                                                                                                                            | `WorkspaceFrame.test.tsx`, `useWorkspacePlaceMessages.test.ts`                                          |
-| Back's card: top left, alone, the strip's `data-toolbar-menu`, the Header region, inline on a phone; the tab bar has no Back                                                                                                                                                                                       | `WorkbenchChrome.test.tsx`, `TabBar.workbench.test.tsx`                                                 |
-| Pairing page workspace copy; Settings scope                                                                                                                                                                                                                                                                        | `PairWorkbench.test.tsx`, `SettingsTokenPairings.test.tsx`                                              |
-| Worker serves the frame page for frame paths, frameable                                                                                                                                                                                                                                                            | `apps/editor/src/worker.test.ts`                                                                        |
-| End to end, dark: a workspace mint 428 on a document pairing; Allow the workspace request; mint; the frame shows Explorer Home with no header or account; a folder mint shows its empty state; New document opens in the frame; `place` arrives for each; Back at top left, first, returns; `open` moves the frame | `apps/editor/e2e/workbench-workspace.spec.ts` (project `workbench`)                                     |
-| CLI: `workbench open --workspace [--folder]`, `pair --workspace`, `folder ls [--json]`, `folder create [--in] --json`                                                                                                                                                                                              | `packages/agent-verbs/src/verbs/workbench.test.ts`, `folder.test.ts`, `apps/cli/src/commands/*.test.ts` |
-
-The fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) is served by `workbench-support.ts` from a Node `http`
-server on `127.0.0.1` at a free port; it frames the URL it is given, answers `hello` with `hello-ack { name: 'Fake
-Workbench' }`, answers `renew` with a ticket the test mints, and records every message into `window.received`.
-`scripts/e2e-stack.mjs` under `E2E_WORKBENCH=1` acts as the accounts Worker as under `E2E_ACCOUNTS_STUB` (its own JWKS at `/e2e/accounts/api/auth/jwks` and `/e2e/token`)
-and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NEXT_PUBLIC_E2E_AUTH=1`, as under
-`E2E_DRIVE`.
+The fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) is served by `workbench-support.ts` from a Node
+`http` server on `127.0.0.1` at a free port; it frames the URL it is given, answers `hello` with
+`hello-ack { name: 'Fake Workbench' }`, answers `renew` with a ticket the test mints, and records every message into
+`window.received`.
 
 ## Constants and configuration
 
-| Constant                            | Value                        | Provenance                                                       | Safe range          |
-| ----------------------------------- | ---------------------------- | ---------------------------------------------------------------- | ------------------- |
-| `WORKBENCH_TICKET_TTL_MS`           | 60000                        | Spec                                                             | 30000 to 120000     |
-| `WORKBENCH_SESSION_TTL_MS`          | 28800000                     | Spec                                                             | 3600000 to 86400000 |
-| `WORKBENCH_HANDSHAKE_MS`            | 5000                         | Spec                                                             | 2000 to 15000       |
-| `WORKBENCH_SELECTION_SETTLE_MS`     | 250                          | Spec                                                             | 100 to 1000         |
-| `WORKBENCH_SELECTION_MAX_REFS`      | 20                           | Spec                                                             | 5 to 50             |
-| `WORKBENCH_PAIRING_TTL_MS`          | 600000                       | Spec                                                             | 120000 to 1800000   |
-| `WORKBENCH_TICKETS_PER_MINUTE`      | 30                           | Spec; the binding's `simple.limit`                               | 10 to 120           |
-| `WORKBENCH_RENEW_LEAD_MS`           | 600000                       | WB38                                                             | 60000 to 3600000    |
-| `WORKBENCH_RENEW_RETRY_MS`          | 60000                        | WB38                                                             | 10000 to 300000     |
-| `WORKBENCH_PAIRING_POLL_INTERVAL_S` | `DEVICE_POLL_INTERVAL_S` (5) | The device grant's, as the spec's "as auth login --device waits" | 2 to 15             |
-| `WORKBENCH_TICKET_BYTES`            | 16                           | Spec: 128 random bits                                            | fixed               |
-| `WORKBENCH_SESSION_SECRET_BYTES`    | 32                           | As an API token (WB39)                                           | 32 to 64            |
-| `WORKBENCH_PAIRING_CODE_BYTES`      | 16                           | 128 bits, as a ticket (WB29)                                     | 16 to 32            |
-| `WORKBENCH_SESSION_PREFIX`          | `lvw_`                       | Spec                                                             | fixed               |
-| `WORKBENCH_NAME_MAX_LENGTH`         | 40                           | WB2                                                              | 20 to 80            |
-| `WORKBENCH_ORIGIN_MAX_LENGTH`       | 255                          | A host name's own cap plus scheme and port                       | fixed               |
-| `WORKBENCH_SESSION_GRACE_MS`        | 86400000                     | WB30                                                             | 0 to 604800000      |
-| `WORKBENCH_ENDED_CLOSE`             | 4006                         | Next after 4005                                                  | fixed               |
-| `WORKBENCH_TICKET_RATE_LIMITER`     | namespace `1010`, 30 / 60 s  | Spec; its own binding (WB41)                                     | as above            |
+| Constant                        | Value                   | Provenance                                 | Safe range          |
+| ------------------------------- | ----------------------- | ------------------------------------------ | ------------------- |
+| `WORKBENCH_TICKET_TTL_MS`       | 60000                   | Spec; enforced by the platform             | 30000 to 120000     |
+| `WORKBENCH_SESSION_TTL_MS`      | 28800000                | Spec; enforced by the platform             | 3600000 to 86400000 |
+| `WORKBENCH_HANDSHAKE_MS`        | 5000                    | Spec                                       | 2000 to 15000       |
+| `WORKBENCH_SELECTION_SETTLE_MS` | 250                     | Spec                                       | 100 to 1000         |
+| `WORKBENCH_SELECTION_MAX_REFS`  | 20                      | Spec                                       | 5 to 50             |
+| `WORKBENCH_PAIRING_TTL_MS`      | 600000                  | Spec; enforced by the platform             | 120000 to 1800000   |
+| `WORKBENCH_TICKETS_PER_MINUTE`  | 30                      | Spec; enforced by the platform             | 10 to 120           |
+| `WORKBENCH_RENEW_LEAD_MS`       | 600000                  | WB38                                       | 60000 to 3600000    |
+| `WORKBENCH_RENEW_RETRY_MS`      | 60000                   | WB38                                       | 10000 to 300000     |
+| `WORKBENCH_SESSION_PREFIX`      | `lvw_`                  | Spec                                       | fixed               |
+| `WORKBENCH_NAME_MAX_LENGTH`     | 40                      | WB2                                        | 20 to 80            |
+| `WORKBENCH_ORIGIN_MAX_LENGTH`   | 255                     | A host name's own cap plus scheme and port | fixed               |
+| `WORKBENCH_ENDED_CLOSE`         | 4006                    | Next after 4005                            | fixed               |
+| Session check cache             | 60 s live, 10 s refused | `workbench-session.ts`                     | fixed               |
 
-Configuration: `APP_BASE_URL` (existing var) builds the URLs; `WORKBENCH_TICKET_RATE_LIMITER` added to production and
-`[env.staging]` (`pnpm staging:check`); both optional on a deployment (absent limiter allows).
+Configuration: `ACCOUNTS_URL`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` (the api's client credentials) let
+the api check sessions and forward `/api/workbench/*`; without them every `lvw_` bearer reads `unknown`.
 
 ## Assets and external resources
 
-No new asset. The external-link glyph and the key glyph already ship in the editor's icon set; the pairing page
-reuses `OauthShell`, which stands on `AuthStage` (the Night Band frame).
+No new asset. The external-link glyph ships in the editor's icon set.
 
 ## Defaults ledger
 
-WB1 to WB67 in [DEFAULTS.md](DEFAULTS.md).
+WB in [DEFAULTS.md](DEFAULTS.md).

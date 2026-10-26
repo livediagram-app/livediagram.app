@@ -74,7 +74,7 @@ says what it has seen.
      changed it after, so the person's version stands. Taking the changeset's version keeps the save's live fields;
    - a **reorder** is re-applied only when the save still holds those elements in the order the changeset found.
      A save without the header (a bundle older than this spec) is treated as having seen nothing newer than
-     `CHANGESET_MERGE_WINDOW` ago.
+     `CHANGESET_MERGE_WINDOW_MS` ago.
 
 Because the merge reads the store rather than the room, a changeset survives a dropped relay, a sleeping room and an
 editor that was offline when it landed.
@@ -182,8 +182,8 @@ field, and nothing is applied. A relaxed tab is never refused for residue.
 ## The MCP server
 
 `update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
-`update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap no longer
-erases anything:
+`update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap
+erases nothing:
 
 - It takes an optional `rev`, the revision `read_document` returned; the fingerprints come from the tool's own read
   at call time. A person's change between `read_document` and the call is overwritten only on the fields the ops
@@ -198,7 +198,7 @@ erases anything:
 | ----------------------------- | ---------- | ------------------------------------------------------------------------ |
 | `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large diagram fits; a runaway loop does not      |
 | `CHANGESET_RELAY_MAX_BYTES`   | 192 KiB    | Under the room's 256 KiB frame cap with room for metadata                |
-| `CHANGESET_MERGE_WINDOW`      | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
+| `CHANGESET_MERGE_WINDOW_MS`   | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
 | `CHANGESET_RETENTION_DAYS`    | 30         | Matches the Trash: an agent's work can be undone as long as a delete can |
 | `CHANGESET_REVEAL_MS`         | 2000       | Long enough to notice, short enough not to clutter                       |
 | `CHANGESET_TOAST_COALESCE_MS` | 10000      | One toast per burst of work                                              |

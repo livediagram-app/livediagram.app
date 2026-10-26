@@ -29,7 +29,7 @@ theirs without adding a settings screen.
   Spotlight, Eraser, Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
-  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLEARANCE_PX`) so a panel
+  **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `apps/editor/lib/panel-layout.ts`) so a panel
   docked there never overlaps the zoom bar — the snap anchor, the corner guide, and the
   dock container all use the raised inset.
 
@@ -163,8 +163,8 @@ later, or reading a layout written by a newer client, never strands the UI.
 - **`apps/editor/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
-  handlers: `dockToCorner(panelId, corner)`, `setFree(panelId, x, y)`,
-  `resetPanel(panelId)`, plus drag lifecycle (`beginDrag`, `updateDrag`, `endDrag`).
+  `placementOf(panelId)`, `isDragging(panelId)`, `resetPanel(panelId)`, plus the drag lifecycle (`beginDrag`,
+  `updateDrag`, `endDrag`; a drop docks the panel or frees it).
   Composed alongside `usePanelLayout` in the editor view-model.
 - **`MovablePanel`** gains an additive **docked** render mode: when the parent places it
   inside a corner stack it renders as a static flex child (no `absolute`, no corner class,

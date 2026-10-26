@@ -191,8 +191,7 @@ Three lessons are worth keeping:
   had a clipboard's jaw across the top AND a punched margin down the side. The
   jaw read as a stray pill; the rings agree with the holes.
 - **A texture drawn outside the card is not drawn at all.** `overflow-hidden`
-  clipped every pixel of the first `TapeStrip`, so the seal never once
-  appeared. Anything at an edge has to lie ACROSS it.
+  clips it, so anything at an edge has to lie ACROSS it.
 - **Small hardware does not survive the size these elements are used at.** The
   Done check went through a clipboard's jaw and then wire binder rings, and
   both came out. At the size a card actually sits on a canvas a 5px loop and a

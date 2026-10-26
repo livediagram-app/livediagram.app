@@ -124,16 +124,15 @@ rotated shape, or paste one, and it now enters at its angle.
 
 ## Legacy emoji stay icons
 
-[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved documents hold
+Saved documents may hold emoji as **icons** ([Emoji icon entries](emoji-icons.md)),
 `{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
 migrated**: silently restyling somebody's saved document with a plate, a shadow
 and a tilt is not ours to do.
 
-So the icon catalogue keeps rendering them exactly as it always has. Those
+So the icon catalogue renders them as icons. Those
 entries are **derived** from the sticker catalogue rather than hand-copied
-(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. Only the
-palette moved: the Emoji category is gone from `ICON_CATEGORIES`, the Icons
-tab's search and the global "Add to canvas" list both filter legacy emoji ids
+(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. The Icons tab
+has no Emoji category in `ICON_CATEGORIES`, the Icons tab's search and the global "Add to canvas" list both filter legacy emoji ids
 out, and Stickers is the one place you browse or place them.
 
 Sticker ids keep the `emoji-` prefix for the same reason — an id is what a

@@ -88,11 +88,11 @@ favicon }` on each selected link card whose link is still that URL (D50), and tr
    Unbound → allowed.
 3. No `url` → 400 `missing url`. `parsePublicHttpUrl` null → 400 `invalid or disallowed url`.
 4. `fetch` with `redirect: 'follow'`, `User-Agent: USER_AGENT`, `Accept:
-text/html,application/xhtml+xml`, aborted after `FETCH_TIMEOUT_MS` measured to the end of the
+text/html,application/xhtml+xml`, aborted after `UNFURL_FETCH_TIMEOUT_MS` measured to the end of the
    body read (GB10). A throw → 200 `{ url }` (D53).
 5. Final URL (`res.url`) re-validated; blocked → 400 `redirected to a disallowed url`.
 6. `content-type` without `html` → 200 `buildUnfurlResult({}, finalUrl)` (url + favicon).
-7. `collectMeta` streams through `HTMLRewriter`, reading at most `MAX_HTML_BYTES` then cancelling:
+7. `collectMeta` streams through `HTMLRewriter`, reading at most `UNFURL_MAX_HTML_BYTES` then cancelling:
    `<title>` text; the first `og:title`, `og:site_name`, `og:image` or `og:image:url`,
    `og:description`, `description` (`property` or `name`); the first `<link rel>` containing
    `icon` (D51, D52).
@@ -114,7 +114,7 @@ Invariants:
 
 - **I1:** no fetch is issued to a URL `parsePublicHttpUrl` rejects.
 - **I2:** no field is returned from a response whose final URL is blocked.
-- **I3:** at most `MAX_HTML_BYTES` (plus one chunk) is read from any response.
+- **I3:** at most `UNFURL_MAX_HTML_BYTES` (plus one chunk) is read from any response.
 - **I4:** the view never shows `meta` fields whose `url` differs from the card's URL.
 
 ## Interfaces and contracts
@@ -191,8 +191,8 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 | E3  | Redirect (www, https, trailing slash)   | `meta.url` keyed to the requested URL, so the preview survives |
 | E4  | Redirect to a private host              | 400; no data returned (I2)                                     |
 | E5  | Non-HTML target (PDF, image)            | URL + favicon                                                  |
-| E6  | Huge page                               | Read stops at `MAX_HTML_BYTES`                                 |
-| E7  | Slow-drip body                          | Aborted at `FETCH_TIMEOUT_MS` (GB10)                           |
+| E6  | Huge page                               | Read stops at `UNFURL_MAX_HTML_BYTES`                          |
+| E7  | Slow-drip body                          | Aborted at `UNFURL_FETCH_TIMEOUT_MS` (GB10)                    |
 | E8  | OG image or favicon 404 / blocked       | Globe banner / kind glyph                                      |
 | E9  | Multi-selection mixing cards and shapes | All get the link; only cards get `meta`                        |
 | E10 | Non-URL link                            | No unfurl; title "Document" / "Tab" / "Element" `[QB11]`       |
@@ -279,12 +279,12 @@ LinkUnfurled` exist.
 
 ## Constants and configuration
 
-| Name                  | Value                                               | Provenance / safe range                            |
-| --------------------- | --------------------------------------------------- | -------------------------------------------------- |
-| `FETCH_TIMEOUT_MS`    | `8000`                                              | Spec 8 s; 3 000 to 10 000 within the Worker budget |
-| `MAX_HTML_BYTES`      | `512 * 1024`                                        | Spec ~512 KB; the head is rarely past 100 KiB      |
-| `USER_AGENT`          | `livediagram-unfurl/1.0 (+https://livediagram.app)` | Spec "descriptive"; keep a contact URL             |
-| `UNFURL_RATE_LIMITER` | 60 per 60 s, namespace `1005`                       | Spec; production and staging                       |
-| `createLinkCard` size | 280 × 120                                           | Spec                                               |
-| Card radius           | 10 px canvas, 6 px export                           | `element-variant.ts`, `svg-render.ts` (D56)        |
-| Default colours       | fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b`    | `colors.ts`; text on fill 14.6:1                   |
+| Name                      | Value                                               | Provenance / safe range                            |
+| ------------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| `UNFURL_FETCH_TIMEOUT_MS` | `8000`                                              | Spec 8 s; 3 000 to 10 000 within the Worker budget |
+| `UNFURL_MAX_HTML_BYTES`   | `512 * 1024`                                        | Spec ~512 KB; the head is rarely past 100 KiB      |
+| `USER_AGENT`              | `livediagram-unfurl/1.0 (+https://livediagram.app)` | Spec "descriptive"; keep a contact URL             |
+| `UNFURL_RATE_LIMITER`     | 60 per 60 s, namespace `1005`                       | Spec; production and staging                       |
+| `createLinkCard` size     | 280 × 120                                           | Spec                                               |
+| Card radius               | 10 px canvas, 6 px export                           | `element-variant.ts`, `svg-render.ts` (D56)        |
+| Default colours           | fill `#ffffff`, stroke `#e2e8f0`, text `#1e293b`    | `colors.ts`; text on fill 14.6:1                   |

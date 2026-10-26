@@ -8,9 +8,8 @@ one of them: it is a mirror of cloud documents, not a place a document is stored
 **Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
-(The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser
-data-loss warning and a folder browser; it was removed, as most people answered it with the default before they had
-anything on the canvas. A document in This Browser still says what it is on the document itself: the editor header's
+(A Location step would be answered with the default by most people before they had anything on the canvas.) A
+document in This Browser says what it is on the document itself: the editor header's
 **This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
 
 | Location         | What it means                                                                                                |
@@ -37,13 +36,12 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
   signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer: a slow session used to make the document This Browser,
-  and the move prompt then offered the document just made. Only a known account saves on livediagram; a session that
+  sign-in (it then carries on as a guest) is not that answer, or a slow session would make the document This Browser.
+  Only a known account saves on livediagram; a session that
   still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
   person's to set, in Settings > Documents > Default Folders ([Default folders](../013-workspace/default-folders.md)).
-  A preference that once did both, "Always save new documents in <place> and skip this step" (`skipLocationStep`),
-  is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
+  The retired `skipLocationStep` preference is not read ([User preferences](../007-editor/user-preferences.md)).
 
 ## On the start screen
 

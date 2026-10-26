@@ -184,12 +184,8 @@ the same band geometry so a captioned icon exports exactly as drawn.
 
 **The caption is confined to its own band too** (`iconCaptionBand` in
 `../packages/model-core/src/icon-size.ts`, mirrored by the editor's
-`captionBandClass`). The caption used to align over the WHOLE element box
-while only the glyph moved bands, which broke several alignment combos: a
-centre/middle caption sat at 50% height — inside the glyph's bottom band, on
-top of the art — and a left/right caption spanned the full width (long text
-ran under the mark) while hugging the box's top/bottom edge instead of the
-mark's row, so the pair didn't line up. Now the caption gets the complement
+`captionBandClass`). Aligning the caption over the whole element box while only the glyph moves bands would put a centre caption on top
+of the art and run a left/right caption under the mark. The caption gets the complement
 of the glyph band and aligns within it so every combo reads cleanly:
 
 - **Centre captions** keep the full width and take the vertical band the
@@ -207,8 +203,8 @@ all read this one geometry, so a captioned icon exports exactly as drawn.
 the 3 × 3 alignment grid is the one choice with no side to sit on, so it means
 _on the art_: the glyph keeps the whole box, as if unlabelled, and the label is
 centred over it, drawn above the art. That is how a skull goes in a flag or a
-number in a circle. It used to mean "the top band, hugging the glyph", which
-looked almost the same as Top-centre and left no way to label the art itself.
+number in a circle. As "the top band, hugging the glyph" it would look almost the same as Top-centre and leave no way to label
+the art itself.
 `isOnGlyphLabel` (`icon-size.ts`) names the rule; `iconBandBounds` and
 `iconCaptionBand` both return the whole box for it, and the editor's
 `iconBandClass` / `captionBandClass` mirror them, so exports match.

@@ -100,7 +100,7 @@ Scope, by file:
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a frame
-(groups were removed), "parent" for a container (only `mindParentId` is a parent), "section" in code (a frame),
+(there are no groups), "parent" for a container (only `mindParentId` is a parent), "section" in code (a frame),
 "swimlane" in code (a lane).
 
 ## Behaviour and state
@@ -394,8 +394,8 @@ make room here:
 3. Every arrow with a free end whose free ends all have a holder chain, as points, reaching a container in `ids`
    (EO51). Pinned ends follow their elements.
 
-Returns `ids` unchanged when no id is a container, so a plain drag pays one pass over `ids`. The editor's
-full-containment and backmost-owner rules are gone: an element in overlapping containers belongs to the smallest,
+Returns `ids` unchanged when no id is a container, so a plain drag pays one pass over `ids`. There are no
+full-containment or backmost-owner rules: an element in overlapping containers belongs to the smallest,
 the earlier in element order on a tie, as `smallestHolder` decides.
 
 ### Make room

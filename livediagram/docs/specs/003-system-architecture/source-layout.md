@@ -1,79 +1,47 @@
-# Source layout: group `apps/editor` components + hooks by domain
+# Source layout: `apps/editor` components and hooks by domain
 
-Status: **done** — both `apps/editor/hooks/` and `apps/editor/components/` have
-been reorganised into the buckets below.
+`apps/editor/components/` and `apps/editor/hooks/` are grouped by domain, not by type: each file sits in the folder
+that owns its concern, so a file is found by what it is about rather than by scrolling a flat list that mixes
+three-line leaves with thousand-line screens.
 
-## Problem
-
-`apps/editor` has grown two flat grab-bag directories:
-
-- `apps/editor/components/` — ~157 files, alphabetical, mixing 3-line leaves
-  (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
-  (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
-- `apps/editor/hooks/` — ~66 files, canvas state machines
-  (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
-  (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
-  (`useFolders.ts`, `useTeams.ts`).
-
-The blessed counter-example already in the tree is `apps/editor/lib/api/*`,
-which is split by domain (`documents.ts`, `tabs.ts`, `share.ts`, …). A new
-contributor can find the persistence boundary instantly; finding "the
-canvas components" means scrolling 157 alphabetised entries. This is the
-flat-directory half of the consistency review (item #9); it complements
-the no-god-files rule in `AGENTS.md` (cohesion over line count).
-
-## Proposed taxonomy
-
-Group by domain, not by type. Target subdirectories (indicative, not
-exhaustive — each file lands in the bucket that owns its concern):
+## The folders
 
 `apps/editor/components/`
 
-- `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
-  `LinkCardView`, …), overlays, marquee, layers.
-- `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
-  `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
-- `panels/` — side/floating panels (`CollaboratePanel`,
-  `GalleryPane`, Explorer surfaces).
-- `palette/` — palette + context-menu tiles/rows.
-- `chrome/` — header, toolbars, docks, tab bar.
-- `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/` — local leaves (`PortalMenu`, `BackBar`, chart leaves) not
-  promoted to `@livediagram/ui` or `@liveworkspace/ui` (which holds `Portal`).
+- `canvas/`: the canvas, element views and faces (`BoxedElementView`, `ArrowView`, `LinkCardView`, ...), overlays,
+  marquee, layers.
+- `chrome/`: header, toolbars, docks, tab bar, badges and bars.
+- `colour/`: colour pickers and swatches.
+- `dialogs/`: modal surfaces (`ImportTabDialog`, `ExportTabDialog`, Settings, the Community dialogs, ...).
+- `flowchart/`: the flowchart builder's pieces.
+- `notes/`: sticky-note pieces.
+- `palette/`: palette and context-menu tiles and rows.
+- `panels/`: side and floating panels (`CollaboratePanel`, `LayersPanel`, `SearchPanel`, the Explorer host).
+- `placement/`: placing elements onto the canvas.
+- `primitives/`: local leaves (`MovablePanel`, `ChipField`, `HelpArticleLink`, chart leaves) not promoted to `@livediagram/ui` or
+  `@liveworkspace/ui` (which holds `Portal`).
+- `providers/`: React context providers.
+- `rich-text/`: the rich-text editor.
+- `split/`: split view.
+- `start/`: the start panels and template starts.
+- `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md));
+  `useToast` is in `hooks/ui/`.
+- `tour/`: the guided tours.
 
 `apps/editor/hooks/`
 
-- `canvas/` — drag, eraser, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, share links.
-- `ui/` — confirm, toast, panel layout, escape/click-outside.
-- `collab/` — room connection, presence.
+- `canvas/`: drag, eraser, marquee, element style, keyboard shortcuts.
+- `collab/`: room connection, presence.
+- `editor/`: editor-wide state (modes, the default tool).
+- `persistence/`: documents, capabilities, share links, the Community post.
+- `ui/`: confirm, toast, panel layout, escape and click-outside.
 
-Rules:
+## Rules
 
-- Import via the `@/components/<domain>/X` / `@/hooks/<domain>/X` path; no
-  per-directory barrels (keeps tree-shaking + matches today's direct-path
-  imports).
-- A file belongs to the domain of its concern, not the screen that happens
-  to render it first.
-- Cross-app primitives keep migrating to `@livediagram/ui` (see review #4/#5:
-  `Button`, `TextInput`); domain folders are for app-local code.
-
-## Execution
-
-Each directory moves **atomically in its own pass** — never a partial move
-within a directory, which would leave it half-organised (worse than
-consistently-flat). Every move rewrites that directory's `@/<dir>/X` import
-sites across hundreds of files, including hot files (`EditorView`,
-`useEditorState`, `Canvas`) edited continuously by the repo's background
-auto-committer, so each pass runs in an isolated `git worktree` off
-`origin/main`: `git mv` each file into its bucket, a quote-anchored
-project-wide import-path rewrite, then `typecheck && lint && test && format`
-green before a single commit and push.
-
-- **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
-  files had their `@/hooks/*` imports rewritten; full suite green.
-- **`components/` — done.** 158 files → dialogs / panels / palette / chrome /
-  primitives / canvas (`providers/` already existed, left as-is). Two passes:
-  first every inter-component relative import (`./X`, `../X`, `./providers/X`)
-  was resolved to a `@/components/...` alias, then the files moved and the
-  aliases were rewritten to bucketed paths. Full suite green.
+- Import through `@/components/<domain>/X` and `@/hooks/<domain>/X`; no per-directory barrels, which keeps
+  tree-shaking and direct-path imports.
+- A file belongs to the domain of its concern, not the screen that happens to render it first.
+- Code more than one app needs goes to `@livediagram/ui` (or `@liveworkspace/*`, for every product); domain folders
+  are for app-local code.
+- A move between folders moves a whole directory's files in one change, with every import rewritten, so no folder is
+  ever half-organised.

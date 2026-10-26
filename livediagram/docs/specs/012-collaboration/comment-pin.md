@@ -94,21 +94,17 @@ kind of connection would be a second thing to lay out, export and explain.
 It also means the pair behaves like anything else — move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
 The panel is added from the palette only: Workshop's **Record** category, or Diagram's **Write**. The
-element menu's Collaborate section once offered a `Comment Panel` tile that
-dropped the panel and the arrow in one go; it was removed, since a second
-way in from every element's menu was one more tile to read past on the way
-to the thread (the menu keeps `Add Comment`, the anchored popover).
+element menu has no `Comment Panel` tile: a second way in from every element's menu would be one more tile to read
+past on the way to the thread (the menu keeps `Add Comment`, the anchored popover).
 
 ### Why not the pin
 
-The first version was a standalone marker: a dot with a leader line that opened
-the ordinary anchored popover. It was replaced because a popover is **one
+It is not a standalone marker opening the ordinary anchored popover, because a popover is **one
 reader's transient view**. A panel connected to what it is about sits on the
 canvas, in the export, and in everyone's session, which is what makes a remark
 part of the document rather than a note somebody left.
 
-It also means the shape is no longer self-painting: as a 40px bubble it drew
-itself, and as a card it wants the fill, border and rounded corners every other
+It also means the shape is not self-painting: as a card it wants the fill, border and rounded corners every other
 card gets.
 
 ## Registration notes
