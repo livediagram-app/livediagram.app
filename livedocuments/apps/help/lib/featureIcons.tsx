@@ -1169,21 +1169,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4 17l8 4.5 8-4.5" />
     </Glyph>
   ),
-  'layers-visibility-and-locking': (
-    <Glyph>
-      <path d="M2.5 11.5S5.5 6 11 6s8.5 5.5 8.5 5.5S16.5 17 11 17s-8.5-5.5-8.5-5.5z" />
-      <circle cx="11" cy="11.5" r="2.5" />
-      <rect x="16" y="16.5" width="6" height="5" rx="1" />
-      <path d="M17.5 16.5v-1.2a1.5 1.5 0 013 0v1.2" />
-    </Glyph>
-  ),
-  'layers-organising': (
-    <Glyph>
-      <rect x="4" y="3.5" width="11" height="6" rx="1.5" />
-      <rect x="9" y="14.5" width="11" height="6" rx="1.5" />
-      <path d="M12 10.5v3M10.5 12l1.5 1.5L13.5 12" />
-    </Glyph>
-  ),
 };
 
 /** Top-level feature category → glyph.

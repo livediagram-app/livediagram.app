@@ -222,12 +222,12 @@ docs/           # developer docs, indexed in docs/README.md
   instructions/ # repeatable processes (e.g. registering a help article)
 ```
 
-Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestrated with **Turborepo** (`turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
+Workspaces are managed with **pnpm** (the monorepo root's `pnpm-workspace.yaml` and lockfile). Tasks are orchestrated with **Turborepo** (the root `turbo.json`). Node `>=22` (wrangler 4 requirement), pnpm `>=9`.
 
-## What's built, what's still ahead
+## Roadmap
 
 - Built: see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md#where-we-are-now).
-- Still ahead: see [Next and Later](docs/specs/005-project-roadmap/prototype-scope.md#next).
+- Next: see [Next and Later](docs/specs/005-project-roadmap/prototype-scope.md#next).
 
 ## Open source
 
@@ -242,7 +242,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
-- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
+- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, GitHub Actions secrets for the deploy workflows.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
 - Server-only secrets (the accounts client secret, `INDEX_KEY`, `MEDIA_KEY`) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
@@ -292,7 +292,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Hard constraints
 
-- **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
+- **All websites must be static, served as Workers Static Assets.** They deploy from the monorepo's root workflows (`.github/workflows/`). Next.js apps use `output: 'export'`: no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
 - Stored data is reached only through a Worker (the api's Durable Objects, liveworkspace's index and accounts) — never from the browser.
 
@@ -309,7 +309,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 ## Guidelines
 
 - **Every feature decides its share roles.** When specifying or building anything a shared document can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
-- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
+- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app: it breaks the static export the Workers Static Assets deploy serves.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR

@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamMembers, TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import {
+  TeamMembers,
+  TeamSharedTree,
+} from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Teams',
@@ -34,11 +37,11 @@ Admins add people by email address at the foot of the team's card, or share a jo
 
 ## The shared library
 
-Every team has its own folder tree of documents, shown as a **Team documents** card on the team page. Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. Team documents also turn up in your Recent list, marked **Team**. See [Team Shared Documents](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+Every team has its own folder tree of documents, listed on the team's page under its team card. Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. Team documents also turn up in your Recent list, marked **Team**. See [Team Shared Documents](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
 
 Inside a team document, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
-<Figure caption="The Team documents card holds the team's shared folders and documents, which every member can manage.">
+<Figure caption="The team's library holds its shared folders and documents, which every member can manage.">
   <TeamSharedTree noun="document" />
 </Figure>
 

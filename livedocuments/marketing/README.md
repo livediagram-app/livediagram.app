@@ -7,7 +7,7 @@ developer docs stay in [`docs/`](../docs/).
 
 Every claim here must map to a shipped feature. If a feature changes, fix the
 copy in the same change, the same way [Marketing site](../docs/specs/019-marketing/marketing-site.md)
-governs the landing page. When in doubt about what is true today, read
+governs the landing page. When in doubt about what is true, read
 the [marketing FAQ](../apps/marketing/lib/faq-content.tsx) and the help centre.
 
 ## Layout
@@ -30,7 +30,7 @@ marketing/
 - **No em dashes.** Use commas, colons, or parentheses.
 - **The hook is "documents made of pages, made together"**: write an article,
   present a deck, lay out an infographic, with your team, live. Lead with it.
-- **Don't overclaim.** Check "Not yet shipped" in the fact sheet: no CRDT
+- **Don't overclaim.** Check "Out of scope" in the fact sheet: no CRDT
   editing, and no diagrams, whiteboards, boards, sheets, forms, workshops or
   in-editor AI assistant. Never imply they exist.
 - **Free means free.** MIT-licensed, no paid tier, no plan for

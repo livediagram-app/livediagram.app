@@ -5,7 +5,7 @@ Hunt. Ranked by how tightly they fit the product, then split by platform so you
 can paste the right set into each field.
 
 Built from [`facts.md`](facts.md). No tag may imply a feature livedocuments
-doesn't have (see "Not yet shipped" there): that means no `diagrams`,
+doesn't have (see "Out of scope" there): that means no `diagrams`,
 `whiteboard`, `mindmaps`, `flowcharts`, `crdt` or `ai-assistant`.
 
 ## Ranked by fit

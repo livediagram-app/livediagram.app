@@ -6,7 +6,7 @@ field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
 Built from [`facts.md`](facts.md). No em dashes. Don't promise anything under
-"Not yet shipped" there.
+"Out of scope" there.
 
 ---
 
@@ -41,7 +41,7 @@ For directory cards and "short pitch" fields.
 
 > livedocuments is a free, real-time editor for articles, slide decks and
 > infographics. Open the editor and start, no sign-up needed. Write and present
-> together with live cursors, comments and assigned actions, start from 35
+> together with live cursors, comments and assigned actions, start from 23
 > templates, and export to PDF, PNG or Markdown. MIT-licensed and free for
 > everyone. [47 words]
 
@@ -57,7 +57,7 @@ For Product Hunt, app store short descriptions, README intros.
 > and a spotlight. Lay out an infographic or poster for print or social.
 >
 > Teams work on the same document live, with cursors, comments and assigned
-> actions. Start from 35 templates, recolour every page with one of twenty-four
+> actions. Start from 23 templates, recolour every page with one of twenty-four
 > themes, and share view or edit links any time.
 >
 > It is MIT-licensed, free for everyone with no paid tier, and open for anyone
@@ -81,7 +81,7 @@ For longer listing bodies and "about this project" sections.
 > print and social sizes, from 92 layouts.
 >
 > Every page holds shapes, connectors, text, sticky notes, images, icons,
-> tables and charts. Start from 35 templates and recolour every page with one of
+> tables and charts. Start from 23 templates and recolour every page with one of
 > twenty-four themes. A document is a stack of tabs, filed in nested folders.
 >
 > Collaboration is built in: live cursors, selection rings, presence on each
@@ -130,7 +130,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting
 > from one of 92 layouts. Every page holds shapes, connectors, text, sticky
-> notes, images, icons, tables, charts and Sankey diagrams. Start from 35
+> notes, images, icons, tables, charts and Sankey diagrams. Start from 23
 > templates, and recolour every page with one of twenty-four themes in a single
 > click.
 >

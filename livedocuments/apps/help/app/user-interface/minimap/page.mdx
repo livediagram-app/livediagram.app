@@ -1,50 +1,31 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { Minimap } from '@/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'Map',
   description:
-    'Navigate the canvas with the Map: a zoomed-out overview in the bottom-left with a box for your view. Tap or drag it to jump around, and scroll it to zoom.',
+    'livedocuments has no Map overview: a tab is laid out in pages, so you find your way with Contents, the page navigator and Fit.',
   path: '/help/user-interface/minimap/',
 });
 
 <ArticleLayout
   title="Map"
-  description="A zoomed-out overview of the whole canvas in the corner, with a box marking where you are: tap or drag to navigate."
+  description="Why there is no Map overview in livedocuments, and what to use to find your way round a tab instead."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out miniature of every element and arrow in its real colours (labels left out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
+Some canvas apps keep a zoomed-out **Map** of the whole canvas in a corner. livedocuments doesn't show one: every tab is laid out in [pages](/help/pages/working-with-pages/), and the pages themselves are the overview.
 
-<Figure caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
-  <Minimap />
-</Figure>
+## Finding Your Way Round a Tab
 
-## Navigating with it
+- **Contents** lists every page in the tab with a picture of it, its number and its name, and highlights the one you are on. Press a page to glide there. On a computer it sits as a sidebar down the left once a tab has more than one page; on a phone it is a button in the bottom-right corner. See [Contents](/help/pages/working-with-pages/#contents).
+- **The page navigator** in the bottom-right corner, beside Undo and Redo, shows "2 of 5" between **Previous page** and **Next page**, each fitting that page to the screen.
+- **Fit** in the bottom-right corner fits the page you are nearest. The [zoom controls](/help/user-interface/zoom-controls/) zoom in and out.
+- With nothing selected, the **arrow keys** move to the next or previous page.
 
-- **Tap** anywhere on the Map to re-centre the canvas on that spot.
-- **Drag** across it to pan continuously: the view box follows your pointer.
-- **Scroll** on the Map to zoom the canvas in or out, centred where you scroll.
+## The Map Settings
 
-The view box updates live as you pan and zoom by any means, so the Map doubles as a constant "you are here" indicator. The shapes use their real outlines (a circle reads as a circle), and arrows show as connecting lines, so the overview is a faithful miniature rather than a grid of blocks.
-
-## When it shows, and turning it off
-
-The Map appears once a tab has **four or more elements** to map (or any [pages](/help/pages/working-with-pages/)), and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge, and it steps aside in [Zen mode](/help/tools/zen-mode/).
-
-Like the other corner panels, it can be collapsed from its header or dragged to another corner (see [Panel Layout](/help/user-interface/panel-layout/)).
-
-Its settings live in [Settings](/help/user-interface/settings/), under **Panels › Map**:
-
-- **Enable Map**: switch it off to hide the Map, and on again to bring it back.
-- **Dim Outside the View**: shades the part of the Map outside what you are looking at, so the view box stands out. On by default.
-- **Map Size**: **Short**, **Medium** (the default) or **Tall**.
-
-<Tip>
-  On a big canvas, scroll on the Map to zoom straight into a far corner, instead of panning all the
-  way there and zooming separately.
-</Tip>
+[Settings](/help/user-interface/settings/) still lists **Panels › Map** (**Enable Map**, **Dim Outside the View** and **Map Size**). Because a livedocuments tab always has pages, the Map never shows and these rows have no effect.
 
 </ArticleLayout>
