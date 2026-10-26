@@ -89,7 +89,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every tab.
-  await scopeSelect.selectOption({ label: 'Every tab' });
+  await scopeSelect.selectOption({ label: 'All tabs' });
   await expect(visitor.getByRole('button', { name: /Pricing/ })).toBeVisible({ timeout: 15_000 });
   await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 
