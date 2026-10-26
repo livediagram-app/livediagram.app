@@ -3,6 +3,7 @@ import { canonicalJson, type ShapeElement, type Tab } from '@livedesign/design';
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   pullFileText,
   tabHashes,
@@ -58,6 +59,20 @@ describe('tabHashes', () => {
     const moved = await tabHashes(tab({ elements: [{ ...square, x: 5 }] }));
     expect(moved.hash).not.toBe(one.hash);
     expect(moved.settingsHash).toBe(one.settingsHash);
+  });
+});
+
+describe('isLocallyChanged', () => {
+  const same = { hash: 'h', settingsHash: 's' };
+  it('is false while every tab hashes as recorded', () => {
+    expect(isLocallyChanged(file(), { t1: same })).toBe(false);
+  });
+
+  it('is true for a tab hashing otherwise, a tab without a record, or a record without a tab', () => {
+    expect(isLocallyChanged(file(), { t1: { ...same, hash: 'x' } })).toBe(true);
+    expect(isLocallyChanged(file(), { t1: { ...same, settingsHash: 'x' } })).toBe(true);
+    expect(isLocallyChanged(file(), { t1: same, t2: same })).toBe(true);
+    expect(isLocallyChanged(file(), {})).toBe(true);
   });
 });
 

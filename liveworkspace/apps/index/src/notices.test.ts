@@ -2,6 +2,7 @@
 // time in through a link (by the share route or an open), and a person's count of items made.
 import type { ShareLink } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
@@ -111,9 +112,9 @@ describe('a person’s count of items made', () => {
        VALUES (?, 'liveplanner', 'plan', 'user_big', 'p:user_big', 't', ?, ?)`,
     );
     for (let i = 0; i < 5000; i++) insert.run(`big-${i}`, now, now);
-    const started = performance.now();
-    expect(await body(await count('user_big', '?limit=11'))).toEqual({ count: 11 });
-    const bounded = performance.now() - started;
-    expect(bounded).toBeLessThan(50);
+    const cpu = await cpuMsOfAsync(async () => {
+      expect(await body(await count('user_big', '?limit=11'))).toEqual({ count: 11 });
+    });
+    expect(cpu).toBeLessThan(cpuBudgetMs(50));
   });
 });

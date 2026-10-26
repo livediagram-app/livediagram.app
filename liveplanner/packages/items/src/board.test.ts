@@ -4,6 +4,7 @@ import {
   namedStatus,
   cardIsFaceDown,
   columnForStatus,
+  finishedStatuses,
   normaliseBoardSetup,
   projectBoard,
   type PlanBoardSetup,
@@ -293,6 +294,24 @@ describe('itemIdsShownOnTab', () => {
       ...itemIdsShownOnTab([{ shape: 'plan-card', planCard: { itemId: loose.id } }], [bug, loose]),
     ]).toEqual([loose.id]);
     expect(itemIdsShownOnTab([], [bug]).size).toBe(0);
+  });
+});
+
+describe('finishedStatuses', () => {
+  const columns = [
+    { id: 'c1', status: 'todo' },
+    { id: 'c2', status: 'done' },
+    { id: 'c3', status: 'wont' },
+  ];
+  it('is the done column’s status and every later column’s', () => {
+    expect(finishedStatuses({ columns, doneColumnId: 'c2' } as PlanBoardSetup)).toEqual([
+      'done',
+      'wont',
+    ]);
+  });
+
+  it('is none without a done column', () => {
+    expect(finishedStatuses({ columns, doneColumnId: undefined } as PlanBoardSetup)).toEqual([]);
   });
 });
 

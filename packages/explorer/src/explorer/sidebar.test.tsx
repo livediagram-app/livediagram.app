@@ -3,6 +3,7 @@
 // and the keyboard tree (one tab stop, arrows, Home/End, Left/Right, type-ahead, a real chevron).
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Folder } from '@liveworkspace/index-client';
 import { createFakeIndex } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
@@ -221,12 +222,13 @@ describe('a big tree', () => {
     await findRow('Folder 1999');
     const first = row('Folder 0000');
     act(() => first.focus());
-    const started = performance.now();
-    for (let i = 0; i < 20; i++) key(document.activeElement!, 'ArrowDown');
-    const perKey = (performance.now() - started) / 20;
+    const perKey =
+      cpuMsOf(() => {
+        for (let i = 0; i < 20; i++) key(document.activeElement!, 'ArrowDown');
+      }) / 20;
     expect(document.activeElement).toBe(row('Folder 0020'));
     // Measured about 9 ms a key in jsdom (118 ms when the rows were gathered by an attribute selector); the
-    // budget leaves room for a loaded machine.
-    expect(perKey).toBeLessThan(40);
+    // budget leaves room for a slower runner.
+    expect(perKey).toBeLessThan(cpuBudgetMs(40));
   });
 });

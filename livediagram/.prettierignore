@@ -33,3 +33,7 @@ apps/editor/lib/photo-model/weights/model.json
 # The document views' golden files: each is a view's exact output, compared byte for byte
 # (docs/specs/024-agents/blueprints/document-views.md "Testing").
 packages/document-views/src/__fixtures__/golden/
+
+# The first-run welcome manifest: JSON.stringify output its guard test compares byte for byte
+# (packages/template-previews/src/welcome-manifest.test.ts; WELCOME_WRITE=1 writes it).
+packages/templates/welcome.json

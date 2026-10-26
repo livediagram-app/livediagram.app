@@ -4,7 +4,11 @@
   "startBlankHref": "/new?start=blank",
   "allTemplatesHref": "/new",
   "searchHref": "/new?q=",
-  "fan": ["kanban", "budget-planner", "team-retro"],
+  "fan": [
+    "kanban",
+    "budget-planner",
+    "team-retro"
+  ],
   "blanks": [
     {
       "id": "blank-plan",
