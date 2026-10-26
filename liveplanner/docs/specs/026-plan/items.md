@@ -12,11 +12,11 @@ fields people usually want, and any item may carry other fields. The store never
 
 | Term           | Means                                                                                             | Never called                     |
 | -------------- | ------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **item**       | One record in a project's item store: `id`, `type`, `fields`, `rank`, `key`                      | ticket, task, issue, card, entry |
+| **item**       | One record in a project's item store: `id`, `type`, `fields`, `rank`, `key`                       | ticket, task, issue, card, entry |
 | **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers          | kind (that is a tab's), category |
 | **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                      | column, property, attribute      |
-| **item store** | Every item of one project                                                                        | backlog, database, table         |
-| **item key**   | The short number people say out loud, `#12`: assigned once, per project, never reused            | id (the id is internal)          |
+| **item store** | Every item of one project                                                                         | backlog, database, table         |
+| **item key**   | The short number people say out loud, `#12`: assigned once, per project, never reused             | id (the id is internal)          |
 | **rank**       | The ordering key that places an item among others in a column                                     | position, index, order           |
 | **status**     | The `status` field: the value a board's columns are made of                                       | state, column, stage             |
 | **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data | item (the data is the item)      |
@@ -317,6 +317,8 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 - **Create, update, move, delete** with edit access. A tab-scoped link creates cards only from a tab that shows
   every card (a board or plan view on it); from any other tab the card would land on boards outside its reach, so
   the api refuses it (403).
+- **A tab-scoped link never adds a board or plan view** to its tab, since either shows every card: the api refuses
+  the save (403 `tab_scope_widen`) and the room drops the op ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)).
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
   name, else their invite address's local part), fetched once a project has Plan content. A guest, who has no
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its

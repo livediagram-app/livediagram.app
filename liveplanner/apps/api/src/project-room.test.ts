@@ -1322,12 +1322,14 @@ describe('PlanRoom tab-scoped sessions', () => {
     p: ParticipantPresence,
     tabScope: string | null,
     shareCode: string | null = null,
+    tabShowsAll = false,
   ) {
     ws.attachment = {
       presenceId: p.id,
       verifiedRole: p.role,
       presence: p,
       tabScope,
+      tabShowsAll,
       shareCode,
     };
     (ws as unknown as { close: (code: number, reason: string) => void }).close = (code, reason) => {
@@ -1384,6 +1386,22 @@ describe('PlanRoom tab-scoped sessions', () => {
     expect(ops(owner)).toEqual([]);
     sendFrame(room, scoped, { kind: 'op', op: { kind: 'el', tabId: 't2', op: {} } });
     expect(ops(owner)).toEqual([{ kind: 'el', tabId: 't2', op: {} }]);
+  });
+
+  // docs/specs/026-plan/items.md "Who may do what": a board shows every card, so a scoped session never adds one.
+  it("relays a scoped session's board only when its tab already showed every card", () => {
+    const { room, state } = newRoom();
+    const owner = makeSocket();
+    const scoped = makeSocket();
+    const settled = makeSocket();
+    scopedSession(state, owner, presence('p-o', 'edit'), null);
+    scopedSession(state, scoped, presence('p-s', 'edit'), 't2');
+    scopedSession(state, settled, presence('p-t', 'edit'), 't2', null, true);
+    const board = { kind: 'el', tabId: 't2', op: { element: { id: 'b', shape: 'plan-board' } } };
+    sendFrame(room, scoped, { kind: 'op', op: board });
+    expect(ops(owner)).toEqual([]);
+    sendFrame(room, settled, { kind: 'op', op: board });
+    expect(ops(owner)).toEqual([board]);
   });
 
   it('filters the catch-up replay the same way', () => {

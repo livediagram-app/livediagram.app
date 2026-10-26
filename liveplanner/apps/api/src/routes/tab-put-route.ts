@@ -9,21 +9,17 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@liveplanner/api-schema';
+import { tabShowsEveryCard } from '@liveplanner/items';
 import { isValidTab, migrateIncomingTab, type Tab } from '@liveplanner/project';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { newCommentsBy, rewriteCommentAuthors } from '../comments';
-import {
-  changesetMergePages,
-  getTab,
-  isTabRevStale,
-  upsertTabAtRev,
-} from '../db';
+import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
-import { badRequest, conflict, json, payloadTooLarge } from '../responses';
+import { badRequest, conflict, forbidden, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import type { TabSaveProject } from '../db/tab-save-project';
 import { readBody, type PlanRouteContext } from './context';
@@ -55,6 +51,9 @@ export async function handleTabPut(
   existing: TabSaveProject,
   tabId: string,
   owner: string,
+  // The caller holds a link confined to this tab: it may not add the tab's first board or plan view, which would show
+  // it every card (docs/specs/026-plan/items.md "Who may do what").
+  tabScoped = false,
 ): Promise<Response> {
   const { request, env } = ctx;
   const id = existing.id;
@@ -102,6 +101,14 @@ export async function handleTabPut(
       request.headers.get('X-Allow-Empty') !== '1'
     ) {
       return conflict('empty_tab_overwrite_blocked');
+    }
+    // The save as sent, not the merge: a board the owner added in the room meanwhile is theirs, not the visitor's.
+    if (
+      tabScoped &&
+      tabShowsEveryCard(received.elements) &&
+      !tabShowsEveryCard(existingTab?.elements ?? [])
+    ) {
+      return forbidden('tab_scope_widen');
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
     // Newly added comments carry the resolved owner's participant record, never the client's claim

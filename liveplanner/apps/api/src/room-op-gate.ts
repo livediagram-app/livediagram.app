@@ -44,6 +44,8 @@ function keepsToItsTab(op: unknown): boolean {
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
+  // The scoped tab already shows every card (room-session.ts): its ops may carry the board.
+  tabShowsAll?: boolean;
   key: string | undefined;
 };
 
@@ -65,7 +67,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (isSystemOpKind(opKind)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // project's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
-  if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
+  if (!scopedSenderMayRelay(op, sender.tabScope, sender.tabShowsAll ?? false)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,

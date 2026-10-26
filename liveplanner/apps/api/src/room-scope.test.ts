@@ -95,6 +95,31 @@ describe('opForScope (what a scoped session receives)', () => {
 });
 
 describe('scopedSenderMayRelay (what a scoped session may send)', () => {
+  it('never lets a scoped session add a board or plan view, unless its tab already showed every card', () => {
+    const board = { id: 'b', type: 'shape', shape: 'plan-board', planBoard: {} };
+    const view = { id: 'v', type: 'shape', shape: 'plan-view' };
+    const ops = [
+      { kind: 'el', tabId: SCOPE, op: { kind: 'add', element: board } },
+      { kind: 'el', tabId: SCOPE, op: { kind: 'update', element: view } },
+      { kind: 'tab', tabId: SCOPE, tab: { id: SCOPE, elements: [{ id: 'x' }, board] } },
+    ];
+    for (const op of ops) {
+      expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
+      expect(scopedSenderMayRelay(op, SCOPE, true)).toBe(true);
+      expect(scopedSenderMayRelay(op, null)).toBe(true);
+    }
+    // Any other element still relays; a payload nested past any real op's depth fails closed.
+    expect(
+      scopedSenderMayRelay(
+        { kind: 'el', tabId: SCOPE, op: { element: { shape: 'square' } } },
+        SCOPE,
+      ),
+    ).toBe(true);
+    let deep: unknown = { shape: 'square' };
+    for (let i = 0; i < 12; i += 1) deep = { nested: deep };
+    expect(scopedSenderMayRelay({ kind: 'el', tabId: SCOPE, op: deep }, SCOPE)).toBe(false);
+  });
+
   it('lets an unscoped session send anything the role allows', () => {
     expect(scopedSenderMayRelay({ kind: 'project-meta' }, null)).toBe(true);
   });

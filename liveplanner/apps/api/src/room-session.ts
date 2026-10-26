@@ -40,6 +40,9 @@ export type SessionAttachment = {
   //   - `shareCode`: the share code that admitted it, from X-Verified-Share-Code,
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
+  //   - `tabShowsAll`: the scoped tab already held a board or plan view when the session joined, as the room read
+  //     it then, so its ops may carry one (room-scope.ts); otherwise they may not add one.
+  tabShowsAll?: boolean;
   shareCode?: string | null;
   //   - `personTag`: the verified account's per-project person tag, from X-Verified-Person
   //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
@@ -76,6 +79,7 @@ const MAX_PROJECT_ID_LEN = 64;
 type VerifiedSession = {
   verifiedRole?: AccessLevel;
   tabScope: string | null;
+  tabShowsAll?: boolean;
   shareCode: string | null;
   personTag: string | null;
   account: boolean;
@@ -132,6 +136,7 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     verifiedRole: v.verifiedRole,
     presence: null,
     tabScope: v.tabScope,
+    tabShowsAll: v.tabShowsAll ?? false,
     shareCode: v.shareCode,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     account: v.account,

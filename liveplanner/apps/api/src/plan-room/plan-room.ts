@@ -66,7 +66,8 @@ import {
 
 import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
-import { planHasTab } from '../db/tabs';
+import { getTab, planHasTab } from '../db/tabs';
+import { tabShowsEveryCard } from '@liveplanner/items';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
@@ -738,6 +739,11 @@ export class PlanRoom extends DurableObject<Env> {
     const server = pair[1];
     // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
     const v = verifiedSessionOf(request);
+    if (v.projectId) {
+      this.bindPlan(v.projectId);
+      if (v.head) await this.takeHead(v.head);
+    }
+    const tabShowsAll = await this.scopedTabShowsAll(v.projectId, v.tabScope);
     this.acceptSession(
       server,
       v.verifiedRole,
@@ -749,11 +755,8 @@ export class PlanRoom extends DurableObject<Env> {
       v.projectId,
       v.grantExp ?? null,
       v.account,
+      tabShowsAll,
     );
-    if (v.projectId) {
-      this.bindPlan(v.projectId);
-      if (v.head) await this.takeHead(v.head);
-    }
     this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -837,6 +840,18 @@ export class PlanRoom extends DurableObject<Env> {
     this.armAlarm();
   }
 
+  // Whether the one tab a scoped session is confined to already shows every card (a board or plan view): only then
+  // may its ops carry one (room-scope.ts, docs/specs/026-plan/items.md "Who may do what"). Read once per scoped
+  // connection; a tab that can't be read counts as not.
+  private async scopedTabShowsAll(
+    planId: string | null,
+    tabScope: string | null,
+  ): Promise<boolean> {
+    if (!planId || !tabScope) return false;
+    const tab = await getTab(this.requireEnv(), planId, tabScope).catch(() => null);
+    return tabShowsEveryCard(tab?.elements ?? []);
+  }
+
   // Admit one server-side socket into the room: pin its hibernation-proof
   // session state (attachment) and hand it to the runtime. Split out of
   // fetch so tests can drive sessions without constructing WebSocketPair.
@@ -851,6 +866,7 @@ export class PlanRoom extends DurableObject<Env> {
     projectId: string | null = null,
     grantExp: number | null = null,
     account = false,
+    tabShowsAll = false,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -864,6 +880,7 @@ export class PlanRoom extends DurableObject<Env> {
           projectId,
           grantExp,
           account,
+          tabShowsAll,
         },
         crypto.randomUUID(),
       ),
@@ -1105,6 +1122,7 @@ export class PlanRoom extends DurableObject<Env> {
       const gate = gateClientOp(msg.op, {
         role: sender.role,
         tabScope: session.tabScope ?? null,
+        tabShowsAll: session.tabShowsAll ?? false,
         key: sender.key,
       });
       if (gate.kind === 'drop') return;
