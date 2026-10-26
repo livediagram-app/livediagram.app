@@ -68,12 +68,14 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
 
 - Field classification: `title`, `input`, `format` are user content (never logged); `updated_by` is display
   identity (a hashed id, `itemPersonId`); the rest is structural.
-- Hard delete of a project cascades both tables; `projectRemovalStatements` needs nothing new.
-- `apps/api/src/db/sheets.ts`: `listSheets(env, docId, { tabId?, ids? })` (sheets then their cells, two queries),
-  `readSheetHead(env, docId, id)` (the row without cells), `readCells(env, docId, sheetId, keys)`,
-  `insertSheetStatements`, `cellWriteStatements(env, docId, sheetId, applied)`, `layoutWriteStatement(..., rev)`,
-  `deleteSheetStatement`, `sheetCounts(env, docId)`;
-  re-exported from `db/index.ts`. Row ↔ `Sheet` in the same file (`sheetFromRows`).
+- A purged plan's Durable Object drops its whole store (`PlanRoom.purge`, `storage.deleteAll()`), sheets and cells
+  with it.
+- `apps/api/src/db/sheets.ts`: `listSheets` (sheets then their cells, two queries), `listSheetHeads`,
+  `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `usedSheetRows`,
+  `insertSheetStatements`, `copySheetStatements`, `cellWriteStatements`, `axisDeleteStatement`,
+  `headWriteStatement` (the rev raise with a new layout or title, under the rev guard), `recountStatement`,
+  `projectSavedStatement`, `deleteSheetStatement` and `projectSheetTotals`; re-exported from `db/index.ts`. Row ↔
+  `Sheet` in the same file (`headFromRow`, `headToJson`).
 - **Cell writes by `json_each`**: the changed cells go as one JSON parameter per statement, so a 5,000-cell
   write is a handful of statements whatever SQLite's 100-parameter cap in a Durable Object. From the engine's landed write the api builds
   `sets` (cells whose input is set; `{ r, c, i }`), `fmts` (format patches, `{ r, c, fp }` with `null` keys
@@ -110,7 +112,7 @@ SUM(length(format)), 0) ...)`. Each later statement runs only `WHERE EXISTS (...
   `409 sheet_busy`.
 - **Caps**: before writing, `cell_count + cellsAddedUpperBound(applied) > SHEET_CELLS_MAX` reads the touched keys'
   existence (`readCells`) for the exact delta; over → `413 sheet_full`. Bytes the same against `cell_bytes`.
-  Project totals from `sheetCounts` (one `SUM`) for `PROJECT_CELLS_MAX` and `PROJECT_SHEETS_MAX`.
+  Project totals from `projectSheetTotals` (one `COUNT` and `SUM`) for `PROJECT_CELLS_MAX` and `PROJECT_SHEETS_MAX`.
 - A layout write reads the stored layout, applies with the engine (`applySheetWrite`), and stores the whole layout
   JSON under the rev guard.
 
@@ -431,10 +433,10 @@ inputs, formats or titles.
 | `SHEET_WRITE_RETRIES`       | 3      | As items                                                  |
 | `SHEET_REFETCH_DEBOUNCE_MS` | 400    | As items                                                  |
 | `SHEET_RELAY_BYTES_MAX`     | 262144 | Default (D5); well under a WebSocket frame's 1 MB         |
-| `SHEET_UNFRAMED_DAYS`       | 30     | Spec                                                      |
+| `SHEET_UNREFERENCED_DAYS`   | 30     | Spec                                                      |
 | `SHEET_EXPIRY_BATCH`        | 25     | Default (D6); expired sheets read per query               |
 | `SHEET_EXPIRY_BATCH_CELLS`  | 100000 | Default (D6); cells one batch deletes, 2 full sheets      |
 | `SHEET_EXPIRY_CELLS_MAX`    | 500000 | Default (D6); cells one daily run deletes, 10 full sheets |
-| `SHEET_IDS_PER_GET_MAX`     | 50     | Default (D7)                                              |
+| `IDS_PER_GET_MAX`           | 50     | Default (D7)                                              |
 | `AGENT_READ_CELLS_MAX`      | 5000   | Default (D8); a read an agent can hold                    |
 | `SHEET_READ_CHARS_MAX`      | 100000 | Default; about 25,000 tokens of cells a read answers      |

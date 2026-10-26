@@ -50,8 +50,8 @@ editor views.
 ## Editor components (`apps/editor/components/plan/`)
 
 ```
-PlanContext.tsx          context: items, types, item types slice, status, self, people, planInput, canEdit,
-                         canVote, presence, actions
+PlanContext.tsx          context: items, types, item types slice, status, self, people, canEdit,
+                         canEditCards, canVote, presence, actions
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
                          columns and rows grid, cards, keyboard, Add card per cell, the card menu
 edge-auto-scroll.ts      (hooks/plan) `edgeScrollStep` (quadratic ramp in the edge zone, constant under reduced
@@ -141,7 +141,7 @@ track-board-setup.ts     Plan · Changed · <part>
 PlanBoardCells.tsx       a row's band, one card in a cell (right-click → onMenu), and the drag ghost
 PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, votes left, quick filter, Only
                          mine, Reveal; a double-click on the title or its own empty space (not a widget or
-                         button) renames when `canRename` (`canEdit && planInput`), stopping the event
+                         button) renames when `canRename` (`canEdit && interactive`), stopping the event
 BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX` 80, selected on open);
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel

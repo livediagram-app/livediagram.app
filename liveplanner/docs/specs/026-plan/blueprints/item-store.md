@@ -222,7 +222,7 @@ CREATE UNIQUE INDEX items_plan_key ON items(plan_id, item_key);
 
 - Field classification: `fields` is user content (never logged); `created_by`/`updated_by` display identity;
   the rest structural.
-- Cascade removes items on hard delete (`projectRemovalStatements` needs no new statement).
+- A purged plan's Durable Object drops its whole store (`PlanRoom.purge`), items with it.
 - `copyProject` copies items verbatim to the new project id and copies `items_rev`/`items_next_key`.
 - Writes: one `batch` per write in the plan's store: `UPDATE plan SET items_rev = items_rev + 1 [, items_next_key = ...]
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
@@ -313,9 +313,9 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
 
   The comment is made by `newComment` (comment-routes.ts: text trimmed, ≤ `COMMENT_TEXT_MAX`, author name,
   colour and id from the caller, token id for an agent); a post answers `ItemCommentAddResponse` (`ItemResponse`
-  plus the new comment's `commentId`, which a mention's notify request names, comment-mentions.md "The email")
-  and runs `afterCommentPosted` (timeline, owner email);
-  a resolve records `recordCommentResolved` keyed `<project>:item:<itemId>`. Refusals: 400 text, 403 another's
+  plus the new comment's `commentId`) and runs `afterCommentPosted(ctx, caller, comment, itemId)`: the owner's
+  new-comment email and, on a team plan, one email to each teammate it @-mentions (comment-mentions.md "The email"),
+  for a signed-in person's comment. A resolve records nothing beyond the item. Refusals: 400 text, 403 another's
   comment, `404 comment_not_found`, `404 item_not_found`, `413 comments_full`, 409 `item_busy`.
 
 - **Every item answer** (list, create, bulk, patch, move, vote, comment) is `itemForViewer(item, caller.owner)`;
@@ -327,13 +327,10 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
 action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies locally, sends, merges the answer;
   a refusal toasts ("This card holds the most comments it can", else "Couldn't save that comment") and refetches.
   An `add` with mentions that the api accepted then calls `opts.onMentioned(text, mentions, itemId)`, which the
-  editor wires to `useCommentMentions.notifyMentioned` (`Comment · Mentioned`, then `apiNotifyMention` with
-  `itemId`, so the email opens the card).
-- **Activity** (since removed: the Inbox is the index's now): `readActivity` added `cardThreads` from `CARD_THREADS_SQL`, the card
-  placement shared with `CARDS_SQL`. `useActivityFeed` merges them
-  into `threads` as `{ kind: 'card' }` rows ordered by latest comment; `ActivityPane` draws them with
-  `ActivityCardThreadRow`, linking to the card (the link builder went with the pane).
-  `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
+  editor wires to `useCommentMentions.notifyMentioned`: it tracks `Comment · Mentioned`; the email is the api's
+  (above), with `itemId`, so it opens the card.
+- **Activity**: none in liveplanner; a card's comment threads reach a person through the platform Inbox
+  ([Inbox](../../013-workspace/inbox.md)). `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
   `PlanSheetsHost` hands `ItemPanel` `comments: { canComment: canVote, selfId: ownerId, onComment }`;
   `ItemFieldEditor` draws `ItemComments` for `comments`, from the shared `comment-thread-parts.tsx`
   (`CommentThreadList`, `CommentComposer`, `CommentResolveToggle`, also used by `CommentThreadPopover`).

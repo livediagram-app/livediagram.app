@@ -64,8 +64,8 @@ What differs from a frame is presentation only:
     is not a discrete event and its re-render may not have flushed by the time
     the release arrives.
 
-    The drag **snaps** to the ordinary alignment grid. (Snapping to **other lanes'
-    seams**, `lane-seam-snapping.ts`, was never wired in and was removed 2026-10-24.) It would matter: a
+    The drag **snaps** to the ordinary alignment grid. There is no snapping to **other lanes'
+    seams**, though it would matter: a
     stack of swimlanes with headings a few pixels apart is the thing that
     makes a canvas look untidy, and it is nearly impossible to fix by eye
     because the seams are too far apart vertically to sit in one glance. Only
@@ -106,7 +106,7 @@ the alignment guides already make butting one under another easy, and a
 container that repositioned its neighbours would be the same "silently re-flowed
 what I arranged" problem [The mind node](mind-node.md) avoids for mind nodes.
 
-Their borders no longer double up when flush, because a lane's outline is a
+Their borders never double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders
 meeting.
 
@@ -131,10 +131,3 @@ for the work.
   one undo step.
 - Export (SVG, PNG, PDF) draws the turned title exactly as the canvas does; screen readers read the
   title as text, unaffected by its turn.
-
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Lane tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.

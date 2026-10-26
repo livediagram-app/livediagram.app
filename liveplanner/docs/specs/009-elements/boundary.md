@@ -71,10 +71,3 @@ over; clearing its text in place switches it off) and the three styles as tiles.
 
 The MCP server and the REST API take `boundary` with `boundaryStyle`, `pageSubtitle` and `iconId`. An agent drawing
 cloud architecture nests boundaries for edge, region, VPC and subnet.
-
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Boundary tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.

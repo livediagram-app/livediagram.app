@@ -83,39 +83,24 @@ The slots:
 
 - `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
   pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so its `HeaderBlank` no longer fires.
-- `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession` (**retired** in
-  October 2026 with the Start Blank menu, [Start Blank](marketing-site.md#start-blank); the slots
-  stay so their stored history still reads): the menu's five rows beside Choose Template: Blank Diagram
-  (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
-  Whiteboard (`/new?template=whiteboard`), Blank Illustration
-  (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Session
-  (`/new?template=blank-session`). The help centre's header has one
+  bar has no Start Blank, so its `HeaderBlank` never fires.
+- `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession` (**retired**: there is no
+  Start Blank menu, [Start Blank](marketing-site.md#start-blank)); the slots stay in the table and no link carries them. The help centre's header has one
   Start planning button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
-- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
-  (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank
-  canvas became Drawing's whiteboard: it is the same button in the same place,
-  so its series carries on. On a feature page, `Hero` is the category hero's
-  Start planning.
-- `HeroBuild` (**retired** with the hero's stage in October 2026; the slot stays so its history still
-  reads): the **Build yours** button on each of the hero's mode windows, opening the template
-  step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
+- `Hero`: on a feature page, the category hero's Start planning. On the landing page the hero has no buttons, so
+  `Home.Hero`, `HeroDraw` and `HeroBrainstorm` are **retired** slots: they stay in the table, and no link carries them.
+- `HeroBuild` (**retired**): no link carries it.
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
 - `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
-- `HeroBlank<Blank>` (**retired** with the Start Blank menu in October 2026; the slots stay so their history
-  still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
-  header's `Header<Blank>` (`HeroBlankDraw` is Blank Diagram, `/new?blank=1`).
+- `HeroBlank<Blank>` (**retired**): one slot per blank, as the header's `Header<Blank>`; no link carries them.
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
 - `HeroBoard`: one of the template cards in the hero's kanban wall, shown from `xl` (`/new?template=<kind>`).
 - `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
   into the editor.
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
-  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**
-  when the gallery's search moved to the hero in October 2026) was the blank-canvas link shown when a
-  gallery search matched nothing.
+  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**: the gallery has no search) has no link.
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartPlanningCta`).
@@ -169,8 +154,7 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 ### The Dashboard tab
 
 A **Calls to Action** chart stack (CTA Arrivals and Projects from CTAs, headed by
-Projects from CTAs) sits beside the funnel in the Pages section; it left the
-Dashboard's Visitors group in October 2026.
+Projects from CTAs) sits beside the funnel in the Pages section, not in the Dashboard's Visitors group.
 
 ## Out of scope
 

@@ -1,8 +1,6 @@
 # Session button
 
-Status: **implemented**.
-
-A canvas element that **starts a session tool when pressed**: a countdown timer, a stopwatch or a dot vote ([Session tools (timer + voting)](session-tools.md)). Its tiles live in the palette's **Collaborate** category: the Timer and the Stopwatch under **Tools**, the Dot vote under **Ask**.
+A canvas element that **starts a session tool when pressed**: a countdown timer, a stopwatch or a dot vote ([Session tools (timer + voting)](session-tools.md)). Its tile definitions (Timer, Stopwatch, Dot vote) are in `palette-tile-defs.tsx`, but Plan shows no palette and no Plan surface offers them, so a session button arrives with a tab (an import, a paste); the Session strip starts the same tools without one ([Session tools (timer + voting)](session-tools.md)).
 
 ## Why
 
@@ -22,7 +20,7 @@ Putting the tools ON the canvas makes the canvas run itself. A retro board can c
 
 - The press routes through the **same entry points the menus use** (`startTimer`, `startVote`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the telemetry. A vote button pressed while a vote is already running does nothing: starting over would reset every dot cast so far ([Collaboration race hardening](collab-race-hardening.md)).
 - **It starts the tool for the room**, not for the presser alone: a timer nobody else can see is not a timer. The element menu says so.
-- **A timer is not pressed at all any more**, so the rest of this section is about Vote. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. The press-to-pause face it replaced — "Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText` — is still what a surface WITHOUT timer controls draws, which today means a read-only one, so it reads as a live control and correctly refuses like every other read-only press.
+- **A timer is not pressed**, so the rest of this section is about Vote. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. A surface WITHOUT timer controls (a read-only one) draws the press-to-pause face instead ("Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText`), which refuses like every other read-only press.
 - **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([Session tools (timer + voting)](session-tools.md) "Roles", [Share roles](../013-workspace/share-roles.md)).
 - **Dragging it does not press it** (`usePressWithoutDrag`), same as every other Behaviour element.
 
@@ -30,7 +28,7 @@ Putting the tools ON the canvas makes the canvas run itself. A retro board can c
 
 Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote.
 
-**It does not choose the tool.** The section used to lead with a Timer / Vote tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button a row of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
+**It does not choose the tool.** A button is the tool it was made as; a Timer / Vote grid would re-open a settled decision and cost every session button a row of menu height. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
 ### A stopwatch is its own tool, not a timer mode
 
@@ -67,23 +65,14 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 - Chaining several tools behind one press ("start the timer AND the vote"). One button, one action; put two buttons on the canvas.
 - Scheduling ("start this in 10 minutes"). A canvas is not a cron.
 
-## One tile per tool in the palette
+## One tile per tool
 
-The palette offers **Timer**, **Stopwatch** and **Dot Vote** as separate
-tiles in Collaborate. There is no Session group: a dot vote asks the
-room, so it sits in **Ask** beside the temperature check; a timer and a
-stopwatch run the session, so they sit in **Tools** beside the Picker.
+The tile definitions are **Timer**, **Stopwatch** and **Dot Vote**, three tiles rather than one button reconfigured
+after placing: you know whether you want a countdown or a vote before you choose. Plan shows no palette, so no
+surface offers them.
 
-The three have nothing in common at the moment of choosing: you know whether
-you want a countdown or a vote before you reach for the palette, so a single
-button you place and then reconfigure is two steps for something already
-decided.
-
-**This is the only place the tool is chosen**, which is the other half of the
-same argument: if the palette asks once and the answer is a whole element,
-then the element's own menu asking again is the two-step version returning by
-the back door. A session button you want to be a different tool is a different
-element; drag the one you want.
+**The tile is the only place the tool is chosen**: the element's own menu does not ask again. A session button you
+want to be a different tool is a different element.
 
 They remain ONE shape kind with a `session` config, not three kinds. The
 element, its face and its menu are identical; only the config differs, and
@@ -107,7 +96,7 @@ disabled button, why it is disabled.
 
 ## The Timer element IS the timer
 
-A session element whose tool is `timer` no longer renders a button that starts
+A session element whose tool is `timer` does not render a button that starts
 a timer somewhere else. It renders the timer.
 
 It is the **same timer as the pill in the top chrome**, in every sense worth

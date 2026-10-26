@@ -80,9 +80,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 ## Only in Plan
 
 Every tab is in Plan, so a Plan board and a Sheet go on any tab, by any way in: a paste keeps every board and Sheet
-it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one anywhere. Until the other editor modes
-were retired (2026-10-22) a board or Sheet went only on a tab in Plan, a paste elsewhere left them out with a notice,
-and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`.
+it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one anywhere.
 
 ## Dashboard tab
 
@@ -323,8 +321,8 @@ laid out, never the canvas hidden under it:
 **CSV** opens a text panel like JSON's and Markdown's (view, copy, **Download .csv**): a Board tab's cards the board
 shows, a Sheet tab's cells as shown, both safe to open (a field a spreadsheet would run as a formula made inert).
 Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`). Any other tab has neither, so
-it is not offered CSV: it used to be, and copied or downloaded an empty file. A **Form tab**'s form is no element, so
-its canvas is empty: every picture and outline of it came out blank, and only the JSON, which carries the form, is
+it is not offered CSV, which would be an empty file. A **Form tab**'s form is no element, so
+its canvas is empty: every picture and outline of it would come out blank, so only the JSON, which carries the form, is
 offered.
 
 - **Images** (PNG, SVG, PDF) of a **Board tab** draw its board alone (header, columns, counts and card faces, from the

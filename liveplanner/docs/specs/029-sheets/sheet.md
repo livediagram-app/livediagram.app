@@ -43,7 +43,7 @@ cells are worked out in every browser that shows it.
   (CSV, below).
 - Placing one sends `Element · Added · PlanSheet`.
 - The [Plan tour](../026-plan/plan-tour.md)'s Spreadsheets track runs on the person's own Sheet and changes nothing
-  on it (until October 2026 it placed its own **Example Sheet**, already set up, and took it away again).
+  on it.
 
 ### Setup Sheet
 

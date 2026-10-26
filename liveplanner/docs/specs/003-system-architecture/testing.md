@@ -64,7 +64,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
   very string with `runInlineScript(source, globals)` from
   `@liveworkspace/vitest-config/inline-script`: a classic script in its own realm whose globals are
-  the stubs it is handed (`project`, `localStorage`, a clock, `URL`) and nothing of the test's,
+  the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
 - **A stubbed fetch reads what it was sent** through `@liveworkspace/vitest-config/sent-request`:
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
@@ -164,24 +164,19 @@ the "decides who may see this" or "decides what may be deleted" set.
 
 ## CI
 
-CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
-format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
-suite exactly once (a workspace with `test:coverage` runs only that), for every
-workspace but the editor; **Editor unit tests i/3** run the editor's suite
-(`apps/editor`, most of the repository's tests) under coverage, a third of its
-files each (`vitest run --shard=i/3`); **Build** runs the build and the staging
-config check. No CI change is needed to start running
-tests; adding a `test` script to a workspace is enough for Turborepo to pick
-it up.
+The monorepo's root `ci.yml` runs liveplanner's group when a change reaches it
+([Deployment](../016-platform/deployment.md#ci), the liveworkspace root's `docs/ci.md`): **Checks** runs lint,
+type check and format check; **Tests** runs each affected workspace's suite exactly once (a workspace with
+`test:coverage` runs only that, so its thresholds are enforced), for every workspace but the editor; **Editor unit
+tests i/3** run the editor's suite (`apps/editor`, most of the product's tests) under coverage, a third of its files
+each (`vitest run --coverage --shard=i/3`); **Build** runs the builds and the staging config check. No CI change is
+needed to start running tests; adding a `test` script to a workspace is enough for Turborepo to pick it up.
 
-Checks, Tests, every Editor unit tests job and Build are required status checks on `main`, with every E2E Smoke job
-([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
-`workflow_dispatch` run on the same commit is not attached to it.
+The one required check on `main` is **CI**, which fails when any of those jobs failed, with **E2E**, the end-to-end
+workflow's result ([End-to-end tests](e2e-smoke.md#when-it-runs)).
 
-Coverage is a separate step because it enforces the thresholds above — and
-because running it at all keeps the coverage tooling exercised. It previously
-did not run in CI, which is how a v4 coverage provider came to sit against a
-v5 test runner with every check green: nothing invoked the broken path.
+Coverage runs in CI, not only locally, because it enforces the thresholds above, and because running it at all keeps
+the coverage tooling exercised: a coverage provider one major behind the test runner passes every other check.
 
 ### Sizing the shards
 
@@ -199,27 +194,23 @@ stays the thresholds above, and a failed upload leaves the job green.
 
 The pull request's coverage report is the monorepo's own, written into the description from CI's
 lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
-coverage, and a row per product the run reached against `main`. It replaces the
-`coverage-report.yml` and `scripts/coverage-report.mjs` this product carried in its own repository,
-which no longer run.
+coverage, and a row per product the run reached against `main`.
 
 ## Before a push
 
 The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
 changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
-It replaces the hook this product carried in its own repository, whose `.githooks/` and
-`scripts/git-hooks/` are no longer installed.
 
 The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
 inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
 
-## What's tested now, what's ahead
+## What is tested
 
-- **Tested now.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
+- **Tested.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/project`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand strokes, rich text, tables, comments + mentions, element ops and deltas, sessions (timer, votes), tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/project`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, the Mermaid sequence reader, freehand strokes, rich text, tables, Dashboards and their cards, comments + mentions, element ops and deltas, sessions (timer, votes), tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/editor`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -237,8 +228,8 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     every defensive row mapper, the plan's store modules against real SQLite
     (cascades, schema steps), the `PlanRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (projects, tabs, items, sheets,
-    forms, share, thumbnails, folders, teams, trash, changesets, workbench,
-    OAuth, events), email lifecycle, the OpenAPI
+    forms, share, folders, teams, trash, changesets, the internal export and
+    import doors, OAuth, events), email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
@@ -248,10 +239,10 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     enforced by its config: the token grammar and every rejection, canonical
     form and chip writes, matching per dimension, suggestions and their marks,
     view-model copy, `?q=` and carry-over, the telemetry facets.
-  - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
-    appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
-    and the Timeline's cards, stacking, grouping, tones and categories, rendered
-    in jsdom where they hold state.
+  - `packages/ui`: the sites' shared chrome (header, footer, account menu, share rail), appearance boot + store,
+    SEO helpers, icons, the build animations, page-view and web-vitals reporting, and the Trusted Types policy,
+    rendered in jsdom where they hold state. The editor primitives (Button, Tooltip, HoverCard, hints) are
+    `@liveworkspace/ui`'s and tested there.
   - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
@@ -260,7 +251,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
   - `../packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
-  - `packages/oxlint-config`: the shared lint config, linting scratch files
+  - `../packages/oxlint-config`: the shared lint config, linting scratch files
     with the real config (every rule family, the custom raw SVG and native
     `title` rules, directives).
   - `../packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
@@ -270,7 +261,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     error-tracking caps.
   - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
     SDK), tool registration + telemetry, element normalising, tab
-    builders, the find-diagrams search, OAuth state handling, the request scope,
+    builders, the find-projects search, OAuth state handling, the request scope,
     and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level
@@ -304,11 +295,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because a real bug could not be caught without it, in the
-  Timeline, whose state lives in hooks rather than in pure helpers:
-  `useTimelineFeed.test.ts` covers a failed Show More that swapped every
-  event already shown for an error ([Timeline](../013-workspace/timeline.md) §3). It fails if its
-  fix is reverted.
+  It exists because some state lives only in hooks: the platform's Timeline feed (`useTimelineFeed.test.ts` in
+  `@liveworkspace/explorer`) is how a failed Show More that swapped every event already shown for an error was
+  caught, and the editor's hooks are tested the same way.
 
   Both workspaces load the same setup file — `react-cleanup` out of
   `@liveworkspace/vitest-config`, one copy for the repo rather than one per

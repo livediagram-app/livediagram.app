@@ -1,10 +1,10 @@
 # Layout cleanup
 
-The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are one press
-away in Diagram mode on the **Tidy Up** button ([The Tidy Up button](#the-tidy-up-button)), and
-anywhere through the [command palette](../007-editor/command-palette.md)'s actions. They are
-complementary, not duplicates: one snaps current positions, the other recomputes them from the
-graph. Both are editor-only (they mutate) and run a single undoable operation.
+The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are complementary, not duplicates: one
+snaps current positions, the other recomputes them from the graph. Both mutate, so they are an Editor's alone, and each
+runs as a single undoable operation (`autoAlignTab`, `autoLayoutTab` in `useTabCanvas.ts`). The layout is also what
+an agent's unplaced elements and a template's flowchart get. liveplanner's editor reaches neither tidier: it mounts no
+Tidy Up button and its command catalogue has no layout command ([The Tidy Up button](#the-tidy-up-button)).
 
 ## Locked elements stay put
 
@@ -62,8 +62,8 @@ canvas. This is also the routine the agents' graph input leans on to place nodes
   (loose stickies / text / images) pass through with their positions untouched;
   spacing respects element sizes.
 - **Laid-out input** (a template's flowchart, an agent's elements left unplaced) gets the layout described in the
-  sections up to "Tidy Up keeps a flowchart a flowchart", pinned to the origin the caller gives. (liveplanner's
-  node/edge graph input, its Mermaid import and its cluster layout were removed 2026-10-24.)
+  sections up to "Tidy Up keeps a flowchart a flowchart", pinned to the origin the caller gives. liveplanner has
+  no node/edge graph input, Mermaid import or cluster layout.
 - **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
   graph does not, and the generated-graph layout trashed it.
@@ -95,8 +95,8 @@ split; a back edge (a cycle) is drawn as it lands.
 
 ### Nodes sit by their neighbours
 
-Ranks used to be packed and centred on the widest one, so a node sat wherever
-its rank's width put it. Now each node is pulled toward the weighted mean
+Packing ranks and centring them on the widest one would put a node wherever
+its rank's width put it. Instead each node is pulled toward the weighted mean
 position of its neighbours in the adjacent rank, in alternating downward and
 upward sweeps (four pairs, then one pass using both sides), and the wanted
 positions are made legal (order kept, `SIBLING_GAP` between boxes) by isotonic
@@ -234,8 +234,7 @@ the author has it. It is **not offered** when its result would:
 | `covers`           | A moved box newly overlaps another box                                                                                                                                                                                                 | Would cover a shape / Would cover N shapes |
 | `unsuited`         | Mindmap on a graph that loops back on itself (`tidyMindmapFits`)                                                                                                                                                                       | For ideas that branch, not loop            |
 
-The Tidy Up popover greys such a tile out with its line in amber; the command palette refuses the
-command with an info notice naming the tidier (`verdictNotice`), and nothing is committed. So
+A refused tidier shows an info notice naming it (`verdictNotice`), and nothing is committed. So
 lanes, which the layouts move only as rigid blocks, are protected: a swimlane offers Auto-align
 and says why the layouts are not offered.
 
@@ -253,11 +252,9 @@ a component's nodes are positioned:
 | **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom. |
 | **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.    |
 
-- The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
-  MCP server keep calling it with no style and get Smart, unchanged.
-- **UI:** each style is a tile on the [Tidy Up](#the-tidy-up-button) popover, and the command
-  palette carries one command per style (Smart is the plain "Auto Layout (tidy up)", then
-  "Auto Layout: Mindmap", ...). All styles are the same single undoable op.
+- The style lives in `AutoLayoutOptions` on `autoLayoutElements`: a caller passing no style (the MCP server's
+  unplaced elements) gets Smart.
+- Every style is the same single undoable op (`autoLayoutTab(choice)`); no surface in liveplanner offers a choice.
 - **Mindmap order** is measured clockwise from 12 o'clock, where its first branch is placed, so a
   second tidy keeps the map still (measured from 9 o'clock, every tidy turned it a little).
 - Tree and Mindmap consume the same directed edge set as the layered layout; on a
@@ -270,74 +267,16 @@ a component's nodes are positioned:
 
 ## The Tidy Up button
 
-Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
-**left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
-Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
-than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
-strip's other buttons (one open at a time, a second press or a press outside closes it).
-
-### Where it shows
-
-- **Diagram mode only.** Draw, Workshop, Pages and Plan arrange their content another way
-  (strokes, a session board, pages, boards), so the button is not there; the command palette still
-  reaches the tidiers.
-- **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
-  Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the
-  press; the popover fits the screen's width.
-- **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
-- **A locked tab** shows the button, with every tile inert under a "This tab is locked" note, since
-  unlocking it is the one step that makes the tidiers work.
-
-### Share roles
-
-| Role        | Tidy Up                                                                                       |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| Editor      | Sees the button and uses every tile.                                                          |
-| Participant | No button. A tidy moves every element on the tab, and a Participant never reshapes the board. |
-| Viewer      | No button.                                                                                    |
-
-The gate is the structural one Layers uses (a Participant is read-only for structure,
-[Share roles](../013-workspace/share-roles.md)).
-
-### The popover
-
-A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. Two groups:
-
-1. **Auto Layout**, captioned "Rearrange shapes from the arrows between them.": a two-column grid
-   of five **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree,
-   Mindmap. Each tile is a small drawing of the layout it makes (boxes and arrows in the brand
-   colours, readable in light and dark), its name, and one line saying what it does:
-
-   | Tile            | Line                         |
-   | --------------- | ---------------------------- |
-   | Smart           | Follows the way you drew it  |
-   | Flowchart Down  | Top to bottom, in layers     |
-   | Flowchart Right | Left to right, in layers     |
-   | Tree            | Parents above their children |
-   | Mindmap         | Branches around a centre     |
-
-2. **Auto-align**, a full-width row under a hairline: its glyph, the name, and "Snap to the grid.
-   Nothing moves far."
-
-Pressing a tile or the row runs that tidier on the active tab (one undoable step, the same command
-the palette runs) and closes the popover. A tab with nothing on it shows the tiles inert under
-"Nothing to tidy yet. Add some shapes and connect them with arrows." The tiles are buttons, reached
-with Tab and pressed with Enter or Space; Escape closes the popover.
-
-**Greyed out with the reason.** Each tidier is [judged](#a-tidy-never-trashes-the-work) once, one
-per task after the popover paints (so opening never waits on six layouts of a big tab), on the tab
-as it was when the popover opened. A tile that would not help is disabled, its line replaced by the
-reason in amber at full strength while its drawing and name dim. When every layout is refused for
-the lanes, the caption says it once instead: "Your shapes sit in lanes, which keep the layout you
-gave them." A tile pressed before its turn is judged at the press, as the palette's command is.
+`LayersThemeStrip` draws a **Tidy Up** button (a broom), left of Layers, only when it is given `tidyUp`, and
+`CanvasChrome` gives it none, so liveplanner shows no button and no popover. What the editor keeps is the press's two
+halves: the verdict (`assessCleanup`, `verdictNotice`), which refuses a tidier that would not help with an info notice
+naming it and commits nothing, and the hover preview below.
 
 ### Hover to see it first
 
-On a desktop pointer, hovering a tile (or the Auto-align row) lays the tab out **live behind the
-popover**; the layout only sticks on press, and taking the pointer off the tile puts everything
-back. Five styles that can only be told apart by doing them is five undos to find the one you
-wanted, and the names ("Tree", "Mindmap") describe a shape the author has to imagine. Showing it is
-cheaper than explaining it.
+`useCleanupPreview` lays a tab out **live** for a tidier hovered and puts everything back when the hover ends, so a
+style can be seen before it is pressed: five styles told apart only by doing them is five undos. No surface in
+liveplanner hovers one, since no Tidy Up popover is mounted.
 
 It is the style-preset preview ([Style presets](../010-palette/style-presets.md)) one level up: that
 one previews a look on the selected elements, this one previews a position on all of them, and the
@@ -357,8 +296,8 @@ rules are the same ones for the same reasons.
 
 ### Telemetry
 
-Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's own `Tab` /
-`Aligned` event, as the command palette does. A refused tidier sends nothing: it changed nothing.
+A tidier sends its own `Tab` / `Aligned` event (`Tab·Aligned` for Auto-align, `Tab·Aligned·<style>` for a layout
+style). A refused tidier sends nothing: it changed nothing.
 
 ## Out of scope
 

@@ -1,6 +1,6 @@
 # Flowchart: blueprint
 
-**Status in liveplanner: editing removed (2026-10-24).** No Plan tab holds flowcharts ([Plan mode](../../026-plan/plan-mode.md)), so growth (Add Step / Add Branch), the step toolbar, the Flowchart menu, lanes and the re-layout on every commit are gone, with their wiring in `useEditorState`. The element kind stays in `packages/project` for the file format; this spec describes livediagram's behaviour.
+**In liveplanner** the flowchart is model code in `packages/project`: step types, sizes and membership (`flowchart.ts`), the layouts (`flowchart-layout.ts`, `flowchart-spread.ts`), growth planning (`flowchart-grow.ts`) and settling (`flowchart-settle.ts`), exported from the package and covered by its tests. The editor calls none of the growth or layout functions: no Plan tab holds a flowchart, and there is no Add Step, step toolbar, Flowchart menu or lane editing ([Flowchart](../flowchart.md)). What runs is the start step (`createFlowchartStart`, from `component-factories.ts`), validation, copying and every export.
 
 Derived from [The flowchart](../flowchart.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
@@ -20,33 +20,28 @@ Scope, by file:
 | `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
 | `packages/project/src/duplicate.ts`                       | Copies remap the three ids                                                                                                     |
 | `packages/project/src/participant-content.ts`             | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
-| useFlowchartGrowth.ts                                     | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
-| useGrowthLanding.ts                                       | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
-| useFlowchartSetters.ts                                    | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
-| flowchart-dress.ts                                        | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
 | `apps/editor/components/palette/palette-tile-defs.tsx`    | `tools:flowchart` tile (component action `flowchart`)                                                                          |
 | `apps/editor/components/canvas/SelectionPopover.tsx`      | Add Step, Add Branch, Step Type, Lane                                                                                          |
 | `apps/editor/components/canvas/quick-connect-options.tsx` | The ring's Add Step and Add Branch                                                                                             |
-| FlowchartMenuSections.tsx                                 | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
 
 ## Domain and naming
 
-| Term       | Identifier                         | Meaning                                                                                                      |
-| ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Flowchart  | `flowchartId`                      | The chart; the id of its first step                                                                          |
-| Step       | `FlowchartStep` (a `ShapeElement`) | A shape of a step-type kind carrying `flowchartId`                                                           |
-| Step type  | `FlowchartStepType`                | `'terminator' \| 'process' \| 'decision' \| 'io' \| 'project' \| 'database' \| 'preparation' \| 'connector'` |
-| First step | `flowchartAnchor`                  | The step that never moves                                                                                    |
-| Connector  | an `ArrowElement`                  | A pinned arrow between two steps of one chart                                                                |
-| Exit       | an outgoing connector              | Of a Decision: labelled Yes / No                                                                             |
-| Lane       | a `lane` shape with `flowchartId`  | A chart's swimlane                                                                                           |
-| Direction  | `FlowchartDirection`               | `'down' \| 'right'`                                                                                          |
+| Term       | Identifier                         | Meaning                                                                                                       |
+| ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Flowchart  | `flowchartId`                      | The chart; the id of its first step                                                                           |
+| Step       | `FlowchartStep` (a `ShapeElement`) | A shape of a step-type kind carrying `flowchartId`                                                            |
+| Step type  | `FlowchartStepType`                | `'terminator' \| 'process' \| 'decision' \| 'io' \| 'document' \| 'database' \| 'preparation' \| 'connector'` |
+| First step | `flowchartAnchor`                  | The step that never moves                                                                                     |
+| Connector  | an `ArrowElement`                  | A pinned arrow between two steps of one chart                                                                 |
+| Exit       | an outgoing connector              | Of a Decision: labelled Yes / No                                                                              |
+| Lane       | a `lane` shape with `flowchartId`  | A chart's swimlane                                                                                            |
+| Direction  | `FlowchartDirection`               | `'down' \| 'right'`                                                                                           |
 
 Banned synonyms: "node" for a step (a mind node is a different element), "swimlane" in code (it is a
 lane), "orientation" for direction.
 
 `FLOWCHART_STEP_KIND: Record<FlowchartStepType, ShapeKind>`: terminator `stadium`, process `square`,
-decision `diamond`, io `parallelogram`, project `project`, database `cylinder`, preparation
+decision `diamond`, io `parallelogram`, document `document`, database `cylinder`, preparation
 `hexagon`, connector `circle`. `flowchartStepTypeOf(kind)` is its inverse; `undefined` for any other
 kind.
 
@@ -160,17 +155,12 @@ Positions are rounded to whole pixels (memory: fit lands on whole pixels).
 - `applyFlowchartLayout(elements, layout)`: patches position on steps, geometry and title alignment on
   lanes, anchors on connectors; nothing else.
 
-### When the editor lays out again
+### Laying out again
 
-After any commit in which, for a chart present before or after: a step was added or removed, a step's
-kind changed, a connector of the chart was added or removed, or a lane of the chart was added or
-removed, `useFlowchartGrowth` / the setters already lay it out in the same commit. For changes made by
-the generic paths (drawing an arrow, deleting, dragging into a lane), `flowchartStructureChanged(before,
-after)` lists the affected chart ids and the commit path runs `relayoutFlowchart` for each, inside the
-same commit (D171).
-
-A drag that ends with a step's centre inside another lane of its chart sets `flowLaneId` to that lane
-in the drag's commit, then lays out.
+`settleFlowcharts(before, after, lockedIds)` (`flowchart-settle.ts`) returns `after` with every chart whose structure
+changed since `before` laid out again: a step dragged into another of its chart's lanes joins that lane, and a
+connector newly drawn out of a Decision takes its Yes / No label. It returns `after` itself when no chart needs
+anything (D171). No editor commit path calls it in liveplanner.
 
 ## Interfaces and contracts
 
@@ -226,20 +216,20 @@ each structural change, never per frame. Budget: a 200-step, 260-connector chart
 
 ## Testing
 
-Each rule above maps to a test in `flowchart.test.ts`, `flowchart-layout.test.ts`,
-`flowchart-grow.test.ts`, the hook's test, and the templates' tests.
+Each rule above maps to a test in `flowchart.test.ts`, `flowchart-spread.test.ts` and
+`flowchart-settle.test.ts`.
 
 ## Constants and configuration
 
-| Constant                                    | Value       | Provenance                                            |
-| ------------------------------------------- | ----------- | ----------------------------------------------------- |
-| `FLOWCHART_STEP_SIZE`                       | spec        | The spec's step type table                            |
-| `FLOWCHART_LANE_PAD`                        | 32          | Clear of the lane's border at every zoom (D169)       |
-| `FLOWCHART_LANE_MIN`                        | 200         | The lane's default height (`SHAPE_DEFAULT_SIZE.lane`) |
-| `FLOWCHART_LANE_MIN_LENGTH`                 | 600         | A lane shorter than this reads as a box (D170)        |
-| `FLOWCHART_LOOP_GAP`                        | 40          | Clear of the steps a loop passes (D174)               |
-| `FLOWCHART_CORNER_CLEARANCE`                | 32          | A corner exit's first leg stays visible (D175)        |
-| `LAYER_GAP`, `SIBLING_GAP`, `COMPONENT_GAP` | 90, 56, 120 | Shared with Auto Layout                               |
+| Constant                                    | Value       | Provenance                                       |
+| ------------------------------------------- | ----------- | ------------------------------------------------ |
+| `FLOWCHART_STEP_SIZE`                       | spec        | The spec's step type table                       |
+| `FLOWCHART_LANE_PAD`                        | 32          | Clear of the lane's border at every zoom (D169)  |
+| `FLOWCHART_LANE_MIN`                        | 140         | One Process (72) plus the pad each side, rounded |
+| `FLOWCHART_LANE_MIN_LENGTH`                 | 600         | A lane shorter than this reads as a box (D170)   |
+| `FLOWCHART_LOOP_GAP`                        | 40          | Clear of the steps a loop passes (D174)          |
+| `FLOWCHART_CORNER_CLEARANCE`                | 32          | A corner exit's first leg stays visible (D175)   |
+| `LAYER_GAP`, `SIBLING_GAP`, `COMPONENT_GAP` | 90, 56, 120 | Shared with Auto Layout                          |
 
 ## Defaults ledger
 

@@ -20,8 +20,7 @@ card as every other tour, so the tours read as one product. Where this spec is s
 
 - **The footer's Start Tour button.** The one way in is the button in the editor's bottom bar, immediately left of
   Settings ([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It never starts, prompts or offers
-  itself on its own. Until 25 October 2026 it offered itself once per track on a banner ("Getting started with
-  boards?", **No** / **Yes**), and asked **Boards** or **Spreadsheets** on a choice card when both were on the tab.
+  itself on its own: there is no banner and no choice card.
 - **Only while there is plan work to show.** The tour is on offer while a person may edit a tab **with a board or
   a Sheet on it**: a Board tab, a Sheet tab, or a Plan tab holding a board or Sheet. An empty Plan tab (which shows
   Start Planning) and a Dashboard tab have nothing to show, so the button names another tour or is not drawn. The
@@ -53,13 +52,12 @@ started from the footer's **Start Dashboards Tour** button. Its cards read **Sho
 
 - **On offer** while an Editor's dashboard is on screen: not to a Participant or a Viewer, not in an embed, not
   while a maximised slot covers the page. It ranks above the Plan and Forms tours, so on a dashboard the button
-  names it. It stays on offer once taken. Until 25 October 2026 it offered itself once, on a banner ("Getting
-  started with Dashboards?", **No** / **Yes**), 800 ms after a dashboard was first on screen.
+  names it. It stays on offer once taken, and never offers itself on a banner.
 - **However it ends** (completed or skipped), a run from the button marks the `dashboards` track taken
   (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same steps and records nothing.
 - **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` the first time the button shows it in a page load,
   `UI` · `Started` · `DashboardTour` on a press (as on Show Me's), and Show Me's `DashboardTourCompleted` |
-  `DashboardTourSkipped` at the end. `UI` · `Closed` · `DashboardTourOffer` (No) is no longer sent.
+  `DashboardTourSkipped` at the end.
 
 ## Tour content
 
@@ -89,11 +87,10 @@ recorded as tour content (`plan-tour-content` in localStorage) while it exists, 
 - A step whose part of the subject is missing is left out up front: **Move Work Along** and **The Card Panel**
   need a card, so a board with no cards shows neither.
 - If the tour subject goes mid-tour (deleted, by the person or a collaborator), the tour ends as skipped.
-- **Leftovers from the old tour.** Until October 2026 the tour placed its own Example Board (with three example
-  cards) or Example Sheet and took them away at the end, keeping a leftover record so a reload mid-tour could
-  tidy them on the next visit. That sweep stays, so content an older tour left behind is still removed; nothing
-  new is ever recorded. A leftover Example Sheet goes with its element, never the element alone: until a Sheet has
-  drawn to take the sheet, the element and the record stay, and the sweep tries again every 2 seconds.
+- **Leftover records.** The tour places no Example Board or Example Sheet and records nothing, but it sweeps any
+  a stored leftover record names, so such content is removed on the next visit. A leftover Example Sheet goes with
+  its element, never the element alone: until a Sheet has drawn to take the sheet, the element and the record stay,
+  and the sweep tries again every 2 seconds.
 
 ## The steps
 
@@ -161,10 +158,8 @@ settings) is an Editor's to use.
 The editor tours' funnel, with its own tokens, so the tours chart apart:
 
 - **Offer**: `UI` · `Opened` · `PlanTourOffer` the first time the Start Tour button shows this tour in a page
-  load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `PlanTourOffer` counted
-  **No**; nothing sends Closed now, and its explanation stays for the history.
-- **Start**: `UI` · `Started` · `PlanTour` on a press of the button (or a Settings rerun). `UI` · `Selected` ·
-  `PlanTourBoards` | `PlanTourSheets` (the track picked on the choice card) is no longer sent.
+  load.
+- **Start**: `UI` · `Started` · `PlanTour` on a press of the button (or a Settings rerun).
 - **Stage views**: `UI` · `View` · `PlanTourStep<Id>` once per step entry (`PlanTourStepBoard`,
   `PlanTourStepAddCards`, `PlanTourStepMoveCard`, `PlanTourStepCardPanel`, `PlanTourStepBoardHeader`,
   `PlanTourStepCardTypes`; `PlanTourStepSheet`, `PlanTourStepCells`, `PlanTourStepFormulas`,

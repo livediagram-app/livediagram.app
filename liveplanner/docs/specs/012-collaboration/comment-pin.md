@@ -86,34 +86,24 @@ is what an arrow already says on this canvas. Not a bespoke link: a second
 kind of connection would be a second thing to lay out, export and explain.
 It also means the pair behaves like anything else — move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
-The panel is added from the palette only: Diagram's **Write** category. The
-element menu's Collaborate section once offered a `Comment Panel` tile that
-dropped the panel and the arrow in one go; it was removed, since a second
-way in from every element's menu was one more tile to read past on the way
-to the thread (the menu keeps `Add Comment`, the anchored popover).
+No Plan surface places a panel: one arrives with a tab (an import, a paste). The element menu keeps
+`Add Comment`, the anchored popover.
 
-### Why not the pin
+### Why a panel, not a pin
 
-The first version was a standalone marker: a dot with a leader line that opened
-the ordinary anchored popover. It was replaced because a popover is **one
-reader's transient view**. A panel connected to what it is about sits on the
-canvas, in the export, and in everyone's session, which is what makes a remark
-part of the project rather than a note somebody left.
-
-It also means the shape is no longer self-painting: as a 40px bubble it drew
-itself, and as a card it wants the fill, border and rounded corners every other
-card gets.
+A popover is **one reader's transient view**. A panel connected to what it is about sits on the canvas, in the
+export, and in everyone's session, which is what makes a remark part of the project rather than a note somebody
+left. As a card it wants the fill, border and rounded corners every other card gets, so it is not self-painting.
 
 ## Registration notes
 
-- **Self-painting** (`SELF_PAINTING_SHAPES`): the bubble is the element, so the
-  wrapper draws no box behind it — a square framing a speech bubble reads as a
-  shape somebody drew.
-- **Excluded from `isSvgRenderedShape`**, which is allow-by-default: a new
-  CSS-drawn kind left off that list renders as a transparent nothing.
-- **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is canvas
-  chrome, not a node in the tab's theme.
-- **Aspect-locked and square by default**, 40×40. A stretched pin reads as a
-  shape rather than a marker.
-- **Not votable** ([Session tools (timer + voting)](session-tools.md)): a comment pin IS a remark, so a dot on one means
-  nothing.
+- **Not self-painting**: it is not in `SELF_PAINTING_SHAPES`, so the wrapper draws the card's fill, border and
+  corners.
+- **Excluded from `isSvgRenderedShape`** (`shape-svg-overlay.tsx`), which is allow-by-default: a CSS-drawn kind left
+  off that list renders as a transparent nothing.
+- **Keeps its own colours** (the Behaviour set in `themes.ts`): a panel is canvas chrome, not a node in the tab's
+  theme.
+- **Sized for a short conversation**, 300 × 320 (`shape-factory.ts`), with no label: the panel's content is the
+  thread. It reflows, so a resize makes room for more of it.
+- **Not votable** ([Session tools (timer + voting)](session-tools.md)): a comment panel IS a remark, so a dot on one
+  means nothing.

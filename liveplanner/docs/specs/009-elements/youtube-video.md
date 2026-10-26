@@ -2,9 +2,11 @@
 
 ## What
 
-A **Video** element in the palette's **Media** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)): a
-16:9 card that shows a YouTube video's poster frame and plays it inline when
-pressed.
+A **Video** element: a 16:9 card for a YouTube video. In liveplanner it is a model kind: no Plan surface places one,
+and one arrives with a tab (an import, a paste). Its link is set from the link picker (a double-click, or the element
+menu's Link section), and every export draws its card. The canvas has no player face for it: no poster, no play
+button and no iframe, so a video shows as an empty box with its selection ring and its link badge
+([Elements](README.md)).
 
 ## The element
 
@@ -38,14 +40,6 @@ copy of the truth that can drift from the link.
 **Aspect-locked to 16:9** on resize, like an icon ([Technology icons](../010-palette/technology-icons.md)) and for the same
 reason: a letterboxed or stretched video frame is never what anyone wants.
 
-**The lock also governs placement.** The Media tiles arm the tap-or-drag draw
-gesture like every other palette element ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Placement on add"), and the
-drag **fits 16:9 inside the drawn box** instead of taking the box verbatim.
-Honouring the drag literally would have handed the user the one thing the lock
-exists to prevent, on the very gesture that creates the element; fitting keeps
-the drag meaningful (it picks the position and the scale) without ever minting
-a stretched frame.
-
 `THEME_COLOUR_FIELDS` gives video an **empty** list: like image and sticky, a
 video keeps its own look across themes.
 
@@ -68,62 +62,12 @@ host; a query string `?v=` on some other site is not a video. Anything the
 parser rejects renders the "not a YouTube link" state rather than an id-shaped
 guess.
 
-## Nothing loads until you ask
+## Nothing loads
 
-Two deliberate steps, in this order:
-
-1. **Poster only.** The card shows `i.ytimg.com/vi/<id>/hqdefault.jpg` with a
-   play button over it. That is one image request to a cookieless static host.
-2. **The iframe mounts on play, and not before.** Pressing play swaps the
-   poster for `www.youtube-nocookie.com/embed/<id>?autoplay=1`.
-
-Why not just embed the iframe:
-
-- **Cost.** A tab with eight videos would open eight YouTube players on load,
-  each pulling a megabyte-plus of player JavaScript, before anyone watched
-  anything.
-- **The canvas stops working.** An iframe swallows every pointer event inside
-  its rectangle, so a video you could not drag, select, or marquee over would
-  be a hole in the canvas.
-- **Privacy.** `youtube-nocookie.com` sets no cookie until playback starts, so
-  simply opening a project that contains a video is not a tracked visit. This
-  matters more here than usual: liveplanner promises no trackers
-  ([Business model + licence](../002-project-scope/business-model-and-licence.md)), so it should not be silently shipping its users to
-  Google on page load.
-
-Stopping playback unmounts the iframe, so a paused video is not a live player
-sitting in the background.
-
-## The player never takes the pointer by default
-
-The iframe carries `pointer-events: none` **always**: playing, selected, or
-not. Anything else breaks dragging, and tying it to selection only moves the
-problem one step: clicking a video to drag it selects it, which would make it
-interactive, so the drag never starts.
-
-The poster is inert for the same reason. Only two things opt back in: the play
-badge, and the two controls that appear top-left on hover once it is playing.
-
-- **Use the player** hands the pointer to the iframe so you can seek, change
-  volume, or go fullscreen. Press it again to get dragging back.
-- **Stop** unmounts the player and returns to the poster. This is also how you
-  pause, since pausing means clicking the player.
-
-Top-**left** because every element's link badge is pinned to the top-right
-corner, and a video always has a link; controls there would sit underneath it
-and could not be clicked.
-
-## States
-
-| Link              | Renders                                                    |
-| ----------------- | ---------------------------------------------------------- |
-| none              | "Add a YouTube link" prompt, double-click opens the picker |
-| not a YouTube URL | the URL plus a "not a YouTube link" hint                   |
-| valid             | poster + play button; the iframe once played               |
-
-The normal link badge still applies, so the element also opens on YouTube in a
-new tab. Playing inline and opening the source are different intents and both
-are worth having.
+The editor makes no request for a video: no poster image and no player. Opening a project that holds one is not a
+visit to YouTube, which matters because liveplanner promises no trackers
+([Business model + licence](../002-project-scope/business-model-and-licence.md)). The link badge opens the video on
+YouTube in a new tab.
 
 ## Export
 
@@ -138,10 +82,9 @@ are worth having.
 
 - `Element·Added·Video` on creation, from the shared
   `elementTelemetryType` mapper so copy / paste / duplicate count too.
-- `Element·Used·Video` when playback starts. `Used` is an existing action in
-  the closed vocabulary; nothing needed extending.
+- No playback event: nothing plays in liveplanner.
 
 ## Not in scope
 
-Start-time offsets, autoplay-on-load (deliberately never), and playlists.
+An inline player, start-time offsets, autoplay-on-load (deliberately never), and playlists.
 Other providers are specified in [More than YouTube](embed-providers.md).

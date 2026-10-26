@@ -29,7 +29,7 @@ Scope, by file:
 | `../packages/workbench/src/components/canvas/PageCornerFold.tsx` | The turned-back corner                                              |
 | `apps/editor/components/canvas/BoxedElementView.tsx`             | Mounts the fold                                                     |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:page`, `toolGroup: 'write'`                             |
+| `apps/editor/components/palette/palette-tile-defs.tsx`           | Tile `tools:page` (offered by no picker)                            |
 | `packages/project/src/export-tab-text.ts`                        | Markdown outline [QD13]                                             |
 
 ## Domain and naming
@@ -43,7 +43,7 @@ Scope, by file:
 | Subtitle | `pageSubtitle?: string`             | Second masthead line; absent when empty                 |
 | Fold     | `PageCornerFold`                    | The bottom-right turned-back corner                     |
 
-Banned synonyms: "project" for a page (`'project'` is the flowchart shape), "sheet" in code,
+Banned synonyms: "document" for a page (`'document'` is the flowchart shape), "sheet" in code,
 "header" (a web component, `site-header`), "heading" for the masthead title in code (`pageTitle`).
 
 ## Behaviour and state

@@ -19,8 +19,8 @@ drop it in a column) instead of a drawing. It never decides what the tab is: a t
 
 Its mark is a board: three columns, the middle one holding a raised card (`PlanIcon`, `EDITOR_MODE_ICONS.plan`). A
 general tab's pill leads with it; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
-([Plan tabs](plan-tabs.md#the-kinds)). There is no mode switch: the other editor modes were retired
-([Editor mode](../007-editor/editor-modes.md#retired-modes)).
+([Plan tabs](plan-tabs.md#the-kinds)). There is no mode switch and no other mode
+([Editor mode](../007-editor/editor-modes.md#other-mode-ids)).
 
 ## What the mode brings into focus
 
@@ -160,24 +160,24 @@ through its `footer`, in the panel's own colours.
 
 ## Old projects
 
-- **A tab a retired mode made** opens in Plan like any other ([Editor mode](../007-editor/editor-modes.md#retired-modes)):
+- **A tab holding canvas elements** (an import, a paste) opens in Plan like any other:
   its shapes, ink and arrows stay on it, worked as canvas elements; boards and Sheets on it work as on any tab.
 - A tab with Plan content is never added to another project: the tab menu's **Add to Project** is off for it,
   as its cards are this project's items.
 
 ## Tools
 
-- **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
-  it. Select is one pick away, for moving or resizing a board.
-- **No Format or Isometric tool**: the format painter and the isometric view worked on drawn content a Plan tab
-  does not hold, so they are gone, and the image export's isometric option went after them on 2026-10-25
+- **Plan works on the Hand tool**: a board's cards take the pointer themselves, so a drag on the empty canvas
+  pans it. There is no tool picker; a board moves by its header ([Plan board](plan-board.md), "Move handle").
+- **No Format or Isometric tool**: the format painter and the isometric view work on drawn content a Plan tab
+  does not hold, so Plan has neither, and the image export has no isometric option
   ([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)).
 - **No Layers panel**, as below.
 
 ## No palette
 
 Plan mode shows **no palette**, to an Editor or a Participant: a Plan tab is worked by its boards, sheets and
-dashboards, and each carries its own tools on its surface, so a strip of tiles only made them harder to use. What the palette used to place is reached where it is
+dashboards, and each carries its own tools on its surface, so a strip of tiles would only make them harder to use. What a palette would place is reached where it is
 used:
 
 - **Boards and Sheets**: Start Planning on an empty tab ([Starting a board](#starting-a-board)), its templates
@@ -260,11 +260,11 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 
 ## Telemetry
 
-- The mode switch's `Editor` · `Changed` · `ModePlan`, Opens in's `OpensInPlan` and the template filter's
-  `TemplateModePlan` were retired with the switch ([Editor mode](../007-editor/editor-modes.md#telemetry-telemetry)).
+- There is no mode switch, Opens in or template mode filter, so nothing sends `ModePlan`, `OpensInPlan` or
+  `TemplateModePlan` ([Editor mode](../007-editor/editor-modes.md#telemetry-telemetry)).
 - The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
-  and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
-- The header's Start Blank menu offered Blank Plan until it was retired, its funnel slot (`HeaderPlan`) kept for history.
+  and `Revealed` (`Board`), never content. A board placed counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
+- The funnel slot `HeaderPlan` is a retired slot: nothing sends it ([Landing funnel](../019-marketing/landing-funnel.md)).
 
 ## The Plan tour
 

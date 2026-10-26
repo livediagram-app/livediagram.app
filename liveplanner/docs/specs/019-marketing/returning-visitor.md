@@ -8,10 +8,7 @@ The landing page's hero always ends in the fan of template cards ([Marketing sit
 with its Shuffle button, for every visitor, signed in or not, new or returning. It never shows the visitor's own
 recent work: the hero is for starting something new, and the Explorer is where their work is.
 
-Until October 2026 a browser with at least three recent items saw its four most recent on that fan instead, with a
-card to Explorer Home (and before that, **Welcome back**). That went, so every app's hero is the same.
-
-The recent snapshot below stays: other pages read it.
+A browser with recent items sees the same hero as anyone else. The recent snapshot below is read by other pages.
 
 ## The recent-diagrams snapshot
 

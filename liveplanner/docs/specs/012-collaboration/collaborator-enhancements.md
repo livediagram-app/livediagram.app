@@ -20,8 +20,8 @@ obvious question it asks: "tell me about this person".
 
 - **Clicking any avatar in a tab's presence stack opens the Collaborators
   modal**, including your own avatar, the "+N" overflow badge, and the stack on
-  a folder chip ([Tab folders](../006-project/tab-folders.md)). The "+N" popover that listed the
-  hidden participants is gone: the modal lists everyone, so it replaces it.
+  a folder chip ([Tab folders](../006-project/tab-folders.md)). There is no "+N" popover of
+  hidden participants: the modal lists everyone.
 - The modal lists **every person in the project, grouped by the tab they are
   on**, in tab-bar order. A tab nobody is on is left out. People on a tab that
   no longer exists (a peer's focus can briefly point at a tab just deleted) are
@@ -34,7 +34,7 @@ obvious question it asks: "tell me about this person".
   status line: the presence word plus how long ago they were last active, the
   same text the avatar hover card uses.
 - **One person, one entry.** The room mints an id per connection, so the same
-  browser open in two tabs used to show up twice (once as "You", once as a
+  browser open in two tabs would show up twice (once as "You", once as a
   peer with your name). Every tab in a browser shares one collab key
   ([Per-participant responses](participant-responses.md)), so presence collapses on it: your
   own other tabs are left out, and a peer connected more than once appears

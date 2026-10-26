@@ -231,16 +231,14 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Mind connectors: `deriveArrowViewFrame(arrow, index, finish)` / `arrowViewGeometry(..., finish)` (finish from
   `resolveFinish(el.finish, tabFinish)` in `CanvasElementsLayer` and `previewArrowGeometry`) draw through
   `finishArrowEnds` (`packages/project/src/mind-connector-route.ts`, blueprint in
-  [Mind node](../../009-elements/blueprints/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
+  [Mind node](../../009-elements/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
   and `beginArrowBend` refuses a routed connector.
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
-- Palette: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
-  Professional and Marker for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
-  `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
-  strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`) and `.palette-finish-marker` (round caps and joins, 2.75 px strokes at 0.88 (the default glyph line is close to 2.25, so 2.25 barely showed)
-  opacity).
+- Palette tiles: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` and the
+  `.palette-finish-*` classes in `app/globals.css` are defined, with their test, but no Plan surface draws a palette
+  tile, so nothing applies them.
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
@@ -256,7 +254,6 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. `app/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
-  `TabWindowFace` marks its drawing and its Open button `data-sketch-skip`.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
 - WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
@@ -277,7 +274,7 @@ the same strokes, hatching and heads from `sketch.ts`, and the Professional fall
 `data-finish="marker"` group). `svgArrow` takes its width from `finishArrowWidthPx` and its line from
 `handDrawnArrow` (a still: `flowing` false); a marker line writes `stroke-opacity`, its `lineOver` as a second path,
 and a `headFill` head with `fill` and `fill-opacity`. Every caller that loops `svgBoxed` (`renderElementsToSvg`,
-`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
+`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`) computes `sketchBackdropIds`
 once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
 raster path so PNG matches SVG.
 
@@ -363,7 +360,8 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
-  `FinishTab`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
+  `FinishTab`'s `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme
+  and font and inlines it
   (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
   (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
@@ -405,10 +403,7 @@ sticky and table.
   the export's two copies repeat identical gradient definitions, which resolve to the first.
 - A face that animates in CSS: the copy carries the same classes, so its ink animates too (restarted at each copy).
 - Hover and press tints on a face's controls are not drawn (the ink is a still copy); focus rings are.
-- WebKit: a face is drawn whole, unwobbled. Icon or sticker art that animates, or whose drawing has no size yet, shows
-  live and unwobbled until a settle finds it still and sized. A zoom changes no attribute in the art, so a picture
-  keeps the raster scale it was taken at until its art next changes or resizes; zoomed past that, it softens.
-- A browser without `ResizeObserver`: a resized icon's picture follows its next change instead.
+- WebKit: a face is drawn whole, unwobbled.
 
 ## Security and trust
 
@@ -431,7 +426,6 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   `sketch-backdrop.test.ts`); it returns at once when nothing on the tab is sketched.
 - Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes; the
   backdrop store re-renders only the views whose flag flips.
-- Palette tiles: one shared filter definition, applied by class; no per-tile geometry.
 - Faces (measured on a static build, headless Chromium, 1600 x 1000, a Sketch tab of 200 charts, Sankeys, pyramids
   and hubs plus one 2400 x 1600 Sankey, zooming and panning): copying all 201 faces' ink 6-14 ms once; the two-pass
   art filter on faces gave zoom tasks of 51-89 ms (budget: none over 50 ms, canvas-performance.md), the one-pass face
@@ -443,9 +437,9 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   template, three Hand-tool pans): before, a Sketch pan's frames were p50 220-260 ms, p90 310-404 ms (Flexible: 14 /
   15-20 ms), the GPU process 4.3-6.1 s of CPU against 0.2 s. Turning the filters off took it to Flexible's; flat
   noise (no `feTurbulence`) still left 113-160 ms p90, and promoting the filtered parts or the world to their own
-  layers made it worse (hitches to 940 ms). With pictures and whole faces: p50 14 ms, p90 19-20 ms, GPU 0.3-0.4 s,
+  layers made it worse (hitches to 940 ms). With whole faces: p50 14 ms, p90 19-20 ms, GPU 0.3-0.4 s,
   matching Flexible in the same runs. Chromium at the same size showed no difference between the finishes, before or
-  after. Each picture is one decode per settle; at most `SKETCH_ART_PICTURE_MAX_PX` squared pixels.
+  after.
 
 ## Presentation and UX
 
@@ -542,9 +536,6 @@ per command letter.
 | `SKETCH_FACE_FILTER.numOctaves` | 1                | two passes broke the zoom budget on a 200-chart board (measured)       | 1                       |
 | `SKETCH_INK_SETTLE_MS`          | 120              | past a zoom frame or a keystroke, quicker than the eye follows         | 80 to 200               |
 | `SKETCH_INK_MAX_WAIT_MS`        | 1000             | a face that never settles still follows within a second                | 500 to 2000             |
-| `SKETCH_ART_PICTURE_MARGIN`     | 0.15             | the art filter's own region, so a wobbled edge is never clipped        | 0.1 to 0.2              |
-| `SKETCH_ART_PICTURE_MAX_SCALE`  | 4                | covers a 3x phone screen at 100% zoom with room to zoom in             | 2 to 4                  |
-| `SKETCH_ART_PICTURE_MAX_PX`     | 1024             | a big sticker's picture stays about 4 MB of pixels                     | 512 to 2048             |
 
 ## Assets and external resources
 

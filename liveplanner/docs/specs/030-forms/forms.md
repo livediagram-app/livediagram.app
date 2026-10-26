@@ -379,8 +379,7 @@ A run ending (completed or skipped) writes `formTourSeen` (synced preferences), 
 **Forms Tour** row; it never hides the button. **Show Me Around** at the foot of the cog's panel starts it at once,
 taken or not, as Settings' row does, when it is on offer. Its events are `UI` `Opened` `FormTourOffer` (the first
 time the button shows it in a page load), `Started` `FormTour` (a press), `View` `FormTourStep<Step>` and `Ended`
-`FormTourCompleted`/`FormTourSkipped`, charted as the **Forms Tour** stack. `Closed` `FormTourOffer` (No on the old
-banner) is no longer sent.
+`FormTourCompleted`/`FormTourSkipped`, charted as the **Forms Tour** stack.
 
 ## Publishing and the form link
 

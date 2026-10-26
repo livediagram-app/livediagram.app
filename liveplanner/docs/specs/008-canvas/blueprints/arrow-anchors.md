@@ -95,7 +95,7 @@ One `Record<Anchor, AnchorInfo>`; every helper reads it.
 - `OFFERED`: `Partial<Record<ShapeKind, readonly Anchor[]>>`, in table order:
   - `circle`, `diamond`, `actor`: the corners and middles (`COMPASS_ANCHORS`);
   - `triangle`: `ene e ese sse s ssw wsw w wnw`;
-  - `project`: all sixteen but `se` and `sw`.
+  - `document`: all sixteen but `se` and `sw`.
 - `offeredAnchors(el)`: `OFFERED[el.shape]` for a shape, else `ALL_ANCHORS`.
 - `sideOffered(el, side)`: some offered anchor lies on `side`.
 - `offeredOnSide(el, side, cls)`: the offered anchors of `cls` on `side`; when none, of the
@@ -148,7 +148,7 @@ from `shapePolygonVertices(kind)` (D15). `mid(a, b)` is the midpoint, `lerp(a, b
 | `cylinder`                                                     | Body with half-ellipse top (centre y 15, ry 12) and bottom (centre y 85, ry 12), each `ARC_SEGMENTS` segments, in the 0..100 box |
 | `stadium`                                                      | Capsule polygon: `r = min(w, h)/2`, two half circles of `ARC_SEGMENTS` segments on the short axis ends (D8)                      |
 | `actor`                                                        | `ACTOR_HULL` (viewBox 90 × 130) fitted "meet": `k = min(w/90, h/130)`, centred (D8)                                              |
-| `cloud`, `project`                                             | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
+| `cloud`, `document`                                            | `sampleSvgPath(d)` of the kind's single main path in the shape-geometry table, mapped from 0..100 to the box                     |
 | anything else                                                  | `null`: the connector box is the outline                                                                                         |
 
 `pointInsideOutline(el, p, inset): boolean`:
@@ -369,18 +369,17 @@ export function passesThroughOwnShapes(
   index: ElementIndex,
 ): boolean;
 
-// arrow-rebind.ts (signature unchanged)
+// arrow-rebind.ts
 export function rebindArrowAnchorsAfterMove(
   elements: Element[],
   movingIds: ReadonlySet<ElementId> | Map<ElementId, unknown>,
 ): Element[];
 ```
 
-`bestAnchorTowards` loses its `current` and `avoid` parameters: no caller passes them.
+`bestAnchorTowards(element, towards)` (`anchor-choice.ts`) takes the element and the point only.
 
 Validation (`validate.ts`): `ANCHORS = new Set<string>(ALL_ANCHORS)`; a pinned endpoint with an
-anchor outside it fails `isValidEndpoint`, which rejects the element (named rejection of the
-existing validator). The api, the MCP tools and every import path validate through it.
+anchor outside it fails `endpointRule` (`PINNED_RULE`), which rejects the element, naming the rule. The api, the MCP tools and every import path validate through it.
 
 ## Data and persistence
 
@@ -447,7 +446,7 @@ PATH_MAX_SAMPLES_PER_SEGMENT)` samples × 2 shapes × outline edges (≤ 61, the
 
 ## Presentation and UX
 
-- **Setting row.** Label "Auto-Attach Arrows" (unchanged). Description: "When a move leaves an
+- **Setting row.** Label "Auto-Attach Arrows". Description: "When a move leaves an
   arrow running through a shape it connects, its end moves to the side facing the other end and
   keeps its corner, quarter or middle spot." Default on.
 - **Snap-target markers.** Sixteen dots per nearby element, same size and style as before.

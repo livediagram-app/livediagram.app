@@ -52,9 +52,8 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 
-Until 25 October 2026 it also stepped aside while a tour's offer or last card was up (`data-tour-card-open` on
-the body), since both took the same place at the bottom. Tours no longer draw a banner: every card is the tour
-popover ([Editor tours](../007-editor/editor-tour.md) "Where it appears"), so there is nothing to step aside for.
+It never needs to step aside for a tour: tours draw no banner, and every card is the tour popover
+([Editor tours](../007-editor/editor-tour.md) "Where it appears").
 
 The delay is per editor session (per page load); it isn't persisted
 across reloads. Opening project after project in quick succession

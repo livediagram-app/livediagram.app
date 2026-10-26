@@ -5,7 +5,6 @@ Derived from [Colour scheme, Dark palette (Steel)](../color-scheme.md#dark-palet
 dark selection from [Canvas and palette, Selection](../../008-canvas/canvas-and-palette.md#selection) and the audit
 from [End-to-end smoke tests](../../003-system-architecture/e2e-smoke.md). The spec decides; this file adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
-The Charcoal migration has its own blueprint ([Retired schemes](../../011-theme/blueprints/retired-schemes.md)).
 
 Scope, by file:
 
@@ -109,8 +108,7 @@ low-contrast node fails the audit with its text, colours, ratio and element.
 ## Data and persistence
 
 Nothing new is stored. `DARK_CANVAS_*` reach stored data only through tabs saved with the Default scheme in dark
-mode (their backdrop). Tabs holding the previous dark half are migrated on read; see
-[Retired schemes](../../011-theme/blueprints/retired-schemes.md).
+mode (their backdrop).
 
 ## Errors and edge cases
 
@@ -222,7 +220,7 @@ The Charcoal migration logs as its blueprint states.
 | Surfaces 950 / 900 / 800       | `#0b0f16` / `#131b26` / `#16202e`        | Operator decision 2                          | Dark, ordered                      |
 | Steel ramp                     | spec table                               | Operator decision 3                          | White on 600 >= 4.5:1              |
 | Wordmark accent                | `#a78bfa`                                | Tailwind violet-400                          | >= 4.5:1 on slate-950              |
-| `PARTICIPANT_DEEP`             | each colour's Tailwind 700 step          | Operator choice (identity avatars, option B) | White >= 4.5:1                     |
+| A presence colour's `deep`     | each colour's Tailwind 700 step          | Operator choice (identity avatars, option B) | White >= 4.5:1                     |
 | `SHADE_STEP`                   | `0.05`                                   | D20                                          | 0.01 to 0.1                        |
 | Tile plate / veil              | `#f3faff`                                | Measured: maps to `#0d1318` under the filter | Within 2 of the canvas per channel |
 | Tile invert                    | `0.95`                                   | Operator decision 6                          | 0.9 to 1                           |

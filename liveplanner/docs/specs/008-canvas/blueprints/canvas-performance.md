@@ -103,17 +103,16 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `commentActions`, `actionActions`: the panel actions' methods join the stable bag, and
     `idBound(make)` hands each element one object built from them, cached per id for as long as
     the bag's presence pattern holds. Absent actions give `undefined`, as before.
-  - `onSetSessionConfig`, `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`,
-    `onReactionBurstDone`: into the layer's `useStableHandlers` bag.
+  - `onSetSessionConfig`, `onOpenElementSettings`: into the layer's `useStableHandlers` bag.
   - `collab`: `useStableCollab(collab)` in `EditorCanvasHost`: handlers through
     `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile
     time), `participants` held while what a face reads of them (`id`, `key`, `name`, `color`,
     `status`, `role`, `picture`; not `lastActiveAt`) is unchanged, the rest by value.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
-  layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`,
-  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
-  `RichTextEditor` (mounted only
-  while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A freehand
+  layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `ElementIndicators`,
+  `LayerSelectionChrome`, `PageMasthead`, `RichTextEditor` (mounted only while editing), `ScaleCapped`, `TableView`,
+  the badges and parts in `element-badges.tsx` / `element-parts.tsx`, `selection-aware-views.tsx` and the remote
+  cursor (`view-readers.tsx`). A freehand
   stroke is picked by its box, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
 - `ArrowView` takes `frame: ArrowViewFrame` and `holes: Rect[]` in place of `elementIndex` and
   `occluders`. The layer derives both per arrow on each element change: the frame with
@@ -135,13 +134,13 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   checks): 50-90 ms a frame at the reference speed.
 - The drag's snap guides (alignment, equal spacing, arrow-endpoint markers) live in a
   `SnapGuideStore` per editor (`useSnapGuideState`), not in the editor's state: a dense board
-  changes them on most frames of a drag, and each change used to render the whole editor.
+  changes them on most frames of a drag, and keeping them in editor state would render the whole
+  editor on each change.
   `useEditorDrag` writes it through the rAF-coalesced `scheduleGuides` / `scheduleSnapTargets`;
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.
 - The elements themselves are listed by `CanvasElementList`, memoised, with every prop
-  identity-stable across editor renders that change nothing it draws (`useInsertShift` returns one
-  object while its answers hold). A press or a release that renders the editor (the drag state
+  identity-stable across editor renders that change nothing it draws. A press or a release that renders the editor (the drag state
   beginning or ending) renders the layer but walks none of the board's element slots.
 - Invariant: between the press and the release of a move, the editor root, `Canvas` and the element
   layer do not render; at the press and the release, the element list does not render unless an
@@ -191,8 +190,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 - `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
   `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
-  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay` and
-  `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`; a move's frames keep it, so alignment guides read no layout.
 - The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
 
 ### The Map draws settled elements
@@ -206,7 +204,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   drag's release) commits first and the Map's rebuild and image parse follow as their own render
   (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
   128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
-  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer no longer yields a new
+  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer never yields a new
   array per render.
 - Pan and zoom never redraw the markup; they move only the viewport rectangle, as today.
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first

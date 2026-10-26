@@ -23,7 +23,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   The toolbar cards apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
 - **Shared controls carry it**, so every caller does: the chrome buttons (`CHROME_BTN`), the
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
-  header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
+  header buttons (`MovablePanelHeader`), the dialog close in both shapes
   (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
   own 16px pad on a coarse pointer (canvas element parts).
 - **Every canvas toolbar pads its items.** The Palette strip and the menu button's own card (`ToolbarExplorerButton`) both carry `PHONE_TOOLBAR_ITEMS`;

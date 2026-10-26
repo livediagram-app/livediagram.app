@@ -1,8 +1,9 @@
 # CLI
 
-**Status: published.** `@liveplanner/cli` is on npm (0.1.0, 2026-10-06; 0.2.0 adds `workbench`; 0.3.0, not yet on npm, adds `folder` and `workbench --workspace`). Every command below signs in through the
-browser, a device code or a token kept in the system's keychain, and is counted on the dashboard. The help centre
-article is `/help/developers/cli/` (Developers). Ahead: the update check.
+`@liveplanner/cli` (version 0.3.0 in `apps/cli/package.json`) is the command line for plans. Every command below
+signs in through the browser, a device code or a token kept in the system's keychain, and is counted on the
+dashboard. The help centre article is `/help/developers/cli/` (Developers). The update check ("Distribution") is
+specified and not built: no command checks npm.
 
 `liveplanner` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
 agent changing a diagram while a person talks to it) and second for people (scripts, pulling projects to files).

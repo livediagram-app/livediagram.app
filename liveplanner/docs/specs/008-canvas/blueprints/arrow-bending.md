@@ -42,7 +42,7 @@ Scope, by file:
 - `straight`, or `curved` without `curvePoints`: `bow`. `t` = the grab's projection parameter on
   the chord (straight) or the nearest of 64 samples of the quadratic (curved).
 - `curved` with `curvePoints`: `insert` at the index of the nearest segment of
-  `[from, ...anchors, to]`, the rule `addCurvePoint` used.
+  `[from, ...anchors, to]`.
 - `angled`: `slide` of the nearest segment of `arrowPathPolyline`; its unit direction is stored.
 
 **Apply** (`applyArrowBend(plan, delta)`), pure, from the start snapshot:
@@ -117,7 +117,7 @@ scales a free arrow.
 | `BEND_T_MIN`           | 0.2   | Keeps a grab beside a head from exploding; 0.1 to 0.3 |
 | `DOUBLE_PRESS_MS`      | 450   | Existing (usePressWithoutDrag), moved to double-press |
 | `DOUBLE_PRESS_SLOP_PX` | 8     | Screen px between the two presses; 4 to 16            |
-| `MOVE_FRAME_PAD_PX`    | 12    | Frame clearance round the route; 8 to 24              |
+| `MOVE_FRAME_PAD_PX`    | 20    | Frame clearance round the route; 8 to 24              |
 | `MOVE_FRAME_HIT_PX`    | 10    | Grab band width of the frame edge; 8 to 16            |
 | `MAX_CURVE_POINTS`     | 5000  | A path's node limit (MAX_PATH_NODES); 1000 to 5000    |
 
@@ -126,7 +126,7 @@ scales a free arrow.
 - An editable arrow line shows the `grab` cursor; locked, read-only and format-painter lines keep
   their existing cursor.
 - A selected free arrow shows the shape selection ring and handles; its ring edge shows `move`.
-- The "+" add-point handles are gone; the curve, bend-point and elbow handles are unchanged.
+- There are no "+" add-point handles; the line shows its curve, bend-point and elbow handles.
 
 ## Accessibility
 

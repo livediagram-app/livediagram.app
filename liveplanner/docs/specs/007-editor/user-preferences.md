@@ -320,8 +320,7 @@ Missing key === undefined === default behaviour. Concretely:
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `panelLayout` and `minimalPanels`, which older blobs still carry, are
-  ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
+- A stored key the type does not name is ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -362,10 +361,8 @@ Missing key === undefined === default behaviour. Concretely:
   feature working (see the data model). Emits `UI`/`Toggled`/
   `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
-- **Retired keys.** The keys livediagram retired (the Activity panel's `activityPanelEnabled`, the Experimental
-  switches, `skipLocationStep`, the Workshop and Avatar tours' seen-guards, `presentation`) and its rename of
-  `notifyDiagramJoin` to `notifyProjectJoin` never reached liveplanner, which was never deployed with them: nothing
-  reads, renames or drops them (the read-time upgrade, `upgradeLegacyPreferences`, was removed on 2026-10-24).
+- **No retired keys.** liveplanner's preferences have only ever been stored in their current names, so nothing
+  upgrades, renames or drops a key on read.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -420,10 +417,9 @@ that is the only control.
   It is the answer to "I half-remember a setting about layer previews" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
-- **One setting, one control.** The Palette / Layers / Activity / AI / Map
-  gear popovers that used to carry a subset each are gone: once every
-  preference had a row in the dialog, those were five second homes for
-  settings that already had one. A handful of preferences DO keep a second,
+- **One setting, one control.** No panel carries a settings gear of its own:
+  every preference has its row in the dialog, and a gear would be a second home
+  for a setting that already has one. A handful of preferences DO keep a second,
   in-context control where that control is the thing itself rather than a
   settings menu: the Appearance cycle button in the footer, and each of those rows says
   **"Also in ..."** so the pair reads as deliberate.
@@ -551,9 +547,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
   email stand-in card, the API Tokens manager), the message ends with a
-  **Sign In** link to `/sign-in/` that returns to the current page. Preferences whose
-  day-to-day home used to be a panel's own gear popover live here now, and
-  only here - see **UI placement** below.
+  **Sign In** link to `/sign-in/` that returns to the current page. Preferences a panel might
+  otherwise carry live here, and only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds none today: every editor setting applies to every tab, and a
@@ -673,9 +668,7 @@ and the dialog stays as the one complete, browsable index of them.
   Start Tour button, which stays on offer whether a tour is taken or not ([Editor tours](editor-tour.md) "Where it
   appears"); the switches are the record of which have been taken. Switch one back on and close Settings to take it
   again straight away when it is on offer where you are; otherwise nothing starts, and the button is there once it
-  is. Until 25 October 2026 each tour offered itself once and its switch was what let it offer itself again. (The
-  tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked for them: a
-  tour is not an accessibility setting.) Every switch is inverted: on means "not taken yet", the preference records
+  is. The switches sit in their own category, not inside Accessibility: a tour is not an accessibility setting. Every switch is inverted: on means "not taken yet", the preference records
   "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is `...SeenOff`), so each
   dashboard series keeps its meaning.
 
@@ -692,10 +685,9 @@ and the dialog stays as the one complete, browsable index of them.
   switch over all its tracks (**Plan Tours**). The Plan tour's old single flag (`planTourSeen`) counts every track
   only while Power user mode is on.
 
-  The Diagram tour's **Diagram Tour** row, the Avatar tour's row and the **Show Me** section of element tours went
-  with Diagram mode, Workshop mode's avatars and the diagram elements ([Editor tours](editor-tour.md),
-  [Element tours](element-tours.md)); their flags (`tourSeen`, `elementToursSeen`, `elementTourKinds`) are no longer
-  preferences, and a stored value is ignored.
+  There is no Diagram Tour, Avatar tour or element-tour row ([Editor tours](editor-tour.md),
+  [Element tours](element-tours.md)); `tourSeen`, `elementToursSeen` and `elementTourKinds` are not preferences, and
+  a stored value is ignored.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
@@ -722,7 +714,7 @@ and the dialog stays as the one complete, browsable index of them.
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
   keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
-  standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
+  standard kinds through the package's `bindRow` (`packages/settings-ui/src/bind.ts`), which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
   liveworkspace.app renders the same view over this app's derived catalogue
@@ -750,7 +742,7 @@ and the dialog stays as the one complete, browsable index of them.
   editor's own row for the key when it has one (so the change is counted and synced as here), and
   its Profile's Name and Colour is edited in place, never a link away: the shared editor
   (`ProfileEditor` in `@liveworkspace/settings-ui`), which reads and patches the profile over the
-  same door (`/api/workspace/account/profile`, `bearerProfileHost`). A saved name or colour is the
+  same door (`/api/workspace/account/profile`, `requestProfileHost` in `packages/settings-ui/src/profile/profile-host.ts`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
   a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
@@ -778,14 +770,12 @@ and the dialog stays as the one complete, browsable index of them.
   The **Editor** group holds only Power User Mode and its children. The
   canvas-era rows (`alignmentGuides`, `autoRebindArrows`, `elementIndicatorStyle`,
   `quickAddOnHover`, `middleMousePan`) and the Layers, Map and Quick Style panels
-  are no longer offered in Settings, and the AI assistant is removed; their stored fields
-  stay in the type because the canvas host still reads them. The
+  are not offered in Settings, and there is no AI assistant; their stored fields
+  stay in the type because the canvas host reads them. The
   **Keyboard** group holds the **Keyboard Shortcuts** switch, which is
   per-device (localStorage, not `UserPreferences`) so shortcuts can be on at
-  a full keyboard and off on a tablet; it used to sit in Controls, and
-  before that at the foot of the Shortcuts dialog. Below it, the shortcut
-  catalogue renders as collapsible groups, the same content the old dialog
-  listed. The
+  a full keyboard and off on a tablet. Below it, the shortcut
+  catalogue renders as collapsible groups. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is

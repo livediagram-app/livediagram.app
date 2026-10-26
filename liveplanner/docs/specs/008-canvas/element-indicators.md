@@ -2,17 +2,15 @@
 
 The marks on an element that say it carries something you cannot otherwise see: a **link**, a
 **note**, an open assigned **action** ([Assigned actions](../012-collaboration/assigned-actions.md))
-or unresolved **comments**. A mind map root also carries two **commands** here, **Edit Outline**
-and **Tidy Map** ([Mind node](../009-elements/mind-node.md)).
+or unresolved **comments**. A Plan item (a board, card, view or Sheet) carries none: nothing is attached to Plan
+items ([Plan mode](../026-plan/plan-mode.md)), so indicators show only on the canvas elements a tab arrives with.
 
 ## Why
 
-They used to be one connected chip of 32px buttons on the element's top-right corner, half in and
-half out, with a ring, a shadow and hairline dividers. It read as a toolbar parked on the canvas,
-louder than the element's own label, and it mixed what an element **has** (a note) with what you
-can **do** to it (Tidy Map), all at equal weight, all the time. Indicators are status: they should
-read as part of the element, quiet until you look for them, and commands should appear only when
-you are working on that element.
+One connected chip of 32px buttons on the element's top-right corner, half in and half out, with a
+ring, a shadow and hairline dividers, would read as a toolbar parked on the canvas, louder than the
+element's own label, all at equal weight, all the time. Indicators are status: they should
+read as part of the element, quiet until you look for them.
 
 ## Styles
 
@@ -54,10 +52,8 @@ shows its metadata, with words beside the glyphs:
 
 ### Off
 
-No indicators are drawn on any element, and a mind root's commands do not appear on hover or
-selection. Everything they open stays reachable: links, notes and actions from the element's
-menu, comments from the element's menu and the Collaborate panel, and Edit Outline and Tidy Map
-from the root's Mind Map menu section. A scale-to-fit label keeps its whole box.
+No indicators are drawn on any element. Everything they open stays reachable: links, notes and actions from the
+element's menu, and comments from the element's menu and the Collaborate panel. A scale-to-fit label keeps its whole box.
 
 ## Placement on any shape
 
@@ -104,17 +100,6 @@ Selecting an element puts its own chrome on the same edges: the selection box, i
 same way when it is deselected. Hidden, they take no clicks and leave the tab order. Nothing else
 moves: content that moved out of their way stays put, so selecting never shifts the label.
 
-## Commands
-
-A mind map root's **Edit Outline** and **Tidy Map** are commands, not status, so they are hidden
-at rest and appear only while the pointer is over that root (not while it is selected, when the
-whole cluster is out of the way). In Top they lead the cluster (left of the indicators); in Footer
-they end the row; in the pip they lead it. Their space is reserved at rest, so nothing moves when
-they appear. A cluster holding the commands alone (a root with no link, note, action or comment)
-hides whole at rest, its pip chip and backing included, so an empty chip never sits on the root.
-Both stay in the root's Mind Map menu section too, which is the way in on a touch
-device or from the keyboard.
-
 ## Unchanged
 
 - Each glyph is a button: a click follows the link, opens the note, the action or the comments.
@@ -132,9 +117,7 @@ device or from the keyboard.
 ## Accessibility
 
 - Every glyph is a real `button` with an `aria-label` ("Follow link", "Open note", "Open action",
-  "Open 2 comments", "Edit Outline", "Tidy Map") and a visible focus ring.
-- A hidden command is `visibility: hidden`, so it is out of the tab order and the accessibility
-  tree until the root is hovered; from the keyboard, the root's Mind Map menu has both.
+  "Open 2 comments") and a visible focus ring.
 - While the element is selected the cluster is `inert`: no focus, no clicks, not announced.
 - The 50% resting glyph is a status cue, not text; the action's assignee and the comment count are
   also in the button's label.

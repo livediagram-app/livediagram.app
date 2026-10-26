@@ -14,7 +14,6 @@ Scope, by file:
 | `packages/project/src/element-refs.ts`                                          | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/project/src/containment.ts`                                           | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
 | `../packages/model-core/src/style-keys.ts`                                      | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| packages/project/src/mermaid-serialise.ts                                       | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/project/src/index.ts`                                                 | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/project-views.ts`                                      | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `../packages/api-schema/src/ref-errors.ts`                                      | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
@@ -195,14 +194,13 @@ container; views, the edit-operations membership reports and the editor's frame 
 2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
    holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
    element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
-   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
-   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
+   `smallestHolder(point, holders)` is that point query alone (smallest holder of the centre, inclusive, the earlier
+   on a tie); `deriveContainers` passes it only the strictly larger
    candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
    axis-aligned ones.
 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
-Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
-keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
+Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
 pass printed elements; the edit-operations engine reads and writes coordinates against the same origin.
@@ -292,8 +290,7 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (the `mode=` segment went with the other editor
-modes: every tab is in Plan); `finish=` only when the tab sets one;
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (there is no `mode=` segment: every tab is in Plan); `finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
@@ -810,7 +807,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/project-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                                |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                        |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                             |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/project/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                    |
+| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/project/src/containment.test.ts`; `packages/project-views/src/tree.test.ts`                                                      |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                            |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                    |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                             |

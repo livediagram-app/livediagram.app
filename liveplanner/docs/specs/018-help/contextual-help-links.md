@@ -80,15 +80,8 @@ is.
 
 Grouped by priority; each links the keyed article.
 
-> **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity (since removed), Comments, and AI (since removed) panels previously each had a bare-glyph
-> `HelpArticleLink` in their header. These were removed: the editor header
-> already has a prominent global Help icon, and a `?` on every panel made the
-> canvas chrome noisy. Contextual links now live only in dialogs, in-panel
-> settings (the Settings dialog's rows), and **empty-state messages** (the
-> empty-canvas card keeps its link). The articles themselves
-> (`explorerPanel`, `palette`, `comments`)
-> stay in the registry, reachable from the help centre and the header.
+Panels carry their article in their header (see "Panel headers carry their article"); the rest live in dialogs,
+in-panel settings (the Settings dialog's rows) and **empty-state messages**.
 
 **High priority**
 
@@ -127,8 +120,8 @@ key and never introduce a second linking pattern.
 ## Panel headers carry their article
 
 Every panel that a help article explains renders a `?` in its header
-chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
-(forwarded by `ModePanel`, so a tool panel opts in with one word).
+chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`, so a panel opts in with one word
+(`CollaboratePanel`'s `comments`, the Explorer's `explorerPanel`).
 
 Declared on the shared component rather than left to each panel's own
 `headerActions`, so the affordance sits in the SAME place on every panel — a
@@ -136,10 +129,9 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, Collaborate and Vote (and,
-until it went with the Format tool, the Format tool panel). This closed the gap the feature was written for and had never
-reached: 21 surfaces linked an article, and every one of them was a dialog, so
-a panel you were looking at could not tell you there was a page about it.
+Wired: the Explorer (`explorerPanel`), Collaborate (`comments`), Vote (`sessionVoting`), the session popover, the
+minimap (`minimap`), and the Plan panels: Card Finder, New Card and Trash (`planCards`) and Card Types
+(`planCardTypes`). So a panel you are looking at can tell you there is a page about it.
 
 `help-articles.test.ts` already refuses a key that resolves to no page, or one
 no surface references, so a panel pointing at a dead article fails the build

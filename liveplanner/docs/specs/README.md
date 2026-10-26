@@ -15,9 +15,9 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./005-project-roadmap/README.md - when asking where the product is now and what is still ahead
 - ./006-project/README.md - when working on the project model: tabs, tab kinds, layers, per-tab storage, previews, offline projects, name length
 - ./007-editor/README.md - when working on the live editor shell: routes, the one editor mode (Plan), the start panel, templates, side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
-- ./008-canvas/README.md - when working on the canvas host under every tab (viewport, selection, history, performance), or on livediagram's drawing code still in the tree
-- ./009-elements/README.md - when changing an element kind: the charts Dashboards use, or the diagram kinds whose code is still in the tree
-- ./010-palette/README.md - when a code comment cites the palette: Plan shows none; its code and catalogues are still in the tree
+- ./008-canvas/README.md - when working on the canvas host under every tab (viewport, selection, history, performance) or on how it draws and edits the element kinds the model holds
+- ./009-elements/README.md - when changing an element kind: the charts Dashboards use, or the other kinds the model validates, renders and exports
+- ./010-palette/README.md - when working on the icon, technology, sticker and emoji catalogues, the style presets or the Behaviours family (Plan shows no palette)
 - ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes, and retired schemes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
 - ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, share links, the Trash or the empty project clean-up
@@ -27,7 +27,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on export (PNG, SVG, PDF, Markdown, CSV, JSON) and its fidelity, or the Mermaid code nothing reaches
+- ./020-import-export/README.md - when working on export (PNG, SVG, PDF, Markdown, CSV, JSON) and its fidelity, or the JSON import back
 - ./024-agents/README.md - when an agent reads, writes or comments on projects: the MCP and CLI front doors, changesets, presence, views, edit operations
 - ./026-plan/README.md - when working on Plan mode, Board and Dashboard tabs, cards and card types, items and the item store, plan views, templates, the Plan tour
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store

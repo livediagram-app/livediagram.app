@@ -8,7 +8,7 @@ The HTTP + WebSocket layer the live editor calls for project persistence and rea
 
 ## Why this exists
 
-The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md)) ran entirely client-side with `localStorage` persistence. Once realtime collaboration entered scope, server state became necessary: a Durable Object per project holds the in-room participant list, orders and relays ops between connected clients and keeps the collaboration state that must outlive a socket, and holds the plan's content in its own SQLite. The editor app no longer reads or writes `localStorage` for projects — `apps/editor/lib/api-client.ts` is the single boundary.
+Realtime collaboration needs server state: a Durable Object per project holds the in-room participant list, orders and relays ops between connected clients and keeps the collaboration state that must outlive a socket, and holds the plan's content in its own SQLite. The editor reads and writes projects only through the api (`apps/editor/lib/api-client.ts` is the single boundary); `localStorage` holds no project.
 
 ## Tech
 
@@ -31,7 +31,7 @@ The api resolves who is calling through three identities, in this order of prefe
 2. **API token** — `Authorization: Bearer lwt_…`, consulted only when no person's token verified. `resolveApiToken` checks it with liveworkspace, which made it ([Public API and API tokens](public-api-and-tokens.md)), remembering the answer for a minute per isolate; the owner id is the token's account, so a token request flows through the same checks as a signed-in one. A token minted **read-only** is refused on every `POST` / `PUT` / `DELETE` with `403 read_only_token`, at one choke point in `index.ts`.
 3. **Workbench session** — `Authorization: Bearer lvw_…`, consulted only when neither of the above resolved ([Workbench embeds](../013-workspace/workbench-embeds.md)). Sessions are liveworkspace's ([liveworkspace/docs/workbench.md](../../../../liveworkspace/docs/workbench.md)): `resolveWorkbenchSession` (`src/auth/workbench-session.ts`) asks the accounts Worker about the secret with the api's client credentials, and keeps the answer per isolate (a live one up to a minute, a refused one ten seconds); an unknown, expired or revoked one is refused `401 invalid_session`, and accounts unreachable answers `503`. `workbenchRefusal` confines it before any route runs, by its scope: a project session answers another project `404`, any route outside `WORKBENCH_ROUTES` `403 workbench_confined`, and an `X-Share-Code` or `X-Share-Password` beside it `403 workbench_confined`; a workspace session reaches the Explorer's routes (`WORKSPACE_ROUTES`), never the account's. A view session's write is `403 workbench_read_only`.
 
-No Bearer at all is a **link visitor**: someone holding only a share code. There is no guest header: `X-Owner-Id`, `X-Owner-Sig`, `POST /api/guest-id` and `POST /api/migrate` are gone with the self-minted guest id.
+No Bearer at all is a **link visitor**: someone holding only a share code. There is no guest header: no `X-Owner-Id`, `X-Owner-Sig`, `POST /api/guest-id` or `POST /api/migrate`, and no self-minted guest id.
 
 `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` are **worker secrets** (`wrangler secret put`, synced from GitHub repo secrets on deploy), not `[vars]` entries — only the client secret is sensitive, but keeping every out-of-band value in one mechanism is simpler than reasoning about which ones are safe in the open ([Secrets policy](../002-project-scope/secrets-policy.md)). Leaving `ACCOUNTS_URL` or `API_RESOURCE` unset leaves every caller a link visitor — useful for local dev or for environments without an accounts client yet. The sign-in round trip itself (`/api/auth/sign-in`, `/callback`, `/token`, `/sign-out`) and the guest handoff (`/api/auth/guest`) live in `apps/api/src/routes/auth.ts`.
 
@@ -192,7 +192,7 @@ where its age puts it.
 
 ### Marking a project used
 
-The create body's `markUsed` (absent or `true`, or `false`) is still read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. It no longer changes a list: what Recent and Jump back in show is the index's record of opens, which the editor writes when it loads a plan (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
+The create body's `markUsed` (absent or `true`, or `false`) is read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. It changes no list: what Recent and Jump back in show is the index's record of opens, which the editor writes when it loads a plan (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
 
 ### Projects in the Trash
 
@@ -432,11 +432,11 @@ The api worker reaches the DO through its stub (`env.PLAN_ROOM.get(...).fetch(..
 
 ### The persistence boundary
 
-The plan's object holds both the content and the ordering and collaboration state. Tab content reaches its store through `PUT /api/projects/:id/tabs/:tabId`, fired by each editor's debounced autosave with the editor's whole copy of the tab. The store keeps the last save of a tab, with the room ledger and `qaRev` merged in as described on that row. Each editor's copy already folds in the ops it has received, so the last save normally carries everyone's work; an element edit that reached the saver only after its snapshot can be missing from the store until a later save carries it, while live peers still hold it.
+The plan's object holds both the content and the ordering and collaboration state. Tab content reaches its store through `PUT /api/projects/:id/tabs/:tabId`, fired by each editor's debounced autosave with the editor's whole copy of the tab. The store keeps the last save of a tab, with the room ledger merged in as described on that row. Each editor's copy already folds in the ops it has received, so the last save normally carries everyone's work; an element edit that reached the saver only after its snapshot can be missing from the store until a later save carries it, while live peers still hold it.
 
 A tab `PUT` is not relayed to the room; it is the editor's autosave and nothing else's. Every other writer of tab content (the MCP server, the CLI, an API-token script) writes a [changeset](../024-agents/agent-changesets.md), which the api records in the plan's store and relays to the room, and which every later editor save re-applies unless that editor has seen it. The comment and Q&A endpoints also tell the room about their writes.
 
-Every tab the api receives (project create, tab save) is settled by `migrateStoredTab` before `isValidTab`, as every tab read is: malformed styles, ids and bends are dropped and attached elements settled. liveplanner keeps no migrations of livediagram's former shapes (removed 2026-10-24: no liveplanner plan was ever stored in one), so an element in such a shape, for example freehand points before [Stroke points](../006-project/stroke-points.md), is refused.
+Every tab the api receives (project create, tab save) is settled by `migrateStoredTab` before `isValidTab`, as every tab read is: malformed styles, ids and bends are dropped and attached elements settled. liveplanner keeps no migrations of livediagram's former shapes, so an element in such a shape, for example freehand points before [Stroke points](../006-project/stroke-points.md), is refused.
 
 ## Data model
 

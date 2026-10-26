@@ -20,15 +20,15 @@ something it cannot.
    `can` (`apps/editor/lib/editor-capabilities.ts`): `can.takePart` for taking part, `can.addContent`, `can.move`,
    `can.resize`, `can.writeText`, `can.remove` per element; add a flag there (with the Viewer branch `false`) when
    none fits. Structural hooks take `structureBlocked` / `structureCreateBlocked`.
-5. **Hide, do not dead-end.** A control the session cannot use is not rendered, or renders inert. A tool that
-   changes the board carries `mutates: true` in `CANVAS_TOOLS` (`apps/editor/lib/editor-commands.ts`), which keeps it
-   out of read-only command lists and the Participant's selection modes.
+5. **Hide, do not dead-end.** A control the session cannot use is not rendered, or renders inert. A command that
+   changes the project goes below the view-safe subset in `buildEditorCommands` (`apps/editor/lib/editor-commands.ts`),
+   which keeps it out of a read-only visitor's command list.
 6. **Check the copy.** Every empty state, hint, hover card and toast the feature shows: would a Participant or Viewer
    be told to do something it cannot? Give them a description instead (see the temperature check and comment empty
    states for the pattern).
 7. **Lock it with tests.** At least: the server refuses the forbidden write for a Participant and a Viewer; the
    editor capability (or gate) is false for a Viewer and right for a Participant. The role tests that must keep
-   passing: `participant-content.leak.test.ts`, `editor-capabilities.test.ts`, `participant-palette.test.ts`,
+   passing: `participant-content.leak.test.ts`, `editor-capabilities.test.ts` and
    `project-room-participant.test.ts`.
 8. **Look at it as each role.** Open the board through a Participant link and a Viewer link (`/project/shared?s=`)
    and try the feature; a guest browser profile per role keeps the identities apart.

@@ -190,13 +190,6 @@ While it runs, Escape is the tour's and never closes the dialog. Only an Editor 
 sees Show Me. Telemetry: `UI` · `Started` · `SankeyFlowsTour`, and `UI` · `Ended` · `SankeyFlowsTourCompleted` or
 `SankeyFlowsTourSkipped`.
 
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Sankey tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it. The Flows dialog's own [Show Me](#show-me) is unchanged.
-
 ## Who may do what
 
 | Role        | May                                                                    |

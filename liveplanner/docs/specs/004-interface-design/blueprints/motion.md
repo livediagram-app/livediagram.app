@@ -12,7 +12,7 @@ Scope, by file:
 | `../packages/style-guards/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
 | `apps/editor/app/globals.css`                                           | Editor chrome motion only                                                          |
-| `apps/editor/app/canvas-motion.css`                                     | Editor canvas motion, moved out of `globals.css` unchanged                         |
+| `apps/editor/app/canvas-motion.css`                                     | Editor canvas motion, apart from the chrome                                        |
 | `apps/editor/e2e/motion-budget.spec.ts`                                 | The runtime guard                                                                  |
 
 ## Domain and naming
@@ -53,8 +53,7 @@ Tailwind's `--transition-duration-*` namespace gives `duration-micro`, `duration
 ```
 
 `--motion-cascade-cap` is `long − micro`, so the last item of a cascade whose items run at `micro`
-settles at exactly 250ms. The step is 10ms (D3). `fade-in` moves here from the live and telemetry
-globals, where it was duplicated.
+settles at exactly 250ms. The step is 10ms (D3). `fade-in` lives here, once, for every app.
 
 ### `motion.ts`
 
@@ -82,49 +81,46 @@ drifting.
   `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
+- **JS cascades** call `cascadeDelayMs` (the platform's Timeline, the form builder's questions).
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
-- `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
 
 ### Exit holds
 
 Each is set to the token of the exit animation it waits for.
 
-| Where                              | Before | After             |
-| ---------------------------------- | ------ | ----------------- |
-| `TabPresenceStack` `POP_OUT_MS`    | 240    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `RAIL_LEAVE_MS` | 160    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `REORDER_MS`    | 200    | `MOTION_MS.short` |
-| `QuickConnectRing` `EXIT_MS`       | 200    | `MOTION_MS.short` |
+| Where                           | Value             |
+| ------------------------------- | ----------------- |
+| `TabPresenceStack` `POP_OUT_MS` | `MOTION_MS.micro` |
+| `QuickConnectRing` `EXIT_MS`    | `MOTION_MS.short` |
 
-Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
-`RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, `AUTO_DISMISS_MS`,
-`IDLE_MS` and the `useElementPopIn` 400ms canvas timeout.
+Timers of every other kind are not motion and keep their own values: `GRACE_MS`, `CLOSE_DELAY_MS`,
+`RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, a toast's dismiss timer, `IDLE_MS` and the
+`useElementPopIn` 400ms canvas timeout.
 
 ### Chrome keyframe tokens (`apps/editor/app/globals.css`)
 
-| Token                       | Before | After   | Surface                                      |
-| --------------------------- | ------ | ------- | -------------------------------------------- |
-| `pop-in`                    | 360ms  | `micro` | Cluster bars, zoom menu, strip tiles, cards  |
-| `pop-out`                   | 220ms  | `micro` | Presence avatars, strip tiles                |
-| `fade-in`                   | 260ms  | `micro` | Moved to the shared theme                    |
-| `fly-up-in`                 | 420ms  | `long`  | Banners, search, template picker             |
-| `dialog-in` (new)           |        | `long`  | The shared Dialog shell's centred panel      |
-| `fade-in` on the backdrop   |        | `micro` | The shared Dialog shell's dim                |
-| `sheet-up`                  | 340ms  | `long`  | Poll prompt sheet                            |
-| `slide-row-in` / `-out`     | 220ms  | `micro` | Explorer rows, back bar, placement list (D4) |
-| `slide-in-left`             | 240ms  | `short` | Mobile Explorer drawer                       |
-| `tip-next` / `tip-prev`     | 260ms  | `short` | Tour steps, template-picker phases           |
-| `dropdown-down` / `-up`     | 190ms  | `micro` | Palette dropdowns                            |
-| `menu-drop` (stagger)       | 200ms  | `micro` | Context-menu categories                      |
-| `[data-panel-translucent]`  | 200ms  | `micro` | Panel opacity restore on hover               |
-| `.lvd-opt-glyph` hover lift | 160ms  | `micro` | Dropdown tile glyphs                         |
+| Token                       | Value   | Surface                                     |
+| --------------------------- | ------- | ------------------------------------------- |
+| `pop-in`                    | `micro` | Cluster bars, zoom menu, strip tiles, cards |
+| `pop-out`                   | `micro` | Presence avatars, strip tiles               |
+| `fade-in`                   | `micro` | From the shared theme                       |
+| `fly-up-in`                 | `long`  | Banners, search, Start Planning             |
+| `dialog-in`                 | `long`  | The shared Dialog shell's centred panel     |
+| `fade-in` on the backdrop   | `micro` | The shared Dialog shell's dim               |
+| `sheet-up`                  | `long`  | Phone sheets                                |
+| `slide-row-in` / `-out`     | `micro` | Rows, back bar, placement list (D4)         |
+| `slide-in-left`             | `short` | Phone drawers                               |
+| `tip-next` / `tip-prev`     | `short` | Tour steps                                  |
+| `dropdown-down` / `-up`     | `micro` | Dropdowns                                   |
+| `menu-drop` (stagger)       | `micro` | Context-menu categories                     |
+| `[data-panel-translucent]`  | `micro` | Panel opacity restore on hover              |
+| `.lvd-opt-glyph` hover lift | `micro` | Dropdown tile glyphs                        |
 
-`longpress-hold` (320ms) is an ambient indicator: it fills over the long-press timer's window. It
-moves to `canvas-motion.css` with the canvas gesture it belongs to.
+`longpress-hold` (320ms) is an ambient indicator: it fills over the long-press timer's window, in
+`canvas-motion.css` with the canvas gesture it belongs to.
 
-`element-pop-in` is new, in `canvas-motion.css`. It's `pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+`element-pop-in` lives in `canvas-motion.css`. It's `pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
 and `useElementPopIn` uses it in place of `animate-pop-in`, on elements added after the
 board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/canvas-performance.md)
 "Opening animates nothing across the board"). The editor fade-in rule in `globals.css` covers the
@@ -133,26 +129,23 @@ arrival").
 
 ### Shared theme (`../packages/tailwind-config/theme.css`)
 
-| Rule                    | Before                    | After                        |
-| ----------------------- | ------------------------- | ---------------------------- |
-| `.lvd-cascade > *`      | 320ms, 35ms step to 700ms | `micro`, 10ms step to 100ms  |
-| `empty-float` / `-ring` | loops                     | unchanged: ambient indicator |
+| Rule                    | Value                       |
+| ----------------------- | --------------------------- |
+| `.lvd-cascade > *`      | `micro`, 10ms step to 100ms |
+| `empty-float` / `-ring` | loops: ambient indicator    |
 
-The Timeline's `.tl-fan-out(-up)` (`micro`) lives with the one surface that still draws it, liveworkspace.app's
-telemetry dashboard (`liveworkspace/apps/site/app/telemetry/timeline-motion.css` in the monorepo); the Explorer
-keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explorer`'s `explorer.css`).
+The Timeline's motion is the platform's: liveworkspace's dashboard and the Explorer (`@liveworkspace/explorer`'s
+`explorer.css`, its `lw-tl-*` rules) keep their own, under the same budget.
 
 ### Component classes
 
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/editor`**
-  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
-    `TimelineLanesOverlay`, and the `MovablePanel` fade.
-  - `short`: `ToolbarStripRail`, `AccordionSection`,
-    `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
-  - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
+  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`, and the `MovablePanel` fade.
+  - `short`: `AccordionSection`, `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, and
+    the `VotePanel` bars.
+  - `long`: `TourPopover`, `TourHost`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
 - **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes
@@ -165,41 +158,32 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   transition takes 260ms. `.enter` takes 310ms with `animation-delay: var(--enter-delay, 0ms)`.
   `FeatureCategoryHero` sets `--enter-delay` to `min(index × ENTER_BEAT_MS, 130)`, where
   `ENTER_BEAT_MS` is 35.
-- **`liveworkspace/apps/site/app/telemetry`**: the `MetricCloud` word hover and `.stack-dim` take `micro`, and
-  `StickyWindowBar` takes `short`. `MetricCards` staggers its expansion with `cascadeDelayMs`,
-  and `fade-in` comes from the shared theme. The data-viz reveals are content (spec, "Content
-  pacing"), in `dataviz-motion.css`, which is listed as a content stylesheet:
-  - `.cloud-word` and `.metric-rise` take 210ms. `MetricCloud` delays each word by
-    `min(i × CLOUD_BEAT_MS, CLOUD_BEAT_CAP_MS)` (11ms, 250ms), and `MetricSearch` delays each
-    piece by `step × RISE_STEP_MS` (30ms).
-  - `.metric-reveal` takes 400ms and `.funnel-bar` 250ms.
+- The telemetry dashboard is liveworkspace's and keeps its motion there
+  ([liveworkspace/docs/telemetry.md](../../../../../liveworkspace/docs/telemetry.md)).
 
-Canvas and content durations above the ceiling move into their stylesheets, unchanged:
+Canvas and content durations above the ceiling live in their own stylesheets, which the guard does not read as
+chrome:
 
-- The `useFlipList` play transition (420ms) becomes `.qa-flip-move` in `qa-board.css`. The hook
-  adds the class instead of writing the transition inline. Like the old inline value, it stays on
-  the row.
-- The `HeroIllustration` card dim (500ms) becomes `.hero-card-dim` in `hero-animations.css`.
+- The `useFlipList` move transition of the form builder's questions is `.form-q-move` in `forms.css`; the hook adds
+  the class instead of writing the transition inline.
+- The marketing hero's motion is in `hero-animations.css`.
 
 ### `canvas-motion.css`
 
-This is a pure move out of `globals.css` into a new file, imported right after `qa-board.css`. It
-takes these blocks:
+Imported by the editor's `globals.css` after `forms.css`, it holds the canvas's motion:
 
 - The animated elements: `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
 - `[data-insert-shift]`.
 - `longpress-hold` and the new `element-pop-in`.
 
-The only change on the way is `element-pop-in`. Non-motion canvas rules stay in `globals.css`:
-the sticky peel, cursors and note ink.
+Non-motion canvas rules stay in `globals.css`: the sticky peel, cursors and note ink.
 
 ### View Transitions
 
 - **The root takes no part**: `html { view-transition-name: none; }` in the editor's `globals.css`, so only a named
   surface is captured.
-- **Chrome surfaces** would keep theirs in `globals.css`; none has one today (the start's mode switch, whose
-  `start-mode` cross-fade was the one, was retired with the other editor modes).
+- **Chrome surfaces** keep their named transitions in `globals.css`; no chrome surface names one.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the
   pseudo-elements never exist.
 
@@ -290,12 +274,11 @@ Nothing is stored. The `reduceMotion` preference is unchanged.
 
 - **An unknown `var()` in a duration position** is `unbounded`, never assumed small.
 - **A missing classified stylesheet** is reported, as described above.
-- **Reduced motion** still wins. The collapse in `globals.css` sets animations to
-  `0.01ms !important` and transitions to `0s !important`. The zeroed cascade delays stay too.
-  `app/reduced-motion.test.ts` pins both values. Cascade delays are zeroed through the same selectors, now against the
-  `min()` value.
+- **Reduced motion** wins. The collapse in `globals.css` sets animations to `0.01ms !important` and transitions
+  to `0s !important`, and zeroes the cascade delays through the same selectors, against the `min()` value.
+  `app/reduced-motion.test.ts` pins both values.
 - **`fill-mode: both` cascades** still pin `opacity: 1` under reduced motion.
-- **A `transition` with no duration** takes Tailwind's default, which is now bound to `micro`.
+- **A `transition` with no duration** takes Tailwind's default, which is bound to `micro`.
 - **An exit hold can end before its animation** only if the two diverge. Both read one constant,
   so they can't.
 
@@ -305,18 +288,17 @@ The guard only reads source files at test time. It doesn't touch the network or 
 
 ## Performance and limits
 
-Motion gets shorter, so no frame budget grows. The guard reads roughly 3,000 files per full run.
-It's a single pass of string scanning per file, well under a second per workspace.
+No chrome motion outlasts the ceiling, so no frame waits on one. The guard reads each workspace's source in a
+single pass of string scanning per file, well under a second per workspace.
 
 ## Presentation and UX
 
-Only durations change. Keyframes, easing, origins and distances stay the same, so every surface
-moves the same way, just sooner. The copy is unchanged.
+Every chrome surface moves within the three tokens; keyframes, easing, origins and distances are each surface's own.
 
 ## Accessibility
 
-- Reduced motion is untouched and stricter.
-- Shorter motion helps the vestibular case.
+- Reduced motion collapses every animation, chrome and canvas alike.
+- Short motion helps the vestibular case.
 - Focus rings don't animate.
 
 ## Web Experience
@@ -342,8 +324,8 @@ logging, because motion isn't a decision point.
 | Stylesheet: ceiling, hover, ambient, delay   | `../packages/style-guards/src/motion-budget.test.ts`                                            |
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                            |
 | The shared theme is within budget            | `../packages/tailwind-config/src/theme-budget.test.ts`                                          |
-| Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews           |
-| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                        |
+| Each workspace is within budget              | `motion-budget.test.ts` in the editor, help, marketing, ui and template-previews                |
+| Exit holds equal their tokens                | `TabPresenceStack.test.tsx`                                                                     |
 | Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                        |
 | Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx` |
 | Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                         |
@@ -355,9 +337,9 @@ logging, because motion isn't a decision point.
 It emulates `prefers-color-scheme: dark` and `reducedMotion: 'no-preference'`. The run goes like
 this:
 
-1. Start Blank.
-2. Open the palette dropdown, the context menu, the zoom menu, the Settings dialog and the search
-   panel in turn.
+1. Start a blank plan.
+2. Open and close the Explorer, the tab menu, an element's context menu, the Settings dialog and the search panel
+   in turn.
 3. After each, sample `document.getAnimations()`. Canvas animations are left out: any whose effect
    target sits inside `[data-canvas-a11y-root]`.
 4. Assert `delay + activeDuration ≤ 250` for each one whose iterations are finite and fewer than 2.

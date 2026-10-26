@@ -9,11 +9,8 @@ Tracker and the rest, each setting up a way of working across tabs), the twelve
 ([Plan mode](../026-plan/plan-mode.md#starting-a-board)) and its search finds only them; `/new?template=<kind>` makes
 one directly ([New project route](new-project-route.md)).
 
-Until 2026-10-22 every template opened in one of five editor modes (`templateEditorMode`), each mode's templates on
-its own start, with a mode filter on the template picker and a glyph on every card saying which mode a template
-opened in. Those went with the other modes ([Editor mode](editor-modes.md#retired-modes)). The rest of the catalogue
-(the diagram, whiteboard, session and page templates) is still built by name, as an agent's `add_tab` or a
-`/new?template=` link asks, opening in Plan like any tab; no start offers it.
+Every `TemplateKind` is one of those except `blank`, the empty tab. A template carries no mode, the picker has no mode
+filter, and a card no mode glyph ([Editor mode](editor-modes.md#other-mode-ids)).
 
 ## The blanks
 

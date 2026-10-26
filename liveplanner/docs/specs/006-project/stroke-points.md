@@ -66,28 +66,12 @@ pen's pressure at each point when it reported one. It replaces the former `point
   readable `{ nx, ny, p }` points, and a script that prints a tab or project file with every
   block expanded.
 
-## Migration of stored strokes
+## The former shape
 
-**Status: removed from liveplanner (2026-10-24).** liveplanner's plans have only ever been stored in the current shapes (each plan in its own Durable Object since 2026-10-23, with nothing carried over), so the read-time migrations this describes had nothing to read and are gone from `packages/project` (`stored-tab.ts` and `stored-elements.ts` no longer call them). It records what livediagram retired.
-
-- A stroke stored in the former shape (`points` as `{ nx, ny }` objects, optional `pressures`)
-  is converted to `packedPoints` by the stored-tab migration (`migrateStoredTab`) that every
-  stored-tab entry point already runs: the api's tab read and thumbnail, the offline store, and
-  file imports.
-- Points that lie outside `[0, 1]` (possible in strokes written by older code) widen the box to
-  their extent first, so no point moves by more than the precision guarantee. A pressure list
-  whose length differs from the points is dropped, and the stroke draws at the middle pressure.
-- The former shape is accepted **only as migration input**, at every place a stored or foreign
-  element arrives: the api's tab writes (create and save, which also serve API-token scripts), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
-  and tab file imports. Each runs the same migration
-  before validation, so nothing downstream ever sees the former shape.
-- The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.
-- The tab export file's `schemaVersion` and the clipboard payload's become `2`, because the
-  browser reads both directly: a version 1 file or payload imports through the migration, and an
-  older editor refuses a version 2 one (a file with its existing "update the editor" message)
-  rather than pasting strokes it cannot draw.
-- The project file (`liveplanner.project`) stays at version 1: it is only ever read
-  into the api's project create, which migrates.
+A freehand stroke stores `packedPoints` only. A stroke carrying the former fields (`points` as `{ nx, ny }` objects,
+`pressures`) is invalid, a stray field like any other, so validation refuses it on every write path (the api's create
+and tab save, a paste, a tab import, a peer's op, an agent's write) and it is never stored. liveplanner has no
+conversion from it: no liveplanner plan was ever stored in that shape.
 
 ## The wire
 
@@ -116,16 +100,15 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 ## Limits
 
-- At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
+- At most `MAX_FREEHAND_POINTS` (20,000) points per stroke: at most 100,002 bytes,
   133,336 base64 characters.
-- A stroke that fits is stored exactly as written; a writer keeps its strokes under the cap. (A fitter that
-  simplified a longer stroke to fit, `fitStrokeToLimit`, was never called by a writer and was removed 2026-10-24.)
+- A stroke that fits is stored exactly as written; a writer keeps its strokes under the cap.
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 
 ## Measured wins
 
-Measured by the stroke-points bench (scripts/stroke-points-bench.ts, removed 2026-10-24)
+Measured once, by a bench
 on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
 66,000 points, a pressure on every point. Before is the former shape as the pen wrote it (full
 doubles); timings are medians on a developer machine and move with it, the ratios hold.

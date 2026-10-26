@@ -6,9 +6,8 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 **Nobody is asked.** The New Project wizard ([Dedicated route for new-project creation](../007-editor/new-project-route.md#one-step-wizard))
 has no Location step: every new project is stored in the default location for who is creating it, below. A project
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Project** and **Take Offline**.
-(The wizard used to end on a Location step with a Save location chooser, a tile per location, the This Browser
-data-loss warning and a folder browser; it was removed, as most people answered it with the default before they had
-anything on the canvas. A project in This Browser still says what it is on the project itself: the editor header's
+(The wizard has no Location step: most people would answer it with the default before they had anything on the
+canvas. A project in This Browser says what it is on the project itself: the editor header's
 **This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
 
 | Location         | What it means                                                                                                |
@@ -38,8 +37,8 @@ browser's projects beside the index's ([liveworkspace/docs/one-explorer.md](../.
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
   signed-in person is never handed a project in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer: a slow session used to make the project This Browser,
-  and the move prompt then offered the project just made. Only a known account saves on liveplanner; a session that
+  sign-in (it then carries on as a guest) is not that answer: otherwise a slow session would make the project This Browser,
+  and the move prompt would offer the project just made. Only a known account saves on liveplanner; a session that
   still hasn't answered after the wait keeps the project in This Browser, where nothing is lost.
 - There is no per-person override: no setting chooses the store ([User preferences](../007-editor/user-preferences.md)).
 

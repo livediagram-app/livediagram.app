@@ -8,7 +8,7 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 ## Sign-in is always offered
 
-Every build of the editor offers sign-in; there is no switch to turn it off (the old `NEXT_PUBLIC_SIGN_IN_ENABLED` flag and its guest-only notices are gone). Guests and signed-in people always coexist: the root layout mounts the accounts bridge, the header shows Sign in, and the Explorer and editor show their sign-in nudges.
+Every build of the editor offers sign-in; there is no switch to turn it off. Guests and signed-in people always coexist: the root layout mounts the accounts bridge, the header shows Sign in, and the Explorer and editor show their sign-in nudges.
 
 | The api's accounts settings                                                                     | Frontend                                                                                                                         | API worker                                                         |
 | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -200,8 +200,8 @@ The session loads deferred, so `/new` cannot wait for the token request without 
 - **`lp_signed_in=1`**: probably signed in. The create waits for auth to settle and then uses the settled answer.
 - **The consent and device pages** (`/oauth/*`) read the hint the same way. With `lp_signed_in=1` they show their
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
-  sign-in as signed out: a slow session used to show a signed-in person "Sign in to connect", and the click then
-  signed them straight in. Only the session's own answer that there is no one, or no hint, shows the Sign in step
+  sign-in as signed out: a slow session would otherwise show a signed-in person "Sign in to connect", and the click
+  would sign them straight in. Only the session's own answer that there is no one, or no hint, shows the Sign in step
   (`signInGateOf`, `../packages/workbench/src/hooks/auth/useSignInGate.ts`).
 - The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a project in This Browser, the safe direction.
 

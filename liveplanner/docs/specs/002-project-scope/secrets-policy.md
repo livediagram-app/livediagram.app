@@ -8,44 +8,39 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 
 ## Where secrets go
 
-| Environment            | Mechanism                                                         |
-| ---------------------- | ----------------------------------------------------------------- |
-| Local development      | `.env.local` (gitignored) per app/worker                          |
-| Cloudflare Workers     | `wrangler secret put` — never in `wrangler.toml`                  |
-| Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
-| CI / Deploy            | GitHub repo secrets — see below                                   |
-| Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
+| Environment            | Mechanism                                                          |
+| ---------------------- | ------------------------------------------------------------------ |
+| Local development      | `.dev.vars` (Workers) or `.env.local` (Next apps), both gitignored |
+| Cloudflare Workers     | `wrangler secret put`, never in `wrangler.toml`                    |
+| CI / Deploy            | The one repository secret, `CLOUDFLARE_API_TOKEN` (below)          |
+| Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish  |
 
-### GitHub Actions secrets
+### The deploy credential
 
-Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
+The root workflows hold one repository secret, **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace Cloudflare
+account with Workers Scripts and D1 edit rights ([Deployment](../016-platform/deployment.md#credentials-and-secrets)).
+Every `wrangler.toml` pins the account id, which is an identifier, not a secret. Deploys write code and plain vars
+only; they never write a Worker secret.
 
-| Secret          | Purpose                                                                                                                                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
+## Worker secrets
 
-The deploy workflow also **syncs** the sign-in values, `INDEX_KEY` and `MEDIA_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `INDEX_KEY` and `MEDIA_KEY`. Each sync is guarded on the GitHub secret being non-empty, so an environment that sets none still deploys.
+Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md): worker secrets are per environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored), and **never** `[vars]`, which is plain text in source. Every one is optional: absent, its feature degrades rather than breaking, which keeps local development and previews working without them (see [Business model + licence](business-model-and-licence.md)).
 
-## Worker secrets in use today
+| Secret                                          | Worker          | Absent means                                                                                                                                                                                     |
+| ----------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so plans stay in This Browser ([Auth and guest access](../014-identity/auth-and-guest-access.md))                             |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                |
+| `INDEX_KEY`                                     | api             | The plan rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index))           |
+| `MEDIA_KEY`                                     | api             | liveworkspace's media service cannot draw the plans' previews through the export door, and a purge leaves a plan's previews to lapse ([previews.md](../../../../liveworkspace/docs/previews.md)) |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export plans as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                          |
+| `MIGRATION_KEY`                                 | api             | The migrate tool cannot open the migration door with its own key (the index's key still opens it); set only while a migration runs ([migration.md](../../../../docs/migration.md))               |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([Telemetry](../017-telemetry/telemetry.md))                                                                                                                       |
 
-Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in source. Every one is optional: absent, its feature degrades rather than breaking, which keeps local development and previews working without them (see [Business model + licence](business-model-and-licence.md)).
-
-| Secret                                          | Worker          | Absent means                                                                                                                                                                                                                 |
-| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so plans stay in This Browser ([04](../014-identity/auth-and-guest-access.md))                                                                            |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                            |
-| `INDEX_KEY`                                     | api             | The plan rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index))                                       |
-| `MEDIA_KEY`                                     | api             | liveworkspace's media service cannot draw the plans' previews through the export door, and a purge leaves a plan's previews to lapse ([previews.md](../../../../liveworkspace/docs/previews.md))                             |
-| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export plans as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                                                      |
-| `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
-| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                                                          |
-
-`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEPLANNER`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEPLANNER`). A mismatch is silent (the posts are simply not stored), so verify with `wrangler secret list` on both rather than assuming. Generate it with `openssl rand -hex 32`.
 
 Email has no secret at all: the api sends through Cloudflare Email Service's `send_email` binding, `EMAIL`, which is the credential ([Transactional email](../014-identity/transactional-email.md), [liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Without the binding, all transactional email is inert.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in plain text, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, `APP_BASE_URL` per environment) is equally non-secret but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every environment's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+Non-secret configuration (`EMAIL_FROM`, `INDEX_ORIGIN`, `MEDIA_URL`, `OAUTH_ISSUER`, the mcp worker's `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in plain text, documented alongside each entry there and in the per-app `.env.example`. What only liveplanner.app runs with (`TELEMETRY_ENABLED`, and per environment `APP_BASE_URL` and `TELEMETRY_URL`) is equally non-secret but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every environment's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -65,26 +60,16 @@ Never imported in client code, never bundled into the static export:
 - Stored data (each plan's Durable Object, liveworkspace's services) is reached only through a Worker; the browser never holds storage credentials.
 - Any signing / encryption key.
 
-Workers and server-only code read these from `env` bindings — not from `process.env`-style imports in shared code.
+Workers and server-only code read these from `env` bindings, not from `process.env`-style imports in shared code.
 
 ## `.env.example`
 
-Each app or worker that needs env vars ships a `.env.example` documenting **which variables are required** with placeholder values:
-
-```
-# (no secret keys here — those go in the Cloudflare dashboard)
-```
-
-`.env.local` is gitignored. `.env.example` is committed.
+The apps that read env vars ship a `.env.example` (`apps/editor`, `apps/mcp`) documenting each variable with an
+example value and no secret. `.env.local` and `.dev.vars` are gitignored; `.env.example` is committed.
 
 ## If a secret leaks
 
-1. **Rotate immediately** in the relevant provider (the accounts Worker's client secret, Cloudflare, etc.).
-2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
-3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is permanent.
-4. Open a tracking note in specs (or wherever incidents live, TBD) to project what leaked, when, and what was rotated.
-
-## Tooling (to be added)
-
-- Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
-- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).
+1. **Rotate immediately** in the relevant provider (the accounts Worker's client secret, Cloudflare, and so on).
+2. Set the new value on each Worker that holds it (`wrangler secret put`, with `--env staging` for staging).
+3. Force-push and `git filter-repo` are **not** sufficient: rotation comes first because Git history is permanent.
+4. Record what leaked, when, and what was rotated.

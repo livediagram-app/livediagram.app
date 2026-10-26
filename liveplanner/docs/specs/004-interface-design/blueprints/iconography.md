@@ -67,8 +67,8 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 ## Data and persistence
 
 - `iconWeight` is optional and persisted with the element like `iconSize`. Absent means `regular`. No migration.
-- Projects saved before this change render at 1.25px instead of 2px. This is the intended refinement.
-- The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`.
+- `iconWeight` is a style field (`element-fields.ts`, values in `element-field-values.ts`), so a menu's Icon weight row
+  and the multi-selection's both set it.
 
 ## Errors and edge cases
 
@@ -126,7 +126,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 | Icon weight default + map         | `icon-weight.test.ts`                                                                                    |
 | Export honours weight             | `svg-render.test.ts`                                                                                     |
 | Weight UI                         | e2e `icon-weight.spec.ts`: regular by default, set Bold, reload                                          |
-| Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`), `format-painter.test.ts`                                |
+| Weight on elements                | `style-presets.test.ts` (`applyIconWeightToEl`)                                                          |
 | Furniture silhouettes distinct    | `icon-catalog.test.ts`: no two ids share prims                                                           |
 | No same-provider tech glyph dupes | `tech-icon-catalog.test.ts`                                                                              |
 | No raw svg outside homes          | `liveworkspace/no-raw-icon-svg` with `RAW_ICON_SVG` (literal width 8–24px), `raw-svg.test.ts`            |

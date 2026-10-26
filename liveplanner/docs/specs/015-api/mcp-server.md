@@ -20,7 +20,7 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
 load-bearing decision. liveplanner runs no model of its own (the in-editor
-AI assistant and its `/api/ai` endpoint were removed). The user already has a capable model in front of them; the
+AI assistant and no `/api/ai` endpoint). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no

@@ -1,39 +1,18 @@
 # The flowchart
 
-**Status in liveplanner: editing removed (2026-10-24).** No Plan tab holds flowcharts ([Plan mode](../026-plan/plan-mode.md)), so growth (Add Step / Add Branch), the step toolbar, the Flowchart menu, lanes and the re-layout on every commit are gone, with their wiring in `useEditorState`. The element kind stays in `packages/project` for the file format; this spec describes livediagram's behaviour.
+**In liveplanner** a flowchart is model code in `packages/project` (`flowchart*.ts`): its step types, membership, layouts and settling are exported and tested, and every export draws a chart. No Plan tab holds one and the editor offers no way to grow or reshape it: no Tab / Enter growth, step toolbar, Flowchart menu or lane editing. A chart arrives with a tab (an import, a paste, an agent's elements).
 
 ## What
 
-A **Flowchart**: a chart of **steps** joined by connectors, grown one step at a time and **laid out
-again after every change**, so it is always clean and tidy and nobody ever drags a box into line.
-
-It starts as one **Start** step, placed from the palette (Build → **Flowchart**). From a selected
-step:
-
-- **Tab** adds the **next step** after it, connected from it (on a step the keyboard's Tab walk just reached,
-  Tab walks on instead, as on a mind node: [The mind node](mind-node.md)).
-- **Enter** adds a **parallel step**: another step from the same step the selected one came from.
-
-The same two actions are one click away: **Add Step** and **Add Branch** on the step's selection
-toolbar, and on its quick-connect "+" ring. Each new step is a **Process**, selected and ready to
-type into, exactly as a mind node is ([The mind node](mind-node.md): selection stays on the canvas,
-typing opens the label editor with that first character, typing ahead is captured for the new step,
-and Escape on the empty step a Tab made one time too many removes it).
-
-Any step's **type** is changed from its toolbar's **Step Type** menu or the context menu's
-**Flowchart** menu, so a Process becomes a Decision in one click.
-
-## Why
-
-[Purpose](../001-project-vision/purpose.md) names flowcharts first among the artifacts people make.
-Today a flowchart is drawn shape by shape and arrow by arrow, then tidied by hand or with Auto Layout
-([Layout cleanup](../008-canvas/layout-cleanup.md)). The mind node showed what growing a structure
-from the keyboard is worth; a process flow is the other structure people most often talk through
-live, and it needs the same: keep up with the speaker, and never spend a minute nudging boxes.
+A **Flowchart** is a chart of **steps** joined by connectors, laid out so it is always clean. Every step carries the
+chart's `flowchartId` (the id of its first step, which never moves), and the layout rules below place each step, lane
+and connector. The model starts a chart as one **Start** step (`createFlowchartStart`). The model's growth planner
+(`planFlowchartStep`) adds a next step or a parallel one, and its type is changed by `retypeFlowchartStep`; the
+editor calls neither.
 
 ## Step types
 
-The classic flowchart vocabulary (ISO 5807 / ANSI), drawn with shapes the palette already has:
+The classic flowchart vocabulary (ISO 5807 / ANSI), drawn with existing shape kinds:
 
 | Step type      | Shape           | Size      | Meaning                                 |
 | -------------- | --------------- | --------- | --------------------------------------- |
@@ -41,7 +20,7 @@ The classic flowchart vocabulary (ISO 5807 / ANSI), drawn with shapes the palett
 | Process        | `square`        | 200 × 72  | A step someone or something does        |
 | Decision       | `diamond`       | 200 × 120 | A question with labelled exits          |
 | Input / Output | `parallelogram` | 220 × 72  | Data entering or leaving the flow       |
-| Project        | `project`       | 200 × 84  | A project the flow produces or reads    |
+| Document       | `document`      | 200 × 84  | A document the flow produces or reads   |
 | Database       | `cylinder`      | 160 × 96  | Stored data                             |
 | Preparation    | `hexagon`       | 200 × 72  | Setting up before a step                |
 | Connector      | `circle`        | 56 × 56   | An on-page jump, labelled with a letter |
@@ -50,7 +29,7 @@ A step's type **is** its shape kind; there is no separate type field. Changing t
 kind and sets the type's size, keeping the label, colours and links, and the chart is laid out
 again.
 
-The palette places the first step as a **Start / End** labelled "Start". Every step added after it
+A chart's first step is a **Start / End** labelled "Start". Every step added after it
 is a **Process** until its type is changed.
 
 ## A new step looks like its type
@@ -86,13 +65,13 @@ branches into one step) and **loop** (an arrow back to an earlier step), which a
 ## Connectors
 
 A new step's connector is an **angled** arrow with an arrowhead at the step it enters, the
-flowchart idiom; if the chart already has connectors, it copies their look (`paintableArrowFields`)
+flowchart idiom; if the chart already has connectors, it copies their look
 instead.
 
 **Decisions label their exits.** A connector leaving a Decision is labelled **"Yes"** if no exit of
 that Decision says Yes yet, else **"No"** if none says No; a third exit is unlabelled. The labels
-are ordinary arrow labels: edit them to anything. The rule applies however the exit was made: Tab,
-Add Step, the ring, or drawing an arrow from the Decision to another step of the chart.
+are ordinary arrow labels: edit them to anything. The rule applies however the exit was made: a planned step, or an arrow drawn from the Decision to
+another step of the chart (labelled when the chart settles).
 
 **A Decision's exits leave by its corners.** An exit that carries straight on along the flow leaves by
 the flow's face; one whose step lies beyond a side corner leaves by that corner (left or right flowing
@@ -140,44 +119,32 @@ Only the chart's own steps, connectors and lanes move. Other elements on the tab
 are.
 
 **Dragging a step is allowed.** The chart is laid out again at its next structural change, and the
-dragged step returns to its slot: the chart is always tidy, by design. **Tidy Flowchart** in the
-Flowchart menu's Chart category lays it out on demand. A locked step, or one on a locked layer, keeps its
+dragged step returns to its slot: the chart is always tidy, by design (`relayoutFlowchart` lays it out on demand). A locked step, or one on a locked layer, keeps its
 place and size, and the layout routes around it as Auto Layout does.
 
 ## Direction
 
-**Down** (top to bottom) or **Right** (left to right), from the Flowchart menu's Direction category. A chart with no lanes flows down by default; a chart with lanes flows right by default. Choosing
-a direction writes it to every step and lays the chart out again.
-
-## The Flowchart menu
-
-A selected step's or lane's context menu has one **Flowchart** row, a parent category that opens to the
-side (a `MenuFlyoutSection`, the way the Mind Map and Sankey rows do). Inside it, up to three categories,
-each a closed `MenuAccordionSection` like every element-menu section, so the menu never shows every list
-at once. Each holds one of Plan mode's option lists (`OptionRows`): a bordered box, one full-width row per
-choice, its icon at the left.
-
-- **Chart**: **Add Lane** and **Tidy Flowchart**.
-- **Step Type**: the eight step types, the step's own ticked. Only on a step, not a lane.
-- **Direction**: **Down** and **Right**, the chart's own ticked.
+**Down** (top to bottom) or **Right** (left to right), stored on every step as `flowDirection`. A chart with no lanes
+flows down by default; a chart with lanes flows right by default. `setFlowchartDirection` writes it to every step and
+lays the chart out again.
 
 ## Swimlanes
 
-Swimlanes are optional: a flowchart works without them, and gains them from **Add Lane**.
+Swimlanes are optional: a flowchart works without them, and gains them from `addFlowchartLane`.
 
 The lanes are ordinary [Lanes](lane.md) carrying the chart's `flowchartId`, so they look, title and
 carry their contents exactly as any lane does.
 
-- **Add Lane** on a chart without lanes wraps every step in **"Lane 1"** and adds an empty
+- Adding a lane to a chart without lanes wraps every step in **"Lane 1"** and adds an empty
   **"Lane 2"**; on a chart with lanes it adds the next lane at the end. Titles are edited like any
   lane's.
 - Lanes run **across** the flow: horizontal rows when the chart flows right, vertical columns
   (title centred at the top) when it flows down. Changing direction turns the lanes. A lane whose title
   already runs the right way (a row's pinned left or right, a column's in a band at its top or bottom)
   keeps its own alignment.
-- A new step lands in the **same lane** as the step it grew from. The step toolbar's **Lane** menu
-  lists the chart's lanes by title and moves the step; **dragging a step into another lane** of the
-  chart moves it too. Either way the chart is laid out again.
+- A new step lands in the **same lane** as the step it grew from. `moveStepToLane` moves a step, and a
+  step whose centre ends inside another lane of its chart joins that lane when the chart settles
+  (`settleFlowcharts`). Either way the chart is laid out again.
 - The layout keeps every step inside its lane's band: ranks are shared across lanes, so a column of
   steps lines up through every lane, and each lane grows to fit its tallest stack of steps (never
   thinner than one holding a single Process). The lanes are stacked flush, in the order they are drawn, and all
@@ -196,41 +163,14 @@ start of their lane. The first step never moves, connected or not.
 
 ## Share roles
 
-[Share roles](../013-workspace/share-roles.md):
-
-- **Editor**: everything above.
-- **Participant**: grows the chart (Tab, Enter, Add Step, Add Branch) and writes on its steps, as
-  a Participant grows a mind map; the growth's layout moves the chart's steps, connectors and lanes in
-  the same change. A Participant does not change a step's type, the direction or the lanes, and does
-  not use the quick-connect ring (an Editor's).
-- **Viewer**: looks only. No step toolbar actions, no keys.
-
-## Templates
-
-The flowchart-family templates are live flowcharts: every step carries the chart's fields and the
-whole chart is laid out by the flowchart layout, so Tab and Enter grow any template in place.
-
-- **Flowchart**: the checkout flow, flowing down; its key stays an ordinary group of shapes beside
-  it.
-- **Swimlane**: a laned chart, flowing right.
-- **Approval Workflow**: a laned chart, flowing right.
-- **Decision Tree**: a chart of Decisions with Yes / No exits, flowing down.
-
-The **Data flow** template keeps its own notation (a DFD's entities, processes and stores are not
-flowchart steps) and is unchanged.
+[Share roles](../013-workspace/share-roles.md): a Participant may move anyone's flowchart step (`x`, `y`) and anyone's
+lane band (`x`, `y`, `width`, `height`), so a chart's layout can move the chart's steps, connectors and lanes in the
+same change (`participant-content.ts`). Nothing else on another person's step or lane is a Participant's to change. A
+Viewer changes nothing.
 
 ## Telemetry
 
-`Element` · `Added` · `FlowchartStep` on every grown step; `Element` · `Changed` · `FlowchartStepType`
-on a type change; `Element` · `Added` · `FlowchartLane` on Add Lane; `Element` · `Changed` ·
-`FlowchartDirection` on a direction change. The palette tile records its placement as every tile does.
-
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Flowchart tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.
+None of its own: nothing in the editor grows or reshapes a chart.
 
 ## What it is not
 
@@ -238,4 +178,3 @@ is selected, never from a toolbar beside it.
   what most people mean by a flowchart.
 - No Subroutine (predefined process) step yet: it needs a new shape kind.
 - Not a re-layout of anything else on the tab; a chart that grows into a note does not move the note.
-- Mermaid import still produces ordinary shapes, not a live flowchart.

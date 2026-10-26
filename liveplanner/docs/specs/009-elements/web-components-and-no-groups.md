@@ -97,8 +97,7 @@ hero.
 - Components already on a board were built as loose primitives and **stay as they are**: they
   are simply separate elements. We do not try to recognise and fuse them.
 - `groupId` on stored elements is **ignored** and stripped on load.
-- A legacy `pinned-group` arrow end is refused by the validator. liveplanner removed its migration
-  (`migrateLegacyGroups`) on 2026-10-24: no liveplanner build ever wrote one.
+- A `pinned-group` arrow end is refused by the validator; nothing migrates one.
 
 ## No groups
 

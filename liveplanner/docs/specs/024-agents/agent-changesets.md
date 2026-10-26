@@ -143,8 +143,7 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 ## Boards and Sheets only in Plan
 
 Every tab is in Plan, so a changeset may add a Plan board or a Sheet to any tab
-([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). Until the other editor modes were retired (2026-10-22) one that
-left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
+([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 
 ## Revert
 

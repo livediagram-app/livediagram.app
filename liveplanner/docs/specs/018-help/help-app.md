@@ -224,7 +224,7 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   `<CliConsent product="liveplanner" noun="plan" />`.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
-  `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
+  `LookAndFeelTheme`, `LightDarkToggle`, `PlanGanttSwimlanesScene`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
 - **`components/illustrations/<surface>.tsx`**: an editor surface several
@@ -306,9 +306,8 @@ A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing`
   keywords, capped at 6; registry order decides ties. Revisit if keyword
   coverage makes the group noisy.
 
-(Previously listed here: surfacing the full article catalogue in editor
-search. That shipped — the registry moved to `@liveplanner/help-registry` with
-per-article `keywords`, and `help-search.ts` now derives from it.)
+Editor search reaches the full article catalogue: the registry is `@liveplanner/help-registry`, with per-article
+`keywords`, and `help-search.ts` derives from it.
 
 ## articleCount is pinned by a test
 

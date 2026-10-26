@@ -1,9 +1,10 @@
 # Public API and API tokens
 
-**Status: shipped.** API tokens (§3) and the input validation (§5) are live. The guest header this spec once
-hardened (`X-Owner-Id` and its signature, §4) is gone: a guest is now a liveworkspace guest token, checked like an
-account's ([Auth + guest access](../014-identity/auth-and-guest-access.md)). This spec sequenced opening the REST
-API to external, programmatic callers.
+API tokens (§3) let external, programmatic callers use the REST API, and every input is validated (§5). There is no
+guest header (§4): a guest is a liveworkspace guest token, checked like an account's
+([Auth + guest access](../014-identity/auth-and-guest-access.md)). API tokens themselves are minted, stored and
+revoked by liveworkspace's accounts service ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md));
+this app resolves them and enforces what they allow.
 
 ## 1. Goal
 
@@ -16,63 +17,18 @@ the app uses, under an explicit, revocable credential.
 advanced, opt-in feature for users with an account; the canvas, guests, and the
 share/realtime flows are unaffected and stay account-free ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 A token always acts as a signed-in account; there are **no guest-owned tokens**. This
-is a deliberate constraint, not a limitation to apologise for: programmatic API
-use is a power-user need, requiring an account for it is reasonable, and it
-keeps tokens off the spoofable guest-identity path entirely (the guest REST
-hardening in [§4](#4-the-guest-header-retired) is a separate track).
+is a deliberate constraint: programmatic API
+use is a power-user need, requiring an account for it is reasonable, and a
+token never stands for a guest ([§4](#4-no-guest-header)).
 
 This must not weaken the friction-free guest model ([Auth + guest access](../014-identity/auth-and-guest-access.md))
 or the degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 
-## 2. Why the API wasn't safe to expose as-is (history)
-
-**History, not the current API.** This section records the weakness that
-motivated §4, as it stood before this work shipped. Every surface it names has
-since been closed; [Where it stands now](#where-it-stands-now) says how, and
-what is still a deployment switch.
-
-The worker resolved the caller two ways ([Auth + guest access](../014-identity/auth-and-guest-access.md)):
-
-- **A session JWT** in `Authorization: Bearer <jwt>` (Clerk's then; an account access token from
-  the liveworkspace accounts Worker now), verified (signature, exp, issuer, audience), today in
-  `apps/api/src/auth/accounts.ts`. Sound.
-- **Guest path**: an `X-Owner-Id` header carrying a per-browser UUID, **trusted
-  verbatim** by `resolveOwner()` in `apps/api/src/index.ts`, with **no
-  signature** on the REST path. (The realtime WS upgrade of the time required an
-  HMAC proof, `?g=`; REST did not.)
-
-The guest header was the blocker, and the owner id it carried was **not a
-secret in practice.** The obvious REST surfaces were already redacted for
-non-owners (the shared project DTO, `redactOwner`; comment author ids on tab
-read, `redactCommentAuthorIds`), but two surfaces still exposed a
-collaborator to the owner's id:
-
-- **Realtime presence**: `broadcastPresence` (`project-room.ts`, roster in `room-roster.ts`) sent every
-  connected participant's `id`, unredacted, to all room peers, and that id was
-  the owner id. Any co-present collaborator, including a **view-only** share
-  visitor, could read it off a presence frame.
-- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /projects/<id>/log` returned each entry's
-  `participantId` unredacted to any **edit-access** collaborator (edit-share
-  holders, joined team members). A static, reliable harvest.
-
-Because REST trusted `X-Owner-Id` with no signature, a collaborator who
-harvested an owner's id could call the API **as** that owner across ALL their
-content: `GET /api/projects` listed every project the id owned, each then
-readable / editable / deletable. **Sharing one project (or being in a team)
-could escalate to impersonating the owner account-wide.** It applied to
-signed-in owners too: their id is the account `sub`, and the `X-Owner-Id`
-fallback accepted it whenever a request carried no Bearer token.
-
-Conclusion at the time: external access needed a real, server-verifiable
-credential, AND the bare `X-Owner-Id` trust had to be replaced, which also
-closed the escalation. The fix is [§4](#4-the-guest-header-retired).
-
-### Where it stands now
+## 2. Trust boundaries
 
 - **No guest header.** Every caller is a verified token (an account's, a guest's, an API token or a workbench
-  session) or a link visitor with a share code. The spoofable `X-Owner-Id` path, its HMAC signature
-  (`X-Owner-Sig`, `GUEST_ID_HMAC_SECRET`, `GUEST_SIG_ENFORCE_AFTER`), `POST /api/guest-id` and `POST /api/migrate`
-  are removed ([§4](#4-the-guest-header-retired)).
+  session) or a link visitor with a share code. No header names an owner, and there is no `POST /api/guest-id` or
+  `POST /api/migrate` ([§4](#4-no-guest-header)).
 - **Access is the index's grant.** Who may open a plan is decided by liveworkspace's index and carried as a
   short-lived grant; an API token's request gets one fetched for it as its account ([API app](api.md) "Access").
 - **The WS upgrade takes only a ticket**: the grant, as `?t=` ([API app](api.md) "Realtime model"). No owner id,
@@ -238,8 +194,7 @@ Tokens are created, viewed and revoked in the **Settings dialog**
 sub-category of **Account** (id `tokens`, `parent: 'account'`, shown as
 "Account › API Tokens"). It is account-scoped like its parent, and the dialog is reachable
 from both the Explorer and the editor, so the tokens are too. There is no
-Explorer page for them: the former `/explorer/tokens` route and its sidebar
-entry are gone, with no redirect (few people had used it).
+Explorer page for them.
 
 The category holds one row, the **token manager** (`kind: 'tokens'`), laid
 out top to bottom:
@@ -338,15 +293,14 @@ from a guest-only deployment, because the whole canvas / guest model stays fully
 available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md)). No new
 dependency beyond the optional sign-in that teams already need.
 
-## 4. The guest header (retired)
+## 4. No guest header
 
-REST once took a guest's identity from an `X-Owner-Id` header carrying a per-browser UUID, later guarded by an HMAC
-signature (`X-Owner-Sig`) and a refusal of account-shaped ids. All of it is gone: a guest's identity now comes from
-liveworkspace as a signed guest token, the same in every app, sent as the Bearer and verified exactly as an
-account's access token is ([Auth + guest access](../014-identity/auth-and-guest-access.md#guests)). A forged or
-harvested id is worth nothing without the token, and the token never leaves the guest's own browser.
+A guest's identity comes from liveworkspace as a signed guest token, the same in every app, sent as the Bearer and
+verified exactly as an account's access token is ([Auth + guest access](../014-identity/auth-and-guest-access.md#guests)).
+No request header carries an owner id, so a forged or harvested id is worth nothing without the token, and the token
+never leaves the guest's own browser.
 
-## 5. Input validation (prerequisite — shipped)
+## 5. Input validation
 
 Opening the API magnifies the cost of weak input handling, so the validation
 hardening landed first:
@@ -361,52 +315,24 @@ hardening landed first:
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Project
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and project name length](../006-project/name-length.md)).
-- **Already solid** (pre-existing): every SQL statement is parameterised; session JWT
+- **Throughout**: every SQL statement is parameterised; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
 
-## 6. Rollout
+## 6. Presence ids
 
-1. ✅ Input hardening (done).
-2. ✅ **Closing the guest-header hole** ([§4](#4-the-guest-header-retired)): first an HMAC signature on `X-Owner-Id`,
-   then (October 2026) the header itself retired for liveworkspace guest tokens. The raw owner id is no longer
-   emitted where a collaborator can read it: each realtime session gets a **room-scoped ephemeral presence id**,
-   and features that match an answer back to a person use the stable collab key (`ParticipantPresence.key`,
-   [Per-participant responses](../012-collaboration/participant-responses.md)).
-3. ✅ `api_tokens` table + migration (`expires_at` fixed to +6 months) + token
-   mint/verify (`auth/`), signed-in-only `/api/tokens` routes (the team-route
-   gate, [Teams](../013-workspace/teams.md)).
-4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
-   UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page
-   ([§3.7](#37-an-api-without-sign-in)).
-5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
-   ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
-6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
-   features and must be registered — see the help-centre rule in `AGENTS.md`,
-   so this copy lands when the feature does, not before):
-   - A new help article (e.g. `account-and-data/api-tokens`) covering what
-     tokens are, creating/revoking them **from the Explorer**, the **6-month
-     expiry + manual rotation**, and the **signed-in-only** limitation —
-     registered in `apps/help/lib/articles.ts`.
-   - Add API tokens to the "what signing in unlocks" list in the
-     `account-and-data/signing-in` article (next to teams + cross-device sync).
-   - `docs/` updates: note the new `/api/tokens` surface + its account
-     requirement in `docs/development/architecture.md`, and the signed-in-only nature in
-     `docs/specs/016-platform/deployment.md` (tokens need sign-in, like teams).
-   - ✅ Public API reference for the existing routes. Two layers, both
-     shipped: the machine-readable `GET /api/openapi.json`
-     ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**
-     category in the help centre ([Help app](../018-help/help-app.md)) whose API
-     reference links out to it. The `account-and-data/api-tokens` article
-     cross-links the reference as the next step after minting a token.
+The raw owner id is never emitted where a collaborator can read it. Each realtime session gets a **room-scoped
+ephemeral presence id**, minted by the room and never supplied by a client (`helloPresence`, `project-room-rules.ts`),
+so a joiner cannot announce or impersonate another person's id. Features that match an answer back to a person use
+the stable collab key (`ParticipantPresence.key`,
+[Per-participant responses](../012-collaboration/participant-responses.md)).
 
-## 7. Out of scope (for now)
+## 7. Out of scope
 
 Finer-grained scopes — per-project / per-folder grants, per-verb permissions —
 plus webhooks and any billing or quota tiers (the product has no paid tier —
-[Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope that DID land is
+[Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope there is is
 the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
-OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
+OAuth / third-party app authorization is in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.

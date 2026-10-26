@@ -34,7 +34,6 @@ Scope, by file:
 | `apps/editor/components/canvas/SelectionPopover.tsx`                        | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
 | `apps/editor/lib/element-names.ts`                                          | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
 | `packages/ui/src/SiteSwitcher.tsx`                                          | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
-| `../liveworkspace/apps/site/app/telemetry/_shared/StickyWindowBar.tsx`      | View picker command menu                                                                                     |
 
 ## Domain and naming
 
@@ -122,27 +121,27 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 `openedFromKeyboard()`). Returns `{ attach, element, tree, surfaceProps }` with `{ id, role: 'dialog', tabIndex: -1,
 'aria-label', 'data-menu-surface': 'control', 'data-menu-parent'? }` (no `aria-modal`: false is the default).
 
-| #   | When              | Does                                                                                                                                                 |
-| --- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Element appears   | Records `returnTarget`; with `focusOnOpen` and no text edit, focuses the first focusable with `preventScroll`                                        |
-| C2  | Escape            | Root: a `project` listener that skips a `defaultPrevented` event. Sub-panel: a listener on its element that `preventDefault`s. Both call `onClose()` |
-| C3  | Element goes away | As M10                                                                                                                                               |
+| #   | When              | Does                                                                                                                                                  |
+| --- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Element appears   | Records `returnTarget`; with `focusOnOpen` and no text edit, focuses the first focusable with `preventScroll`                                         |
+| C2  | Escape            | Root: a `document` listener that skips a `defaultPrevented` event. Sub-panel: a listener on its element that `preventDefault`s. Both call `onClose()` |
+| C3  | Element goes away | As M10                                                                                                                                                |
 
 `openedFromKeyboard()` is true when the last interaction was a key press rather than a pointer press, tracked by
 `input-modality.ts` on the project (D51).
 
 ### Hosts
 
-| Host                                                             | Kind                                                 | Return target, trigger            |
-| ---------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------- |
-| `PortalMenu` (primitives)                                        | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
-| `MenuFlyoutSection`                                              | The parent tree's kind                               | Its row is the trigger            |
-| `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
-| `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
-| Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
-| `ElementEllipsisMenu`                                            | `kind` prop                                          | Its ⋯                             |
-| `ZoomMenu`                                                       | Command, `initialFocus` `none` on hover              | The percentage button             |
-| `AuthControls`, `EmbedChrome`, `SiteSwitcher`, `StickyWindowBar` | Command                                              | Their trigger                     |
+| Host                                          | Kind                                                 | Return target, trigger            |
+| --------------------------------------------- | ---------------------------------------------------- | --------------------------------- |
+| `PortalMenu` (primitives)                     | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
+| `MenuFlyoutSection`                           | The parent tree's kind                               | Its row is the trigger            |
+| `ContextMenu`                                 | Control, `label` prop                                | None: the focused element at open |
+| `TabPortalMenu` `PortalMenu`                  | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
+| Custom colour menu (`ColourPicker`)           | Command, "<colour> menu"                             | The swatch                        |
+| `ElementEllipsisMenu`                         | `kind` prop                                          | Its ⋯                             |
+| `ZoomMenu`                                    | Command, `initialFocus` `none` on hover              | The percentage button             |
+| `AuthControls`, `EmbedChrome`, `SiteSwitcher` | Command                                              | Their trigger                     |
 
 ### Row primitives by kind
 
@@ -155,8 +154,7 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `MenuAccordionSection` | Header `menuitem` + `aria-expanded`; content `role="group"` `aria-labelledby` the header                     | Disclosure `button`                |
 | `MenuHeader`           | Its title span carries the id and `data-menu-label` (M2); the header is `aria-hidden`                        | Unchanged                          |
 | `MenuGroupSeparator`   | `role="separator"` exposed                                                                                   | Unchanged                          |
-| `MenuCheckRow`         | `menuitemcheckbox`, `tabIndex -1`                                                                            | Same                               |
-| `ElementMenuItem`      | `menuitem` (its unused `active` prop and `ElementMenuLabel` are gone)                                        | `button`                           |
+| `ElementMenuItem`      | `menuitem`                                                                                                   | `button`                           |
 | `FlyoutMobileHeader`   | Its Close is the panel's last item in reading order, drawn first (`order-first`)                             | Same, a button                     |
 
 Collapsed accordion content is `inert` and `aria-hidden` in every kind (Chromium keeps inert content in its tree).
@@ -212,7 +210,7 @@ None: no input crosses a trust boundary; labels are rendered text.
 
 - Item lookup is one `querySelectorAll` per key press over at most ~40 items (the element menu's open sections): well
   under 1 ms. Nothing runs per frame or per pointer move.
-- One native `keydown` listener per open menu; no global listener except a control menu's `project` Escape.
+- One native `keydown` listener per open menu; no global listener except a control menu's `document` Escape.
 
 ## Presentation and UX
 
@@ -221,7 +219,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 
 ## Accessibility
 
-- Roles, states and properties as in Behaviour; verified by `ariaSnapshot` in e2e.
+- Roles, states and properties as in Behaviour; verified by the menu tests and `menu-keyboard.spec.ts`.
 - Ring: `[data-menu-surface] :is(button, a, [role^='menuitem'], [role='button']):focus-visible` gets
   `outline: 2px solid var(--color-brand-600); outline-offset: -2px`, `.dark` overrides to `--color-brand-400` (D52).
   Contrast: light brand 600 `#0284c7` against white 4.10, slate 100 3.74, brand 100 3.57; dark brand 400 `#8fb3e0`
@@ -242,21 +240,21 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 
 ## Testing
 
-| Rule (spec)                                                                                | Test                                                                                                      |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Key to intent, wrap, Home/End, typeahead, initial                                          | `../packages/ui/src/menu/menu-keys.test.ts`                                                               |
-| Own items, ownership chain, tabbable neighbour                                             | `../packages/ui/src/menu/menu-dom.test.ts`                                                                |
-| Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                                                |
-| Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                                          |
-| Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                                         |
-| Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                                                   |
-| Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
-| Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
-| Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |
-| Element quick menu kinds                                                                   | `apps/editor/components/canvas/ElementEllipsisMenu.test.tsx`                                              |
-| Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                                   |
-| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`                     |
-| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                                     |
+| Rule (spec)                                                                                | Test                                                                         |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Key to intent, wrap, Home/End, typeahead, initial                                          | `../packages/ui/src/menu/menu-keys.test.ts`                                  |
+| Own items, ownership chain, tabbable neighbour                                             | `../packages/ui/src/menu/menu-dom.test.ts`                                   |
+| Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                   |
+| Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                             |
+| Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                            |
+| Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                      |
+| Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx` |
+| Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`           |
+| Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                  |
+| Element quick menu kinds                                                                   | `apps/editor/components/canvas/ElementEllipsisMenu.test.tsx`                 |
+| Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                      |
+| Signed-in account menu by keyboard                                                         | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`                        |
+| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                        |
 
 ## Constants and configuration
 

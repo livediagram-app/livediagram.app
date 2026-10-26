@@ -30,10 +30,10 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
 | Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
-| Preview       | `data-hint="preview"` (`useRowPreview` removed 2026-10-24) | A picture of what the control opens, after 600 ms                  |
+| Preview       | `data-hint="preview"`                                      | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
-| Open trigger  | `HintOpenTrigger` (`'pointer' \| 'focus' \| 'touch'`)      | What opened the hint                                               |
+| Open trigger  | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
 | Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip or a preview may skip its delay                          |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
@@ -41,15 +41,14 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Chart readout | `ChartReadout`                                             | The label: value box over a chart mark; canvas content, not a hint |
 
 Props: a Tooltip's text is `label` (it is the name, and matches `aria-label`); a hover card's is `title` +
-`description`. Renamed with this change, no aliases kept: `Tooltip` (rich) to `HoverCard`; `tooltipTitle` /
-`tooltipDescription` to `hoverCardTitle` / `hoverCardDescription`; `withTooltip` to `withHoverCard`; `ChartTooltip` to
-`ChartReadout`; `IconButton`'s `hideTooltip` to `hint="tooltip"`; `SizeButton`'s `title` to `label`.
+`description`. A rich hint is a `HoverCard` (`hoverCardTitle` / `hoverCardDescription`, `withHoverCard`), a chart's
+value box is a `ChartReadout`, `IconButton` takes `hint="tooltip"`, and `SizeButton` takes `label`.
 
 Banned: "tooltip" for anything with a description, "hover tooltip", "info popover" for a hint, `title=` as a hint.
 
 ## Behaviour and state
 
-`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenTrigger | null`; everything else is a
+`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenSource | null`; everything else is a
 ref, so pointer traffic re-renders nothing until the hint actually opens or closes.
 
 One `Machine` ref holds the rest: the wrapper element, `open`, `source`, `overTrigger`, `overSurface`, `focused`
@@ -119,7 +118,7 @@ export function HoverCard(props: HoverCardProps): JSX.Element;
 // The engine both components share; exported inside the package only.
 export function useHint(kind: HintKind): {
   open: boolean;
-  source: HintOpenTrigger | null;
+  source: HintOpenSource | null;
   attach: (el: HTMLSpanElement | null) => void; // callback ref for the wrapper
   anchor: () => Element | null;
   triggerProps: HintTriggerProps; // spread on the wrapper
@@ -163,7 +162,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 
 | Case                                               | Handling                                                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rendered on the server (no `project`)              | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
+| Rendered on the server (no `document`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
 | `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                                                                                                                                                                                                                                                 |
 | Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead                                                                                                                                             |
 | Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                                                                                                                                           |
@@ -188,7 +187,7 @@ surface.
 ## Performance and limits
 
 - Pointer traffic touches refs only; React re-renders a hint twice per open (open, then measured layout).
-- A palette shows up to ~60 tiles; each carries one wrapper and no listeners on `project` until it opens. The
+- A palette shows up to ~60 tiles; each carries one wrapper and no listeners on `document` until it opens. The
   project `keydown`, `scroll` and `resize` listeners exist only while a hint is open, which is at most one (I1).
 - The accessible-name check runs once per open, not per render or mount.
 - Layout reads two rects per open or scroll event, and one trigger rect per frame while a hint is open (at most one):
@@ -276,4 +275,4 @@ None. No new dependency: the engine is hand-rolled on React, like the component 
 ## Native `title` exceptions
 
 The lint selector allows `title` on `iframe` and `abbr` only. SVG `<title>` is an element, not an attribute, and is
-untouched. The one remaining native `title` in the apps is `VideoView`'s `<iframe title>`.
+untouched.

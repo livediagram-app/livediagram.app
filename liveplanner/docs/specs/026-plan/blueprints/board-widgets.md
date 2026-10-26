@@ -115,7 +115,7 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 | ---------------------- | ----- | ------------------- | ---------- |
 | `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx | 2..10      |
 | `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx | 3..8       |
-| `TYPES_SHOWN`          | 5     | BoardWidgetView.tsx | 3..8       |
+| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx | 3..8       |
 | `DUE_SOON_DAYS`        | 7     | widget-stats.ts     | 1..30      |
 
 ## Defaults ledger

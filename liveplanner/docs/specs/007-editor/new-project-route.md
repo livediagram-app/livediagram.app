@@ -5,55 +5,25 @@
 project's editor, whose empty first tab opens on Start Planning ([Plan mode](../026-plan/plan-mode.md)). Nothing is
 asked. The editor route is editor-only.
 
-> **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
-> removed — the editor app serves at clean routes. So today the editor is
-> `/project/<id>` (not `/live/project/<id>`), `/new` is `/new`, and
-> there is no bare `/live` entry point (`/` is the marketing home). The
-> historical `/live...` URLs below describe the pre-cleanup scheme; map
-> each to its `/live`-stripped form. The placeholder-rewrite mechanism
-> and the `/new` split itself are unchanged.
+## Why a route of its own
 
-## Motivation
-
-`/live` currently serves two distinct experiences from one component:
-
-1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
-   State: load project, autosave, room broadcast, etc.
-2. **Welcome / Create new** — `/live` with no params. State:
-   `templatePickerMode`, `welcomeOpen`, `loadedExistingProject`,
-   `nameConfirmed`, and the `commitProjectId()` flow that mints a
-   UUID + rewrites the URL via `history.replaceState`.
-
-The overlap is the source of recurring state bugs:
-
-- The "Empty Canvas" flash on `New Project` clicks (multiple
-  iterations to land cleanly).
-- `templatePickerMode = 'welcome'` showing on existing-project tabs.
-- Hydration spinner hangs because the no-params path raced with the
-  identity-API roundtrip.
-- The `effectiveTemplatePickerMode` derived patch papering over
-  conflicts between welcome and per-tab template states.
-
-Each fix touched a different gate. Splitting the two surfaces lets
-each one own a clean state model without conditional gates.
+Creating a project and editing one are different surfaces with different state, so they are different routes. The
+editor route only ever opens a project that has an id (`/project/<id>`) or a share code (`/project/shared?s=`), and
+never has to decide whether to mint one. `/new` owns the identity settle and the create, end to end, and asks
+nothing.
 
 ## Goals
 
-- A dedicated `/new` route that owns the identity-mint and create flow end-to-end, and asks nothing.
-- `/live` becomes editor-only. Hydration only handles `?d=` /
-  `?s=` URLs and never has to consider "do I mint an id?".
-- Visiting `/live` with no params redirects to `/new` instead
-  of trying to be both surfaces at once.
-- "New Project" buttons (Explorer + NotFound CTA) navigate to
-  `/new`. Existing share / open flows stay on `/live`.
+- `/new` mints, creates, files and hands off; nothing on it is a choice.
+- The editor route is editor-only. Its index (`app/page.tsx`, reached only through the editor app directly, since the
+  router serves the marketing home at `/`) forwards a `?s=<code>` to `/project/shared?s=<code>` and anything else to
+  `/new`.
+- **New Project** (the Explorer, the NotFound card) and every public CTA go to `/new`.
 
 ## Non-goals
 
-- Changing the visitor `?s=<code>` flow. Visitors still land on
-  `/project/shared?s=<code>` and confirm their name there —
-  the `identityOnlyScreenOpen` mini-flow stays in the editor route
-  because it's about the visitor's session, not about creating a
-  new project.
+- The visitor `?s=<code>` flow. A visitor lands on `/project/shared?s=<code>` and confirms their name there; the
+  `identityOnlyScreenOpen` mini-flow is the editor's, because it is about the visitor's session, not a new project.
 - Choosing a template on `/new`. An empty tab's Start Planning holds the Plan templates, in the editor, where the
   project is already loaded.
 
@@ -61,7 +31,7 @@ each one own a clean state model without conditional gates.
 
 | Route                  | Purpose                              | State                                                                                                                   |
 | ---------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `/live`                | Bare entry point                     | Redirect → `/new` (or `/project/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.           |
+| editor index           | The editor app's own `/`             | Redirect → `/new` (or `/project/shared?s=<code>` when a `?s=` is present). Renders nothing else.                        |
 | `/project/<id>`        | Editor for an existing owned project | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/project/shared?s=<>` | Visitor view of a shared project     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
 | `/new`                 | Creator URL, no screen of its own    | Identity, then POSTs the project and hands off to `/project/<id>` in place.                                             |
@@ -83,8 +53,7 @@ Editor URLs use a path segment rather than a query string. `output:
 4. In `next dev`, Next.js resolves the dynamic segment natively so the
    same URL works without going through the worker.
 
-The hard cutover dropped the legacy `?d=<id>` query scheme — old
-bookmarks pointing at `/live?d=<id>` no longer work.
+There is no `?d=<id>` query scheme.
 
 ### Not-found slot renders the editor
 
@@ -95,15 +64,10 @@ enumerated in `generateStaticParams`. `placeholder` is the only
 enumerated id, so every real project URL triggers `notFound()` the
 instant the JS hydrates.
 
-Earlier attempts tried to _prevent_ the trigger — a route-level
-`not-found.tsx`, a pre-hydration URL swap to `placeholder`, then
-the same swap using the captured native `replaceState` so Next's
-patched version wouldn't re-notify the router. None of them held
-up: Next.js's static export bakes the framework default 404 into
-the `notFound` slot of the layout's flight payload and the client
-router reaches it before any of those interventions can finish.
+Preventing the trigger does not hold: the static export bakes the framework's default 404 into the `notFound`
+slot of the layout's flight payload, and the client router reaches it before any intervention can finish.
 
-Working approach: **embrace the trigger**. `apps/editor/app/not-found.tsx`
+So the editor **embraces the trigger**. `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
 `children` to the `notFound` slot — which is now the editor. The
@@ -126,8 +90,8 @@ titled **Project not found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 `/explorer`, New Project to `/new`). An embed shows the card with New Project
 only, opening the app in a new tab. Only the editor's own empty route (`/project`,
-`/project/placeholder`) hands off to `/new`. Before, every address without a
-project id went to `/new`, so a mistyped or retired page made a new project with no word of what went wrong.
+`/project/placeholder`) hands off to `/new`.
+A mistyped or retired page never makes a new project.
 
 ### A failed load is not a missing project
 
@@ -158,7 +122,7 @@ knowing about when adding another.
 
 ### Owner creates a new project
 
-1. User clicks **New Project** in the Explorer (or lands on `/live`), or follows a link to `/new` from a public page.
+1. User clicks **New Project** in the Explorer, or follows a link to `/new` from a public page.
 2. Browser navigates to `/new`, which shows the opening screen at its "creating" stage at once
    ([The opening screen](#the-opening-screen)).
 3. The page mints the project and tab ids and creates the project as soon as it mounts
@@ -169,12 +133,12 @@ knowing about when adding another.
 ### Owner opens an existing project
 
 1. Explorer list row click → `window.location.assign('/project/<id>')`.
-2. Editor route hydrates as today; `/new` never loads.
+2. The editor route hydrates; `/new` never loads.
 
 ### Visitor follows a share link
 
 1. URL is `/project/shared?s=<code>`.
-2. Editor route hydrates via the existing `apiLoadShared` branch.
+2. The editor route hydrates through `apiLoadShared`.
 3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
    stays on the editor route — it's about the visitor, not the project.
 
@@ -188,22 +152,13 @@ knowing about when adding another.
 1. URL is `/project/<id>` but the API returns 404.
 2. NotFound surface renders, and its new-project CTA navigates to `/new`.
 
-## State changes in `/live`
+## Editor route state
 
-Removed from the editor route:
+The editor route holds no create state: no welcome or template-picker mode and no id mint. A path whose id segment is
+the build-time placeholder (`/project`, `/project/placeholder`) with no `?s=` code hands off to `/new` (via
+`window.location.assign`) and shows the spinner until the navigation completes.
 
-- `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
-  derivation.
-- `welcomeOpen` (the chrome-hide trigger for the old New Project modal).
-- `commitProjectId()` and every call site (`createShareLink`,
-  `skipTemplatePicker`, `chooseTemplate`).
-- The "no URL params" branch of hydration. If the pathname's id
-  segment resolves to the build-time placeholder and no `?s=` code
-  is set, the editor route redirects to `/new` (via
-  `window.location.assign`) and renders the spinner until the
-  navigation completes.
-
-Kept on the editor route:
+The editor route keeps:
 
 - The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
   `identityOnlyScreenOpen`).
@@ -247,8 +202,8 @@ Mode's second effect off):
   added by a public page's CTA. `useCtaAttribution` reads it once, sends `Cta / Opened / <source>`, and strips it from
   the address bar with `history.replaceState` (keeping the other params), so a reload can't count the arrival twice.
   The create then sends `Cta / Created / <source>`, once. An unknown source is stripped and ignored.
-- Older links keep working: `?blank=1`, `?start=blank`, `?mode=` and `?welcome=1` are no longer read, so each makes a
-  blank project (or the `?template=` beside it).
+- `?blank=1`, `?start=blank`, `?mode=` and `?welcome=1` are not read, so a link carrying one makes a blank project
+  (or the `?template=` beside it). Start Blank's link is `/new?start=blank`.
 
 ### Back from a restored page
 
@@ -357,13 +312,13 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 
 ## API impact
 
-- No new endpoints. `POST /api/projects` already accepts an
+- No endpoint of its own. `POST /api/projects` accepts an
   optional `tabs` array per [Per-tab storage](../006-project/per-tab-storage.md) — the route uses it,
   and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 
-- `/live` with no params → redirects to `/new`.
+- The editor index with no params → redirects to `/new`.
 - `/new` → the opening screen, then the editor on `/project/<id>`, its empty tab on Start Planning; This Browser for
   a guest, filed in the signed-in person's default folder for it.
 - `/new?folder=<id>` → the project files into that folder.
@@ -371,6 +326,6 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 - `/new?template=not-a-kind`, `/new?blank=1`, `/new?mode=draw` → a blank project.
 - `/new?q=retro` → Start Planning opens with its search reading "retro".
 - Back from the editor → the page before `/new`.
-- `/project/<id>` (existing) → editor hydrates as before.
+- `/project/<id>` (existing) → the editor hydrates.
 - `/project/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA and the Explorer's New Project → go to `/new`.

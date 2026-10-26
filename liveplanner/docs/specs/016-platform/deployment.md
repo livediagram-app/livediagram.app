@@ -1,165 +1,160 @@
 # Deployment
 
-All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
-
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.liveplanner.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects and KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+liveplanner deploys from the liveworkspace monorepo's root `.github/` workflows to **Cloudflare Workers** in the
+liveworkspace Cloudflare account, as every product and the platform do ([docs/ci.md](../../../../docs/ci.md)
+"Deploys"). **Staging** follows `main` on its own; **production** is a manual gate that ships what staging runs.
+This spec covers what is liveplanner's within that pipeline; [Staging environment](staging-environment.md) covers
+what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
 | App              | Cloudflare Worker       | Type                                                                          |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
 | `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `liveplanner-editor`    | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/editor`    | `liveplanner-editor`    | Static assets plus a small path-rewrite worker.                               |
 | `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `liveplanner-api`       | Worker (Durable Objects), no D1 and no R2.                                    |
+| `apps/api`       | `liveplanner-api`       | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.           |
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `liveplanner-router`    | Worker (service bindings to the other five).                                  |
+| `apps/router`    | `liveplanner-router`    | Worker with service bindings to marketing, editor, api and help.              |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+`apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, Durable Object bindings, the account it deploys to (`account_id`, the liveworkspace account) and its public hostnames (see [Custom domain](#custom-domain)). Secrets **never** go in `wrangler.toml`. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+The marketing and help workers serve their `out/` folders. The editor worker serves `apps/editor/out/` through
+`apps/editor/src/worker.ts`, which rewrites every `/project/<id>` request to the one statically built
+`/project/placeholder/` page ([New project route](../007-editor/new-project-route.md)) and serves the share page. The
+api worker holds the REST and WebSocket layer ([API](../015-api/api.md)). The mcp worker serves the AI tools on its
+own host, `mcp.liveplanner.app`, and binds to the api worker directly, not through the router
+([MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: its `MARKETING`, `EDITOR`,
+`API` and `HELP` service bindings forward each request to its worker, and it forwards the platform's paths to
+liveworkspace ([Router app](router-app.md)).
+
+Telemetry, its dashboard, the status page, the Explorer, previews, Drive sync and the index are liveworkspace's
+services and deploy with the platform ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md),
+[liveworkspace/docs/previews.md](../../../../liveworkspace/docs/previews.md)).
+
+Each app's `wrangler.toml` sits at the app root and is the source of truth for the worker's name, compatibility
+date, `[assets]`, `[[services]]`, Durable Object bindings, the account it deploys to (`account_id`, the liveworkspace
+account) and its public hostnames ([Custom domain](#custom-domain)). Secrets **never** go in `wrangler.toml`
+([Secrets policy](../002-project-scope/secrets-policy.md)).
 
 ## Toolchain
 
-- **Node:** `>=22` (Wrangler 4 requires it). Both `ci.yml` and `deploy.yml` pin Node 22.
-- **pnpm:** `9.15.0` via `pnpm/action-setup`.
-- **Wrangler:** `^4.40.0` across all workspaces.
-- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first.
+- **Node:** 22 (Wrangler 4 requires 22 or later); the root `.github/actions/setup` pins it for every job.
+- **pnpm:** `9.15.0`, the root `packageManager`, through `pnpm/action-setup`.
+- **Wrangler:** `^4.148.0` in every app that deploys.
+- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends
+  with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it
+  first.
 
 ## CI
 
-In the liveworkspace monorepo these run from the root's `.github/` ([docs/ci.md](../../../../docs/ci.md)): one CI,
-E2E and canvas performance workflow for every product (CodeQL waits on GitHub Advanced Security), running liveplanner's jobs only when a change reaches it.
-The `liveplanner/.github/` copies are inert there, deploys included: the monorepo deploys every Worker itself, staging
-on each green `main` and production by hand, only what a change reaches (docs/ci.md "Deploys").
+The root `ci.yml` runs on every pull request and every push to `main`, and runs liveplanner's group only when a
+change reaches it ([docs/ci.md](../../../../docs/ci.md) "Only what changed"). For the liveplanner group:
 
-`.github/workflows/ci.yml` runs on **every PR** and **every push to `main`**.
+- **Checks**: lint and type check of the affected workspaces, and liveplanner's own `format:check`.
+- **Tests**: every affected workspace's suite once. Those with `test:coverage` run that, so their per-file
+  thresholds are enforced; the rest run `test`. Two at a time (`--concurrency=2`): each vitest fills the cores.
+- **Editor unit tests i/3**: `@liveplanner/editor` under coverage, a third of its files per job
+  (`vitest run --coverage --shard=i/3`) ([Coverage report](../003-system-architecture/testing.md#coverage-report)).
+  `scripts/ci-test-filters.mjs` keeps the editor out of the Tests job, so each suite runs exactly once.
+- **Build**: the affected workspaces' builds, the CLI's `npm pack --dry-run`, and `staging:check`.
+- **CI**: one job that fails when any of the above failed. It is the check `main` requires.
 
-Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slowest rather than their sum:
+No job needs another's output: only the seven apps have a `build` script, and no workspace depends on an app, so
+checks and tests build nothing.
 
-- **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`.
-- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/editor` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
-- **Editor unit tests i/3**: the editor's suite (`apps/editor`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
-- **Build**: `pnpm build`, then `pnpm staging:check`.
+`staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp,
+router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]`
+block, or a `service =` that lost its `-staging` suffix and points the staging router at **production**, is neither
+a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-No job needs another's output: only the nine apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
+The root `e2e.yml` runs liveplanner's six smoke shards, its sites audit and its signed-in specs through
+`e2e-product.yml` when a change reaches the editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)).
+`canvas-perf.yml` runs the canvas performance probe nightly against `main`
+([Canvas performance](../008-canvas/canvas-performance.md)). It never blocks anything: a miss opens or comments on
+one issue, **Canvas performance budget: liveplanner**, which the first all-pass run closes.
 
-The two test steps run two packages at a time. `pnpm test` cannot carry the flag: it is pnpm's built-in test command, so CI calls turbo directly.
-
-CI is the gate you check before deploying to production, but it does **not** trigger that deploy — production is a separate, manually-dispatched workflow (see below). It **does** trigger the staging deploy, via `workflow_run` on a successful CI run on `main` ([Staging environment](staging-environment.md)).
-
-`pnpm staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block — or a `service =` that lost its `-staging` suffix, pointing the staging router at **production** — is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
-
-`.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget: liveplanner**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
-
-`.github/workflows/mcp-registry.yml` publishes the root `server.json` to the official MCP Registry when that file changes on `main`, or on manual dispatch. It authenticates with GitHub OIDC, so it needs no secret. See [MCP server §4.16](../015-api/mcp-server.md#416-registry-listing).
-
-**Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
+**Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their
+`package.json` scripts and `vitest` to their `devDependencies`; turbo picks the task up. Tests live next to the
+source they cover as `*.test.ts` files.
 
 ### Runs on main are never cancelled
 
-`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no Codecov base to compare against, failing its [Coverage report](../003-system-architecture/testing.md#coverage-report) with a 404.
-
-The cost is runner time: a merge on `main` is about a dozen jobs (CI's six, E2E's shards), so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order is handled by the staging deploy, which deploys only `main`'s tip ([Staging environment](staging-environment.md)).
+`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main`
+every commit runs to the end, each in a concurrency group of its own (keyed by the commit), so a failure can be
+pinned on its commit and every pull request has a base to compare coverage against. Runs on `main` finishing out of
+order are handled by the staging deploy, which skips a commit `main` has moved past.
 
 ## Deploy
 
-The deploy is split in two: `.github/workflows/deploy-reusable.yml` holds every job below as a **reusable workflow** (`workflow_call`), and two thin callers trigger it — `deploy.yml` for production and `deploy-staging.yml` for staging. Both environments therefore run byte-identical steps; the only difference is the inputs (`wrangler_env`, the MCP origin) and which secrets the caller passes. One body, because a staging deploy that has drifted from production's tests nothing.
+`deploy.yml` (**Deploy (reusable)**) deploys one environment. Two callers run it:
 
-`.github/workflows/deploy.yml` is **manual-only** (`workflow_dispatch`). It does not chain off CI; trigger it yourself from the Actions tab, where it appears as **Deploy Production** (or `gh workflow run deploy.yml --ref main` — the file name is passed rather than the display name, so a future rename can't stale this out) once CI on `main` is green and you've decided to ship. It checks out and builds whatever the current `main` is at trigger time.
+- `deploy-staging.yml`, a `workflow_run` after CI passes for a push to `main`, deploys that commit to every
+  Worker's `[env.staging]`.
+- `deploy-production.yml` (**Deploy Production**, `workflow_dispatch`) ships exactly what staging runs (the
+  `deployed/staging` tag) by default; a `ref` ships another commit.
 
-Every `wrangler` invocation in the reusable workflow ends in `${WRANGLER_ENV:+--env "$WRANGLER_ENV"}`, which expands to nothing for production — so production runs exactly the commands it always ran — and to `--env staging` for the staging caller. Shell expansion rather than a GitHub expression, so it reads the same locally as in the log.
+**Only what changed.** Each environment remembers the commit it last deployed in full as the tag
+`deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since then, with
+everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them.
+**all** redeploys every Worker (a first deploy, or a rollback).
 
-Jobs:
+**Order.** Three tiers, each waiting for the one before, and a failing tier stops the ones after it:
 
-1. **build** — installs deps, runs `pnpm build`, uploads `apps/marketing/out`, `apps/editor/out` and `apps/help/out` as workflow artifacts. (Telemetry and its dashboard are liveworkspace's, deployed from there: liveworkspace/docs/telemetry.md.)
-2. **deploy-marketing** — downloads `marketing-out`, runs `pnpm exec wrangler deploy` from `apps/marketing/`.
-3. **deploy-editor** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/editor/`.
-4. **deploy-api** — runs:
-   - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
-   - the secret syncs (below). There is no migration step: the api has no D1, and each plan's object brings its own SQLite up to date on first use (`plan-schema.ts`).
-   - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on liveplanner.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
-5. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
-6. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.liveplanner.app` is its own host, not a path under the main hostname.
-7. **deploy-router** — depends on **deploy-marketing**, **deploy-editor**, **deploy-api** and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the four workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than six.
+1. **Services and apis**: `liveplanner-api`. There is no migration step: the api has no D1, and each plan's
+   object brings its own SQLite schema up to date on first use (`plan-schema.ts`).
+2. **Sites and MCP**: `liveplanner-marketing`, `liveplanner-editor`, `liveplanner-help` and `liveplanner-mcp`, so
+   a new editor never calls an api that lacks its routes and the mcp worker's binding to the api exists.
+3. **Routers**: `liveplanner-router`, whose service bindings target the workers above.
 
-`deploy-marketing`, `deploy-api` and `deploy-help` run in parallel off `build`, and `deploy-editor` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the four it binds (not mcp, which is a separate host).
-
-All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
-
-### Deploy order
-
-The apps' workers deploy separately, so old and new versions briefly serve side by side. The deploy keeps that window
-short and recoverable:
-
-- **deploy-api** syncs its secrets first, straight before `wrangler deploy`, so the window is the deploy itself.
-- **deploy-editor** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
-  **deploy-router** still waits for the six it binds.
-- A save that fails in the window is retried on its own
-  ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)).
-- A plan's schema only moves forward (a later change adds a step to `plan-schema.ts`, never edits one), so a problem
-  is fixed forward.
+`deploy-worker.yml` deploys each Worker: its build when it serves static assets (the help site from full history,
+since its sitemap dates each article by its last commit), then `pnpm exec wrangler deploy`, with `--env staging` on
+staging. A save that fails while old and new versions briefly serve side by side is retried on its own
+([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)). A plan's schema only moves forward (a
+later change adds a step to `plan-schema.ts`, never edits one), so a problem is fixed forward.
 
 ## Hosted profile
 
-Some configuration is what **liveplanner.app** runs with, not what the software defaults to. Committed `[vars]` would make it every environment's default (local development, previews); a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
+Some configuration is what **liveplanner.app** runs with, not what the software defaults to. Committed `[vars]`
+would make it every environment's default (local development, previews); a value set only in the Cloudflare
+dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it
+declares. So it has a seam of its own: the **hosted profile**.
 
-- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`, such as `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.liveplanner.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
-- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `liveplanner-app/liveplanner.app`, so production and staging both apply it, a rename or transfer keeps it, and no other repository matches. A deploy from anywhere else applies nothing, so it is **telemetry-off**.
-- **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
-- **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
+- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"`
+  ([Telemetry](../017-telemetry/telemetry.md)), and per environment, under `environments.production` and
+  `environments.staging`, `APP_BASE_URL` (the canonical public origin email and share links are built from,
+  `https://www.liveplanner.app` in production, never the apex that redirects to it) and `TELEMETRY_URL`
+  (liveworkspace's telemetry endpoint). An empty per-environment value is unset there.
+- **Who gets it.** The deploy plan marks a Worker `hosted` when its app has `scripts/hosted-vars.mjs`, which only
+  the api has; each liveplanner site's build reads the same file for its frontend mirror.
+- **How it is applied.** On every deploy: a site's build exports the frontend mirror
+  (`node scripts/hosted-vars.mjs build-env`, `NEXT_PUBLIC_TELEMETRY_ENABLED` among it) with its build id
+  (`NEXT_PUBLIC_BUILD_ID`), and on staging the staging MCP origin (`NEXT_PUBLIC_MCP_ORIGIN`). The api deploy passes
+  each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`) plus `BUILD_ID`. Every
+  command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own
+  environment's entries.
+- **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every
+  version serving traffic and fails the run on any hosted var that is missing or different, or that its environment
+  leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops
+  turning telemetry on, names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a
+  default.
 
-## Required GitHub Action secrets
+## Credentials and secrets
 
-Set in the repo under **Settings → Secrets and variables → Actions**:
+The only credential the workflows hold is the repository secret **`CLOUDFLARE_API_TOKEN`**, a token for the
+liveworkspace account with Workers Scripts and D1 edit rights ([docs/ci.md](../../../../docs/ci.md) "Deploys"). Every
+`wrangler.toml` pins the account, so no account id is passed.
 
-| Secret          | What it is                                                 |
-| --------------- | ---------------------------------------------------------- |
-| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers. |
-| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.           |
-
-**Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so an environment that sets none still deploys:
-
-| Secret                   | Synced to       | See                                                                                                                                                                          |
-| ------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
-| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
-| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                                                     |
-| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                                               |
-| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEPLANNER`                          |
-| `MEDIA_KEY`              | api             | liveworkspace's media service, which serves every plan's previews ([previews.md](../../../../liveworkspace/docs/previews.md)): the same value as its `MEDIA_KEY_LIVEPLANNER` |
-| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                                                     |
-
-Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
-
-Staging has a `_STAGING`-suffixed twin of each optional secret (its own accounts client registration among them), listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
-
-### Creating the API token
-
-Cloudflare dashboard → **My Profile → API Tokens → Create Token → Custom Token**.
-
-Permissions (all on the account that owns the workers):
-
-- **Workers Scripts → Edit** — deploy & update workers.
-- **Workers Routes → Edit** — wire / update custom domain routes.
-- **Account Settings → Read** — required by wrangler.
-- **User → User Details → Read** — `wrangler whoami` introspection.
-
-Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing a scope above (or was minted for a different account than `CF_ACCOUNT_ID`).
-
-### Getting the account ID
-
-Cloudflare dashboard → any zone → right sidebar → **Account ID** (copy).
-
-## First deploy
-
-On the first run, none of the workers exist yet. The job ordering handles this: `deploy-marketing`, `deploy-editor`, `deploy-api` and `deploy-help` run first and create those workers, then `deploy-router` runs, by which point its four service-binding targets already exist, so wrangler accepts the bindings.
-
-Subsequent deploys are idempotent updates.
+A deploy writes code and plain vars only. Each Worker's secrets (the accounts client values, `INDEX_KEY`,
+`MEDIA_KEY`, `TELEMETRY_KEY`, `GUEST_ID_HMAC_SECRET` and the rest) are set on it with `wrangler secret put` (with
+`--env staging` for staging) and survive every deploy. [Secrets policy](../002-project-scope/secrets-policy.md) holds
+the full table. Email needs no secret: its `send_email` binding is the credential
+([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
 
 ## Custom domain
 
-Production lives at **`https://liveplanner.app`**. Only two workers have a hostname, and each declares its own in its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`), as liveworkspace's workers declare theirs:
+Production lives at **`https://liveplanner.app`**. Only two workers have a hostname, and each declares its own in
+its `wrangler.toml` as a Workers custom domain (`routes` with `custom_domain = true`):
 
 | Worker                       | Hostnames                                |
 | ---------------------------- | ---------------------------------------- |
@@ -168,17 +163,19 @@ Production lives at **`https://liveplanner.app`**. Only two workers have a hostn
 | `liveplanner-router-staging` | `staging.liveplanner.app`                |
 | `liveplanner-mcp-staging`    | `mcp-staging.liveplanner.app`            |
 
-`wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a dashboard step and none can be forgotten. `www.liveplanner.app` is attached because it is the canonical origin links are built from (`APP_BASE_URL`, [Hosted profile](#hosted-profile)). Changing a hostname needs **Zone → Workers Routes → Edit** on `liveplanner.app` ([Creating the API token](#creating-the-api-token)); a deploy that leaves them as they are needs only the Workers permission. The other workers have no hostname: they are reached only over the router's (and the mcp worker's) service bindings. From the router:
+`wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a
+dashboard step. `www.liveplanner.app` is attached because it is the canonical origin links are built from
+(`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's (and the mcp worker's)
+service bindings. From the router ([Router app](router-app.md)):
 
-- `https://liveplanner.app/api/*` → api worker (REST + WebSocket).
-- `https://liveplanner.app/live` and `https://liveplanner.app/live/<anything>` → live editor (the router strips the `/live` prefix before forwarding).
-- `https://liveplanner.app/telemetry` → telemetry dashboard; `https://liveplanner.app/help` → help centre (both prefix-stripped).
-- Everything else → marketing.
+- `/api/*` goes to the api worker (REST and WebSocket), except the platform's `/api/index/*`, Drive and previews
+  paths, which go to liveworkspace.
+- `/live/*` is the editor's `_next` assets (prefix stripped); the editor's page routes (`/project`, `/new`,
+  `/form`, ...) are forwarded as they are.
+- `/help/*` goes to the help centre (prefix stripped); `/telemetry` redirects to liveworkspace's dashboard.
+- Everything else goes to marketing.
 
-The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.
+## Rollback
 
-## What this spec does **not** yet cover
-
-- Preview deploys for PRs (one environment tracking `main` is all there is — see [Staging environment](staging-environment.md) "What staging is not").
-- Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above would be set by hand with `wrangler secret put` and persist across deploys. There are none today: email needs no secret, its `send_email` binding being the credential ([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+A rollback is **Deploy Production** with an older `ref`: a commit older than production's own redeploys every
+Worker, as **all** does.

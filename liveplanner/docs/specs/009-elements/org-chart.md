@@ -36,13 +36,6 @@ missing the look.
 The palette's **Org Chart** tile (Build, after Mind Node) drops a person root in the Downward flow, "Ana Kim" / "Head
 of Engineering". Tab from it adds the first report.
 
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Org Chart tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.
-
 ## Share roles
 
 As a mind node's ([Mind node](mind-node.md)): an Editor grows and edits; a Participant writes a node's text only where

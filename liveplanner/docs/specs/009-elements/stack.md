@@ -70,10 +70,3 @@ A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it r
 The MCP server and the REST API take `stack` with `stackDirection`, `stackColumns`, `stackGap`, `stackPadding` and
 `stackAlign`. An agent places children anywhere inside it; the editor lays them out when the board next loads or
 changes.
-
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Stack tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.

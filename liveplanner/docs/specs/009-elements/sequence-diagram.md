@@ -112,13 +112,6 @@ unless Repeat is on. CSS only (a clip from the top); reduced motion and every ex
 A new one shows Browser, API and Database with five messages: a call, a self-call, a call to the database, its reply
 and the reply to the browser.
 
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Sequence tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.
-
 ## Share roles
 
 | Role        | May                                                                                        |

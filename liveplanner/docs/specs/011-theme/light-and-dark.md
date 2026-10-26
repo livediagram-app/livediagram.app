@@ -43,11 +43,10 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   3:1 or more against what is behind it in either half: its own fill, else the topmost filled element it sits on (a
   translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
   ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
-  dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
-  (`CANVAS_TONES`). `apps/editor/lib/template-overlay-contrast.test.ts` checks every template.
+  dark ink of their own, and coloured words straight on the canvas take a tone that reads on both halves. `apps/editor/lib/template-overlay-contrast.test.ts` checks every template.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
-  without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints
+  without its ink, or the ink without the backdrop: a template's dark ink on a panel a dark theme repaints
   deep brown, or its slate caption on a canvas that turned dark. Wherever that leaves a label under 3:1 against what is
   behind it (the same backdrop as above) and reading worse than before, the label's ink is walked in lightness, its
   hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/project/src/label-backdrop.ts`, on
@@ -69,17 +68,10 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches. Server-made images (thumbnails, the MCP's inline renders) have no viewer and draw what is stored.
 
-## The match prompt is gone
+## No match prompt
 
-The prompt that offered to switch the editor's mode to suit a tab's theme ("This tab uses a light theme") is removed,
-and so is the theme browser's "Turn on Dark mode" switch: no theme needs a particular mode any more.
-
-## Retired: Autumn and Jewel
-
-Autumn and Jewel leave the catalogue, being too close to other multi-colour themes. A tab saved on either is migrated on
-load ([Retired colour schemes](retired-schemes.md)): Autumn becomes **Tropical**, Jewel becomes **Rainbow**, and every
-element colour still equal to what the retired theme painted becomes the new theme's colour for the same role; a colour
-someone picked is kept.
+Nothing offers to switch the editor's mode to suit a tab's theme, and the theme browser has no "Turn on Dark mode"
+switch: no theme needs a particular mode.
 
 ## Telemetry
 

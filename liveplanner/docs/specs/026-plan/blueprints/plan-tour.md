@@ -95,16 +95,14 @@ first whose box meets the window, else the first). "Subject deleted": `subject[t
 `activeTab.elements`.
 
 End: close the item panel, remove the example card, write `markPlanTracksSeen(prefs, [tourTrack])` (rebased onto
-the freshest preferences); then send `Ended` · `PlanTourCompleted` or `Ended` · `PlanTourSkipped`. Until 25 October
-2026 it also sent `Closed` · `PlanTourOffer` on a declined welcome card, and a declined choice card answered both
-tracks.
+the freshest preferences); then send `Ended` · `PlanTourCompleted` or `Ended` · `PlanTourSkipped`.
 
 ### Tracks
 
 The engine's `steps` are `planTourSteps(tourTrack)`: that track's steps and its last card. Every board has the
 card steps: the Boards track adds its own example card to show them on. The last card's help link follows the track
-(`/help/plan/planning-basics/` or `/help/plan/sheets/`). There is no choice card: until 25 October 2026 a tab with both
-asked **Boards** or **Spreadsheets** (`welcomeChoices`, sending `Selected` · `PlanTourBoards` | `PlanTourSheets`).
+(`/help/plan/planning-basics/` or `/help/plan/sheets/`). There is no choice card: the button names the
+track.
 
 Boards steps, each scoped to the board's drawn body `[data-plan-board="<board>"]` (`boardRoot`; never its
 `data-element-id` canvas node, hidden under a maximised or tab-filling body): `board` (no anchor, a centred card; prepare
@@ -202,9 +200,7 @@ button for it (`isReadOnly`).
 
 As every editor tour ([Editor tours](../../007-editor/editor-tour.md)). The footer button reads **Start Boards
 Tour** or **Start Sheets Tour**. The cards' `ariaPrefix` is **Boards tour** or **Sheets tour**. The last card is a
-step card in `TourPopover`, with **Help** linking the track's article and its finish button. The welcome cards and
-their art (`BoardsTourArt`, `SheetsTourArt`, `PlanChoiceTourArt`, `TourArtFrame`, `TourHelpArt`) were deleted on
-25 October 2026.
+step card in `TourPopover`, with **Help** linking the track's article and its finish button. There are no welcome cards and no tour art.
 
 ## Accessibility
 

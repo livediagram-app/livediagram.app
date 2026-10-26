@@ -1,23 +1,16 @@
-# Mermaid input & export
+# Sequence text
 
-**Status: removed from liveplanner (2026-10-24).** liveplanner's MCP server, CLI and public API take no Mermaid
-and no node/edge `graph`, and the CLI has no `mermaid` export format (dropped 2026-10-22). The code that was left
-behind in `packages/project` went with it: the flowchart, state and ER readers (`mermaid*.ts`), the flowchart
-serialiser, graph input and its layout (`graph-input.ts`, `graph-authoring.ts`, `graph-look*.ts`, `graph-lanes.ts`,
-`graph-mindmap.ts`, `graph-cycle.ts`, `graph-branches.ts`, `graph-notches.ts`, `graph-limits.ts`), the
-subgraph-as-frame cluster layout (`auto-layout-cluster*.ts`), the orthogonal router behind it, the ER hub ordering
-(`er-hub-first.ts`), the mind-map template builder (`mind-template.ts`), the reciprocal-arrow pairing
-(`arrow-reciprocal.ts`) and `buildGraphTab`. Nothing a person or an agent uses reached any of it.
+liveplanner takes no Mermaid: its MCP server, CLI and public API accept no Mermaid text and no node/edge `graph`, and
+nothing exports one. What `packages/project` keeps is the sequence model a sequence diagram element draws from:
 
-What stays:
-
+- `mermaid-sequence.ts`: the sequence types (`SequenceDiagram`, `SequenceItem`) that `sequence-element.ts` and
+  `sequence-layout.ts` use, and `parseSequenceDiagram`, which reads Mermaid `sequenceDiagram` text into them. No
+  product surface calls the parser; the sequence layout tests write their cases in that text and read them through it.
 - `graph-header.ts` (`withHeaderAndKey`): the title, caption and key a sequence diagram element draws above itself.
 - `glyph-width.ts` (`glyphWidth`): the DOM-free text width estimate the header, the sequence layout and chart
   values measure with.
-- `mermaid-sequence.ts`: the sequence types `sequence-layout.ts` draws from, and `parseSequenceDiagram`, which no
-  product surface calls; the sequence layout tests read their cases from Mermaid text through it.
 
-## Sequence text
+## The syntax
 
 What `parseSequenceDiagram` reads, and how `layoutSequence` draws it (the
 [sequence diagram element](../009-elements/sequence-diagram.md) draws through the same layout).

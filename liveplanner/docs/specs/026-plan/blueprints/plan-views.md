@@ -35,9 +35,9 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
 
 ## Element model
 
-- `createShape('plan-view')` is 720 × 400 with `planView: { view: 'workload' }`. A tile's `plan` choice is the
-  view id: `buildDrawnBoxed` and the drop path set `planView` and, on a tap or drop, `planViewSize(view)`
-  (metric 260 × 64, Gantt 880 × 420, else 720 × 400). The drag ghost uses the same size.
+- `createShape('plan-view')` is 720 × 400 with `planView: { view: 'workload' }`. A view placed
+  by the tab actions (`usePlanTabActions`, a Dashboard slot) takes its view's size, `planViewSize(view)` (`packages/items/src/plan-views.ts`;
+  metric 260 × 64, Gantt 880 × 420, else 720 × 400), through `hooks/plan/slot-elements.ts`.
 - Validation: `planView` must be `{ view }` with `isPlanViewId(view)`, else the `planView` field issue.
 - `plan-view` is a Plan shape (`isPlanShape`), self-drawing and self-painting; no quick-connect pluses; it latches
   `usePlanNeeded`; `itemIdsShownOnTab` gives every item to a tab holding one; edit-operations stores `planView`.
@@ -132,7 +132,7 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
 - Gantt names column `min(220px, 33%)` unless `planView.namesWidth` (px) is set, then that width clamped by
   `ganttNamesWidth(width, chartPx)` to `GANTT_NAMES_MIN_PX`..`GANTT_NAMES_MAX_SHARE` of the chart, never past
   `GANTT_NAMES_MAX_PX` (2000, the validator's bound); rows 30 px, lane
-  headers 24 px (`LANE_H`), axis 22 px; bar 14 px, project colour at 28 % with the children-done share solid
+  headers 30 px (`LANE_H`), axis 22 px; bar 14 px, project colour at 28 % with the children-done share solid
   (green when the project is done).
 - Gantt names separator (`GanttNamesResizer`, gantt-names-resize.tsx): a 6 px `col-resize` strip over the column's
   right edge, `role="separator"`, `aria-orientation="vertical"`, `aria-valuenow` (px), `aria-valuemin`,
@@ -216,7 +216,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 | `GANTT_NAMES_MAX_SHARE`     | 0.6       | plan-view-gantt.ts | 0.4..0.8   |
 | `GANTT_NAMES_STEP_PX`       | 16        | plan-view-gantt.ts | 4..40      |
 | `GANTT_PILL_MIN_COLUMN_PX`  | 160       | GanttView.tsx      | 120..240   |
-| `LANE_H`                    | 24        | GanttView.tsx      | 20..32     |
+| `LANE_H`                    | 30        | GanttView.tsx      | 20..32     |
 | `PLAN_METRIC_SIZE`          | 260 × 64  | plan-views.ts      |            |
 | `PLAN_CHART_SIZE`           | 720 × 400 | plan-views.ts      |            |
 | `PLAN_GANTT_SIZE`           | 880 × 420 | plan-views.ts      |            |

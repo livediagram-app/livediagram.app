@@ -6,8 +6,7 @@ never changes mode, a new tab and a new Project open in Plan, and an empty tab o
 ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). This spec keeps what the editor mode still means to the
 project model, to stored data and to the look every tab shares; how Plan works is [Plan mode](../026-plan/plan-mode.md).
 
-Until October 2026 a tab had one of five modes (Diagram, Draw, Workshop, Pages and Plan) and a switch on an empty
-tab's start. The other four, the switch and everything that existed only for them are gone (see "Retired modes").
+There is no other mode and no switch between modes (see "Other mode ids").
 
 ## Domain language
 
@@ -22,7 +21,7 @@ tab's start. The other four, the switch and everything that existed only for the
 
 ## Where the mode is named
 
-The mode is no longer stored on a tab, but it is still named wherever a project's mode is recorded or sent, so it
+The mode is not stored on a tab, but it is named wherever a project's mode is recorded or sent, so it
 stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `isEditorMode`):
 
 - **A project's recorded creation intent** (`intent.mode`, the `opens_in` column, `ProjectSummary.opensIn`;
@@ -34,23 +33,17 @@ stays declared once (`EDITOR_MODE_CATALOGUE`, `EditorMode`, `EDITOR_MODES`, `isE
 - **The Explorer filter `opens-in:plan`** ([Explorer filters](../013-workspace/explorer-filters.md)).
 - **The returning-visitor note** (`RecentDiagram.mode`; [Returning visitor](../019-marketing/returning-visitor.md)).
 
-## Retired modes
+## Other mode ids
 
-Diagram, Draw, Workshop and Pages were retired on 2026-10-22, and with them the mode switch on an empty tab's start,
-Shift+D, the tab menu's mode rows, the "Open a New <Mode> Tab?" prompt, a collaborator's "switched this tab" toast,
-each mode's template start (Start Diagramming, Start Drawing, Start a Workshop, Start Making Pages) and its search into
-other modes, the empty-canvas card, the Diagram tour, the `/new` mode step, the template picker's mode filter and the
-per-mode palette layouts.
+liveplanner has one mode. There is no mode switch, no Shift+D, no mode rows in the tab menu, no `/new` mode step and
+no per-mode template start or palette. Stored data never names another mode, and an id that does is handled so:
 
-liveplanner was never deployed with those modes, so no stored data names them:
-
-- **A tab's `opensIn`** is no longer part of the `Tab` type and is ignored where it is read: every tab is in Plan.
+- **A tab's `opensIn`** is not part of the `Tab` type and is ignored where it is read: every tab is in Plan.
 - **A stored mode id anywhere else** (a recorded intent, a tab-stats row, a returning-visitor note, an
   `opens-in:` filter, a create's `intent.mode`) is read through `parseEditorMode`: `plan` reads as itself, and
-  anything else, a retired mode's id included, reads as unknown. (The read-time list that mapped the retired ids to
-  `plan` was removed on 2026-10-24.)
+  anything else reads as unknown.
 - **A stored default-folder key of a retired mode** (`mode:diagram`, `mode:draw`, `mode:workshop`, `mode:pages`,
-  `mode:illustrate`, `mode:infographic`, `mode:facilitate`) is no longer in force: it is left out of the person's
+  `mode:illustrate`, `mode:infographic`, `mode:facilitate`) is not in force: it is left out of the person's
   defaults and never answers a create; the row stays until it is cleared. A request naming one is refused as an
   unknown key (`default_key_invalid`).
 - **A `/new?mode=` link** is ignored: `/new` makes a blank Project ([New project route](new-project-route.md)).
@@ -86,8 +79,6 @@ is one field, `TextElement.sizing`:
 - `'fit'`: the width follows the words up to the wrap width, and the height hugs the lines;
 - `'wrap'`: the width is set, and the height hugs the lines;
 - absent: a fixed box, its text wrapping inside it.
-- It replaces `autoWidth`: `autoWidth: true` becomes `'fit'`; text on a migrated whiteboard without it becomes
-  `'wrap'`, as it hugged there.
 
 ## The tool Plan starts with
 
@@ -100,9 +91,8 @@ A stored tab with `kind: 'whiteboard'` reads as a general tab; its elements, bac
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The mode switch's `Editor` · `Changed` · `Mode<Mode>` events, `Tab` · `Changed` · `PageFitToContent`, and a template
-picked from another mode (`UI` · `Used` · `StartOtherMode`) went with the switch; their stored rows age out
-([Telemetry](../017-telemetry/telemetry.md) "Retired features"). Default folders report the one remaining mode key as
+There is no mode switch, so `Editor` · `Changed` · `Mode<Mode>`, `Tab` · `Changed` · `PageFitToContent` and
+`UI` · `Used` · `StartOtherMode` are not sent; the retired ones are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)). Default folders report the one remaining mode key as
 `DefaultModePlan`.
 
 ## Non-goals

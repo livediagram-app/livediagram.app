@@ -1,72 +1,58 @@
 # Collaboration race hardening
 
-Status: **implemented** (phases 1 to 5).
-
 A room of people pressing the same cards at once must not lose, duplicate or
-retract anybody's action. The dot-vote was fixed for this first ([Session tools (timer + voting)](session-tools.md),
-"Casting a dot"). A review of every element used during collaboration found
-the same failure in the temperature check, the checklist and comment threads, plus a handful of transport bugs underneath
-all of them. This spec records what the review found and the order it is
-being fixed in.
+retract anybody's action. The dot-vote ([Session tools (timer + voting)](session-tools.md), "Casting a dot"), the temperature
+check, the checklist and comment threads share the same hazards, and the transport underneath all of them. This spec
+names the hazards and the design that answers each.
 
-## Why presses were lost
+## How a press can be lost
 
-Six shared causes. Most element bugs are one of these showing through.
+Six shared hazards, each answered below. Most element bugs would be one of these showing through.
 
-1. **A press ships the whole element, late.** An element change only leaves
-   the browser through the autosave (600 ms debounce, then the tab PUT, then
-   the broadcast), as an `el` `update` op that replaces the whole element on
-   every receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one card inside that window
-   overwrite each other.
-2. **Collaborative presses pushed undo history.** `useCollabElements` wrote
-   through `commitTabs`, which pushes an undo step, although [Per-participant responses](participant-responses.md) said it
-   must not. Undo re-grafted only comment threads, actions, the timer and the
-   vote, so Ctrl+Z withdrew your own answer and anyone else's that had
-   arrived since the snapshot, for the whole room.
-3. **The save baseline ignored remote ops.** `lastSavedTabsRef` was not
-   updated when a peer's op was applied, so the next local save diffed
-   against a pre-remote snapshot and re-broadcast the peer's elements in the
-   local, possibly stale, form. It also made every participant's first save
-   after a vote started re-send the whole dots map.
-4. **A remote op cancelled the pending local save.** The autosave skipped
-   one run whenever `remoteUpdateRef` was set. A peer's op arriving within
-   600 ms of a local press cancelled the press's save and broadcast
-   outright; a remote op that changed nothing left the flag set and
-   swallowed the next local change instead.
-5. **The store is last writer wins.** Every client PUTs whole tabs, and the api
-   replaces the stored blob, so a reload or late joiner sees whichever save
-   landed last. (Multi-writer fields merge since phase 3; element content is
-   written again by the saver that may have landed last, see
+1. **A press ships the whole element, late.** An element change leaves the browser through the autosave (600 ms
+   debounce, then the tab PUT, then the broadcast), as an `el` `update` op that replaces the whole element on every
+   receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one card inside that
+   window would overwrite each other, so per-participant fields travel as their own ops.
+2. **Undo could withdraw a press.** A press written through the history-pushing `commitTabs` would let Ctrl+Z
+   withdraw your own answer, and anyone else's that arrived since the snapshot, for the whole room
+   ([Per-participant responses](participant-responses.md)).
+3. **A stale save baseline re-broadcasts peers' work.** A baseline that does not follow applied remote ops makes the
+   next local save diff against a pre-remote snapshot and re-send the peer's elements in the local, possibly stale,
+   form (and every participant's first save after a vote starts re-send the whole dots map).
+4. **A remote op must not cancel a local save.** An autosave that skipped its next run after a remote op would lose
+   a local press made within the debounce, or swallow the next local change after a remote op that changed nothing.
+5. **The store is last writer wins.** Every client PUTs whole tabs, and the api replaces the stored blob, so a reload
+   or late joiner sees whichever save landed last. (Multi-writer fields merge, see
+   [The store keeps multi-writer fields](#the-store-keeps-multi-writer-fields); element content is written again by
+   the saver that may have landed last, see
    [A save that wrote over a peer's change writes again](#a-save-that-wrote-over-a-peers-change-writes-again).)
-6. **Whole-tab fallbacks.** A cleared field (Clear Timer, Clear Vote) or a
-   change of more than 20 elements travels as a whole `tab` op, which
-   replaces every element on receivers, wiping their unsaved presses.
+6. **Whole-tab fallbacks.** A cleared field (Clear Timer, Clear Vote) or a change of more than 20 elements travels as
+   a whole `tab` op, which replaces every element on receivers, so it must not wipe their unsaved presses.
 
-## Phase 1 (shipped): stop the client losing its own and its peers' work
+## The client keeps its own and its peers' work
 
-- **Collaborative presses do not push undo** (causes 2). Casting or
+- **Collaborative presses do not push undo** (hazard 2). Casting or
   withdrawing a response, clearing and the picker's roll all go through the
   non-history `tickTabs`, as the vote does.
-- **Undo re-grafts every live collaborative field** (cause 2). The fields a
+- **Undo re-grafts every live collaborative field** (hazard 2). The fields a
   press writes (`responses`, `pickerResult`) join
   `commentThread` and `action` in `LIVE_ELEMENT_FIELDS`, so restoring a
   snapshot keeps their present values.
-- **The save baseline follows remote ops** (causes 3 and 4). Every applied
+- **The save baseline follows remote ops** (hazards 3 and 4). Every applied
   remote op is also folded into `lastSavedTabsRef` through the same pure
   function the receiver uses (`applyRoomOpToTabs`). A save that was in
   flight re-folds the ops that arrived during it when it lands, so its
   success does not roll the baseline back. The save diff compares tab
   CONTENT when identity differs (a remote op makes a new tab object), so a
-  remote-only change is not a local change and the `remoteUpdateRef` skip is
-  gone from the autosave. Nothing cancels a local save any more.
+  remote-only change is not a local change, and nothing cancels a local save.
 - **A vote has a round** ([Session tools (timer + voting)](session-tools.md)). `TabVote.round` is minted at Start and
   carried on every `vote` op. A dot for a different round, or for a vote
   that is not open, is dropped. Within one round the votes map only ever
   moves by deltas: a lifecycle patch (End, Reveal, the walkthrough) or a
-  whole-tab op for the SAME round keeps the receiver's map, so it can no
-  longer erase dots still in flight.
+  whole-tab op for the SAME round keeps the receiver's map, so it never
+  erases dots still in flight.
 
-## Phase 2 (shipped): per-participant fields travel as their own ops
+## Per-participant fields travel as their own ops
 
 The dot-vote pattern for every field many people write at once. A new room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
@@ -78,7 +64,7 @@ applied by the sender and every receiver through the same pure
   by `participantKey` (the temperature check).
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
-  row with that text, or nothing. A tick is no longer undoable.
+  row with that text, or nothing. A tick is not undoable.
 - `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`:
   one change to a thread, by comment id, so a replay is a no-op. An add and a
   resolve may name a Sheet cell (`cell`), for that cell's thread
@@ -107,19 +93,13 @@ with a DIFFERENT round replaces the answers (that is how a clear
 reaches everyone). Undo re-grafts `collabRound` and the checklist ticks with
 the other live fields.
 
-Decisions against the plan above: checklist rows are matched by index and
-text rather than given ids (no schema change).
+Checklist rows are matched by index and text rather than given ids, so no schema change is needed.
 
-Still open until phase 4: a view-role comment goes through its REST
-endpoint, not a delta (the room drops view-role mutations), so editors still
-don't see it live.
+## The store keeps multi-writer fields
 
-## Phase 3 (shipped): the store stops overwriting multi-writer fields
-
-Phase 2 made the room converge, but every client still PUT whole tabs and
-the api replaced the stored blob, so the store held whichever save landed last. A
-save snapshotted before somebody's answer arrived erased it from the store, and a
-reload showed fewer marks than the room had seen.
+The deltas make the room converge, but every client PUTs whole tabs, and a store that replaced the blob would hold
+whichever save landed last: a save snapshotted before somebody's answer arrived would erase it from the store, and a
+reload would show fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` and `vote` op it
 sequences, the Durable Object records the change in a small per-element
@@ -160,46 +140,45 @@ Every server-stored project has a room, since an agent is a second writer
 even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-projects));
 an agent's changesets merge into a save by their own rule, not through this ledger.
 
-**Comments joined the ledger in phase 5**, once the room stamped their
-authors; at first they were left out, because the api credits every comment
-new to the store to the saver and a merged comment would have been credited wrongly.
+**Comments are in the ledger**, because the room stamps their authors: the api credits a comment new to the store
+to the session that posted it, not to the saver.
 
 Residual, stated plainly: the merge and the write are two steps, so two
 saves whose merge and write interleave can still land the older merge
 last. The window is the length of one write, not the 600 ms debounce,
 and the next save from anybody repairs it.
 
-## Phase 4 (shipped): the rest
+## Cleared fields, view-role comments and votes
 
 - **A cleared tab field travels by name.** A `tab-meta` op carries a
   `clear` list of the fields the sender removed, and receivers delete them.
-  Clear Timer and Clear Vote (and a reset background) used to fall back to a
-  whole-`tab` op, which replaced every element on every receiver and wiped
-  their unsaved presses. Whole-tab ops remain only for a new tab and a bulk
+  Clear Timer and Clear Vote (and a reset background) never fall back to a
+  whole-`tab` op, which would replace every element on every receiver and wipe
+  their unsaved presses. Whole-tab ops are only for a new tab and a bulk
   change.
 - **A view-role comment reaches the room.** The comment endpoints (the only
-  write a view-role visitor has) now hand the room the same `comment-add` /
+  write a view-role visitor has) hand the room the same `comment-add` /
   `comment-remove` delta an editor's comment sends, through an internal
   `POST /mutation` on the Durable Object, which sequences, logs and records it
-  like a peer's op. Editors see it at once and their next save keeps it; it
-  used to reach the store only, and the next editor save erased it. The relayed
+  like a peer's op. Editors see it at once and their next save keeps it, where a
+  comment reaching the store only would be erased by the next editor save. The relayed
   comment carries no `authorId` (the author's owner id, which a tab GET
   redacts for everyone else); the author's own browser keeps it when it swaps
   its local comment id for the server's.
 - **A session button can't start a vote over a running one.** Pressing a
-  vote button mid-vote used to start a fresh vote, which reset every dot on
-  the canvas. It is now a no-op; ending the vote stays with the vote's own
+  vote button mid-vote is a no-op, since a fresh vote would reset every dot on
+  the canvas; ending the vote stays with the vote's own
   controls.
 - **Votes are keyed by the collab key.** Dots, the budget and the host
   (`startedBy`) use `participantKey`, not the owner id, which is a guest's
   credential and which every dot op broadcast to the whole room.
 
-## Phase 5 (shipped): the loose ends
+## The loose ends
 
 - **Comment author ids stay off the wire.** A comment's `authorId` is its
   author's owner id, a guest's credential. The store keeps it (delete-own needs it)
-  and a tab GET redacts it for everyone but the author, but every element op,
-  whole-tab op and comment delta carried it to every socket in the room. One
+  and a tab GET redacts it for everyone but the author; element ops, whole-tab ops
+  and comment deltas would carry it to every socket in the room. One
   definition, `opForTheWire`, strips it from any op, and it runs at the two
   choke points: the editor's socket `send` (room.ts) and the room's relay of
   every mutation, so neither a new send path nor an old client can leak one.
@@ -209,10 +188,9 @@ and the next save from anybody repairs it.
   comment an editor posts with the sending session's presence name and colour
   (the identity already on that person's cursor) (`stampCommentAuthor`). The ledger records adds, removes and the latest
   resolve, and a save merges the ones the saver hadn't seen, in the order the
-  room took them. Crediting was wrong before this in a way that predates the
-  branch: the api stamps every comment NEW to the store with the saver's identity, so
-  a save that reached the store before the author's own credited the author's
-  comment to the saver. `rewriteCommentAuthors` now credits such a comment
+  room took them. The api stamps every comment NEW to the store with the saver's identity, so a save that reached
+  the store before the author's own would credit the author's comment to the saver. `rewriteCommentAuthors` credits
+  such a comment
   with the name the room saw it posted under, leaves its author id empty, and
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
@@ -221,23 +199,21 @@ and the next save from anybody repairs it.
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 
-Residual, stated plainly: comment names are the sender's own choice, as they
-are on the participant record the api used before; what changed is that a
-comment now carries the name of the session that posted it rather than of
-whoever saved first.
+Residual, stated plainly: comment names are the sender's own choice, as on any participant record; a comment
+carries the name of the session that posted it rather than of whoever saved first.
 
-## Phase 6 (shipped): a Plan board's set-up travels as deltas
+## A Plan board's set-up travels as deltas
 
 A [Plan board](../026-plan/plan-board.md) keeps its whole set-up (title, columns, rows, card fields,
 widgets, voting) in one element field, `planBoard`, and its column cogs and its menu's board rows edit it
 WITHOUT selecting the board, so the selection lock never heads off a collision. Two people setting
-up one board at once, say one renaming To do while the other renames Review, each sent a
-whole-element `update`, each receiver took the other's copy, and the two screens ended up holding
+up one board at once, say one renaming To do while the other renames Review, would each send a
+whole-element `update`, each receiver would take the other's copy, and the two screens would end up holding
 different boards (each with only the other's rename), while the store kept whichever save landed last. A
 whole-element update is not last-writer-wins in room order on the sender's own screen, because the
 room never sends a sender its own op back: it is last-writer-wins on every OTHER screen.
 
-The set-up now moves the way the other multi-writer fields do:
+So the set-up moves the way the other multi-writer fields do:
 
 - **A `board` delta carries the change, not the set-up.** `planBoardPatch(before, after)`
   (`packages/project/src/plan-board-patch.ts`) names only what changed: the top-level fields set
@@ -271,7 +247,7 @@ The set-up now moves the way the other multi-writer fields do:
   with no deltas, so its copy of the set-up is taken.
 - **The ledger records it.** For each board, the latest value of every top-level field and every
   column field, each column added or removed, and the latest order, each with the seq that set it.
-  A save merges in only the entries the saver had not seen (phase 3), so the store keeps both renames.
+  A save merges in only the entries the saver had not seen ([The store keeps multi-writer fields](#the-store-keeps-multi-writer-fields)), so the store keeps both renames.
 
 Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
 do) in the same moment still each see the other's value, exactly as a same-element collision on
@@ -280,9 +256,8 @@ any shape does; the next change to that field from either side settles it.
 ## Saves
 
 A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan ledger changes waits up to
-`ROOM_SEQUENCE_ACK_TIMEOUT_MS` for the room before its PUT, and a newer save of the same tab used to overtake it, so
-the server kept the older snapshot while the client believed the newer one saved and peers received the older
-element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or
+`ROOM_SEQUENCE_ACK_TIMEOUT_MS` for the room before its PUT. A newer save of the same tab overtaking it would leave the server with the older snapshot while the
+client believed the newer one saved, so each save or delete of a tab starts only once that tab's previous one has settled, landed or
 failed; different tabs never wait on each other.
 
 ### A save that wrote over a peer's change writes again
@@ -305,5 +280,5 @@ a write again sends nothing, so it starts no further one, and only a peer still 
 A peer's `project-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
 saved yet (`keepUnsavedTabChanges`, judged against the save baseline as it was before the op): a tab added here and
 not yet saved stays, after the tab it followed, and a tab deleted here and not yet saved stays deleted. Replacing the
-screen with the list dropped a new tab before its first save, and brought a deleted one back as an empty placeholder
-whose next save emptied the real tab for everyone. The baseline takes the list as it is.
+screen with the list would drop a new tab before its first save, and bring a deleted one back as an empty tab
+whose next save empties the real tab for everyone. The baseline takes the list as it is.

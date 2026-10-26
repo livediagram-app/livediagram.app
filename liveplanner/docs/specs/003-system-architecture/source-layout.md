@@ -1,79 +1,62 @@
-# Source layout: group `apps/editor` components + hooks by domain
+# Source layout: `apps/editor` grouped by domain
 
-Status: **done** — both `apps/editor/hooks/` and `apps/editor/components/` have
-been reorganised into the buckets below.
+`apps/editor`'s components and hooks are grouped by domain, not by type, so a reader finds "the sheet components"
+or "the persistence hooks" in one folder. The persistence boundary is split the same way in `apps/editor/lib/api/*`
+(`projects.ts`, `tabs.ts`, `items.ts`, `sheets.ts`, `share.ts`, ...). This complements the no-god-files rule in
+`AGENTS.md` (cohesion over line count).
 
-## Problem
-
-`apps/editor` has grown two flat grab-bag directories:
-
-- `apps/editor/components/` — ~157 files, alphabetical, mixing 3-line leaves
-  (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
-  (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
-- `apps/editor/hooks/` — ~66 files, canvas state machines
-  (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
-  (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
-  (`useFolders.ts`, `useTeams.ts`).
-
-The blessed counter-example already in the tree is `apps/editor/lib/api/*`,
-which is split by domain (`projects.ts`, `tabs.ts`, `share.ts`, …). A new
-engineer can find the persistence boundary instantly; finding "the
-canvas components" means scrolling 157 alphabetised entries. This is the
-flat-directory half of the consistency review (item #9); it complements
-the no-god-files rule in `AGENTS.md` (cohesion over line count).
-
-## Proposed taxonomy
-
-Group by domain, not by type. Target subdirectories (indicative, not
-exhaustive — each file lands in the bucket that owns its concern):
+## The folders
 
 `apps/editor/components/`
 
-- `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
-  `LinkCardView`, …), overlays, marquee, layers.
-- `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
-  `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
-- `panels/` — side/floating panels (`CollaboratePanel`,
-  Explorer surfaces).
-- `palette/` — palette + context-menu tiles/rows.
-- `chrome/` — header, toolbars, docks, tab bar.
-- `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.
-- `primitives/` — local leaves (`PortalMenu`, `BackBar`, chart leaves) not
-  promoted to `@liveplanner/ui` or `@liveworkspace/ui` (which holds `Portal`).
+- `canvas/`: the canvas host (`Canvas.tsx`, `EditorCanvasHost.tsx`), element views (`BoxedElementView`,
+  `ArrowView`, the chart views), overlays, selection chrome and remote cursors.
+- `chrome/`: the header, toolbars, zoom controls and the tab bar.
+- `colour/`: the colour picker and custom colour editor ([Colour picker](../004-interface-design/colour-picker.md)).
+- `dialogs/`: modal surfaces (`ConfirmDialog`, `ImportTabDialog`, `ExportTabDialog`, `CanvasThemeDialog`, the
+  settings dialog's panes).
+- `forms/`: the Form tab's builder and its response views ([Forms](../030-forms/forms.md)).
+- `notes/`: an element's rich-text note editor.
+- `palette/`: the element menu (`EditorContextMenu`, its sections, tiles and rows) and the tile definitions
+  Start Planning and the Dashboard slot pickers draw from.
+- `panels/`: side and floating panels (the Collaborate panel, the action popover).
+- `plan/`: boards, cards, the item panel, the card type editor, plan views, board widgets, Dashboards
+  (`dashboard/`), Start Planning (`start/`), and the plan view and widget faces (`views/`, `widgets/`).
+- `primitives/`: app-local leaves (icon glyphs, portal menus, chart leaves) not promoted to `@liveplanner/ui`
+  or `@liveworkspace/ui`.
+- `providers/`: React context providers the editor mounts once.
+- `rich-text/`: the label editor's rich-text parts.
+- `sheets/`: the Sheet element: grid, formula bar, toolbar, the rules editors (`rules/`)
+  ([Sheet element](../029-sheets/blueprints/sheet-element.md)).
+- `split/`: side by side tabs ([Split view](../007-editor/split-view.md)).
+- `start/`: the start panel ([Start panel](../007-editor/start-panel.md)).
+- `tour/`: the tours' stage and art ([Plan tour](../026-plan/plan-tour.md)).
+
+The toast stack, the selection store and other editor parts every product shares live in
+`@liveworkspace/workbench` (`../packages/workbench`), not here; `hooks/ui/useToast.tsx` wraps its `ToastStack`
+([Toasts](../004-interface-design/toasts.md)).
 
 `apps/editor/hooks/`
 
-- `canvas/` — drag, marquee, element style, keyboard shortcuts.
-- `persistence/` — folders, teams, capabilities, share links.
-- `ui/` — confirm, toast, panel layout, escape/click-outside.
-- `collab/` — room connection, presence.
+- `canvas/`: drag, marquee, element style setters, keyboard shortcuts.
+- `collab/`: the room connection and presence.
+- `editor/`: editor-wide hooks that belong to no one surface (the default tool, custom colours, tag colours, the tour square).
+- `forms/`: the Form tab's state.
+- `persistence/`: the project, its tabs, capabilities and share links.
+- `plan/`: the item store client, boards, card types and Dashboards.
+- `sheets/`: the sheet store client.
+- `ui/`: confirm, toast, panel layout, escape and click-outside.
 
-Rules:
+`apps/editor/lib/` holds pure modules and clients: `api/` (the api client by domain), `export-plan/`,
+`offline/` ([Offline Mode](../006-project/offline-mode.md)), `workbench/` and `testing/`, beside flat modules.
+`apps/editor/app/` holds the routes ([New project route](../007-editor/new-project-route.md)).
 
-- Import via the `@/components/<domain>/X` / `@/hooks/<domain>/X` path; no
-  per-directory barrels (keeps tree-shaking + matches today's direct-path
-  imports).
-- A file belongs to the domain of its concern, not the screen that happens
-  to render it first.
-- Cross-app primitives keep migrating to `@liveplanner/ui` (see review #4/#5:
-  `Button`, `TextInput`); domain folders are for app-local code.
+## Rules
 
-## Execution
-
-Each directory moves **atomically in its own pass** — never a partial move
-within a directory, which would leave it half-organised (worse than
-consistently-flat). Every move rewrites that directory's `@/<dir>/X` import
-sites across hundreds of files, including hot files (`EditorView`,
-`useEditorState`, `Canvas`) edited continuously by the repo's background
-auto-committer, so each pass runs in an isolated `git worktree` off
-`origin/main`: `git mv` each file into its bucket, a quote-anchored
-project-wide import-path rewrite, then `typecheck && lint && test && format`
-green before a single commit and push.
-
-- **`hooks/` — done.** 66 files → canvas / persistence / ui / collab; ~410
-  files had their `@/hooks/*` imports rewritten; full suite green.
-- **`components/` — done.** 158 files → dialogs / panels / palette / chrome /
-  primitives / canvas (`providers/` already existed, left as-is). Two passes:
-  first every inter-component relative import (`./X`, `../X`, `./providers/X`)
-  was resolved to a `@/components/...` alias, then the files moved and the
-  aliases were rewritten to bucketed paths. Full suite green.
+- Import via the `@/components/<domain>/X` and `@/hooks/<domain>/X` paths; no per-directory barrels (keeps
+  tree-shaking and direct-path imports).
+- A file belongs to the domain of its concern, not the screen that happens to render it first.
+- Code more than one app needs moves to a package: `@liveplanner/ui` for liveplanner's apps, `@liveworkspace/*` in
+  the root `packages/` for every product ([docs/structure.md](../../../../docs/structure.md)). Domain folders are for
+  app-local code.
+- A folder moves whole, in one change, never half-organised.

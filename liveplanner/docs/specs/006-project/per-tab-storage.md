@@ -103,7 +103,7 @@ the real server row**. So while the active tab's content is outstanding:
   Retry instead means a wrong 404 can never wipe content.
 
 The overlay is **pointer-only** — it cannot block `window` keydown or
-`project` paste, so the spinner alone is not the edit lock. The actual
+`document` paste, so the spinner alone is not the edit lock. The actual
 guard is that the active tab's load state feeds the editor's single
 `editsBlocked` gate (alongside locked-tab and view-only), so EVERY
 commit-based mutator — shape shortcuts, paste, AI apply, import,
@@ -145,17 +145,15 @@ at once, as before.
 
 ### A refused save stops; a failed save doesn't
 
-The autosave used to treat every rejection as one thing: set the status to
-`error`, toast "Couldn't save your changes. Check your connection.", and try
-again on the next edit. That's right for a blip, a 5xx, or a dropped
-connection — the next attempt may well work (and it now comes without waiting for
-the next edit, see Retrying a failed save).
+Treating every rejection as one thing (status `error`, the toast "Couldn't save your changes. Check your
+connection.", another try on the next edit) is right for a blip, a 5xx, or a dropped connection: the next attempt
+may well work, and it comes without waiting for the next edit (see Retrying a failed save).
 
 It's wrong for a **403**. The server isn't failing, it's refusing: the share
 link was revoked, we were removed from the team, or the role changed under us.
-No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
-and the only feedback blamed a connection that was fine — so someone could
-edit for an hour against a project that would never take a single write. Live
+No retry can succeed. Retrying would fire another doomed PUT on every keystroke,
+and feedback blaming a connection that was fine would let someone edit for an
+hour against a project that would never take a single write. Live
 telemetry showed the shape of it: **297 `Http403` in one day** against a
 baseline in single digits, which is one long session failing over and over.
 
@@ -182,7 +180,7 @@ whatever still differs from the last saved state, so nothing is sent twice
 
 A save that never answers counts as failed too. Each tab's saves run one after another, so a request
 left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
-used to hold back every later save of that tab. A tab save and a project meta save now give up
+would hold back every later save of that tab. A tab save and a project meta save give up
 after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
 `apps/editor/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
 above sends the newest content on a fresh connection.
@@ -212,8 +210,8 @@ anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 
 A **413** (`payload_too_large`) is the server refusing a tab over its row cap
 ([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
-neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
-"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. Blaming the connection and retrying every minute would be a save that could
+never land.
 
 So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
 
@@ -262,9 +260,8 @@ untouched placeholder keeps its object.
 
 A fetched tab's content replaces what is on screen unless that already holds
 elements (the user drew on it first). An empty placeholder never keeps the
-fetched content out, whatever else it carries (a dismissed Quick Start's
-`templateChosen` once did, and the tab then counted as loaded while still the
-empty placeholder, so the autosave saved it over the stored tab). A fetch whose
+fetched content out, whatever else it carries (otherwise the tab would count as loaded while still the
+empty placeholder, and the autosave would save it over the stored tab). A fetch whose
 content did not land does not make its tab loaded.
 
 Landing fetched content never clears the undo history: it goes into the present

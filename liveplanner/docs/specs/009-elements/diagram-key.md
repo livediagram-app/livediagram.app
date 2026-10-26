@@ -58,10 +58,3 @@ A new key is 260 wide and grows to fit its rows (28 px a row under a 32 px title
 
 The MCP server and the REST API take `diagram-key` with `label` and `keyMeanings`; the rows are derived when the board
 next loads or changes.
-
-## Element tour
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. The Diagram Key tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.

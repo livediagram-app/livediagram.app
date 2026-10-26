@@ -37,8 +37,8 @@ editor carried 247 findings and 73 suppressions; at zero they are errors, so no 
   (`../packages/workbench/src/hooks/ui/useFollowingDraft.ts`).
 - **Effects synchronise with the outside world** (subscriptions, timers, the DOM, storage, the network)
   and set state only from their callbacks. External stores are read with `useSyncExternalStore`: the
-  guest id (`subscribeGuestSelfId`), the guest-data migration (`subscribeGuestMigration`), the URL,
-  the help article's headings.
+  guest id (`subscribeGuestSelfId`), the server's release (`subscribeServerRelease`), the signed-in hint,
+  the changeset reveals, the help article's headings.
 - **An element a popover anchors to** is held in state through a callback ref, so the first render that
   has the element has it. A floating element re-positions through `useReposition(measure)`, with
   `measure` memoised, so its dependencies are checked.
@@ -119,8 +119,8 @@ Every app is a static export, so every component also renders once at build time
 - **A node that carries more than a ref** stays: React event props (a tooltip's trigger), `textContent`, or the
   component's own box are not what a `FragmentInstance` offers.
 - **An event React exposes is listened to through React** (`onFullscreenChange`, `onFullscreenError`) when it fires
-  on an element the component renders. An event that fires on `<html>` or `project` (presenting fullscreens the
-  whole project) is beyond any component's tree, so an effect listens on `project`.
+  on an element the component renders. An event that fires on `<html>` or `document` is beyond any component's
+  tree, so an effect listens on `document`.
 
 ## Out of scope
 

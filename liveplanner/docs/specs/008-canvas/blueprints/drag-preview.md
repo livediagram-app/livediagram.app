@@ -70,9 +70,9 @@ drags for collaborators.
   `deps.tick(els => applyOverlay(els, overlay))`,
   `clearLocalPreview()`.
 - The drag effect running with no drag while a preview remains (a route that neither committed nor
-  cancelled) commits it, matching the old behaviour where every tick was a write.
+  cancelled) commits it.
 - Cancel (Escape, a pinch or second touch, unmount): `cancelPreview()`; nothing was written, so
-  nothing is restored (a cancelled pinch used to leave a half-applied move). Escape no longer calls
+  nothing is restored, so a cancelled pinch never leaves a half-applied move. Escape does not call
   `cancelToCheckpoint`.
 - A gesture that changed nothing (a click) commits nothing and logs nothing.
 
@@ -105,8 +105,7 @@ drags for collaborators.
 - The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
   `applyOverlay(elements, overlay)` while a preview lasts, so the union handles follow a
   multi-resize: `useCanvasSelectionView(input, tabId)` reads `usePreviewedElements` itself, so
-  `Canvas` does not render for a preview frame. `Canvas`'s `plusBlocked` reads the project's
-  elements; the pluses are hidden while a selection moves.
+  `Canvas` does not render for a preview frame. The pluses are hidden while a selection moves.
 
 ### Live drags (part two)
 

@@ -19,7 +19,7 @@ room at most once a minute) so the series knows who is active.
 
 **Transactional — always send (when the feature is on):**
 
-1. **Team invite** — no longer sent by liveplanner: teams, their invitations
+1. **Team invite**: not sent by liveplanner: teams, their invitations
    and those emails (the invite, its reminders and the answer to the admins)
    belong to the liveworkspace account and come from liveworkspace, which also
    counts them ([Teams](../013-workspace/teams.md)).
@@ -165,7 +165,6 @@ name, or a recipient count.
 ## 6. Out of scope (for now)
 
 Dark-mode email variants, bounce handling (Email Service handles delivery and
-refuses suppressed recipients; sends are best-effort). Per-notification **email preferences** are no longer out of
-scope — [Account settings & email notifications](profile-and-email-notifications.md)
+refuses suppressed recipients; sends are best-effort). Per-notification **email preferences** are in scope, [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each notification, stored in the person's settings at
 the accounts Worker ([User preferences](../007-editor/user-preferences.md)).

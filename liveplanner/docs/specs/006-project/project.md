@@ -49,14 +49,13 @@ that named it moved in one change:
 - **Code:** identifiers, files and packages (`@liveplanner/project`, `apps/editor/app/project/[id]`).
 - **Stored data:** there is no D1. Each plan's own SQLite names the container `plan` (the `plan`
   row, `plan_tabs`, `plan_id`), and the stored values that name it (titles and snapshot keys, the
-  `notifyProjectJoin` preference, telemetry types) use project. The tab kind `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+  `notifyProjectJoin` preference, telemetry types) use project. The tab kind `'diagram'` and anything naming a drawing are left alone.
 - **Realtime and storage:** the Durable Object class is `PlanRoom` (binding `PLAN_ROOM`), a SQLite-backed class declared
-  new in its first migration (liveplanner was never deployed, so it carries no rename history); it holds each plan's
+  new in its first migration, with no rename history; it holds each plan's
   content ([API](../015-api/api.md#storage)); the room ops are `project-meta` and `project-trashed`.
 - **Stored names:** a project still called "Untitled diagram" counts as untitled, exactly as "Untitled project"
   does.
-- **No old addresses.** liveplanner was never deployed, so nobody holds a `/diagram/<id>` link or an old help
-  address: the router redirects neither, and there are no `/api/diagrams…` routes and no MCP `*_diagram` tools.
+- **No old addresses.** There is no `/diagram/<id>` link or old help address to honour: the router redirects neither, and there are no `/api/diagrams…` routes and no MCP `*_diagram` tools.
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

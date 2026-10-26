@@ -112,8 +112,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as **five
   flyout rows of the menu itself**, under Style and set apart from it by a separator, each opening its own panel to the
-  side. They used to sit one level down, as sub-sections of a **Board** flyout, which cost a click and hid what was
-  there behind a name the rows said better; the cog shows the same rows: **Board Setup** (its **Title** and **Setup
+  side, rather than one level down under a **Board** flyout, which would cost a click and hide them behind a name
+  the rows say better; the cog shows the same rows: **Board Setup** (its **Title** and **Setup
   Board**; a board on the canvas is added to the slides from its element menu, above; the board itself has no ⋯),
   **Columns** (below; left out on an All Cards or Archive board and on one not set up yet, which Setup Board sets up),
   **Swimlanes** (**Group Rows By**, one grid: None, Assignee,

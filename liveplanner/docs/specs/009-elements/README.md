@@ -2,11 +2,14 @@
 
 Follow the references below only as needed; never upfront.
 
-**In liveplanner** the element kinds a tab places are Plan's: the board, its cards, plan views, the Sheet and the
-Dashboard's charts and notes ([Plan tabs](../026-plan/plan-tabs.md)). The diagram kinds specified here (flowcharts,
-mind maps, entities, the concept graphics, Sankey and the rest) came from livediagram; no Plan surface places them,
-but their code is still in `packages/project` and `apps/editor` and cites these specs, so they stay until it goes
-([Build phase](../005-project-roadmap/prototype-scope.md#next)). The charts stay for good: Dashboards use them.
+The element kinds a Plan tab places are the board, its cards, plan views, the Sheet, the Form and the Dashboard's
+charts, metrics and notes ([Plan tabs](../026-plan/plan-tabs.md)); the charts are specified here because Dashboards
+draw them. The other kinds here (flowcharts, mind maps, entities, the concept graphics, Sankey and the rest) are model
+kinds: `packages/project` validates them and its renderer draws them whole in every export, but no Plan surface
+places one. On the canvas a plain shape kind draws its outline and label; a kind that paints its own face (a code
+block, a Sankey, a concept graphic, a chart with no sheet behind it) has no face in liveplanner's element routers
+(`ElementFaceRouter`, `ShapeContentRouter`), so it shows as an empty box with its selection ring. They arrive with a tab: an import, a paste of the `liveplanner.elements` clipboard, or the elements an
+agent writes through `update_project` ([MCP server](../015-api/mcp-server.md)).
 
 - ./blueprints/README.md - when implementing or changing an element from its blueprint
 - ./annotations.md - when working on Annotations: Palette marker (themed circle + note glyph): hover to read its note, click to edit

@@ -84,9 +84,10 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   Server-rendered PNG previews (the MCP's inline images, the CLI) letter every font in Inter, so there the
   hand-drawn lines carry the look and the lettering does not; browser exports use the real font.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the hand-drawn line.
-- **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
-  hand-drawn wobble as the palette's Sketch tiles, so their lines tremble like pencil. The canvas and browser exports
-  both draw it (an SVG displacement filter, defined once per export and only when something needs it).
+- **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through a
+  hand-drawn wobble, so their lines tremble like pencil. The canvas has no face for a standalone icon or sticker
+  ([Elements](../009-elements/README.md)), so this shows in exports (an SVG displacement filter, defined once per
+  export and only when something needs it) and on an inline icon beside a label.
 - **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
   same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
@@ -108,8 +109,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.
 
 - **In WebKit** (Safari, and every browser on an iPhone or iPad), which runs a live wobble filter again on every
-  repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. Icons and stickers
-  keep theirs, drawn once into a still picture and redrawn only when the art changes. A face is not split: it draws
+  repaint (a pan at iPhone resolution took 220-400 ms a frame), the canvas draws no live wobble. A face is not split: it draws
   as it does under Flexible, its lettering in the handwriting font, inside its hand-drawn outline and shading. Other
   browsers and every export are unchanged.
 - **Not affected:** freehand pen strokes and highlights (already hand-drawn) and images (photos, not drawings).
@@ -224,11 +224,6 @@ Draws exactly as liveplanner did before finishes existed.
   screen is the page itself: its contents follow the finish, its own background stays plain. Sketch's handwriting is
   lifted to the UI face's x-height on these compact surfaces; Marker's lettering is drawn at its own size (it has no
   true lowercase, so brought down it read too small).
-- **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
-  glyphs are square and fine, under Sketch they are drawn wobbly and doubled, under Marker they are drawn bold with round ends. Full-colour art (technology icons,
-  stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.
-  Under Sketch the tiles **fade in** where the other finishes pop in: a glyph drawn through the sketch filter, inside
-  a tile scaling up from nothing, could stay rasterised at its early size and show as a blurred square.
 
 ## Share roles
 
@@ -262,5 +257,4 @@ A sketched face costs one still copy of its DOM, taken once it settles (so a zoo
 frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face
 takes 6-14 ms, a pan costs nothing, and a zoom keeps every task under 50 ms; the icons' heavier two-pass wobble
 broke that budget on faces, so faces take one pass. WebKit is the exception: it re-runs a live filter on every
-repaint wherever it is layered, so there the wobble is drawn into still pictures (icons and stickers) or left out
-(faces), and a Sketch pan costs what a Flexible one does.
+repaint wherever it is layered, so there a face's wobble is left out (the face draws whole), and a Sketch pan costs what a Flexible one does.

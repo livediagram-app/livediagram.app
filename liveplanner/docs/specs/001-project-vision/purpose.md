@@ -3,9 +3,9 @@
 liveplanner is a web app where teams **plan the work together, in real time**.
 
 This is the root of the spec tree: every other spec is a decision taken inside
-the boundaries set here. That only works if it stays true, so it carries a
-[record of the boundaries that have moved](#boundaries-that-have-moved) rather
-than quietly describing a product that no longer exists.
+the boundaries set here. That only works if it stays true, so a spec that moves a
+boundary updates this page in the same change and is named
+[beside the boundary it moved](#boundaries-set-by-other-specs).
 
 ## What it is
 
@@ -76,8 +76,8 @@ never arrives.
 
 ## What it is _not_
 
-- **Not a diagram tool or a whiteboard.** liveplanner was forked from livediagram and keeps only its Plan mode;
-  shapes, arrows, freehand drawing, pages and workshops are livediagram's, not this product's. The test for a
+- **Not a diagram tool or a whiteboard.** Diagrams, freehand drawing, pages and workshops are livediagram's,
+  not this product's: every tab is a Board, Sheet, Dashboard or Form ([Scope](../002-project-scope/product-scope.md)). The test for a
   new feature is whether it helps a team plan and run work, not whether a canvas could hold it.
 - **Not a writing tool or wiki.** A card has a description and a project has comments; long-form prose is
   not the goal.
@@ -85,17 +85,14 @@ never arrives.
   the default posture ([Offline Mode](../006-project/offline-mode.md)).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the planner
   ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
-- **Not a public codebase (yet).** The code is MIT licensed but its repository is private; the product is free to use.
+- **Not a public codebase.** The code is MIT licensed but its repository (the liveworkspace monorepo) is private; the product is free to use.
 
-## Boundaries that have moved
+## Boundaries set by other specs
 
-When a boundary moves, it is recorded here in the same change, with the spec that moved it.
-
-- **From a diagram canvas to a planner** (October 2026): liveplanner began as a fork of livediagram, whose
-  boundary was "teams build diagrams together". The fork keeps Plan (Board, Sheet, Dashboard and Form tabs) and
-  the core around it (the Explorer, sign-in, collaboration, comments, sharing, teams, the Trash, settings,
-  theming, the MCP server and the CLI), and drops the diagram, draw, workshop and pages modes with their
-  elements, importers, facilitation tools and community gallery ([Scope](../002-project-scope/product-scope.md)).
+- **A planner, not a canvas**: [Scope](../002-project-scope/product-scope.md) holds what is in (Plan's Board,
+  Sheet, Dashboard and Form tabs, and the core around them: sign-in, collaboration, comments, sharing, the Trash,
+  settings, theming, the MCP server and the CLI, with the Explorer, teams and the Inbox as liveworkspace's platform
+  services) and what is out.
 - **"Not an offline-first desktop app"**: narrowed by [Offline Mode](../006-project/offline-mode.md). Still not
   a desktop app, and cloud is still the default, but a project can be kept only in this browser's IndexedDB and
   converted back and forth.
@@ -114,16 +111,16 @@ not "is this good?" but "does a team running this plan need it in the project?".
 ## How it ships
 
 liveplanner is **MIT licensed** and runs as one **hosted product**, free for
-everyone, no paid tier, with no trackers and no ads. See
-[Business model + licence](../002-project-scope/business-model-and-licence.md). It has not been deployed yet
-([Build phase](../005-project-roadmap/prototype-scope.md)).
+everyone, no paid tier, with no trackers and no ads. It is hosted at
+[liveplanner.app](https://liveplanner.app) ([Deployment](../016-platform/deployment.md)); see
+[Business model + licence](../002-project-scope/business-model-and-licence.md).
 
 The planner is **always available without signing in**: a visitor can build a
 real plan before being asked to create an account. Signing in (a liveworkspace account) adds sync,
 teams and per-account history on top of that
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 
-Usage is measured, anonymously and first-party, and published at `/telemetry`
-([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). That dashboard is how a claim on
+Usage is measured, anonymously and first-party, and published on liveworkspace's public dashboard, which
+`/telemetry` opens at liveplanner ([Telemetry](../017-telemetry/telemetry.md)). That dashboard is how a claim on
 this page gets checked: "the unit of value is the team" is a statement the Collaboration tab can agree or
 disagree with.

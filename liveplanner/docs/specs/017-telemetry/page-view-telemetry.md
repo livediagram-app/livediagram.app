@@ -131,38 +131,22 @@ article say so.
 
 ## Dashboard
 
-A **Pages** tab (`PagesView`) reads page views **by app**: Marketing, Live
-(the editor app), Help and Dashboard. The app is derived from the path's first
-segment using the same live route-segment list the router routes by (shared
-from `@liveplanner/api-schema`, so the dashboard and router can't disagree
-about which app serves a path). Top to bottom:
+The dashboard is liveworkspace's ([liveworkspace telemetry](../../../../liveworkspace/docs/telemetry.md)). Its Pages
+view reads page views **by app**: Marketing, Live (the editor app), Help and Dashboard. The app is derived from the
+path's first segment using the same live route-segment list the router routes by (shared from
+`@liveplanner/api-schema`, so the dashboard and router can't disagree about which app serves a path).
 
-- **Views by app** now lives on **Dashboard** as the **Page Views by App**
-  chart stack ([Telemetry + public transparency dashboard](telemetry.md)): a head plotting each app's line with the combined
-  count, opening into one card per app (the shared metric card, matching a set
-  of paths rather than one type). The per-card "N% of page views" line went
-  with the move, since catalogue charts are fixed definitions and the share
-  depends on the selected window; each app's count sits in the head's legend.
-- **Top pages.** The ten most-viewed pages across every app, then each app's
-  own top ten, as ranking cards, each row labelled with the raw path (not
-  title-cased) with its share bar and 30-day sparkline, balanced across two
-  independent columns ([Telemetry + public transparency dashboard](telemetry.md) `CardColumns`): apps serve very different
-  numbers of pages, and grid rows stretched each short card to the tallest
-  beside it.
+- **Views by app** is the Dashboard's **Page Views by App** chart stack: a head plotting each app's line with the
+  combined count, opening into one card per app (the shared metric card, matching a set of paths rather than one
+  type). Each app's count sits in the head's legend.
+- **Top pages.** The ten most-viewed pages across every app, then each app's own top ten, as ranking cards, each row
+  labelled with the raw path (not title-cased) with its share bar and 30-day sparkline, in two independent columns,
+  since apps serve very different numbers of pages.
 
-Removed in September 2026: an **Insights** row (landing, wizard, explorer,
-sign-up and help rates plus pages per visitor, each counted from the day page
-views began), a **Rising pages** card (biggest gain over the
-last 7 days against the 7 before), and the **All pages** list of every page
-(Search still reaches any single page; the Raw tab that also did was removed). The ten most-viewed
-pages were briefly a stack opening into the per-app lists; a set of rankings
-read side by side on the page is not a stack.
+Search reaches any single page. The page-view helpers live in
+`../liveworkspace/apps/site/app/telemetry/_shared/page-views.ts`, pure and tested apart from the view.
 
-The page-view helpers live in `../liveworkspace/apps/site/app/telemetry/_shared/page-views.ts`, pure and
-tested apart from the view.
-
-Page views are events, so they also count toward the window totals and Search
-like any other category.
+Page views are events, so they also count toward the window totals and Search like any other category.
 
 ## Out of scope
 

@@ -184,13 +184,16 @@ does; the add's route answers 201 too, as the OpenAPI manifest says. Resolve and
 
 Side effects, all in `waitUntil` (PR24, PR25):
 
-| Verb    | Timeline                                                                                       | Email                                               |
-| ------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| add     | `recordCommentAdded`, `reply` when the thread held a comment                                   | `notifyNewComment` when the caller is not the owner |
-| reply   | `recordCommentAdded` with `reply: true`                                                        | as add                                              |
-| resolve | `recordCommentResolved` with thread key `<projectId>:<elementId>` and the first comment's text | none                                                |
-| reopen  | none                                                                                           | none                                                |
-| delete  | none                                                                                           | none                                                |
+| Verb    | Email                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------ |
+| add     | `notifyNewComment` when the caller is not the owner; `notifyMentions` on a team plan, never for an API token |
+| reply   | as add                                                                                                       |
+| resolve | none                                                                                                         |
+| reopen  | none                                                                                                         |
+| delete  | none                                                                                                         |
+
+The Timeline entry is the platform's: the plan's outbox reports the write to the index
+([liveworkspace/docs/one-explorer-contracts.md](../../../../../liveworkspace/docs/one-explorer-contracts.md) "Timeline").
 
 `ProjectCommentThread`:
 

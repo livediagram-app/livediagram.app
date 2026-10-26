@@ -12,20 +12,18 @@ test lives here.
 
 ## When it runs
 
-The suite is a **per-PR merge gate**. **Every one of its jobs** (below) is a required status check
-on `main` beside CI's jobs ([CI](testing.md#ci)), so a pull request whose change breaks a browser flow
-cannot merge. A check is named after its job, so renaming a job or changing the shard count
-updates the `main` ruleset's required checks in the same change; until then a pull request waits
-on a check that never reports, or merges without one. A post-merge-only run let regressions land unseen and kept `main` red for
-hours at a time while later pull requests inherited the failure.
+The suite is a **per-PR merge gate**. It runs from the monorepo's root `e2e.yml` (named **E2E**), which calls
+`e2e-product.yml` for liveplanner whenever a change reaches its editor (the liveworkspace root's `docs/ci.md`). The
+workflow's one result job, **E2E**, is a required check on `main` beside **CI** ([CI](testing.md#ci)), so a pull
+request whose change breaks a browser flow cannot merge, and a renamed job or a new shard count needs no ruleset
+change.
 
-The repository is public, so GitHub-hosted runners cost nothing; the price of the gate is the
-run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the gate never
-holds back a merge for longer than CI itself does. The run needs no secret, no
-Cloudflare account and no deployed environment: the stack is local to the runner
-([The stack under test](#the-stack-under-test)), so every pull request runs it.
+The price of the gate is the run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the
+gate never holds back a merge for longer than CI itself does. The run needs no secret, no Cloudflare account and no
+deployed environment: the stack is local to the runner ([The stack under test](#the-stack-under-test)), so every
+pull request runs it.
 
-The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggered on:
+`e2e.yml` runs on:
 
 - **`pull_request`**: every pull request, the gate;
 - **push to `main`**: the merged result, since a pull request is tested against the `main` it
@@ -33,24 +31,23 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 - **`workflow_dispatch`**: by hand against any branch; such a run is not attached to a pull
   request, so it never stands in for the required check.
 
-A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
-pull request never queues two runs of the suite.
+A new push to a pull request cancels its run in flight (`concurrency`); on `main` every commit's run goes to the end.
 
-It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in Drive, perf and WebKit projects),
-spread over parallel jobs so the wall time is the slowest job, not the sum:
+It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects), spread over parallel
+jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                   | Runs                                                                                                    |
-| ------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live                                     | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | live, help, telemetry, then marketing    | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                                        | Runs                                                                                                    |
+| ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer)           | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | the editor and help, then marketing, and liveworkspace's site | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | the editor with sign-in on (`build:signed-in`)                | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
-Only the sites audit opens help, telemetry and marketing, so only its job pays for their builds. Marketing builds after the
+Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
 app's Turbopack cache, and beside the app's own build the two corrupt it.
 Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
 
-Cost controls, all in `e2e.yml` and `playwright.config.ts`:
+Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 
 - **Chromium only** (`--project=chromium`); no Firefox / WebKit.
 - **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
@@ -71,23 +68,22 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   saves, or shares it) opens `/new` through `serverNewUrl`, which adopts a minted guest and adds a `?folder=` of
   theirs, the placement that makes `/new` create on liveplanner whoever is creating. `startBlankProject` does it for
   every caller. A spec that only needs a canvas takes the guest's own `/new`.
-- **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
+- **Sharded** (`--shard=i/6`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
-  test (container, install, the live build), and the Sites audit, which cannot be split, takes
+  test (container, install, the editor build), and the Sites audit, which cannot be split, takes
   about 4.5 minutes. The shard count is the smallest that keeps the slowest shard within that
   floor: more shards finish no sooner, and each takes one of the account's 20 concurrent runner
   slots that every other pull request's run waits on. When the suite grows past the floor, the
   shard count grows with it.
-- **No type check in the builds**: `e2e.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
-  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
-  apps). CI's required Checks job already type-checks every app with `tsc --noEmit` against the
-  same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
+- **No type check in the builds**: `e2e-product.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
+  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by every Next app). CI's Checks job
+  already type-checks every app against the same tsconfig; repeating it cost each editor build about 40 seconds. Deploys leave it unset.
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
   run on `main` before it builds, so it compiles only what changed
-  (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it,
-  keyed by version, lockfile and commit, one copy per set of builds (`live`, `live-signed-in`,
-  `sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
+  (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it
+  (`.github/actions/next-cache-save`), keyed by version, lockfile and commit, one copy per set of builds
+  (`liveplanner-live`, `liveplanner-live-signed-in`, `liveplanner-sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
   re-checks every input, so a cache from an older commit only ever saves work, and a lockfile change
   starts cold. Each restore logs `[next-cache] <name>: restored <key>` or a miss. A cache only ever
   saves time: every build runs through `scripts/next-build-cold-retry.sh`, which, when a build fails
@@ -101,9 +97,10 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
   on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
   guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
-  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e.yml`
+  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e-product.yml`
   uploads them whenever any holds a trace, a timed-out run included, one artefact per job
-  (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
+  (`liveplanner-playwright-report-shard-i`, `liveplanner-playwright-report-sites`,
+  `liveplanner-playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it. `seedTab` returns once the seeded elements have
   finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
@@ -122,7 +119,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    (its own D1 migrated afresh on each boot). The api has no D1: each plan's object makes its own SQLite on first use.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
-2. **live**: the static `apps/editor/out` served by a minimal Node
+2. **editor**: the static `apps/editor/out` served by a minimal Node
    server that reproduces the three things the production router +
    editor worker do (so clean routes and the project placeholder resolve
    identically to prod):
@@ -137,7 +134,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      `liveworkspace/apps/site/out` when that site is built, as the router's workspace routes
      (`@liveworkspace/sites/workspace-proxy`) do; without the build they answer a logged 404, so only the specs
      that open the Explorer page need it (CI builds it in each job that runs them);
-   - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
+   - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
@@ -158,7 +155,7 @@ The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3202 + api :8887) runs
+developer with `pnpm dev` already running (editor :3202 + api :8887) runs
 `pnpm --filter @liveplanner/editor test:e2e` against that stack with no
 extra boot.
 
@@ -176,7 +173,7 @@ The Explorer at `/explorer` is liveworkspace's site, a separate export, so it ne
 
 `pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3215`, api `:8225`, marketing `:3216`), so a guest stack already up on `:3202` is never
+(editor `:3215`, api `:8225`, marketing `:3216`), so a guest stack already up on `:3202` is never
 reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
@@ -187,7 +184,7 @@ account API's `tokens/verify` as in production. Display names are the account's 
 through the account API's `profiles/write` and `profiles/read`, so an agent's changes and comments carry the name the
 person set (`packages/auth-client/src/e2e-token-stand-in.ts` answers both, shared by every app's stack). So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one project. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's local storage outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack's local storage outlives a test. `e2e-product.yml` builds and runs them in their own job, beside the smoke shards.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
@@ -202,8 +199,7 @@ code paths; this is the alarm.
 `apps/editor/e2e/fixtures.ts` exports a `test` extended with a **`pageErrors`**
 fixture, which collects every `pageerror` and `console.error` the page raises,
 minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
-chatter, Chromium's generic "Failed to load resource" line, and the blocked
-model fetches of the photo tests). A test that takes `pageErrors` ends with
+chatter, Chromium's generic "Failed to load resource" line). A test that takes `pageErrors` ends with
 **`expectNoPageErrors(pageErrors)`**, which fails naming what leaked. A Trusted Types violation is one of them:
 the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-platform/trusted-types.md)).
 
@@ -217,30 +213,49 @@ A spec that opens its own context with `browser.newContext()` sets it there with
 
 One spec file per feature, each linking the spec it proves:
 
-| File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                                  | Spec                                                                                           |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`                 | a guest's `/new` opens a plan in This Browser on Start Planning; `/explorer` renders for a guest; create a blank diagram, add a shape, label it, and it survives a reload; on a phone, the Session strip keeps Undo on screen and opens the Timer on top                                                                                                                                      | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)             |
-| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-project/per-tab-storage.md)                                           |
-| `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
-| `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                                          | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
-| `tab-scoped-share.spec.ts`      | a tab-scoped link opens its tab and nothing else; the owner is never scoped                                                                                                                                                                                                                                                                                                                   | [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)                           |
-| `arrow-labels.spec.ts`          | a label sits on its broken-open line; double-clicks edit rather than bend; Shift+Enter and Enter; blank lines keep their height                                                                                                                                                                                                                                                               | [Arrow labels](../008-canvas/arrow-labels.md), [Arrow bending](../008-canvas/arrow-bending.md) |
-| `arrow-rebind.spec.ts`          | arrows re-anchor live while dragging, keep a quarter point on the new side, and the Settings switch turns it off                                                                                                                                                                                                                                                                              | [Arrow anchors](../008-canvas/arrow-anchors.md)                                                |
-| `grips-on-top.spec.ts`          | a selected element's resize handles and an arrow's end grips are the topmost thing at their centres, whatever the element's rotation, opacity or animation and whatever is drawn over it                                                                                                                                                                                                      | [Canvas and palette](../008-canvas/canvas-and-palette.md) (Resize)                             |
-| `viewport-on-add.spec.ts`       | the first element dropped on an empty tab stays where it was dropped; a reloaded tab is framed on its content                                                                                                                                                                                                                                                                                 | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                      |
-| `multicolour-theme.spec.ts`     | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                                  | [Multi-colour themes](../011-theme/multicolour-themes.md)                                      |
-| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                     | [Editor app](../007-editor/editor-app.md)                                                      |
-| `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                              | [Power user mode](../007-editor/power-user-mode.md)                                            |
-| `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                                     | [User preferences](../007-editor/user-preferences.md)                                          |
-| `hints.spec.ts`                 | a palette tile's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                         | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md) |
-| `icon-weight.spec.ts`           | icons draw regular by default and bold once chosen, across a reload; chrome glyphs keep the house weight in on-screen px                                                                                                                                                                                                                                                                      | [Iconography](../004-interface-design/iconography.md)                                          |
-| `scrollbars.spec.ts`            | every scrolling surface is in-theme, per colour scheme                                                                                                                                                                                                                                                                                                                                        | [Scrollbars](../004-interface-design/scrollbars.md)                                            |
-| `motion-budget.spec.ts`         | every chrome animation (menus, dropdowns, context menu, Settings, Search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                                                                                                                          | [Motion](../004-interface-design/motion.md)                                                    |
-| `contrast-audit.spec.ts`        | dark mode, on the wizard, the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                         |
-| `optical-audit.spec.ts`         | dark mode at 4x, on the wizard, the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
-| `optical-audit-sites.spec.ts`   | the same audit on the help centre, the telemetry dashboard and the marketing site                                                                                                                                                                                                                                                                                                             | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
-| `marketing-header-fit.spec.ts`  | the marketing header fits a 320, 360, 390 and 430px phone: no sideways scroll, the last control keeps its 16px gutter (in the `sites` project, which builds marketing)                                                                                                                                                                                                                        | [Marketing site](../019-marketing/marketing-site.md)                                           |
-| `optical-clip.spec.ts`          | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                                     | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)         |
+| File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                      | Spec                                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `smoke.spec.ts`                 | a guest's `/new` opens a plan in This Browser on Start Planning; `/explorer` renders for a guest; a seeded element on a blank plan survives a reload; on a phone, the Session strip keeps Undo on screen and opens its tools on top                                                                                                                                               | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)             |
+| `explorer.spec.ts`              | a guest makes, syncs, renames, opens, stars, files, deletes and restores a plan in the Explorer; the Explorer offers every app's items, plans first                                                                                                                                                                                                                               | [liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)           |
+| `plan-collab.spec.ts`           | two people renaming different columns of one board both keep their rename; a late joiner sees a card already held                                                                                                                                                                                                                                                                 | [Plan mode](../026-plan/plan-mode.md#collaboration)                                            |
+| `plan-sheet.spec.ts`            | a Sheet tab takes a formula, works it out, keeps it, and fills the tab                                                                                                                                                                                                                                                                                                            | [Sheet](../029-sheets/sheet.md)                                                                |
+| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                    | [Per-tab storage](../006-project/per-tab-storage.md)                                           |
+| `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                             | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
+| `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                              | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)           |
+| `drag-live.spec.ts`             | a collaborator sees a drag live, and where it lands                                                                                                                                                                                                                                                                                                                               | [Drag preview](../008-canvas/drag-preview.md)                                                  |
+| `drag-preview.spec.ts`          | a drag moves the box and its arrow on screen while writing nothing, then writes once on release; Escape puts it back; one undo takes the drag back                                                                                                                                                                                                                                | [Drag preview](../008-canvas/drag-preview.md)                                                  |
+| `tab-scoped-share.spec.ts`      | a tab-scoped link opens its tab and nothing else; the owner is never scoped                                                                                                                                                                                                                                                                                                       | [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)                           |
+| `select-clicks.spec.ts`         | selection follows the click rules                                                                                                                                                                                                                                                                                                                                                 | [Selection clicks](../008-canvas/blueprints/selection-clicks.md)                               |
+| `selection-chrome.spec.ts`      | the selection chrome follows the selection                                                                                                                                                                                                                                                                                                                                        | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                      |
+| `canvas-still.spec.ts`          | a still canvas with a selection asks for no animation frames                                                                                                                                                                                                                                                                                                                      | [Canvas performance](../008-canvas/canvas-performance.md)                                      |
+| `chrome-drift.spec.ts`          | editing a label at the bottom edge leaves the corner chrome where it is                                                                                                                                                                                                                                                                                                           | [Layout stability](../004-interface-design/layout-stability.md)                                |
+| `arrow-labels.spec.ts`          | a label sits on its broken-open line; double-clicks edit rather than bend; Shift+Enter and Enter; blank lines keep their height                                                                                                                                                                                                                                                   | [Arrow labels](../008-canvas/arrow-labels.md), [Arrow bending](../008-canvas/arrow-bending.md) |
+| `arrow-rebind.spec.ts`          | arrows re-anchor live while dragging, and keep a quarter point on the new side                                                                                                                                                                                                                                                                                                    | [Arrow anchors](../008-canvas/arrow-anchors.md)                                                |
+| `grips-on-top.spec.ts`          | a selected element's resize handles and an arrow's end grips are the topmost thing at their centres, whatever the element's rotation, opacity or animation and whatever is drawn over it                                                                                                                                                                                          | [Canvas and palette](../008-canvas/canvas-and-palette.md) (Resize)                             |
+| `viewport-on-add.spec.ts`       | a reloaded tab is framed on its content                                                                                                                                                                                                                                                                                                                                           | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                      |
+| `multicolour-theme.spec.ts`     | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                      | [Multi-colour themes](../011-theme/multicolour-themes.md)                                      |
+| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                         | [Editor app](../007-editor/editor-app.md)                                                      |
+| `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                  | [Power user mode](../007-editor/power-user-mode.md)                                            |
+| `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                         | [User preferences](../007-editor/user-preferences.md)                                          |
+| `menu-keyboard.spec.ts`         | the element menu is a control menu that takes focus from the keyboard; the tab menu is a named dialog; the site switcher opens from the keyboard, not on focus alone                                                                                                                                                                                                              | [Menus](../004-interface-design/menus.md)                                                      |
+| `hints.spec.ts`                 | a control's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                  | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md) |
+| `icon-weight.spec.ts`           | icons draw regular by default and bold once chosen, across a reload; chrome glyphs keep the house weight in on-screen px                                                                                                                                                                                                                                                          | [Iconography](../004-interface-design/iconography.md)                                          |
+| `scrollbars.spec.ts`            | every scrolling surface is in-theme, per colour scheme                                                                                                                                                                                                                                                                                                                            | [Scrollbars](../004-interface-design/scrollbars.md)                                            |
+| `motion-budget.spec.ts`         | every chrome animation (menus, dropdowns, context menu, Settings, Search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                                                                                                              | [Motion](../004-interface-design/motion.md)                                                    |
+| `contrast-audit.spec.ts`        | dark mode, on the editor with its panels and dialogs, the Join dialog and the Explorer: every visible text node meets WCAG AA (4.5:1, or 3:1 for large text) against the background actually painted under it; no allow-list, and what cannot be measured honestly (glyphs under 6px, disabled controls, hidden text, filtered art, text over an image) is reported, never failed | [Colour scheme](../004-interface-design/color-scheme.md#accessibility)                         |
+| `optical-audit.spec.ts`         | dark mode at 4x, on the editor and its dialogs, the Join dialog and the Explorer: every glyph in a small painted shape sits within 0.5px of its centre and stacked actions share one baseline; each failure names the shape, the offset and why it was held to centring                                                                                                           | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
+| `optical-audit-sites.spec.ts`   | the same audit on the help centre and the marketing site                                                                                                                                                                                                                                                                                                                          | [Optical alignment](../004-interface-design/optical-alignment.md)                              |
+| `optical-snap.spec.ts`          | the browser paints text baselines on the nearest whole CSS pixel, and a transform moves a baseline after the snap                                                                                                                                                                                                                                                                 | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)         |
+| `optical-clip.spec.ts`          | a trimmed label that also truncates keeps its descenders, proven in pixels across the label's own columns                                                                                                                                                                                                                                                                         | [Optical alignment blueprint](../004-interface-design/blueprints/optical-alignment.md)         |
+| `marketing-header-fit.spec.ts`  | the marketing header fits a 320, 360, 390 and 430px phone: no sideways scroll, the last control keeps its 16px gutter (in the `sites` project, which builds marketing)                                                                                                                                                                                                            | [Marketing site](../019-marketing/marketing-site.md)                                           |
+| `new-version-prompt.spec.ts`    | the prompt stays hidden while the server serves this editor's format; it offers a reload, saves the edit first and keeps it; it never reloads over unsaved changes                                                                                                                                                                                                                | [New version prompt](../016-platform/new-version-prompt.md)                                    |
+| `stale-builds.spec.ts`          | once a newer build is live, links and back are full page loads                                                                                                                                                                                                                                                                                                                    | [Stale builds](../016-platform/stale-builds.md)                                                |
+| `stale-html.spec.ts`            | a simulated deploy leaves every other browser context on its build; back after a deploy brings the Explorer back, never a white screen                                                                                                                                                                                                                                            | [Stale builds](../016-platform/stale-builds.md)                                                |
+| `workbench-embed.spec.ts`       | a paired workbench frames the editor, hears the selection, renews, and ends on Unpair; a page of another origin framing the URL mounts nothing                                                                                                                                                                                                                                    | [Workbench embeds](../013-workspace/workbench-embeds.md)                                       |
+| `workbench-workspace.spec.ts`   | a workspace frame is its own approval, browses the Explorer and opens projects in place; a ticket on a folder starts the frame there                                                                                                                                                                                                                                              | [Workbench embeds](../013-workspace/workbench-embeds.md)                                       |
+
+The `signed-in` project adds `agent-changesets.spec.ts`, `agent-presence.spec.ts`, `creation-use.spec.ts`,
+`menu-keyboard.spec.ts`, `oauth-device.spec.ts` and `workbench-contrast.spec.ts` ([Signed-in specs](#signed-in-specs)).
 
 A new browser-risky feature adds one focused spec file here (or a case in the
 file of the feature it extends), linked from its own spec; depth stays in unit
@@ -254,12 +269,12 @@ tests where it's cheap.
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`startBlankProject`, `startTemplateProject`, `seedTab`, `dismissQuickTour`, `openJustDraw`).
-  `startTemplateProject` exists because the blank helper skips the wizard's category step and so never
-  exercises template creation.
-- `apps/editor/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
-- `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
-- `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
+  shared flows (`startBlankProject`, `openStartBlank`, `openTeamRetro`, `serverNewUrl`, `seedTab`, `seedPlan`,
+  `mintGuest`, `adoptGuest`, `planHeaders`, `settledBox`).
+- `apps/editor/e2e/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`, the screens and
+  measurements the dark-mode audits share; `fixtures/fake-workbench.html` for the workbench specs.
+- `scripts/e2e-stack.mjs`: the stack boot + static serve (editor, help, marketing).
+- The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
 - `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
   (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
@@ -267,4 +282,4 @@ tests where it's cheap.
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so
-`e2e.yml` is the only thing that runs it in CI.
+the E2E workflow is the only thing that runs it in CI.

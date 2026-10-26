@@ -131,7 +131,7 @@ it further toward the element's fill, down to 22%. The Cycle draws its steps as 
 first step solid in the accent to mark where the loop starts. A Hub's hub is solid in the accent and its satellites
 the fill with an accent ring, its spokes in the accent at half strength. An Onion's core is the accent and each ring
 outward steps down the ramp; a Chevron process ramps left to right. Each row's text takes the readable colour for its own
-fill (`readableColour`), so labels stay legible down the ramp. A Cycle's later steps and a Hub's satellites, drawn in
+fill (`labelOn`, `packages/project/src/readable-colour.ts`), so labels stay legible down the ramp. A Cycle's later steps and a Hub's satellites, drawn in
 the fill, write their names in the element's text colour where it reads on that fill at 4.5:1, and in the fill's own
 readable label where it does not (`conceptDiscInk`): the text colour is chosen for the canvas, where a Cycle's centre
 words sit, so a pale fill on a dark canvas must not take it. A theme switch carries all of it, since it is derived from
@@ -181,13 +181,6 @@ carries explains an idea the way a funnel or a cycle does.
 
 The **Pyramid** and **Funnel** templates are one Pyramid element each (Pyramid and Funnel variants) with their copy as
 rows, and the **Flywheel** template's ring is one Cycle. Templates that sit beside them keep their own elements.
-
-## Element tours
-
-Removed from liveplanner with the element tours ([Element tours](../007-editor/element-tours.md)): no Plan tab
-places this element. Each concept graphic's tour was offered from a small **Show Me** toolbar beside the first one a person
-selected; in livediagram an element's tour is now started from the footer's Start Tour button while the element
-is selected, never from a toolbar beside it.
 
 ## Share roles
 

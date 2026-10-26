@@ -37,18 +37,15 @@ Both tools can also be started by a [Session button](session-button.md) — a ca
 Each tool has a purpose-built pane (`components/panels/session-studio/`: `TimerPane`, `VotePane`),
 described under its section below. A pane shows the tool's **set-up** while it is idle and its **live** controls once it
 runs. The panes open from the [Session strip](#the-session-strip) in the bottom bar, one popover per
-tool. The tab menu (the tab's ⋯ and the canvas right-click menu) has **no** session tools: its
-Collaborate row, a flyout with a Timer · Vote switcher (the Session Studio), was removed once
-the strip gave each tool its own button.
+tool. The tab menu (the tab's ⋯ and the canvas right-click menu) has **no** session tools: each tool
+has its own button on the strip.
 
 ## One UI per tool, in three places
 
 A session tool's controls are ONE component, rendered in the Session strip's
 popover, in the element's `…` quick menu, and in that element's right-click
-**Session** category. They used to be three separate implementations of the
-same question — a dial in the tab menu's Studio, eight stacked "N minutes" rows in the
-popover, a number field in the context menu — and they drifted exactly as you
-would expect: different controls and different wording.
+**Session** category. Three separate implementations of the same question would drift: different controls and
+different wording.
 
 The bodies are CONTROLLED (`TimerSetupBody`, `VoteSetupBody`), which is what lets one component serve both jobs: in the
 strip's popover the value is local state and means "what I am about to start"; on an
@@ -265,9 +262,8 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   static winner rings are suppressed so attention lands on the single
   focused pick.
 - **The walkthrough position is SHARED** (`vote.reviewIndex`), and only the
-  host moves it. It used to be per-participant local state — "everyone
-  reviews at their own pace" — but that meant a host saying "look at
-  this one" had no way to actually put the room on it, which is the whole
+  host moves it. Per-participant local state ("everyone reviews at their own pace")
+  would leave a host saying "look at this one" no way to actually put the room on it, which is the whole
   point of walking results together. Followers get the readout and the
   focus; the Previous / Next / Done buttons and the Vote panel's clickable
   rows are hidden for them rather than rendered as no-ops.

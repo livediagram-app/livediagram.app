@@ -101,7 +101,7 @@ type Tab = {
 //                            / phone / tablet)
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
 //                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
-//                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
+//                     textScale, the Shift-resize scale)
 //   ImageElement     (boxed, an empty picture placeholder left by diagram templates; imageId stays null,
 //                     liveplanner takes no image uploads)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)

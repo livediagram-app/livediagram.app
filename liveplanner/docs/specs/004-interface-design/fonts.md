@@ -149,8 +149,7 @@ so the names would all look alike). Picking one letters the whole tab at once.
 ## Exports carry the face
 
 An exported image is the canvas as far as its reader is concerned, so PNG /
-SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
-sans, which quietly rewrote every canvas).
+SVG / PDF paint the same typeface the canvas did.
 
 - `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
   hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement
@@ -161,7 +160,7 @@ sans, which quietly rewrote every canvas).
   belt-and-braces: the PNG path rasterises element fragments through an
   `<img>`, which blocks external resources outright, so a referenced font
   would silently come back as the fallback. Non-Latin text keeps the fallback
-  face — embedding every script would multiply an export's weight for coverage
+  face: embedding every script would multiply an export's weight for coverage
   a canvas almost never uses.
 - **A headless render declares instead.** `renderElementsToSvg` (the api / mcp
   workers, which have no font-fetch budget) emits `svgFontDefs`: an `@import`
@@ -169,7 +168,7 @@ sans, which quietly rewrote every canvas).
   file gets the real faces; an offline vector editor gets the stack's system
   fallback.
 - Both paths emit nothing at all when no element or tab picked a font, so an
-  ordinary export is byte-identical to what it was before fonts existed.
+  ordinary export carries no font rules.
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising
   mid-swap would bake the fallback into the file.
 
@@ -177,7 +176,7 @@ Implementation: `../packages/model-core/src/fonts.ts` (catalogue + resolver),
 `components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
-apply the resolved stack; `useElementStyle.setFontSelected` and
+apply the resolved stack; `setFontSelected` (`useTextStyleSetters.ts`) and
 `useTabCanvas.setTabFont` are the mutators. See also
 [Project structure](../006-project/project-structure.md) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md).

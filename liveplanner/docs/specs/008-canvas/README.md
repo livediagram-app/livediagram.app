@@ -2,17 +2,18 @@
 
 Follow the references below only as needed; never upfront.
 
-**In liveplanner** the canvas is Plan's infrastructure: the canvas host, viewport, selection, history and element
-sync carry every tab, since a Board or a Sheet is a canvas element that fills it ([Scope](../002-project-scope/product-scope.md)).
-No one draws on it: Plan shows no palette and places no shapes or arrows. The specs here that describe drawing
-(arrows, anchors, finishes, the quick style panel) specify livediagram code that is
-still in the tree and cited from it; they stay until that code goes ([Build phase](../005-project-roadmap/prototype-scope.md#next)).
+The canvas is Plan's infrastructure: the canvas host, viewport, selection, history and element sync carry every tab,
+since a Board, a Sheet, a plan view and a chart are canvas elements that sit on a tab or fill it
+([Scope](../002-project-scope/product-scope.md)). The editor shows no palette and places no shapes, but the canvas draws
+and edits the shapes, arrows and labels the model holds, so the drawing behaviour specified here (arrows and their
+anchors, labels, finishes, corners, shadows) is what a tab holding such elements does: an imported tab, a paste
+of the `liveplanner.elements` clipboard, or an arrow made from a quick-connect ring.
 
-- ./canvas-and-palette.md - when working on Canvas and palette: The canvas and its palette strip: canvas tools, every element kind, drawing, rich-text labels
+- ./canvas-and-palette.md - when working on the canvas: the Hand tool, the element kinds it draws, selection, arrows, labels and rich text, templates' catalogue, search, comments, tabs and the clipboard
 - ./element-menu-quick-bar.md - when working on the element menu's quick bar: Assign Action, Comment, Link and Note, and Clear Styles, above every category
 - ./arrow-anchors.md - when working on Arrow anchors and auto-rebind: The sixteen anchor ids, the anchors each shape offers and where they sit, outline projection, the creation anchor, the converging fan, and the auto-rebind that moves an end to the facing side (same position class) only when its drawn path runs through a shape, plus same-side crossing swaps
 - ./blueprints/README.md - when implementing a canvas spec that has a blueprint (arrow anchors, labels, bending, quick style panel)
-- ./layout-cleanup.md - when working on Layout cleanup: the command palette's tidiers: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up: fewer crossings, long-edge lanes, neighbour placement, flow-face anchors, two-bend angled lines); locked elements stay put
+- ./layout-cleanup.md - when working on Layout cleanup: the tidiers: Auto-align (grid snap) + Auto Layout (deterministic graph layout / Tidy up: fewer crossings, long-edge lanes, neighbour placement, flow-face anchors, two-bend angled lines); locked elements stay put
 - ./arrow-to-arrow.md - when working on Arrow-to-arrow connections: Snap an arrow endpoint to evenly-spaced points along another arrow's line (sequence-diagram messages)
 - ./minimap.md - when working on Minimap: Bottom-left zoomed-out overview + viewport rect; tap/drag to navigate. Desktop only
 - ./snap-override.md - when working on Snap override (free drag): Hold Cmd/Ctrl while dragging or resizing to disable alignment snapping + guides for a free, off-grid placement
@@ -25,7 +26,7 @@ still in the tree and cited from it; they stay until that code goes ([Build phas
 - ./arrow-bending.md - when working on Bending arrows: drag the line to bend it (bow, bend point, segment slide), move frame for free arrows, and the double-press rule that stops fast double-clicks hitting fresh handles
 - ./element-indicators.md - when working on Element indicators: the link / note / action / comment marks on an element and a mind root's Edit Outline / Tidy Map commands; Top (default, centred on round shapes), Footer or Off, placed inside any shape's outline with a pip fallback
 - ./corner-radius.md - when working on corner presets and how a corner is drawn: None / Small / Medium / Large / Full, never more than a quarter of the shorter side (Full exempt), one shared `cornerRadiusPx` for canvas, exports and hit outlines; where corners are set
-- ./quick-style-panel.md - (the panel is removed in liveplanner; style memory remains) when working on Quick style panel: The left-edge panel of most-used style choices for selected shapes + arrows (7 theme-relative colours, then 3-option rows for width, style, text + icon alignment, Clear Styles), its boundary with the context menu, deterministic placement clear of the Palette, and per-kind style memory for the next user-drawn element
+- ./quick-style-panel.md - when working on style memory, quick-swatch colour bindings, the floating-panel presence signal and Clear Styles (no panel is mounted)
 - ./canvas-performance.md - when a change touches how the canvas renders or reacts to a gesture: the budget, the reference board, and the rules that keep cost following what a gesture touches
 - ./drag-preview.md - when working on how a move, resize or reshape draws while it lasts, writes on release, and shows live to collaborators
 - ./finish.md - when working on Finish: the Flexible / Professional / Sketch / Marker drawing style of a tab and its elements (element follows its tab unless set), what each changes, where it is set, roles

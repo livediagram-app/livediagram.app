@@ -2,13 +2,13 @@
 
 liveplanner is a fork of livediagram cut down to its Plan mode and the core experience around it
 ([Scope](../002-project-scope/product-scope.md)). This spec captures **where we are now** and **what's still ahead**,
-so nobody has to reverse-engineer the timeline from AGENTS.md and git history.
+so nobody has to reverse-engineer it from the code.
 
 ## Where we are now
 
-**Not deployed.** Nothing runs at liveplanner.app yet. The Cloudflare resource ids in every wrangler config are
-placeholders for the liveplanner account, the Google client ids are empty, and the staging deploy, CLI publish and MCP
-registry workflows run only by hand ([Deployment](../016-platform/deployment.md)). The stack runs locally on its own
+liveplanner deploys from the monorepo's root `.github/` workflows to Cloudflare Workers in the liveworkspace account:
+staging follows `main`, and production is a manual gate ([Deployment](../016-platform/deployment.md)). The stack runs
+locally on its own
 ports (router 3200, marketing 3201, editor 3202, help 3204, api 8887, mcp 8888), so it sits beside a
 livediagram checkout ([Local development](../../development/local-development.md)).
 
@@ -87,19 +87,15 @@ only small per-browser state, under `liveplanner:*` keys:
 
 ## Next
 
-- **Finish the fork.** Done: Plan is the one mode; the importers, Drive mirror, community gallery, facilitation
-  tools, diagram lint and diagram tools for agents are gone; the container is a **project** everywhere
-  ([Domain language](../003-system-architecture/domain-language.md)). Still to do:
-  - **The diagram element code.** The element routers carry only Plan's kinds, but the diagram kinds' modules
-    (flowcharts, mind maps, arrows' routing, Sankey, the concept graphics, Mermaid, the unmounted palette strip) are
-    still in `packages/project` and `apps/editor`, reached from shared code. Their specs in
-    [Canvas](../008-canvas/README.md), [Elements](../009-elements/README.md), [Palette](../010-palette/README.md) and
-    [Import and export](../020-import-export/README.md) stay until that code goes, and go with it.
-  - **The help centre** around the Plan category, and the brand's remaining sky hexes.
+- **The diagram model code.** The element routers carry only Plan's kinds. The diagram kinds' model code in
+  `packages/project` (flowcharts, mind maps, Sankey, the concept graphics, code blocks, portals, tab windows) stays where
+  exports, validation, the MCP and the CLI use it, and its specs in [Canvas](../008-canvas/README.md),
+  [Elements](../009-elements/README.md) and [Palette](../010-palette/README.md) describe it from that use. Code no Plan
+  path reaches (flowchart and mind-map growth, Tidy Up, the element-tour dialog handles) is a candidate to remove.
+- **The help centre** around the Plan category, and the brand's remaining sky hexes.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
-- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, register the accounts client, onboard
-  liveplanner.app to Cloudflare Email Service, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
+- **Publish** the CLI and the MCP registry entry.
 
 ## Later
 

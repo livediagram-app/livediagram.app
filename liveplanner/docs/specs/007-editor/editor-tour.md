@@ -16,8 +16,7 @@ it appears"), with liveplanner's tours on it:
   reading **Start Boards Tour**, **Start Sheets Tour**, **Start Forms Tour** or **Start Dashboards Tour**
   (`TourOfferButton`, `@liveworkspace/workbench/components/tour`). On a phone, and wherever its neighbours drop
   their words, it shows the glyph alone and keeps its full name as its accessible name. With no tour on offer it is
-  not drawn. A tour never starts, prompts or offers itself on its own: no banner, no card. This replaced the offer
-  banners ("Getting started with Plan?") on 25 October 2026.
+  not drawn. A tour never starts, prompts or offers itself on its own: no banner, no card.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): a surface on the tab first
   (the Dashboards tour, while a dashboard is open), then the tab's own (the Plan tour on a board or Sheet, the
@@ -35,13 +34,11 @@ it appears"), with liveplanner's tours on it:
 - **Settings reruns** (the **Tours** rows) and the form cog's **Show Me Around** start the tour if it is on offer
   right now; otherwise the button is there once it is.
 
-## Retired: the Diagram tour
+## No welcome tour
 
-Until 2026-10-22 the **Diagram tour** ("Getting started with Diagrams?", the welcome tour until October 2026) was
-offered on a brand-new user's first project, in Diagram mode only, and from Settings' **Diagram Tour** row. It went
-with Diagram mode ([Editor mode](editor-modes.md#retired-modes)): its host, the `/new` handoff flag that owed it
-(`liveplanner:v2:tour-pending`), its Settings row and its help article. A stored `tourSeen` preference is left in place
-and never read. A new user meets the Plan tour, on the footer's Start Tour button once a board or Sheet is on the tab.
+No tour is offered on a brand-new user's first project: there is no Diagram tour and no `/new` handoff flag owing
+one. A stored `tourSeen` preference is never read. A new user meets the Plan tour, on the footer's Start Tour button
+once a board or Sheet is on the tab.
 
 ## Steps open what they explain
 
@@ -140,7 +137,6 @@ never sees it (the editor is read-only for the tours' purposes: `isReadOnly`).
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
-Each tour's funnel is its own (its spec says which). The Diagram tour's tokens (`UI`·`Opened`/`Closed`·`TourOffer`,
-`UI`·`Started`·`Tour`, `UI`·`View`·`TourStep<Id>`, `UI`·`Ended`·`TourCompleted`/`TourSkipped`, Settings'
-`UI`·`Toggled`·`TourSeenOn`/`TourSeenOff`) were retired with it ([Telemetry](../017-telemetry/telemetry.md) "Retired
-features").
+Each tour's funnel is its own (its spec says which). The generic tour tokens (`UI`·`Opened`/`Closed`·`TourOffer`,
+`UI`·`Started`·`Tour`, `UI`·`View`·`TourStep<Id>`, `UI`·`Ended`·`TourCompleted`/`TourSkipped`,
+`UI`·`Toggled`·`TourSeenOn`/`TourSeenOff`) are not sent; they are listed in liveworkspace's `../liveworkspace/apps/site/app/telemetry/liveplanner/retired-events.ts` ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)).

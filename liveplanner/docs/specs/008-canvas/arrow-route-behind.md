@@ -113,8 +113,8 @@ The shared SVG arrow renderer (`svgArrow` in `packages/project/src/svg-render-ar
 punches the same holes into the same mask as the label knockouts, so every
 export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
 arrows from that markup), server snapshots and thumbnails, and the MCP's inline
-preview. It used to skip them, so an arrow the canvas drew passing behind a box
-came out drawn straight across it.
+preview. Skipping them would draw an arrow the canvas shows passing behind a
+box straight across it.
 
 ## Relationship to [Arrow collision avoidance at draw time](arrow-collision-avoidance.md)
 

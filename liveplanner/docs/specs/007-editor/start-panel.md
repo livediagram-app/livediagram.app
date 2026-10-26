@@ -6,10 +6,8 @@ beside a grid of cards, so the boards, sheets, forms, layouts and templates sit 
 the panel itself (`StartPanel`, `apps/editor/components/start/StartPanel.tsx`); what Start Planning offers is
 [Plan mode](../026-plan/plan-mode.md#starting-a-board) (`components/plan/start/StartPlanning.tsx`).
 
-Until 2026-10-22 the panel also drew the template starts of the retired editor modes (Start Diagramming, Start
-Drawing, Start a Workshop and Start Making Pages), led by a mode switch, with a search reaching every mode's templates
-and a × to close it ([Editor mode](editor-modes.md#retired-modes)). Those went with their modes; Start Planning
-remains, and it cannot be closed.
+Start Planning is the panel's one start: there is no mode switch and no other mode's start
+([Editor mode](editor-modes.md#other-mode-ids)), and it cannot be closed.
 
 ## The panel
 
@@ -47,16 +45,12 @@ To someone who can edit (an **Editor**), after hydration, outside zen and an emb
 elements; a Dashboard with no rows, a Form tab with no form). A **Participant** or **Viewer** sees an empty tab as it is.
 A new tab and a new Project open on it.
 
-While one of the palette's popovers is open, the start **steps aside**: it stays mounted, so its search, its group and
-its scroll are kept, but is hidden (`../packages/workbench/src/lib/palette-popover-open.ts`; `StartPanel` hides its own root). Plan shows no
-palette, so this does not arise there today.
-
 ## Default folders
 
 A template picked here on a project `/new` just made goes to that template's default folder, unless the project was
 made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default folders](../013-workspace/default-folders.md)
-"A template picked after creation"). The move loads only at the pick (`useTemplatePickMove`, a dynamic import of
-`move-on-template-pick.ts`).
+"A template picked after creation"). The move is `useTemplatePickMove` (`components/start/useTemplatePickMove.ts`): once per plan, and it asks the
+index anything only for a pick on a noted plan, of a template with a family.
 
 ## Search handed over
 
@@ -82,8 +76,8 @@ the ones shown. They are kept for the browser tab only and read once (`start-que
 
 ## Telemetry
 
-A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. `UI · Used · StartOtherMode`, a template
-chosen from another mode's results, was retired with the other modes.
+A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. There are no other
+modes' results, so `UI · Used · StartOtherMode` is not sent.
 
 ## Tests
 

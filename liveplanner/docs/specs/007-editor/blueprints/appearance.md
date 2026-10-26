@@ -115,7 +115,7 @@ read back unchanged, and anything older reads as the default.
 | ----------------------------------------- | ----------------------------------------------------------------------- |
 | `localStorage` throws (private mode)      | Boot script: `try/catch`, page stays light. Store: guarded read / write |
 | No `matchMedia`                           | `system` resolves light; the boot script checks `typeof matchMedia`     |
-| Server render                             | `applyAppearance` is a no-op without `project`                          |
+| Server render                             | `applyAppearance` is a no-op without `document`                         |
 | Unknown stored value                      | Reads as `system` (I1)                                                  |
 | Route that never mounts the hook (`/new`) | The boot script alone paints it                                         |
 | Dark Reader installed                     | Lock meta; the extension leaves the page untouched (I5)                 |

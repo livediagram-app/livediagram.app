@@ -1,165 +1,63 @@
 # Stickers
 
-Status: shipped
+A **sticker** (`shape: 'sticker'`) is a die-cut plate with a soft shadow, in colours that are its own: an emoji on a
+white plate, or a word pill (APPROVED, BLOCKED, WIP, P0, ...) coloured by what it means. The catalogue and the art
+are the platform's (`@liveworkspace/icons`: `sticker-catalog.ts`, `stickerArt`). In liveplanner a sticker is a model
+kind: no Plan surface places one, it arrives with a tab (an import, a paste), and every export draws it. The canvas
+has no face for it ([Elements](../009-elements/README.md)), so it shows as an empty box with its selection ring.
 
-## What
+## A sticker is not an icon
 
-A **Stickers** category in the palette, in the **Decorate** band ([Palette top-level categories and bands](palette-top-level-categories.md)),
-between Icons and Tech — and a **`sticker` shape kind** behind it.
+An icon is a glyph you tint, caption and fold into a shape's label. A sticker is an object stuck on the canvas, so
+it is its own shape kind carrying its own `stickerId`:
 
-A sticker is the thing you slap on a canvas: a die-cut plate with a soft shadow,
-in colours that are its own. Two flavours:
+|                     | Icon                            | Sticker                        |
+| ------------------- | ------------------------------- | ------------------------------ |
+| Artwork             | line art, one colour            | die-cut plate + shadow + art   |
+| Theme tint          | takes the element stroke colour | never: its colours are its own |
+| Caption             | a label band under the glyph    | none, ever                     |
+| Fold into a shape   | yes, becomes an inline glyph    | never                          |
+| Colours / Border UI | stroke + text swatches          | none (nothing to recolour)     |
 
-- **Emoji** — ~193 colour emoji on a white die-cut plate.
-- **Badges** — 32 word pills that no emoji says: APPROVED, BLOCKED, WIP,
-  NEEDS REVIEW, AT RISK, P0, OUT OF SCOPE, OWNER?, MVP, …
-
-Eleven groups, browsed by drill-in with a breadcrumb and searched across all of
-them at once — the same navigation every catalogue tab uses ([Browsing the palette by category](palette-category-browse.md)):
-
-| Group         | What it holds                                                                |
-| ------------- | ---------------------------------------------------------------------------- |
-| **Badges**    | The word pills, tone-coloured by what they mean                              |
-| **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes           |
-| **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown    |
-| **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows   |
-| **Direction** | Arrows, pointing hands, pins, compass, play — pointing at things on a canvas |
-| **Celebrate** | Party popper, confetti, trophy, medals, cake, gift, crown, rocket            |
-| **Decorate**  | Sparkles, rainbow, sun, flowers, hearts in every colour, gems                |
-| **Meeting**   | Timers, calendar, speech + thought bubbles, megaphone, mic, coffee, brain    |
-| **Work**      | Bug, wrench, gear, key, folder, package, laptop, money, target               |
-| **People**    | Person, people, raising a hand, bowing, worker, detective, walking           |
-| **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                   |
-
-Groups are **disjoint** — every sticker has exactly one home, pinned by a test,
-the same rule the icon categories follow. Search cuts across all eleven, and a
-badge also matches on the word on its pill, so "blocked" finds BLOCKED.
-
-## A sticker is NOT an icon
-
-The first cut of this made stickers ordinary `icon` elements, on the reasoning
-that everything an icon does on the canvas a sticker also wants. That was
-wrong, and it showed the moment one landed: it looked exactly like an icon,
-because it _was_ one. An icon is a glyph you tint, caption and fold into a
-shape's label. A sticker is a physical-feeling object you stick on the canvas.
-Those want opposite treatment on every axis, so a sticker is its own shape kind
-carrying its own `stickerId`:
-
-|                     | Icon                            | Sticker                         |
-| ------------------- | ------------------------------- | ------------------------------- |
-| Artwork             | line art, one colour            | die-cut plate + shadow + art    |
-| Theme tint          | takes the element stroke colour | never — its colours are its own |
-| Caption             | a label band under the glyph    | none, ever                      |
-| Fold into a shape   | yes, becomes an inline glyph    | never                           |
-| Colours / Border UI | stroke + text swatches          | none (nothing to recolour)      |
-
-Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
-`ShapeElement`, its own `STICKER_DND_MIME` (in `lib/icons.ts` beside `ICON_DND_MIME`, so a drag onto a shape can't be
-mistaken for an icon fold), `supportsColours` false, membership in
-`SELF_PAINTING_SHAPES` (no wrapper border) and in `isSelfDrawingShape` (no
-label editor, no markers, no text alignment, no morph), and exclusion from
+Mechanically: `'sticker'` in `ShapeKind`, `stickerId` on `ShapeElement` (a string of at most 256 characters,
+`malformed-ids.ts`), `supportsColours` false (`colors.ts`), membership in `SELF_PAINTING_SHAPES` (no wrapper border)
+and in `isSelfDrawingShape` (no label editor, no markers, no text alignment, no morph), and exclusion from
 `acceptsInlineIcon`.
 
-**Animations all work.** Glow, Pulse, Trace and Gradient did nothing at all: a
-sticker counts as SVG-rendered, so the wrapper dropped its animation class on
-the assumption `ShapeSvgOverlay` would paint it — and the overlay never renders
-for a sticker, which paints its own art. They now ride the same filter-based
-path standalone text uses (`drop-shadow` off the real silhouette, since a
-box-shadow would ring the bounding rectangle). `gradient` is the one that
-can't: it is a background clipped to glyphs, and a sticker has none, so it gets
-a hue cycle over its own colours instead — the same idea on a surface that has
-one. The other eleven were already fine on the wrapper.
-
-**Presets go too.** A preset ([Style presets](style-presets.md)) is nothing but fill + stroke + text
-colours, so a shape that takes no element colour has nothing for it to set —
-a sticker showed a full grid of preset tiles where every one did nothing.
-`shapeSupportsPresets` now asks `supportsColours` rather than keeping a second
-exclusion list of its own, which is what let stickers through: the list knew
-about icons and charts because those predated it, and had never heard of a
-sticker. With Presets, Colours and Border all empty, the whole **Style flyout
-stops rendering** for a sticker rather than opening onto nothing.
-
-**No text, by any route.** The selection toolbar drops its Add-text button,
-double-click doesn't open an editor, and type-to-edit refuses — all three off
-the one `isSelfDrawingShape` predicate, which already documented itself as
-exactly this behaviour. A caption under a die-cut sticker is the icon treatment
-it exists not to be.
+- **No presets.** `shapeSupportsPresets` asks `supportsColours`, so a sticker's element menu has no Presets grid,
+  and with Presets, Colours and Border all empty the Style flyout does not render (`PresetSections.tsx`).
+- **No text, by any route.** No Add-text button, no double-click editor, no type-to-edit, all from
+  `isSelfDrawingShape`.
+- **Square and aspect-locked.** A new sticker is 104 × 104 and `aspectLocked`, because the plate and its content
+  are drawn to one shape (`shape-factory.ts`).
 
 ## The artwork is built once
 
-`stickerArt(def)` in `@liveworkspace/icons` returns `{ viewBox, markup }` and is
-the ONLY place a sticker is drawn. The editor canvas, the palette tile, the
-SVG / PNG / PDF export, the api worker's share thumbnail and the MCP render all
-call it. A sticker that looked one way in the editor and another in the export
-would defeat the point of it being a sticker.
+`stickerArt(def)` in `@liveworkspace/icons` returns `{ viewBox, markup }` and is the only place a sticker is drawn:
+the SVG / PNG / PDF export (`svg-render-describe.ts`, resolved before any colour work, with no label), the api
+worker's share thumbnail and the MCP render all call it. Three layers: a soft shadow, the white die-cut plate, then
+the content (an emoji glyph, or a word on a tone-coloured pill whose font size follows its character count, so "P0"
+and "OUT OF SCOPE" both fit).
 
-Three layers: a soft shadow, the white die-cut plate, then the content (an
-emoji glyph, or a word on a tone-coloured pill whose font size is computed from
-the character count so "P0" and "OUT OF SCOPE" both fit).
+There is no SVG `<filter>` for the shadow: a filter needs a `defs` id, and the export packs every element into one
+document where those ids collide. The shadow is an offset rounded rect at low opacity instead, which renders the same
+everywhere, headless included. The PNG drawer hands a sticker to its SVG before its own shape drawing
+(`export-tab-canvas-draw.ts`).
 
-Deliberately **no SVG `<filter>`** for the shadow. A filter needs a `defs` id,
-and the export packs every element into one project where those ids collide;
-the shadow is an offset rounded rect at low opacity instead, which renders
-identically everywhere including headless.
+## Rotation enters at its angle
 
-## No automatic tilt
+A sticker lands square to the canvas, like every element, and turns from the element's Rotation menu. The pop-in
+entry keyframe multiplies in `--lvd-enter-rot` (0deg when unset), which `BoxedElementView` publishes beside the
+rotation, so a rotated element (a sticker, a pasted or duplicated shape) enters at its angle rather than flat
+(`globals.css`).
 
-A sticker was briefly given a small tilt on drop, on the theory that an angle
-is what makes one read as stuck on rather than drawn in. It was wrong in
-practice: an element that arrives at an angle you did not ask for reads as a
-glitch, not as character, and the first thing you want to do is straighten it.
+## Emoji ids
 
-Stickers land **square to the canvas**, like every other element. Rotation is
-still there by hand, from the element's Rotation menu, for anyone who wants the
-scrapbook look.
-
-The attempt did surface a real bug, which is fixed and worth naming because it
-was never sticker-specific. The pop-in entry animation sets
-`transform: scale(...)`, and a keyframe that touches `transform` **replaces**
-the element's inline `transform: rotate(Ndeg)` for its whole duration — so any
-rotated element popped in flat and then visibly snapped to its angle when the
-class dropped. The keyframe now multiplies in `--lvd-enter-rot` (0deg when
-unset), which BoxedElementView publishes alongside the rotation. Duplicate a
-rotated shape, or paste one, and it now enters at its angle.
-
-## Legacy emoji stay icons
-
-[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved projects hold
-`{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
-migrated**: silently restyling somebody's saved project with a plate, a shadow
-and a tilt is not ours to do.
-
-So the icon catalogue keeps rendering them exactly as it always has. Those
-entries are **derived** from the sticker catalogue rather than hand-copied
-(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. Only the
-palette moved: the Emoji category is gone from `ICON_CATEGORIES`, the Icons
-tab's search and the global "Add to canvas" list both filter legacy emoji ids
-out, and Stickers is the one place you browse or place them.
-
-Sticker ids keep the `emoji-` prefix for the same reason — an id is what a
-saved element, an API payload and an MCP call carry.
-
-## What we deliberately did NOT build
-
-- **A raster / vector sticker pack of our own art.** Native emoji render at any
-  size, in every export path we have, on every platform, in colour, for zero
-  bytes. Hand-drawn art would be a new asset pipeline for a worse result.
-- **Editable badge text.** A badge says one of 32 agreed things; a free-text
-  badge is a sticky note, which the palette already has.
-- **Very new emoji.** Entries stay at Emoji 13.0 and below so a sticker never
-  lands as a tofu box on an older machine. That rules out 🫡, 🫧 and friends.
+Sticker ids keep the `emoji-` prefix of the emoji icon entries ([Emoji icons](emoji-icons.md)): an id is what a saved
+element, an API payload and an MCP call carry, so it never changes.
 
 ## Tests
 
-`stickers.test.ts` pins the group coverage (every sticker in exactly one group,
-every group id resolving), the catalogue floors for both flavours, that every
-entry builds art drawing both the plate and its own content, and the drop
-geometry for each flavour. The public
-OpenAPI schema is regenerated, so `sticker` / `stickerId` are part of the
-documented wire format.
-
-## No hover card on a sticker tile
-
-A sticker's palette tile has no hover card. One opened over the browse's breadcrumb, and then over the two-pane
-browse's heading, as the pointer crossed the grid, hiding the way round. The picture is the answer; its name is the
-button's accessible label.
+`stickers.test.ts` (in `@liveworkspace/workbench`) pins the group coverage (every sticker in exactly one group), the
+catalogue floors for both flavours, and that every entry builds art drawing both the plate and its content;
+`sticker-badge-centre.test.ts` (in `@liveworkspace/icons`) centres a badge's word on its pill.

@@ -66,9 +66,8 @@ this way. Where switching to one must stay instant, its code is fetched once the
   request, so a board that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer popover (mounted from its first opening on, then kept, so its
   state survives), search and session settings. Fetched once the opened project has rendered and the page is
-  idle. Only what Plan can open is prefetched: the Layers panel, the quick style panel and the Format tool's
-  panel were dropped from the list in October 2026 (about 60 KB of JavaScript, 22 KB gzipped, no longer
-  fetched on every editor open), and their code went with them.
+  idle. Only what Plan can open is prefetched: no Layers panel, quick style panel or Format tool panel is on the
+  list.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys

@@ -87,7 +87,7 @@ ColourPicker({
 | Plan card type           | `components/plan/ColourSwatches.tsx` (`TypeColourButton`)                                            | none                        | strong light hex                                                                                                                                 | hex                            |
 | Plan card Colour         | `ColourSelect` (same file, a `ColourField`)                                                          | None                        | strong light hex                                                                                                                                 | hex / undefined                |
 | Plan column              | `components/plan/PlanColumnPopover.tsx`                                                              | No colour                   | strong light hex; column colours as `extra`                                                                                                      | hex / null                     |
-| Form cover background    | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | `PageFill` / undefined         |
+| Form cover background    | `components/canvas/page-background-section.tsx`, `page-background-custom.tsx` (`PAGE_COLOUR_GROUPS`) | Paper                       | soft "Light" + strong "Dark", light hex                                                                                                          | a fill / undefined             |
 | Canvas, pattern          | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`)                           | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                            |
 | Rich-text colour         | `components/canvas/RichTextToolbar.tsx`                                                              | none                        | strong hex for the canvas                                                                                                                        | hex                            |
 | Pie and legend rows      | `components/palette/context-menu-data-editors.tsx`                                                   | none                        | strong light hex                                                                                                                                 | hex                            |
@@ -98,12 +98,11 @@ ColourPicker({
 - Keys (`onColourKeys`, `colourKeyTarget` in `useColourKeys.ts`): on the picker root, for targets carrying
   `data-colour-key`, `ArrowLeft`/`ArrowUp` previous, `ArrowRight`/`ArrowDown` next, wrapping; `Home`/`End`. The editor's
   own controls keep their arrows. `preventDefault` + `stopPropagation` so a host menu's roving keys do not also move.
-- Quick Style colour rows (`QuickRadioRow` with swatches) reuse `colourKeyTarget` across the row and More colours;
-  rows of glyph buttons stay radio groups whose arrows move and choose.
+- Rows of glyph buttons stay radio groups whose arrows move and choose.
 - Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` call `onPreview(id)`; `onPointerLeave` of the root
   and focus leaving the root call `onPreviewEnd`; unmount reverts (`useRevertOnUnmount`).
 - **Add a custom colour** (`MoreColoursGlyph`) toggles the editor; Use calls `onPick(hex)` and closes it.
-- Outside-press handling: `ContextMenu`, `PagePanel` and `RichTextEditor` ignore presses and focus inside
+- Outside-press handling: `ContextMenu`, `PlanColumnPopover` and `RichTextEditor` ignore presses and focus inside
   `[data-anchored-popover]`, so a picker popover never closes its host.
 
 ## Data and persistence
@@ -111,7 +110,7 @@ ColourPicker({
 - No new stored field. `applyStrokeColorToEl` / `applyTextColorToEl` (`apps/editor/lib/style-presets.ts`) store any pen
   name by name where the element has `penColour` / `penTextColour` (shape, arrow, freehand; text, sticky), else its
   light hex; Ink leaves a nameless element unchanged.
-- `customSwatches` and `whiteboardYourColours` stay in the `UserPreferences` type, marked dead, so stored blobs load;
+- `customSwatches` and `quickSwatchOverrides` stay in the `UserPreferences` type, marked dead, so stored blobs load;
   nothing reads or writes them.
 - `Tab.customColours?: string[]` (`packages/project/src/index.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
@@ -162,8 +161,7 @@ Constants (`../packages/workbench/src/components/colour/colour-metrics.ts`):
 | `COLOUR_POPOVER_PADDING` | 12    | the popover's inset         |
 | `YOUR_COLOURS_MAX`       | 12    | the old per-user cap        |
 
-Headings: 10px, semibold, uppercase, slate-500, 6px above their row. Quick Style: `QUICK_ROW_TARGETS` = 10 (Ink, eight
-hued, More colours), so the panel is 258px.
+Headings: 10px, semibold, uppercase, slate-500, 6px above their row.
 
 ## Accessibility
 
@@ -193,7 +191,7 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | Plan surfaces                                             | `ColourSwatches.test.tsx`, `ItemFieldEditor.colour.test.tsx`, `PlanColumnPopover.colour.test.tsx`, `packages/items/src/item-colour.test.ts` |
 | form cover background                                     | `page-background-section.test.tsx`                                                                                                          |
 | colour wells                                              | `components/palette/colour-wells.test.tsx`                                                                                                  |
-| rows fit, e2e                                             | the quick-style unit tests (its e2e specs were removed)                                                                                     |
+| rows fit, e2e                                             | the quick-style unit tests                                                                                                                  |
 
 ## Constants and configuration
 
