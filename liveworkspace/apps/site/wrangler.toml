@@ -5,13 +5,14 @@ compatibility_date = "2026-05-29"
 # global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
 # livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
 compatibility_flags = ["global_fetch_strictly_public"]
-# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). The APIs have more
-# specific routes, so they win: accounts (/api/auth/*, /api/account/* and the two .well-known documents),
-# the index, media, telemetry and the Community (/api/index*, /api/media*, /api/previews*, /api/telemetry*,
-# /api/community*).
+# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). Custom domains, so a deploy creates their
+# DNS records and certificates. The APIs' path routes on the same hosts win over a custom domain: accounts
+# (/api/auth/*, /api/account/* and the two .well-known documents), the index, media, telemetry, the Community,
+# status and Drive (/api/index*, /api/media*, /api/previews*, /api/telemetry*, /api/community*, /api/status*,
+# /api/drive*).
 routes = [
-  { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
-  { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app", custom_domain = true },
+  { pattern = "www.liveworkspace.app", custom_domain = true },
 ]
 workers_dev = false
 
@@ -22,7 +23,7 @@ not_found_handling = "404-page"
 
 [env.staging]
 name = "liveworkspace-site-staging"
-routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+routes = [{ pattern = "staging.liveworkspace.app", custom_domain = true }]
 workers_dev = false
 
 [env.staging.assets]

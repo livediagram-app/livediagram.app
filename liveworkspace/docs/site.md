@@ -643,11 +643,12 @@ they never meet an app's own `/_next`, and one build serves both addresses.
 
 ## Hosting
 
-One Worker, `liveworkspace-site`, static assets only, on the route `liveworkspace.app/*` (and
-`www.`). The APIs' routes are more specific, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
+One Worker, `liveworkspace-site`, static assets only, on the custom domain `liveworkspace.app` (and `www.`;
+`staging.` for staging), so a deploy creates their DNS records and certificates. The APIs are path routes on the same
+hosts, which win over a custom domain, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
 `/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
-the status Worker, and everything else here. Security headers come from `public/_headers`.
+the status Worker, `/api/drive*` to Drive, and everything else here. Security headers come from `public/_headers`.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
