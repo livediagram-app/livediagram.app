@@ -26,8 +26,9 @@ The same as review-loop (`.claude/skills/review-loop/SKILL.md`): the liveplanner
 
 ## The plan's shape
 
-- **Work Items** board columns, left to right: Under Review, Reviewed, **Selected for Development**,
-  **In Progress**, **Development Failure**. **Implemented** is on the separate **Completed Work Items** board.
+- Work Item columns sit on three tabs: **Backlog** (Under Review, Reviewed, **Selected for Development**),
+  **In Flight** (Selected for Development again, **In Progress**, **Development Failure**) and **Results**
+  (**Implemented**, Cancelled). Tab names may change, so go by column names, which `list_items` lists per board.
   A `move` names the column, and the card moves there on every board.
 - The Work Item's **Pull Request** field is a link, id `f-pull-request`. Write it by id:
   `{"op": "set", "item": "#12", "fields": {"f-pull-request": "<PR url>"}}`.
