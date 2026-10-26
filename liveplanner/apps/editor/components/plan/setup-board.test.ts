@@ -5,6 +5,7 @@ import {
   setUpBoard,
   setupLayoutOf,
   withSetupLayout,
+  withSuggested,
   type SetupColumn,
 } from './setup-board';
 
@@ -49,6 +50,21 @@ describe('setUpBoard', () => {
       name: `Stage ${i}`,
     }));
     expect(setUpBoard(empty, many, null, ALL).columns).toHaveLength(PLAN_COLUMNS_MAX);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Suggested statuses".
+describe('withSuggested', () => {
+  const named = (cs: readonly SetupColumn[]) => cs.map((c) => c.name);
+  it('adds each as a new state where it keeps the order a board runs', () => {
+    const own: SetupColumn = { kind: 'existing', status: 'w', name: 'Waiting' };
+    const next = withSuggested([own], ['Done', 'To Do'], PLAN_COLUMNS_MAX);
+    expect(named(next)).toEqual(['Waiting', 'To Do', 'Done']);
+    expect(next[1]).toEqual({ kind: 'new', name: 'To Do' });
+  });
+
+  it('stops at the column limit', () => {
+    expect(withSuggested([], ['Backlog', 'To Do', 'Done'], 2)).toHaveLength(2);
   });
 });
 

@@ -16,7 +16,7 @@ import {
 import { ChevronRightIcon } from '@liveplanner/ui';
 import { InfoNote } from '@/components/palette/plan-menu-parts';
 import { AddColumnPicker } from './AddColumnPicker';
-import { addColumnAfter } from './board-setup-edits';
+import { addColumnAfter, addColumnsAfter } from './board-setup-edits';
 import { requestColumnSettings } from './column-settings-request';
 import { addStatusColumn, addStatusColumns, pickableStatuses } from './column-status-picks';
 import { HEADING, StatusSwatch } from './ExistingStatusList';
@@ -173,6 +173,10 @@ export function BoardColumnsSection({
             onName={(name) => {
               const made = addColumnAfter(setup, after, name);
               if (made) commit(made.setup, 'ColumnAdded', made.column.id);
+            }}
+            onSuggest={(names) => {
+              const made = addColumnsAfter(setup, after, names);
+              if (made) commit(made.setup, 'ColumnAddedSuggested', made.column.id);
             }}
           />
         )}

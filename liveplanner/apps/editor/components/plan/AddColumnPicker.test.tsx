@@ -22,12 +22,16 @@ const DONE: MissingStatus = {
 };
 const BLOCKED: MissingStatus = { status: 'blocked~x', name: 'Blocked', cards: 0, boards: [] };
 
-function show(existing: readonly MissingStatus[]) {
-  const statusNames = new Map(existing.map((s) => [s.status, s.name]));
-  const handlers = { onPick: vi.fn(), onPickAll: vi.fn(), onName: vi.fn() };
+function show(
+  existing: readonly MissingStatus[],
+  board: PlanBoardSetup = setup,
+  known: ReadonlyMap<string, string> = new Map(),
+) {
+  const statusNames = new Map([...known, ...existing.map((s) => [s.status, s.name] as const)]);
+  const handlers = { onPick: vi.fn(), onPickAll: vi.fn(), onName: vi.fn(), onSuggest: vi.fn() };
   render(
     <AddColumnPicker
-      setup={setup}
+      setup={board}
       statusNames={statusNames}
       existing={existing}
       autoFocus
@@ -138,6 +142,76 @@ describe('AddColumnPicker', () => {
     fireEvent.change(field(), { target: { value: 'Blocked' } });
     fireEvent.click(add);
     expect(h.onName).toHaveBeenCalledWith('Blocked');
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Suggested statuses".
+describe('the picker’s suggested statuses', () => {
+  const suggested = () =>
+    within(screen.getByRole('group', { name: 'Suggested Statuses' }))
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-label'));
+
+  it('suggests the common statuses the board and the project lack, without existing ones', () => {
+    const board = {
+      columns: [{ id: 'todo', status: 'todo', name: 'To Do' }],
+    } as unknown as PlanBoardSetup;
+    show(
+      [],
+      board,
+      new Map([
+        ['todo', 'To Do'],
+        ['done~ab12', 'done'],
+      ]),
+    );
+    expect(suggested()).toEqual(['Add Backlog', 'Add In Progress', 'Add In Review']);
+    expect(screen.getByText('Being worked on')).toBeTruthy();
+  });
+
+  it('adds one with a press, and all of them in order with Add All', () => {
+    const h = show([], { columns: [] } as unknown as PlanBoardSetup);
+    fireEvent.click(screen.getByRole('button', { name: 'Add In Progress' }));
+    expect(h.onSuggest).toHaveBeenCalledWith(['In Progress']);
+    fireEvent.click(screen.getByRole('button', { name: 'Add All' }));
+    expect(h.onSuggest).toHaveBeenLastCalledWith([
+      'Backlog',
+      'To Do',
+      'In Progress',
+      'In Review',
+      'Done',
+    ]);
+    expect(h.onName).not.toHaveBeenCalled();
+  });
+
+  it('offers no Add All for a single suggestion', () => {
+    const board = {
+      columns: ['Backlog', 'To Do', 'In Progress', 'In Review'].map((name, i) => ({
+        id: `c${i}`,
+        status: `c${i}`,
+        name,
+      })),
+    } as unknown as PlanBoardSetup;
+    show([], board);
+    expect(suggested()).toEqual(['Add Done']);
+    expect(screen.queryByRole('button', { name: 'Add All' })).toBeNull();
+  });
+
+  it('shows none while there are existing statuses to pick', () => {
+    show([TODO]);
+    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+  });
+
+  it('shows no section once every suggestion is taken', () => {
+    const board = {
+      columns: ['Backlog', 'To Do', 'In Progress', 'In Review', 'Done'].map((name, i) => ({
+        id: `c${i}`,
+        status: `c${i}`,
+        name,
+      })),
+    } as unknown as PlanBoardSetup;
+    show([], board);
+    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(document.querySelector('[data-suggested-statuses]')).toBeNull();
   });
 });
 

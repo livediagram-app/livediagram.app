@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PLAN_COLUMNS_MAX, presetSetup } from '@liveplanner/items';
 import {
   addColumnAfter,
+  addColumnsAfter,
   moveColumn,
   newColumnStatus,
   recolourColumn,
@@ -75,6 +76,31 @@ describe('board set-up edits', () => {
     };
     expect(addColumnAfter(full, null)).toBeNull();
     expect(newColumnStatus('!!!', [])).toBe('column');
+  });
+
+  it('adds several new columns in order after another, as one set-up, until the board is full', () => {
+    const made = addColumnsAfter(board, first.id, ['Backlog', 'In Review'], () => 0)!;
+    expect(made.setup.columns.map((c) => c.name)).toEqual([
+      'To do',
+      'Backlog',
+      'In Review',
+      'In progress',
+      'Done',
+    ]);
+    expect(made.column.name).toBe('In Review');
+    const roomForOne = {
+      ...board,
+      columns: Array.from({ length: PLAN_COLUMNS_MAX - 1 }, (_, i) => ({
+        id: `c${i}`,
+        status: `s${i}`,
+        name: `C${i}`,
+      })),
+    };
+    const one = addColumnsAfter(roomForOne, null, ['Backlog', 'Done'])!;
+    expect(one.setup.columns).toHaveLength(PLAN_COLUMNS_MAX);
+    expect(one.column.name).toBe('Backlog');
+    expect(addColumnsAfter(one.setup, null, ['Done'])).toBeNull();
+    expect(addColumnsAfter(board, null, [])).toBeNull();
   });
 
   it('removes a column but never the last, clearing done with it', () => {

@@ -4,13 +4,15 @@
 // After. One field names the column: when the project has statuses this board lacks, it is a combobox over them
 // (Existing Statuses, ExistingStatusList), narrowing them as it is typed, the arrows moving through them and Enter
 // adding the highlighted one; with none highlighted, Enter (or Add Column) adds the typed name, which uses the
-// existing status of that name rather than a near-duplicate, and says so. Without any, it is the plain field.
-import { useId, useState } from 'react';
+// existing status of that name rather than a near-duplicate, and says so. Without any, it is the plain field, with
+// the suggested statuses the board and the project lack under it (SuggestedStatusList).
+import { useId, useMemo, useState } from 'react';
 import { Button, PlusIcon, TextInput } from '@liveplanner/ui';
-import type { MissingStatus, PlanBoardSetup } from '@liveplanner/items';
+import { suggestedStatuses, type MissingStatus, type PlanBoardSetup } from '@liveplanner/items';
 import { COLUMN_NAME_MAX } from './board-setup-edits';
 import { matchStatus, statusKey, type StatusPick } from './column-status-picks';
 import { ExistingStatusList, HEADING, optionId } from './ExistingStatusList';
+import { SuggestedStatusList } from './SuggestedStatusList';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 const pickOf = (s: MissingStatus): StatusPick => ({ status: s.status, name: s.name });
@@ -33,6 +35,7 @@ export function AddColumnPicker({
   onPick,
   onPickAll,
   onName,
+  onSuggest,
 }: {
   setup: Pick<PlanBoardSetup, 'columns'>;
   // The project's statuses (pickableStatuses), for what a typed name matches.
@@ -46,6 +49,8 @@ export function AddColumnPicker({
   onPickAll: (picks: StatusPick[]) => void;
   // A new status's name (a name matching an existing status arrives as a pick instead).
   onName: (name: string) => void;
+  // Suggested statuses pressed (one, or Add All's in order): each a new status.
+  onSuggest: (names: string[]) => void;
 }) {
   const id = useId();
   const listId = `${id}-statuses`;
@@ -54,6 +59,14 @@ export function AddColumnPicker({
   const match = matchStatus(name, setup, statusNames);
   const shown = narrowStatuses(existing, name);
   const combo = existing.length > 0;
+  // Only with no existing status to list (spec "Suggested statuses"): the ones neither the board nor the project has.
+  const suggestions = useMemo(
+    () =>
+      combo
+        ? []
+        : suggestedStatuses([...setup.columns.map((c) => c.name), ...statusNames.values()]),
+    [combo, setup.columns, statusNames],
+  );
   const highlighted = active >= 0 ? shown[active] : undefined;
   // The typed name: the existing status of that name, or a new one; nothing for a name the board already has.
   const addTyped = () => {
@@ -152,6 +165,16 @@ export function AddColumnPicker({
                 ? () => onPickAll(existing.map(pickOf))
                 : undefined
             }
+          />
+        </>
+      ) : suggestions.length ? (
+        <>
+          <div aria-hidden className="h-px bg-slate-100 dark:bg-slate-800" />
+          <SuggestedStatusList
+            heading="Suggested Statuses"
+            suggestions={suggestions}
+            onPick={(n) => onSuggest([n])}
+            onPickAll={onSuggest}
           />
         </>
       ) : null}

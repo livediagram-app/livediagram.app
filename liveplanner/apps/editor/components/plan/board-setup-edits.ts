@@ -124,6 +124,23 @@ export function addColumnAfter(
   return { setup: { ...setup, columns }, column };
 }
 
+// New columns named `names`, in order, after `afterId` (at the end when null), as one set-up, stopping at the limit
+// (Suggested Statuses' Add All); null when none fits. `column` is the last one made.
+export function addColumnsAfter(
+  setup: PlanBoardSetup,
+  afterId: string | null,
+  names: readonly string[],
+  random: () => number = Math.random,
+): { setup: PlanBoardSetup; column: PlanColumn } | null {
+  let made: { setup: PlanBoardSetup; column: PlanColumn } | null = null;
+  for (const name of names) {
+    const next = addColumnAfter(made?.setup ?? setup, made?.column.id ?? afterId, name, random);
+    if (!next) break;
+    made = next;
+  }
+  return made;
+}
+
 // Removes a column (never the last); its cards are the caller's to move first.
 export function removeColumn(setup: PlanBoardSetup, id: string): PlanBoardSetup {
   if (setup.columns.length <= 1) return setup;

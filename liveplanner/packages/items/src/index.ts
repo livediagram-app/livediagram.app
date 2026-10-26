@@ -38,6 +38,7 @@ export * from './type-change-face';
 export * from './board-place';
 export * from './board-csv';
 export * from './status-title-case';
+export * from './suggested-statuses';
 export * from './tab-items';
 export * from './tab-import';
 export * from './views';
