@@ -37,11 +37,11 @@ A new push to a pull request cancels its run in flight (`concurrency`); on `main
 It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                              | Runs                                                                                                    |
-| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer) | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | the editor, help and community, then marketing      | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | the editor with sign-in on (`build:signed-in`)      | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                                                                      | Runs                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer)                                         | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | the editor, help and community, then marketing                                              | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | the editor with sign-in on (`build:signed-in`), and the Explorer's e2e export (`build:e2e`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
 Only the sites audit opens help, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
