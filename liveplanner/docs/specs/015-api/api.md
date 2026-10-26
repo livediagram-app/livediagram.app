@@ -192,7 +192,11 @@ where its age puts it.
 
 ### Marking a project used
 
-The create body's `markUsed` (absent or `true`, or `false`) is read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. It changes no list: what Recent and Jump back in show is the index's record of opens, which the editor writes when it loads a plan (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
+The create body's `markUsed` (absent or `true`, or `false`) is read and validated: anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. What Recent and Jump back in show is the index's record of opens and use days ([Explorer Home](../013-workspace/explorer-home.md)):
+
+- For an API client's create (one the worker makes the index's item for), absent or `true`, the worker records the open at the index for the caller beside the create (`POST /items/:id/open`, never waited on), so the plan joins their Jump back in at once; `false` leaves it to join at its first open or edit.
+- An editor's create (it sends the index's grant) is the editor's to record, which it does when it loads the plan, and a re-commit of an id the index already holds is no making, so neither is recorded here.
+- The create itself is the plan's making, not an edit: the plan's room records no editor for `POST /api/projects` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that `markUsed: false` withheld.
 
 ### Projects in the Trash
 

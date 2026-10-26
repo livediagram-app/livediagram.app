@@ -319,6 +319,71 @@ describe("a plan's content lives in its own Durable Object", () => {
     ]);
   });
 
+  it('records no editor for the create: the making is no edit, so markUsed: false counts no use day', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    const edits = () => plan.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all();
+    expect(edits()).toEqual([]);
+    // A re-commit of its own id is the making again, not an edit.
+    await createPlan(w, 'A');
+    expect(edits()).toEqual([]);
+    indexCalls.length = 0;
+    await plan.room.drain();
+    expect(indexCalls).toContain('PUT /api/index/app/items/A/summary');
+    expect(indexCalls).not.toContain('PUT /api/index/app/items/A/events');
+    // Its first edit afterwards is a use like any other.
+    const saved = await w.send('PUT', '/api/projects/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [box('a'), box('b')],
+    });
+    expect(saved.status).toBe(200);
+    expect(edits()).toHaveLength(1);
+  });
+
+  it("records an API client's create as its use unless it says markUsed: false", async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    // The index makes an API client's item and answers its grant; the rest as the suite's stand-in answers.
+    const indexFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      if (req.method === 'POST' && new URL(req.url).pathname === '/api/index/items') {
+        indexCalls.push('POST /api/index/items');
+        const { id } = (await req.json()) as { id: string };
+        return Response.json(
+          {
+            item: { id, folderId: null, teamId: null },
+            grant: { grant: grantOf(id), level: 'edit', tabId: null, expiresAt: 9e12 },
+          },
+          { status: 201 },
+        );
+      }
+      return indexFetch(input, init);
+    });
+    const apiCreate = async (id: string, extra: Record<string, unknown> = {}) => {
+      const res = await w.send(
+        'POST',
+        '/api/projects',
+        { id, name: id, tabs: [{ id: `${id}-t1`, name: 'Board', elements: [box('a')] }], ...extra },
+        { 'X-Index-Grant': '' },
+      );
+      expect(res.status).toBe(201);
+      // Told beside the create, never waited on.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+
+    await apiCreate('used');
+    await apiCreate('batch', { markUsed: false });
+    expect(indexCalls).toContain('POST /api/index/items/used/open');
+    expect(indexCalls).not.toContain('POST /api/index/items/batch/open');
+
+    // An editor's create sends the index's grant and records its own open: nothing recorded here.
+    indexCalls.length = 0;
+    await createPlan(w, 'mine');
+    expect(indexCalls.filter((call) => call.endsWith('/open'))).toEqual([]);
+  });
+
   it('records nothing for a read: no edit key, no outbox row, no push scheduled', async () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createPlan(w, 'A');
