@@ -5704,6 +5704,9 @@ importers:
         specifier: workspace:*
         version: link:../ui
     devDependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../icons
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../vitest-config
