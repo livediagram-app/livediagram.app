@@ -101,6 +101,8 @@ jobs:
         apps/live/.next/cache
         apps/help/.next/cache
         apps/marketing/.next/cache
+      smoke-explorer: true
+      signed-in-explorer: true
 
   livedocuments:
     name: livedocuments

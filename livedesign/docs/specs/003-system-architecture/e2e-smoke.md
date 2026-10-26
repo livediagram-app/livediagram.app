@@ -37,11 +37,11 @@ A new push to a pull request cancels its run in flight (`concurrency`); on `main
 It runs **every** spec file in `apps/live/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                        | Runs                                                                                                    |
-| ------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live, and liveworkspace's site (the Explorer) | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | live, help, then marketing                    | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | live with sign-in on (`build:signed-in`)      | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                                                           | Runs                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | live, and liveworkspace's site (the Explorer)                                    | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | live, help, then marketing                                                       | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`), and liveworkspace's site (`build:e2e`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
 Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -183,6 +183,8 @@ source scanner already skips it), built by `pnpm build:signed-in` with sign-in o
 `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
+
+The Explorer at `/explorer` is liveworkspace's site, a separate export, so it needs the same switch: `pnpm --filter @liveworkspace/site build:e2e` builds it into `liveworkspace/apps/site/.next/out-e2e/` (never `out/`) with `NEXT_PUBLIC_E2E_AUTH=1`, and on livedesign's address it then reads the spec's session (`livedesign:e2e:session`, the same key) as the account instead of asking the api for a cookie the stack never sets. The signed-in project serves it with `E2E_WORKSPACE_SITE_OUT=.next/out-e2e`; unbuilt, `/explorer` answers the logged 404. A production build inlines the flag as false and never reads the key.
 
 `pnpm --filter @livedesign/live test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_LIVE_OUT=.next/out-signed-in` on its own ports
