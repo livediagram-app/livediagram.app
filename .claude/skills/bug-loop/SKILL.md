@@ -5,12 +5,11 @@ description: One hourly pass over the liveworkspace monorepo that finds and fixe
 
 # Bug loop: one pass
 
-Work from the repo root (`git rev-parse --show-toplevel`). Use `corepack pnpm` and `gh` (on Tom's Mac it's
-`/opt/homebrew/bin/gh`, not on PATH). Find the repo once, `REPO=$(gh repo view --json nameWithOwner -q
+Work from the repo root (`git rev-parse --show-toplevel`). Use `corepack pnpm` and `gh`. Find the repo once, `REPO=$(gh repo view --json nameWithOwner -q
 .nameWithOwner)`, and pass `-R "$REPO"` to every `gh` call. For turbo, put a corepack shim on PATH
 (`corepack enable --install-directory <scratchpad>/bin pnpm`).
 
-The owner authorised this loop (2026-10-25) to push its own `bugs/*` branches. **All fixes go into ONE rolling PR** (`bugs/sweep-<date>`): never open a PR per area or per run. Every PR and every push to one runs the full CI matrix; 27 PRs used up the org's Actions minutes on 2026-10-26. Never push
+This loop may push its own `bugs/*` branches. **All fixes go into ONE rolling PR** (`bugs/sweep-<date>`): never open a PR per area or per run. Every PR and every push to one runs the full CI matrix; 27 PRs used up the org's Actions minutes on 2026-10-26. Never push
 to `main`, never merge a PR, never deploy. The goal is to clear the remaining obvious bugs overnight, so a run
 fixes **many** bugs, never one: each area's agent aims for every obvious bug it can find and prove.
 
@@ -59,7 +58,7 @@ in the run's single push (step 3).
   - CI on main: `gh run list -R "$REPO" --branch main --limit 10` and the failing jobs' logs;
   - stale generated files their own "up to date" tests flag (regenerate with the package's script);
   - code that contradicts its spec (the spec wins, unless the spec is clearly the stale side; then say so);
-  - the owner's running local apps on ports 3000–3499, **read-only**: load the area's main pages at
+  - the dev servers already running on ports 3000–3499, **read-only**: load the area's main pages at
     desktop and 390px phone width (a scratchpad Playwright script with `isMobile`, `hasTouch`, 390x844;
     resizing the Chrome window doesn't change its viewport), and look for console errors, failed requests,
     404 links, horizontal scroll, broken dark mode and clipped menus;
@@ -70,7 +69,7 @@ in the run's single push (step 3).
   A change to intended behaviour updates the spec first. Commit fixes in small logical commits, each message
   ending with the Co-Authored-By trailer. Don't commit pnpm-lock.yaml unless required.
 - **Gate:** typecheck, oxlint, `prettier --check` on changed files and vitest for every touched package.
-- **Performance** (owner's global rule before any push): read the touched code paths for cost (hot paths,
+- **Performance** (before any push): read the touched code paths for cost (hot paths,
   re-renders, N+1, bundle size), measure what is cheap, and fix it in the same change.
 - **Push the branch, open no PR** (CI runs only on PRs and main, so a plain branch push costs no minutes).
   Screenshot every visual change before and after into the scratchpad.
@@ -81,8 +80,7 @@ in the run's single push (step 3).
 
 **Hard rules for every agent (copy them in verbatim):**
 
-- NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the owner's
-  dev servers (ports 3000–3499), or Wrangler workers named liveworkspace-_, live_-api, live*-mcp or
+- NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the dev servers already running (ports 3000–3499), or Wrangler workers named liveworkspace-_, live_-api, live*-mcp or
   live*-router-local. Wrangler's registry is machine-wide. Your own servers go on 3600+.
 - Don't touch .dev.vars or .env files. Don't touch the main checkout's working tree (the repo root the loop
   was started from): other sessions keep uncommitted work there. Never `git stash`.
@@ -102,7 +100,7 @@ When the agents report:
 - Clean up: remove the agents' worktrees and your own (`git worktree remove`), and delete the pushed area branches
   once merged into the rolling branch (`git push origin --delete bugs/<area>-...`, plus the local branch).
 - Update the state file: "Last areas", "Last run", open loop PRs, and merge their "Known, not fixed" lists.
-- Send the owner a short summary per area: the PR link, how many bugs were fixed and the notable ones, and
-  anything that needs their decision.
+- Report a short summary per area: the PR link, how many bugs were fixed and the notable ones, and
+  anything that needs a person's decision.
 
 Keep the coordinator's own context light: read the agents' reports, not their transcripts.

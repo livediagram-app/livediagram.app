@@ -5,15 +5,13 @@ description: One pass over livediagram's marketing app (livediagram/apps/marketi
 
 # Marketing loop: one pass
 
-Work from the repo root (`git rev-parse --show-toplevel`). Use `corepack pnpm` (no pnpm on PATH) and `gh` (on
-Tom's Mac it's `/opt/homebrew/bin/gh`, not on PATH). Find the repo once, `REPO=$(gh repo view --json nameWithOwner
+Work from the repo root (`git rev-parse --show-toplevel`). Use `corepack pnpm` and `gh`. Find the repo once, `REPO=$(gh repo view --json nameWithOwner
 -q .nameWithOwner)`, and pass `-R "$REPO"` to every `gh` call.
 **Paths below are livediagram's** (`apps/marketing`, `docs/specs/...`, `packages/templates`): in the monorepo they
 sit under `livediagram/`. The marketing pages every product shares live in the root's `packages/marketing-site`,
 and the comparison pages in `packages/comparisons` (read the root AGENTS.md: shared code stays there, not in one
 product).
-The user authorised this loop to push its own branch and open/update its own PR (an exception to "never open a PR
-without permission", for this loop only). Never push to main.
+This loop may push its own branch and open or update its own PR (an exception to "never open a PR without permission", for this loop only). Never push to main.
 
 This loop runs unattended. Act on these rules and never stop to ask (AskUserQuestion). Put decisions in the report.
 
@@ -31,7 +29,7 @@ Read it first (create it if missing). Do the **two** actions after "Last action"
 Update "Last action", "Last run" (absolute date + time) and "Open PR" at the end of every run, even when nothing
 was found. A run that found nothing still advances the rotation.
 
-**Scope per run: substantial, not small** (the user asked for bigger passes, 2026-10-10). Each action aims to fix
+**Scope per run: substantial, not small** (bigger passes since 2026-10-10). Each action aims to fix
 everything it finds in its area, not one item: a run that lands only a one-line copy tweak has stopped short. Target
 several meaningful fixes or additions per action (copy across all affected pages, new cards/FAQ entries, tests that
 guard the class of bug). If an action finds genuinely nothing, say so and put the time into the other action.
@@ -64,7 +62,7 @@ from (`@livediagram/templates`, `template-previews`, `icons`, `ui`, `@liveworksp
 - Check every internal link and redirect resolves: `public/_redirects`, `sitemap.ts`, links to `/help/...`,
   `/community`, `/new`, `/alternatives/<slug>`, `/features/<slug>`. A link to a help article must match
   `packages/help-registry`.
-- Serve `out/` (or `next dev` on a free port at 3600+, so the owner's servers keep their ports) and look at the
+- Serve `out/` (or `next dev` on a free port at 3600+, so the dev servers already running keep their ports) and look at the
   landing page, a feature page, an alternatives page and the FAQ at desktop and phone width. Use a scratchpad
   Playwright script for the phone (`isMobile`, `hasTouch`, 390x844; resizing the Chrome window doesn't change its
   viewport). Look for broken layout, horizontal scroll, dark-mode contrast, console errors, broken images,
@@ -122,7 +120,7 @@ and where they are, never "they aren't a diagram tool".
    other workspace touched, `prettier --check` on changed files, and `pnpm format:check` across the repo.
    Run commands with `set -o pipefail`.
 2. Any new code ships with tests (check patch coverage with `vitest --coverage`).
-3. Performance check (global CLAUDE.md): note any bundle/image/animation cost the change adds, measured.
+3. Performance check: note any bundle/image/animation cost the change adds, measured.
 4. Commit with explicit pathspecs (the auto-committer races the index), message ends with the Co-Authored-By
    trailer. No em dashes anywhere.
 5. Before pushing, re-check the PR is still open (`gh pr view <n> -R "$REPO" --json state`): the PR loop can
@@ -140,4 +138,4 @@ The PR loop takes over CI, conflicts, comments and merging. Once the PR has merg
 
 ## 4. Report
 
-Two or three lines: the actions run, what changed (with the commit), the PR link, and anything left for Tom.
+Two or three lines: the actions run, what changed (with the commit), the PR link, and anything left for a person to decide.

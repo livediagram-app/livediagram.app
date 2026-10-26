@@ -1,18 +1,17 @@
 ---
 name: pr-loop
-description: One pass over Tom's open PRs on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run on a timer with `/loop 30m /pr-loop`.
+description: One pass over your open PRs on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run on a timer with `/loop 30m /pr-loop`.
 ---
 
 # PR loop: one pass
 
 Work from the repo root (`git rev-parse --show-toplevel`). Every product is in this one repo; read its AGENTS.md
-and docs/ci.md. Use `corepack pnpm` (no pnpm on PATH) and `gh` (on Tom's Mac it's `/opt/homebrew/bin/gh`, not on
-PATH). Find the repo once per pass, `REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)`, and pass
+and docs/ci.md. Use `corepack pnpm` and `gh`. Find the repo once per pass, `REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)`, and pass
 `-R "$REPO"` to every `gh` call, so the loop keeps working when the repo moves or is renamed.
 
 Until livediagram moves back into its own repo (docs/migration.md), `livediagram-app/livediagram.app` may still
 hold open PRs. If `$REPO` is a different repo, don't work them here: list them in the report
-(`gh pr list -R livediagram-app/livediagram.app --state open`) for Tom to decide.
+(`gh pr list -R livediagram-app/livediagram.app --state open`) to decide.
 
 This loop runs unattended. Act on these rules and never stop to ask (AskUserQuestion): a question nobody answers
 stalls every later pass. Write judgement calls and open decisions into the report instead.
@@ -20,8 +19,8 @@ stalls every later pass. Write judgement calls and open decisions into the repor
 ## 1. Collect
 
 1. `git fetch -q origin`.
-2. List open PRs: `gh pr list -R "$REPO" --author tommcclean --state open --json number,title,headRefName,labels`.
-   (`--author @me` has returned an empty list; use the login.)
+2. List open PRs: `gh pr list -R "$REPO" --author "$(gh api user -q .login)" --state open --json number,title,headRefName,labels`.
+   (`--author @me` has returned an empty list, so look the login up.)
 3. For each PR, gather in one go:
    - checks: `gh pr checks <n> -R "$REPO" --json name,bucket,link` (with `--json` it exits 0 even when red);
    - state: `gh pr view <n> -R "$REPO" --json state,mergeable,mergeStateStatus,comments,reviews`;
@@ -38,7 +37,7 @@ CI isn't running, and carry on with conflicts and comments.
 
 **"Keep going till they are clear" does not end at an empty queue.** Other sessions open PRs all the time
 (2026-10-15: I reported the backlog clear and stopped, and six new PRs sat red for hours). When asked to clear a
-backlog, keep re-listing open PRs (a Monitor polling `gh pr list` every few minutes, or `/loop`) until Tom says stop.
+backlog, keep re-listing open PRs (a Monitor polling `gh pr list` every few minutes, or `/loop`) until you're told to stop.
 
 ## Velocity first: CI is the bottleneck
 
@@ -87,8 +86,7 @@ show HEAD:$f | wc -c) -lt 5 ] && echo $f; done` (#644 shipped two 0-byte bluepri
 merge origin/main`. Verify `git diff origin/main HEAD` equals `git diff origin/<parent> origin/<child>`.
 2. **Red CI** - read the failing job log (`gh run view <id> -R "$REPO" --log-failed`), fix the cause, never skip
    a test.
-3. **Comments** - act on unresolved review threads, bot findings and **Tom's own comments** (his comments are
-   tasks to build, on every PR whatever its labels). Skip an item only when a later commit already covers it;
+3. **Comments** - act on unresolved review threads, bot findings and **comments from whoever runs the loop** (theirs are tasks to build, on every PR whatever its labels). Skip an item only when a later commit already covers it;
    say so in the summary.
 4. **Gate before pushing**: typecheck + tests of the touched workspaces, `prettier --check` on changed files.
    Follow AGENTS.md (specs first, docs kept current, no em dashes).
@@ -108,7 +106,7 @@ merge origin/main`. Verify `git diff origin/main HEAD` equals `git diff origin/<
    - green and `MERGEABLE`/`CLEAN`: merge it (section 3) if no label blocks it, otherwise report it ready.
    - CodeQL threads close on rescan; if one stays open after a green rescan, check the alert is gone and say so.
      If the Monitor times out with checks still running, re-arm once. Keep going until each PR is mergeable or
-     blocked only on Tom (a label or a decision).
+     blocked only on a person (a label or a decision).
 
 ## 3. Merge
 
@@ -116,7 +114,7 @@ Merge a PR only when all hold: CI fully green, `mergeable: MERGEABLE` / `mergeSt
 no unresolved threads or unaddressed comments, and no `not-ready` or `do-not-merge` label.
 Use `gh pr merge <n> -R "$REPO" --squash` (auto-merge is off on the repo). Merge at most what is ready now; a PR
 you just pushed to waits for its CI. Check `gh pr view <n> -R "$REPO" --json state` right before any push or
-merge: Tom merges green PRs mid-loop too.
+merge: people merge green PRs mid-loop too.
 
 **Order when several are ready: least conflict first.** Each merge moves main, and every other open PR (ready or
 not) then has to absorb it. So before merging:
@@ -135,5 +133,5 @@ Say the order you used, and why, in the report.
 
 ## 4. Report
 
-Short summary per PR touched: what was wrong, what you did, the pushed commit, and anything left for Tom
+Short summary per PR touched: what was wrong, what you did, the pushed commit, and anything left for a person
 (decisions, PRs blocked on a label, CI not running).
