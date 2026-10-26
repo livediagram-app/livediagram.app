@@ -735,7 +735,8 @@ and the dialog stays as the one complete, browsable index of them.
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedesign**
   (this app's logo and name) and **All** (liveworkspace's logo). livedesign shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
   own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
-  at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
+  at once and the rest join them when read (a read that fails leaves this app's own rows, with a note and Try again
+  for the rest); a guest sees this app's own Settings alone, asking the network
   for nothing. All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
   merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so

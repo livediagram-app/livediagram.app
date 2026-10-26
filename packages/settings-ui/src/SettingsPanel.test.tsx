@@ -95,6 +95,30 @@ describe('SettingsPanel', () => {
       expect(rows).not.toContain(other);
   });
 
+  it("keeps an editor's own settings when the account's can't be read, with Try again for the rest", async () => {
+    let fail = true;
+    const calls: string[] = [];
+    const request = (async (path: string) => {
+      calls.push(path);
+      return fail ? { ok: false, error: 'offline' } : { ok: true, data: { all: {}, app: {} } };
+    }) as SettingsRequest;
+    renderWithKit(<Host own={fixtureCategories()} request={request} initial="app" />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/Couldn’t reach your account/);
+    // The editor's own rows stay; only the Account section and Common are missing.
+    expect(within(pane()).getByRole('switch', { name: 'Alignment Guides' })).toBeTruthy();
+    expect(within(rail()).queryByRole('button', { name: 'Account' })).toBeNull();
+
+    fail = false;
+    const asked = calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() =>
+      expect(within(rail()).getByRole('button', { name: 'Account' })).toBeTruthy(),
+    );
+    expect(calls.length).toBeGreaterThan(asked);
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+  });
+
   it('offers no switch when All is not allowed (a guest)', () => {
     const { request } = fakeRequest();
     renderWithKit(

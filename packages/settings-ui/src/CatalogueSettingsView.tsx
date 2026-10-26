@@ -149,9 +149,30 @@ export default function CatalogueSettingsView({
     };
   }, [apps, store, attempt]);
 
-  // An editor's own settings are drawn at once while the Account section and Common load beside them.
-  if (load.state === 'loading' && mode === 'app' && own) {
-    return <SettingsView {...view(props)} categories={own} memoryKey={props.memoryKey ?? null} />;
+  const retry = () => {
+    setLoad({ state: 'loading' });
+    setAttempt((n) => n + 1);
+  };
+  // An editor's own settings are drawn at once while the Account section and Common load beside them, and stay when
+  // that read fails: only the account's and the shared parts are missing, so the note and Try again say so below them.
+  if (load.state !== 'ready' && mode === 'app' && own) {
+    return (
+      <SettingsView
+        {...view(props)}
+        categories={own}
+        memoryKey={props.memoryKey ?? null}
+        footer={
+          load.state === 'error' ? (
+            <>
+              {props.footer}
+              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+            </>
+          ) : (
+            props.footer
+          )
+        }
+      />
+    );
   }
   if (load.state !== 'ready') {
     return (
@@ -166,17 +187,7 @@ export default function CatalogueSettingsView({
         placeholder={
           load.state === 'error' ? (
             <div className="px-4 py-4">
-              <ErrorNote>{errorMessage(load.error)}</ErrorNote>
-              <button
-                type="button"
-                onClick={() => {
-                  setLoad({ state: 'loading' });
-                  setAttempt((n) => n + 1);
-                }}
-                className="mt-3 cursor-pointer text-sm font-semibold text-slate-900 underline underline-offset-2 dark:text-white"
-              >
-                Try again
-              </button>
+              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
             </div>
           ) : (
             <SettingsSkeleton />
@@ -442,6 +453,22 @@ export function panelModel({
     categories.push(...listed);
   }
   return { categories: [...accountListed, ...categories], groups };
+}
+
+// A read of the account's settings that failed: what went wrong, and the way to ask again.
+function ReadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <>
+      <ErrorNote>{message}</ErrorNote>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-3 cursor-pointer text-sm font-semibold text-slate-900 underline underline-offset-2 dark:text-white"
+      >
+        Try again
+      </button>
+    </>
+  );
 }
 
 function ErrorNote({ children }: { children: ReactNode }) {
