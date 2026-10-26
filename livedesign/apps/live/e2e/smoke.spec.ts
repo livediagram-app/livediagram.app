@@ -4,8 +4,9 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
+  onPage,
+  openBlankPage,
   openStartBlank,
-  startBlankDesign,
   paletteTile,
 } from './fixtures';
 
@@ -49,7 +50,8 @@ test('create a blank design, add a shape, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankDesign(page);
+  // Its page chosen a Logo first: the unchosen page's What Is This Page For? covers it at this window size.
+  await openBlankPage(page);
   // /new created a real design and routed to it.
   await expect(page).toHaveURL(/\/design\/[0-9a-f-]{36}/);
   // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
@@ -58,13 +60,13 @@ test('create a blank design, add a shape, and it survives a reload', async ({
 
   // The palette is open by default on desktop; its shape tiles are
   // aria-labelled ("Add Square"). Arm the Square, then drop it on the
-  // canvas with a single click. Element views carry a role=img label
+  // page with a single click (a press off every page places nothing). Element views carry a role=img label
   // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 420, y: 300 } });
+  await canvas.click({ position: await onPage(page, 0.3, 0.25) });
   await expect(square).toHaveCount(1);
 
   // The autosave round-trip through the api + D1 is the part no unit

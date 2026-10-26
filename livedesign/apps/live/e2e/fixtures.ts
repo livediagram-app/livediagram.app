@@ -164,6 +164,41 @@ export async function startBlankDesign(page: Page): Promise<void> {
   await openStartBlank(page);
 }
 
+// A blank design on livedesign whose page is chosen as a Logo, so the page's choice is put away and the page takes
+// elements: for a spec that places elements by hand (onPage). The choice (What Is This Page For?,
+// docs/specs/007-editor/pages-mode.md "Page kinds") is centred on the unchosen page at one screen size, so on a
+// laptop-sized window it covers the whole page and a click meant for the page lands on it. On the server, because
+// the choice's own autosave is what it waits for, and a spec's seedTab writes after it.
+export async function openBlankPage(page: Page): Promise<void> {
+  await openStartBlank(page);
+  const choice = page.locator('[data-first-page-choice]');
+  const logo = choice.getByRole('button', { name: /^Logo/ });
+  await untilHydrated(logo);
+  // The choice is an edit: wait for its autosave, or a spec's own write (seedTab) races it and loses.
+  const saved = page.waitForResponse(
+    (r) => r.request().method() === 'PUT' && /\/api\/designs\/[^/]+\/tabs\//.test(r.url()),
+  );
+  await logo.click();
+  await choice.waitFor({ state: 'detached' });
+  await saved;
+}
+
+// A point on the first page as a fraction of its width and height (0..1), relative to the canvas: what a canvas
+// click's `position` takes. Elements are placed only on a page (a press off every page is ignored,
+// docs/specs/007-editor/pages-mode.md "The pages"), which sits small in the middle of a blank tab.
+export async function onPage(
+  page: Page,
+  fx: number,
+  fy: number,
+): Promise<{ x: number; y: number }> {
+  const sheet = await settledBox(page.locator('[data-page-id]').first());
+  const canvas = (await page.locator('[data-canvas-a11y-root]').boundingBox())!;
+  return {
+    x: Math.round(sheet.x + sheet.width * fx - canvas.x),
+    y: Math.round(sheet.y + sheet.height * fy - canvas.y),
+  };
+}
+
 // A /new address that makes the design on livedesign. A guest's own /new makes it in This Browser
 // (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
