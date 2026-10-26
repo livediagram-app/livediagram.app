@@ -24,7 +24,8 @@ const typeArg = z
 const fieldsArg = z
   .record(z.string(), z.unknown())
   .describe(
-    'Fields by name: description, status (a column name), assignee (a person’s name, e.g. "Sam"), priority ' +
+    'Fields by name: description (Markdown: # headings, **bold**, *italic*, [links](https://…), - bullets; ' +
+      'shown formatted on the card), status (a column name), assignee (a person’s name, e.g. "Sam"), priority ' +
       '(urgent|high|medium|low), labels (["seo","copy"] or "seo, copy"), estimate (0-999), start and due ' +
       '(YYYY-MM-DD), color (a #rrggbb colour, e.g. ' +
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +

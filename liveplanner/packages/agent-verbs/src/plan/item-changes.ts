@@ -7,6 +7,8 @@ import type { ItemResponse } from '@liveplanner/api-schema';
 import {
   assignedPeople,
   boardShowsType,
+  descriptionFromMarkdown,
+  DESCRIPTION_RICH_FIELD,
   isItemPerson,
   itemStatus,
   itemSummary,
@@ -113,16 +115,38 @@ function storedText(value: unknown, items: readonly Item[]): string {
   return cut(String(JSON.stringify(value)));
 }
 
+// A description as an agent writes it is Markdown: stored as its plain text and its formatting. Text with nothing
+// marked drops formatting the card had, so the panel never shows an old description over the new one.
+function withDescription(
+  fields: Record<string, unknown>,
+  had: Readonly<Record<string, unknown>> = {},
+): { set: Record<string, unknown>; clear: string[] } {
+  const markdown = fields['description'];
+  if (typeof markdown !== 'string') return { set: fields, clear: [] };
+  const { plain, runs } = descriptionFromMarkdown(markdown);
+  if (runs)
+    return { set: { ...fields, description: plain, [DESCRIPTION_RICH_FIELD]: runs }, clear: [] };
+  return {
+    set: { ...fields, description: plain },
+    clear: DESCRIPTION_RICH_FIELD in had ? [DESCRIPTION_RICH_FIELD] : [],
+  };
+}
+
 const cut = (text: string) =>
   text.length > SET_VALUE_MAX ? `${text.slice(0, SET_VALUE_MAX - 1)}…` : text;
 
 function setNote(
-  set: Readonly<Record<string, unknown>>,
-  clear: readonly string[],
+  written: Readonly<Record<string, unknown>>,
+  cleared: readonly string[],
   type: ItemTypeDef,
   items: readonly Item[],
 ): string[] {
   const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
+  // The formatting reads back as the description it belongs to.
+  const set = Object.fromEntries(
+    Object.entries(written).filter(([k]) => k !== DESCRIPTION_RICH_FIELD),
+  );
+  const clear = cleared.filter((k) => k !== DESCRIPTION_RICH_FIELD);
   const parts = [
     ...(Object.keys(set).length
       ? [
@@ -160,7 +184,7 @@ export async function applyItemChanges(
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
-        const fields = fieldsFor(c.fields, type);
+        const fields = withDescription(fieldsFor(c.fields, type)).set;
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
@@ -175,11 +199,20 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
-        const set = fieldsFor(c.fields, type);
+        const described = withDescription(fieldsFor(c.fields, type), target.fields);
+        const set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
-        const clear = (c.clear ?? []).map((k) =>
+        const named = (c.clear ?? []).map((k) =>
           k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
         );
+        // Clearing the description clears its formatting with it.
+        const clear = [
+          ...named,
+          ...described.clear,
+          ...(named.includes('description') && DESCRIPTION_RICH_FIELD in target.fields
+            ? [DESCRIPTION_RICH_FIELD]
+            : []),
+        ];
         const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
           ...(Object.keys(set).length ? { set } : {}),
           ...(clear.length ? { clear } : {}),

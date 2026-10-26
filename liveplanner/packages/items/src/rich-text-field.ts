@@ -12,6 +12,12 @@ const LINK_MAX = 2048;
 
 const SIZES = ['xs', 'sm', 'md', 'lg'];
 const SAFE_LINK = /^(https?:\/\/|mailto:)/i;
+
+// A link a description's run may carry: http(s) or mailto, within the length the store keeps.
+export function isRichLink(link: string): boolean {
+  return link.length <= LINK_MAX && SAFE_LINK.test(link);
+}
+
 const BOOLS = ['bold', 'italic', 'underline', 'strikethrough'] as const;
 
 // The runs, normalised (unknown keys dropped), or undefined when any run is invalid or the text runs
@@ -42,8 +48,7 @@ export function normaliseRichRuns(v: unknown): ItemFieldValue[] | undefined {
     }
     if (run['link'] !== undefined) {
       const link = run['link'];
-      if (typeof link !== 'string' || link.length > LINK_MAX || !SAFE_LINK.test(link))
-        return undefined;
+      if (typeof link !== 'string' || !isRichLink(link)) return undefined;
       next['link'] = link;
     }
     if (run['heading'] !== undefined) {

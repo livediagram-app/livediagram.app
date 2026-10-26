@@ -47,6 +47,7 @@ export * from './indefinite-article';
 export * from './store';
 export * from './refs';
 export * from './rich-text-field';
+export * from './rich-text-markdown';
 export * from './card-finder';
 export * from './slug';
 export * from './write-checks';
