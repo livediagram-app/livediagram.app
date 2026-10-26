@@ -148,15 +148,17 @@ its number, title, description and every comment **verbatim**, with author and d
     `hasTouch`) and a ~450px desktop window, with before and after shots.
   - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
     obvious from the after shot alone.
-  - Your own servers go on 3600+. Reuse one dev server for every shot; don't build for screenshots.
+  - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
+    don't build for screenshots.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
 - **One PR, one push.** Push the branch once, when everything above passes, then open a ready PR (never draft)
   against `main`. Add `not-ready` only for high-risk changes (schema or wire format, auth, sharing, user data,
-  worker bindings), and say why. Push the images to an orphan `pr-assets/<PR#>` branch and link commit-pinned
-  raw URLs. The description: one calm paragraph of context, then what it solves, then what was done, then
+  worker bindings), and say why. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
+  to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
+  `raw.githubusercontent.com` links 404. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per Question: "#24: <the answer, short> → <how it was built>"), Decisions, Performance
   and the screenshots. It names the card ("Work Tracker #12") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
@@ -167,11 +169,18 @@ its number, title, description and every comment **verbatim**, with author and d
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
   built, the decisions, and anything the owner should look at.
 
+Give each agent its own **port block** (the first agent of a pass 3600 to 3619, the second 3620 to 3639, the
+third 3640 to 3659, and the next agent reuses a finished one's block) and its own **scratch folder**
+(`<scratchpad>/card-<number>/`). Put both in the brief. Agents that share them overwrite each other's servers and
+screenshots.
+
 **Hard rules for every agent (copy them in verbatim):**
 
 - NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the dev servers
   already running (ports 3000 to 3499), or Wrangler workers named liveworkspace-\*, live\*-api, live\*-mcp or
   live\*-router-local. Wrangler's registry is machine-wide.
+- `pnpm install` rewrites the shared git `core.hooksPath`. Read it (`git config --get core.hooksPath`) before
+  installing and set it back to that value straight after.
 - Don't touch .dev.vars or .env files. Don't touch the main checkout's working tree: other sessions keep
   uncommitted work there. Never `git stash`.
 - Never push to main, merge a PR or deploy. Don't apply remote D1 migrations.
