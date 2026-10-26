@@ -26,12 +26,17 @@ async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
       await Promise.allSettled(going.map((a) => a.finished));
     }
   });
+  // The box in whole pixels, every pixel it touches: the view centres a page on the canvas, which can leave a box
+  // edge half a pixel in (y 150.5), and an edge stroke inside it then shades the pixel the edge splits. That pixel is
+  // the box's, so the ring starts at the first pixel wholly outside it.
   const box = (await element.boundingBox())!;
+  const left = Math.floor(box.x);
+  const top = Math.floor(box.y);
   const clip = {
-    x: box.x - MARGIN_PX,
-    y: box.y - MARGIN_PX,
-    width: box.width + 2 * MARGIN_PX,
-    height: box.height + 2 * MARGIN_PX,
+    x: left - MARGIN_PX,
+    y: top - MARGIN_PX,
+    width: Math.ceil(box.x + box.width) - left + 2 * MARGIN_PX,
+    height: Math.ceil(box.y + box.height) - top + 2 * MARGIN_PX,
   };
   const shot = () => page.screenshot({ clip, animations: 'disabled', caret: 'hide' });
   await element.evaluate((el: HTMLElement) => (el.style.visibility = 'hidden'));
