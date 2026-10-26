@@ -5,6 +5,7 @@
 // underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the whiteboard, Plan and documents block).
 
 import type { ReactNode } from 'react';
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT } from '@/components/art-tokens';
 import {
   Cursor as TeammateCursor,
@@ -65,7 +66,8 @@ export function Avatar({
       <circle cx={x} cy={y} r={r} fill={colour} />
       <text
         x={x}
-        y={y + r * 0.37}
+        // The initials centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(y, r * 0.95)}
         textAnchor="middle"
         fontSize={r * 0.95}
         fontWeight="700"
