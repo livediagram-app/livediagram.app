@@ -14,7 +14,7 @@ Skip, Back and closing card, driven by the same engine. Where this spec is silen
 
 ## Where it appears
 
-- **On the Start Tour button, in Workshop mode.** The footer's button, left of Settings
+- **On the Start Tour button, in Workshop mode.** The footer's button, left of Search
   ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Workshop Tour** while the open tab
   is in Workshop on a tab the person may edit, unless something more specific is on offer (a selected element's own
   tour). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, no start on screen, not

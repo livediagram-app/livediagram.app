@@ -23,7 +23,7 @@ footer's Start Tour button live once in `@liveworkspace/workbench/components/tou
 | `packages/workbench/src/components/tour/tour-step.ts`        | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                                   |
 | `packages/workbench/src/components/tour/useTourEngine.ts`    | The shared step runner: step index, direction, target rect, prepare / wait / heal                                         |
 | `packages/workbench/src/components/tour/tour-offer.ts`       | `useOfferTour`, `TOUR_OFFER_RANK`: each host publishes its tour; the most specific one is on the button                   |
-| `packages/workbench/src/components/tour/TourOfferButton.tsx` | The footer's Start Tour button, beside Settings (`ChromeControls`)                                                        |
+| `packages/workbench/src/components/tour/TourOfferButton.tsx` | The footer's Start Tour button, beside Search (`ChromeControls`)                                                          |
 | `apps/editor/components/tour/TourStage.tsx`                  | The editor's overlay over the shared `TourStage`: spotlight, `TourPopover`                                                |
 | `apps/editor/components/tour/plan-tour-steps.ts`             | `planTourSteps`, `PlanTourApi`, `boardRoot`, `sheetRoot`, `firstCardOn`, `visiblePlanWork`, `needsReveal`, telemetry type |
 | `apps/editor/components/tour/PlanTourHost.tsx`               | Offer, subject, the example card, relaunch, end; builds `PlanTourApi`                                                     |

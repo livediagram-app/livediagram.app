@@ -19,7 +19,7 @@ timeline and chevron process; the [data charts](../009-elements/pie-chart.md); a
 | Term                  | Means                                                                                        |
 | --------------------- | -------------------------------------------------------------------------------------------- |
 | **Element tour**      | This pattern, and one tour of it (the **Sankey tour**)                                       |
-| **Start Tour button** | The footer button, left of Settings, that starts every tour ("Start Sankey Tour")            |
+| **Start Tour button** | The footer button, left of Search, that starts every tour ("Start Sankey Tour")              |
 | **Toured kind**       | An element type that has an element tour (`sankey`, `chart`, …)                              |
 | **Selection toolbar** | The floating toolbar over a single selection ([Canvas](../008-canvas/canvas-and-palette.md)) |
 

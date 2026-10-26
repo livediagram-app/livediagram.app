@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The footer's Start Tour button (docs/specs/007-editor/editor-tour.md "Where it appears"): the one way into a tour,
-// left of Settings, offering the most relevant tour on offer, and absent with none.
+// left of Search, offering the most relevant tour on offer, and absent with none.
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -26,12 +26,12 @@ const offer = (id: string, name: string, rank: number, start = vi.fn()) => ({
   start,
 });
 
-// The footer as each editor draws it: Search, then the tour button, then Settings and the appearance switch.
+// The footer as each editor draws it: the tour button, then Search, Settings and the appearance switch.
 function Footer({ labelled = true }: { labelled?: boolean }) {
   return (
     <div data-testid="footer">
-      <button type="button" aria-label="Search" />
       <TourOfferButton labelled={labelled} />
+      <button type="button" aria-label="Search" />
       <button type="button" aria-label="Settings" />
       <button type="button" aria-label="System" />
     </div>
@@ -45,7 +45,7 @@ describe('TourOfferButton', () => {
     expect(document.querySelector('[data-tour-offer]')).toBeNull();
   });
 
-  it('names the tour, wears the play glyph and sits just before Settings', () => {
+  it('names the tour, wears the play glyph and sits just before Search', () => {
     render(<Footer />);
     act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
     const button = screen.getByRole('button', { name: 'Start Draw Tour' });
@@ -53,8 +53,8 @@ describe('TourOfferButton', () => {
     expect(button.querySelector('svg')).not.toBeNull();
     const buttons = [...screen.getByTestId('footer').querySelectorAll<HTMLElement>('button')];
     const at = buttons.indexOf(button);
-    expect(buttons[at + 1]?.getAttribute('aria-label')).toBe('Settings');
-    expect(buttons[at - 1]?.getAttribute('aria-label')).toBe('Search');
+    expect(at).toBe(0);
+    expect(buttons[at + 1]?.getAttribute('aria-label')).toBe('Search');
   });
 
   it('starts the tour on a press, and stays to be pressed again', () => {

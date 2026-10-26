@@ -576,7 +576,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Tours',
     sectionNotes: {
       'Offer Again': {
-        note: 'Start a tour from the Start Tour button in the bottom bar, left of Settings: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
+        note: 'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
       },
     },
     rows: [

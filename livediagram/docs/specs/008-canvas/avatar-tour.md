@@ -16,7 +16,7 @@ Draw tour's rules hold.
 ## Where it appears
 
 - **On the Start Tour button, in Avatar mode**, which a person enters by pressing a
-  [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The footer's button, left of Settings
+  [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The footer's button, left of Search
   ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Avatar Tour** while the avatar is
   the tool in hand: ahead of the tab's mode tour, behind a selected element's own tour (`TOUR_OFFER_RANK.tool`). The
   editor has to be usable (hydrated, no welcome overlay, no start panel on screen, not an embed). Unlike the Draw tour

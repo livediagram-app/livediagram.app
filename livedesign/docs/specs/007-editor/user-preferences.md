@@ -676,7 +676,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Tours** is a category of its own: **Pages Tours** (over **Wireframe Tour**, **Logo Tour** and **Photo Tour**), with a line saying where it runs and a **Learn more** to its article, under
   one **Offer Again** section note. No tour offers itself any more: every tour is started from the footer's
-  **Start Tour** button, immediately left of Settings, and stays there once taken ([Pages tour](pages-tour.md)).
+  **Start Tour** button, immediately left of Search, and stays there once taken ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
   tour when it is on offer right now. (The note's words, and the Show Me section's, still describe tours offering themselves
   once, as they did until 25 October 2026.) (The tours used to be an Onboarding Tutorials grid of switches inside Accessibility, where nobody looked

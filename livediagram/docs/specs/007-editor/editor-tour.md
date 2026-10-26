@@ -20,7 +20,7 @@ proved the better introduction.
 ## Where it appears
 
 - **The footer's Start Tour button is the one way in.** Every tour (this one, the mode tours, the element tours,
-  the avatar and Plan tours) is started from one button in the editor's bottom bar, immediately left of Settings:
+  the avatar and Plan tours) is started from one button in the editor's bottom bar, immediately left of Search:
   a contained chip with a play glyph in a small accent disc, reading **Start Diagram Tour** (`TourOfferButton`,
   `@liveworkspace/workbench/components/tour`). It is as tall as its neighbours and set in their type, its hover runs
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
@@ -28,6 +28,10 @@ proved the better introduction.
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
   own: no banner, no card, no toolbar beside an element. This replaced the offer banners ("Getting started with
   Diagrams?") in October 2026, which people found they had to keep turning down.
+- **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
+  computer, a narrow window and a phone: **Start Tour**, then **Search**, then **Settings** and the appearance
+  switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
+  Search, Settings or the appearance switch. It sat between Search and Settings until October 2026.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
   `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
   tour first, then a tool in hand or a surface on the tab (the Avatar tour, the Dashboards tour), then the tab's

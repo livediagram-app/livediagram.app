@@ -353,7 +353,7 @@ number).
 ### The Forms tour
 
 A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
-`form-tour-steps.ts`), started from the footer's **Start Forms Tour** button, left of Settings
+`form-tour-steps.ts`), started from the footer's **Start Forms Tour** button, left of Search
 ([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It is on offer while an Editor has a Form tab open
 and the editor is ready (hydrated, no start panel, not read-only, not locked, not embedded); it stays on offer once
 taken, and a press while another tour is on screen does nothing. It never starts or offers itself: until 25 October
