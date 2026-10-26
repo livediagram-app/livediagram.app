@@ -61,7 +61,7 @@ a save that changes no image writes no row. A writer that only touches `element_
 - The design's alarm drains the outbox: it reads the set (`designImageIds`), grants the images whose owners may
   place them right now (`grantPlacedImages`, [Images](../images.md)), then `pushDesignMediaRefs` sends the whole
   set, replacing what the service held, with `complete: true`. A refusal throws, so the key stays and is retried.
-- A set over `MEDIA_REFS_PER_DOCUMENT_MAX` sends the first that many and logs an error.
+- A set over the media service's cap of 1000 references per design sends the first 1000 and logs an error.
 - The daily run (`announceMediaRefs`) tells the service livedesign's set is complete, so a quiet day never holds its
   sweep up. Every design has sent its own set from its first change, so `complete` always holds.
 - A purged design tells the service it places nothing (`forgetDesignMediaRefs`, best effort).
@@ -109,8 +109,8 @@ a save that changes no image writes no row. A writer that only touches `element_
 
 ## Constants and configuration
 
-| Constant                      | Value       | Provenance                           |
-| ----------------------------- | ----------- | ------------------------------------ |
-| `IMAGE_REF_ID_MAX_LENGTH`     | 128         | Spec; gallery ids are 36-char UUIDs  |
-| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000        | `@liveworkspace/media` (`limits.ts`) |
-| Daily run                     | `0 3 * * *` | `apps/api/wrangler.toml`             |
+| Constant                  | Value       | Provenance                           |
+| ------------------------- | ----------- | ------------------------------------ |
+| `IMAGE_REF_ID_MAX_LENGTH` | 128         | Spec; gallery ids are 36-char UUIDs  |
+| References per design     | 1000        | `@liveworkspace/media` (`limits.ts`) |
+| Daily run                 | `0 3 * * *` | `apps/api/wrangler.toml`             |
