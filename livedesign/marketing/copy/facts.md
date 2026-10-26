@@ -1,6 +1,6 @@
 # Fact sheet
 
-The canonical, true-today facts all marketing copy is built from. If something
+The canonical facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
 descriptions. Mirrors [Purpose](../../docs/specs/001-project-vision/purpose.md)
 and the site-wide pitch in `packages/ui/src/site.ts` (`SITE_PITCH`: "a real-time
@@ -31,10 +31,10 @@ Teams who design and show their work together:
 
 The unit of value is the team, not the individual.
 
-## Shipped today
+## Shipped
 
 - Real-time multiplayer: live cursors, selection awareness, per-element merge,
-  comments with mentions, Follow Me, one realtime room per design.
+  comments with mentions, Follow (pin your view to someone else's), one realtime room per design.
 - Logo pages: artboards with guides, mirroring and shape combining, exported as
   a Logo Kit.
 - Wireframe pages: a screen per page, sized to its device, with ready-made
@@ -45,9 +45,11 @@ The unit of value is the team, not the individual.
   embeds.
 - Templates for logos, wireframes and photos; themes that restyle a whole tab.
 - Show the work: a laser pointer, a spotlight and Zen mode.
-- Export pages as PDF, PNG or SVG; import and export a design as JSON.
+- Export pages as PDF, PNG or SVG; export a tab as JSON and import it back.
 - Tabs, tab folders and layers; nested folders in the Explorer.
-- Editor or view-only share links, revocable any time; read-only embeds.
+- Share links as passes with three roles (Editor, Participant, Viewer), with optional
+  passwords and expiry, revocable any time; embeds that follow the pass's role
+  (editable for an Editor pass, look-only otherwise).
 - Teams with a shared library of designs.
 - Undo and redo, personal to each editor; every change saves on its own.
 - Offline Mode: a design can be kept in this browser only.
@@ -79,4 +81,4 @@ No Node-hosted backend, no SSR.
 ## Links
 
 - Hosted: https://livedesign.app
-- Editor: https://livedesign.app/live
+- Editor: https://livedesign.app/new

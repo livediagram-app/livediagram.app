@@ -250,7 +250,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
-- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
+- All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
 - Server-only secrets (the accounts client secret, the index, media and telemetry keys) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` designing what's required.
@@ -300,7 +300,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Hard constraints
 
-- **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
+- **All websites must be static and deploy as Cloudflare Workers Static Assets** (from the monorepo's root deploy workflows). Next.js apps use `output: 'export'`: no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
 - Stored data is reached through a Worker — never from the browser. A design's content lives in its Durable Object behind the api worker; the index, accounts and media are liveworkspace's services, reached with the app's keys.
 
@@ -317,7 +317,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 ## Guidelines
 
 - **Every feature decides its share roles.** When specifying or building anything a shared design can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
-- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
+- Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app: it breaks the static-assets deploy.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR

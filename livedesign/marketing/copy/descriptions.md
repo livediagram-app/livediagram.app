@@ -53,7 +53,7 @@ For Product Hunt, app store short descriptions, README intros.
 > livedesign is a collaborative page editor in the browser for logos, wireframes
 > and photos. The editor never sits behind a sign-in wall, so getting started is
 > as simple as opening a link. Teams work on the same pages in real time: live
-> cursors, selection awareness, comments with mentions, and Follow Me.
+> cursors, selection awareness, comments with mentions, and Follow.
 >
 > Draw a logo on an artboard and export its Logo Kit, lay out the screens of an
 > app as wireframes, or touch up a photo in layers with adjustments and filters.
@@ -73,7 +73,7 @@ For longer listing bodies and "about this project" sections.
 > and make a real design before being asked to create anything.
 >
 > Collaboration is real time and built in, not bolted on. Everyone on a design
-> sees live cursors and selections, and comment threads with mentions; Follow Me
+> sees live cursors and selections, and comment threads with mentions; Follow
 > keeps a group on the same view. Each design gets its own realtime room, so
 > presence and edits stay snappy.
 >
@@ -85,8 +85,8 @@ For longer listing bodies and "about this project" sections.
 > images, charts, tables, icons and embeds.
 >
 > When it is time to show the work, point with a laser or a spotlight, or hide
-> the toolbars in Zen mode. Export pages as PDF, PNG or SVG, share view-only or
-> editable links and revoke them whenever you like, and keep everything in tabs
+> the toolbars in Zen mode. Export pages as PDF, PNG or SVG, share links as an
+> Editor, Participant or Viewer and revoke them whenever you like, and keep everything in tabs
 > and nested folders.
 >
 > livedesign is MIT-licensed, free for everyone with no paid tier and no plan
@@ -112,7 +112,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > Collaboration is the product, not a feature. Everyone on a design sees live
 > cursors, selections and comment threads as they happen, with mentions to pull
-> someone in, and Follow Me to keep a group on one view. Each design runs in its
+> someone in, and Follow to keep a group on one view. Each design runs in its
 > own realtime room, and concurrent edits merge per element, so nobody clobbers
 > anyone else.
 >
@@ -132,14 +132,13 @@ detailed GitHub / Product Hunt write-up.
 > Start from a template for each kind of page, or start blank, and restyle a
 > whole tab with a theme. When the work is ready, walk people through it with a
 > laser pointer and a spotlight, or clear the screen with Zen mode. Export pages
-> as PDF, PNG or SVG, a photo as PNG, JPEG, WebP or PSD, and a whole design as
-> JSON.
+> as PDF, PNG or SVG, a photo as PNG, JPEG, WebP or PSD, and a tab as JSON.
 >
 > #### Nothing gets lost
 >
 > Every change saves on its own as you work, and undo and redo step back and
 > forth through your own recent edits without touching anyone else's work. Share
-> view-only or editable links per design and revoke them whenever you want.
+> a design with Editor, Participant or Viewer links and revoke them whenever you want.
 > Teams get a shared library of designs, and AI tools can read and write designs
 > through the MCP server, the CLI or the REST API.
 >
