@@ -237,6 +237,60 @@ describe('drawPlan', () => {
     expect(out).toContain('Card number 2');
   });
 
+  // docs/specs/029-sheets/sheet.md "Exports and images": a named tab's picture is what a link confined to that tab
+  // gets, so its card functions read only the cards the tab shows; the first tab's reads every card.
+  it("counts only a named tab's own cards in its sheet formulas", async () => {
+    const { book } = await import('../../../packages/sheets/src/testing/book');
+    const { sheetToJson } = await import('../../../packages/sheets/src/sheet-json');
+    const sheet = book({ A1: '=CARDCOUNT()+1000' }).sheets.map(sheetToJson);
+    const card = (id: string, title: string) =>
+      ({
+        id,
+        type: 'task',
+        key: 1,
+        rank: 'a',
+        fields: { title, status: presetSetup('kanban').columns[0]!.status },
+        rev: 1,
+        createdAt: 0,
+        updatedAt: 0,
+        createdBy: { id: 'p', name: 'P', color: '#000000' },
+        updatedBy: { id: 'p', name: 'P', color: '#000000' },
+      }) as unknown as Item;
+    const frame = {
+      id: 's1',
+      type: 'shape',
+      shape: 'plan-sheet',
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 200,
+      planSheet: { sheetId: sheet[0]!.id },
+    };
+    const pinned = {
+      id: 'c1',
+      type: 'shape',
+      shape: 'plan-card',
+      x: 500,
+      y: 0,
+      width: 200,
+      height: 100,
+      planCard: { itemId: 'i1' },
+    };
+    db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [frame, pinned] }), 2));
+    db.listSheets.mockResolvedValue(sheet);
+    db.listItems.mockResolvedValue([
+      card('i1', 'Shown'),
+      card('i2', 'Elsewhere'),
+      card('i3', 'Also'),
+    ]);
+    db.getProjectItemTypes.mockResolvedValue(defaultCatalogue());
+
+    expect(await draw(liveDoc())).toContain('>1003<');
+    const named = await draw(liveDoc(), { tabId: 't1' });
+    expect(named).toContain('>1001<');
+    expect(named).not.toContain('>1003<');
+  });
+
   it('writes nothing for a count already known, or a body it cannot count', async () => {
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
     await draw(liveDoc());

@@ -946,7 +946,10 @@ Every tab is in Plan, so a Sheet element goes on any tab, as a board does
 - Images, thumbnails, PDFs, slides and api or MCP renders draw the Sheet element as in other modes: header, column
   and row headers, and the cells that fit its frame from the top left (after frozen rows and columns), with values
   worked out from the sheet store.
-- Card functions ([Formulas](formulas.md#plan-cards)) in an export read the project's items, as boards do.
+- Card functions ([Formulas](formulas.md#plan-cards)) in an export read the project's items, as boards do. A preview
+  of one named tab (the picture a link confined to that tab gets, cached for every reader of the tab) reads only the
+  items that tab shows ([Items](../026-plan/items.md) "Who may do what"), so it never tells a tab-scoped visitor more
+  than their editor does; the first tab's preview, which only whole-plan readers get, reads them all.
 
 ## Performance
 

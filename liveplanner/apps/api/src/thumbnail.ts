@@ -15,7 +15,7 @@ import {
 } from '@liveplanner/project';
 import { readForm } from '@liveplanner/forms';
 import { formArt } from '@liveplanner/plan-art';
-import { cardSourceOf, typesOf } from '@liveplanner/items';
+import { cardSourceOf, itemIdsShownOnTab, typesOf, type Item } from '@liveplanner/items';
 import { renderModelsForTab, sheetFramesOf } from '@liveplanner/sheets';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the preview instead of
@@ -51,7 +51,8 @@ export async function drawPlan(
   opts: DrawOptions = {},
 ): Promise<string | null> {
   const body = tabId ? await getTabBody(env, plan.id, tabId) : await getTabBody(env, plan.id);
-  return renderTabBodyToSvg(env, plan, body, opts);
+  // A named tab's picture is what a link confined to it gets: its card functions read only the cards it shows.
+  return renderTabBodyToSvg(env, plan, body, opts, tabId !== null);
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
@@ -105,6 +106,8 @@ async function renderTabBodyToSvg(
   liveDoc: DrawSubject,
   body: StoredTabBody | null,
   opts: DrawOptions = {},
+  // Card functions read only the items this tab shows (docs/specs/029-sheets/sheet.md "Exports and images").
+  scoped = false,
 ): Promise<string | null> {
   if (!body) return null;
   let parsed: Partial<Tab>;
@@ -163,9 +166,14 @@ async function renderTabBodyToSvg(
           liveDoc.itemTypes !== undefined ? liveDoc.itemTypes : getPlanItemTypes(env, liveDoc.id),
         ])
       : [undefined, null];
+  const cardItems = (all: Map<string, Item>) => {
+    if (!scoped) return all.values();
+    const shown = itemIdsShownOnTab(tab.elements, all.values());
+    return [...all.values()].filter((item) => shown.has(item.id));
+  };
   const sheets = frames.length
     ? renderModelsForTab(sheetJson, frames, {
-        cards: sheetCards && items ? cardSourceOf(items.values(), typesOf(catalogue)) : null,
+        cards: sheetCards && items ? cardSourceOf(cardItems(items), typesOf(catalogue)) : null,
       })
     : undefined;
   const types = plan ? typesOf(catalogue) : undefined;

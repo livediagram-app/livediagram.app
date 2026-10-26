@@ -116,7 +116,8 @@ the Trash), whatever board they are on, as a [plan view](../026-plan/plan-views.
 - An unknown field is `#NAME?` (hovering names it); a card number no card has is `#N/A`.
 - A sheet using these functions loads the project's items, as a board does; until they arrive the cells show
   **Loading…**. They recalculate as cards change, live for everyone.
-- Outside the editor (exports, images, agents), they read the items the api reads.
+- Outside the editor (exports, images, agents), they read the items the api reads; a named tab's preview reads only
+  the items that tab shows ([Sheet](sheet.md) "Exports and images").
 
 ## Operators
 
