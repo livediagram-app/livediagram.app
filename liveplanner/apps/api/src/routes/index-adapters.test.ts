@@ -117,12 +117,16 @@ describe('the index doors on one plan', () => {
       ctx('DELETE', '/api/projects/P', { headers: { 'X-Project-Conversion': 'offline' } }),
     );
     expect(res!.status).toBe(204);
+    // Its 204 carries the CORS headers every other answer does, so a cross-origin caller can read it.
+    expect(res!.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(calls.map((c) => c.search)).toEqual(['?permanent=true&reason=offline']);
   });
 
   it('trashes, and deletes for good on ?permanent=1', async () => {
     routes['DELETE /items/P'] = () => new Response(null, { status: 204 });
-    expect((await handleProjectIndexRoutes(ctx('DELETE', '/api/projects/P')))!.status).toBe(204);
+    const trashed = (await handleProjectIndexRoutes(ctx('DELETE', '/api/projects/P')))!;
+    expect(trashed.status).toBe(204);
+    expect(trashed.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(
       (await handleProjectIndexRoutes(ctx('DELETE', '/api/projects/P?permanent=1')))!.status,
     ).toBe(204);
@@ -201,6 +205,14 @@ describe('the Trash, folders, teams and links', () => {
     calls = [];
     expect((await handleTrash(ctx('PUT', '/api/trash/T'))).status).toBe(404);
     expect(calls).toEqual([]);
+  });
+
+  it('deletes a trashed plan for good, answering 204 with the CORS headers', async () => {
+    routes['DELETE /items/T'] = () => new Response(null, { status: 204 });
+    const res = await handleTrash(ctx('DELETE', '/api/trash/T'));
+    expect(res.status).toBe(204);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(calls.map((c) => c.search)).toEqual(['?permanent=true']);
   });
 
   it("lists the caller's folders, and its teams from its token", async () => {

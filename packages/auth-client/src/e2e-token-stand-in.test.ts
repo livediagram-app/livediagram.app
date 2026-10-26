@@ -31,6 +31,24 @@ describe('the e2e stacks’ accounts token and profile stand-in', () => {
     expect(standIn.answer('/settings', {})).toBeNull();
   });
 
+  it('makes a token for an AI tool for the person the app’s access token names', () => {
+    const standIn = createTokenStandIn('/e2e/accounts');
+    const claims = { sub: 'user_a', email: 'a@example.com', email_verified: true };
+    const jwt = `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
+    const minted = standIn.answer('/tokens', { accessToken: jwt, name: 'livedocuments CLI' });
+    expect(minted).toMatchObject({
+      status: 201,
+      body: { name: 'livedocuments CLI', readOnly: false, secret: expect.stringMatching(/^lwt_/) },
+    });
+    const secret = (minted!.body as { secret: string }).secret;
+    expect(standIn.answer('/tokens/verify', { token: secret })).toMatchObject({
+      status: 200,
+      body: { userId: 'user_a', email: 'a@example.com', name: 'livedocuments CLI' },
+    });
+    expect(standIn.answer('/tokens', { accessToken: 'not-a-jwt' })?.status).toBe(401);
+    expect(standIn.answer('/tokens', {})?.status).toBe(401);
+  });
+
   it('keeps the profiles the api writes, and reads back only the ones it has', () => {
     const standIn = createTokenStandIn('/e2e/accounts');
     expect(standIn.answer('/profiles/read', { ids: ['user_a'] })).toEqual({
@@ -97,6 +115,16 @@ describe('the e2e stacks’ accounts token and profile stand-in', () => {
         body: JSON.stringify({ ids: ['user_b'] }),
       });
       expect(await read.json()).toMatchObject({ profiles: [{ id: 'user_b', name: 'Bea' }] });
+      const jwt = `h.${Buffer.from(JSON.stringify({ sub: 'user_b' })).toString('base64url')}.s`;
+      const minted = await fetch(`${base}/api/account/internal/tokens`, {
+        method: 'POST',
+        body: JSON.stringify({ accessToken: jwt, name: 'CLI' }),
+      });
+      expect(minted.status).toBe(201);
+      expect(await minted.json()).toMatchObject({
+        name: 'CLI',
+        secret: expect.stringMatching(/^lwt_/),
+      });
       expect((await fetch(`${base}/api/account/internal/settings`)).status).toBe(418);
     } finally {
       server.close();

@@ -66,6 +66,13 @@ describe('workspacePlaceOf', () => {
       kind: 'explorer',
       node: { kind: 'home' },
     });
+    // A malformed percent-escape names no document or folder: Home, never a URIError that takes the frame down.
+    for (const path of [
+      '/embed/workbench/document/%E0%A4%A',
+      '/embed/workbench/explorer/folder/%',
+    ]) {
+      expect(place(path), path).toEqual({ kind: 'explorer', node: { kind: 'home' } });
+    }
   });
 });
 

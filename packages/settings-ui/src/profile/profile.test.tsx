@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetPictureFailures } from '@liveworkspace/ui';
 import { accountCategories } from '../account-model';
@@ -194,16 +194,50 @@ describe('Sign-in Methods and Where You’re Signed In', () => {
   });
 
   it('lists each session, this device first, and signs out of another or all the others', async () => {
-    const security = fakeSecurity();
+    const mine = session(
+      'mine',
+      true,
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/156.0',
+    );
+    const phone = session(
+      'phone',
+      false,
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 19_0) Mobile Safari/604.1',
+    );
+    const pc = session('pc', false, 'Mozilla/5.0 (Windows NT 10.0) Edg/120.0');
+    // The server's answer, before and after the phone is signed out.
+    let live = [mine, phone, pc];
+    const security = fakeSecurity({ sessions: vi.fn(async () => live) });
     drawn(profileRows({ ...base, identity: ada, security }).find((r) => r.key === 'sessions'));
     expect(await screen.findByText('Chrome on macOS')).toBeTruthy();
     expect(screen.getByText('This device')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Sign out of Safari on iOS' }));
     await waitFor(() => expect(security.revokeSession).toHaveBeenCalledWith('token-phone'));
+    live = [mine, pc];
     // Read again after the change.
     await waitFor(() => expect(security.sessions).toHaveBeenCalledTimes(2));
     fireEvent.click(await screen.findByRole('button', { name: 'Sign Out Others' }));
     await waitFor(() => expect(security.revokeOtherSessions).toHaveBeenCalledTimes(1));
+  });
+
+  it('drops a signed-out session at once, so it cannot be signed out twice while the list is read again', async () => {
+    let answer: (value: AccountSession[]) => void = () => {};
+    const first = fakeSecurity();
+    const initial = await first.sessions();
+    const security = fakeSecurity({
+      sessions: vi
+        .fn<() => Promise<AccountSession[]>>()
+        .mockResolvedValueOnce(initial!)
+        .mockImplementation(() => new Promise((resolve) => (answer = resolve))),
+    });
+    drawn(profileRows({ ...base, identity: ada, security }).find((r) => r.key === 'sessions'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out of Safari on iOS' }));
+    await waitFor(() => expect(security.sessions).toHaveBeenCalledTimes(2));
+    // The read after it is still on its way: the row has gone already.
+    expect(screen.queryByRole('button', { name: 'Sign out of Safari on iOS' })).toBeNull();
+    expect(security.revokeSession).toHaveBeenCalledTimes(1);
+    await act(async () => answer(initial!.filter((s) => s.current)));
+    expect(screen.getByText('This device')).toBeTruthy();
   });
 
   it('says so when a sign-out is refused', async () => {

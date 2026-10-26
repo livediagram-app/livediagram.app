@@ -6,6 +6,7 @@ vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
 
 import {
   loadPreview,
+  PREVIEW_CACHE_MAX,
   PREVIEW_CONCURRENCY,
   previewUrl,
   renderPreview,
@@ -63,5 +64,21 @@ describe('previews on liveworkspace.app', () => {
     expect(fetch).toHaveBeenCalledTimes(11);
     await loadPreview(item({ id: 's', sharedVia: 'code' }));
     expect(new Headers(fetch.mock.calls.at(-1)![1].headers).get('X-Share-Code')).toBe('code');
+  });
+
+  it('drops the least recently used preview when full, not the first fetched', async () => {
+    const fetch = vi.fn(async () => new Response('<svg/>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const items = Array.from({ length: PREVIEW_CACHE_MAX }, (_, i) => item({ id: `p${i}` }));
+    for (const it of items) await loadPreview(it);
+    // The first one is asked for again (still on screen), so it is the most recently used.
+    await loadPreview(items[0]!);
+    await loadPreview(item({ id: 'one-more' }));
+    expect(fetch).toHaveBeenCalledTimes(PREVIEW_CACHE_MAX + 1);
+    await loadPreview(items[0]!);
+    expect(fetch).toHaveBeenCalledTimes(PREVIEW_CACHE_MAX + 1);
+    // p1 was the least recently used, so it went.
+    await loadPreview(items[1]!);
+    expect(fetch).toHaveBeenCalledTimes(PREVIEW_CACHE_MAX + 2);
   });
 });

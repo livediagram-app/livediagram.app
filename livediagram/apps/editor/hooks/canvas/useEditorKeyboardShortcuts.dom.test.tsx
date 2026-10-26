@@ -142,6 +142,37 @@ describe("a Participant's palette keys", () => {
     expect(addShape).not.toHaveBeenCalled();
   });
 
+  it("work on a Draw tab too, where the dock keys are an Editor's", () => {
+    const addSticky = vi.fn();
+    const addText = vi.fn();
+    const wb = {
+      pickSelect: vi.fn(),
+      pickPen: vi.fn(),
+      pickEraser: vi.fn(),
+      pickSticky: vi.fn(),
+      pickText: vi.fn(),
+      pickShape: vi.fn(),
+      pickPath: vi.fn(),
+      openShapes: vi.fn(),
+    };
+    const { bag } = deps({
+      selectedId: null,
+      isReadOnly: true,
+      participant: true,
+      whiteboard: wb,
+      addSticky,
+      addText,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('n').defaultPrevented).toBe(true);
+    press('t');
+    press('1');
+    expect(addSticky).toHaveBeenCalledTimes(1);
+    expect(addText).toHaveBeenCalledTimes(1);
+    expect(wb.pickPen).not.toHaveBeenCalled();
+    expect(wb.pickSticky).not.toHaveBeenCalled();
+  });
+
   it("are not a Viewer's", () => {
     const addSticky = vi.fn();
     const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky });

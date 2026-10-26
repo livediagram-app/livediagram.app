@@ -130,7 +130,7 @@ export class RoomFacilitator {
     } else if (msg.action === 'unlock') {
       // Uses the baton rather than moving it, so it returns here instead of
       // falling through to set: there is no BatonMove to make.
-      this.releaseSelectionLock(asker, msg.target, msg.elementId);
+      this.releaseSelectionLock(asker, session.tabScope ?? null, msg.target, msg.elementId);
       return;
     }
     if (!move) return;
@@ -220,7 +220,12 @@ export class RoomFacilitator {
    * "nothing to do", and a room that answered them would be telling a peer
    * which presence ids are live.
    */
-  private releaseSelectionLock(asker: Asker, target: string, elementId: string): void {
+  private releaseSelectionLock(
+    asker: Asker,
+    tabScope: string | null,
+    target: string,
+    elementId: string,
+  ): void {
     // A view-role visitor can't select, edit or hold the baton, so it has no
     // business freeing an editor's hold either. The client hides the menu
     // from them; this is the room refusing a hand-sent frame.
@@ -228,7 +233,11 @@ export class RoomFacilitator {
     if (!mayReleaseLock(this.state, asker.presenceId)) return;
     if (target === asker.presenceId) return;
     if (typeof elementId !== 'string' || elementId.length === 0) return;
-    if (!this.deps.socketByPresence(target)) return;
+    const holder = this.deps.socketByPresence(target);
+    if (!holder) return;
+    // A tab-scoped session acts on its own tab only (docs/specs/013-workspace/tab-scoped-share-links.md): it frees a
+    // hold only from someone working on that tab, never one on a tab it cannot reach.
+    if (tabScope && this.deps.readSession(holder)?.presence?.tabId !== tabScope) return;
     this.deps.sendToPresence(target, {
       kind: 'selection-released',
       elementId,

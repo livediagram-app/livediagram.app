@@ -5,9 +5,9 @@
 // element's place in the stacking order; the inputs go, with the arrows pinned to them, as Delete
 // takes them. One edit, one undo.
 import {
-  arrowReferencesAny,
   isBoxed,
   logoPageAt,
+  withAttachedArrows,
   type BoxedElement,
   type Element,
   type LaidOutPage,
@@ -93,6 +93,8 @@ export function useCombineShapes({
     const removed = new Set(result.removedIds);
     commit((els) => {
       if (!unchanged(els)) return els;
+      // The arrows attached to the inputs go with them, and those hung off those arrows in turn.
+      const gone = withAttachedArrows(els, removed);
       const out: Element[] = [];
       let placed = false;
       for (const el of els) {
@@ -102,7 +104,7 @@ export function useCombineShapes({
           placed = true;
           continue;
         }
-        if (el.type === 'arrow' && arrowReferencesAny(el, removed)) continue;
+        if (gone.has(el.id)) continue;
         out.push(el);
       }
       return out;

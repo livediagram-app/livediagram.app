@@ -47,7 +47,10 @@ export async function sendEmail(
   });
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`email send timed out after ${timeoutMs} ms`)), timeoutMs);
+    timer = setTimeout(
+      () => reject(new Error(`email send timed out after ${timeoutMs} ms`)),
+      timeoutMs,
+    );
   });
   try {
     return (await Promise.race([send, timeout])).messageId;
@@ -69,9 +72,10 @@ export function parseSender(from: string): string | { email: string; name: strin
   return name ? { email, name } : email;
 }
 
-/** An address cut down for a log line (`jo***@example.com`), so `wrangler tail` stays useful without dumping it. */
+/** An address cut down for a log line (`jo***@example.com`), so `wrangler tail` stays useful without dumping it.
+ *  A short local part keeps fewer characters, so at least one is always hidden (`j***@`, `***@`). */
 export function redactAddress(address: string): string {
   const at = address.indexOf('@');
   if (at < 1) return '***';
-  return `${address.slice(0, 2)}***${address.slice(at)}`;
+  return `${address.slice(0, Math.min(2, at - 1))}***${address.slice(at)}`;
 }

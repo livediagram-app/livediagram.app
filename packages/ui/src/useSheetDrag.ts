@@ -45,11 +45,21 @@ export function sheetRelease(
   return 'stay';
 }
 
-export function useSheetDrag(onDismiss: () => void): SheetDrag {
+// `open` is for a host that stays mounted while closed (Dialog): each opening starts the sheet at rest again,
+// never full height because it was left so last time.
+export function useSheetDrag(onDismiss: () => void, open = true): SheetDrag {
   // Where the press began (read by the handlers), and the drag as drawn (read by render).
   const start = useRef<{ y: number; t: number } | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [live, setLive] = useState<{ dy: number; height: number; max: number } | null>(null);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (!open) {
+      setExpanded(false);
+      setLive(null);
+    }
+  }
 
   const end = () => {
     start.current = null;

@@ -127,3 +127,26 @@ describe('tabToMarkdownText', () => {
     expect(lines).toContain('- *dangles*: ? → (0, 0)');
   });
 });
+
+describe('tabToMarkdownText and hidden layers', () => {
+  it('leaves out what sits on a hidden layer, and the arrows pinned to it', () => {
+    const t = {
+      ...tab('T', [
+        shape('a', { label: 'Shown' }),
+        shape('b', { label: 'Hidden note', layerId: 'L' }),
+        arrow('e', {
+          from: { kind: 'pinned', elementId: 'a' },
+          to: { kind: 'pinned', elementId: 'b' },
+        } as Partial<ArrowElement>),
+      ]),
+      layers: [
+        { id: 'base', name: 'Base' },
+        { id: 'L', name: 'Secret', visible: false },
+      ],
+    } as Tab;
+    const md = tabToMarkdownText(t);
+    expect(md).toContain('Shown');
+    expect(md).not.toContain('Hidden note');
+    expect(md).not.toContain('## Connections');
+  });
+});

@@ -883,11 +883,13 @@ event on the preferences key.
 ## API
 
 - **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
-  for the resolved owner. Empty object when no row exists. Auth:
-  the standard identity (an account or guest Bearer).
-- **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
-  upserts the row for the resolved owner. Returns 204. The blob
-  is opaque to the api worker beyond a size cap (4 KB; defends
-  against runaway clients). No per-field validation: the client
-  is responsible for the shape, and a malformed client just
-  reflects malformed prefs back to itself.
+  for the resolved owner, or `{ prefs: null }` where they are not
+  kept (above). Auth: the standard identity (an account or guest
+  Bearer).
+- **`PUT /api/preferences`** — body `{ prefs }`, a patch: each key
+  named takes its value whole, `null` deletes it, keys not named
+  stay. Returns 204. The blob is opaque to the api worker beyond a
+  size cap (16 KB, `PREFERENCES_PATCH_MAX`, the accounts Worker's
+  limit on one scope). No per-field validation: the client is
+  responsible for the shape, and a malformed client just reflects
+  malformed prefs back to itself.

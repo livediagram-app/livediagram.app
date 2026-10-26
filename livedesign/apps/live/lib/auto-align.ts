@@ -48,7 +48,9 @@ export function autoAlignElement(el: Element): Element {
     // the two snapped sides so a "tall-ish circle" becomes a circle
     // around the taller axis (snapping down would shrink it past
     // user intent more often than snapping up).
-    if (el.type === 'shape' && SQUARE_SHAPES.has(el.shape) && drawnSquare(el.width, el.height)) {
+    const squared =
+      el.type === 'shape' && SQUARE_SHAPES.has(el.shape) && drawnSquare(el.width, el.height);
+    if (squared) {
       const side = Math.max(width, height);
       width = side;
       height = side;
@@ -56,7 +58,9 @@ export function autoAlignElement(el: Element): Element {
     // Explicit aspect-lock (textually editable shapes that the user
     // pinned via the Aspect-lock toggle). Same square-snap rule;
     // we preserve the ratio not by shape but by user intent.
-    if (el.aspectLocked === true) {
+    // Not after the square rule: a square is already its own ratio, and re-deriving one side from the
+    // drawn (unsquared) ratio grew a locked circle off-round, further on every pass and every press.
+    if (el.aspectLocked === true && !squared) {
       const ratio = el.width / Math.max(1, el.height);
       // Pick which axis to drive: the larger absolute change wins,
       // so dragging a 197 x 100 shape to "200 x 100" stays roughly

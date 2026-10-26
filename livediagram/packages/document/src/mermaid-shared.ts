@@ -121,14 +121,17 @@ export function readId(s: string): { id: string; rest: string } | null {
 // The clusters that become frames. An arrow may reference a cluster's id (it pins to the frame), and that mention
 // auto-created a node with the id: drop it (unless a real node claimed it) so the id resolves to the frame. Only
 // for a cluster that BECOMES a frame: an empty one (`subgraph X … end`, `state X { }`) is dropped, so deleting its
-// node too would silently erase every arrow touching X. Its auto node stays and the arrows keep a target.
+// node too would silently erase every arrow touching X. Its auto node stays and the arrows keep a target, under the
+// cluster's title: left as its id, an exported empty frame "Backend" came back as a box reading "s1".
 export function framedClusters(
   clusters: GraphCluster[],
   implicit: ReadonlySet<string>,
-  nodes: Map<string, unknown>,
+  nodes: Map<string, { label?: string }>,
 ): GraphCluster[] {
   const surviving = new Set(clusters.filter((c) => c.members.length > 0).map((c) => c.id));
   for (const c of clusters) {
+    const auto = !surviving.has(c.id) && implicit.has(c.id) ? nodes.get(c.id) : undefined;
+    if (auto && c.label) auto.label = c.label;
     if (surviving.has(c.id) && implicit.has(c.id) && nodes.has(c.id)) {
       nodes.delete(c.id);
       for (const other of clusters) other.members = other.members.filter((m) => m !== c.id);

@@ -25,6 +25,7 @@ import {
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
+  templateTabName,
   validTemplateKinds,
   closestTemplatesHint,
   type TemplateKind,
@@ -53,7 +54,7 @@ import {
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { withoutFindings } from '@livediagram/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
-import { elementsIssue, graphIconIssue } from './element-values';
+import { elementsIssue, graphIconIssue, tabElementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
@@ -143,8 +144,12 @@ export function registerTools(server: McpServer, env: Env): void {
     const templateTabIds = new Set<string>();
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
-      // An unnamed tab is "Tab n".
-      const t = { ...given, name: given.name ?? `Tab ${index + 1}` };
+      // An unnamed tab is named after its template, as the editor names one (templateTabName), else "Tab n".
+      const templateKind = given.template ? resolveTemplate(given.template) : null;
+      const t = {
+        ...given,
+        name: given.name ?? (templateKind && templateTabName(templateKind)) ?? `Tab ${index + 1}`,
+      };
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
       // instead of expecting elements.
       if (t.template) {
@@ -177,11 +182,11 @@ export function registerTools(server: McpServer, env: Env): void {
       if (valueIssue) return errorResult(`Tab "${t.name}": ${valueIssue}`);
       const ended = resolveArrowEnds(drawn.elements, idsOf(drawn.elements));
       if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
-      const candidate: unknown = {
-        id: tabId,
-        name: t.name,
-        elements: normaliseElements(ended.elements),
-      };
+      const finished = normaliseElements(ended.elements);
+      const candidate: unknown = { id: tabId, name: t.name, elements: finished };
+      // What is wrong, named, before the general shape of an element.
+      const shapeIssue = t.elements ? tabElementsIssue(finished) : null;
+      if (shapeIssue) return errorResult(`Tab "${t.name}": ${shapeIssue}`);
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +

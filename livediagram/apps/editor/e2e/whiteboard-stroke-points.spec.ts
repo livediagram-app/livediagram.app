@@ -11,6 +11,7 @@ import {
   seedTab,
   test,
   pageOwnerHeaders,
+  serverNewUrl,
 } from './fixtures';
 
 // Packed stroke points end to end (docs/specs/006-document/stroke-points.md), in dark mode: a pen
@@ -29,7 +30,7 @@ const sketches = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /
 async function openWhiteboard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await page.locator('[data-whiteboard-dock]').waitFor();

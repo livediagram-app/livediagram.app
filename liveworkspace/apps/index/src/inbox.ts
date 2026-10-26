@@ -4,6 +4,7 @@
 // reach. Three queries, each starting from an index on the person.
 
 import {
+  COLLAB_CARDS_TAB,
   isApp,
   LIST_LIMIT_MAX,
   type ActionStatus,
@@ -21,10 +22,16 @@ import { badRequest, json } from './http';
 import { LIVE_LINK } from './rows';
 import { timelineNewQuery } from './timeline';
 
-// Reached as owner, through a scope, or through a live link the person opened.
-const REACHABLE = `(i.owner_id = ? OR i.scope IN (SELECT value FROM json_each(?)) OR EXISTS (
+// Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
+// scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
+// tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias.
+const reachable = (
+  row: string,
+) => `(i.owner_id = ? OR i.scope IN (SELECT value FROM json_each(?)) OR EXISTS (
   SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
-  WHERE sw.person_id = ? AND sw.item_id = i.id AND ${LIVE_LINK('sl')}))`;
+  WHERE sw.person_id = ? AND sw.item_id = i.id AND (sl.tab_id IS NULL OR sl.tab_id = ${row}.tab_id
+    OR (${row}.tab_id = '${COLLAB_CARDS_TAB}' AND json_extract(${row}.card, '$.board.tabId') = sl.tab_id))
+    AND ${LIVE_LINK('sl')}))`;
 
 type ThreadRow = {
   app: App;
@@ -104,7 +111,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       JOIN collab_threads t ON t.app = c.app AND t.item_id = c.item_id AND t.tab_id = c.tab_id
         AND t.element_id = c.element_id
       JOIN items i ON i.id = t.item_id
-      WHERE t.resolved = 0 AND i.trashed_at IS NULL ${appClause} AND ${REACHABLE}
+      WHERE t.resolved = 0 AND i.trashed_at IS NULL ${appClause} AND ${reachable('t')}
       ORDER BY t.latest_at DESC LIMIT ?`,
     args: [
       personId,
@@ -123,7 +130,7 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
         a.assigner_name, a.team_id, a.card, a.created_at, a.updated_at
       FROM collab_actions a JOIN items i ON i.id = a.item_id
       WHERE a.status = 'open' AND (a.assignee_id = ? OR a.assigner_id = ?) AND i.trashed_at IS NULL
-        ${app ? 'AND a.app = ?' : ''} AND ${REACHABLE}
+        ${app ? 'AND a.app = ?' : ''} AND ${reachable('a')}
       ORDER BY a.updated_at DESC LIMIT ?`,
     args: [personId, personId, ...(app ? [app] : []), ...reachArgs, limit],
   };

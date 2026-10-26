@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { explorerSwitchHref, SITES } from '@liveworkspace/sites';
@@ -73,5 +75,17 @@ describe('SiteSwitcher on an Explorer page', () => {
       </SiteSwitcher>,
     );
     expect(hrefs(html)).toEqual(SITES.map((site) => site.url));
+  });
+});
+
+describe('SiteSwitcher in the browser', () => {
+  it('names its menu "liveworkspace sites", not after its trigger', () => {
+    render(
+      <SiteSwitcher app="livediagram" current="livediagram.app">
+        <a href="/">logo</a>
+      </SiteSwitcher>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Switch site' }));
+    expect(screen.getByRole('menu').getAttribute('aria-label')).toBe('liveworkspace sites');
   });
 });

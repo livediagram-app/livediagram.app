@@ -55,6 +55,33 @@ describe('lane seam snapping', () => {
       expect(coords).toEqual([100 + 600 - 132]);
     });
 
+    it('holds a seam inside a lane shrunk below its heading, as the strip is drawn', () => {
+      // A 100-wide lane keeps a 132 heading on record; it draws 99 wide, so its seam is at 199.
+      const els = [lane('b', 100, 300, 100)];
+      expect(
+        laneSeamCoordinates(
+          els,
+          'x',
+          'a',
+          () => 'left',
+          () => 132,
+        ),
+      ).toEqual([199]);
+    });
+
+    it('offers no seam for a turned lane', () => {
+      const els = [{ ...lane('b', 100, 300), rotation: 90 } as Element];
+      expect(
+        laneSeamCoordinates(
+          els,
+          'x',
+          'a',
+          () => 'left',
+          () => 132,
+        ),
+      ).toEqual([]);
+    });
+
     it('ignores the lane being dragged', () => {
       const els = [lane('a', 100, 0)];
       expect(

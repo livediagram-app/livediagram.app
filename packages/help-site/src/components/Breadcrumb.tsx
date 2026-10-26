@@ -20,15 +20,18 @@ export function Breadcrumb({ items, helpUrl }: { items: BreadcrumbItem[]; helpUr
           <BreadcrumbTrail items={items} rootLabel="Help" linkComponent={Link} />
         </nav>
       </div>
-      <JsonLd
-        data={breadcrumbJsonLd([
-          { name: 'Help', url: `${helpUrl}/` },
-          ...items.map((item) => ({
-            name: item.label,
-            url: item.href ? `${helpUrl}${item.href}` : undefined,
-          })),
-        ])}
-      />
+      {/* None on the help home itself: a list of the home alone is one item, which search engines reject. */}
+      {items.length > 0 ? (
+        <JsonLd
+          data={breadcrumbJsonLd([
+            { name: 'Help', url: `${helpUrl}/` },
+            ...items.map((item) => ({
+              name: item.label,
+              url: item.href ? `${helpUrl}${item.href}` : undefined,
+            })),
+          ])}
+        />
+      ) : null}
     </div>
   );
 }

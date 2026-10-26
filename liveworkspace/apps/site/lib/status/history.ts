@@ -125,7 +125,8 @@ export function stripSummary(history: StatusHistory, serviceId: string): string 
   const s = history.services[serviceId];
   if (!s || s.p === null) return `No checks stored for the last ${history.days} days yet.`;
   const bad: number[] = [];
-  for (let i = 0; i < s.w.length; i++) if (s.w[i] === 's' || s.w[i] === 'd') bad.push(i);
+  // Down days only: a slow hour is no incident (liveworkspace/docs/status.md), so a slow day isn't counted as one.
+  for (let i = 0; i < s.w.length; i++) if (s.w[i] === 'd') bad.push(i);
   const head = `${formatUptime(s.p)} up over ${history.days} days`;
   if (bad.length === 0) return `${head}; every day with checks fully up.`;
   const last = LONG_DAY_FORMAT.format(dayStart(addDays(history.from, bad.at(-1)!)));

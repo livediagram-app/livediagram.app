@@ -93,13 +93,24 @@ export function isRegistering(search: string): boolean {
 export const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // Where a sign-in started from the site's header goes back to: the `return` path it carries, if
-// it's a path on this site. Anything else (another origin, `//host`, a backslash trick) is ignored,
-// so the parameter can't send anyone off-site.
+// it's a path on this site. Anything else (another origin, `//host`, a backslash trick, a tab or newline,
+// which a browser drops so `/<tab>/host` becomes `//host`) is ignored, so the parameter can't send anyone
+// off-site.
 export const RETURN_PARAM = 'return';
+
+// The C0 controls, space and DEL: a URL parser strips or drops them, so none belongs in a path we follow.
+function hasControlOrSpace(path: string): boolean {
+  for (let i = 0; i < path.length; i++) {
+    const code = path.charCodeAt(i);
+    if (code <= 0x20 || code === 0x7f) return true;
+  }
+  return false;
+}
 
 export function returnPath(search: string): string | null {
   const path = new URLSearchParams(search).get(RETURN_PARAM);
   if (!path || !path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return null;
+  if (hasControlOrSpace(path)) return null;
   return path;
 }
 

@@ -60,9 +60,11 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
   if (strays.length > 0) {
     groups.push({ tab: null, isActive: false, participants: strays.sort(order) });
   }
-  const people = groups.map((g) => withoutAgentRows(g.participants).length);
-  const peopleCount = people.reduce((n, count) => n + count, 0);
-  const peopleTabCount = people.filter((count) => count > 0).length;
+  const people = groups.map((g) => withoutAgentRows(g.participants));
+  // Each person once: side by side puts one person on both tabs' rows,
+  // and counting rows called someone alone with a split view open "2 people across 2 tabs".
+  const peopleCount = new Set(people.flatMap((rows) => rows.map((row) => row.id))).size;
+  const peopleTabCount = people.filter((rows) => rows.length > 0).length;
   return { groups, peopleCount, peopleTabCount };
 }
 

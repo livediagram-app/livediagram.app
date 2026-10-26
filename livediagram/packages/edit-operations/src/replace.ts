@@ -25,7 +25,6 @@ import {
 import {
   buildTemplateTab,
   closestTemplatesHint,
-  isTemplateKind,
   resolveTemplate,
   validTemplateKinds,
 } from '@livediagram/templates';
@@ -106,9 +105,11 @@ function build(
     case 'template': {
       const { template } = body as { template: unknown };
       const kind = typeof template === 'string' ? resolveTemplate(template) : null;
+      // Every catalogue template is an agent's to build since Plan mode's hidden ones left, so a kind it cannot
+      // resolve is simply not a template.
       if (!kind)
         return invalidBody(
-          `template=${JSON.stringify(template)}: ${typeof template === 'string' && isTemplateKind(template) ? 'made in the editor only' : 'not a template'}`,
+          `template=${JSON.stringify(template)}: not a template`,
           `${typeof template === 'string' ? closestTemplatesHint(template) : ''}templates: ${validTemplateKinds()}`,
         );
       const tabOf = (tabId: string, name: string) => buildTemplateTab(tabId, name, kind, themeId);

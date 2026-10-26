@@ -70,4 +70,22 @@ describe('arrow-behind-box', () => {
       of(lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'))), 'arrow-behind-box'),
     ).toEqual([]);
   });
+
+  it('passes over an arrow drawn over the boxes on purpose (routeBehind false), and counts no crossing of it', () => {
+    const over = arrow('x', 'a', 'b', ['e', 'w'], { routeBehind: false });
+    const report = lint(tabOf(box('a', 0, 0), box('m', 200, 0), box('b', 600, 0), over));
+    expect(of(report, 'arrow-behind-box')).toEqual([]);
+    // A lifeline across another line crosses it by design.
+    const lifeline = lint(
+      tabOf(
+        box('l', 0, 200),
+        box('r', 600, 200),
+        box('t', 300, 0),
+        box('u', 300, 400),
+        arrow('h', 'l', 'r'),
+        arrow('v', 't', 'u', ['s', 'n'], { routeBehind: false }),
+      ),
+    );
+    expect(lifeline.measures.crossings).toBe(0);
+  });
 });

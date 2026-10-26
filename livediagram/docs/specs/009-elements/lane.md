@@ -54,7 +54,12 @@ What differs from a frame is presentation only:
   - **Dragging the seam** between the gutter and the body sets `headerSize`.
     132 and 64 suit only the titles they were measured against; a lane holding "Q3 Marketing Programme" wants more than
     one holding "Q3". One commit per gesture, so a drag is one undo step, and
-    the seam is clamped so a gutter can neither vanish nor eat the lane.
+    the seam is clamped so a gutter can neither vanish nor eat the lane. A
+    turned lane reads the drag along its own axis, so its heading follows the
+    pointer at any rotation. At rest the strip draws at `laneDrawnSize`, its
+    `headerSize` held a pixel short of the lane's span, on the canvas and in
+    every export alike, so a lane resized smaller than its heading keeps a body
+    edge rather than the strip spilling past it.
 
     The live size during a drag is held in a ref as well as in state, and
     release commits from the ref. Committing from inside a `setState`
@@ -72,6 +77,9 @@ What differs from a frame is presentation only:
     lanes whose heading runs along the same axis are offered, since a column's
     seam and a row's seam are different lines. A centred strip has two seams
     and no single line to align, so it is sized freely rather than snapped.
+    A turned lane's seam lies on neither canvas axis, so it neither snaps nor
+    is offered as a target; the targets take each lane's seam where its strip
+    is drawn (`laneDrawnSize`).
 
 - **Left-aligned, vertically centred label**, so the title reads along the
   band's leading edge rather than floating in the middle of the work.

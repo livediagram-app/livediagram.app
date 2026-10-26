@@ -14,3 +14,12 @@ export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'status', label: 'Status', side: 'server', bundler: 'worker' },
   { id: 'telemetry', label: 'Telemetry', side: 'server', bundler: 'worker' },
 ];
+
+/** The page's line about the services, named from the table above so it can't fall behind it: "Accounts, …, Status
+ *  and Telemetry". */
+export function serverServices(apps: readonly LicenceApp[] = LICENCE_APPS): string {
+  const names = apps.filter((a) => a.side === 'server').map((a) => a.label);
+  return names.length < 2
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+}

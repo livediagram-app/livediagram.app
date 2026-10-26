@@ -49,9 +49,16 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
     timers.current = { fire: null, reveal: null };
   };
 
-  // Clear any pending timer on unmount so a press that outlives the element
-  // (deleted mid-hold) never fires into a stale callback.
-  useEffect(() => () => clearTimers(), []);
+  // Let go of a press on unmount so one that outlives the element (deleted
+  // mid-hold) never fires into a stale callback, and its window listeners
+  // come off now rather than when the finger lifts.
+  useEffect(
+    () => () => {
+      armed.current?.();
+      clearTimers();
+    },
+    [],
+  );
 
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.pointerType !== 'touch') return;

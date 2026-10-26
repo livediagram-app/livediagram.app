@@ -166,7 +166,11 @@ export const FUNCTION_DOCS: Readonly<Record<string, FunctionDoc>> = {
   ISERROR: D('value', 'TRUE for any error', '=ISERROR(A2/B2)'),
   ISNA: D('value', 'TRUE for #N/A', '=ISNA(MATCH(A2, D:D, 0))'),
   ISFORMULA: D('cell', 'TRUE when a cell holds a formula', '=ISFORMULA(B2)'),
-  'ERROR.TYPE': D('value', 'The number of an error (1 for #DIV/0!, ...)', '=ERROR.TYPE(A2)'),
+  'ERROR.TYPE': D(
+    'value',
+    'The number of an error, as in Excel (2 for #DIV/0!, 7 for #N/A, ...)',
+    '=ERROR.TYPE(A2)',
+  ),
   NA: D('', 'The #N/A error', '=NA()'),
   N: D('value', 'A value as a number (text is 0)', '=N(A2)'),
   TYPE: D(

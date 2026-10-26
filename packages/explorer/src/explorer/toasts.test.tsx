@@ -44,6 +44,30 @@ describe('toasts', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  it('keeps the clock stopped while focus is on Undo, whatever the pointer does', () => {
+    vi.useFakeTimers();
+    render(
+      <ToastProvider>
+        <Shows action />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'go' }));
+    const toast = screen.getByRole('status');
+    fireEvent.focus(screen.getByRole('button', { name: 'Undo' }));
+    fireEvent.mouseEnter(toast);
+    fireEvent.mouseLeave(toast);
+    act(() => void vi.advanceTimersByTime(60_000));
+    expect(screen.queryByRole('status')).toBeTruthy();
+    // And the other way round: hovered, focus leaving does not start it either.
+    fireEvent.mouseEnter(toast);
+    fireEvent.blur(screen.getByRole('button', { name: 'Undo' }));
+    act(() => void vi.advanceTimersByTime(60_000));
+    expect(screen.queryByRole('status')).toBeTruthy();
+    fireEvent.mouseLeave(toast);
+    act(() => void vi.advanceTimersByTime(TOAST_ANSWER_MS + 1));
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
   it('lets a plain toast go after five seconds', () => {
     vi.useFakeTimers();
     render(

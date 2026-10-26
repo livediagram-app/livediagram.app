@@ -80,11 +80,21 @@ export function readCookie(header: string | null, name: string): string | null {
 }
 
 // Only a path on this site: anything else (`//evil.example`, `https://…`, `/\evil`) would make the bounce an
-// open redirect.
+// open redirect. So would a tab, newline or other control character: the browser drops them from the Location it
+// follows, so `/<tab>/evil.example` lands on `//evil.example`.
+function hasControlOrSpace(path: string): boolean {
+  for (let i = 0; i < path.length; i++) {
+    const code = path.charCodeAt(i);
+    if (code <= 0x20 || code === 0x7f) return true;
+  }
+  return false;
+}
+
 export function safeReturnPath(value: string | null, fallback: string): string {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
     return fallback;
   }
+  if (hasControlOrSpace(value)) return fallback;
   return value;
 }
 

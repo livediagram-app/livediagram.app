@@ -151,6 +151,8 @@ describe('filters', () => {
       'owner=them',
       'intent=Kan%20ban',
       'space=elsewhere',
+      'space=team:',
+      'space=mine,team:',
       `intent=${Array.from({ length: 9 }, (_, i) => `w${i}`).join(',')}`,
       'deep=1',
     ]) {

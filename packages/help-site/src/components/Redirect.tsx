@@ -9,7 +9,9 @@ import { useEffect } from 'react';
 // basePath, since window.location is not basePath-aware.
 export function Redirect({ href, label }: { href: string; label: string }) {
   useEffect(() => {
-    window.location.replace(href);
+    // An old deep link's #section comes along (location.replace drops it), unless the new address names its own.
+    const { hash } = window.location;
+    window.location.replace(href.includes('#') || !hash ? href : `${href}${hash}`);
   }, [href]);
 
   return (

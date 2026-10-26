@@ -64,12 +64,30 @@ describe('which tab', () => {
     expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({ tabId: ONE });
   });
 
+  it('names the design’s tabs for a tab it does not hold, never blaming the design', async () => {
+    const { api } = setUp();
+    const out = await pagesTabOf(api, DOC_A, 'nope');
+    expect(out).toMatchObject({ ok: false, code: 'unknown_tab' });
+    expect((out as { message: string }).message).toMatch(
+      /^No tab "nope" in this design\. Tabs: .*\(tab-one-0000\)/,
+    );
+  });
+
+  it('keeps the api’s refusal when the design does hold the tab that answered 404', async () => {
+    // The tab is in the design's list but its own route is gone (deleted between the two reads).
+    const { api } = setUp({ [TWO]: { id: TWO, elements: [] } });
+    const out = await pagesTabOf(api, DOC_A, ONE);
+    expect(out).toMatchObject({ ok: false, code: 'not_found' });
+  });
+
   it('turns a missing design into the api’s refusal', async () => {
     const { api } = setUp();
     expect(await pagesTabOf(api, 'nope', undefined)).toMatchObject({
       ok: false,
       code: 'not_found',
     });
+    // A named tab in a missing design: the design is what is missing, not the tab.
+    expect(await pagesTabOf(api, 'nope', ONE)).toMatchObject({ ok: false, code: 'not_found' });
   });
 });
 

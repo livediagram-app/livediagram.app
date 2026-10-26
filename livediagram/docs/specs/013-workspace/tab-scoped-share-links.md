@@ -50,6 +50,12 @@ The room confines a scoped session to its tab (`apps/api/src/room-scope.ts`), bo
   reach it.
 - **Inbound**: the room drops any op from it that carries another `tabId`, a `select` with no `tabId`, and
   `document-meta`. Anything unknown fails closed.
+- **A tab op's payload keeps to the tab it names**, from anyone (`apps/api/src/room-op-gate.ts`): the room drops a
+  whole-tab op whose tab carries another id, and a `tab-meta` patch that names an id, elements or articles. An editor
+  receiving one keeps its tab's own id. A receiver merges the payload over its tab, so a payload naming another id
+  would renumber its tab, and its next save would write over a tab the sender cannot reach.
+- **Freeing a held selection** ([Facilitator](../012-collaboration/facilitator.md)) reaches only someone on the
+  scoped session's own tab.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 
 **A changed scope reconnects.** A grant whose tab changes on renewal closes the socket (`4005`, "access changed"), and

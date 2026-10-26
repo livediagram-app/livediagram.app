@@ -351,6 +351,30 @@ describe('applySheetWrite', () => {
     const cols = roundTrip(s, { kind: 'layout', changes: [{ k: 'deleteCols', ids: [C(0)] }] });
     expect(cols.applied.kind).toBe('layout');
   });
+  it('keeps an open-ended range when its first row or column goes', () => {
+    const s = base({
+      A1: '1',
+      A2: '2',
+      A3: '3',
+      A4: '4',
+      B1: '5',
+      C1: '6',
+      D1: '=SUM(A2:A)',
+      D3: '=SUM(B1:1)',
+    });
+    const r = roundTrip(s, { kind: 'layout', changes: [{ k: 'deleteRows', ids: [R(1)] }] });
+    const wb = new Workbook({ sheets: [r.sheet], locale: 'en' });
+    const formula = (row: number, col: number) => {
+      const input = r.sheet.cells.get(cellKey(R(row), C(col)))?.input as { f: never };
+      return renderFormula(input.f, wb.ctxFor(r.sheet.id));
+    };
+    expect(formula(0, 3)).toBe('=SUM(A2:A)');
+    expect(wb.value(r.sheet.id, 0, 3)).toBe(7);
+    const c = roundTrip(s, { kind: 'layout', changes: [{ k: 'deleteCols', ids: [C(1)] }] });
+    const wc = new Workbook({ sheets: [c.sheet], locale: 'en' });
+    const input = c.sheet.cells.get(cellKey(R(2), C(3)))?.input as { f: never };
+    expect(renderFormula(input.f, wc.ctxFor(c.sheet.id))).toBe('=SUM(B1:1)');
+  });
   it('puts formats back exactly on undo', () => {
     const s = applySheetWrite(
       base(),

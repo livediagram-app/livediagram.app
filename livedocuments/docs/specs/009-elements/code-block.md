@@ -40,7 +40,9 @@ hanging over the edge. A **Wrap Long Lines** toggle in the menu's Code section
 turns it off for the block whose lines mean something at their full length.
 
 The headless render wraps too (word-first, mid-token as a fallback), so a
-shared thumbnail shows the same amount of code the canvas does.
+shared thumbnail shows the same amount of code the canvas does. It counts
+columns as the monospace face draws them: a character takes one, a wide one
+(an emoji, a CJK character) two, and a character is never cut in half.
 
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 

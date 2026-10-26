@@ -170,13 +170,15 @@ export function applyQuestionSet(
       'Low and high labels show on a rating whose style is "numbers".',
     );
   if (next.type === 'multi') {
-    const count = next.options?.length ?? 0;
+    // As the builder counts them: its options and Other, when it has one. 0 is no bound, as a stored form reads it.
+    const count = (next.options?.length ?? 0) + (next.other ? 1 : 0);
     for (const key of ['min', 'max'] as const) {
       const v = next[key];
-      if (v !== undefined && (!Number.isInteger(v) || v < 0 || v > count))
+      if (v === 0) delete next[key];
+      else if (v !== undefined && (!Number.isInteger(v) || v < 1 || v > count))
         return refuse(
           'picks_out_of_range',
-          `A Multiple Choice's ${key} picks is a whole number from 0 to its ${count} options.`,
+          `A Multiple Choice's ${key} picks is a whole number from 1 to its ${count} options${next.other ? ' (Other counts as one)' : ''}, or 0 for none.`,
         );
     }
   }

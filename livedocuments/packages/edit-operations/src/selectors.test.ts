@@ -6,7 +6,13 @@ import { refused } from './fixtures/outcomes';
 import { elementOf, run } from './fixtures/run';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { formatRejections } from './rejections';
-import { parseSelector, resolveOne, resolveSelector, resolveSome } from './selectors';
+import {
+  parseSelector,
+  resolveMembers,
+  resolveOne,
+  resolveSelector,
+  resolveSome,
+} from './selectors';
 import { createState, putElement, type EditState } from './state';
 import type { ApplyOptions } from './types';
 
@@ -260,6 +266,29 @@ describe('the working state', () => {
     ids('verify', state);
     ids('in:f2', state);
     expect(state.targets).toEqual(['n6', 'n7', 'a6', 'f2', 'n4', 'n5']);
+  });
+});
+
+// What `layout` acts on: each ref or quoted label one element, the other words together.
+describe('resolveMembers', () => {
+  const members = (selector: string, state = stateOf()) => {
+    const out = resolveMembers(state, [selector], 1);
+    return 'rejection' in out ? out.rejection.code : out.els.map((el) => el.id);
+  };
+
+  it('takes a quoted label as one element, beside a ref', () => {
+    expect(members('"Cart" n5')).toEqual(['n2', 'n5']);
+  });
+
+  it('reads a key:"value" term and a reserved word as words of a selector, not a label', () => {
+    expect(members('id:"n3"')).toEqual(['n3']);
+    const state = stateOf(checkoutFlow(), { selected: ['n4', 'n3'] });
+    expect(members('selected n5', state)).toEqual(['n3', 'n4', 'n5']);
+  });
+
+  it("passes on a selector's refusal: a stray quote, a word that finds nothing", () => {
+    expect(members('"Cart')).toBe(refusal('"Cart').code);
+    expect(members('n5 type:sticky')).toBe('target_not_found');
   });
 });
 

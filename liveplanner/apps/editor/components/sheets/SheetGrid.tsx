@@ -177,7 +177,7 @@ export function SheetGrid({
     }
     // Each peer's selection, in their colour, named.
     const byId = new Map(peers.map((p) => [p.id, p]));
-    for (const [id, sel] of presence.on(c.sheet.id)) {
+    for (const [id, sel] of presence.on(c.sheet.id, c.sheet.tabId)) {
       const peer = byId.get(id);
       if (!peer) continue;
       sel.ranges.forEach((ids, i) => {

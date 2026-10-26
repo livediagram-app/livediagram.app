@@ -59,8 +59,11 @@ describe('Take Offline', () => {
   });
 
   it('sends a plain delete to the Trash when nothing is declared', async () => {
-    expect((await del())!.status).toBe(204);
+    const res = (await del())!;
+    expect(res.status).toBe(204);
     expect(searches).toEqual(['']);
+    // Its 204 carries the CORS headers every other answer does, so a cross-origin caller can read it.
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });
 
   it('ignores an unrecognised conversion value rather than trusting it', async () => {

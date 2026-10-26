@@ -34,6 +34,20 @@ describe('placeBoard', () => {
     ).toBe(true);
   });
 
+  it('keeps every column whose names shorten to the same id', () => {
+    for (const columns of [
+      ['Waiting for customer feedback A', 'Waiting for customer feedback B'],
+      ['Готово', 'Сделано', 'В работе'],
+    ]) {
+      const r = placeBoard({ columns }, [], [], 'b', fixed);
+      if (!r.ok) throw new Error(r.message);
+      const placed = r.board.planBoard.columns;
+      expect(placed.map((c) => c.name)).toEqual(columns);
+      expect(new Set(placed.map((c) => c.status)).size).toBe(columns.length);
+      expect(new Set(placed.map((c) => c.id)).size).toBe(columns.length);
+    }
+  });
+
   it('builds columns by name, a title and card types, at the origin of an empty tab', () => {
     const r = placeBoard(
       { columns: ['Ideas', 'done', 'Shipped'], title: 'Roadmap', types: ['project'] },

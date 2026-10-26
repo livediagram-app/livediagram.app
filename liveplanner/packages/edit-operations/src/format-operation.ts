@@ -22,8 +22,8 @@ function fieldText(value: FieldValue): string {
   return JSON.stringify(value);
 }
 
-const fieldsText = (fields: Fields | undefined) =>
-  Object.entries(fields ?? {}).map(([key, value]) => `${key}=${fieldText(value)}`);
+const fieldsText = (fields: Fields) =>
+  Object.entries(fields).map(([key, value]) => `${key}=${fieldText(value)}`);
 
 function flagsText(operation: EditOperation): string[] {
   return Object.entries(FLAG_MEMBERS)

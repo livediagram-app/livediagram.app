@@ -881,7 +881,7 @@ function Pane({
     ? () =>
         void folders
           .create({
-            name: 'New folder',
+            name: 'New Folder',
             parentId: here,
             teamId: section.kind === 'team' ? section.id : null,
           })

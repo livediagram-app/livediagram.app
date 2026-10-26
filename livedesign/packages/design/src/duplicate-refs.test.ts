@@ -34,6 +34,12 @@ describe('remapElementRefs', () => {
     expect((out[1] as ArrowElement).to).toMatchObject({ arrowId: 'A0' });
   });
 
+  it("follows an attached badge's host, as a duplicated tab re-mints both", () => {
+    const badge = shape('b1', { shape: 'badge', attachedTo: 's1', attachAt: 'top-right' });
+    const [out] = remapElementRefs([badge], new Map([['s1', 'S1']]));
+    expect(out).toMatchObject({ attachedTo: 'S1', attachAt: 'top-right' });
+  });
+
   it('leaves references outside the map, and element links, alone', () => {
     const el = shape('s2', {
       link: { kind: 'element', tabId: 't', elementId: 's1' },

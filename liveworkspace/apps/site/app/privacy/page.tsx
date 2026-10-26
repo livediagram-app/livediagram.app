@@ -14,6 +14,20 @@ export const metadata: Metadata = {
   description:
     'What liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign) do, and do not do, with your data.',
   alternates: { canonical: '/privacy' },
+  openGraph: {
+    title: 'Privacy Policy · liveworkspace',
+    description:
+      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign) do, and do not do, with your data.',
+    url: '/privacy',
+    siteName: 'liveworkspace',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Privacy Policy · liveworkspace',
+    description:
+      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign) do, and do not do, with your data.',
+  },
 };
 
 const HandshakeIcon = lucideGlyph(lucideHandshake, 20);

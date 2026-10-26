@@ -18,7 +18,14 @@ function fakeClient(
   const client = {
     config: vi.fn(async () => {
       calls.push('config');
-      return ok({ enabled: true, connected: false, clientId: 'c', pickerKey: null, appId: null, ...config });
+      return ok({
+        enabled: true,
+        connected: false,
+        clientId: 'c',
+        pickerKey: null,
+        appId: null,
+        ...config,
+      });
     }),
     connection: vi.fn(async () => {
       calls.push('connection');
@@ -40,7 +47,14 @@ const cloudSyncOf = (client: DriveClient, config: Partial<DriveConfigAnswer> = {
   client,
   workspaceOrigin: 'https://lw.test',
   settingsParam: 'account:account',
-  config: { enabled: true, connected: false, clientId: 'c', pickerKey: null, appId: null, ...config },
+  config: {
+    enabled: true,
+    connected: false,
+    clientId: 'c',
+    pickerKey: null,
+    appId: null,
+    ...config,
+  },
 });
 
 const CONNECTED: DriveConnectionAnswer = {
@@ -72,8 +86,11 @@ describe('GoogleDriveRow', () => {
     expect(calls).toEqual([]);
     expect(screen.getByText('Not connected')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
-    const back = 'http://localhost:3000/project/p1?tab=2&settings=account%3Aaccount&section=cloud-sync';
-    expect(assign).toHaveBeenCalledWith(`https://lw.test/drive/connect?return=${encodeURIComponent(back)}`);
+    const back =
+      'http://localhost:3000/project/p1?tab=2&settings=account%3Aaccount&section=cloud-sync';
+    expect(assign).toHaveBeenCalledWith(
+      `https://lw.test/drive/connect?return=${encodeURIComponent(back)}`,
+    );
     // The page's own entry names Cloud Sync, so Back from Google reopens it.
     vi.restoreAllMocks();
     expect(window.location.search).toBe('?tab=2&settings=account%3Aaccount&section=cloud-sync');
@@ -84,7 +101,9 @@ describe('GoogleDriveRow', () => {
     renderWithKit(<GoogleDriveRow cloudSync={cloudSyncOf(client, { connected: true })} />);
     await waitFor(() => expect(screen.getByText('Last synced 3 mins ago')).toBeTruthy());
     expect(calls).toContain('check');
-    expect(screen.getByText('Your work is synced to “liveworkspace” in Google Drive.')).toBeTruthy();
+    expect(
+      screen.getByText('Your work is synced to “liveworkspace” in Google Drive.'),
+    ).toBeTruthy();
   });
 
   it('Disconnect asks first, neutrally, then shows Not connected', async () => {
@@ -102,12 +121,41 @@ describe('GoogleDriveRow', () => {
     await waitFor(() => expect(screen.getByText('Not connected')).toBeTruthy());
   });
 
+  it('a read still on its way when Disconnect lands does not bring the connection back', async () => {
+    const { client } = fakeClient({ connected: true }, CONNECTED);
+    // The opening read answers; the one after the pass is held until after Disconnect.
+    let release: () => void = () => {};
+    vi.mocked(client.connection)
+      .mockImplementationOnce(async () => ok(CONNECTED))
+      .mockImplementationOnce(
+        () => new Promise((resolve) => (release = () => resolve(ok(CONNECTED)))),
+      );
+    renderWithKit(<GoogleDriveRow cloudSync={cloudSyncOf(client, { connected: true })} />);
+    await waitFor(() => screen.getByText('Last synced 3 mins ago'));
+    await waitFor(() => expect(client.connection).toHaveBeenCalledTimes(2));
+    fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
+    const buttons = screen.getAllByRole('button', { name: 'Disconnect' });
+    await act(async () => {
+      fireEvent.click(buttons[buttons.length - 1]!);
+    });
+    await waitFor(() => expect(screen.getByText('Not connected')).toBeTruthy());
+    await act(async () => release());
+    expect(screen.getByText('Not connected')).toBeTruthy();
+    expect(screen.queryByText('Last synced 3 mins ago')).toBeNull();
+  });
+
   it('reads a cancel at Google once, calmly, and takes it out of the address', async () => {
-    window.history.replaceState(null, '', '/explorer?settings=profile&section=cloud-sync&drive=cancelled');
+    window.history.replaceState(
+      null,
+      '',
+      '/explorer?settings=profile&section=cloud-sync&drive=cancelled',
+    );
     const { client } = fakeClient({});
     renderWithKit(<GoogleDriveRow cloudSync={cloudSyncOf(client)} />);
     expect(screen.getByText('Connection cancelled. Connect whenever you’re ready.')).toBeTruthy();
-    await waitFor(() => expect(window.location.search).toBe('?settings=profile&section=cloud-sync'));
+    await waitFor(() =>
+      expect(window.location.search).toBe('?settings=profile&section=cloud-sync'),
+    );
   });
 });
 
@@ -125,12 +173,20 @@ describe('the Cloud Sync section', () => {
 
   it('shows only once the service says the deployment offers Drive', async () => {
     const on = fakeClient({ enabled: true });
-    const host = { client: on.client, workspaceOrigin: 'https://lw.test', settingsParam: 'profile' };
+    const host = {
+      client: on.client,
+      workspaceOrigin: 'https://lw.test',
+      settingsParam: 'profile',
+    };
     renderWithKit(<Probe host={host} />);
     await waitFor(() => expect(screen.getByText(/Cloud Sync/)).toBeTruthy());
 
     const off = fakeClient({ enabled: false });
-    const offHost = { client: off.client, workspaceOrigin: 'https://lw.test', settingsParam: 'profile' };
+    const offHost = {
+      client: off.client,
+      workspaceOrigin: 'https://lw.test',
+      settingsParam: 'profile',
+    };
     const { container } = renderWithKit(<Probe host={offHost} />);
     await waitFor(() => expect(off.client.config).toHaveBeenCalled());
     expect(container.textContent).not.toContain('Cloud Sync');

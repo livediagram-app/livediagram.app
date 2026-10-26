@@ -140,6 +140,17 @@ describe('image placeholder ink', () => {
     expect(box(container).style.color).toBe('rgb(190, 18, 60)'); // IMAGE_BROKEN_TONE.light.ink
   });
 
+  it('shows Image unavailable when the bytes arrive but will not decode', () => {
+    blob.state = { status: 'ready', src: 'data:image/png;base64,AAAA' } as typeof blob.state;
+    const { container, getByText, queryByText } = draw(
+      image({ imageId: 'data:image/png;base64,AAAA' }),
+    );
+    expect(queryByText('Image unavailable')).toBeNull();
+    fireEvent.error(container.querySelector('img')!);
+    expect(getByText('Image unavailable')).toBeTruthy();
+    expect(container.querySelector('img')).toBeNull();
+  });
+
   it('reads as an empty state, with a Select Image button that opens the picker', () => {
     const open = vi.fn();
     const { getByText, getByRole } = draw(image(), { onOpenPicker: open });

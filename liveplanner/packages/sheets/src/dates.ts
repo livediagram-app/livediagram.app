@@ -6,8 +6,16 @@ const EPOCH_MS = Date.UTC(1899, 11, 30);
 // 31 December 9999, the last date a date function accepts.
 export const SERIAL_MAX = 2_958_465;
 
+// Date.UTC reads a year from 0 to 99 as 1900 to 1999, so such a year is set on its own: year 50 stays year 50.
+// Every other year takes Date.UTC, the fast path a sheet full of dates runs.
 export function serialFromDate(y: number, m: number, d: number): number {
-  return Math.round((Date.UTC(y, m - 1, d) - EPOCH_MS) / MS_PER_DAY);
+  let ms: number;
+  if (y >= 0 && y < 100) {
+    const date = new Date(0);
+    date.setUTCFullYear(y, m - 1, d);
+    ms = date.getTime();
+  } else ms = Date.UTC(y, m - 1, d);
+  return Math.round((ms - EPOCH_MS) / MS_PER_DAY);
 }
 
 export function serialFromParts(y: number, m: number, d: number, h = 0, min = 0, s = 0): number {

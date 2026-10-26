@@ -211,6 +211,16 @@ describe('normaliseBoardSetup', () => {
       expect(normaliseBoardSetup({ ...kanban, fillTab: v })).not.toHaveProperty('fillTab');
   });
 
+  it('trims a column status, as a card status is trimmed, so a card moved there lands in it', () => {
+    const s = normaliseBoardSetup({
+      columns: [
+        { id: 'a', status: ' review ', name: 'Review' },
+        { id: 'b', status: 'review', name: 'Dup' },
+      ],
+    });
+    expect(s?.columns).toEqual([{ id: 'a', status: 'review', name: 'Review' }]);
+  });
+
   it('drops bad columns and fields, keeps the first of a duplicate status', () => {
     const s = normaliseBoardSetup({
       title: 7,

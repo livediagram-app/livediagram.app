@@ -328,7 +328,8 @@ none, and the room pins it on the session attachment as `personTag`.
 - `withoutAgentRows(rows)` drops standalone agent rows for the roll call and the Collaborators count.
 - `apiSetThreadResolved(ownerId, documentId, tabId, commentId, resolved, shareCode)`: a session that may participate
   but not edit calls it from `resolveThread` / `unresolveThread` with the thread's first comment id, as its add calls
-  `apiAddComment`; a session that may edit keeps the room path. A refused call puts the thread back (PR36).
+  `apiAddComment`; a session that may edit keeps the room path. A refused call puts the thread back (PR36), and a
+  refused `apiAddComment` takes the local comment off again (`comment-remove`, `[comments] comment not saved`).
 
 ## Data and persistence
 
@@ -359,7 +360,8 @@ setAt, expiresAt }`.
 - **E6** The room is full: 409 `agent_presence_full`; logged.
 - **E7** A refresh that fails or finds the room full: logged, the changeset stands.
 - **E8** The alarm fires late or not before an eviction: every roster read sweeps first (PR30), and the constructor
-  sweeps on wake.
+  sweeps on wake. A write treats its own expired entry as absent (a refresh starts a bare one, PR9), and a write
+  that finds the room full sweeps before refusing it.
 - **E9** The facilitator grace and an entry share the one alarm: `alarm()` sweeps entries, then judges the baton,
   then re-arms.
 - **E10** A token revoked while present: refreshes fail at auth; the entry leaves on its ttl (PR15).

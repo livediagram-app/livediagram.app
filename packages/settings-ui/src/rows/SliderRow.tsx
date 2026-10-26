@@ -27,8 +27,10 @@ export function SettingsSliderRowView({
   // mid-drag ends it too, so an uncommitted value never sticks.
   const { preview } = row;
   useEffect(() => () => preview?.(null), [preview]);
+  // Only a value that moved is a change: Tab landing on the slider fires its keyup, and a click on the thumb its
+  // pointerup, and neither should save or log one.
   const commit = () => {
-    row.onCommit(draft);
+    if (draft !== row.value) row.onCommit(draft);
     preview?.(null);
   };
 

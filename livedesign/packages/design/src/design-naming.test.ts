@@ -38,6 +38,12 @@ const LOOKALIKE = /documentation|documented|livedocument/i;
 const CONTRACT: Record<string, ReadonlySet<string>> = {
   'apps/api/src/media.ts': new Set(['documents', 'MEDIA_REFS_PER_DOCUMENT_MAX']),
 };
+// The platform's shared names, which say document for every app's item: an OpenAPI document, the
+// @liveworkspace/api-schema/document-* modules and the names this product re-exports from them as its own.
+const SHARED_PLATFORM =
+  /OpenApiDocument|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Dd]esign|DESIGN)|\(typeof DOCUMENT_SOURCES\)|\((TrashedDocument|DocumentCommentThread) (in @liveworkspace\/|there\))/;
+// The documents of the old livediagram.app that the migration brings over.
+const OTHER_APP_ITEMS = /livediagram(\.app)?(['’]s old)? documents?\b/;
 // Other sites' addresses keep their own paths (a Google Docs link, an API reference).
 const FOREIGN_URL =
   /https?:\/\/(?!(?:www\.|staging\.)?livedesign\.app|[a-z]+\.test|localhost)[^\s'"`)<>\]]+/g;
@@ -58,6 +64,7 @@ describe('a design is never called a document', () => {
       if (!/document/i.test(text)) continue;
       const lines = text.split('\n');
       lines.forEach((line, i) => {
+        if (SHARED_PLATFORM.test(line) || OTHER_APP_ITEMS.test(line)) return;
         for (const word of line.match(
           /[A-Za-z0-9_$]*[Dd][Oo][Cc][Uu][Mm][Ee][Nn][Tt][A-Za-z0-9_$]*/g,
         ) ?? []) {

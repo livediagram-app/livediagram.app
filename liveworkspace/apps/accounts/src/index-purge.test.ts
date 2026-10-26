@@ -139,6 +139,24 @@ describe('deleteAccount', () => {
     addUser(sql, { id: 'user_bea', email: 'bea@example.com' });
   });
 
+  it('refuses a body of null as a bad request, closing nothing', async () => {
+    const res = await deleteAccount(
+      new Request(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/auth/delete-account',
+        {
+          method: 'POST',
+          headers: { authorization: `Basic ${btoa('livediagram:secret')}` },
+          body: 'null',
+        },
+      ),
+      auth,
+      db,
+      config,
+    );
+    expect(res.status).toBe(400);
+    expect(sql.prepare('SELECT id FROM "user"').all()).toHaveLength(2);
+  });
+
   it('tells the index, naming the teams that closed with the account', async () => {
     const solo = (await createTeam(db, { id: 'user_ada', email: 'ada@example.com' }, 'Solo')) as {
       ok: true;

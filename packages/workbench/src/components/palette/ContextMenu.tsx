@@ -93,7 +93,7 @@ export function ContextMenu({
     // on the just-mounted dismiss listeners and close the menu the instant
     // it appears. Desktop right-click is unaffected: its mousedown fires
     // before the contextmenu that opens the menu, so nothing arrives during
-    // the window. Escape (below) is never graced.
+    // the window. Escape (useControlMenu, above) is never graced.
     // Measured from MOUNT, not from each effect run: `onClose` is an inline
     // callback in most hosts, so it changes identity on every render and the
     // effect re-subscribes. Recomputing the window here meant any re-render

@@ -822,7 +822,9 @@ H (hand) and Z (zen) keep working as on any tab, and every modifier shortcut
 box selected, typing a character still edits it rather than switching tool;
 any other selection (a shape just drawn, a line, a stroke) leaves the key to
 the dock, so R then O draws a rectangle and then an ellipse.
-View-role visitors get V and Escape only. Each dock button and Shapes option
+View-role visitors get V and Escape only. A Participant also keeps its palette's keys (N, T and 9,
+[The Participant palette](../013-workspace/share-roles.md#the-participant-palette)), which arm its tiles here as on any
+tab, never the dock's tools. Each dock button and Shapes option
 with a key shows it small in its bottom-right corner, as the Toolbar strip does (a tool bar is
 where people learn the keys), and carries it in `aria-keyshortcuts`.
 

@@ -34,13 +34,17 @@ const SHAPE_TO_AT_NAME: Record<string, string> = {
 // introduces aren't double-escaped; newlines become <br/>. A `#` that would
 // read as an entity code is itself written as one (`#35;`), and `%%` (a
 // comment opener in an unquoted edge label) as `#37;#37;`, so every label
-// round-trips.
+// round-trips. So are a backtick (`#96;`: a label wrapped in them read back as
+// Mermaid's markdown string, its backticks and emphasis marks stripped) and the
+// `<` of a `<br>` written as text (`#60;`: it read back as a line break).
 function escapeLabel(label: string): string {
   return label
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/#(?=\d+;)/g, '#35;')
     .replace(/%%/g, '#37;#37;')
+    .replace(/`/g, '#96;')
+    .replace(/<(?=br\s*\/?>)/gi, '#60;')
     .replace(/\n/g, '<br/>');
 }
 

@@ -98,6 +98,17 @@ describe('create_document intent', () => {
   });
 });
 
+// An unnamed template tab takes the template's title, as the editor names one (docs/specs/007-editor/
+// templates-by-mode.md "The tab's name"), which the tab argument's description promises; any other is "Tab n".
+describe('create_document tab names', () => {
+  it('names an unnamed template tab after its template, and an unnamed other tab "Tab n"', async () => {
+    const { run, posted } = harness(undefined);
+    await run([{ template: 'flowchart' }, { elements: [] }, { name: 'Mine', template: 'swot' }]);
+    const tabs = posted[0]!.tabs as { name: string }[];
+    expect(tabs.map((t) => t.name)).toEqual(['Flowchart', 'Tab 2', 'Mine']);
+  });
+});
+
 describe('create_document folder', () => {
   it('reports My Work when the document landed at the root', async () => {
     const { run, requested } = harness({ folderId: null, teamId: null });

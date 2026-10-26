@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NAME_MAX_LENGTH, truncateName } from './names';
+import { NAME_MAX_LENGTH, initialsOf, truncateName } from './names';
 
 describe('truncateName', () => {
   it('leaves a name that already fits alone', () => {
@@ -43,5 +43,21 @@ describe('truncateName', () => {
   it('handles an empty or whitespace-only name', () => {
     expect(truncateName('')).toBe('');
     expect(truncateName('   \n ')).toBe('');
+  });
+});
+
+describe('initialsOf', () => {
+  it("takes the first and last words, or a single word's first two letters", () => {
+    expect(initialsOf('Curious Falcon')).toBe('CF');
+    expect(initialsOf('ada lovelace byron')).toBe('AB');
+    expect(initialsOf('owl')).toBe('OW');
+    expect(initialsOf('   ')).toBe('?');
+  });
+
+  it('keeps an emoji or astral letter whole, never half a surrogate pair', () => {
+    expect(initialsOf('\u{1F680} Launch')).toBe('\u{1F680}L');
+    expect(initialsOf('Team \u{1F680}')).toBe('T\u{1F680}');
+    expect(initialsOf('\u{1F680}')).toBe('\u{1F680}');
+    expect(initialsOf('\u{1D49C}da Byron')).toBe('\u{1D49C}B');
   });
 });

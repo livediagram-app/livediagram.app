@@ -489,3 +489,45 @@ describe('Multiple Choice and Rating fields', () => {
     expect(multiChoiceOf(options, '')).toBeUndefined();
   });
 });
+
+describe('Currency and Email fields', () => {
+  const deal: ItemTypeDef = {
+    ...note,
+    id: 'deal',
+    label: 'Deal',
+    fields: ['title', 'status', 'f-value', 'f-mail'],
+    custom: [
+      { id: 'f-value', label: 'Value', kind: 'currency', currency: 'GBP' },
+      { id: 'f-mail', label: 'Contact', kind: 'email' },
+    ],
+  };
+  const dealSetup: PlanBoardSetup = { ...setup, addTypes: ['deal'] };
+
+  it('reads an amount back as the number a card stores, and an email only when it is one', () => {
+    const won = item(
+      { title: 'Big deal', status: 'todo', 'f-value': 12500.5, 'f-mail': 'sam@example.com' },
+      { type: 'deal' },
+    );
+    const rows = boardCsvRows(dealSetup, mapOf([won]), [deal]);
+    const header = rows[0]!;
+    const typed = header.map((h) =>
+      h === 'Title'
+        ? 'Pounds'
+        : h === 'Value'
+          ? '£1,200.456'
+          : h === 'Contact'
+            ? 'not an address'
+            : '',
+    );
+    const { creates } = boardCsvImport([...rows, typed], {
+      setup: dealSetup,
+      types: [deal],
+      people: [],
+      room: 100,
+    });
+    expect(creates.map((c) => [c.fields['f-value'], c.fields['f-mail']])).toEqual([
+      [12500.5, 'sam@example.com'],
+      [1200.46, undefined],
+    ]);
+  });
+});

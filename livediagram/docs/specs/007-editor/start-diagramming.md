@@ -15,7 +15,9 @@ draws them.
   **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
 - **Rail:** led by the mode switch over a hairline ([Changing mode](#changing-mode)), then **Recommended** and the
-  mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail.
+  mode's groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
+  count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark
+  and 2.7:1 in light.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the
   panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new

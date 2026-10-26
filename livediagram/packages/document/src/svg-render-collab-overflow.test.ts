@@ -30,6 +30,12 @@ describe('fitLine', () => {
     expect(line!.length).toBeLessThanOrEqual(20);
     expect(line!.endsWith('…')).toBe(true);
   });
+
+  it('adds no ellipsis when every word fits, however the words are spaced', () => {
+    // perLine is 8 here; two words, two lines.
+    for (const body of ['aaaa\n\nbbbb', 'aaaa  bbbb', 'aaaa\r\nbbbb'])
+      expect(wrapLines(body, 41.6, 10, 2), JSON.stringify(body)).toEqual(['aaaa', 'bbbb']);
+  });
 });
 
 describe('collab card title', () => {

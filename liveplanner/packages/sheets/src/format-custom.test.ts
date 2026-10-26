@@ -34,6 +34,24 @@ describe('a custom format code', () => {
     });
     expect(displayValue('hi', { nf: 'custom' }, 'en-GB').text).toBe('hi');
   });
+  it('hides the numbers of an empty section, as Excel does', () => {
+    const draw = (v: number, nc: string) => displayValue(v, { nf: 'custom', nc }, 'en-GB').text;
+    expect(draw(-5, ';;;')).toBe('');
+    expect(draw(5, ';;;')).toBe('');
+    expect(draw(-5, '0;;0')).toBe('');
+    expect(draw(5, '0;;0')).toBe('5');
+    expect(draw(0, '0;0;')).toBe('');
+    expect(draw(-5, '0;(0)')).toBe('(5)');
+    expect(draw(-5, '0')).toBe('-5');
+  });
+  it('rounds half away from zero, as ROUND and the Number format do', () => {
+    const draw = (v: number, nc: string) => displayValue(v, { nf: 'custom', nc }, 'en-GB').text;
+    expect(draw(1.005, '0.00')).toBe('1.01');
+    expect(draw(2.675, '0.00')).toBe('2.68');
+    expect(draw(-1.005, '0.00')).toBe('-1.01');
+    expect(draw(0.125, '0.00')).toBe('0.13');
+    expect(draw(1234567.891, '#,##0.00')).toBe('1,234,567.89');
+  });
   it('is a format key a write may set', () => {
     expect(validFormat({ nf: 'custom', nc: '0.00' })).toBe(true);
     expect(validFormatPatch({ nc: '"open' })).toBe(false);

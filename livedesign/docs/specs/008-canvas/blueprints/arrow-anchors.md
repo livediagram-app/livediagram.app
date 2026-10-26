@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/design/src/anchor-choice.ts`                        | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
 | `packages/design/src/arrow-path.ts`                           | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
 | `packages/design/src/arrow-path-hits.ts`                      | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
-| `packages/design/src/arrow-rebind.ts`                         | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
+| `packages/design/src/arrow-rebind.ts`                         | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`, `withAttachedArrows`                          |
 | `packages/design/src/arrow-rebind-swap.ts`                    | `swapCrossingEnds`                                                                                 |
 | `packages/design/src/arrow-endpoint-spread.ts`                | Quarter fans                                                                                       |
 | `packages/design/src/validate.ts`                             | `ANCHORS` derived from `ALL_ANCHORS`                                                               |

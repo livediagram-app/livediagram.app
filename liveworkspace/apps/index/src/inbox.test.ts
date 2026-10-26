@@ -89,6 +89,44 @@ describe('Inbox threads', () => {
     expect(owned).toMatchObject({ onYourItem: true, youCommented: false, mentionsYou: false });
   });
 
+  it('reach a link visitor only on the tab their link opens', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const item = await makeItem(ada.auth, { title: 'Plan' });
+    const made = await call(`/items/${item.id}/share`, {
+      method: 'POST',
+      auth: ada.auth,
+      body: { level: 'participate', tabId: 't1' },
+    });
+    const { link } = await body<{ link: { code: string } }>(made);
+    expect((await call(`/share/${link.code}`, { auth: bob.auth })).status).toBe(200);
+    for (const tab of ['t1', 't2'])
+      await asApp(`/app/items/${item.id}/collab/${tab}`, {
+        tabName: tab === 't1' ? 'Shared' : 'Private',
+        threads: [thread({ elementId: `on-${tab}`, mentionedIds: ['user_b'] })],
+        actions: [action({ actionId: `act-${tab}`, assigneeId: 'user_b' })],
+      });
+    // Cards, pushed under the cards tab: only the one on a board in the link's tab.
+    const onTab = (tabId: string, key: number): CollabCard => ({
+      ...card,
+      key,
+      board: { ...card.board!, tabId },
+    });
+    await asApp(`/app/items/${item.id}/collab/${COLLAB_CARDS_TAB}`, {
+      threads: [],
+      actions: [
+        action({ elementId: 'c1', actionId: 'c1', assigneeId: 'user_b', card: onTab('t1', 1) }),
+        action({ elementId: 'c2', actionId: 'c2', assigneeId: 'user_b', card: onTab('t2', 2) }),
+      ],
+    });
+    const forBob = await inbox(bob.auth);
+    expect(forBob.threads.map((t) => t.tabId)).toEqual(['t1']);
+    expect(forBob.actions.map((a) => a.card?.key ?? a.tabId).sort()).toEqual([1, 't1']);
+    // The owner still sees both.
+    const forAda = await inbox(ada.auth);
+    expect(forAda.threads.map((t) => t.tabId).sort()).toEqual(['t1', 't2']);
+  });
+
   it('carry an action’s notes and names', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);

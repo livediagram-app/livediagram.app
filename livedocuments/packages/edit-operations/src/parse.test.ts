@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedocuments/api-schema';
+import { run } from './fixtures/run';
 import { parseEditOperations } from './parse';
 import { formatRejections } from './rejections';
 import type { EditLog, EditOperation } from './types';
@@ -187,6 +188,10 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
 
 describe('parseEditOperations: refusals', () => {
   const detail = (text: string) => errorsOf(text)[0]!.details[0];
+
+  it("stops before applying anything: the suites' runner answers the errors alone", () => {
+    expect(run('set n3 label="Sign in')).toEqual({ errors: errorsOf('set n3 label="Sign in') });
+  });
 
   it('names the line, the column and what was expected, with a caret', () => {
     const [error] = errorsOf('set n3 label="Sign in');

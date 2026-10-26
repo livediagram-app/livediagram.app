@@ -36,6 +36,8 @@ type IconComponent = ComponentType<{ 'aria-hidden'?: boolean; className?: string
 
 const ChevronIcon = lucideGlyph(lucideChevronDown, 16);
 const SettingsIcon = lucideGlyph(lucideSettings, 16);
+// The open menu's name. Given to useMenu: an aria-label on the surface itself is overwritten by its trigger's name.
+const MENU_LABEL = 'Account';
 
 /** Where Settings goes on a surface with no Settings panel of its own: the same address's Explorer, which opens the
  *  panel on load (liveworkspace/docs/site.md "Settings", Addresses). Teams are made and run in the Explorer too
@@ -89,7 +91,13 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
   const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
   const ref = useRef<HTMLDivElement>(null);
-  const { attach, surfaceProps } = useMenu({ open, onClose: close, trigger, initialFocus });
+  const { attach, surfaceProps } = useMenu({
+    open,
+    onClose: close,
+    trigger,
+    initialFocus,
+    label: MENU_LABEL,
+  });
   useClickOutside(ref, close, open);
 
   // Arriving in place of the Guest stand-in: carry on where it left off, once.
@@ -152,7 +160,6 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
         <div
           ref={attach}
           {...surfaceProps}
-          aria-label="Account"
           className="absolute top-full right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800"
         >
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">

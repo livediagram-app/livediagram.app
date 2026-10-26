@@ -5,7 +5,8 @@
 // - API tokens are made on liveworkspace.app, so a spec seeds one (`POST /e2e/accounts/__seed/token {userId,
 //   email?, name?, readOnly?}` → `{id, name, readOnly, expiresAt, secret}`), and the app's api checks it as it
 //   does in production, through the account API (account.ts: `/api/account/internal/tokens/verify`,
-//   `/tokens/live`, `/tokens/revoke`).
+//   `/tokens/live`, `/tokens/revoke`). An app connecting an AI tool makes one through the same API (`/tokens
+//   {accessToken, name, readOnly}`), for the person its access token names, as the accounts Worker does.
 // - Profiles (display names and colours, liveworkspace/docs/accounts.md "Profiles") are kept in memory: the api
 //   writes one when someone sets their name (`/profiles/write {owner, name?, color?}`) and reads them for
 //   presence, comments and changeset toasts (`/profiles/read {ids}`), as against the accounts Worker. An id
@@ -94,6 +95,23 @@ export function createTokenStandIn(
     return { id: token.id, name, readOnly, expiresAt: token.expiresAt, secret };
   };
   const answer: TokenStandIn['answer'] = (route, body) => {
+    // A token for an AI tool someone is connecting in an app (account.ts `mintAccountToken`). The accounts Worker
+    // checks the app's access token; the stack minted it, so the stand-in reads the person from it.
+    if (route === '/tokens') {
+      const person = accessTokenSubject(body.accessToken);
+      if (!person) return { status: 401, body: { error: 'invalid_token' } };
+      const name =
+        typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'MCP client';
+      return {
+        status: 201,
+        body: seed({
+          userId: person.sub,
+          email: person.email,
+          name,
+          readOnly: body.readOnly === true,
+        }),
+      };
+    }
     if (route === '/tokens/verify') {
       const token = tokens.get(String(body.token ?? ''));
       if (!token || token.revoked || token.expiresAt <= Date.now()) {
@@ -167,7 +185,9 @@ export function createTokenStandIn(
   const seedPath = `${accountsPath}/__seed/token`;
   const serve: TokenStandIn['serve'] = (req, res, pathname) => {
     const route =
-      pathname.startsWith(`${internal}/tokens/`) || pathname.startsWith(`${internal}/profiles/`)
+      pathname === `${internal}/tokens` ||
+      pathname.startsWith(`${internal}/tokens/`) ||
+      pathname.startsWith(`${internal}/profiles/`)
         ? pathname.slice(internal.length)
         : null;
     if (pathname !== seedPath && route === null) return false;
@@ -196,6 +216,26 @@ export function createTokenStandIn(
     return true;
   };
   return { seed, answer, serve };
+}
+
+// The person an access token names (its `sub`, and its email when verified), read without checking the signature:
+// only the stack that minted it talks to the stand-in. Null for anything that is not a JWT naming an account.
+function accessTokenSubject(token: unknown): { sub: string; email: string | null } | null {
+  if (typeof token !== 'string') return null;
+  const payload = token.split('.')[1];
+  if (!payload) return null;
+  try {
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<
+      string,
+      unknown
+    >;
+    if (typeof claims.sub !== 'string' || !claims.sub.startsWith('user_')) return null;
+    const email =
+      typeof claims.email === 'string' && claims.email_verified === true ? claims.email : null;
+    return { sub: claims.sub, email };
+  } catch {
+    return null;
+  }
 }
 
 // A profile field as the accounts Worker cleans it: left out (undefined), cleared (null, or blank once

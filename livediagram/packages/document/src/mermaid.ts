@@ -418,8 +418,11 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
         const cluster: GraphCluster = idTitle
           ? { id: idTitle[1]!, label: decodeLabel(idTitle[2]!), members: [] }
           : { id: spec, label: decodeLabel(spec), members: [] };
-        clusters.push(cluster);
-        currentCluster = cluster;
+        // A subgraph opened again by its id carries on the first: two clusters of one id became two frames under
+        // one element id, and the second (with its members' frame) was lost.
+        const reopened = clusters.find((c) => c.id === cluster.id);
+        if (!reopened) clusters.push(cluster);
+        currentCluster = reopened ?? cluster;
       }
       continue;
     }
@@ -478,7 +481,15 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   }
 
   // An edge to a subgraph id pins to its frame.
-  const realClusters = framedClusters(clusters, implicit, nodes);
+  const realClusters = framedClusters(clusters, implicit, nodes).map((c) => {
+    // A node written out with a subgraph's id keeps the id (edges naming it meant the node); the frame takes a fresh
+    // one, so neither is lost to the other's element id.
+    if (!nodes.has(c.id)) return c;
+    let id = `${c.id}_subgraph`;
+    for (let n = 2; nodes.has(id) || clusters.some((o) => o.id === id); n += 1)
+      id = `${c.id}_subgraph${n}`;
+    return { ...c, id };
+  });
 
   // A flowchart needs either the header or at least one connection — a bare
   // word (or a stray line of prose) is not a diagram.

@@ -85,7 +85,7 @@ The editor shortens at its own mutation points, so what the author sees is
 already the stored name without waiting on a round trip:
 
 - `useSelectionEditing` — the auto-name path (the case that prompted this).
-- `useTabActions.renameTab`.
+- `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
 - `useDocumentListActions.renameDocument` and `useTeamLibrary.renameDocument`.
 - `EditorView`'s header rename.
 - The `/new` wizard's document-name field.

@@ -38,6 +38,9 @@ team takes effect when the person's token is next minted.
 | Rename it, change its organisation, delete it                  | ✓                                          |        |
 | Leave                                                          | ✓ (not the last admin while others remain) | ✓      |
 
+A team always keeps a joined admin: demoting or removing the last one answers `409 last_admin`. The check is part of
+the write itself, so two admins demoting or removing each other at once can't both pass it.
+
 ### Invitations
 
 An invitation is a member row with the invited address, `invited` until answered. Accepting it
@@ -332,6 +335,10 @@ quick bounce through the accounts site. The mechanism is shared, in `@liveworksp
    code it signs in exactly as a clicked sign-in does; with an error, or a code swap that fails, it
    does nothing. Either way the browser goes back to the same path, query and hash.
 
+`return` is followed only when it is a path on the app: another origin, `//host`, `/\host`, or a path with a
+space, tab, newline or other control character (which the browser drops, so `/<tab>/host` would land on `//host`)
+goes to the app's fallback page instead (`safeReturnPath`).
+
 It never bounces:
 
 - more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
@@ -423,9 +430,9 @@ nothing changes.
    the visitor's address in `X-Liveworkspace-Client-IP`, which the code limits count
    ([Limits](#limits)) instead of the router's.
 4. **The page** signs in exactly as on liveworkspace.app (email code, name for a new account,
-   Turnstile). Then it asks `POST /api/auth/handoff/start` `{ returnUrl, bind }` for a hand-off. The
+   Turnstile). Then it asks `POST /api/auth/handoff/start` `{ return, bind }` for a hand-off. The
    Worker refuses unless the request's `Origin` is one of the app origins (403), there is a
-   session (401), `bind` is a nonce hash, and `returnUrl` is one of that same app's registered
+   session (401), `bind` is a nonce hash, and `return` is one of that same app's registered
    redirect URIs (400 `invalid_return`). It stores only the SHA-256 of a fresh 32-byte token, with
    the session, the bind and the address, for 60 seconds, clears the session cookie on the app's
    address in the same answer, and gives back `{ url }`: `https://liveworkspace.app/api/auth/handoff?token=…`.
@@ -559,6 +566,9 @@ doesn't name stay as they are. The merge runs inside SQLite (`json_remove` then 
 upsert per scope), against the row as it stands, so two apps writing different keys at once both
 land. A write covering both scopes is one batch, so it applies whole or not at all, and it answers
 the settings as they now are.
+An account id with no account behind it writes nothing and is refused (`404 unknown_owner`), as profiles are, so an
+app access token that outlives a closed account (it lasts its hour) can't write the account's settings back. A
+guest's id has no account row and writes as before.
 
 ### Limits
 
@@ -739,6 +749,10 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   address (its router's proxy, [Signing in on the app's own address](#signing-in-on-the-apps-own-address)) is in that app's colours and logo, and
   its subject names the app (`123456 is your liveplanner sign-in code`). One on liveworkspace.app's own page is
   liveworkspace's. The code sits alone in a tinted panel.
+  Only `POST /api/auth/sign-in/email-otp` takes a code, and spends it. Better Auth's other code routes
+  (`check-verification-otp`, which checks a code without spending it and counts attempts in two steps, so guesses
+  sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
+  are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
 
 ## Notification emails

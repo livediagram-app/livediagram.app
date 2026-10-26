@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, seedTab, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  serverNewUrl,
+  test,
+} from './fixtures';
 
 // docs/specs/008-canvas/canvas-performance.md "A still canvas does nothing": with a board open and a
 // selection showing its toolbar, a still second asks
@@ -39,7 +46,8 @@ async function openStill(page: Page, path: string) {
   });
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-  await page.goto(path);
+  // On the server (serverNewUrl): seedTab writes the new board through the api.
+  await page.goto(await serverNewUrl(page, path));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

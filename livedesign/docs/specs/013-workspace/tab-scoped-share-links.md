@@ -70,6 +70,9 @@ For a scoped session:
 
 - **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `design-meta` is redacted the same way the REST design is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
 - **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, and `design-meta` outright (and the retired `log` / `log-remove` ops of the removed Activity panel). Anything else fails closed.
+- **From anyone**, scoped or not, the room drops a tab op whose payload reaches past the tab it names: a whole `tab` op whose `tab.id` is not its `tabId`, or a `tab-meta` whose patch carries `id`, `elements` or `photos`. A receiving editor would take that payload as its tab's own, and its next save would write it over another tab.
+- A scoped session's facilitator **unlock** (free a held selection) reaches only someone working on its own tab; aimed at anyone on another tab it is dropped.
+- **Receiving editors** take a tab's id from the op's `tabId` alone, and a `tab-meta` patch never sets a tab's `id`, `elements`, `photos` or `folder`, so no peer can turn one tab into another.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 
 ### Revoke closes the socket

@@ -325,7 +325,11 @@ and radii, and the content kinds' looks, media, attach points and pyramid varian
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
 pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
-of every template, so a tab read back as JSON writes again unchanged.
+of every template, so a tab read back as JSON writes again unchanged. A refusal names the element by its id, or, for
+an ops `add` without one, as "the added element" (never "element 1", its place in the op's own one-element list).
+The fields like an unknown camelCase key are those sharing its first word (`strokeColour`: `strokeColor`,
+`strokeWidth`). `create_document` names the element and the rule a finished tab breaks (`element "svc": "label" must
+be a string.`, or an id given twice), as `add_tab` and `update_document` do, rather than a general shape reminder.
 
 ### 4.5 `list_templates`
 

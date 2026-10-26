@@ -84,6 +84,18 @@ describe('useFollowMe', () => {
     );
   });
 
+  it('ends a follow when the person followed turns out to follow you (both pressed at once)', () => {
+    const { hook, args } = setup({ nameOf: () => 'Alex' });
+    act(() => hook.result.current.startFollowing('p1'));
+    expect(hook.result.current.followingId).toBe('p1');
+    hook.rerender({ ...args, followerIds: ['p1'], nameOf: () => 'Alex' });
+    expect(hook.result.current.followingId).toBeNull();
+    expect(args.onNotice).toHaveBeenCalledTimes(1);
+    expect(args.onNotice).toHaveBeenCalledWith(
+      "Alex is following you, so you can't follow them back.",
+    );
+  });
+
   it('tells the room who it follows, and when it stops', () => {
     const sendFollow = vi.fn();
     const { hook } = setup({ sendFollow });

@@ -145,8 +145,14 @@ export function applyArticleWrite(
   let blocks: ArticleBlock[];
   let gone: ArticleZoneBlock[] = [];
   if (append) {
-    // An empty new article's placeholder Title and paragraph give way to what is appended.
-    blocks = [...(created ? [] : doc.blocks), ...read.blocks];
+    // An empty new article's placeholder Title and paragraph give way to what is appended. A `[zone <id>]` line
+    // names a zone the article already holds, which stays where it is: appended again, the article held two blocks
+    // of one id.
+    const kept = new Set(read.keptZones);
+    blocks = [
+      ...(created ? [] : doc.blocks),
+      ...read.blocks.filter((b) => !(b.type === 'zone' && kept.has(b.id))),
+    ];
   } else {
     blocks = read.blocks;
     gone = doc.blocks.filter(
@@ -179,7 +185,7 @@ export function applyArticleWrite(
 
   const title = articleTitleOf(next);
   lines.push(
-    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the article "${title}" (${flow}): ${append ? `${read.blocks.length} blocks added, ` : ''}${blocks.length} blocks.`,
+    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the article "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length} blocks added, ` : ''}${blocks.length} blocks.`,
   );
   if (read.tables)
     lines.push(

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { collectDeclared } from '@liveworkspace/licences/declared';
 import { TEXT_SOURCES } from '@liveworkspace/licences/texts';
 
-import { LICENCE_APPS } from './apps.ts';
+import { LICENCE_APPS, serverServices } from './apps.ts';
 import { EMBEDDED_WORKS } from './embedded-works.ts';
 import { OVERRIDES } from './overrides.ts';
 
@@ -17,6 +17,15 @@ describe('LICENCE_APPS', () => {
   it('registers every app in liveworkspace/apps/, so a new one cannot ship unlisted', () => {
     const dirs = readdirSync(appsDir).filter((d) => statSync(appsDir + d).isDirectory());
     expect(LICENCE_APPS.map((a) => a.id).toSorted()).toEqual(dirs.toSorted());
+  });
+});
+
+describe('serverServices', () => {
+  it('names every service the page lists, Drive, the gateway and status included', () => {
+    const phrase = serverServices();
+    for (const app of LICENCE_APPS.filter((a) => a.side === 'server'))
+      expect(phrase, app.id).toContain(app.label);
+    expect(phrase).toMatch(/, Status and Telemetry$/);
   });
 });
 

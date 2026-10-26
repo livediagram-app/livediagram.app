@@ -119,3 +119,32 @@ describe('useStylePreview hover snapshot integrity', () => {
     expect(el.colorPreset).toBe('b');
   });
 });
+
+// docs/specs/008-canvas/canvas-and-palette.md "Locking": a rotation leaves a locked element unchanged, whichever
+// control turns it.
+describe('useStylePreview rotation tiles', () => {
+  it('turn the unlocked members of a selection and leave a locked one', () => {
+    const free = createShape('square', 0, 0);
+    const locked = { ...createShape('square', 200, 0), locked: true };
+    let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [free, locked] }];
+    const preview = renderHook(() =>
+      useStylePreview({
+        editsBlocked: false,
+        activeId: 'tab1',
+        currentSelectionIds: () => new Set([free.id, locked.id]),
+        tabsRef: { current: committed },
+        tickTabs: (map) => {
+          committed = map(committed);
+        },
+        commitTabs: (map) => {
+          committed = map(committed);
+        },
+        previewingRef: { current: false },
+      }),
+    ).result.current;
+    preview.commitRotation(90);
+    const [a, b] = committed[0]!.elements as (Element & { rotation?: number })[];
+    expect(a!.rotation).toBe(90);
+    expect(b!.rotation).toBeUndefined();
+  });
+});

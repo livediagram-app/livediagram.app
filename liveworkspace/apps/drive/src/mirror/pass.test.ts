@@ -97,6 +97,26 @@ describe('the first mirror', () => {
   });
 });
 
+describe('the root', () => {
+  it('is never a folder someone else owns, tagged as a root and shared with the person', async () => {
+    const theirs = h.google.otherUserFile({
+      owner: 'mallory-google',
+      name: 'liveworkspace (development)',
+      mimeType: 'application/vnd.google-apps.folder',
+      content: '',
+      appProperties: { lwRoot: ORIGIN },
+      shareWith: GOOGLE_USER,
+    });
+    // Opened once with the app (the Picker, or Open with), so drive.file lists it.
+    h.google.grantAccess(GOOGLE_USER, theirs);
+    const a = h.index.addItem({ name: 'Flow' });
+    await connected();
+    const root = h.store.connection()!.rootId;
+    expect(root).not.toBe(theirs);
+    expect(h.fileOf(a.id)!.parents).toEqual([root]);
+  });
+});
+
 describe('outbound', () => {
   it('follows renames, moves, the Trash and a restore', async () => {
     const folder = h.index.addFolder('Work');

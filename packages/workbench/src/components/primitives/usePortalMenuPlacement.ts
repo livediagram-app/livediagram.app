@@ -74,10 +74,11 @@ export function usePortalMenuPlacement(
       // A MenuFlyoutSection portals its panel outside this menu but marks it
       // data-menu-flyout, so clicks inside the flyout count as inside the menu. An AnchoredPopover the menu opened
       // (the full colour picker of a colour row in it) is the menu's own too: closing here unmounted the picker
-      // before its pick landed.
+      // before its pick landed. A ConfirmPopover a row opens (portalled, marked data-confirm-popover) is the
+      // menu's own the same way: its Confirm press would otherwise close the menu first.
       if (
         e.target instanceof Element &&
-        e.target.closest('[data-menu-flyout], [data-anchored-popover]')
+        e.target.closest('[data-menu-flyout], [data-anchored-popover], [data-confirm-popover]')
       )
         return;
       // Clicks anywhere INSIDE the anchor (including its inner svg / text

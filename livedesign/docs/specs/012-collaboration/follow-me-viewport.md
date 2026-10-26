@@ -83,7 +83,10 @@ recognise itself in a peer's message.
 - **Following someone who is following you is refused**, with a line saying
   why ("Alex is following you, so you can't follow them back."). Two mirrors
   pointed at each other oscillate. The check reads the room's `followers` list
-  (below), one hop, so it costs nothing.
+  (below), one hop, so it costs nothing. Two people who press Follow on each
+  other at the same moment both pass that check before the list arrives, so a
+  follow also ends, with the same line, as soon as the list shows the person
+  followed following you back.
 - **Following someone who is following a third person just works**: you get
   their viewport, which is the third person's viewport. No special case.
 - **Zoom is mirrored exactly, not fitted.** A follower on a smaller screen sees

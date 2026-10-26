@@ -18,7 +18,8 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   multi-colour palette and its root, and each shape kind's colours in a per-shape theme (UML).
 - **Contrast.** Both halves meet WCAG 2.2 AA: text on its fill at 4.5:1 or more, outlines and arrows against the canvas
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
-  until it passes, keeping its hue.
+  until it passes, keeping its hue; where the range runs out first (white on a mid grey just darker than the turn,
+  #777777, stuck at 4.48:1), it is walked the other way, past what it sits on.
   `packages/design/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
   `apps/live/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
   and arrow).

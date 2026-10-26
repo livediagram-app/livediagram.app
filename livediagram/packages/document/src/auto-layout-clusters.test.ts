@@ -219,6 +219,27 @@ describe('sweepEdgelessNodes', () => {
     expect(byId(els, 'loose').y).toBeGreaterThan(byId(els, 'b').y + 120);
     expect(byId(els, 'fixed')).toMatchObject({ x: 10, y: 10 });
   });
+
+  it('sweeps a node whose only arrow loops back to itself, rather than leaving it on the first node', () => {
+    const els = sweepEdgelessNodes([
+      shape('a', 0, 0),
+      shape('b', 0, 300),
+      {
+        id: 'arr',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'a', anchor: 's' },
+        to: { kind: 'pinned', elementId: 'b', anchor: 'n' },
+      },
+      shape('self', 0, 0),
+      {
+        id: 'loop',
+        type: 'arrow',
+        from: { kind: 'pinned', elementId: 'self', anchor: 'e' },
+        to: { kind: 'pinned', elementId: 'self', anchor: 'n' },
+      },
+    ]);
+    expect(byId(els, 'self').y).toBeGreaterThan(byId(els, 'b').y + 120);
+  });
 });
 
 describe('group members (docs/specs/020-import-export/mermaid.md)', () => {

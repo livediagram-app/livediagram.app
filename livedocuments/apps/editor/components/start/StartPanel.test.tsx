@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { contrastRatio, hexToRgb, type CanvasSurface } from '@livedocuments/document';
+import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
+import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';
 
 afterEach(() => {
@@ -80,5 +83,33 @@ describe('the start panel on a short window', () => {
     expect(wrapper.className).toContain('short-window:pb-[var(--start-floor)]');
     expect(wrapper.className).toContain('short-window:z-[var(--z-overlay)]');
     expect(wrapper.className).not.toContain('landscape-phone:');
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "Rail": the chosen group's count is the panel's ink on the accent's tint.
+// The accent itself on that tint (its 22% over the row's 14%, over the card) read 3.6:1 in light, under WCAG AA.
+describe('the chosen rail count', () => {
+  const over = (paper: string, colour: string, share: number) => {
+    const [p, c] = [hexToRgb(paper)!, hexToRgb(colour)!];
+    const mix = (a: number, b: number) =>
+      Math.round(a * (1 - share) + b * share)
+        .toString(16)
+        .padStart(2, '0');
+    return `#${mix(p.r, c.r)}${mix(p.g, c.g)}${mix(p.b, c.b)}`;
+  };
+
+  it.each<CanvasSurface>(['dark', 'light'])('reads at AA in %s', (surface) => {
+    render(
+      <CanvasSurfaceProvider surface={surface}>
+        <StartFromTemplates tabId="t1" onTemplate={vi.fn()} />
+      </CanvasSurfaceProvider>,
+    );
+    const palette = startPalette(surface, {});
+    const chosen = document.querySelector<HTMLElement>('[data-rail][aria-current="true"]')!;
+    const badge = chosen.lastElementChild as HTMLElement;
+    const { r, g, b } = hexToRgb(palette.text)!;
+    expect(badge.style.color).toBe(`rgb(${r}, ${g}, ${b})`);
+    const pill = over(over(palette.card, palette.focus, 0.14), palette.focus, 0.22);
+    expect(contrastRatio(palette.text, pill)).toBeGreaterThanOrEqual(4.5);
   });
 });

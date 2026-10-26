@@ -119,6 +119,9 @@ describe('StatusBoard', () => {
 // The stored history (liveworkspace/docs/status.md), served at /api/status/history; every other address as fetchWhere.
 const AT = Date.now() - 23 * 60_000;
 const DAYS = 90;
+// An hour before the run, but never before its UTC midnight: the strip's days are UTC days, so an incident begun
+// the evening before would also touch yesterday's bar, and the test failed in the first 83 minutes of every UTC day.
+const INCIDENT_START = AT - Math.min(3_600_000, AT % 86_400_000);
 const bars = (last: number, worst: string) => ({
   p: 99.5,
   w: `${'u'.repeat(DAYS - 1)}${worst}`,
@@ -139,7 +142,7 @@ const HISTORY: StatusHistory = {
     'livediagram:editor': bars(1000, 'u'),
     'liveplanner:api': bars(500, 'd'),
   },
-  incidents: [['liveplanner:api', AT - 3_600_000, null, 'd', 2, 'timeout']],
+  incidents: [['liveplanner:api', INCIDENT_START, null, 'd', 2, 'timeout']],
 };
 
 function withHistory(history: unknown, seen: string[] = []): typeof fetch {

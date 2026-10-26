@@ -112,7 +112,9 @@ describe('TourPopover last card', () => {
     expect(screen.queryByText('4 of 5')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Skip tour' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'Learn More' }).getAttribute('href')).toBe('/help/draw/');
+    expect(screen.getByRole('link', { name: 'Learn More' }).getAttribute('href')).toBe(
+      '/help/draw/',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     expect(onNext).toHaveBeenCalledTimes(1);
   });
@@ -124,5 +126,31 @@ describe('TourPopover last card', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(onSkip).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/007-editor/editor-tour.md: while the next step prepares, the card's buttons wait.
+describe('TourPopover busy', () => {
+  afterEach(cleanup);
+
+  it("waits on a keyboard press of Next or Back too (a focused button's Enter is a click)", () => {
+    const onNext = vi.fn();
+    const onBack = vi.fn();
+    const { rerender } = render(
+      <TourPopover {...props} stepNumber={2} busy onNext={onNext} onBack={onBack} />,
+    );
+    const next = screen.getByRole('button', { name: 'Next' });
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(next.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(next);
+    fireEvent.click(back);
+    expect(onNext).not.toHaveBeenCalled();
+    expect(onBack).not.toHaveBeenCalled();
+    rerender(<TourPopover {...props} stepNumber={2} onNext={onNext} onBack={onBack} />);
+    expect(next.hasAttribute('aria-disabled')).toBe(false);
+    fireEvent.click(next);
+    fireEvent.click(back);
+    expect(onNext).toHaveBeenCalledTimes(1);
+    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

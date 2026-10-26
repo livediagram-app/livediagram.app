@@ -18,6 +18,14 @@ describe('reachContrast', () => {
     expect(contrastRatio(out, '#0f172a')).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
   });
 
+  it('turns back when the first way runs out of range before it reads', () => {
+    // #777777 sits just under the turn, so white was walked lighter, where it cannot go, and stayed at 4.48:1.
+    for (const fg of ['#ffffff', '#333333']) {
+      const out = reachContrast(fg, '#777777', THEME_TEXT_CONTRAST);
+      expect(contrastRatio(out, '#777777')).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
+    }
+  });
+
   it('leaves an unparseable colour alone', () => {
     expect(reachContrast('transparent', '#ffffff', THEME_TEXT_CONTRAST)).toBe('transparent');
   });
@@ -39,5 +47,11 @@ describe('labelOn', () => {
     // White on the brand sky blue is 2.8:1.
     const label = labelOn('#0ea5e9');
     expect(contrastRatio(label, '#0ea5e9')).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
+  });
+
+  it('reaches the floor on a mid grey just darker than the turn', () => {
+    for (const fill of ['#777777', '#787878', '#767676']) {
+      expect(contrastRatio(labelOn(fill), fill), fill).toBeGreaterThanOrEqual(THEME_TEXT_CONTRAST);
+    }
   });
 });

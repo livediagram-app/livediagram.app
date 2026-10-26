@@ -84,7 +84,9 @@ export function createHelpSite(config: HelpSiteConfig): HelpSite {
       // child segment; the root index spells the suffix out itself). Link previews carry the bare title.
       title: { default: `Help | ${facts.siteName}`, template: `%s | ${facts.siteName}` },
       description: `Guides, tutorials, and answers for ${facts.siteName}. Browse feature documentation, getting-started guides, and troubleshooting.`,
-      alternates: { canonical: '/help' },
+      // With the trailing slash every help route has (`trailingSlash: true`, as the sitemap lists the home):
+      // `/help` is only the redirect to it.
+      alternates: { canonical: '/help/' },
       openGraph: { type: 'website', siteName: name, locale: 'en_GB' },
       twitter: { card: 'summary_large_image' },
       robots: { index: true, follow: true },

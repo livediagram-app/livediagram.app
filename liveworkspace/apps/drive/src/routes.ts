@@ -20,7 +20,7 @@ import { consentUrl, redirectUriOf, safeReturnTo } from './consent';
 import { driveConfigured, setting, type Env } from './env';
 import { fail, json, noContent, notFound, readObject } from './http';
 import type { IndexApi } from './index-api';
-import { driveLog } from './log';
+import { driveLog, driveWarn, errorKind } from './log';
 import type { OpenTarget } from './open';
 
 type Refusal = { refused: DriveErrorCode };
@@ -57,6 +57,13 @@ export type RouteDeps = {
 };
 
 const refused = (answer: object): answer is Refusal => 'refused' in answer;
+
+// Open and import reach Google, the index and an app's door: a failure none of them names (a Google 5xx once the
+// client stops retrying, a token endpoint outage, an index error, a door timeout) is `502 google_failed`, never a 500.
+function unexpected(route: string, err: unknown, person: string): Response {
+  driveWarn(`${route}-failed`, { person, error: errorKind(err) });
+  return fail('google_failed');
+}
 
 function logRoute(route: string, outcome: string, person?: string): void {
   driveLog(`route ${route}`, { outcome, ...(person ? { person } : {}) });
@@ -216,9 +223,13 @@ const ROUTES: Record<string, Partial<Record<string, Handler>>> = {
     POST: async ({ request, person, mirror }) => {
       const target = fileTarget(await readObject(request));
       if (!target) return fail('invalid_request');
-      const answer = await mirror.open(person, target);
-      logRoute('open', answer.action, person);
-      return json(answer);
+      try {
+        const answer = await mirror.open(person, target);
+        logRoute('open', answer.action, person);
+        return json(answer);
+      } catch (err) {
+        return unexpected('open', err, person);
+      }
     },
   },
 
@@ -226,9 +237,13 @@ const ROUTES: Record<string, Partial<Record<string, Handler>>> = {
     POST: async ({ request, person, mirror }) => {
       const target = fileTarget(await readObject(request));
       if (!target) return fail('invalid_request');
-      const answer = await mirror.importFile(person, target);
-      logRoute('import', refused(answer) ? answer.refused : 'ok', person);
-      return refused(answer) ? fail(answer.refused) : json(answer);
+      try {
+        const answer = await mirror.importFile(person, target);
+        logRoute('import', refused(answer) ? answer.refused : 'ok', person);
+        return refused(answer) ? fail(answer.refused) : json(answer);
+      } catch (err) {
+        return unexpected('import', err, person);
+      }
     },
   },
 };

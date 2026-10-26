@@ -361,6 +361,19 @@ describe('safeReturnPath', () => {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
   });
+
+  it('refuses control characters and spaces, which the browser drops to leave `//evil.example`', () => {
+    for (const unsafe of [
+      '/\t/evil.example',
+      '/\n/evil.example',
+      '/\r/evil.example',
+      '/ /evil.example',
+      '/\x00/evil.example',
+      '/\x7f/evil.example',
+    ]) {
+      expect(safeReturnPath(unsafe)).toBe('/explorer/home');
+    }
+  });
 });
 
 describe('readCookie', () => {

@@ -381,6 +381,18 @@ describe('safeReturnPath', () => {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
   });
+
+  it('refuses a control character, space or DEL, which a browser drops to reach //evil.example', () => {
+    for (const unsafe of [
+      '/\t/evil.example',
+      '/\n/evil.example',
+      '/\r/evil.example',
+      '/ /evil.example',
+      '/\x7f/x',
+    ]) {
+      expect(safeReturnPath(unsafe)).toBe('/explorer/home');
+    }
+  });
 });
 
 describe('readCookie', () => {

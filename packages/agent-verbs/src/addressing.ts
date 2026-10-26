@@ -106,7 +106,22 @@ export function createAddressing<N extends string>({
         });
       return { shareCode: code };
     }
-    return { id: decodeURIComponent(parts[1]) };
+    // A pasted link with a broken escape (`%E0`) is not a link to anything, said as every other bad link is,
+    // never a bare URIError the front doors can't word.
+    let id: string;
+    try {
+      id = decodeURIComponent(parts[1]);
+    } catch {
+      throw refuse({
+        kind: 'usage',
+        what: noun,
+        input,
+        candidates: [],
+        message: `${input} is not a ${word} link`,
+        hint: `${cli} ${noun} ls`,
+      });
+    }
+    return { id };
   }
 
   const nearest = (all: readonly FoundFile[], input: string) => {

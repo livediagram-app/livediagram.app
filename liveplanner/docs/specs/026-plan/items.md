@@ -314,7 +314,9 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 
 - **Read** with any access to the project. A visitor on a **tab-scoped** link sees only the items that tab shows:
   the items its boards show and its Plan cards point at.
-- **Create, update, move, delete** with edit access.
+- **Create, update, move, delete** with edit access. A tab-scoped link creates cards only from a tab that shows
+  every card (a board or plan view on it); from any other tab the card would land on boards outside its reach, so
+  the api refuses it (403).
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
   name, else their invite address's local part), fetched once a project has Plan content. A guest, who has no
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its

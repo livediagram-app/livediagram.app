@@ -195,7 +195,9 @@ async function syncSheetHeaders(
   if (missing.length) {
     const from = columnLetters(lastCol);
     const to = columnLetters(lastCol + missing.length - 1);
-    changes.push({ op: 'set', at: `${from}1`, rows: [missing] });
+    // As text: a set reads text as typed, so "2024" would be a number and "=Score" a formula, and a response
+    // (which finds its column by a text header) would then add a second column. A leading ' keeps it text.
+    changes.push({ op: 'set', at: `${from}1`, rows: [missing.map((h) => `'${h}`)] });
     changes.push({ op: 'format', range: `${from}1:${to}1`, format: { bold: true } });
     // Widths fitted to the headers, so a long question never runs over the column beside it.
     changes.push({ op: 'resize', cols: `${from}:${to}`, fit: true });

@@ -84,6 +84,11 @@ describe('registering a client', () => {
     expect(made).toEqual([]);
   });
 
+  it('refuses a body of null as a bad request, not a crash', async () => {
+    expect((await register(null)).status).toBe(400);
+    expect(made).toEqual([]);
+  });
+
   it('needs the admin token', async () => {
     expect((await register(valid, 'wrong')).status).toBe(401);
   });

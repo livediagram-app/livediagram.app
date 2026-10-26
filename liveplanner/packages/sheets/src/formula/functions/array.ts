@@ -6,11 +6,12 @@ import { dims, err, isError, scalarOf, toBool, type Scalar, type Value } from '.
 
 const NOTHING = err('#N/A', 'No rows matched');
 
+// A row's identity for UNIQUE. Text keeps its case, as Google Sheets' UNIQUE does ("Apple" and "apple" are two rows).
 function cellKey(row: Value[]): string {
   return JSON.stringify(
     row.map((x) => {
       const s = scalarOf(x);
-      return typeof s === 'string' ? `s:${s.toLowerCase()}` : s;
+      return typeof s === 'string' ? `s:${s}` : s;
     }),
   );
 }

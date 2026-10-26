@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { workspaceRouteFor, workspaceRoutes } from '@liveworkspace/sites/workspace-proxy';
@@ -96,7 +96,8 @@ describe('production dispatch (service bindings)', () => {
     }
     const staging = await dispatch('/telemetry', {
       ...env,
-      TELEMETRY_DASHBOARD_URL: 'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry',
+      TELEMETRY_DASHBOARD_URL:
+        'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry',
     });
     expect(staging.headers.get('Location')).toBe(
       'https://liveworkspace-gateway-staging.liveworkspace-easing509.workers.dev/telemetry?app=livedocuments.app',
@@ -177,7 +178,9 @@ describe('local-dev dispatch (origin proxy)', () => {
       // Never the api worker, and production's index when no origin is named.
       expect(api.urls).toEqual([]);
       await dispatch('/api/index/items', env);
-      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/items');
+      expect(fetchMock.mock.calls[1]![0].url).toBe(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/index/items',
+      );
       // `/api/indexes` is not the index.
       await dispatch('/api/indexes', env);
       expect(api.urls).toEqual(['https://livedocuments.app/api/indexes']);
@@ -276,6 +279,24 @@ describe('bare help-article paths', () => {
     const { env, live } = makeEnv();
     await dispatch('/new', env);
     expect(live.urls.length).toBe(1);
+  });
+
+  it("lists exactly the editor's route segments in the spec's live page routes row", async () => {
+    // The spec's table is prose, so it listed `/workbench/*`, which the router never routed (the workbench lives
+    // under `/embed`), and left out `/offline`. Pin its row to the set the router routes by. `explorer` has its own
+    // row (liveworkspace's).
+    const { LIVE_ROUTE_SEGMENTS } = await import('@livedocuments/api-schema');
+    const spec = readFileSync(
+      fileURLToPath(
+        new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
+      ),
+      'utf8',
+    );
+    const row = spec.split('\n').find((line) => line.startsWith('| live page routes:'));
+    expect(row).toBeDefined();
+    const listed = [...row!.matchAll(/`\/([a-z-]+)(?:\/\*)?`/g)].map((m) => m[1]!);
+    const routed = [...LIVE_ROUTE_SEGMENTS].filter((segment) => segment !== 'explorer');
+    expect(listed.filter((s) => s !== 'icon.svg').toSorted()).toEqual(routed.toSorted());
   });
 
   it('covers every help category the registry declares', async () => {
@@ -466,7 +487,9 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
-        expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`);
+        expect(fetchMock.mock.lastCall![0].url).toBe(
+          `https://liveworkspace-gateway.liveworkspace-easing509.workers.dev${path}`,
+        );
       }
       expect(live.urls).toEqual([]);
       expect(marketing.urls).toEqual([]);
@@ -534,7 +557,10 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       Promise.resolve(
         new Response(null, {
           status: 307,
-          headers: { Location: 'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent' },
+          headers: {
+            Location:
+              'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/explorer/recent',
+          },
         }),
       ),
     );

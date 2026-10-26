@@ -11,6 +11,7 @@ import {
 import type { EvalValue, Frame } from '../../engine/frame';
 import {
   arrayArg,
+  finite,
   flatValues,
   fn,
   numArg,
@@ -44,9 +45,32 @@ function addMonths(serial: number, months: number, endOfMonth: boolean): Value {
   const total = p.y * 12 + (p.m - 1) + Math.trunc(months);
   const y = Math.floor(total / 12);
   const m = (total % 12) + 1;
-  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
   if (y < 1 || y > 9999) return err('#NUM!');
-  return serialFromDate(y, m, endOfMonth ? last : Math.min(p.d, last));
+  const last = serialFromDate(y, m + 1, 1) - serialFromDate(y, m, 1);
+  // Before 30 December 1899 is out of range, as for every other date function.
+  return checkSerial(serialFromDate(y, m, endOfMonth ? last : Math.min(p.d, last)));
+}
+
+// A date function over numbers whose first argument may also be text that reads as a date or a time
+// ("2026-03-01", "14:30"), as Excel and Google Sheets read it: YEAR("2026-03-01") is 2026. The rest are numbers.
+function dateFn(min: number, max: number, each: (ns: number[]) => Value): FnDef {
+  return scalarFn(min, max, (xs, f) => {
+    const ns: number[] = [];
+    for (let i = 0; i < xs.length; i++) {
+      const x = xs[i]!;
+      if (i === 0 && typeof x === 'string') {
+        const serial = parseDateText(x, localeDayFirst(f.locale))?.serial ?? parseTimeText(x);
+        if (serial !== null) {
+          ns.push(serial);
+          continue;
+        }
+      }
+      const n = toNumber(x);
+      if (typeof n !== 'number') return n;
+      ns.push(n);
+    }
+    return finite(each(ns));
+  });
 }
 
 // A date argument: a number, or text that reads as a date ("2026-10-08").
@@ -75,12 +99,19 @@ function isWeekend(serial: number): boolean {
   return wd === 0 || wd === 6;
 }
 
-function weekNumber(serial: number, startsMonday: boolean): number {
+// The week of the year whose weeks start on `startDay` (0 Sunday), the week holding 1 January being week 1.
+function weekNumber(serial: number, startDay: number): number {
   const p = dateFromSerial(serial);
   const jan1 = serialFromDate(p.y, 1, 1);
   const jan1wd = dateFromSerial(jan1).weekday;
-  const offset = startsMonday ? (jan1wd + 6) % 7 : jan1wd;
+  const offset = (jan1wd - startDay + 7) % 7;
   return Math.floor((Math.floor(serial) - jan1 + offset) / 7) + 1;
+}
+
+// The day a week starts on for WEEKDAY's and WEEKNUM's types 11 to 17 (Excel's, and Google Sheets' WEEKNUM):
+// 11 Monday through 16 Saturday, 17 Sunday. Null for any other type.
+function weekStartOfType(type: number): number | null {
+  return Number.isInteger(type) && type >= 11 && type <= 17 ? (type - 10) % 7 : null;
 }
 
 function isoWeek(serial: number): number {
@@ -93,6 +124,13 @@ function isoWeek(serial: number): number {
   return Math.floor((thursday - (firstThursdayWeek - fwd + 3)) / 7) + 1;
 }
 
+const isLeapYear = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+const isLastOfFebruary = (p: { y: number; m: number; d: number }) =>
+  p.m === 2 && p.d === (isLeapYear(p.y) ? 29 : 28);
+
+// YEARFRAC's year fraction, as Excel and Google Sheets count it. Basis 0 is US 30/360 with its February rule (the
+// last day of February counts as the 30th); basis 1 divides by 366 when a span of a year or less takes in a
+// 29 February, else by 365, and a longer span by the average length of the years it touches.
 function yearFrac(a: number, b: number, basis: number): Value {
   const [s, e] = a <= b ? [a, b] : [b, a];
   const ps = dateFromSerial(s);
@@ -101,14 +139,24 @@ function yearFrac(a: number, b: number, basis: number): Value {
     case 0: {
       let d1 = ps.d;
       let d2 = pe.d;
-      if (d1 === 31) d1 = 30;
-      if (d2 === 31 && d1 >= 30) d2 = 30;
+      if (d1 === 31 && d2 === 31) [d1, d2] = [30, 30];
+      else if (d1 === 31) d1 = 30;
+      else if (d1 === 30 && d2 === 31) d2 = 30;
+      else if (isLastOfFebruary(ps) && isLastOfFebruary(pe)) [d1, d2] = [30, 30];
+      else if (isLastOfFebruary(ps)) d1 = 30;
       return ((pe.y - ps.y) * 360 + (pe.m - ps.m) * 30 + (d2 - d1)) / 360;
     }
     case 1: {
       const days = e - s;
-      if (ps.y === pe.y) {
-        const leap = new Date(Date.UTC(ps.y, 1, 29)).getUTCMonth() === 1;
+      const withinAYear =
+        ps.y === pe.y || (pe.y === ps.y + 1 && (ps.m > pe.m || (ps.m === pe.m && ps.d >= pe.d)));
+      if (withinAYear) {
+        let leap = ps.y === pe.y && isLeapYear(ps.y);
+        for (let y = ps.y; !leap && y <= pe.y; y++) {
+          if (!isLeapYear(y)) continue;
+          const feb29 = serialFromDate(y, 2, 29);
+          leap = s <= feb29 && feb29 <= e;
+        }
         return days / (leap ? 366 : 365);
       }
       let total = 0;
@@ -135,9 +183,10 @@ export const DATE_FUNCTIONS: Record<string, FnDef> = {
   NOW: volatileFn(0, 0, (_a, f) => f.now()),
   DATE: numFn(3, 3, ([y, m, d]) => dateSerial(y!, m!, d!)),
   TIME: numFn(3, 3, ([h, m, s]) => {
-    const t = (Math.trunc(h!) * 3600 + Math.trunc(m!) * 60 + Math.trunc(s!)) / 86_400;
-    if (t < 0) return err('#NUM!');
-    return t - Math.floor(t);
+    const secs = Math.trunc(h!) * 3600 + Math.trunc(m!) * 60 + Math.trunc(s!);
+    if (secs < 0) return err('#NUM!');
+    // Whole seconds wrapped before dividing, so TIME(25, 0, 0) is exactly TIME(1, 0, 0).
+    return (secs % 86_400) / 86_400;
   }),
   DATEVALUE: scalarFn(1, 1, ([t], f) => {
     if (typeof t === 'number') return Math.floor(t);
@@ -152,26 +201,29 @@ export const DATE_FUNCTIONS: Record<string, FnDef> = {
     const d = parseDateText(t, localeDayFirst(f.locale));
     return d ? d.serial - Math.floor(d.serial) : err('#VALUE!', `"${t}" is not a time`);
   }),
-  YEAR: numFn(1, 1, ([s]) => dateFromSerial(s!).y),
-  MONTH: numFn(1, 1, ([s]) => dateFromSerial(s!).m),
-  DAY: numFn(1, 1, ([s]) => dateFromSerial(s!).d),
-  HOUR: numFn(1, 1, ([s]) => dateFromSerial(s!).h),
-  MINUTE: numFn(1, 1, ([s]) => dateFromSerial(s!).min),
-  SECOND: numFn(1, 1, ([s]) => dateFromSerial(s!).s),
-  WEEKDAY: numFn(1, 2, ([s, type = 1]) => {
+  YEAR: dateFn(1, 1, ([s]) => dateFromSerial(s!).y),
+  MONTH: dateFn(1, 1, ([s]) => dateFromSerial(s!).m),
+  DAY: dateFn(1, 1, ([s]) => dateFromSerial(s!).d),
+  HOUR: dateFn(1, 1, ([s]) => dateFromSerial(s!).h),
+  MINUTE: dateFn(1, 1, ([s]) => dateFromSerial(s!).min),
+  SECOND: dateFn(1, 1, ([s]) => dateFromSerial(s!).s),
+  WEEKDAY: dateFn(1, 2, ([s, type = 1]) => {
     const wd = dateFromSerial(s!).weekday;
     if (type === 1) return wd + 1;
     if (type === 2) return ((wd + 6) % 7) + 1;
     if (type === 3) return (wd + 6) % 7;
-    return err('#NUM!');
+    const start = weekStartOfType(type);
+    return start === null ? err('#NUM!') : ((wd - start + 7) % 7) + 1;
   }),
-  WEEKNUM: numFn(1, 2, ([s, type = 1]) => {
-    if (type !== 1 && type !== 2) return err('#NUM!');
-    return weekNumber(s!, type === 2);
+  WEEKNUM: dateFn(1, 2, ([s, type = 1]) => {
+    if (type === 1 || type === 2) return weekNumber(s!, type === 2 ? 1 : 0);
+    if (type === 21) return isoWeek(s!);
+    const start = weekStartOfType(type);
+    return start === null ? err('#NUM!') : weekNumber(s!, start);
   }),
-  ISOWEEKNUM: numFn(1, 1, ([s]) => isoWeek(s!)),
-  EDATE: numFn(2, 2, ([s, m]) => addMonths(s!, m!, false)),
-  EOMONTH: numFn(2, 2, ([s, m]) => addMonths(s!, m!, true)),
+  ISOWEEKNUM: dateFn(1, 1, ([s]) => isoWeek(s!)),
+  EDATE: dateFn(2, 2, ([s, m]) => addMonths(s!, m!, false)),
+  EOMONTH: dateFn(2, 2, ([s, m]) => addMonths(s!, m!, true)),
   DATEDIF: fn(3, 3, (args, f) => {
     const a = dateArg(args[0]!, f);
     const b = dateArg(args[1]!, f);

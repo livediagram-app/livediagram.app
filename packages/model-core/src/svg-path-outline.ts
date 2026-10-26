@@ -3,7 +3,8 @@
 // "Anchor geometry"), and every drawn part of a shape for the whiteboard's
 // outline hit (docs/specs/023-draw-mode/draw-mode.md "Selecting"). Only the
 // absolute commands the shape-geometry table uses are read (M, L, C, A, Z);
-// anything else returns null and the caller keeps the box.
+// anything else, or a command cut short of its numbers, returns null and the
+// caller keeps the box.
 
 import type { Point } from './geometry-primitives';
 
@@ -69,7 +70,7 @@ export function arcPoints(
 }
 
 /** The path's subpaths as polylines, each closed by a Z or left open, or null
- *  for a command outside M, L, C, A and Z. */
+ *  for a command outside M, L, C, A and Z or one missing some of its numbers. */
 export function svgPathSubpaths(
   d: string,
   segmentsPerCurve = PATH_CURVE_SEGMENTS,
@@ -94,6 +95,12 @@ export function svgPathSubpaths(
     if (!(cmd in PARAMS)) {
       console.warn(`[shape-outline] unsupported path command=${cmd}`);
       return null;
+    }
+    // A command cut short of its numbers (`L 10`, or a letter where a number belongs) would read NaN
+    // points, which no caller can tell from real ones.
+    for (let k = 0; k < PARAMS[cmd]!; k++) {
+      const t = tokens[i + k];
+      if (t === undefined || /[a-zA-Z]/.test(t)) return null;
     }
     if (cmd === 'M') {
       cur = { x: num(), y: num() };

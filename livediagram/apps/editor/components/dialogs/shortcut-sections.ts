@@ -55,7 +55,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
-      { keys: ['⇧', 'D'], label: `Next Editor Mode (${CYCLED_MODES})` },
+      { keys: ['⇧', 'D'], label: `Next Editor Mode on an Empty Tab (${CYCLED_MODES})` },
     ],
   },
   {

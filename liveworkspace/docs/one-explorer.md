@@ -200,7 +200,9 @@ prefix) is not forwarded: the router sends it to the app's own editor dev server
 on it means that dev server is unhealthy (a Turbopack cache error, for one), and restarting the app's `pnpm dev`
 clears it. Staging and production never request it.
 
-The page reads where it is from its own address and there is that app's page:
+The page reads where it is from its own address and there is that app's page: the app's live, `www.`, `staging.`
+and workers.dev stand-in hosts, and locally any `localhost` port in the app's block (livediagram 3100–3199, and so
+on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (`:3102`) is that app's too.
 
 - **Who it reads as.** The app's own session: the app's access token (`POST /api/auth/token`, from the app's
   refresh cookie, asked only while the app's signed-in hint says there is one, and never twice at once), else the

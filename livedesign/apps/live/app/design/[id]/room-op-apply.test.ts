@@ -75,6 +75,33 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]!.folder).toBe('mine');
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a peer on one tab must never be able to turn it
+  // into another tab, which our next save would then write with our access.
+  it('never takes a tab id, elements or photos from inside an op', () => {
+    const tabs = [tab(), tab({ id: 't2', name: 'Pricing' })];
+    const meta = applyRoomOpToTabs(tabs, {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { id: 't2', elements: [], photos: {}, name: 'Renamed' } as Partial<Tab>,
+    });
+    expect(meta.map((t) => t.id)).toEqual(['t1', 't2']);
+    expect(meta[0]!.elements).toBe(tabs[0]!.elements);
+    expect(meta[0]!).not.toHaveProperty('photos');
+    expect(meta[0]!.name).toBe('Renamed');
+    const whole = applyRoomOpToTabs(tabs, {
+      kind: 'tab',
+      tabId: 't1',
+      tab: tab({ id: 't2', elements: [el('x')] }),
+    });
+    expect(whole.map((t) => t.id)).toEqual(['t1', 't2']);
+    const added = applyRoomOpToTabs([tab()], {
+      kind: 'tab',
+      tabId: 't3',
+      tab: tab({ id: 't1' }),
+    });
+    expect(added.map((t) => t.id)).toEqual(['t1', 't3']);
+  });
+
   it('design-meta reorders, keeps identity, and adds placeholders', () => {
     const one = tab();
     const two = tab({ id: 't2', name: 'Tab 2' });

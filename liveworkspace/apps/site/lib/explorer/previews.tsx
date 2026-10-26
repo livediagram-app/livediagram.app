@@ -89,7 +89,12 @@ export function loadPreview(item: Item): Promise<Entry> | null {
   if (!url) return null;
   const key = `${url}|${item.sharedVia ?? ''}`;
   const hit = entries.get(key);
-  if (hit) return Promise.resolve(hit);
+  if (hit) {
+    // Asked again, so the most recently used: to the newest end, so the cache drops the least recently used.
+    entries.delete(key);
+    entries.set(key, hit);
+    return Promise.resolve(hit);
+  }
   let pending = inflight.get(key);
   if (!pending) {
     pending = fetchPreview(url, item.sharedVia ?? null).then(

@@ -4,12 +4,27 @@ import type { Metadata } from 'next';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { listedApps } from '@/lib/apps';
+import { serverServices } from '@/lib/licences/apps';
 
 export const metadata: Metadata = {
   title: 'Third-party licences · liveworkspace',
   description:
     'The open-source projects liveworkspace.app and its services ship, with their licences and notices, generated from what each one actually bundles.',
   alternates: { canonical: '/licences' },
+  openGraph: {
+    title: 'Third-party licences · liveworkspace',
+    description:
+      'The open-source projects liveworkspace.app and its services ship, with their licences and notices.',
+    url: '/licences',
+    siteName: 'liveworkspace',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Third-party licences · liveworkspace',
+    description:
+      'The open-source projects liveworkspace.app and its services ship, with their licences and notices.',
+  },
 };
 
 const apps = listedApps();
@@ -41,7 +56,7 @@ export default function LicencesPage() {
             </>
           }
           browserIntro="Sent to your browser by this website."
-          serverIntro="Bundled into the accounts, Community, index, media and telemetry services, which run on Cloudflare rather than on your device."
+          serverIntro={`Bundled into the platform’s services (${serverServices()}), which run on Cloudflare rather than on your device.`}
         />
       </main>
       <Footer />

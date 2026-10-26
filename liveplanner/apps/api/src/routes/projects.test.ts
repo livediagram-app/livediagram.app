@@ -116,6 +116,33 @@ describe('a plan read', () => {
     };
     expect((await call(db, 'GET', '/api/projects/N', { owner: null, grant })).status).toBe(404);
   });
+
+  it("starts one a signed-in link visitor opens first as the index's owner, never the visitor", async () => {
+    const db = sqliteD1();
+    const grant: PlanGrant = {
+      item: 'N',
+      level: 'view',
+      tab: null,
+      sub: 'user_visitor',
+      team: null,
+      owner: 'user_owner',
+      exp: Math.floor(Date.now() / 1000) + 600,
+      shareCode: 'CODE2345',
+      token: 'g',
+    };
+    const res = await call(db, 'GET', '/api/projects/N', { owner: 'user_visitor', grant });
+    expect(res.status).toBe(200);
+    expect(db.sql.prepare("SELECT owner_id FROM plan WHERE id = 'N'").get()).toEqual({
+      owner_id: 'user_owner',
+    });
+    // A grant from before the index named the owner: a link visitor's starts nothing.
+    const older = sqliteD1();
+    const { owner: _owner, ...unnamed } = grant;
+    expect(
+      (await call(older, 'GET', '/api/projects/N', { owner: 'user_visitor', grant: unnamed }))
+        .status,
+    ).toBe(404);
+  });
 });
 
 describe('a create', () => {

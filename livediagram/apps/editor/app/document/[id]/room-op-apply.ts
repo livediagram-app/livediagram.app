@@ -36,8 +36,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
       // appended; otherwise merged, keeping our folder and our dots.
-      if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, op.tab];
-      return updateTab(tabs, op.tabId, (tab) => mergeRemoteTab(tab, op.tab));
+      // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
+      // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
+      if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
+      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -96,8 +98,11 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
       // (docs/specs/006-document/tab-folders.md); a `vote` in the patch follows the round rule, so an End or
       // a Reveal can't erase dots still in flight.
       return updateTab(tabs, op.tabId, (tab) => {
-        const { folder: _ignored, ...patch } = op.patch;
-        const merged: Tab = { ...tab, ...patch, folder: tab.folder };
+        // Only non-element fields: never the id or elements (META_SKIP), whatever the patch carries.
+        const patch = Object.fromEntries(
+          Object.entries(op.patch ?? {}).filter(([key]) => !META_SKIP.has(key)),
+        ) as Partial<Omit<Tab, 'elements'>>;
+        const merged: Tab = { ...tab, ...patch, id: tab.id, folder: tab.folder };
         if ('vote' in patch) {
           const vote = mergeRemoteVote(tab.vote, patch.vote);
           if (vote === undefined) delete merged.vote;

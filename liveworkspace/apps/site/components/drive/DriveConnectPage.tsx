@@ -22,7 +22,11 @@ import {
 
 /** liveworkspace's own pages and every app's, in this environment. */
 export function isOurOrigin(url: URL): boolean {
-  return url.origin === workspaceOrigin() || url.origin === window.location.origin || appOfHost(url.host) !== null;
+  return (
+    url.origin === workspaceOrigin() ||
+    url.origin === window.location.origin ||
+    appOfHost(url.host) !== null
+  );
 }
 
 export function DriveConnectPage() {
@@ -31,7 +35,11 @@ export function DriveConnectPage() {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const returnTo = here
-    ? safeReturn(new URLSearchParams(here.search).get(DRIVE_RETURN_PARAM), workspaceOrigin(), isOurOrigin)
+    ? safeReturn(
+        new URLSearchParams(here.search).get(DRIVE_RETURN_PARAM),
+        workspaceOrigin(),
+        isOurOrigin,
+      )
     : null;
 
   useEffect(() => {
@@ -43,7 +51,7 @@ export function DriveConnectPage() {
         setFailed(true);
         return;
       }
-      rememberConsent(sessionStorage, result.data.state, returnTo);
+      rememberConsent(() => sessionStorage, result.data.state, returnTo);
       window.location.assign(result.data.authUrl);
     });
     return () => {

@@ -14,7 +14,7 @@ import {
   type Thunk,
 } from '../fn';
 import {
-  ERROR_CODES,
+  type ErrorCode,
   compareScalars,
   err,
   isArray,
@@ -113,6 +113,19 @@ function is(test: (x: Scalar) => boolean): FnDef {
   return scalarFn(1, 1, ([x]) => test(x!));
 }
 
+// ERROR.TYPE's numbers, as Excel and Google Sheets give them, so a formula pasted from either agrees
+// (#NULL! is 1 there; this engine has none).
+const ERROR_TYPE_NUMBERS: Record<ErrorCode, number> = {
+  '#DIV/0!': 2,
+  '#VALUE!': 3,
+  '#REF!': 4,
+  '#NAME?': 5,
+  '#NUM!': 6,
+  '#N/A': 7,
+  '#ERROR!': 8,
+  '#SPILL!': 9,
+};
+
 export const INFO_FUNCTIONS: Record<string, FnDef> = {
   ISBLANK: is((x) => x === null),
   ISNUMBER: is((x) => typeof x === 'number'),
@@ -126,7 +139,7 @@ export const INFO_FUNCTIONS: Record<string, FnDef> = {
     return f.isFormula(r.sheetId, r.r1, r.c1);
   }),
   'ERROR.TYPE': scalarFn(1, 1, ([x]) =>
-    isError(x!) ? ERROR_CODES.indexOf(x.e) + 1 : err('#N/A', 'The value is not an error'),
+    isError(x!) ? ERROR_TYPE_NUMBERS[x.e] : err('#N/A', 'The value is not an error'),
   ),
   NA: fn(0, 0, () => err('#N/A')),
   N: scalarFn(1, 1, ([x]) => {

@@ -145,8 +145,14 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
 }
 
 const settle = (ms = 30) => act(async () => new Promise((r) => setTimeout(r, ms)));
+// The card's Next waits while the next step prepares (aria-disabled): press it once it is ready.
 const next = async () => {
-  fireEvent.click(screen.getByRole('button', { name: /next/i }));
+  const button = await waitFor(() => {
+    const b = screen.getByRole('button', { name: /next/i });
+    expect(b.getAttribute('aria-disabled')).toBeNull();
+    return b;
+  });
+  fireEvent.click(button);
   await settle();
 };
 // The steps load at the press: wait for the first step card.

@@ -371,6 +371,16 @@ describe('safeReturnPath', () => {
     for (const unsafe of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }
+    // A tab, newline, space or DEL would be dropped by the browser, leaving `//evil.example`.
+    for (const dropped of [
+      '/\t/evil.example',
+      '/\n/evil.example',
+      '/\r/evil.example',
+      '/ /evil.example',
+      '/\x7f/x',
+    ]) {
+      expect(safeReturnPath(dropped)).toBe('/explorer/home');
+    }
   });
 });
 

@@ -112,4 +112,21 @@ describe('flow-backwards', () => {
     ];
     expect(of(lint(tabOf(...sideways)), 'flow-backwards')).toEqual([]);
   });
+
+  it('follows a branch that rejoins only once when it asks whether an arrow closes a loop', () => {
+    // top leads to r two ways, and never back down to d: back still runs against the flow.
+    const diamond = [
+      box('p', 600, 0),
+      box('q', 900, 0),
+      box('r', 750, 400),
+      arrow('tp', 'top', 'p', ['s', 'n']),
+      arrow('tq', 'top', 'q', ['s', 'n']),
+      arrow('pr', 'p', 'r', ['s', 'n']),
+      arrow('qr', 'q', 'r', ['s', 'n']),
+    ];
+    const report = lint(
+      tabOf(...column(), ...down(), ...diamond, arrow('back', 'd', 'top', ['n', 's'])),
+    );
+    expect(of(report, 'flow-backwards').map((f) => f.refs[0])).toEqual(['back']);
+  });
 });

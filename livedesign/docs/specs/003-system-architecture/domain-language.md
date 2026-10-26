@@ -4,7 +4,9 @@
 
 What a person makes is a **design** ([Design](../006-design/design.md)), never a "document": in a file name, an
 identifier, a route, a table, copy or a spec (`packages/design/src/design-naming.test.ts` holds the line). The
-DOM's `document` and the flowchart shape `document` keep their names.
+DOM's `document` and the flowchart shape `document` keep their names. So do the platform's shared names, which say document for
+every app's item (an OpenAPI document, `@liveworkspace/api-schema/document-*`, re-exported here under the design
+noun), and the old livediagram.app documents the migration brings over.
 
 ## Mode, kind and template
 

@@ -126,21 +126,25 @@ import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
-import { rotationOf } from './rotation';
+import { drawnBounds, rotationOf } from './rotation';
 import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
 // Arrows count by their drawn route (a bow can swing well outside the boxes
-// it joins) and, when a label pass is given, by their label plates.
+// it joins) and, when a label pass is given, by their label plates. A route is found among `all` (the whole tab,
+// as the arrow is drawn), so an arrow pinned to an element on a hidden layer is measured where it is drawn, not
+// toward the canvas origin its end fell back to among the visible elements alone. A boxed element counts by its
+// drawn box, its rotation included (drawnBounds), so a turned bar is not cut short.
 export function contentBounds(
   elements: Element[],
   labels?: ArrowLabelPass,
+  all: Element[] = elements,
 ): { x: number; y: number; w: number; h: number } {
   const points: Point[] = [];
   for (const el of elements) {
     if (el.type === 'arrow') {
-      points.push(...arrowRoutePoints(el, elements));
+      points.push(...arrowRoutePoints(el, all));
       const l = labels?.layouts.get(el.id);
       if (l) {
         points.push(
@@ -149,7 +153,8 @@ export function contentBounds(
         );
       }
     } else {
-      points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
+      const box = drawnBounds(el);
+      points.push({ x: box.x, y: box.y }, { x: box.x + box.width, y: box.y + box.height });
       // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
       if (isPointerNote(el)) {
         const t = pointerTipOf(el);
@@ -572,7 +577,7 @@ export function renderElementsToSvg(
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
-  const bounds = frame ? frame.bounds : contentBounds(visible, labels);
+  const bounds = frame ? frame.bounds : contentBounds(visible, labels, tab.elements);
   const vbX = bounds.x - padding;
   const vbY = bounds.y - padding;
   const vbW = bounds.w + padding * 2;

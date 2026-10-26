@@ -242,6 +242,12 @@ describe('AccountMenu signed in', () => {
     expect(screen.queryAllByRole('menuitem')).toHaveLength(0);
   });
 
+  it('names the open menu "Account", not after its trigger', () => {
+    render(<AccountMenu {...signedIn} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    expect(screen.getByRole('menu').getAttribute('aria-label')).toBe('Account');
+  });
+
   it('offers the Explorer only where it is given (liveworkspace.app), and never API tokens', () => {
     const { unmount } = render(<AccountMenu {...signedIn} explorerHref="/explorer" />);
     fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));

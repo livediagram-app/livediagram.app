@@ -40,6 +40,14 @@ describe('GET /api/templates', () => {
     });
     expect(get('/api/templates/kanban/x').status).toBe(404);
   });
+
+  it('answers a malformed percent-escape as an unknown template, never a 500', async () => {
+    for (const path of ['/api/templates/%E0%A4%A', '/api/templates/%']) {
+      const res = get(path);
+      expect(res.status, path).toBe(404);
+      expect(await res.json()).toMatchObject({ error: 'unknown_template' });
+    }
+  });
 });
 
 describe('GET /api/schema', () => {
@@ -67,6 +75,12 @@ describe('GET /api/schema', () => {
       ]);
     }
     expect(get('/api/schema/plan-view/x').status).toBe(404);
+  });
+
+  it('answers a malformed percent-escape as an unknown kind, never a 500', async () => {
+    const res = get('/api/schema/%');
+    expect(res.status).toBe(404);
+    expect(await res.json()).toMatchObject({ error: 'unknown_kind' });
   });
 });
 

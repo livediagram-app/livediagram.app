@@ -15,6 +15,27 @@ type OpGate =
 
 const DROP: OpGate = { kind: 'drop' };
 
+// The tab fields a `tab-meta` patch never carries (the editor's tabMetaPatch skips them): the tab's id, its elements
+// and its articles' writing travel on their own ops, and a receiver spreads the patch over its tab.
+const TAB_META_FIXED = ['id', 'elements', 'articles'] as const;
+
+// Whether a tab-content op keeps to the tab it names. A receiver merges a `tab` op's payload over its own tab and
+// spreads a `tab-meta` patch over it, so a payload naming another id would renumber the tab on every peer: their
+// next save then writes it over that other tab, past the sender's own tab scope (and past nobody's edit gate).
+function keepsToItsTab(op: unknown): boolean {
+  const o = op as { kind?: unknown; tabId?: unknown; tab?: unknown; patch?: unknown };
+  if (o.kind === 'tab') {
+    const tab = o.tab as { id?: unknown } | null | undefined;
+    return typeof tab === 'object' && tab !== null && tab.id === o.tabId;
+  }
+  if (o.kind === 'tab-meta') {
+    const patch = o.patch;
+    if (typeof patch !== 'object' || patch === null) return false;
+    return !TAB_META_FIXED.some((key) => Object.hasOwn(patch, key));
+  }
+  return true;
+}
+
 /** The sender as the gate needs it: its server-verified role and tab scope. */
 export type GateSender = {
   role: unknown;
@@ -40,6 +61,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
+  if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op and
   // `article` frame go through the participant rules (text only) and never relay as sent; everything else needs an

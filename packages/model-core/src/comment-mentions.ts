@@ -31,16 +31,27 @@ export function mentionHandle(name: string): string {
 // Handles for a list of people, unique in list order: the second
 // `thomas-mcclean` becomes `thomas-mcclean-2`. A person whose name yields
 // nothing falls back to the local part of their email, then to `teammate`.
+// A suffix never lands on a handle someone already has: a member called
+// "Sam Lee 2" listed after two Sam Lees gets `sam-lee-2-2`, not a second
+// `sam-lee-2` that one mention would tag both of.
 export function assignHandles<T extends { name: string; email?: string | null }>(
   people: readonly T[],
 ): (T & { handle: string })[] {
-  const used = new Map<string, number>();
+  const taken = new Set<string>();
+  // The last suffix tried per base, so a long run of one name stays linear.
+  const next = new Map<string, number>();
   return people.map((p) => {
     const base =
       mentionHandle(p.name) || mentionHandle((p.email ?? '').split('@')[0] ?? '') || 'teammate';
-    const n = (used.get(base) ?? 0) + 1;
-    used.set(base, n);
-    return { ...p, handle: n === 1 ? base : `${base}-${n}` };
+    let handle = base;
+    if (taken.has(handle)) {
+      let n = (next.get(base) ?? 1) + 1;
+      while (taken.has(`${base}-${n}`)) n += 1;
+      next.set(base, n);
+      handle = `${base}-${n}`;
+    }
+    taken.add(handle);
+    return { ...p, handle };
   });
 }
 

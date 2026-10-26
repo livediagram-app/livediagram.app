@@ -17,10 +17,12 @@ describe('gateClientOp', () => {
 
   it('relays presence from anyone, mutations from an editor only', () => {
     expect(gateClientOp({ kind: 'cursor' }, as('view'))).toEqual(relay(true));
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('edit'))).toEqual(relay(false));
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't' } }, as('edit'))).toEqual(
+      relay(false),
+    );
+    expect(gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't' } }, as('view'))).toEqual(DROP);
     // An unknown role reads as the lowest level.
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't' } }, as('admin'))).toEqual(DROP);
   });
 
   it('relays a photo page\'s layer changes from an editor alone (docs/specs/031-photo/photo-pages.md "Share roles")', () => {
@@ -32,12 +34,32 @@ describe('gateClientOp', () => {
     expect(gateClientOp(op, as('edit', { tabScope: 't' }))).toEqual(relay(false));
   });
 
+  // docs/specs/013-workspace/tab-scoped-share-links.md: a receiving editor takes the id inside a whole tab, or a
+  // tab-meta patch's fields, as its tab's own, so a payload naming another tab would rewrite that tab through a peer.
+  it('drops a tab op whose payload reaches past the tab it names, from anyone', () => {
+    for (const sender of [as('edit'), as('edit', { tabScope: 't1' })]) {
+      expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't2' } }, sender)).toEqual(DROP);
+      expect(gateClientOp({ kind: 'tab', tabId: 't1' }, sender)).toEqual(DROP);
+      for (const key of ['id', 'elements', 'photos']) {
+        const op = { kind: 'tab-meta', tabId: 't1', patch: { [key]: 't2' } };
+        expect(gateClientOp(op, sender), key).toEqual(DROP);
+      }
+      const rename = { kind: 'tab-meta', tabId: 't1', patch: { name: 'Roadmap' } };
+      expect(gateClientOp(rename, sender)).toEqual(relay(false));
+      expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't1' } }, sender)).toEqual(
+        relay(false),
+      );
+    }
+  });
+
   it("routes a participant's element op through the content rule, and drops its other mutations", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
     expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't' } }, as('participate'))).toEqual(
+      DROP,
+    );
   });
 
   it("shows only an editor's drag preview", () => {
@@ -47,8 +69,10 @@ describe('gateClientOp', () => {
 
   it('keeps a tab-scoped session to its own tab', () => {
     const scoped = as('edit', { tabScope: 't1' });
-    expect(gateClientOp({ kind: 'tab', tabId: 't1' }, scoped)).toEqual(relay(false));
-    expect(gateClientOp({ kind: 'tab', tabId: 't2' }, scoped)).toEqual(DROP);
+    expect(gateClientOp({ kind: 'tab', tabId: 't1', tab: { id: 't1' } }, scoped)).toEqual(
+      relay(false),
+    );
+    expect(gateClientOp({ kind: 'tab', tabId: 't2', tab: { id: 't2' } }, scoped)).toEqual(DROP);
     expect(gateClientOp({ kind: 'design-meta' }, scoped)).toEqual(DROP);
   });
 });

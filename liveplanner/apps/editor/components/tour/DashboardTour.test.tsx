@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   dashboardFromPreset,
@@ -77,6 +77,17 @@ const held = () => {
 
 const settle = () => act(async () => new Promise((r) => setTimeout(r, 30)));
 
+// The card's Next waits while the next step prepares (aria-disabled): press it once it is ready.
+const next = async () => {
+  const button = await waitFor(() => {
+    const b = screen.getByRole('button', { name: /next/i });
+    expect(b.getAttribute('aria-disabled')).toBeNull();
+    return b;
+  });
+  fireEvent.click(button);
+  await settle();
+};
+
 const startShowMe = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Dashboard Settings' }));
   fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
@@ -119,16 +130,12 @@ describe('Dashboard Show Me', () => {
   it('shows the filled slot’s grip and cog while its step is up, and hides them after', async () => {
     show(held());
     await startShowMe();
-    const next = () => fireEvent.click(screen.getByRole('button', { name: /next/i }));
-    next(); // Fill a Slot
-    await settle();
-    next(); // Change or Move a Slot
-    await settle();
+    await next(); // Fill a Slot
+    await next(); // Change or Move a Slot
     expect(screen.getByRole('dialog', { name: /Change or Move a Slot/ })).toBeTruthy();
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
-    next(); // Dashboard Settings
-    await settle();
+    await next(); // Dashboard Settings
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(false);
   });
 
@@ -142,10 +149,8 @@ describe('Dashboard Show Me', () => {
   it('ends when the page can no longer be edited, letting go of the slot it was showing', async () => {
     const { setCanEdit } = show(held());
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Fill a Slot
-    await settle();
-    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Change or Move a Slot
-    await settle();
+    await next(); // Fill a Slot
+    await next(); // Change or Move a Slot
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
     setCanEdit(false);

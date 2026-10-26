@@ -147,6 +147,9 @@ export async function createMany(
 async function create(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
+  // A tab-scoped grant makes cards only from a tab that shows every card (a board or plan view): from any other
+  // tab the new card would land on boards elsewhere in the plan, outside what the grant reaches.
+  if (caller.scope && !caller.scopeTakesNew) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const read = readCreate(body, caller.owner);

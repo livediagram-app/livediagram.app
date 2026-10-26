@@ -12,7 +12,7 @@ import {
   type ArticleFlow,
   type ArticleRun,
 } from './article-flow';
-import { parseMarkdownBlocks, spaceWrapped } from './article-markdown';
+import { closesFence, fenceOpening, parseMarkdownBlocks, spaceWrapped } from './article-markdown';
 
 // The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
 export const ARTICLE_MARKDOWN_MAX = 400_000;
@@ -74,15 +74,28 @@ const cellsOf = (row: string) =>
     .split('|')
     .map((c) => c.trim());
 
+/** Reads lines in order, answering true for each line that is a fence or inside one (as parseMarkdownBlocks reads
+ *  them), so a line of code is never read as a table, a zone or a page break. */
+function fenceTracker(): (line: string) => boolean {
+  let open = 0;
+  return (line) => {
+    if (open) {
+      if (closesFence(line, open)) open = 0;
+      return true;
+    }
+    open = fenceOpening(line);
+    return open > 0;
+  };
+}
+
 /** A Markdown table (a header row, a rule, rows) as a list: the header in bold, then a row an item,
  *  cells joined with ` · `. Lines in a code fence stay as they are. `found` is told of each table. */
 function tablesAsLists(lines: readonly string[], found: () => void): string[] {
   const out: string[] = [];
-  let fenced = false;
+  const fence = fenceTracker();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
-    if (/^```/.test(line.trim())) fenced = !fenced;
-    if (fenced || !TABLE_ROW.test(line) || !isTableRule(lines[i + 1] ?? '')) {
+    if (fence(line) || !TABLE_ROW.test(line) || !isTableRule(lines[i + 1] ?? '')) {
       out.push(line);
       continue;
     }
@@ -121,7 +134,6 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
   heading('subtitle', subtitle);
   const kept: string[] = [];
   let stretch: string[] = [];
-  let fenced = false;
   const flush = () => {
     if (stretch.length === 0) return;
     for (const b of parseMarkdownBlocks(stretch.join('\n'))) blocks.push({ ...b, id: fresh() });
@@ -129,10 +141,11 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
   };
   let paragraph = 0;
   let tables = 0;
+  const fence = fenceTracker();
   for (const line of tablesAsLists(body.split('\n'), () => tables++)) {
     paragraph = line.trim() ? paragraph + line.length + 1 : 0;
     if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
-    if (/^```/.test(line.trim())) fenced = !fenced;
+    const fenced = fence(line);
     const bare = line.trim();
     const zone = fenced ? null : ZONE_LINE.exec(bare);
     if (zone) {
@@ -180,14 +193,20 @@ function codeSpan(text: string): string {
   return fence + pad + text + pad + fence;
 }
 
+// A link's address as the reader takes it back: its parentheses and backslashes escaped, so an address such as
+// `https://en.wikipedia.org/wiki/Mercury_(planet)` is not cut at its first `)`.
+const escapeHref = (href: string) => href.replace(/[\\()]/g, '\\$&');
+
 function runMarkdown(run: ArticleRun): string {
-  if (run.code) return codeSpan(run.text.replace(/\n/g, ' '));
-  // A line break inside a block reads back as a space: Markdown paragraphs join their lines.
-  let out = escapeText(run.text).replace(/\n/g, ' ');
+  // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
+  // alone written. A line break inside a block reads back as a space: Markdown paragraphs join their lines.
+  let out = run.code
+    ? codeSpan(run.text.replace(/\n/g, ' '))
+    : escapeText(run.text).replace(/\n/g, ' ');
   if (run.s) out = `~~${out}~~`;
   if (run.i) out = `*${out}*`;
   if (run.b) out = `**${out}**`;
-  if (run.href) out = `[${out}](${run.href})`;
+  if (run.href) out = `[${out}](${escapeHref(run.href)})`;
   return out;
 }
 
@@ -196,7 +215,8 @@ function runMarkdown(run: ArticleRun): string {
 function runsMarkdown(runs: readonly ArticleRun[]): string {
   return runs
     .map((run) => {
-      if (!run.b && !run.i && !run.s && !run.href) return runMarkdown(run);
+      // Code keeps its edge spaces inside its span (codeSpan pads it so they read back).
+      if (run.code || (!run.b && !run.i && !run.s && !run.href)) return runMarkdown(run);
       // trimStart/trimEnd, not `/\s*$/`: that regex retries from every offset, quadratic in spaces.
       const lead = run.text.slice(0, run.text.length - run.text.trimStart().length);
       const tail = run.text.slice(run.text.trimEnd().length);
@@ -205,6 +225,11 @@ function runsMarkdown(runs: readonly ArticleRun[]): string {
     })
     .join('');
 }
+
+// A title or subtitle in front matter, quoted when the reader would otherwise take its own quotes off (`unquote`):
+// a title `"Quoted"` read back as `Quoted`.
+const frontValue = (value: string) =>
+  /^(["']).*\1$/.test(value) ? (value[0] === '"' ? `'${value}'` : `"${value}"`) : value;
 
 const PARAGRAPH_PREFIX: Record<string, string> = { h1: '# ', h2: '## ', h3: '### ', quote: '> ' };
 
@@ -217,9 +242,13 @@ export function articleToMarkdown(flow: ArticleFlow): string {
     if (at < 0) continue;
     const text = (blocks[at] as { runs: ArticleRun[] }).runs.map((r) => r.text).join('');
     blocks.splice(at, 1);
-    if (text.trim()) front.push(`${style}: ${text.replace(/\n/g, ' ').trim()}`);
+    const value = text.replace(/\n/g, ' ').trim();
+    if (value) front.push(`${style}: ${frontValue(value)}`);
   }
   const lines: string[] = front.length ? ['---', ...front, '---', ''] : [];
+  // Without front matter, an opening divider is written `***`: as `---` it read back as the start of front matter,
+  // and everything up to the next divider was taken for it and lost.
+  let opening = !front.length;
   let numbers: number[] = [];
   let prevList = false;
   for (const b of blocks) {
@@ -248,11 +277,15 @@ export function articleToMarkdown(flow: ArticleFlow): string {
         lines.push(`${'  '.repeat(level)}${marker} ${escapeLineStart(runsMarkdown(b.runs))}`);
         break;
       }
-      case 'code':
-        lines.push('```', b.text, '```', '');
+      case 'code': {
+        // One backtick more than the longest fence-like line of the code, so none of its lines closes the fence.
+        const inner = Math.max(0, ...b.text.split('\n').map(fenceOpening));
+        const fence = '`'.repeat(Math.max(3, inner + 1));
+        lines.push(fence, b.text, fence, '');
         break;
+      }
       case 'divider':
-        lines.push('---', '');
+        lines.push(opening ? '***' : '---', '');
         break;
       case 'pageBreak':
         lines.push('\\pagebreak', '');
@@ -262,6 +295,7 @@ export function articleToMarkdown(flow: ArticleFlow): string {
         break;
     }
     prevList = isList;
+    opening = false;
   }
   while (lines.length && lines[lines.length - 1] === '') lines.pop();
   return lines.join('\n') + (lines.length ? '\n' : '');

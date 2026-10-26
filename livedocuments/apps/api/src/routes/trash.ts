@@ -3,7 +3,7 @@
 import { trashPurgeDueAt, type TrashedDocument } from '@livedocuments/api-schema';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
 import { INDEX_APP } from '../index-service';
-import { json, notFound } from '../responses';
+import { json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { allPages, clientFor, refusal } from './index-adapters';
 
@@ -47,7 +47,7 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
       return json({ document: { id: item.id, name: item.title } });
     }
     await client.deleteItem(id!, { permanent: true });
-    return new Response(null, { status: 204 });
+    return noContent();
   } catch (err) {
     return refusal(err);
   }

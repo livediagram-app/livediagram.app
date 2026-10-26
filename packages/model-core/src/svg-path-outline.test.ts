@@ -52,4 +52,20 @@ describe('svgPathSubpaths', () => {
     expect(warn).toHaveBeenCalledWith('[shape-outline] unsupported path command=H');
     warn.mockRestore();
   });
+
+  it('rejects a command cut short of its numbers rather than reading NaN points', () => {
+    expect(svgPathSubpaths('M 0 0 L 10')).toBeNull();
+    expect(svgPathSubpaths('M 0 0 C 1 2 3 4 5')).toBeNull();
+    expect(svgPathSubpaths('M 0 0 A 5 5 0 0 1 Z')).toBeNull();
+    expect(svgPathSubpaths('M 0')).toBeNull();
+    expect(svgPathSubpaths('M 0 0 L 10 10 Z')).toEqual([
+      {
+        points: [
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ],
+        closed: true,
+      },
+    ]);
+  });
 });

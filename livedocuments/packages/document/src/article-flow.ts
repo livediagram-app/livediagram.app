@@ -200,7 +200,12 @@ export function normaliseRuns(v: unknown): ArticleRun[] {
     if (left <= 0) break;
     const run = parseRun(raw);
     if (!run) continue;
-    if (run.text.length > left) run.text = run.text.slice(0, left);
+    if (run.text.length > left) {
+      // Never half an emoji: a cut between a surrogate pair would store a lone half, drawn as a broken glyph.
+      const end = isHighSurrogate(run.text.charCodeAt(left - 1)) ? left - 1 : left;
+      run.text = run.text.slice(0, end);
+      if (!run.text) break;
+    }
     // A link's address counts against the block's budget too, so no block outgrows a room frame.
     left -= run.text.length + (run.href?.length ?? 0);
     const last = out[out.length - 1];
@@ -210,6 +215,8 @@ export function normaliseRuns(v: unknown): ArticleRun[] {
   }
   return out;
 }
+
+const isHighSurrogate = (code: number) => code >= 0xd800 && code <= 0xdbff;
 
 const clampSize = (v: unknown): number | undefined =>
   typeof v === 'number' && Number.isFinite(v)

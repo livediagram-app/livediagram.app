@@ -100,19 +100,18 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
   MINIFS: ifs('min'),
   MAXIFS: ifs('max'),
   MEDIAN: aggregate((ns) => (ns.length === 0 ? err('#NUM!') : percentile(ns, 0.5))),
+  // Of the values seen most often, the one that comes first, as Excel and Google Sheets choose: MODE(3, 5, 5, 3)
+  // is 3, not the 5 that reached two first.
   MODE: aggregate((ns) => {
     const counts = new Map<number, number>();
-    let best: number | null = null;
     let bestCount = 1;
     for (const n of ns) {
       const c = (counts.get(n) ?? 0) + 1;
       counts.set(n, c);
-      if (c > bestCount) {
-        bestCount = c;
-        best = n;
-      }
+      if (c > bestCount) bestCount = c;
     }
-    return best === null ? err('#N/A', 'No value repeats') : best;
+    if (bestCount < 2) return err('#N/A', 'No value repeats');
+    return ns.find((n) => counts.get(n) === bestCount)!;
   }),
   MIN: aggregate((ns) => (ns.length === 0 ? 0 : smallest(ns))),
   MAX: aggregate((ns) => (ns.length === 0 ? 0 : largest(ns))),
@@ -122,6 +121,8 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
       for (const x of flatScalars([a], f)) if (typeof x === 'number') n++;
       // A number typed as text in the arguments themselves counts, as in Sheets.
       if (a !== null && typeof a === 'string' && !Number.isNaN(Number(a)) && a.trim() !== '') n++;
+      // So does TRUE or FALSE typed as an argument (COUNT(TRUE, 1) is 2); one in a range does not.
+      if (typeof a === 'boolean') n++;
     }
     return n;
   }),
@@ -178,6 +179,9 @@ export const STATS_FUNCTIONS: Record<string, FnDef> = {
     for (let i = 0; i < a.length; i++) {
       const x = a[i];
       const y = b[i];
+      // An error in either range is the answer, as in Google Sheets; text, logicals and blanks are skipped.
+      if (isError(x)) return x;
+      if (isError(y)) return y;
       if (typeof x === 'number' && typeof y === 'number') {
         xs.push(x);
         ys.push(y);

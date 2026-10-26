@@ -128,6 +128,10 @@ describe('<ExplorerPanel>', () => {
     expect(button.querySelector('svg')).toBeTruthy();
     fireEvent.click(button);
     await waitFor(() => expect(index.count('createFolder')).toBe(1));
+    // Named as every other way of making one names it (menus.tsx, the Explorer's own button).
+    expect(index.calls.find((c) => c.method === 'createFolder')?.args[0]).toMatchObject({
+      name: 'New Folder',
+    });
   });
 
   it("names New Folder New Subfolder inside a folder, and the team's Members is a glyph too", () => {

@@ -144,6 +144,19 @@ function TimelineFilterPopover({
     });
   }, [anchor]);
   useDismiss(ref, onClose, true, '[data-timeline-filter-button]');
+  // The panel is portalled to the end of the page, so Tab from the button would never reach it: it takes focus
+  // when it opens, and hands it back to the button when it closes with focus inside (Escape, a picked day).
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const node = ref.current;
+    node?.focus({ preventScroll: true });
+    return () => {
+      const active = document.activeElement;
+      if (!active || active === document.body || node?.contains(active)) {
+        opener?.focus({ preventScroll: true });
+      }
+    };
+  }, []);
   useEffect(() => {
     window.addEventListener('resize', onClose);
     return () => window.removeEventListener('resize', onClose);
@@ -158,8 +171,9 @@ function TimelineFilterPopover({
         ref={ref}
         role="dialog"
         aria-label="Timeline filters"
+        tabIndex={-1}
         style={{ position: 'fixed', left: position.left, top: position.top, width: WIDTH }}
-        className="z-50 rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+        className="z-50 rounded-xl border border-slate-200 bg-white p-3 shadow-lg outline-none dark:border-slate-700 dark:bg-slate-900"
       >
         <div className="sm:hidden">
           <p className={`mb-2 ${HEADING}`}>View</p>

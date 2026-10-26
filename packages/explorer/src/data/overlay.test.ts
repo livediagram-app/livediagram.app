@@ -32,6 +32,34 @@ describe('createItemOverlay', () => {
     expect(overlay.apply(a).title).toBe('First');
   });
 
+  it('keeps a later patch on the same key when an earlier one is refused, in either order', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    const undoB = overlay.patch(a.id, { title: 'B' });
+    const undoC = overlay.patch(a.id, { title: 'C' });
+    undoB();
+    expect(overlay.apply(a).title).toBe('C');
+    undoC();
+    expect(overlay.apply(a)).toBe(a);
+
+    const undoD = overlay.patch(a.id, { title: 'D' });
+    const undoE = overlay.patch(a.id, { title: 'E' });
+    undoE();
+    expect(overlay.apply(a).title).toBe('D');
+    undoD();
+    expect(overlay.apply(a)).toBe(a);
+  });
+
+  it('takes a patch back once only', () => {
+    const overlay = createItemOverlay();
+    const a = makeItem(1);
+    const undo = overlay.patch(a.id, { title: 'B' });
+    undo();
+    const v = overlay.version();
+    undo();
+    expect(overlay.version()).toBe(v);
+  });
+
   it('tells subscribers and bumps its version on every change', () => {
     const overlay = createItemOverlay();
     const listener = vi.fn();

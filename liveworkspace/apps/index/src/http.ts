@@ -25,8 +25,10 @@ export const noContent = () => new Response(null, { status: 204 });
 export async function readObject(request: Request): Promise<Record<string, unknown> | null> {
   const length = Number(request.headers.get('Content-Length') ?? '0');
   if (length > MAX_BODY_BYTES) return null;
-  const text = await request.text().catch(() => '');
-  if (text.length > MAX_BODY_BYTES) return null;
+  // A body that broke off mid-read is no body, not an empty one: `{}` would read as "clear everything" to a route like
+  // PUT /items/:id/share-password.
+  const text = await request.text().catch(() => null);
+  if (text === null || text.length > MAX_BODY_BYTES) return null;
   if (!text) return {};
   try {
     const value = JSON.parse(text) as unknown;

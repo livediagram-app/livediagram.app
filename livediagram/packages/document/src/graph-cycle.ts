@@ -10,6 +10,11 @@ import { ALL_ANCHORS, isBoxed, type Anchor, type BoxedElement, type Element } fr
 // Room between two stops along the ring, and the smallest ring.
 const RING_GAP = 72;
 const RING_MIN_R = 200;
+// The room between two stacked hubs; how far the ring widens a step to clear them, and the most steps it takes (about
+// 12,000px, past any hub stack a graph's node cap allows).
+const HUB_GAP = 16;
+const RING_GROW = 8;
+const RING_GROW_STEPS = 1500;
 
 export function layoutCycle(
   graph: DiagramGraph,
@@ -32,7 +37,7 @@ export function layoutCycle(
   const ring = sized.map((b) => ({ ...b, width: w, height: h }));
   const n = Math.max(1, ring.length);
   const reach = Math.hypot(w, h);
-  const r = Math.max(RING_MIN_R, (n * (reach + RING_GAP)) / (2 * Math.PI));
+  let r = Math.max(RING_MIN_R, (n * (reach + RING_GAP)) / (2 * Math.PI));
   // A hub fits inside the ring with room for the arrows: a round hub wraps its label rather than ballooning.
   const hubMax = Math.max(140, 2 * r - reach - 2 * RING_GAP);
   const hubs = boxes
@@ -47,17 +52,28 @@ export function layoutCycle(
       };
     });
   const angle = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
+  // Hubs stack at the centre. The ring widens until no stop comes within half a gap of the stack: sized by its stops
+  // alone, three hubs under a three-stop ring ran into its top stop.
+  const hubH = hubs.reduce((h, b) => h + b.height, 0) + HUB_GAP * Math.max(0, hubs.length - 1);
+  const hubW = Math.max(0, ...hubs.map((b) => b.width));
+  const clear = RING_GAP / 2;
+  const meetsHubs = (radius: number) =>
+    hubs.length > 0 &&
+    ring.some((_, i) => {
+      const cx = radius * Math.cos(angle(i));
+      const cy = radius * Math.sin(angle(i));
+      return Math.abs(cx) < (hubW + w) / 2 + clear && Math.abs(cy) < (hubH + h) / 2 + clear;
+    });
+  for (let i = 0; i < RING_GROW_STEPS && meetsHubs(r); i++) r += RING_GROW;
   const placed: BoxedElement[] = ring.map((b, i) => ({
     ...b,
     x: r * Math.cos(angle(i)) - b.width / 2,
     y: r * Math.sin(angle(i)) - b.height / 2,
   }));
-  // Hubs stack at the centre.
-  const hubH = hubs.reduce((h, b) => h + b.height, 0) + 16 * Math.max(0, hubs.length - 1);
   let hy = -hubH / 2;
   for (const b of hubs) {
     placed.push({ ...b, x: -b.width / 2, y: hy });
-    hy += b.height + 16;
+    hy += b.height + HUB_GAP;
   }
   const at = new Map(placed.map((b) => [b.id, b]));
   const centers = new Map<string, Pt>(

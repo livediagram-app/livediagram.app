@@ -6,7 +6,7 @@ import { builtInFieldOf } from './card-source';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
 import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
-import { ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
+import { isEmailAddress, ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_DESCRIPTION_MAX,
   ITEM_LABEL_MAX,
@@ -186,6 +186,13 @@ function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefine
       const n = Number(text);
       return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
     }
+    // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
+    case 'currency': {
+      const n = Number(text.replace(/[^\d.-]/g, ''));
+      return /\d/.test(text) && Number.isFinite(n) ? Math.round(n * 100) / 100 : undefined;
+    }
+    case 'email':
+      return isEmailAddress(text) ? text : undefined;
     default:
       return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
   }

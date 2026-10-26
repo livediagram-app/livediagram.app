@@ -34,6 +34,13 @@ describe('dayKey', () => {
     }
   });
 
+  it('refuses a day past its month’s end instead of rolling into the next month', () => {
+    expect(dayNumber('2026-02-31')).toBeUndefined();
+    expect(dayNumber('2026-02-29')).toBeUndefined();
+    expect(dayNumber('2026-04-31')).toBeUndefined();
+    expect(dayNumber('2028-02-29')).toBe(dayNumber('2028-03-01')! - 1);
+  });
+
   it('pads the month and day', () => {
     expect(dayKey(monthStart(2026, 2))).toBe('2026-03-01');
   });

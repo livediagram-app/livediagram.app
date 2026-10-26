@@ -3,6 +3,7 @@ import {
   LANE_BAND_PX,
   LANE_GUTTER_PX,
   isUprightTitle,
+  laneDrawnSize,
   laneSizeOfElement,
   uprightTitleStrip,
 } from './lane-gutter';
@@ -61,5 +62,20 @@ describe('uprightTitleStrip', () => {
     expect(
       uprightTitleStrip({ titleOrientation: 'upright', textAlignX: 'center' }, 900, 200),
     ).toEqual({ x: 418, y: 0, width: LANE_BAND_PX, height: 200, alongAlign: 'center' });
+  });
+});
+
+// The strip a lane draws (docs/specs/009-elements/lane.md): its heading, held short of its span.
+describe('laneDrawnSize', () => {
+  it('draws the heading at its size when the lane has room', () => {
+    expect(laneDrawnSize({ textAlignX: 'left', headerSize: 150 }, 600, 200)).toBe(150);
+  });
+
+  it('holds a side heading a pixel short of a lane narrower than it', () => {
+    expect(laneDrawnSize({ textAlignX: 'left', headerSize: 150 }, 100, 200)).toBe(99);
+  });
+
+  it('measures a band against the lane height', () => {
+    expect(laneDrawnSize({ textAlignY: 'top', headerSize: 90 }, 600, 50)).toBe(49);
   });
 });

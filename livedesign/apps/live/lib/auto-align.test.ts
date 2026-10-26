@@ -76,6 +76,15 @@ describe('autoAlignElement', () => {
     expect(out.height).toBe(100);
   });
 
+  it('keeps an aspect-locked circle drawn square round, and settled on a second press', () => {
+    const circle = square({ shape: 'circle', aspectLocked: true, width: 36, height: 32 });
+    const once = autoAlignElement(circle) as ShapeElement;
+    expect([once.width, once.height]).toEqual([40, 40]);
+    const [a] = autoAlignElements([circle]) as ShapeElement[];
+    const [b] = autoAlignElements([a!]) as ShapeElement[];
+    expect([a!.width, a!.height, b!.width, b!.height]).toEqual([40, 40, 40, 40]);
+  });
+
   it('floors width and height at MIN_SIZE so a tiny shape never collapses below the grab threshold', () => {
     const out = autoAlignElement(square({ width: 2, height: 3 })) as ShapeElement;
     expect(out.width).toBeGreaterThanOrEqual(MIN_SIZE);

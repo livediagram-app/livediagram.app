@@ -101,7 +101,10 @@ describe('who may call', () => {
   });
 
   it('answers nothing outside its API, or at all when switched off', async () => {
-    const res = await worker.fetch(new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/other'), db.env);
+    const res = await worker.fetch(
+      new Request('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/api/other'),
+      db.env,
+    );
     expect(res.status).toBe(404);
     const disabled = await call(
       '/app/images?owner=user_1',
@@ -273,6 +276,16 @@ describe('deleting', () => {
     const keep = await uploaded(png(3), { owner: 'user_2' });
     const res = await asApp('/app/owners/user_1', { method: 'DELETE' });
     expect(await res.json()).toEqual({ deleted: 2 });
+    expect([...db.objects.keys()]).toEqual([keep.image.id]);
+  });
+
+  it('deletes a guest owner’s images, its `guest:` id encoded as the client sends it', async () => {
+    await uploaded(png(1), { owner: 'guest:abc' });
+    const keep = await uploaded(png(2), { owner: 'user_2' });
+    const res = await asApp(`/app/owners/${encodeURIComponent('guest:abc')}`, {
+      method: 'DELETE',
+    });
+    expect(await res.json()).toEqual({ deleted: 1 });
     expect([...db.objects.keys()]).toEqual([keep.image.id]);
   });
 });

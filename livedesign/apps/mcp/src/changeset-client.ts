@@ -101,10 +101,10 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      const drawn = packFreehandPoints([op.element]);
+      const drawn = packFreehandPoints([op.element], 'the added element');
       if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
       const given = drawn.elements[0] as Record<string, unknown>;
-      const valueIssue = elementsIssue([given]);
+      const valueIssue = elementsIssue([given], 'the added element');
       if (valueIssue) return `ops[${n}]: ${valueIssue}`;
       const element = withEnds(given);
       if (typeof element === 'string') return `ops[${n}]: ${element}`;
@@ -115,7 +115,10 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
       // New points for a stroke are packed as an added one's are: its box and its block, together.
       let given = op.element;
       if (stored?.type === 'freehand' && given.points !== undefined) {
-        const drawn = packFreehandPoints([{ ...given, type: 'freehand' }]);
+        const drawn = packFreehandPoints(
+          [{ ...given, type: 'freehand' }],
+          `element "${op.elementId}"`,
+        );
         if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
         const { x, y, width, height, packedPoints } = drawn.elements[0] as Record<string, unknown>;
         const { points: _points, ...rest } = given;

@@ -16,7 +16,7 @@ import { usePopoverLayer } from './popover-stack';
 // Portal-rendered (so its `position: fixed` is relative to the viewport,
 // not a transformed ancestor like the tab menu) and tagged with
 // `data-confirm-popover` so a host menu's outside-click handler can
-// exclude it. Esc cancels, Enter confirms. Sits at `--z-modal` (above the
+// exclude it. Esc cancels, Enter confirms (on a focused button, Enter presses that button). Sits at `--z-modal` (above the
 // `--z-overlay` context menus that spawn it) so the "are you sure?" prompt
 // is never hidden behind the menu it was opened from. A press anywhere but
 // the popover, its anchor or a popover opened above it cancels, and Escape
@@ -94,11 +94,12 @@ export function ConfirmPopover({
 }: ConfirmPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
-  // left/top of the panel + which side the arrow is on + the arrow's top.
+  // left/top of the panel + which side the arrow is on (none when it could not sit beside the anchor) + the
+  // arrow's top.
   const [layout, setLayout] = useState<{
     left: number;
     top: number;
-    side: 'left' | 'right';
+    side: 'left' | 'right' | null;
     arrowTop: number;
   } | null>(null);
 
@@ -111,12 +112,15 @@ export function ConfirmPopover({
       // if there's no room.
       const roomLeft = a.left - GAP - WIDTH >= EDGE;
       const side: 'left' | 'right' = roomLeft ? 'left' : 'right';
-      const left = side === 'left' ? a.left - GAP - WIDTH : a.right + GAP;
+      const beside = side === 'left' ? a.left - GAP - WIDTH : a.right + GAP;
+      // With room on neither side (a full-width row on a phone), it stays on screen over the anchor, with no
+      // arrow: placed beside it, the whole popover, Confirm focused, would sit past the right edge.
+      const left = clampIntoRange(beside, EDGE, window.innerWidth - WIDTH - EDGE);
       // Vertically centre on the anchor, clamped to the viewport.
       const top = clampIntoRange(a.top + a.height / 2 - h / 2, EDGE, window.innerHeight - h - EDGE);
       // Arrow sits level with the anchor's centre, relative to the panel.
       const arrowTop = clampIntoRange(a.top + a.height / 2 - top, ARROW, h - ARROW * 2);
-      setLayout({ left, top, side, arrowTop });
+      setLayout({ left, top, side: left === beside ? side : null, arrowTop });
     };
     place();
     window.addEventListener('resize', place);
@@ -135,6 +139,9 @@ export function ConfirmPopover({
       onCancel();
       anchor.focus();
     } else if (e.key === 'Enter') {
+      // A focused button presses itself: Enter on Cancel cancels. Taking every Enter as Confirm deleted
+      // the thing a keyboard user had just tabbed to Cancel to keep.
+      if (e.target instanceof HTMLButtonElement && ref.current?.contains(e.target)) return;
       e.preventDefault();
       onConfirm();
     }
@@ -170,7 +177,7 @@ export function ConfirmPopover({
         style={{ left: layout?.left ?? -9999, top: layout?.top ?? -9999, width: WIDTH }}
       >
         {/* Arrow: a rotated square poking out of the side facing the anchor. */}
-        {layout ? (
+        {layout?.side ? (
           <span
             aria-hidden
             className={`absolute h-3 w-3 rotate-45 bg-white dark:bg-slate-900 ${

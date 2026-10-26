@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { defineVerb } from '../define';
 import { listAllDocuments, type FoundDocument } from '../find-documents';
 import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
-import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT } from './shared';
+import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, moreLine } from './shared';
 
 export const listedDocument = z.object({
   ref: z.string(),
@@ -42,9 +42,7 @@ export function documentListText({
   return [
     ...(documents.length === 0 ? [query ? `no documents match "${query}"` : 'no documents'] : []),
     ...columns(documents.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
-    ...(more > 0
-      ? [`… ${more} more; --limit ${documents.length + more}, or narrow with a query`]
-      : []),
+    ...(more > 0 ? [moreLine(documents.length, more, LIST_MAX_LIMIT, 'narrow with a query')] : []),
   ];
 }
 

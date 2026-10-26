@@ -105,7 +105,7 @@ describe('sendEmail', () => {
       'Network.SendEmail',
     );
     // The log line carries a redacted address, never the whole one.
-    expect(String(error.mock.calls[0]![0])).toContain('a@***');
+    expect(String(error.mock.calls[0]![0])).toContain('to=***@b.com');
     expect(String(error.mock.calls[0]![0])).not.toContain('a@b.com');
   });
 });

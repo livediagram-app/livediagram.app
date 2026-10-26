@@ -202,7 +202,8 @@ export function SearchPanel({
     setActiveFor(q);
     setActive(0);
   }
-  const shown = Math.min(active, Math.max(0, flat.length - 1));
+  // Never below the first: an arrow pressed before any results arrive must not leave the highlight at -1.
+  const shown = Math.max(0, Math.min(active, flat.length - 1));
   const searching = q !== '' && (!found || found.q !== q);
   const failed = found?.q === q && found.failed;
 
@@ -213,7 +214,7 @@ export function SearchPanel({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') setActive(Math.min(flat.length - 1, shown + 1));
+    if (e.key === 'ArrowDown') setActive(Math.max(0, Math.min(flat.length - 1, shown + 1)));
     else if (e.key === 'ArrowUp') setActive(Math.max(0, shown - 1));
     else if (e.key === 'Enter' && flat[shown]) pick(flat[shown]);
     else return;

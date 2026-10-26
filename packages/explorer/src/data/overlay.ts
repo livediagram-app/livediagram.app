@@ -22,6 +22,10 @@ export type ItemOverlay = {
 };
 
 export function createItemOverlay(): ItemOverlay {
+  // Each item's patches in the order they were laid, and what they come to together. Taking one back removes
+  // just that layer: a later patch on the same key keeps its value whichever call settles first (a refused
+  // rename no longer wipes a newer one that the index took).
+  const layers = new Map<string, ItemPatch[]>();
   const patches = new Map<string, ItemPatch>();
   const listeners = new Set<() => void>();
   let version = 0;
@@ -29,23 +33,29 @@ export function createItemOverlay(): ItemOverlay {
     version++;
     for (const fn of listeners) fn();
   };
+  const merge = (id: string) => {
+    const list = layers.get(id);
+    if (!list || list.length === 0) {
+      layers.delete(id);
+      patches.delete(id);
+    } else {
+      patches.set(id, Object.assign({}, ...list) as ItemPatch);
+    }
+  };
   return {
     patch(id, patch) {
-      const before = patches.get(id);
-      const after = { ...before, ...patch };
-      patches.set(id, after);
+      const layer = { ...patch };
+      const list = layers.get(id);
+      if (list) list.push(layer);
+      else layers.set(id, [layer]);
+      merge(id);
       changed();
       return () => {
-        const now = patches.get(id);
-        if (!now) return;
-        // Only this patch's keys go back to what they were; a later patch's other keys stay.
-        const restored: ItemPatch = { ...now };
-        for (const key of Object.keys(patch) as (keyof ItemPatch)[]) {
-          if (before && key in before) (restored as Record<string, unknown>)[key] = before[key];
-          else delete restored[key];
-        }
-        if (Object.keys(restored).length === 0) patches.delete(id);
-        else patches.set(id, restored);
+        const now = layers.get(id);
+        const at = now ? now.indexOf(layer) : -1;
+        if (!now || at < 0) return;
+        now.splice(at, 1);
+        merge(id);
         changed();
       };
     },
@@ -60,6 +70,7 @@ export function createItemOverlay(): ItemOverlay {
     },
     clear() {
       if (patches.size === 0) return;
+      layers.clear();
       patches.clear();
       changed();
     },

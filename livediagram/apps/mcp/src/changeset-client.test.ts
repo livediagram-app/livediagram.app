@@ -84,7 +84,31 @@ describe('mcpOpsToEditOperations', () => {
     expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
     expect(
       mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
-    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+    ).toMatch(/^ops\[1\]: element "ring": "points" takes 1 to/);
+  });
+
+  it('names the element a refusal is about, never its place in a one-element list', () => {
+    // An added element without an id is the op's own; "element 1" named nothing the caller sent.
+    expect(
+      mcpOpsToEditOperations(
+        [
+          { op: 'update', elementId: 'a', element: { label: 'A2' } },
+          {
+            op: 'add',
+            element: {
+              type: 'shape',
+              shape: 'square',
+              x: 0,
+              y: 0,
+              width: 1,
+              height: 1,
+              colour: 'red',
+            },
+          },
+        ],
+        tab,
+      ),
+    ).toMatch(/^ops\[2\]: the added element: "colour" is not a field of a shape/);
   });
 
   it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {

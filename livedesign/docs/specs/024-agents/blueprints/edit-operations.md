@@ -428,6 +428,10 @@ On the working state, in order:
 1. `normaliseElement` on every touched element (never on the rest: I2), noting `codeLanguage` / `codeTheme`
    coercions as `value_coerced`.
 2. Coerce every touched shape's `shape` with `coerceShapeKind`.
+   Then each touched element is checked (`elementValidationIssue`), and a touched arrow with an end attached to
+   nothing on the result (pinned to an id no element holds, or hung off one no arrow holds, whether it named nothing
+   or what it named went earlier in the same edit) is `invalid_value` naming the arrow, the side and the id (EO58).
+   An end already loose before the edit and left as it was is not refused, so carrying such an arrow still works.
 3. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
 4. Each container moved to directly before its earliest member when it is after it (I6).
 5. Membership before and after (`deriveContainers`) is read by the result lines' container lines.

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { SettingsToggleGroupRow } from './model';
 import { SettingsChoiceRowView } from './rows/ChoiceRow';
 import { SettingsLinkRowView, SettingsNoteRowView } from './rows/SimpleRows';
+import { SettingsSliderRowView } from './rows/SliderRow';
 import { SettingsToggleGroupRowView } from './rows/ToggleGroupRow';
 import { SettingsRowShell } from './SettingsRowShell';
 import { renderWithKit } from './test/kit';
@@ -77,6 +78,47 @@ describe('SettingsToggleGroupRowView', () => {
     renderWithKit(<SettingsToggleGroupRowView row={group(onChange)} disabled />);
     fireEvent.click(screen.getByRole('switch', { name: 'Safe Area' }));
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('SettingsSliderRowView', () => {
+  const slider = (onCommit: (next: number) => void, preview = vi.fn()) => (
+    <SettingsSliderRowView
+      row={{
+        kind: 'slider',
+        key: 'opacity',
+        label: 'Panel Opacity',
+        description: '',
+        min: 0,
+        max: 100,
+        step: 5,
+        format: (v) => `${v}%`,
+        value: 80,
+        onCommit,
+        preview,
+      }}
+    />
+  );
+
+  it('commits a moved value on release, once', () => {
+    const onCommit = vi.fn();
+    renderWithKit(slider(onCommit));
+    const input = screen.getByRole('slider', { name: 'Panel Opacity' });
+    fireEvent.change(input, { target: { value: '60' } });
+    expect(onCommit).not.toHaveBeenCalled();
+    fireEvent.pointerUp(input);
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith(60);
+  });
+
+  it('commits nothing when Tab lands on it or the thumb is clicked without moving', () => {
+    const onCommit = vi.fn();
+    const preview = vi.fn();
+    renderWithKit(slider(onCommit, preview));
+    const input = screen.getByRole('slider', { name: 'Panel Opacity' });
+    fireEvent.keyUp(input, { key: 'Tab' });
+    fireEvent.pointerUp(input);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(preview).toHaveBeenLastCalledWith(null);
   });
 });
 

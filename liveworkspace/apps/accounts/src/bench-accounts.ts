@@ -26,7 +26,11 @@ export async function benchAccounts(
   if (!env.ADMIN_TOKEN || !(await sameSecret(token, env.ADMIN_TOKEN))) {
     return new Response('Unauthorized', { status: 401 });
   }
-  const body = (await request.json().catch(() => ({}))) as { count?: unknown; name?: unknown };
+  // `null` parses, and has no fields: read as an empty body, so a 400, never a TypeError.
+  const body = ((await request.json().catch(() => null)) ?? {}) as {
+    count?: unknown;
+    name?: unknown;
+  };
   const count = body.count;
   if (
     typeof count !== 'number' ||

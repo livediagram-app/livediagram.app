@@ -6,6 +6,7 @@ import {
   seedTab,
   test,
   pageOwnerHeaders,
+  serverNewUrl,
 } from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md: while a drag lasts, the moved box and the arrow pinned to it
@@ -69,7 +70,7 @@ const arrowPath = (page: Page) =>
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?blank=1');
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);

@@ -146,3 +146,27 @@ describe('deleting a mind node', () => {
     expect(ids(getResult())).toEqual(['a', 'a-a1', 'a1']);
   });
 });
+
+// docs/specs/008-canvas/arrow-to-arrow.md: an arrow hung off a connector goes when the connector does, however the
+// connector goes, the cascade from a deleted box included.
+describe('the arrow cascade reaches arrows hung off arrows', () => {
+  const hung = (id: string, onto: string): ArrowElement => ({
+    id,
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'on-arrow', arrowId: onto, t: 0.5 },
+  });
+  const els = () => [shape('a'), shape('b'), pinnedArrow('x', 'a', 'b'), hung('y', 'x')];
+
+  it('takes the hung arrow with the connector a single delete takes', () => {
+    const { actions, getResult } = setup(els(), { selection: ['a'] });
+    actions.deleteSelected();
+    expect(ids(getResult())).toEqual(['b']);
+  });
+
+  it('takes it on a multi-selection delete too', () => {
+    const { actions, getResult } = setup([...els(), shape('c')], { selection: ['a', 'c'] });
+    actions.deleteMultiSelected();
+    expect(ids(getResult())).toEqual(['b']);
+  });
+});

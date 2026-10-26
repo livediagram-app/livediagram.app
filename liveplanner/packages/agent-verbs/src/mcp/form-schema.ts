@@ -61,8 +61,18 @@ const questionFields = {
     .boolean()
     .optional()
     .describe('single: a dropdown whatever its length (past 7 options it is one anyway).'),
-  min: z.number().optional().describe('number: the lowest answer. multi: the fewest picks.'),
-  max: z.number().optional().describe('number: the highest answer. multi: the most picks.'),
+  min: z
+    .number()
+    .optional()
+    .describe(
+      'number: the lowest answer. multi: the fewest picks (Other counts as one; 0 for none).',
+    ),
+  max: z
+    .number()
+    .optional()
+    .describe(
+      'number: the highest answer. multi: the most picks (Other counts as one; 0 for none).',
+    ),
   whole: z.boolean().optional().describe('number: whole numbers only.'),
   scale: z
     .number()

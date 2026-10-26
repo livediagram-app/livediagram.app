@@ -29,7 +29,9 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
   - **Custom Formula Is**: a formula written for the range's top-left cell (`=$C2>100`, `=ISODD(ROW())`), read for
     every other cell with its relative references moved by that cell's offset, as a fill moves them; the cell meets
     the condition when the formula's value is TRUE or a number other than 0. A formula that cannot be read is not
-    saved: the editor says why under its field. An error meets nothing.
+    saved: the editor says why under its field. An error meets nothing. Deleting the range's top row or left column
+    moves the formula to the new top-left cell: its relative references on the sheet keep their offsets from that
+    cell, as in Google Sheets (`=$C2>100` on A2:A10 with row 2 deleted is `=$C2>100` on A2:A9, reading the old C3).
   - The style: any of **Bold**, **Italic**, **Underline**, **Strikethrough**, **Text Colour**, **Fill Colour** (the
     one [colour picker](../004-interface-design/colour-picker.md)). A new rule starts with a light green fill
     (`#b7e1cd`) and dark green text (`#137333`), as Google Sheets' does; six **preset styles** sit above the controls (**Green Fill**, **Red Fill**, **Yellow Fill**, **Blue Fill**, **Bold Text**

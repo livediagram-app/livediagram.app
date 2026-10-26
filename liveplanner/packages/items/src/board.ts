@@ -704,9 +704,12 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   const columns: PlanColumn[] = [];
   for (const c of input['columns'].slice(0, PLAN_COLUMNS_MAX)) {
     if (!isObj(c)) continue;
-    const { id, status, name, wipLimit, color } = c;
+    const { id, status: rawStatus, name, wipLimit, color } = c;
     if (typeof id !== 'string' || !id || id.length > 40 || seenIds.has(id)) continue;
-    if (typeof status !== 'string' || !status.trim() || status.length > ITEM_STATUS_MAX) continue;
+    if (typeof rawStatus !== 'string' || !rawStatus.trim() || rawStatus.length > ITEM_STATUS_MAX)
+      continue;
+    // Trimmed, as every card's status is (fields.ts), so a card moved into the column lands in it.
+    const status = rawStatus.trim();
     if (seenStatus.has(status)) continue;
     seenIds.add(id);
     seenStatus.add(status);

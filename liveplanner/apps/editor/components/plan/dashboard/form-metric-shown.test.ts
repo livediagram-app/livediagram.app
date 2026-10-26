@@ -71,6 +71,21 @@ describe('formMetricShown', () => {
     expect(shown('closes', { form: { ...form, closesAt: NOW - 1 } }).hero).toBe('Closed');
   });
 
+  it('counts calendar days to the close, not 24-hour blocks', () => {
+    const at = (day: number, hour: number) => new Date(2026, 9, day, hour).getTime();
+    // 5pm today to 9am tomorrow is 16 hours, but it closes tomorrow.
+    expect(shown('closes', { now: at(26, 17), form: { ...form, closesAt: at(27, 9) } }).hero).toBe(
+      '1 day',
+    );
+    // 8am today to 8pm tomorrow is 36 hours, still tomorrow.
+    expect(shown('closes', { now: at(26, 8), form: { ...form, closesAt: at(27, 20) } }).hero).toBe(
+      '1 day',
+    );
+    expect(shown('closes', { now: at(26, 8), form: { ...form, closesAt: at(26, 23) } }).hero).toBe(
+      'Today',
+    );
+  });
+
   it('gives a link card its line', () => {
     expect(shown('link')).toEqual({ hero: null, line: 'Anyone with the link can fill it in' });
     expect(shown('link', { link: link({ link: null }) }).line).toBe('Publish it from Share Form');

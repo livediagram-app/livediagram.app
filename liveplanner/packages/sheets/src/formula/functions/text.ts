@@ -5,7 +5,18 @@ import { regexShape, regexWork } from '../regex-cost';
 import { textFormat } from '../../number-format';
 import { parseLocaleNumber } from '../../input';
 import { localeDayFirst, parseDateText, parseTimeText } from '../../dates';
-import { MANY, boolArg, flatScalars, fn, opt, scalarFn, textArg, type FnDef } from '../fn';
+import {
+  MANY,
+  boolArg,
+  deref,
+  flatScalars,
+  fn,
+  lift,
+  opt,
+  scalarFn,
+  textArg,
+  type FnDef,
+} from '../fn';
 import { err, isError, toNumber, toText, type Scalar, type Value } from '../values';
 
 function bounded(text: string): Value {
@@ -25,32 +36,47 @@ function texts(xs: Scalar[]): string[] | Value {
 }
 
 // A text function of fixed arguments: the first `nText` read as text, the rest as numbers (absent ones undefined).
+// Only an argument left out (`LEFT(A1,)`) is absent: a reference to an empty cell reads as 0, as in Excel and Sheets.
 function textFn(
   min: number,
   max: number,
   nText: number,
   each: (ts: string[], ns: (number | undefined)[]) => Value,
 ): FnDef {
-  return scalarFn(min, max, (xs) => {
-    const ts: string[] = [];
-    const ns: (number | undefined)[] = [];
-    for (let i = 0; i < xs.length; i++) {
-      const x = xs[i]!;
-      if (i < nText) {
-        const t = toText(x);
-        if (isError(t)) return t;
-        ts.push(t);
-      } else if (x === null && i >= min) {
-        ns.push(undefined);
-      } else {
-        const n = toNumber(x);
-        if (typeof n !== 'number') return n;
-        ns.push(n);
-      }
-    }
-    const out = each(ts, ns);
-    return typeof out === 'string' ? bounded(out) : out;
+  return fn(min, max, (args, f) => {
+    const skipped = args.map((a) => a === null);
+    return lift(
+      args.map((a) => deref(a, f)),
+      (xs) => textEach(xs, skipped, min, nText, each),
+    );
   });
+}
+
+function textEach(
+  xs: Scalar[],
+  skipped: boolean[],
+  min: number,
+  nText: number,
+  each: (ts: string[], ns: (number | undefined)[]) => Value,
+): Value {
+  const ts: string[] = [];
+  const ns: (number | undefined)[] = [];
+  for (let i = 0; i < xs.length; i++) {
+    const x = xs[i]!;
+    if (i < nText) {
+      const t = toText(x);
+      if (isError(t)) return t;
+      ts.push(t);
+    } else if (skipped[i] && i >= min) {
+      ns.push(undefined);
+    } else {
+      const n = toNumber(x);
+      if (typeof n !== 'number') return n;
+      ns.push(n);
+    }
+  }
+  const out = each(ts, ns);
+  return typeof out === 'string' ? bounded(out) : out;
 }
 
 function regex(pattern: string, text: string, flags = 'u'): RegExp | Value {
@@ -111,7 +137,8 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
   RIGHT: textFn(1, 2, 1, ([t], [n = 1]) => {
     if (n < 0) return err('#VALUE!');
     const chars = [...t!];
-    return n === 0 ? '' : chars.slice(-n).join('');
+    const k = Math.trunc(n);
+    return k === 0 ? '' : chars.slice(-k).join('');
   }),
   MID: textFn(3, 3, 1, ([t], [start, n]) => {
     if (start! < 1 || n! < 0) return err('#VALUE!');
@@ -218,7 +245,8 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     }
     if (dropEmpty) parts = parts.filter((p) => p !== '');
     if (parts.length === 0) return '';
-    return { rows: [parts] };
+    // A part that reads as a number is one, as in Google Sheets: SPLIT("3,4", ",") sums to 7, not 0.
+    return { rows: [parts.map(splitPart)] };
   }),
   REGEXMATCH: textFn(2, 2, 2, ([t, p]) => {
     const re = regex(p!, t!);
@@ -240,3 +268,10 @@ export const TEXT_FUNCTIONS: Record<string, FnDef> = {
     label === undefined || label === '' ? url! : label,
   ),
 };
+
+// One part of a SPLIT: a number (or a percentage) when it reads as one, else the text. A blank part stays text.
+function splitPart(part: string): Scalar {
+  if (part.trim() === '') return part;
+  const n = toNumber(part);
+  return typeof n === 'number' ? n : part;
+}

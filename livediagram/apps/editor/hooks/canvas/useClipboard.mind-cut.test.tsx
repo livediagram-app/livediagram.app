@@ -53,15 +53,19 @@ afterEach(() => {
   cleanup();
 });
 
-function copied(opts?: { cut: boolean }): string[] {
+function copied(
+  opts?: { cut: boolean },
+  { selected = 'a', layerLockedIds }: { selected?: string; layerLockedIds?: Set<string> } = {},
+): string[] {
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
       embedMode: false,
-      readSelection: () => ({ selectedId: 'a', multiSelectedIds: new Set() }),
+      readSelection: () => ({ selectedId: selected, multiSelectedIds: new Set() }),
       editingId: null,
       setEditingId: () => {},
       activeTab: { id: 't', name: 'Board', elements: map },
+      ...(layerLockedIds ? { layerLockedIds } : {}),
       commit: () => {},
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
@@ -81,5 +85,13 @@ describe('copying a mind node', () => {
 
   it('a plain Copy copies only the selected node', () => {
     expect(copied()).toEqual(['a']);
+  });
+
+  it('a Cut copies only what its delete takes: a node on a locked layer stays, and its branch', () => {
+    // The delete takes root (and, as with any box, the connector pinned to it); a, on a locked layer, stays with
+    // everything under it, so none of that is copied to be pasted twice.
+    expect(copied({ cut: true }, { selected: 'root', layerLockedIds: new Set(['a']) })).toEqual([
+      'root',
+    ]);
   });
 });

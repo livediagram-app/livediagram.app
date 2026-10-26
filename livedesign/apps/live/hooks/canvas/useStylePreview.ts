@@ -89,6 +89,10 @@ import { track } from '@/lib/telemetry';
 type Snapshot = { ids: Set<string>; originals: Map<string, Element> };
 type ArrowPreset = { style: BorderStyle; thickness: ArrowThickness; flow?: ArrowFlow };
 
+// A rotation tile turns an element unless it is locked.
+const rotateUnlocked = (el: Element, deg: number): Element =>
+  el.locked === true ? el : applyRotationToEl(el, deg);
+
 export function useStylePreview(deps: {
   editsBlocked: boolean;
   activeId: string;
@@ -277,9 +281,10 @@ export function useStylePreview(deps: {
     // Finish tiles (docs/specs/008-canvas/finish.md); `null` is Follow Tab.
     previewFinish: (v: Finish | null) => previewStyle((el) => applyFinishToEl(el, v)),
     commitFinish: (v: Finish | null) => commitStyle((el) => applyFinishToEl(el, v), 'Finish'),
-    // Rotation angle tiles (fixed 45° steps).
-    previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
-    commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),
+    // Rotation angle tiles (fixed 45° steps). A locked member keeps its angle, as the palette's setter leaves it
+    // (docs/specs/008-canvas/canvas-and-palette.md "Locking").
+    previewRotation: (deg: number) => previewStyle((el) => rotateUnlocked(el, deg)),
+    commitRotation: (deg: number) => commitStyle((el) => rotateUnlocked(el, deg), 'Rotation'),
     // Shape morph tiles. Id-scoped: the single menu morphs the clicked
     // element only (not its group), the multi menu passes every morphable
     // member — so the ids come from the caller, not the resolved selection.

@@ -54,7 +54,34 @@ export async function pagesTabOf(
     const { tab } = await api.json<TabResponse>(tabPath(designId, id));
     return { tabId: id, tab };
   } catch (err) {
+    // A tab the design does not hold answers a bare 404, which reads as "no such design"; the design is read
+    // to name its tabs, as read_design and update_design do.
+    if (tabId !== undefined && err instanceof ApiError && err.status === 404) {
+      const missing = await missingTab(api, designId, tabId);
+      if (missing) return missing;
+    }
     return refusedBy(err);
+  }
+}
+
+// The refusal for a tab id the design does not hold, naming its tabs; null when the design cannot be read either
+// (then the design is what is missing) or does hold the tab.
+async function missingTab(
+  api: ApiClient,
+  designId: string,
+  tabId: string,
+): Promise<PagesRefused | null> {
+  try {
+    const { design } = await api.json<DesignResponse>(designPath(designId));
+    const tabs = design.tabs.filter((t) => !t.outOfScope);
+    if (tabs.some((t) => t.id === tabId)) return null;
+    return {
+      ok: false,
+      code: 'unknown_tab',
+      message: `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+    };
+  } catch {
+    return null;
   }
 }
 

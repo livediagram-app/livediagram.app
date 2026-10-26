@@ -82,7 +82,7 @@ export function HeroKanban() {
           >
             <p
               aria-hidden
-              className="absolute left-4 top-4 hidden items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-brand-600 md:flex dark:text-brand-400"
+              className="absolute left-4 top-4 hidden items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-brand-700 md:flex dark:text-brand-400"
             >
               {lane.name}
               <span className="rounded-full bg-brand-500/15 px-1.5 py-px font-medium normal-case tracking-normal text-(--hero-ink)">

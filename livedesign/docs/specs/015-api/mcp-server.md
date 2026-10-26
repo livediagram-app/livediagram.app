@@ -325,7 +325,11 @@ and radii, and the content kinds' looks, media, attach points and pyramid varian
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
 pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
-of every template, so a tab read back as JSON writes again unchanged.
+of every template, so a tab read back as JSON writes again unchanged. A refusal names the element by its id, an ops
+`add` without one as "the added element" and an ops `update` by its `elementId` (never "element 1", its place in the
+op's own one-element list), and the fields like an unknown camelCase one share its first word (`strokeColour` →
+`strokeColor`, `strokeWidth`). `create_design` names the element and the rule a tab's elements break (a card's
+seventh tag, an id given twice) as `add_tab` does, before the general "every element needs id/type/x/y/width/height".
 
 ### 4.5 `list_templates`
 
@@ -712,7 +716,7 @@ An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
 such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
 code or status: a design in the Trash, a view-only grant, an id that names nothing) and a named input error
-(a tab id the design lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
+(a tab id the design lacks names its tabs, `rename_design` and `change_pages` included, whose tab routes answer a bare 404 that would otherwise read as "no such design"); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
 | Tool             | Result object                                                                                             |

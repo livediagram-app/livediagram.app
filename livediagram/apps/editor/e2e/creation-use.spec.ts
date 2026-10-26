@@ -5,8 +5,8 @@ import { syntheticExportZip } from './ms-whiteboard-board';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
 // "Making a document"), end to end against the real build and api worker, as a guest, in dark
 // mode: a board imported on its own is in Home's Jump Back In without being opened; a two-board
-// import puts neither there, though both are on the Recent page. Home and Recent are the shared Explorer's
-// (liveworkspace's page at /explorer, from its site build); the import is this site's /import page.
+// import puts neither there, though both are in All (Recent lists only what was opened). Home and All are the
+// shared Explorer's (liveworkspace's page at /explorer, from its site build); the import is this site's /import page.
 
 test.use({ colorScheme: 'dark' });
 
@@ -64,7 +64,7 @@ test('a board imported on its own is in Jump Back In without being opened', asyn
   expectNoPageErrors(pageErrors);
 });
 
-test('a two-board import marks neither used: Jump Back In stays empty, Recent has both', async ({
+test('a two-board import marks neither used: Jump Back In stays empty, All has both', async ({
   page,
   pageErrors,
 }) => {
@@ -78,7 +78,8 @@ test('a two-board import marks neither used: Jump Back In stays empty, Recent ha
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });
 
-  await page.goto('/explorer/recent');
+  // Never opened, so not in Recent either: All lists every item the person can open.
+  await page.goto('/explorer/all');
   await expect(page.getByRole('link', { name: SINGLE_BOARD }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: UNTITLED_BOARD }).first()).toBeVisible();
 

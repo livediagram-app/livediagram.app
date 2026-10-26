@@ -87,6 +87,16 @@ describe('app pushes', () => {
     ).toBe(400);
   });
 
+  it('take an updatedAt from a clock running fast as now', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const before = Date.now();
+    await asApp(`/app/items/${item.id}/summary`, { summary: {}, updatedAt: 1e15 });
+    const got = await body<{ item: Item }>(await call(`/items/${item.id}`, { auth: ada.auth }));
+    expect(got.item.updatedAt).toBeLessThanOrEqual(Date.now() + 5 * 60 * 1000);
+    expect(got.item.updatedAt).toBeGreaterThanOrEqual(before);
+  });
+
   it('replace one tab’s threads and actions, leaving other tabs', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);

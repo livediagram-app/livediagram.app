@@ -84,10 +84,10 @@ function fromElements(raw: unknown, themeId: string | undefined, kept: ReadonlyS
   for (const el of normalised) {
     const issue = elementValidationIssue(el);
     if (issue) {
-      const subject = el as { id?: unknown; type?: unknown; shape?: unknown };
+      // Every element passed planElementIssue above, so each is a Plan shape with its kind.
+      const subject = el as { id?: unknown; shape: string };
       const ref = typeof subject.id === 'string' && subject.id !== '' ? subject.id : 'an element';
-      const kind = typeof subject.shape === 'string' ? subject.shape : undefined;
-      return invalidResult(ref, kind, issue);
+      return invalidResult(ref, subject.shape, issue);
     }
   }
   const valid = normalised as Element[];

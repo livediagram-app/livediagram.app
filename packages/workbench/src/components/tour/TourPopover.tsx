@@ -149,7 +149,9 @@ export function TourPopover({
       data-tour-popover=""
       role="dialog"
       aria-label={
-        outro ? `${ariaPrefix}: ${title}` : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`
+        outro
+          ? `${ariaPrefix}: ${title}`
+          : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`
       }
       data-tour-card={outro ? 'outro' : 'step'}
       onPointerDown={(e) => e.stopPropagation()}
@@ -241,14 +243,26 @@ export function TourPopover({
               {onBack ? (
                 <button
                   type="button"
-                  onClick={onBack}
+                  aria-disabled={busy || undefined}
+                  onClick={() => {
+                    if (!busy) onBack();
+                  }}
                   className="inline-flex h-8 items-center rounded-lg px-3 text-[13px] font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                 >
                   Back
                 </button>
               ) : null}
               {/* The last card finishes the tour; every other step moves it on. */}
-              <AccentButton onClick={onNext}>{outro ? outro.finish : 'Next'}</AccentButton>
+              {/* While busy a press waits, the keyboard's too: the focused Next stays mounted while the next step
+                  prepares, and Enter or Space on it would otherwise skip that step. */}
+              <AccentButton
+                busy={busy}
+                onClick={() => {
+                  if (!busy) onNext();
+                }}
+              >
+                {outro ? outro.finish : 'Next'}
+              </AccentButton>
             </div>
           </div>
         </>
@@ -258,10 +272,19 @@ export function TourPopover({
 }
 
 // The primary button in the tab's accent, its label in the ink that reads on it (tour-colours inkOn).
-function AccentButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+function AccentButton({
+  busy,
+  onClick,
+  children,
+}: {
+  busy: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
+      aria-disabled={busy || undefined}
       onClick={onClick}
       className="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg bg-[var(--tour-accent)] px-3.5 text-[13px] font-medium text-[var(--tour-on-accent)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
     >

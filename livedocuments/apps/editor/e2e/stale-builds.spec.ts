@@ -60,7 +60,8 @@ test.describe('stale builds', () => {
     await openNewDocument(page);
     await page.waitForLoadState('networkidle');
     await page.goBack();
-    await expect(page).toHaveURL(new RegExp(`/document/${first}$`));
+    // The document page pins its open tab in the fragment (#t=<tab>), so back lands on it with one.
+    await expect(page).toHaveURL(new RegExp(`/document/${first}(#t=[^#]+)?$`));
     await expect.poll(() => loads.at(-1)).toBe(`/document/${first}`);
     await expect(page.locator(CANVAS)).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(CRASH)).toHaveCount(0);

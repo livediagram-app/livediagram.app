@@ -126,11 +126,10 @@ export function resolveBoxedMove({
       )
     : [];
   // Distribution guides only for the axis distribution actually drove
-  // (alignment didn't already claim it).
+  // (alignment didn't already claim it). distributionSnap returns a guide only
+  // for an axis it snapped, so a zero delta (already exactly even) keeps its guide.
   const distGuides = guidesOn
-    ? dist.guides.filter((g) =>
-        g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
-      )
+    ? dist.guides.filter((g) => (g.axis === 'x' ? !snap.snappedX : !snap.snappedY))
     : [];
   return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides };
 }
@@ -313,7 +312,12 @@ export function resolveBoxedResize({
   const unionNext =
     dragAspectLocked || anyAspectLocked || shiftHeld
       ? constrainedBounds(unionStart, mode, dx, dy, unionMinScale(elements, startBounds))
-      : nextBounds(unionStart, mode, dx, dy, false);
+      : flooredUnion(
+          unionStart,
+          nextBounds(unionStart, mode, dx, dy, false),
+          corner,
+          unionAxisFloors(elements, startBounds),
+        );
   const boundsById = new Map<string, ShapeBounds>();
   for (const el of elements) {
     if (!isBoxed(el)) continue;
@@ -330,6 +334,40 @@ export function resolveBoxedResize({
     boundsById.set(el.id, unionResizeMember(start, unionStart, unionNext, corner));
   }
   return { boundsById, guides: null };
+}
+
+// The smallest scale on each axis an unconstrained multi-resize may reach: the largest of its resizable members'
+// own floors on that axis. Below it a member stopped at its minimum size while the union kept shrinking, so it stuck
+// out of the box. Fixed-size members keep their size whatever the union does, so they set no floor.
+function unionAxisFloors(
+  elements: Element[],
+  startBounds: ReadonlyMap<string, ShapeBounds>,
+): { sx: number; sy: number } {
+  const floorFor = (side: number) => (side >= MIN_SIZE ? MIN_SIZE / side : 1);
+  let sx = 0;
+  let sy = 0;
+  for (const el of elements) {
+    const start = startBounds.get(el.id);
+    if (!start || !isBoxed(el) || isFixedSizeElement(el)) continue;
+    sx = Math.max(sx, floorFor(start.width));
+    sy = Math.max(sy, floorFor(start.height));
+  }
+  return { sx, sy };
+}
+
+// The union no smaller than its floors, around the same anchor (the corner opposite the handle).
+function flooredUnion(
+  start: ShapeBounds,
+  next: ShapeBounds,
+  corner: 'nw' | 'ne' | 'sw' | 'se',
+  floors: { sx: number; sy: number },
+): ShapeBounds {
+  const width = Math.max(next.width, start.width * floors.sx);
+  const height = Math.max(next.height, start.height * floors.sy);
+  if (width === next.width && height === next.height) return next;
+  const x = corner === 'nw' || corner === 'sw' ? start.x + start.width - width : start.x;
+  const y = corner === 'nw' || corner === 'ne' ? start.y + start.height - height : start.y;
+  return { x, y, width, height };
 }
 
 // The smallest uniform scale a constrained multi-resize may reach: the

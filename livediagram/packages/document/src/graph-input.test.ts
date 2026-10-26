@@ -185,6 +185,36 @@ describe('Mermaid', () => {
     expect(r.graph?.sequence?.participants.map((p) => p.id)).toEqual(['A', 'B']);
   });
 
+  it('drops a sequence edge to an unknown node, as every style does, never an arrow end at NaN', () => {
+    const els = layoutGraph({
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [
+        { from: 'a', to: 'ghost', label: 'lost' },
+        { from: 'a', to: 'b', label: 'hi' },
+      ],
+      style: 'sequence',
+    });
+    const messages = els.filter((e) => e.type === 'arrow' && 'label' in e && e.label);
+    expect(messages.map((m) => (m as { label?: string }).label)).toEqual(['hi']);
+    expect(JSON.stringify(els)).not.toContain('null');
+  });
+
+  it('holds a sequence graph to the Mermaid sequence caps', () => {
+    const nodes = Array.from({ length: 31 }, (_, i) => ({ id: `p${i}` }));
+    expect(resolveGraphInput({ graph: { nodes, edges: [], style: 'sequence' } }).error).toMatch(
+      /up to 30 participants/,
+    );
+    const edges = Array.from({ length: 301 }, () => ({ from: 'p0', to: 'p1' }));
+    expect(
+      resolveGraphInput({ graph: { nodes: nodes.slice(0, 2), edges, style: 'sequence' } }).error,
+    ).toMatch(/300 messages/);
+    // The same graph in another style is not a sequence, and keeps the graph caps.
+    expect(resolveGraphInput({ graph: { nodes, edges: [] } }).error).toBeUndefined();
+  });
+
   it('prefers graph over mermaid, and gives nothing for neither', () => {
     expect(resolveGraphInput({})).toEqual({});
     expect(

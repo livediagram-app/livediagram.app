@@ -35,6 +35,62 @@ describe('Dialog backdrop', () => {
   });
 });
 
+// docs/specs/007-editor/editor-app.md "Escape closes the dialog on top alone".
+describe('Dialog Escape', () => {
+  it('closes an open dialog', () => {
+    const { onClose } = open();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes only the dialog on top when one is open over another', () => {
+    const outer = vi.fn();
+    const inner = vi.fn();
+    function Stack({ confirming }: { confirming: boolean }) {
+      return (
+        <Dialog open onClose={outer} ariaLabel="Settings">
+          <p>Settings</p>
+          <Dialog open={confirming} onClose={inner} ariaLabel="Confirm">
+            <p>Sure?</p>
+          </Dialog>
+        </Dialog>
+      );
+    }
+    const { rerender } = render(<Stack confirming={false} />);
+    rerender(<Stack confirming />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(inner).toHaveBeenCalledTimes(1);
+    expect(outer).not.toHaveBeenCalled();
+    // With the confirm gone, Escape reaches Settings again.
+    rerender(<Stack confirming={false} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(outer).toHaveBeenCalledTimes(1);
+    expect(inner).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the dialog beneath open while the one on top holds Escape back', () => {
+    const outer = vi.fn();
+    const inner = vi.fn();
+    const { rerender } = render(
+      <Dialog open onClose={outer} ariaLabel="Settings">
+        <Dialog open={false} onClose={inner} ariaLabel="Busy" closeOnEscape={false}>
+          <p>Saving</p>
+        </Dialog>
+      </Dialog>,
+    );
+    rerender(
+      <Dialog open onClose={outer} ariaLabel="Settings">
+        <Dialog open onClose={inner} ariaLabel="Busy" closeOnEscape={false}>
+          <p>Saving</p>
+        </Dialog>
+      </Dialog>,
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(inner).not.toHaveBeenCalled();
+    expect(outer).not.toHaveBeenCalled();
+  });
+});
+
 // A fake on-screen keyboard: the visual viewport shrinks under the window, the window itself does not
 // (docs/specs/007-editor/editor-app.md "A dialog stays above the on-screen keyboard").
 type FakeViewport = EventTarget & {

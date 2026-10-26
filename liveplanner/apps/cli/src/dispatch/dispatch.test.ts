@@ -36,6 +36,10 @@ describe('route', () => {
       verb: { id: 'guide' },
       rest: ['edit'],
     });
+    // `el` is the element resource's alias (docs/specs/015-api/cli.md "Commands"); `doc` is none: liveplanner makes
+    // projects, not docs.
+    expect(route(['el'])).toEqual({ kind: 'resource', resource: 'element' });
+    expect(failureOf(() => route(['doc']))).toMatchObject({ exit: 2, code: 'usage' });
     expect(route(['tab', 'view', 'x'])).toMatchObject({
       kind: 'verb',
       verb: { id: 'tab.view' },

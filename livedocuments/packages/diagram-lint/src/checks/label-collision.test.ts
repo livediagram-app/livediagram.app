@@ -162,4 +162,65 @@ describe('label-collision', () => {
     expect(found[0]!.refs).toEqual(['y', 'n']);
     expect(found[0]!.message).toMatch(/label overlaps .*'s label/);
   });
+
+  it('finds the run a label sits on past an earlier run on the same level', () => {
+    // The upright case turned on its side: right along y=0, up, back and down to y=0 again, the label on the last
+    // run, past the first one's end. A line along that run is its own track.
+    const hook = arrow('x', 'a', 'b', ['e', 'w'], {
+      arrowStyle: 'angled',
+      label: 'go',
+      labelOffset: { t: 0.5, offset: 0 },
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 800, y: 0 },
+      curvePoints: [
+        { dx: -300, dy: 0 },
+        { dx: -300, dy: 100 },
+        { dx: -200, dy: 100 },
+        { dx: -200, dy: 0 },
+      ],
+    });
+    const along = arrow('y', 'a', 'b', ['e', 'w'], {
+      from: { kind: 'free', x: 250, y: 0 },
+      to: { kind: 'free', x: 350, y: 0 },
+    });
+    expect(of(lint(tabOf(hook, along)), 'label-collision')).toEqual([]);
+  });
+
+  it('strikes a label on a slanted line, which has no track of its own', () => {
+    const slant = arrow('x', 'a', 'b', ['e', 'w'], { label: 'go' });
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 800, 400),
+      box('c', 396, -200),
+      box('d', 396, 600),
+      slant,
+      arrow('y', 'c', 'd', ['s', 'n']),
+    );
+    expect(of(lint(tab), 'label-collision')[0]).toMatchObject({ refs: ['x', 'y'] });
+  });
+
+  it('looks for a clear spot along every run of a bent line', () => {
+    // The hook above, struck through its label by a level line: the clear spot is found two runs along.
+    const hook = arrow('x', 'a', 'b', ['s', 'n'], {
+      arrowStyle: 'angled',
+      label: 'go',
+      labelOffset: { t: 0.5, offset: 0 },
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 0, y: 800 },
+      curvePoints: [
+        { dx: 0, dy: -300 },
+        { dx: 100, dy: -300 },
+        { dx: 100, dy: -200 },
+        { dx: 0, dy: -200 },
+      ],
+    });
+    const strike = arrow('y', 'c', 'd', ['e', 'w'], {
+      from: { kind: 'free', x: -60, y: 300 },
+      to: { kind: 'free', x: 60, y: 300 },
+    });
+    expect(of(lint(tabOf(hook, strike)), 'label-collision')[0]).toMatchObject({
+      refs: ['x', 'y'],
+      fix: 'set x labelOffset={"t":0.25,"offset":0}',
+    });
+  });
 });

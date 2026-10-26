@@ -6,6 +6,7 @@ import {
   seedTab,
   settledBox,
   test,
+  serverNewUrl,
 } from './fixtures';
 
 // Where the whiteboard dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
@@ -18,7 +19,7 @@ const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 async function openWhiteboard(page: Page, viewport = { width: 1600, height: 900 }) {
   await page.setViewportSize(viewport);
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/new?template=whiteboard');
+  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await dock(page).waitFor();

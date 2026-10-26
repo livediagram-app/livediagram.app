@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ChangesetSummary } from '@liveplanner/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
-import { projectLs, projectView } from './project';
+import { projectListText, projectLs, projectView } from './project';
 import { columns } from './shared';
 import { tabLs, tabView } from './tab';
 
@@ -37,6 +37,10 @@ describe('project ls', () => {
     const some = await projectLs.run!(ctx, projectLs.input.parse({ query: 'AUTH', limit: '1' }));
     expect(some).toMatchObject({ more: 1, query: 'AUTH' });
     expect(projectLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
+    // Past the flag's own maximum, the line offers narrowing, never a --limit the flag would refuse.
+    expect(projectListText({ projects: [], more: 250 }).at(-1)).toBe(
+      '… 250 more; narrow with a query (--limit goes up to 200)',
+    );
   });
 
   it('says when nothing is there, or nothing matches', async () => {

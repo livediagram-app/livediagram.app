@@ -25,7 +25,7 @@ verbs, and the api owns every write ([Agents](../024-agents/README.md)). The res
 
 ## Commands
 
-Resource, then verb. `doc` and `el` are accepted for `project` and `element`.
+Resource, then verb. `el` is accepted for `element`. liveplanner makes projects, not docs, so there is no `doc` alias.
 
 | Command                                                                             | Does                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

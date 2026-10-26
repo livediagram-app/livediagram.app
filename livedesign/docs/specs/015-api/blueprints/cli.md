@@ -468,8 +468,9 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
   with `json=1`.
 - **`-q`** prints `quiet(output)`, one ref or id a line; a list's footer goes to stderr.
 - **Lists** stop at `--limit` (default `LIST_DEFAULT_LIMIT`, at most `LIST_MAX_LIMIT`) and end with one stdout line
-  when cut: `… <n> more; --limit <m>, or narrow with <how>`. An empty list prints `no <things>` (with
-  `match "<query>"` when narrowed).
+  when cut: `… <n> more; --limit <m>, or narrow with <how>` (`moreLine`); when showing them all would take more
+  than the flag's maximum, `… <n> more; narrow with <how> (--limit goes up to <max>)`, never a `--limit` the flag
+  refuses. An empty list prints `no <things>` (with `match "<query>"` when narrowed).
 - **Errors** go to stderr in `formatError`'s shape:
 
 ```text
@@ -587,10 +588,10 @@ max-age=300` (CLI72).
 | Path                           | Success                                                                                                                        | Failures                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | `GET /api/templates`           | 200 `TemplateCatalogueResponse = { categories, templates: { kind, title, description, category }[] }`, `list_templates`' shape | none                                                                                             |
-| `GET /api/templates/:kind`     | 200 `text/plain`: `renderView` outline of `buildTemplateTab(kind)`; `json=1` its JSON                                          | 404 `unknown_template { kinds }`                                                                 |
+| `GET /api/templates/:kind`     | 200 `text/plain`: `renderView` outline of `buildTemplateTab(kind)`; `json=1` its JSON                                          | 404 `unknown_template { kinds }`, a malformed escape too                                         |
 | `GET /api/icons?query=&limit=` | 200 `IconSearchResponse = { icons: { id, label, set: 'line' \| 'technology' }[], more }`                                       | 400 `invalid_value` (query 1 to `ICON_QUERY_MAX` characters, limit 1 to `ICON_SEARCH_MAX_LIMIT`) |
 | `GET /api/schema`              | 200 `text/plain`: `elementFormatText()`, the kinds one line each                                                               | none                                                                                             |
-| `GET /api/schema/:kind`        | 200 `text/plain`: `elementFormatText(kind)`, the kind's fields, values and defaults                                            | 404 `unknown_kind { kinds }`                                                                     |
+| `GET /api/schema/:kind`        | 200 `text/plain`: `elementFormatText(kind)`, the kind's fields, values and defaults                                            | 404 `unknown_kind { kinds }`, a malformed escape too                                             |
 
 - `searchIcons(query, limit)` (`@liveworkspace/icons`) ranks the line-art and Technology catalogues by `paletteRank`
   over each icon's label and keywords, its id's words and a Technology icon's provider ("aws lambda" finds

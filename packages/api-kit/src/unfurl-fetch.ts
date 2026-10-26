@@ -14,10 +14,16 @@ export const UNFURL_MAX_HTML_BYTES = 512 * 1024; // only the <head> is needed
 async function collectMeta(res: Response, maxBytes: number): Promise<CollectedMeta> {
   const collected: CollectedMeta = {};
   let titleBuf = '';
+  // The document's <title> is the first one: the reader runs on past </head>, where an inline SVG's own <title>
+  // elements (an icon's "Menu", "Close") would otherwise be glued onto it.
+  let titles = 0;
   const rewriter = new HTMLRewriter()
     .on('title', {
+      element() {
+        titles += 1;
+      },
       text(t) {
-        titleBuf += t.text;
+        if (titles === 1) titleBuf += t.text;
       },
     })
     .on('meta', {

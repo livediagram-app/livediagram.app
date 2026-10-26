@@ -73,16 +73,17 @@ export default defineConfig({
         /signed-in\//,
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
+        /marketing-header-fit\.spec\.ts/,
         /workbench-(embed|workspace)\.spec\.ts/,
       ],
     },
-    // The optical audit of the help centre, telemetry dashboard and marketing site: the one suite
-    // that needs their builds, so CI gives it its own job and the shards build only live
-    // (docs/specs/003-system-architecture/e2e-smoke.md "When it runs").
+    // The optical audit of the help centre, telemetry dashboard and marketing site, and the marketing
+    // header's phone fit: the suites that need their builds, so CI gives them their own job and the
+    // shards build only live (docs/specs/003-system-architecture/e2e-smoke.md "When it runs").
     {
       name: 'sites',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: /optical-audit-sites\.spec\.ts/,
+      testMatch: /(optical-audit-sites|marketing-header-fit)\.spec\.ts/,
     },
     ...(workbench
       ? [

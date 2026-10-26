@@ -151,9 +151,9 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-design-route.md).
+// links to (docs/specs/007-editor/new-design-route.md), made on livedesign (serverNewUrl) so seedTab can write it.
 export async function openStartBlank(page: Page): Promise<void> {
-  await page.goto('/new?blank=1');
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
@@ -162,6 +162,29 @@ export async function openStartBlank(page: Page): Promise<void> {
 // "start a blank design"). livedesign has one mode, Pages, so there is no Mode step to pass.
 export async function startBlankDesign(page: Page): Promise<void> {
   await openStartBlank(page);
+}
+
+// A /new address that makes the design on livedesign. A guest's own /new makes it in This Browser
+// (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
+// and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
+// /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new
+// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), and the
+// folder is one of theirs, made at the index.
+export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
+  let owner = adoptedGuests.get(page) ?? adoptedGuests.get(page.context());
+  if (!owner) {
+    owner = await mintGuest(page.request);
+    await adoptGuest(page, owner);
+  }
+  const res = await page.request.post('/api/index/folders', {
+    headers: ownerHeaders(owner),
+    data: { name: 'e2e' },
+  });
+  expect(res.ok(), `folder create: ${res.status()}`).toBe(true);
+  const { folder } = (await res.json()) as { folder: { id: string } };
+  const at = new URL(url, 'http://e2e.invalid');
+  at.searchParams.set('folder', folder.id);
+  return `${at.pathname}${at.search}`;
 }
 
 export type Seed = Record<string, unknown>[];
@@ -227,10 +250,14 @@ export function guestTokenFor(owner: string): string | null {
   return guestTokens.get(owner) ?? null;
 }
 
+// Whom each page or context opens as, so serverNewUrl keeps a spec's own guest rather than minting a second.
+const adoptedGuests = new WeakMap<Page | BrowserContext, string>();
+
 // The page (or every page of a context) opens as this guest: its token is where the app keeps it.
 export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
   const token = guestTokens.get(owner);
   if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  adoptedGuests.set(target, owner);
   await target.addInitScript((t) => {
     try {
       localStorage.setItem('livedesign:v2:guest-token', t);

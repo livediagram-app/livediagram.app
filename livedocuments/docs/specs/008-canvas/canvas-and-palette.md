@@ -644,7 +644,7 @@ The remaining shape kinds (hexagon, stadium, document, cloud, devices, …) have
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | `⌘Z`             | Undo                                                                                                         |
 | `⌘⇧Z` / `Ctrl Y` | Redo                                                                                                         |
-| `⌘X`             | Cut                                                                                                          |
+| `⌘X`             | Cut (copies what its delete takes: never a locked element, nor one on a locked layer, which both stay put)   |
 | `⌘C`             | Copy                                                                                                         |
 | `⌘V`             | Paste (offset copy, from the OS clipboard; also routes pasted images / files to upload)                      |
 | `⌘D`             | Duplicate                                                                                                    |

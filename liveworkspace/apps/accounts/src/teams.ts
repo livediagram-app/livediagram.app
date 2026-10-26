@@ -582,6 +582,11 @@ export async function inviteMember(
   });
 }
 
+// Appended to a member row's UPDATE: it never takes the team's last joined admin, so two admins demoting or removing
+// each other at once can't both pass the count read before it and leave the team with none. ?1 is the team id.
+const KEEPS_AN_ADMIN = `AND NOT (role = 'admin' AND status = 'joined' AND
+  (SELECT COUNT(*) FROM team_member WHERE teamId = ?1 AND status = 'joined' AND role = 'admin') <= 1)`;
+
 async function adminCount(db: D1Database, teamId: string): Promise<number> {
   const row = await db
     .prepare(
@@ -650,22 +655,33 @@ export async function setMemberRole(
   ) {
     return fail(409, 'last_admin');
   }
-  await db.batch([
+  const [, updated] = await db.batch([
     db.prepare(BUMP),
     db
-      .prepare(`UPDATE team_member SET role = ?, updatedAt = ?, rev = ${REV} WHERE id = ?`)
-      .bind(rawRole, now, memberId),
-    teamEvent(db, {
-      id: `team_role_changed:${memberId}:${now}`,
-      type: 'team_role_changed',
-      teamId,
-      teamName: me.teamName,
-      actor,
-      at: now,
-      scopes: teamScopes(teamId, [target.userId]),
-      detail: { personId: target.userId, memberName: target.memberName, role: rawRole },
-    }),
+      .prepare(
+        `UPDATE team_member SET role = ?2, updatedAt = ?3, rev = ${REV} WHERE id = ?4
+         ${rawRole === 'member' ? KEEPS_AN_ADMIN : ''}`,
+      )
+      .bind(teamId, rawRole, now, memberId),
+    teamEvent(
+      db,
+      {
+        id: `team_role_changed:${memberId}:${now}`,
+        type: 'team_role_changed',
+        teamId,
+        teamName: me.teamName,
+        actor,
+        at: now,
+        scopes: teamScopes(teamId, [target.userId]),
+        detail: { personId: target.userId, memberName: target.memberName, role: rawRole },
+      },
+      {
+        sql: 'EXISTS (SELECT 1 FROM team_member WHERE id = ? AND role = ? AND updatedAt = ?)',
+        args: [memberId, rawRole, now],
+      },
+    ),
   ]);
+  if ((updated?.meta?.changes ?? 0) === 0) return fail(409, 'last_admin');
   return ok({ id: memberId, role: rawRole });
 }
 
@@ -698,13 +714,14 @@ export async function removeMember(
     }
     if ((await adminCount(db, teamId)) <= 1) return fail(409, 'last_admin');
   }
-  await db.batch([
+  const [, updated] = await db.batch([
     db.prepare(BUMP),
     db
       .prepare(
-        `UPDATE team_member SET status = 'removed', updatedAt = ?, rev = ${REV} WHERE id = ?`,
+        `UPDATE team_member SET status = 'removed', updatedAt = ?2, rev = ${REV} WHERE id = ?3
+         ${KEEPS_AN_ADMIN}`,
       )
-      .bind(now, memberId),
+      .bind(teamId, now, memberId),
     // A member removed, or leaving; an invitation withdrawn or a refusal cleared is no news.
     ...(target.status === 'joined'
       ? [
@@ -729,6 +746,7 @@ export async function removeMember(
         ]
       : []),
   ]);
+  if ((updated?.meta?.changes ?? 0) === 0) return fail(409, 'last_admin');
   return ok({ id: memberId, teamDeleted: false, removed });
 }
 

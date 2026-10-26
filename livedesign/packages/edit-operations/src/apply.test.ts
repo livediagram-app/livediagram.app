@@ -1,11 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS } from '@livedesign/api-schema';
-import {
-  MAX_ELEMENTS_PER_TAB,
-  applyElementOps,
-  type Element,
-  type Tab,
-} from '@livedesign/design';
+import { MAX_ELEMENTS_PER_TAB, applyElementOps, type Element, type Tab } from '@livedesign/design';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';
@@ -317,5 +312,40 @@ describe('targets that match nothing', () => {
     if (!('errors' in out)) throw new Error('applied');
     const last = out.errors.find((e) => e.operation === 3)!;
     expect(last.details?.[0]).toBe('"other" matches nothing');
+  });
+});
+
+// EO58: an arrow end attached to nothing on the result is refused, never stored as an arrow to nowhere.
+describe('an arrow end attached to nothing', () => {
+  const arrow = (id: string, from: string, to: string) =>
+    add({
+      id,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: from, anchor: 'e' },
+      to: { kind: 'pinned', elementId: to, anchor: 'w' },
+    });
+
+  it('is refused when it names no element', () => {
+    const r = refused(run([arrow('x1', 'n1', 'ghost')]));
+    expect(r).toMatchObject({ code: 'invalid_value', operation: 1 });
+    expect(r.details?.[0]).toMatch(/to: "ghost" is not an element on the tab/);
+  });
+
+  it('is refused when the element it names goes earlier in the same edit', () => {
+    expect(refused(run([{ op: 'rm', target: 'n8' }, arrow('x2', 'n1', 'n8')]))).toMatchObject({
+      code: 'invalid_value',
+      operation: 2,
+    });
+  });
+
+  it('is refused when a set re-pins an end to nothing', () => {
+    const r = refused(
+      run([set('a7', { to: { kind: 'pinned', elementId: 'ghost', anchor: 'n' } })]),
+    );
+    expect(r.details?.[0]).toMatch(/to: "ghost"/);
+  });
+
+  it('still adds an arrow between elements on the tab', () => {
+    applied(run([arrow('x3', 'n1', 'n8')]));
   });
 });

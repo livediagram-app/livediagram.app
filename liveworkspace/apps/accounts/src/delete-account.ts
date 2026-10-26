@@ -50,7 +50,8 @@ export async function deleteAccount(
 ): Promise<Response> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
-  const body = (await request.json().catch(() => ({}))) as { token?: unknown };
+  // `?? {}` too: a body of `null` parses, and reading `.token` off it would answer 500 instead of 400.
+  const body = ((await request.json().catch(() => null)) ?? {}) as { token?: unknown };
   const token = typeof body.token === 'string' ? body.token : '';
   if (!clientId || !authorization || !token) {
     return Response.json(

@@ -9,7 +9,20 @@ export const metadata: Metadata = {
   description:
     'Anonymous, first-party product usage for every liveworkspace app, in the open. No third-party vendors; data is never sold or shared beyond this page.',
   alternates: { canonical: '/telemetry' },
-  openGraph: { url: '/telemetry' },
+  openGraph: {
+    title: 'Telemetry · liveworkspace',
+    description:
+      'Anonymous, first-party product usage for every liveworkspace app, in the open. No third-party vendors; data is never sold or shared beyond this page.',
+    url: '/telemetry',
+    siteName: 'liveworkspace',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Telemetry · liveworkspace',
+    description:
+      'Anonymous, first-party product usage for every liveworkspace app, in the open. No third-party vendors; data is never sold or shared beyond this page.',
+  },
 };
 
 export default function TelemetryLayout({ children }: { children: ReactNode }) {

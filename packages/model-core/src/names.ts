@@ -41,10 +41,13 @@ export function truncateName(raw: string): string {
 // two letters; multi-word names use the first letter of the first and last
 // word ("Curious Falcon" -> "CF"). Here rather than in the editor so the
 // headless export draws the same initials the canvas does (a Roll call's
-// people, docs/specs/020-import-export/export-fidelity.md).
+// people, docs/specs/020-import-export/export-fidelity.md). Letters are code
+// points, so a name that starts with an emoji or an astral letter keeps it
+// whole rather than showing half of it as a replacement character.
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
+  const first = (word: string, n = 1) => Array.from(word).slice(0, n).join('');
+  if (parts.length === 1) return first(parts[0]!, 2).toUpperCase();
+  return (first(parts[0]!) + first(parts[parts.length - 1]!)).toUpperCase();
 }

@@ -48,11 +48,13 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
   await expect(avatar.first()).toBeVisible();
   await expect(page.locator('[data-agent-focus-id="api"]')).toBeVisible();
   await avatar.first().hover();
-  await expect(page.getByText(/^Adding the payment flow · Online/)).toBeInViewport();
+  // In the card itself: the avatar also carries the line in a hidden copy it is described by.
+  const card = page.locator('[data-hint="hover-card"]');
+  await expect(card.getByText(/^Adding the payment flow · Online/)).toBeInViewport();
   // The card fades in; the screenshot waits for it.
-  await page
-    .locator('[data-hint="hover-card"]')
-    .evaluate((el) => Promise.all(el.getAnimations().map((animation) => animation.finished)));
+  await card.evaluate((el) =>
+    Promise.all(el.getAnimations().map((animation) => animation.finished)),
+  );
   await page.screenshot({ path: test.info().outputPath('agent-presence.png') });
 
   // The Collaborators modal counts Webber alone and shows the status line on his row.

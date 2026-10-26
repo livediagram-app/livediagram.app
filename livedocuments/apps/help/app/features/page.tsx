@@ -3,7 +3,7 @@ import { site } from '@/lib/help-site';
 
 export const metadata = featuresMetadata(
   site,
-  'Browse livedocuments feature guides by area: User Interface, Explorer, Palette, Canvas, Tabs, Collaboration, and Tools.',
+  'Browse livedocuments feature guides by area: Pages, User Interface, Explorer, Selection Modes, Palette, Canvas, Tabs, Collaboration, Tools, and Search Panel.',
 );
 
 export default function Features() {

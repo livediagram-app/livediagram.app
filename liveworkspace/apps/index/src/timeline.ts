@@ -52,8 +52,8 @@ type Db = D1Database;
 // A name an app reports for whoever did it, cut to this.
 const ACTOR_NAME_MAX = 200;
 // A report from further ahead than this is taken as now: a clock running fast can't pin an event to the
-// top of everyone's Timeline.
-const FUTURE_SLACK_MS = 5 * 60 * 1000;
+// top of everyone's Timeline (nor an item to the top of every list, app-routes.ts's summary push).
+export const FUTURE_SLACK_MS = 5 * 60 * 1000;
 
 export type EventInput = {
   itemId: string;
@@ -401,8 +401,8 @@ export function timelineNewQuery(person: Person, app: App | null, now: number): 
 export async function handleTimeline(ctx: PersonContext): Promise<Response> {
   const { request, env, url, segments, person } = ctx;
   if (segments.length === 2 && segments[1] === 'dismiss' && request.method === 'POST') {
-    const body = (await request.json().catch(() => null)) as { ids?: unknown } | null;
-    const ids = body?.ids;
+    // readObject, like every other route: an oversized body is refused before it is parsed.
+    const ids = (await readObject(request))?.ids;
     if (
       !Array.isArray(ids) ||
       ids.length === 0 ||

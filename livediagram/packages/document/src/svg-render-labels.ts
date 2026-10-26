@@ -140,16 +140,27 @@ export function wrapExportRuns(
     cur = [];
     curW = 0;
   };
+  // Whether white space came since the last word: a run that starts mid-word (part of a word bolded) carries on
+  // that word, with no space put in and no break there.
+  let spaced = false;
   for (const run of runs) {
     const plain = labelMeasure(run.size, run.bold, run.italic, fontFamily);
     const measure = trackingPx ? (s: string) => plain(s) + trackingPx * [...s].length : plain;
     const spaceW = Math.max(measure(' '), run.size * 0.25);
     run.text.split('\n').forEach((para, pi) => {
       if (pi > 0) pushLine();
-      for (const word of para.split(/\s+/).filter(Boolean)) {
+      for (const token of para.split(/(\s+)/)) {
+        if (token === '') continue;
+        if (/^\s/.test(token)) {
+          spaced = true;
+          continue;
+        }
+        const word = token;
         const wordW = measure(word);
-        if (curW > 0 && curW + spaceW + wordW > maxWidth) pushLine();
-        const frag = (curW > 0 ? ' ' : '') + word;
+        const glued = curW > 0 && !spaced;
+        spaced = false;
+        if (curW > 0 && !glued && curW + spaceW + wordW > maxWidth) pushLine();
+        const frag = (curW > 0 && !glued ? ' ' : '') + word;
         const last = cur[cur.length - 1];
         if (
           last &&

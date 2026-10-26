@@ -212,6 +212,28 @@ describe('apply', () => {
     expect(summary.skipped).toBeGreaterThan(0);
   });
 
+  it('refuses a concurrency that would start no workers, before touching anything', async () => {
+    for (const concurrency of [Number.NaN, 0, -2, 1.5]) {
+      const { runner, commands } = fakeRunner();
+      await expect(
+        apply({
+          bundleDir: outDir,
+          env: 'staging',
+          ledgerPath: join(tempDir('concurrency'), 'ledger.sqlite'),
+          dryRun: false,
+          runner,
+          http: fakeHttp().http,
+          vars: VARS,
+          wrangler: ['wrangler'],
+          concurrency,
+          log: () => {},
+        }),
+        String(concurrency),
+      ).rejects.toThrow(/--concurrency/);
+      expect(commands).toEqual([]);
+    }
+  });
+
   it('refuses a bundle planned at an older ledger generation', async () => {
     const ledgerPath = join(tempDir('stale'), 'ledger.sqlite');
     const opts = {

@@ -755,7 +755,7 @@ describe('DocumentRoom op-role enforcement', () => {
     editor.ws.sent.length = 0;
 
     // A view-only visitor must not inject canvas edits into peers.
-    sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: {} } });
+    sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: { id: 't' } } });
 
     expect(opsReceived(editor.ws)).toHaveLength(0);
   });
@@ -919,7 +919,7 @@ describe('DocumentRoom hibernation survival', () => {
     editor.sent.length = 0;
 
     // The viewer still can't inject a mutation op (verified role survived) ...
-    sendFrame(after, viewer, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: {} } });
+    sendFrame(after, viewer, { kind: 'op', op: { kind: 'tab', tabId: 't', tab: { id: 't' } } });
     expect(editor.sent).toHaveLength(0);
     // ... the editor still relays under the SAME ephemeral id ...
     sendFrame(after, editor, { kind: 'op', op: { kind: 'cursor', tabId: 't', x: 1, y: 2 } });
@@ -1286,6 +1286,23 @@ describe('DocumentRoom freeing a selection lock (docs/specs/007-editor/editor-ap
     sendFrame(room, bystander, unlock());
     expect(released(holder)).toEqual([
       { kind: 'selection-released', elementId: 'el-1', by: 'bystander' },
+    ]);
+  });
+
+  it("lets a tab-scoped editor free a hold on its own tab only, never on one it can't reach", () => {
+    const { room, state } = newRoom();
+    const scoped = makeSocket();
+    const onOther = makeSocket();
+    const onMine = makeSocket();
+    seedSession(state, scoped, presence('scoped', 'edit'));
+    (scoped.attachment as { tabScope?: string }).tabScope = 't1';
+    seedSession(state, onOther, { ...presence('other', 'edit'), tabId: 't2' });
+    seedSession(state, onMine, { ...presence('mine', 'edit'), tabId: 't1' });
+    sendFrame(room, scoped, unlock('other'));
+    sendFrame(room, scoped, unlock('mine'));
+    expect(released(onOther)).toEqual([]);
+    expect(released(onMine)).toEqual([
+      { kind: 'selection-released', elementId: 'el-1', by: 'scoped' },
     ]);
   });
 

@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  pageOwnerHeaders,
+  startBlankDocument,
+  test,
+} from './fixtures';
 
 // What livediagram owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md): the
 // editor's Explorer panel around the open canvas, This Browser in it for the canvases the index never sees (the old
@@ -10,7 +17,17 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 const sidebar = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
 
+// Recent and Favourites are the Library's pages, folded under it until it is opened.
+const LIBRARY_PAGES = new Set(['Recent', 'Favourites']);
+
 async function showView(page: Page, name: string): Promise<void> {
+  if (LIBRARY_PAGES.has(name)) {
+    const library = sidebar(page).getByRole('treeitem', { name: 'Library', exact: true });
+    await expect(library).toBeVisible();
+    if ((await library.getAttribute('aria-expanded')) !== 'true') {
+      await sidebar(page).getByRole('button', { name: 'Expand Library', exact: true }).click();
+    }
+  }
   await sidebar(page).getByRole('button', { name, exact: true }).click();
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
@@ -33,6 +50,12 @@ test('the panel names the open canvas, and the Explorer opens it again', async (
   await startBlankDocument(page);
   await dismissQuickTour(page);
   const id = new URL(page.url()).pathname.split('/').pop()!;
+  // startBlankDocument files it in a folder of its own (serverNewUrl): out to My Work's root, where this looks.
+  const moved = await page.request.patch(`/api/index/items/${id}`, {
+    headers: await pageOwnerHeaders(page),
+    data: { folderId: null },
+  });
+  expect(moved.ok(), `move to the root: ${moved.status()}`).toBe(true);
 
   // The panel's card is the open canvas as the index has it; renaming it there renames it at the index.
   const current = await openExplorerPanel(page);

@@ -87,6 +87,13 @@ describe('server events', () => {
     ).resolves.toBeUndefined();
 
     vi.useFakeTimers();
+    // AbortSignal.timeout runs on Node's own timers, which fake timers never advance: left alone, this waited the
+    // real two seconds and timed out on a busy machine. Its stand-in aborts on a faked setTimeout instead.
+    vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(new DOMException('timed out', 'TimeoutError')), ms);
+      return controller.signal;
+    });
     try {
       const hung = {
         fetch: (request: Request) =>

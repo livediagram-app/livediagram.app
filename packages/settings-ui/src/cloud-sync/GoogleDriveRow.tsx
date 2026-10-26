@@ -4,7 +4,7 @@
 // button on the right; a second line only while something needs the person. The status keeps one width per phase
 // (Layout stability). Syncing is the service's and automatic, so there is no Sync now: opening the row asks for a
 // pass (`POST /api/drive/check`), and the row reads the connection again only while a pass or a first copy runs.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { lucideCloud, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Button, ConfirmDialog, lucideGlyph } from '@liveworkspace/ui';
 import {
@@ -117,8 +117,20 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
   const [busy, setBusy] = useState(false);
   const [reads, setReads] = useState(0);
 
+  // Only the newest read lands: an older one answering late (the opening pair, a poll) would undo a newer answer,
+  // and one still on its way when Disconnect was pressed brought the connection back. Disconnecting and leaving
+  // the row each start a new turn too.
+  const readTurn = useRef(0);
+  useEffect(
+    () => () => {
+      readTurn.current += 1;
+    },
+    [],
+  );
   const read = useCallback(async () => {
+    const turn = ++readTurn.current;
     const result = await client.connection();
+    if (turn !== readTurn.current) return;
     setReads((n) => n + 1);
     setRow((previous) => {
       if (result.ok) {
@@ -182,7 +194,9 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
     setConfirming(false);
     setBusy(true);
     setActionError(null);
+    readTurn.current += 1;
     const result = await client.disconnect();
+    readTurn.current += 1;
     setBusy(false);
     if (result.ok || result.error === 'not_connected') setRow({ kind: 'not_connected' });
     else setActionError(DISCONNECT_FAILED);

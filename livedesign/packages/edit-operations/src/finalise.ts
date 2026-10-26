@@ -23,7 +23,7 @@ import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';
 import { invalidResult } from './rejections';
-import { currentElements, replaceElement, type EditState } from './state';
+import { currentElements, refsOf, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';
 import { ALIAS_FIELDS } from './fields';
 
@@ -85,10 +85,39 @@ function normaliseTouched(state: EditState, log: EditLog): void {
 }
 
 function touchedIssue(state: EditState): EditRejection | null {
-  for (const id of state.touched.keys()) {
+  for (const [id, touch] of state.touched) {
     const el = state.byId.get(id);
     const issue = el && elementValidationIssue(el);
     if (issue) return invalidResult(id, kindOf(el), issue);
+    const loose = el?.type === 'arrow' ? looseEnd(state, el) : null;
+    if (loose) return { ...loose, operation: touch.operation };
+  }
+  return null;
+}
+
+// An end of a touched arrow attached to nothing on the result (EO58): pinned to an id no element holds, or hung off
+// one no arrow holds, whether it named nothing from the start or what it named went earlier in the same edit. The
+// arrow was stored, drawn toward the canvas origin, an arrow to nowhere.
+function looseEnd(state: EditState, arrow: ArrowElement): Omit<EditRejection, 'operation'> | null {
+  for (const side of ['from', 'to'] as const) {
+    const end = arrow[side];
+    const target =
+      end.kind === 'pinned' ? end.elementId : end.kind === 'on-arrow' ? end.arrowId : null;
+    if (target === null) continue;
+    const held = state.byId.get(target);
+    if (held && (end.kind === 'pinned' ? held.type !== 'arrow' : held.type === 'arrow')) continue;
+    // An end already loose before this edit, left as it was, is not this edit's doing: refusing it would block
+    // every edit that so much as carries the arrow.
+    const was = state.before.get(arrow.id);
+    const unchanged = was?.type === 'arrow' && JSON.stringify(was[side]) === JSON.stringify(end);
+    if (unchanged && !state.before.has(target)) continue;
+    return {
+      code: 'invalid_value',
+      details: [
+        `${refsOf(state).refOf(arrow.id)} ${side}: ${JSON.stringify(target)} is not ${end.kind === 'pinned' ? 'an element' : 'an arrow'} on the tab`,
+      ],
+      hint: 'attach the end to something on the tab, or leave it free',
+    };
   }
   return null;
 }

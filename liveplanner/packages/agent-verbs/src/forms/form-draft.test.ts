@@ -138,6 +138,29 @@ describe('syncChoiceField', () => {
     expect(syncChoiceField(crowded, 'q-sev')).toMatchObject({ code: 'field_options_full' });
   });
 
+  it('refuses a Rating field on a shorter scale, and a field the type hides', () => {
+    const stars = { id: 'f-stars', label: 'Stars', kind: 'rating' as const, scale: 5 };
+    const hidden = { id: 'f-old', label: 'Old Notes', kind: 'text' as const };
+    const type = {
+      ...BUG,
+      fields: [...BUG.fields, 'f-stars'],
+      custom: [...BUG.custom!, stars, hidden],
+    };
+    const d = formDraft(bugForm(), { ...formWorld(), types: [type] });
+    const ten: FormQuestion = { id: 'q-sum', type: 'rating', prompt: 'How bad?', scale: 10 };
+    expect(setGoesTo(d, ten, 'Stars')).toMatchObject({ code: 'field_does_not_fit' });
+    expect(setGoesTo(d, { ...ten, scale: 5 }, 'Stars')).toBeNull();
+    // A question with no scale rates out of 5, past a 3-star field.
+    const three = { ...type, custom: [{ ...stars, scale: 3 }, hidden] };
+    const small = formDraft(bugForm(), { ...formWorld(), types: [three] });
+    expect(setGoesTo(small, { ...ten, scale: undefined }, 'Stars')).toMatchObject({
+      code: 'field_does_not_fit',
+    });
+    expect(setGoesTo(d, q(d.form, 'q-sum'), 'Old Notes')).toMatchObject({
+      code: 'field_does_not_fit',
+    });
+  });
+
   it('refuses a mapped choice given Other', () => {
     const form = bugForm();
     const withOther = {

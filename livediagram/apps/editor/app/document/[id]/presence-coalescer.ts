@@ -26,6 +26,12 @@ export type PresenceCoalescer = {
   cursor(from: string, pos: CursorPos): void;
   laser(from: string, incoming: { tabId: string; point: LaserPoint; config?: LaserConfig }): void;
   avatar(from: string, entry: AvatarEntry): void;
+  /**
+   * Forget buffered packets from anyone not in `present` (the roster just received). A peer's last
+   * cursor move often lands in the same frame as the roster that drops them; flushed after the
+   * roster's prune, it would put their cursor back on every screen until the next roster.
+   */
+  prune(present: ReadonlySet<string>): void;
   /** Drop a pending frame on teardown, so a flush can't land after unmount. */
   cancel(): void;
 };
@@ -139,6 +145,11 @@ export function createPresenceCoalescer({
       // character has one position at a time.
       pendingAvatars.set(from, entry);
       schedule();
+    },
+    prune(present) {
+      for (const pending of [pendingCursors, pendingLasers, pendingAvatars]) {
+        for (const id of pending.keys()) if (!present.has(id)) pending.delete(id);
+      }
     },
     cancel() {
       if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);

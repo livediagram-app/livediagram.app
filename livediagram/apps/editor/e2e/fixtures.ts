@@ -164,9 +164,11 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
 // creates the document there and then, and lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
-export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
-  await page.goto(url);
+// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is
+// made on livediagram (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
+// own create, which keeps it in This Browser.
+export async function createInMode(page: Page, mode: string, url?: string): Promise<string> {
+  await page.goto(url ?? (await serverNewUrl(page)));
   await page.getByText('New Canvas', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
@@ -258,9 +260,9 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md).
+// links to (docs/specs/007-editor/new-document-route.md), made on livediagram (serverNewUrl) so seedTab can write it.
 export async function openStartBlank(page: Page): Promise<void> {
-  await page.goto('/new?blank=1');
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
@@ -269,7 +271,7 @@ export async function openStartBlank(page: Page): Promise<void> {
 // (docs/specs/012-collaboration/workshop-mode.md "Templates"). Where the session kit lives: the
 // Collaborate and Stickers categories and the Session strip.
 export async function openBlankSession(page: Page): Promise<void> {
-  await page.goto('/new?template=blank-session');
+  await page.goto(await serverNewUrl(page, '/new?template=blank-session'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
@@ -281,6 +283,29 @@ export async function startBlankDocument(page: Page): Promise<void> {
   const start = startScreen(page, /^Start Diagramming$/);
   await start.getByRole('button', { name: 'Close' }).click();
   await start.waitFor({ state: 'detached' });
+}
+
+// A /new address that makes the document on livediagram. A guest's own /new makes it in This Browser
+// (docs/specs/006-document/save-locations.md "The default depends on who is creating"), where the index holds no item
+// and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
+// /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new
+// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), and the
+// folder is one of theirs, made at the index.
+export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
+  let owner = adoptedGuests.get(page) ?? adoptedGuests.get(page.context());
+  if (!owner) {
+    owner = await mintGuest(page.request);
+    await adoptGuest(page, owner);
+  }
+  const res = await page.request.post('/api/index/folders', {
+    headers: ownerHeaders(owner),
+    data: { name: 'e2e' },
+  });
+  expect(res.ok(), `folder create: ${res.status()}`).toBe(true);
+  const { folder } = (await res.json()) as { folder: { id: string } };
+  const at = new URL(url, 'http://e2e.invalid');
+  at.searchParams.set('folder', folder.id);
+  return `${at.pathname}${at.search}`;
 }
 
 export type Seed = Record<string, unknown>[];
@@ -346,10 +371,14 @@ export function guestTokenFor(owner: string): string | null {
   return guestTokens.get(owner) ?? null;
 }
 
+// Whom each page or context opens as, so serverNewUrl keeps a spec's own guest rather than minting a second.
+const adoptedGuests = new WeakMap<Page | BrowserContext, string>();
+
 // The page (or every page of a context) opens as this guest: its token is where the app keeps it.
 export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
   const token = guestTokens.get(owner);
   if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  adoptedGuests.set(target, owner);
   await target.addInitScript((t) => {
     try {
       localStorage.setItem('livediagram:v2:guest-token', t);

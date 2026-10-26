@@ -37,6 +37,10 @@ describe('design ls', () => {
     const some = await designLs.run!(ctx, designLs.input.parse({ query: 'AUTH', limit: '1' }));
     expect(some).toMatchObject({ more: 1, query: 'AUTH' });
     expect(designLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
+    // Past the flag's maximum, the line suggests narrowing, never a --limit the flag would refuse.
+    expect(designLs.text!({ designs: [], more: 250 }).at(-1)).toBe(
+      '… 250 more; narrow with a query (--limit goes up to 200)',
+    );
   });
 
   it('says when nothing is there, or nothing matches', async () => {

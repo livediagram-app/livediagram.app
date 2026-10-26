@@ -79,4 +79,14 @@ describe('node-isolated', () => {
       ),
     ).toEqual([]);
   });
+
+  it('skips a shape with no label at all, as one with a blank label', () => {
+    const { label: _, ...bare } = box('bare', 0, 200) as { label?: string };
+    expect(
+      of(
+        lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), bare as never)),
+        'node-isolated',
+      ),
+    ).toEqual([]);
+  });
 });

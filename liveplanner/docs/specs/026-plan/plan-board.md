@@ -35,7 +35,7 @@ Stored on the element, shared by everyone, undone like any element edit:
   takes both back); a board someone titled differently keeps its title, and a tab that already had a name of its own
   renames no board.
 - **Columns**: each a **status** value and a display name, an optional **WIP limit** and an optional colour. A board
-  has 1 to 12 columns. The first column is where new items land when no column is chosen.
+  has 1 to 12 columns. A column's status is read trimmed, as a card's status is, so a card moved into it lands in it. The first column is where new items land when no column is chosen.
 - **Done column**: optionally one column is marked done: its cards draw muted and count as finished in the
   header's progress.
 - **The header's controls** run Focus, Maximise, then the cog. There is no ⋯: the cog is the board's menu.

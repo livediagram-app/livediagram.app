@@ -1,6 +1,6 @@
 // Saving what the Settings panel changes over the accounts API (liveworkspace/docs/site.md "Settings"). Each change
 // shows at once and is written alone, as a patch of just the key it touches in its scope (an app's own, or `all`);
-// a write that fails puts that key back, unless a newer change to it has gone since. Kept outside React: the rows
+// a write that fails puts that key back to what the server last took, unless a newer change to it has gone since. Kept outside React: the rows
 // carry `change`, and what the saves share (the scopes as last shown, each key's newest change, the writes on their
 // way) is never drawn.
 import { isAllSetting, joinSettings, type SettingsBlob } from '@liveworkspace/settings';
@@ -52,6 +52,11 @@ export function createScopesSaver({
 }: ScopesSaverOptions): ScopesSaver {
   let current = initial;
   const latest: Record<string, number> = {};
+  // Per key: the writes on their way, and the value the server last took (from the newest write it answered OK),
+  // which is what a refused write puts back. The value shown before a change is not that once an earlier change
+  // to the key is still on its way: two refused writes put back the first one's value, never stored.
+  const pending: Record<string, number> = {};
+  const confirmed: Record<string, { turn: number; back: Back }> = {};
   let inFlight = 0;
   let handlers: ScopesSaverHandlers = { show: () => {}, error: () => {}, saved: () => {} };
 
@@ -68,22 +73,32 @@ export function createScopesSaver({
     return { ...scopes, all };
   };
 
-  // One write: shown at once, sent, and put back if refused. `turnKey` names the stored key in its scope.
+  // One write: shown at once, sent, and put back if refused. `turnKey` names the stored key in its scope; `before`
+  // is the key as shown now, and `sent` the value written.
   async function write(
     turnKey: string,
+    before: Back,
+    sent: unknown,
     apply: (scopes: PanelScopes) => PanelScopes,
-    revert: (scopes: PanelScopes) => PanelScopes,
+    revert: (scopes: PanelScopes, back: Back) => PanelScopes,
     send: () => Promise<
       { ok: true; settle: (scopes: PanelScopes) => PanelScopes } | { ok: false; error: string }
     >,
   ) {
     const turn = (latest[turnKey] ?? 0) + 1;
     latest[turnKey] = turn;
+    // With nothing on its way for this key, what is shown is what the server holds.
+    if (!pending[turnKey]) confirmed[turnKey] = { turn: turn - 1, back: before };
+    pending[turnKey] = (pending[turnKey] ?? 0) + 1;
     handlers.error(null);
     show(apply(current));
     inFlight += 1;
     const result = await send();
     inFlight -= 1;
+    pending[turnKey] -= 1;
+    if (result.ok && turn > confirmed[turnKey]!.turn) {
+      confirmed[turnKey] = { turn, back: { had: true, value: sent } };
+    }
     if (latest[turnKey] !== turn) return;
     if (result.ok) {
       // The server's copy, once nothing else is on its way.
@@ -91,23 +106,18 @@ export function createScopesSaver({
       handlers.saved();
       return;
     }
-    show(revert(current));
+    show(revert(current, confirmed[turnKey]!.back));
     handlers.error(result.error);
   }
 
   // One key of `all`, written whole.
   function writeShared(key: string, value: unknown) {
-    const had = Object.hasOwn(current.all, key);
-    const previous = current.all[key];
     void write(
       `all:${key}`,
+      { had: Object.hasOwn(current.all, key), value: current.all[key] },
+      value,
       (scopes) => withShared(scopes, { ...scopes.all, [key]: value }),
-      (scopes) => {
-        const reverted = { ...scopes.all };
-        if (had) reverted[key] = previous;
-        else delete reverted[key];
-        return withShared(scopes, reverted);
-      },
+      (scopes, back) => withShared(scopes, putBack(scopes.all, key, back)),
       async () => {
         const result = await store.patchShared({ [key]: value });
         return result.ok
@@ -132,19 +142,14 @@ export function createScopesSaver({
       }
       const before = current.apps[app] ?? {};
       const { key } = binding;
-      const had = Object.hasOwn(before, key);
-      const previous = before[key];
       const patch = storedPatch(before, binding, stored);
       reportApp?.(app, binding, stored);
       void write(
         `${app}:${key}`,
+        { had: Object.hasOwn(before, key), value: before[key] },
+        patch[key],
         (scopes) => withApp(scopes, app, { ...scopes.apps[app], ...patch }),
-        (scopes) => {
-          const reverted = { ...scopes.apps[app] };
-          if (had) reverted[key] = previous;
-          else delete reverted[key];
-          return withApp(scopes, app, reverted);
-        },
+        (scopes, back) => withApp(scopes, app, putBack(scopes.apps[app] ?? {}, key, back)),
         async () => {
           const result = await store.patchApp(app, patch);
           return result.ok
@@ -163,4 +168,14 @@ export function createScopesSaver({
       writeShared(key, value);
     },
   };
+}
+
+// A key as it stood: present with a value, or absent.
+type Back = { had: boolean; value: unknown };
+
+function putBack(blob: SettingsBlob, key: string, back: Back): SettingsBlob {
+  const reverted = { ...blob };
+  if (back.had) reverted[key] = back.value;
+  else delete reverted[key];
+  return reverted;
 }

@@ -81,9 +81,15 @@ export class RoomAgentPresence {
   async write(w: AgentPresenceWrite): Promise<AgentPresenceWriteResult> {
     const key = agentPresenceKey(w.tokenId, w.tabId);
     const now = this.now();
-    const prior = this.entries.get(key);
-    if (!prior && this.entries.size >= AGENT_PRESENCE_ROOM_MAX)
-      return { ok: false, error: 'agent_presence_full' };
+    // An entry past its expiry that no alarm has swept yet is gone (I3): a refresh of it starts a bare entry (PR9).
+    const stored = this.entries.get(key);
+    const prior = stored && stored.expiresAt > now ? stored : undefined;
+    if (!prior && this.entries.size >= AGENT_PRESENCE_ROOM_MAX) {
+      // Expired entries waiting on a late alarm hold no place in a full room.
+      await this.sweep();
+      if (this.entries.size >= AGENT_PRESENCE_ROOM_MAX)
+        return { ok: false, error: 'agent_presence_full' };
+    }
     const ttl = Math.min(w.ttlMs, AGENT_PRESENCE_MAX_TTL_MS);
     const refresh = w.mode === 'refresh' && prior;
     const record: AgentPresenceRecord = {

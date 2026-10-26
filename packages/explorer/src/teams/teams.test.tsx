@@ -196,7 +196,9 @@ describe('a team’s view', () => {
     await waitFor(() => expect(host.resetInviteLink).toHaveBeenCalledWith('t1'));
     fireEvent.click(await screen.findByRole('button', { name: 'Copy' }));
     await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith('https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/join?token=abc'),
+      expect(writeText).toHaveBeenCalledWith(
+        'https://liveworkspace-gateway.liveworkspace-easing509.workers.dev/join?token=abc',
+      ),
     );
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy();
   });

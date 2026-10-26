@@ -20,3 +20,37 @@ export function parentRouteHref(pathname: string): string {
   const segments = routeHref(pathname).split('/').filter(Boolean);
   return routeHref(`/${segments.slice(0, -1).join('/')}`);
 }
+
+export type Crumb = { label: string; href?: string };
+
+// An article's breadcrumb trail below Help, read off the route like its links above: the top category (the
+// route's first segment), the parent article one level up when there is one, then the article itself. The
+// category is skipped when it would repeat the title or the parent. The category crumb had been built from
+// `categorySlug`, which for a nested article is the parent's path: it linked "Developers" to the parent's page
+// (two crumbs, one URL) and, with no parent passed, labelled the parent's page with the category's name.
+export function articleCrumbs({
+  pathname,
+  title,
+  categoryTitle,
+  parentTitle,
+}: {
+  pathname: string;
+  title: string;
+  categoryTitle: string;
+  parentTitle?: string;
+}): Crumb[] {
+  const segments = routeHref(pathname).split('/').filter(Boolean);
+  const categoryHref = routeHref(`/${segments[0] ?? ''}`);
+  const parentHref = parentRouteHref(pathname);
+  const parent =
+    parentTitle && segments.length > 2 && parentHref !== categoryHref
+      ? { label: parentTitle, href: parentHref }
+      : null;
+  const showCategory =
+    segments.length > 1 && categoryTitle !== title && categoryTitle !== parent?.label;
+  return [
+    ...(showCategory ? [{ label: categoryTitle, href: categoryHref }] : []),
+    ...(parent ? [parent] : []),
+    { label: title },
+  ];
+}

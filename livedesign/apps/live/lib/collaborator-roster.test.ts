@@ -37,6 +37,29 @@ describe('buildCollaboratorRoster', () => {
     expect(roster.peopleCount).toBe(2);
   });
 
+  it('counts a person listed under two tabs side by side once', () => {
+    const alone = buildCollaboratorRoster({
+      participantsByTab: new Map([
+        ['t1', [p('me')]],
+        ['t2', [p('me')]],
+      ]),
+      tabs,
+      activeId: 't1',
+      selfId: 'me',
+    });
+    expect(rosterSummary(alone)).toBe('Just you so far');
+    const pair = buildCollaboratorRoster({
+      participantsByTab: new Map([
+        ['t1', [p('me'), p('bea')]],
+        ['t2', [p('bea')]],
+      ]),
+      tabs,
+      activeId: 't1',
+      selfId: 'me',
+    });
+    expect(rosterSummary(pair)).toBe('2 people across 2 tabs');
+  });
+
   it('puts you first, then orders by status and name', () => {
     const roster = buildCollaboratorRoster({
       participantsByTab: new Map([

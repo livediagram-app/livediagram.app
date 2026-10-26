@@ -244,6 +244,8 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
 - `GET/POST/DELETE /items/:id/share`, `PATCH/DELETE /share/:code`, `POST /share/:code/extend`,
   `PUT /items/:id/share-password` — the share links of today, now on the index. `ShareLink = {code, itemId,
 level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the owner or a joined team member.
+  A new link's `expiry` is one of `SHARE_LINK_EXPIRIES` (`never`, `week`, `month`, `sixMonths`), `never` when left
+  out; any other value is 400 `invalid_expiry`, as a bad `level` is `invalid_level`, never a link that lasts for ever.
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
 - `GET /share/:code` — public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
@@ -324,7 +326,9 @@ is read whole, as before.
 Items push only what is derived from their content, from their Durable Object, on idle, at most once a
 minute, with retries:
 
-- `PUT /app/items/:id/summary` — `{summary, updatedAt}`.
+- `PUT /app/items/:id/summary` — `{summary, updatedAt}`. An `updatedAt` more than five minutes ahead is taken as
+  now, as an event's `at` is: a clock running fast can't pin the item to the top of every list, where a later push
+  could never bring it down.
 - `PUT /app/items/:id/collab/:tabId` — the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
 latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, card?, firstAt, latestAt}],
@@ -487,7 +491,8 @@ name an app reported, or as a teammate.
 `GET /inbox?app=` — `{threads, actions, forms, timelineNew}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
-link); all limited to items I can reach. Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
+link); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
+cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
 `onYourItem`). `timelineNew` is the sidebar's Timeline count, read in the same batch: events by someone else
 since my last look, up to now (never one still to come), not removed, counted to at most

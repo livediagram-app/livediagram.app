@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { contextOf, fakeApi } from '../testing/fake-api';
-import { iconSearch, schemaView, templateLs, templateView } from './catalogues';
+import {
+  ICON_SEARCH_MAX_LIMIT,
+  iconSearch,
+  schemaView,
+  templateLs,
+  templateView,
+} from './catalogues';
 
 describe('template ls and view', () => {
   it('lists kind, title and category, and shows one as the api outlines it', async () => {
@@ -39,6 +45,10 @@ describe('icon search', () => {
       '… 3 more; --limit 4, or narrow the words',
     ]);
     expect(iconSearch.quiet!(hit)).toEqual(['queue']);
+    // Never a --limit past the flag's maximum, which the flag itself would refuse.
+    expect(iconSearch.text!({ icons: [], more: 70 }).at(-1)).toBe(
+      `… 70 more; narrow the words (--limit goes up to ${ICON_SEARCH_MAX_LIMIT})`,
+    );
     const none = await iconSearch.run!(contextOf(api), iconSearch.input.parse({ text: 'zz' }));
     expect(iconSearch.text!(none)).toEqual(['no icons match']);
   });

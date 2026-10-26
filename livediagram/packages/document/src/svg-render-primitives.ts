@@ -33,6 +33,18 @@ export function labelMaxWidth(el: BoxedElement, pad = 8): number {
   return Math.max(8, el.width - pad * 2);
 }
 
+// A word's characters as a reader counts them (grapheme clusters: a flag or a joined emoji is one), else its code
+// points where the runtime has no segmenter. One segmenter, made on first use.
+let _segmenter: Intl.Segmenter | null | undefined;
+export function graphemes(s: string): string[] {
+  if (_segmenter === undefined)
+    _segmenter =
+      typeof Intl !== 'undefined' && 'Segmenter' in Intl
+        ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+        : null;
+  return _segmenter ? Array.from(_segmenter.segment(s), (g) => g.segment) : [...s];
+}
+
 // Greedy word-wrap to a max pixel width, preserving explicit newlines. With
 // `breakWords`, a word wider than the line breaks between characters, as a
 // box label's break-words does on the canvas ("smartwat" / "ch" on a narrow
@@ -58,12 +70,24 @@ export function wrapLabel(
         out.push(cur);
         cur = word;
       }
-      // Too wide on its own line: peel off what fits, a character at a time.
-      while (breakWords && measure(cur) > maxWidth && cur.length > 1) {
-        let n = cur.length - 1;
-        while (n > 1 && measure(cur.slice(0, n)) > maxWidth) n--;
-        out.push(cur.slice(0, n));
-        cur = cur.slice(n);
+      // Too wide on its own line: peel off what fits, a character at a time. Characters as a reader sees them, so
+      // an emoji (two UTF-16 units, or several joined) is never cut in half into two broken glyphs.
+      // Segmented once per too-wide word; the cuts are string slices at its characters' offsets.
+      if (breakWords && measure(cur) > maxWidth) {
+        const ends: number[] = [];
+        let at = 0;
+        for (const g of graphemes(cur)) ends.push((at += g.length));
+        let first = 0;
+        let from = 0;
+        while (ends.length - first > 1 && measure(cur.slice(from)) > maxWidth) {
+          let n = ends.length - 1;
+          while (n > first + 1 && measure(cur.slice(from, ends[n - 1])) > maxWidth) n--;
+          const to = ends[n - 1]!;
+          out.push(cur.slice(from, to));
+          from = to;
+          first = n;
+        }
+        cur = cur.slice(from);
       }
     }
     out.push(cur);

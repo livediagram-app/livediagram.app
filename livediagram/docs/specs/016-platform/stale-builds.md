@@ -83,6 +83,8 @@ ignored) **within `RELOAD_GUARD_WINDOW_MS`** (one minute), remembered in `sessio
 Whichever path fires first takes it, so a failure that persists is reloaded exactly once, then
 shown. One module defines the rule and the claim; the pre-boot guard embeds that same claim, so the
 two paths cannot drift apart. Storage that cannot be read refuses the reload.
+A chunk recovery that never reloads (the work was still unsaved after the wait) gives its claim
+back, so a later failure on the page can still reload once.
 
 ## Knowing which build is live
 

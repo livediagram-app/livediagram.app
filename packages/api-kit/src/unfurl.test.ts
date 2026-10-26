@@ -19,6 +19,9 @@ describe('isBlockedHost (SSRF guard)', () => {
       '::',
       'fd00::1',
       'fe80::1',
+      'fc00::1',
+      'febf::1', // the top of fe80::/10
+      '[fd12:3456::1]',
       // IPv4-mapped IPv6: dotted + the hex form WHATWG URL normalises to.
       '::ffff:127.0.0.1',
       '::ffff:7f00:1', // 127.0.0.1
@@ -38,6 +41,12 @@ describe('isBlockedHost (SSRF guard)', () => {
       '172.32.0.1',
       '93.184.216.34',
       '::ffff:808:808', // 8.8.8.8 mapped — public, allowed
+      // Domains that start with an IPv6 private prefix's letters.
+      'fdic.gov',
+      'fcbarcelona.com',
+      'fc2.com',
+      'fdroid.org',
+      'fe80.example.com',
     ]) {
       expect(isBlockedHost(h), h).toBe(false);
     }

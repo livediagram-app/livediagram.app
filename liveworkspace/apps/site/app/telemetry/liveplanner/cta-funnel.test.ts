@@ -73,6 +73,7 @@ describe('landingFunnel', () => {
       'Home.HeroBlankIllustration',
       'Home.HeroBlankPlan',
       'Home.HeroFan',
+      'Home.HeroBoard',
       'Home.GalleryDraw',
       'Home.Closing',
     ]);
@@ -125,8 +126,11 @@ describe('bestSlot', () => {
 });
 
 describe('ctaSourceLabel', () => {
-  it('labels every source in the table', () => {
-    for (const source of ALL_CTA_SOURCES) expect(ctaSourceLabel(source)).toBeTruthy();
+  it('words every source in the table, never falling back to the bare slot name', () => {
+    for (const source of ALL_CTA_SOURCES) {
+      const slot = source.slice(source.indexOf('.') + 1);
+      expect(ctaSourceLabel(source), source).not.toBe(slot);
+    }
   });
 
   it('uses the button’s own wording where a surface differs', () => {

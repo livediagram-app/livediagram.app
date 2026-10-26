@@ -9,7 +9,15 @@
 // Its verbs come from the host (`InboxHost.actions`), asked per row; nothing is offered that the page can't do. On a
 // phone and in the editor's panel the pane takes the list's place, with Back.
 
-import { forwardRef, useCallback, useId, useImperativeHandle, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { APP_KINDS } from '@liveworkspace/index-client';
 import type { InboxComment, InboxTarget, InboxVerb, ItemPlace } from '../../types';
 import { relativeSince, useNow } from '../../time';
@@ -150,6 +158,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   const [threadBump, setThreadBump] = useState(0);
   // A new row: a fresh draft, no stale error.
   const [shownKey, setShownKey] = useState(entry.key);
+  // The row on show now, for a reply that finishes after the choice moved on (the pane is patched in place).
+  const entryKeyRef = useRef(entry.key);
+  useEffect(() => {
+    entryKeyRef.current = entry.key;
+  });
   if (shownKey !== entry.key) {
     setShownKey(entry.key);
     setDraft('');
@@ -201,18 +214,21 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     if (!text || !actions?.reply || !target || busy) return;
     setBusy('reply');
     setFailed(null);
+    const from = entry.key;
     try {
       await actions.reply(target, text);
       inboxHost?.onTelemetry?.('Added', 'Reply');
+      announce('Reply sent');
+      // Sent, but the choice has moved on: the row on show keeps its own draft and thread.
+      if (entryKeyRef.current !== from) return;
       setDraft('');
       setSent((s) => [
         ...s,
         { id: `sent-${s.length}`, authorName: null, mine: true, text, at: Date.now() },
       ]);
-      announce('Reply sent');
       if (threadKey) setThreadBump((n) => n + 1);
     } catch {
-      setFailed('reply');
+      if (entryKeyRef.current === from) setFailed('reply');
     } finally {
       setBusy(null);
     }
@@ -536,7 +552,8 @@ function Body({
             </p>
           ) : null}
           <ol className="flex flex-col gap-3">
-            {[...shown, ...sent].map((c) => (
+            {/* A read is keyed past every reply sent from here (threadBump), so once one lands it holds them. */}
+            {[...shown, ...(read ? [] : sent)].map((c) => (
               <Comment key={c.id} c={c} />
             ))}
           </ol>

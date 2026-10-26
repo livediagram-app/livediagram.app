@@ -47,11 +47,18 @@ export function freshCopyFields(el: Element): {
 //
 // Returns the new elements plus a map of old → new ids so callers can wire
 // extra arrows (e.g. a connector from the original to the duplicate).
+//
+// `existing` is what an uncopied end may stay pinned to: the ids already on the
+// tab the copies land on. It defaults to every id in `elements`, which is that
+// tab for a duplicate; a paste passes the tab's own ids, because the clipboard
+// elements it merges in are not on the tab (an arrow hung off a copied arrow
+// that was dropped kept naming it, and was drawn at the canvas origin).
 export function duplicateElements(
   elements: Element[],
   ids: ReadonlySet<ElementId>,
   dx: number,
   dy: number,
+  existing?: ReadonlySet<ElementId>,
 ): { newElements: Element[]; idMap: Map<ElementId, ElementId> } {
   const idMap = new Map<ElementId, ElementId>();
   const newBoxed: BoxedElement[] = [];
@@ -64,7 +71,7 @@ export function duplicateElements(
     newBoxed.push(copy);
   }
 
-  const existingIds = new Set(elements.map((e) => e.id));
+  const existingIds = existing ?? new Set(elements.map((e) => e.id));
 
   // Decide which arrows copy, and mint their new ids into idMap BEFORE
   // building any copy: an on-arrow endpoint (docs/specs/008-canvas/arrow-to-arrow.md) can only follow
@@ -184,7 +191,8 @@ export function duplicateElements(
 
 // Re-point element-to-element references after a caller has renamed some
 // element ids (old → new in `idMap`): arrow endpoints pinned to an element or
-// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md). A reference whose target isn't in the map is
+// hung off another arrow (docs/specs/008-canvas/arrow-to-arrow.md), and an attached badge's, step's or pointer
+// note's host (docs/specs/009-elements/badge.md). A reference whose target isn't in the map is
 // left alone. Element links are deliberately NOT touched: a link names its
 // tab as well as its element, and that is still the source tab.
 //
@@ -215,7 +223,11 @@ export function remapElementRefs<E extends Element>(
       const to = endpoint(el.to);
       return from === el.from && to === el.to ? el : { ...el, from, to };
     }
-    return el;
+    // An attached chip follows its host's new id; missed, a duplicated or imported tab's badges named hosts on the
+    // SOURCE tab and came loose from their copies.
+    const hostId = (el as { attachedTo?: ElementId }).attachedTo;
+    const host = hostId !== undefined ? idMap.get(hostId) : undefined;
+    return host ? { ...el, attachedTo: host } : el;
   });
 }
 

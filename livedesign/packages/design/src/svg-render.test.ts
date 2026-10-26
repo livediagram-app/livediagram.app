@@ -90,6 +90,30 @@ describe('renderElementsToSvg', () => {
     expect(svg).toContain('viewBox="-22 -12 164 144"');
   });
 
+  it('frames a rotated element by its drawn box, not its unturned one', () => {
+    // A 300x20 bar turned 90 degrees stands 300 tall about its centre (150,10): y -140..160.
+    const bar = shape('bar', { x: 0, y: 0, width: 300, height: 20, rotation: 90 });
+    const svg = renderElementsToSvg(tab([bar]), { padding: 0 });
+    expect(svg).toContain('viewBox="140 -140 20 300"');
+  });
+
+  it('measures an arrow pinned to a hidden-layer element where it is drawn, never toward the origin', () => {
+    const hidden = shape('a', { x: 1000, y: 1000, width: 100, height: 100, layerId: 'back' });
+    const shown = shape('b', { x: 1300, y: 1000, width: 100, height: 100, layerId: 'front' });
+    const link = { ...createPinnedArrow('b', 'w', 'a', 'e'), id: 'x' };
+    const t = tab([hidden, shown, link], {
+      layers: [
+        { id: 'back', name: 'Back', visible: false },
+        { id: 'front', name: 'Front' },
+      ],
+    });
+    const vb = /viewBox="(-?[\d.]+) (-?[\d.]+)/.exec(renderElementsToSvg(t, { padding: 0 }))!;
+    expect(Number(vb[1])).toBeGreaterThan(900);
+    expect(Number(vb[2])).toBeGreaterThan(900);
+    // Measured among the whole tab, the arrow reaches its hidden end and no further.
+    expect(contentBounds([shown, link], undefined, [hidden, shown, link]).x).toBeCloseTo(1100, 0);
+  });
+
   it('honours an explicit background colour', () => {
     const svg = renderElementsToSvg(tab([shape('a')], { backgroundColor: '#abcdef' }));
     expect(svg).toContain('#abcdef');
@@ -318,6 +342,15 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('y1="60"');
     });
 
+    it('breaks a word wider than its cell, as the canvas’s break-words does', () => {
+      const svg = renderElementsToSvg(
+        tab([table({ cells: [['Supercalifragilisticexpialidocious', 'x']], height: 200 })]),
+      );
+      // Drawn whole, the word ran across the next cell.
+      expect(svg).not.toContain('>Supercalifragilisticexpialidocious<');
+      expect(svg).toContain('>Supercal');
+    });
+
     it('tints the header band and honours pinned column widths', () => {
       const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
       // Header band: the opaque tint the canvas paints, over the first row.
@@ -422,6 +455,42 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('return x;');
       expect(svg).toContain('>ts</text>'); // language badge
       expect(svg).toContain('ui-monospace');
+    });
+
+    it('wraps and clips a code block’s emoji whole, never half of one', () => {
+      // 107px wide is 11 columns, and an emoji takes two, as a monospace face draws it: 5 to a line, the odd
+      // column left empty. 25 emoji wrap, and with wrapping off the one line is cut at the card.
+      for (const codeWrap of [undefined, false]) {
+        const svg = renderElementsToSvg(
+          tab([
+            shape('cb', {
+              shape: 'code-block',
+              width: 107,
+              height: 400,
+              code: '🙂'.repeat(25),
+              ...(codeWrap === false ? { codeWrap } : {}),
+            }),
+          ]),
+        );
+        // A lone surrogate is half an emoji.
+        expect(svg, String(codeWrap)).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/);
+        expect(svg, String(codeWrap)).not.toMatch(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
+        expect(svg).toContain('>🙂🙂🙂🙂🙂<');
+        expect(svg).not.toContain('🙂🙂🙂🙂🙂🙂');
+      }
+    });
+
+    it('wraps a code line of wide characters at the card, and plain text at its spaces', () => {
+      const lines = (code: string) =>
+        [
+          ...renderElementsToSvg(
+            tab([shape('cb', { shape: 'code-block', width: 107, height: 400, code })]),
+          ).matchAll(/xml:space="preserve">([^<]*)</g),
+        ].map((m) => m[1]);
+      // CJK characters are wide too.
+      expect(lines('漢字漢字漢字漢字')).toEqual(['漢字漢字漢', '字漢字']);
+      expect(lines('const total = sum')).toEqual(['const total', '= sum']);
+      expect(lines('abcdefghijklmnop')).toEqual(['abcdefghijk', 'lmnop']);
     });
 
     it('renders a checklist as rows with ticked boxes + strike-through (docs/specs/009-elements/checklist.md)', () => {

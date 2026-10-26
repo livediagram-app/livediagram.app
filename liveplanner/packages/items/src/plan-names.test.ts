@@ -77,6 +77,18 @@ describe('people', () => {
     expect(a.color).toMatch(/^#[0-9a-f]{6}$/);
     expect(personNamed('robin', [])).toEqual({ ...a, name: 'robin' });
   });
+  it('gives two people a name the slug cannot spell, or shortens alike, two ids', () => {
+    const ivan = personNamed('Иван', []);
+    const maria = personNamed('Мария', [ivan]);
+    expect(maria.id).not.toBe(ivan.id);
+    // Still the same person by name, and a stable id for the same name.
+    expect(personNamed('иван', [ivan, maria])).toBe(ivan);
+    expect(personNamed('Мария', [ivan]).id).toBe(maria.id);
+    const long = personNamed('Alexandria Montgomery-Smythe of Bath, Elder', []);
+    const other = personNamed('Alexandria Montgomery-Smythe of Bath, Younger', [long]);
+    expect(other.id).not.toBe(long.id);
+    expect(other.id.length).toBeLessThanOrEqual(32);
+  });
 });
 
 describe('resolveFields', () => {
@@ -145,6 +157,35 @@ describe('resolveFields', () => {
     expect(r).toEqual({
       ok: true,
       fields: { 'f-severity': 'S1', 'f-blocks': 'proj0001', 'f-notes': 'Click it' },
+    });
+  });
+
+  it('reads a custom Number and Date as their kind, refusing what they cannot hold', () => {
+    const sized: ItemTypeDef = {
+      ...bug,
+      custom: [
+        ...(bug.custom ?? []),
+        { id: 'f-points', label: 'Points', kind: 'number' },
+        { id: 'f-launch', label: 'Launch', kind: 'date' },
+      ],
+    };
+    expect(resolveFields({ Points: '5', Launch: ' 2026-11-02 ' }, sized, naming)).toEqual({
+      ok: true,
+      fields: { 'f-points': 5, 'f-launch': '2026-11-02' },
+    });
+    expect(resolveFields({ Points: 2.5 }, sized, naming)).toEqual({
+      ok: true,
+      fields: { 'f-points': 2.5 },
+    });
+    expect(resolveFields({ Points: 'lots' }, sized, naming)).toMatchObject({
+      code: 'value_invalid',
+      message: '"lots" is not a number for Points: give a number.',
+    });
+    expect(resolveFields({ Launch: 'next friday' }, sized, naming)).toMatchObject({
+      code: 'value_invalid',
+    });
+    expect(resolveFields({ Launch: '2026-02-31' }, sized, naming)).toMatchObject({
+      code: 'value_invalid',
     });
   });
 

@@ -186,11 +186,20 @@ export function snapLeadingAxis(
 // down hard; a side that began below MIN_SIZE is floored where it
 // began instead, never bumped up. Pure function (no React, no element
 // types), so it stays trivially testable.
+//
+// A member turned by `rotation` degrees scales about its centre instead:
+// the centre maps through the union scale, and each of its own sides
+// scales by how far the union stretches along that side's direction
+// (exact at quarter turns and for uniform scaling), so a horizontal
+// stretch lengthens whichever side currently reads horizontally.
+// `keepSize` (a fixed-size member) moves it the same way without
+// changing its size.
 export function unionResizeMember(
   member: ShapeBounds,
   unionStart: ShapeBounds,
   unionNext: ShapeBounds,
   corner: 'nw' | 'ne' | 'sw' | 'se',
+  opts: { rotation?: number; keepSize?: boolean } = {},
 ): ShapeBounds {
   const sx = unionNext.width / Math.max(unionStart.width, 1);
   const sy = unionNext.height / Math.max(unionStart.height, 1);
@@ -203,6 +212,29 @@ export function unionResizeMember(
     corner === 'sw' || corner === 'nw' ? unionStart.x + unionStart.width : unionStart.x;
   const anchorY =
     corner === 'ne' || corner === 'nw' ? unionStart.y + unionStart.height : unionStart.y;
+  const rotation = opts.rotation ?? 0;
+  if (rotation % 360 !== 0) {
+    const r = (rotation * Math.PI) / 180;
+    const cos = Math.cos(r);
+    const sin = Math.sin(r);
+    const cx = anchorX + (member.x + member.width / 2 - anchorX) * sx;
+    const cy = anchorY + (member.y + member.height / 2 - anchorY) * sy;
+    const width = opts.keepSize
+      ? member.width
+      : Math.max(Math.min(MIN_SIZE, member.width), member.width * Math.hypot(sx * cos, sy * sin));
+    const height = opts.keepSize
+      ? member.height
+      : Math.max(Math.min(MIN_SIZE, member.height), member.height * Math.hypot(sx * sin, sy * cos));
+    return { x: cx - width / 2, y: cy - height / 2, width, height };
+  }
+  if (opts.keepSize) {
+    return {
+      x: anchorX + (member.x - anchorX) * sx,
+      y: anchorY + (member.y - anchorY) * sy,
+      width: member.width,
+      height: member.height,
+    };
+  }
   return {
     x: anchorX + (member.x - anchorX) * sx,
     y: anchorY + (member.y - anchorY) * sy,

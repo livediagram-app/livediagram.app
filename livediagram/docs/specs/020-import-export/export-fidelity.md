@@ -146,7 +146,9 @@ lock disc and the gesture chip; a Picker shows its reel window; a chair prints
 its label under the seat. A Page draws its masthead inside the border, starts
 its body label under the rule, and turns back its bottom-right corner over the
 paper. A box label breaks a word wider than its line between characters, as
-the canvas's `break-words` does; an icon caption keeps the word whole.
+the canvas's `break-words` does, in the SVG and the PNG alike, and so does a
+table cell's text; an icon caption keeps the word whole. A break falls between
+characters as a reader sees them, so an emoji is never cut in half.
 
 The Mode button's glyph is shared data: the selection-mode glyphs live in
 `MODE_GLYPHS` (`packages/document/src/mode-glyphs.ts`: the shared

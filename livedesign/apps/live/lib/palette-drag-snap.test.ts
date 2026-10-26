@@ -102,3 +102,20 @@ describe('paletteDragSnapAt', () => {
     expect(guides.some((g) => g.axis === 'x')).toBe(true);
   });
 });
+
+// The equal-spacing guide shows on the exact spot too, not only 1 px or more away from it.
+describe('paletteDragSnapAt equal spacing', () => {
+  const box = (id: string, x: number) =>
+    ({ id, type: 'sticky', x, y: 0, width: 100, height: 100 }) as Element;
+  it('guides a ghost already exactly between two neighbours', () => {
+    const { dx, distGuides } = paletteDragSnapAt({
+      canvasX: 250,
+      canvasY: 50,
+      width: 100,
+      height: 60,
+      elements: [box('a', 0), box('b', 400)],
+    });
+    expect(dx).toBe(0);
+    expect(distGuides.filter((g) => g.axis === 'x')).toHaveLength(1);
+  });
+});

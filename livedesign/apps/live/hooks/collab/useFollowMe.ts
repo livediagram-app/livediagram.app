@@ -114,6 +114,21 @@ export function useFollowMe({
     if (departures > 0) announceDeparture();
   }, [departures]);
 
+  // Two people who press Follow on each other at once both pass the refusal above before the room's `followers`
+  // frame arrives, and would mirror each other for good. When the person we follow turns out to follow us, the
+  // follow ends, during render like a departure, with the refusal's line.
+  const [crossed, setCrossed] = useState<{ id: string; n: number } | null>(null);
+  if (followingId !== null && followerIds.includes(followingId)) {
+    setFollowingId(null);
+    setCrossed((c) => ({ id: followingId, n: (c?.n ?? 0) + 1 }));
+  }
+  const announceCrossed = useEffectEvent((id: string) =>
+    onNotice(`${nameOf(id)} is following you, so you can't follow them back.`),
+  );
+  useEffect(() => {
+    if (crossed) announceCrossed(crossed.id);
+  }, [crossed]);
+
   // Any canvas gesture of your own breaks it, instantly and silently — pan,
   // zoom, pinch, arrow keys, fit-to-screen, the minimap. Grabbing the canvas
   // IS the statement that you want your own view back, and a follow that

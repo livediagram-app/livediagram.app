@@ -54,6 +54,8 @@ describe('selector rows', () => {
 
   it('type: by kind word or element type', () => {
     expect(ids('type:bar-chart')).toEqual(['b1']);
+    // An exact id another term has already ruled out keeps nothing.
+    expect(ids('type:bar-chart w1')).toEqual([]);
     expect(ids('type:plan-view')).toEqual(['m1', 'm2', 'm3', 'm4', 'w1', 'c1']);
     expect(ids('Type:shape')).toHaveLength(7);
   });
@@ -129,6 +131,8 @@ describe('cardinality', () => {
       '  v9  plan-view "Workload"',
     ]);
     expect(resolveOne(state(), 'w1', 1)).toMatchObject({ el: { id: 'w1' } });
+    const error = resolveOne(state(), 'colour:red', 1);
+    expect('rejection' in error && error.rejection.code).toBe('parse_error');
   });
 
   it('takes one or more with all, offering all when it is missing', () => {

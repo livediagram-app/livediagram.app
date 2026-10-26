@@ -98,12 +98,13 @@ function shrinkRef(
     (ref.c1 !== undefined && goneCols.has(ref.c1)) ||
     (ref.c2 !== undefined && goneCols.has(ref.c2));
   if (!cornerGone) return ref;
-  // A whole-column or whole-row side has no corner of its own: borrow the grid's edge for the shrink.
+  // A whole-column or whole-row side has no corner of its own, nor has an open end (`A2:A`, `A2:2`): borrow the
+  // grid's edge for the shrink.
   const full = {
     r1: ref.r1 ?? before.rows[0]!,
-    r2: ref.r2 ?? ref.r1 ?? before.rows[before.rows.length - 1]!,
+    r2: ref.r2 ?? before.rows[before.rows.length - 1]!,
     c1: ref.c1 ?? before.cols[0]!,
-    c2: ref.c2 ?? ref.c1 ?? before.cols[before.cols.length - 1]!,
+    c2: ref.c2 ?? before.cols[before.cols.length - 1]!,
   };
   const shrunk = shrinkRange(full, before, goneRows, goneCols);
   if (!shrunk) return ref;

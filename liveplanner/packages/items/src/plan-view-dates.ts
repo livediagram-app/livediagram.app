@@ -34,13 +34,14 @@ export const MONTH_LONG = [
   'December',
 ] as const;
 
-// Days since 1970-01-01 for a `YYYY-MM-DD` value, or undefined for anything else.
+// Days since 1970-01-01 for a `YYYY-MM-DD` value that is a real date, or undefined for anything else.
 export function dayNumber(value: unknown): number | undefined {
   if (typeof value !== 'string') return undefined;
   const m = ISO_DAY.exec(value);
   if (!m) return undefined;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return undefined;
+  // A day past its month's end ("2026-02-31") is not a date, rather than a day in the next month.
+  if (mo < 1 || mo > 12 || d < 1 || d > daysInMonth(y, mo - 1)) return undefined;
   return Math.round(Date.UTC(y, mo - 1, d) / DAY_MS);
 }
 

@@ -87,6 +87,41 @@ describe('single colour', () => {
     expect(style(1)).toEqual(GREEN);
     expect(style(2)).toBeNull();
   });
+  it('a custom formula follows its range when the top row or left column is deleted', () => {
+    const b0 = book({}, { rows: 10, cols: 4 });
+    const ctx = b0.wb.ctxFor(b0.sheets[0]!.id);
+    const fx = compileFormula('=AND($B2>10, C2="y")', ctx);
+    if (!fx.ok) throw new Error('compile');
+    // Rows 2 to 6 (indexes 1 to 5), written for A2; B and C hold what the rule reads.
+    const { b, sheet } = ruled(
+      { B2: '50', B3: '5', B4: '20', B5: '20', C2: 'y', C3: 'y', C4: 'y', C5: 'n' },
+      [fr({ op: 'formula', fx: fx.formula, style: GREEN }, 1, 0, 5, 0)],
+    );
+    const del = apply(sheet, { kind: 'layout', changes: [{ k: 'deleteRows', ids: [R(1)] }] });
+    const rule = del.layout.formatRules![0]!;
+    expect(rule.r1).toBe(R(2));
+    // Written for the new top-left cell (A2, the old A3): $B2 and C2 are the old B3 and C3, not #REF!.
+    expect(rule.fx!.r.map((x) => x.r1)).toEqual([R(2), R(2)]);
+    expect(rule.fx!.t).not.toContain('#REF!');
+    b.wb.updateSheet(del);
+    const style = (r: number) => {
+      const v = b.wb.value(del.id, r, 0);
+      return formatRuleStyle(b.wb, del.id, r, 0, v, shownOf(v));
+    };
+    // Rows now: old 3 (B 5), old 4 (B 20, C y), old 5 (C n).
+    expect([style(1), style(2), style(3)]).toEqual([null, GREEN, null]);
+    // A left column deleted moves the column parts the same way; an absolute part stays.
+    const colFx = compileFormula('=$B1+A1', ctx);
+    if (!colFx.ok) throw new Error('compile');
+    const wide = apply(
+      sheet,
+      set(fr({ id: 'cols01', op: 'formula', fx: colFx.formula, style: RED }, 0, 0, 3, 2)),
+    );
+    const lessCols = apply(wide, { kind: 'layout', changes: [{ k: 'deleteCols', ids: [C(0)] }] });
+    const moved = lessCols.layout.formatRules!.find((x) => x.id === 'cols01')!;
+    expect(moved.c1).toBe(C(1));
+    expect(moved.fx!.r.map((x) => x.c1)).toEqual([C(1), C(1)]);
+  });
   it('skips an error value and a rule with no style', () => {
     const { style } = ruled({ A1: '=1/0' }, [
       fr({ op: 'notEmpty' }),

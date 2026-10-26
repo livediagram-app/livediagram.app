@@ -1,5 +1,6 @@
 import { isBoxed, type Element, type ElementId } from './index';
 import type { LaneGutterEdge, LaneLike } from './lane-gutter';
+import { rotationOf } from './rotation';
 
 // Snapping for a lane's title seam (docs/specs/009-elements/lane.md), the line between its heading
 // and its body that you drag to resize the heading.
@@ -39,8 +40,12 @@ export function laneSeamCoordinates(
   for (const el of elements) {
     if (el.id === excludeId) continue;
     if (!(el.type === 'shape' && el.shape === 'lane')) continue;
+    // A turned lane's seam is no line on either axis, so it offers nothing to line up with.
+    if (rotationOf(el) % 360 !== 0) continue;
     const edge = edgeOf(el);
-    const size = sizeOf(el);
+    // Held short of the lane's span, as the strip is drawn (laneDrawnSize): a lane shrunk below
+    // its heading has its seam inside it, not past its far edge.
+    const size = Math.max(0, Math.min(sizeOf(el), (axis === 'x' ? el.width : el.height) - 1));
     if (axis === 'x') {
       if (edge === 'left') out.push(el.x + size);
       else if (edge === 'right') out.push(el.x + el.width - size);

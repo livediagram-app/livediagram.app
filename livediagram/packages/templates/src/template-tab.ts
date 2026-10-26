@@ -7,6 +7,7 @@ import { buildTab, stampTabKind, type Tab } from '@livediagram/document';
 import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
+import { isBlankTemplate } from './template-modes';
 
 // The templates an agent may build: the catalogue's (templateCatalogue), never a hidden one.
 const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
@@ -63,4 +64,12 @@ export function buildTemplateTab(
     templateChosen: true,
     ...templateCanvasOverrides(kind),
   });
+}
+
+// The name a template gives the tab it fills (docs/specs/007-editor/templates-by-mode.md "The tab's name"): the
+// template's title, whether the editor's Quick Start and /new or an agent fills it. A blank template gives none, so
+// the tab keeps (or takes) its own name.
+export function templateTabName(kind: TemplateKind): string | null {
+  if (isBlankTemplate(kind)) return null;
+  return TEMPLATES.find((t) => t.kind === kind)?.title ?? null;
 }

@@ -78,13 +78,19 @@ describe('share links', () => {
     expect(h.appCalls).toEqual([]);
   });
 
-  it('refuses a bad level or tab', async () => {
+  it('refuses a bad level, tab or expiry', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     const post = (b: unknown) =>
       call(`/items/${item.id}/share`, { method: 'POST', auth: ada.auth, body: b });
     expect(await body(await post({ level: 'owner' }))).toEqual({ error: 'invalid_level' });
     expect(await body(await post({ tabId: 7 }))).toEqual({ error: 'invalid_tab' });
+    // A value that is no expiry is refused, never made a link that lasts for ever.
+    for (const expiry of ['weekly', 7, null])
+      expect(await body(await post({ expiry }))).toEqual({ error: 'invalid_expiry' });
+    const lasting = await post({});
+    expect(lasting.status).toBe(201);
+    expect((await body<{ link: { expiry: string } }>(lasting)).link.expiry).toBe('never');
   });
 
   it('lets a link editor rename, but not move, share or trash', async () => {
@@ -184,7 +190,7 @@ describe('share links', () => {
     expect(byId.get(plain.id)!.hasLinks).toBe(false);
     // An expired link no longer counts.
     const expired = await makeItem(ada.auth);
-    const link = await share(ada.auth, expired.id, { expiry: 'day' });
+    const link = await share(ada.auth, expired.id, { expiry: 'week' });
     h.db.sql.prepare('UPDATE share_links SET expires_at = 1 WHERE code = ?').run(link.code);
     const again = await body<{ items: Item[] }>(await call('/items', { auth: ada.auth }));
     expect(again.items.find((i) => i.id === expired.id)!.hasLinks).toBe(false);

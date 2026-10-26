@@ -5,7 +5,7 @@
 // window (the one reload guard, reload-guard.ts, shared with the pre-boot guard), so a genuinely
 // broken deploy shows its error rather than reloading forever, and never
 // over unsaved editor changes. Pure but for the dependencies passed in.
-import { claimReload } from './reload-guard';
+import { claimReload, releaseReload } from './reload-guard';
 import { reloadWhenSaved } from './reload-when-saved';
 import { debugLog } from './debug-log';
 
@@ -75,7 +75,8 @@ export async function recoverFromChunkError(
   handled.add(err);
   const destination = deps.destination();
   // The one reload guard shared with the pre-boot guard (reload-guard.ts).
-  if (!claimReload(destination, deps.storage, deps.now())) {
+  const claimedAt = deps.now();
+  if (!claimReload(destination, deps.storage, claimedAt)) {
     console.warn('[stale-chunks] already reloaded for this page, showing the error', {
       destination,
     });
@@ -94,5 +95,8 @@ export async function recoverFromChunkError(
       deps.load(destination);
     },
   });
-  return outcome === 'reloaded' ? 'reloading' : 'unsaved';
+  if (outcome === 'reloaded') return 'reloading';
+  // No reload happened, so the allowance goes back: a later failure on this page can still reload once.
+  releaseReload(destination, deps.storage, claimedAt);
+  return 'unsaved';
 }

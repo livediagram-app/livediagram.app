@@ -356,7 +356,8 @@ setAt, expiresAt }`.
 - **E6** The room is full: 409 `agent_presence_full`; logged.
 - **E7** A refresh that fails or finds the room full: logged, the changeset stands.
 - **E8** The alarm fires late or not before an eviction: every roster read sweeps first (PR30), and the constructor
-  sweeps on wake.
+  sweeps on wake. A write treats its own expired entry as absent (a refresh starts a bare one, PR9), and a write
+  that finds the room full sweeps before refusing it.
 - **E10** A token revoked while present: refreshes fail at auth; the entry leaves on its ttl (PR15).
 - **E11** A tab deleted while an entry is on it: the entry expires on its ttl; editors skip it meanwhile.
 - **E12** A focused element removed later: no ring for it; the entry keeps the id until the next PUT.

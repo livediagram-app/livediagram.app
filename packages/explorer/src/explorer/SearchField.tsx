@@ -38,7 +38,7 @@ import {
 } from '../lens';
 import { APP_KINDS } from '@liveworkspace/index-client';
 import { CloseIcon, SearchIcon } from '../ui/icons';
-import { lensViewOf, viewLens, withLens } from '../views';
+import { lensViewOf, viewLens, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
 
 // How often, at most, typing rewrites the address (a trailing write; leaving the field writes at once). A write
@@ -84,6 +84,15 @@ export function useLensContext(): LensContext {
 
 type Sync = { seen: string; pending: string[] };
 
+// Which page a view is, its lens aside: a write waiting for one page must not land on another's address.
+function placeOf(view: ExplorerView): string {
+  return JSON.stringify(
+    Object.entries(view)
+      .filter(([key]) => key !== 'q')
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+  );
+}
+
 /**
  * The field's lens: the string, the caret while focused, and the address kept in step. The string is the state;
  * `q` follows it, and a `q` that changes from outside (a chip, a link, Back) is adopted. Writes this field made
@@ -104,10 +113,12 @@ function useFieldLens() {
   // Search results is being opened from a view with no lens: later keystrokes replace that entry.
   const opening = useRef(false);
   if (lensKind !== null) opening.current = false;
-  const write = useRef<{ timer: ReturnType<typeof setTimeout> | null; q: string | null }>({
-    timer: null,
-    q: null,
-  });
+  const write = useRef<{
+    timer: ReturnType<typeof setTimeout> | null;
+    q: string | null;
+    // The page the write was typed on.
+    place: string | null;
+  }>({ timer: null, q: null, place: null });
   const flush = useCallback(() => {
     const pending = write.current;
     if (pending.timer !== null) clearTimeout(pending.timer);
@@ -115,9 +126,13 @@ function useFieldLens() {
     if (pending.q === null) return;
     const q = pending.q;
     pending.q = null;
+    // Gone to another page meanwhile (Back with a mouse button or a swipe, which leave the field focused and
+    // mounted): the write was for the page left, so it is dropped rather than written onto this one.
+    if (pending.place !== placeOf(viewRef.current)) return;
     navigate(withLens(viewRef.current, q), { replace: true });
   }, [navigate]);
-  // Leaving the view drops a write still waiting: it would land on the next page's address.
+  // Leaving the view drops a write still waiting: it would land on the next page's address. Unmounting clears it
+  // here; a field that stays mounted across views (the header's) drops it in flush.
   useEffect(
     () => () => {
       const pending = write.current;
@@ -168,6 +183,7 @@ function useFieldLens() {
       return;
     }
     write.current.q = written;
+    write.current.place = placeOf(viewRef.current);
     if (nextCaret === null) flush();
     else if (write.current.timer === null)
       write.current.timer = setTimeout(flush, SEARCH_DEBOUNCE_MS);

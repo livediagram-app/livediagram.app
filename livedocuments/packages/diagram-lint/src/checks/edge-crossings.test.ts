@@ -95,6 +95,22 @@ describe('edge-crossings', () => {
       'move a box so a->b crosses fewer lines',
     );
   });
+
+  it('on a tab with a stack, gives advice when no line style lowers the crossings', () => {
+    // A cross: l->r and t->u cross however either is drawn.
+    const report = lint(
+      tabOf(
+        stack('f', -20, 180, 160, 100),
+        box('l', 0, 200),
+        box('r', 600, 200),
+        box('t', 300, 0),
+        box('u', 300, 400),
+        arrow('h', 'l', 'r'),
+        arrow('v', 't', 'u', ['s', 'n']),
+      ),
+    );
+    expect(of(report, 'edge-crossings')[0]!.fix).toBe('move a box so l->r crosses fewer lines');
+  });
 });
 
 function arrowStyleBefore(tab: { elements: Element[] }, selector: string): string {
