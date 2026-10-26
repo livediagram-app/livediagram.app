@@ -85,12 +85,7 @@ export type RouteContext = {
 };
 
 // A RouteContext inside a document's Durable Object (document-room/document-route.ts): its env reaches the document's content.
-export type DocumentRouteContext = RouteContext & {
-  env: DocumentEnv;
-  // Says the request's write is no use of the document (a create with `markUsed: false`, docs/specs/015-api/api.md
-  // "Marking a document used"): the room then records no edit for it, so no Most Used day and no Timeline edit.
-  notAUse?: () => void;
-};
+export type DocumentRouteContext = RouteContext & { env: DocumentEnv };
 
 // A link visitor's share code (X-Share-Code) and its password (X-Share-Password), as @liveworkspace/index-app
 // reads them.

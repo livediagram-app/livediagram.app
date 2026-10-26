@@ -195,7 +195,11 @@ where its age puts it.
 
 ### Marking a document used
 
-Making a document is a use of it, for whoever makes it: the create's write is their edit (a Most Used day and a Timeline edit, pushed to the index like any save's), so a document an API client makes is in Jump Back In before anyone opens it. The create body's `markUsed` (absent or `true`, or `false`) says otherwise: `false` (one of a batch, say) records no edit for the create, so the document joins Jump Back In at its first open or edit. Anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed", and nothing is created. Opens are the index's too: the editor records one when it loads a document (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
+Making a document is a use of it for whoever makes it, recorded as the index's open (a Recent time and a Most Used day), so it joins their Jump Back In at once.
+
+- The editor records the open itself when it loads the document it made (`POST /items/:id/open`, [Explorer Home](../013-workspace/explorer-home.md)).
+- This api validates `markUsed` on a create (anything but a boolean is refused whole, 400 `bad_request` "invalid markUsed"; nothing is created). For an API client's create (one the worker makes the index's item for), absent or `true`, the worker records the open at the index for the caller beside the create; `false` (one of a batch, say) leaves the document to join Jump Back In at its first open or edit. An editor's create (it sends the index's grant) is the editor's to record, and a re-commit of an id the index already holds is no making, so neither is recorded here.
+- The create itself is the document's making, not an edit: the document's room records no editor for `POST /api/documents` ([Timeline](../013-workspace/timeline.md)), so its seeded tabs never count a use day that `markUsed: false` withheld.
 
 ### Documents in the Trash
 

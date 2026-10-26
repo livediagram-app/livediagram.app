@@ -39,13 +39,19 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
   };
 }
 
+// A document's create (`POST /api/documents`, a re-commit of its own id too) is its making, not an edit: whether making
+// it is a use is the create's `markUsed` (docs/specs/015-api/api.md "Marking a document used"), so the room records no
+// editor for it, which would count a use day for every document a script makes with `markUsed: false`.
+export function isDocumentCreate(request: Request): boolean {
+  return request.method === 'POST' && new URL(request.url).pathname === '/api/documents';
+}
+
 // The room's side: the request answered as the worker would have answered it.
 export async function answerDocumentRequest(
   env: DocumentEnv,
   request: Request,
   identity: RouteIdentity,
   waitUntil: (promise: Promise<unknown>) => void,
-  notAUse?: () => void,
 ): Promise<Response> {
   const url = new URL(request.url);
   const ctx: DocumentRouteContext = {
@@ -63,7 +69,6 @@ export async function answerDocumentRequest(
     bearer: identity.bearer,
     grant: identity.grant,
     waitUntil,
-    notAUse,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).
   return handleDocumentRequest(ctx);

@@ -100,7 +100,7 @@ import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import { answerDocumentRequest, type RouteIdentity } from './document-route';
+import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -531,28 +531,23 @@ export class DocumentRoom extends DurableObject<Env> {
     // Before the write counter is read: taking the owner and team is no edit.
     if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
     const writesBefore = this.writes;
-    let use = true;
-    const response = await answerDocumentRequest(
-      env,
-      request,
-      identity,
-      (p) => this.state.waitUntil(p),
-      () => {
-        use = false;
-      },
+    const response = await answerDocumentRequest(env, request, identity, (p) =>
+      this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals, requests that changed nothing and a create that
-    // says it is no use (`markUsed: false`) are not.
-    if (response.ok && identity.owner && use && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        DOCUMENT_OUTBOX,
-        documentId,
-        identity.owner,
-        Date.now(),
-      );
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the document's making (isDocumentCreate).
+    if (response.ok && identity.owner && this.writes > writesBefore) {
+      if (!isDocumentCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          DOCUMENT_OUTBOX,
+          documentId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     return response;
