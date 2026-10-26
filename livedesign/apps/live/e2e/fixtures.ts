@@ -199,6 +199,16 @@ export async function onPage(
   };
 }
 
+// The same point on the first page in window coordinates: what `page.mouse` takes, for a spec that draws with a tool.
+export async function pagePoint(
+  page: Page,
+  fx: number,
+  fy: number,
+): Promise<{ x: number; y: number }> {
+  const sheet = await settledBox(page.locator('[data-page-id]').first());
+  return { x: Math.round(sheet.x + sheet.width * fx), y: Math.round(sheet.y + sheet.height * fy) };
+}
+
 // A /new address that makes the design on livedesign. A guest's own /new makes it in This Browser
 // (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so

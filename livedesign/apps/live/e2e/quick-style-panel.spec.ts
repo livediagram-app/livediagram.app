@@ -1,6 +1,13 @@
 import type { Page } from '@playwright/test';
 import type { StoredDesign, StoredTab } from './stored';
-import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } from './fixtures';
+import {
+  expect,
+  expectNoPageErrors,
+  test,
+  openBlankPage,
+  pageOwnerHeaders,
+  pagePoint,
+} from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -11,7 +18,8 @@ type El = Record<string, unknown> & { id: string; type: string; shape?: string }
 
 async function openBoard(page: Page): Promise<void> {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await openStartBlank(page);
+  // Its page chosen a Logo: elements are drawn only on a page (fixtures openBlankPage).
+  await openBlankPage(page);
 }
 
 // The saved elements of the design's first tab, read through the api.
@@ -44,13 +52,19 @@ async function saved(page: Page, ok: (els: El[]) => boolean): Promise<El[]> {
   return last;
 }
 
-async function drawShape(page: Page, key: 'o' | 'r', at: { x: number; y: number }) {
+// Points are fractions of the page's width and height (pagePoint), right of the panel on the canvas's left.
+type At = readonly [number, number];
+
+async function drawShape(page: Page, key: 'o' | 'r', [fx, fy]: At) {
+  const at = await pagePoint(page, fx, fy);
   await page.keyboard.press('Escape');
   await page.keyboard.press(key);
   await page.mouse.click(at.x, at.y);
 }
 
-async function drawArrow(page: Page, from: { x: number; y: number }, to: { x: number; y: number }) {
+async function drawArrow(page: Page, [fx, fy]: At, [tx, ty]: At) {
+  const from = await pagePoint(page, fx, fy);
+  const to = await pagePoint(page, tx, ty);
   await page.keyboard.press('Escape');
   await page.keyboard.press('a');
   await page.mouse.move(from.x, from.y);
@@ -77,7 +91,7 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawArrow(page, { x: 300, y: 300 }, { x: 600, y: 300 });
+    await drawArrow(page, [0.15, 0.25], [0.6, 0.25]);
     await expect(page.locator('path.lvd-arrow-flow')).toHaveCount(0);
     await choose(page, 'Stroke style', 'Flowing');
     // The line marches on the canvas at once, and one click saved both halves.
@@ -99,7 +113,7 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 400 });
+    await drawShape(page, 'o', [0.4, 0.45]);
     await expect(panel(page)).toBeVisible();
     expect((await panel(page).boundingBox())!.width).toBeCloseTo(258, 0);
     const swatches = panel(page)
@@ -120,7 +134,7 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    await drawShape(page, 'o', [0.4, 0.25]);
     const stroke = panel(page).getByRole('group', { name: 'Stroke', exact: true });
     await stroke.getByRole('button', { name: 'Green' }).click({ button: 'right' });
     const dialog = page.getByRole('dialog', { name: 'Custom colour for Green, Stroke' });
@@ -156,7 +170,7 @@ test.describe('quick style panel', () => {
 
   test('sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 400 });
+    await drawShape(page, 'o', [0.4, 0.45]);
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toHaveCount(0);
     await expect(async () => {
@@ -173,7 +187,7 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    await drawShape(page, 'o', [0.4, 0.25]);
     await expect(panel(page)).toBeVisible();
     await choose(page, 'Stroke', 'Green');
     await expect(row(page, 'Stroke').getByRole('button', { name: 'Green' })).toHaveAttribute(
@@ -181,8 +195,8 @@ test.describe('quick style panel', () => {
       'true',
     );
 
-    await drawShape(page, 'o', { x: 500, y: 600 });
-    await drawShape(page, 'r', { x: 300, y: 600 });
+    await drawShape(page, 'o', [0.4, 0.75]);
+    await drawShape(page, 'r', [0.15, 0.75]);
     const els = await saved(
       page,
       (e) => shapesOf(e, 'circle').length === 2 && shapesOf(e, 'square').length === 1,
@@ -200,11 +214,11 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    await drawArrow(page, { x: 300, y: 300 }, { x: 600, y: 300 });
+    await drawArrow(page, [0.15, 0.25], [0.6, 0.25]);
     await expect(panel(page)).toBeVisible();
     await choose(page, 'Stroke style', 'Flowing');
-    await drawArrow(page, { x: 300, y: 500 }, { x: 600, y: 500 });
-    await drawShape(page, 'o', { x: 800, y: 400 });
+    await drawArrow(page, [0.15, 0.6], [0.6, 0.6]);
+    await drawShape(page, 'o', [0.85, 0.45]);
     const els = await saved(
       page,
       (e) => e.filter((x) => x.type === 'arrow').length === 2 && shapesOf(e, 'circle').length === 1,
@@ -218,11 +232,11 @@ test.describe('quick style panel', () => {
 
   test('Clear Styles resets the selection and forgets its kind', async ({ page, pageErrors }) => {
     await openBoard(page);
-    await drawShape(page, 'o', { x: 500, y: 300 });
+    await drawShape(page, 'o', [0.4, 0.25]);
     await choose(page, 'Background', 'Violet');
     await choose(page, 'Stroke width', 'Thick');
     await panel(page).getByRole('button', { name: 'Clear Styles' }).click();
-    await drawShape(page, 'o', { x: 500, y: 600 });
+    await drawShape(page, 'o', [0.4, 0.75]);
     const els = await saved(page, (e) => shapesOf(e, 'circle').length === 2);
     for (const circle of shapesOf(els, 'circle')) {
       expect(circle.fillSwatch).toBeUndefined();
@@ -238,7 +252,7 @@ test.describe('quick style panel', () => {
     await openBoard(page);
     // Clear of the panel, which sits on the canvas's left (docs/specs/008-canvas/quick-style-panel.md
     // "Where it sits"), so the right-click below lands on the circle.
-    await drawShape(page, 'o', { x: 800, y: 300 });
+    await drawShape(page, 'o', [0.8, 0.25]);
     const widths = panel(page).getByRole('radiogroup', { name: 'Stroke width' });
     await widths.getByRole('radio', { name: 'Medium' }).focus();
     await page.keyboard.press('ArrowRight');
