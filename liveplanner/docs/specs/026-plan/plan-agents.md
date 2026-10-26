@@ -59,6 +59,13 @@ Every write takes what a person would say, and stores the ids:
   "Owner"). A name a type's own custom field has wins over a built-in's other name: on a Post type with a custom
   "Owner" field, "Owner" is that field, not the Assignee; elsewhere it is the Assignee. A built-in's id always means
   the built-in.
+- **A description** is Markdown: `#`, `##` and `###` headings, `**bold**`, `*italic*`, `~~struck~~`,
+  `[text](https://…)` links and `- ` bullets (shown as "• ", as a person's list is). It is stored as the
+  description's formatting (`descriptionRich`) with `description` its plain-text mirror, so it reads in the item
+  panel as a person's formatting does. Inline code loses its backticks (a description has no code style), and a
+  link that is not http(s) or mailto keeps its text only. Text with no Markdown is stored plain and drops any
+  formatting the card had, so a rewritten description never shows the old one; clearing Description clears its
+  formatting too.
 - **An assignee** is a person object `{ id, name, color }` or a name. A name matches a person already assigned on
   the project (case aside); otherwise it makes a named person (`n-` and a slug of the name, a Plan swatch chosen
   from the name; a hash of the name joins the slug when the slug cannot spell it, "Иван", or another person on the

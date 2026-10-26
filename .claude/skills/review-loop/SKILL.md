@@ -142,12 +142,38 @@ One card per question, created in **Under Review** and linked to the Work Item:
 }
 ```
 
-The description, in plain short paragraphs:
+The description is **Markdown**, which the card shows formatted. It takes `###` headings, `**bold**`,
+`*italic*`, `[links](https://…)` and `- ` bullets (no tables or code blocks; backticks are dropped). Keep it
+scannable: the answer first, bullets over paragraphs, one or two lines per bullet, and roughly 150 words in all.
 
-- **Context:** what you found on `origin/main`, with file paths (`liveplanner/apps/editor/src/...`), and why
-  it matters.
-- **Options:** the realistic choices, with the cost or trade-off of each.
-- **Recommendation:** the one you'd pick, and why.
+```markdown
+### Recommendation
+
+**(a) Work them out from the cards.** It matches what MCP and the CLI already do.
+
+### Options
+
+- **(a) Work them out from the cards:** merge `assignedPeople(items)` into the picker. _No migration, but
+  a name goes once no card uses it._
+- **(b) A stored list on the plan:** its own API and MCP support. _Supports rename, but a new data model._
+
+### What I found
+
+- MCP and the CLI already save unknown names as `n-<slug>`
+  ([plan-names.ts:121](https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/packages/items/src/plan-names.ts#L121)).
+- The editor's picker lists only you and your team
+  ([usePlanSlice.ts:168](https://github.com/www-liveworkspace-app/monorepo/blob/<sha>/liveplanner/apps/editor/hooks/plan/usePlanSlice.ts#L168)).
+```
+
+- Link every file you cite to GitHub at the commit you reviewed (`git rev-parse origin/main` for `<sha>`), with
+  `#L<line>` where you have one. The link text is the file name and line, not the whole path.
+- Mention a spec or past decision by linking it the same way (a commit:
+  `https://github.com/www-liveworkspace-app/monorepo/commit/<sha>`).
+- Name the options with letters, so an answer can be just "(b)".
+- Write each bullet or paragraph on **one line** in the JSON (the example above is wrapped only for reading).
+  Every line break shows as a new line on the card, so a hard-wrapped bullet breaks in the middle.
+- If a card shows the raw `**` and `###` marks, the deployed MCP predates Markdown descriptions. Say so in the
+  report.
 
 Batch all of a pass's changes into as few `change_items` calls as you can (up to 50 changes each). Before
 adding a question, check the card's existing Questions (open and Resolved) so you never raise the same one

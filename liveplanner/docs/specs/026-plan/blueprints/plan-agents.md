@@ -26,6 +26,12 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
   string by `personNamed`, Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
   `PRIORITIES`, `labels` string split on commas, Choice by option name; others as given (the api validates).
+- `descriptionFromMarkdown(markdown)` (`packages/items/src/rich-text-markdown.ts`) → `{ plain, runs }`: line
+  marks `#`/`##`/`###` (a heading on the line's runs) and `- `/`* ` (a "• " prefix); inline `**`/`__` bold,
+  `*`/`_` italic, `~~` strikethrough, `[text](url)` (link kept when it passes the item store's safe-link check),
+  backticks dropped, `\` escapes the next mark. `runs` is undefined when nothing is marked. `applyItemChanges`
+  writes a `description` through it: `description` the plain text, `descriptionRich` the runs, or
+  `descriptionRich` cleared when there are none and the card has some; clearing `description` clears both.
 - `applyItemChanges`: one plan read per call; changes in order, each seeing earlier ones' items; first refusal
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).
 - `applyCardTypeChanges`: changes in order on a working list; `add` starts from `NEW_ITEM_TYPE` (shared with the

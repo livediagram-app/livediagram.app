@@ -955,3 +955,80 @@ describe('every branch of the engine', () => {
     ).rejects.toBeInstanceOf(ApiError);
   });
 });
+
+describe('a description written as Markdown', () => {
+  const RICH = [{ text: 'Old', bold: true }];
+  const formatted = () => [
+    item(1, 'aaa111', { title: 'B', status: 'todo~x', description: 'Old', descriptionRich: RICH }),
+  ];
+  const posted = (seen: { method: string; body: unknown }[]) =>
+    seen.filter((c) => c.method === 'POST').map((c) => c.body);
+
+  it('stores its plain text and its formatting, and reads back as the description', async () => {
+    const { api: a, seen } = api();
+    const r = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'add', title: 'New', status: 'To Do', fields: { description: '## Why\n**Soon**' } },
+        { op: 'set', item: '#1', fields: { description: 'See [docs](https://x.dev)' } },
+      ],
+      await readPlanState(a, D),
+    );
+    const [add, set] = posted(seen);
+    expect(add).toMatchObject({
+      fields: {
+        description: 'Why\nSoon',
+        descriptionRich: [
+          { text: 'Why\n', heading: 2 },
+          { text: 'Soon', bold: true },
+        ],
+      },
+    });
+    expect(set).toMatchObject({
+      set: {
+        description: 'See docs',
+        descriptionRich: [{ text: 'See ' }, { text: 'docs', link: 'https://x.dev' }],
+      },
+    });
+    expect(r.applied[1]).toContain('set description = "See docs"');
+    expect(r.applied[1]).not.toContain('descriptionRich');
+  });
+
+  it('drops the formatting a card had when the new text has none, and only then', async () => {
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: formatted(), rev: 1 } });
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { description: 'Plain now' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({
+      set: { description: 'Plain now' },
+      clear: ['descriptionRich'],
+    });
+    expect(r.applied[0]).not.toContain('cleared');
+
+    const { api: b, seen: seenB } = api();
+    await applyItemChanges(
+      b,
+      D,
+      [{ op: 'set', item: '#1', fields: { description: 'Plain now' } }],
+      await readPlanState(b, D),
+    );
+    expect(posted(seenB)[0]).toEqual({ set: { description: 'Plain now' } });
+  });
+
+  it('clears the formatting with the description', async () => {
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: formatted(), rev: 1 } });
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', clear: ['Description'] }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({ clear: ['description', 'descriptionRich'] });
+    expect(r.applied[0]).toContain('cleared description');
+    expect(r.applied[0]).not.toContain('descriptionRich');
+  });
+});
