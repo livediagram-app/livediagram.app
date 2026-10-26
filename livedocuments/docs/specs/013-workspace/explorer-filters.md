@@ -1,10 +1,10 @@
 # Explorer filters
 
-Status: shipped on the shared Explorer, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The
+The lens is the shared Explorer's, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md). The
 grammar, matching, suggestion engine and view models live in its `src/lens/` (pure, no DOM or React); the field, the
 chips and the states are its SearchField and Lens components. The index narrows the lists
 themselves: the filters are `GET /items` and `GET /shared` query parameters
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "The lens's filters").
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "The lens's filters").
 
 ## What
 
@@ -90,7 +90,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
 - **Opens in** is the app an item opens in, named by its kind (`opens-in:document`) and labelled with the app's name from
   `@liveworkspace/sites`. Its chip and suggestions show while a list holds every app's items (All, and
   liveworkspace.app's Explorer); on a list held to the host's own app there is no chip, and a typed `opens-in:` token
-  still reads and narrows within that app (another app's leaves the list empty). **Kind** was not carried over: a
+  still reads and narrows within that app (another app's leaves the list empty). There is no **Kind** dimension: a
   document's tabs are not in the index.
 
 ## Matching

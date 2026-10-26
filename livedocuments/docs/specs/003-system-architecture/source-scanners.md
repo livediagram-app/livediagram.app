@@ -1,7 +1,5 @@
 # Source scanners
 
-Status: shipped
-
 ## What
 
 Some guards read the repo's own TypeScript rather than run it: the light and dark palette tests
@@ -16,7 +14,7 @@ walk the trees with `typescript/unstable/ast`: its `is*` guards, `SyntaxKind`, a
 ## Why
 
 The repo runs one TypeScript, TypeScript 7, whose compiler is native and ships no classic compiler API
-(`ts.createSourceFile` is gone). Its API reaches the native compiler instead, so a guard parses with
+(no `ts.createSourceFile`). Its API reaches the native compiler instead, so a guard parses with
 exactly the compiler that type-checks the code, and a syntax TypeScript accepts is a syntax the guards
 read.
 

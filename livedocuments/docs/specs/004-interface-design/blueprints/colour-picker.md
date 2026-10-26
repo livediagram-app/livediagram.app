@@ -13,7 +13,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                                   |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/editor/lib/document-colours.ts`), `useDocumentColours()` (`apps/editor/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`apps/editor/components/colour/CustomColourEditor.tsx`)                                                                                                                       |
-| skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                    |
+| skins                | inline `ColourPicker`; row (`ColourRow`); `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                                   |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                                  |
 
 Grey is a **neutral stock colour**: `GREY_PEN_COLOUR = 'grey'`, `PenColourName = 'ink' | 'grey' | HuedPenColourName`.
@@ -64,8 +64,6 @@ ColourPicker({
   leave out any colour the Theme Palette (or any other group) already offers.
 - `ColourPopover({ anchor, onClose, ...picker })`: an `AnchoredPopover` of `COLOUR_POPOVER_WIDTH`
   (`COLOUR_PICKER_WIDTH + 2 * COLOUR_POPOVER_PADDING + 2`), focusing the picker's Tab stop a frame after opening.
-- `ColourField({ swatch, name, none?, id?, disabled?, ...picker })`: h-8 trigger (chip, name, chevron); Arrow Up or
-  Down opens it; a pick closes it and refocuses the trigger.
 - `ColourSwatchButton({ swatch, none?, children?, preserveFocus?, onOpenChange?, triggerProps?, className?, ...picker })`:
   `preserveFocus` prevents mousedown focus (rich text keeps its selection) and skips the refocus.
 - Builders (`colour-options.ts`): `standardOptions(tone, appearance, by: 'hex' | 'name')`, `standardGroup(...)`

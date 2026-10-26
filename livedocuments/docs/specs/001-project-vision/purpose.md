@@ -4,9 +4,8 @@ livedocuments is a web app where teams make **documents of pages together, in re
 and infographics.
 
 This is the root of the spec tree: every other spec is a decision taken inside
-the boundaries set here. That only works if it stays true, so it carries a
-[record of the boundaries that have moved](#boundaries-that-have-moved) rather
-than quietly describing a product that no longer exists.
+the boundaries set here, so it stays true to the product: when a boundary moves, this spec changes in the same
+change ([Boundaries](#boundaries)).
 
 ## What it is
 
@@ -47,7 +46,7 @@ never arrives.
   [articles](../007-editor/article-pages.md) that flow text across pages. On a page:
   text, shapes, images, charts, concept graphics, tables, code blocks, checklists, stickers, icons and embeds, plus
   web components that lay themselves out
-  ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)).
+  ([Web components are elements; no groups](../009-elements/web-components-and-no-groups.md)).
 - **Structure**: tabs, tab folders, per-tab layers ([Layers](../006-document/layers.md)),
   themes and the Pages templates.
 - **Presenting** ([Presentation mode](../012-collaboration/presentation-mode.md)): full-screen decks with the laser
@@ -77,18 +76,12 @@ never arrives.
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the
   core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
-## Boundaries that have moved
+## Boundaries
 
-A boundary nobody maintains is not a boundary. When one moves, it gets recorded
-here in the same change, with the spec that moved it.
-
-- **"Not an offline-first desktop app"**: narrowed by
-  [Offline Mode](../006-document/offline-mode.md). Still not a desktop app, and cloud is still the
-  default, but a document can be kept only in this browser's IndexedDB and
-  converted back and forth. Offline is a supported mode, not merely an
-  unsupported state.
-- **Pages only**: livedocuments began as livediagram with every mode, and was cut down to Pages. A feature that serves
-  only a diagram, a whiteboard, a workshop or a plan does not belong here.
+- **Not a desktop app, but offline is a mode**: cloud is the default, and a document can be kept only in this
+  browser's IndexedDB and converted back and forth ([Offline Mode](../006-document/offline-mode.md)).
+- **Pages only**: a feature that serves only a diagram, a whiteboard, a workshop or a plan does not belong here
+  (those are livediagram's and liveplanner's).
 - **Articles, slides and infographics**: logos and wireframes are livedesign's. A page kind, layout or tool that
   serves only a logo or a screen wireframe does not belong here.
 

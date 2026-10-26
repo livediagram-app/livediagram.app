@@ -6,10 +6,9 @@ or unresolved **comments**.
 
 ## Why
 
-They used to be one connected chip of 32px buttons on the element's top-right corner, half in and
-half out, with a ring, a shadow and hairline dividers. It read as a toolbar parked on the canvas,
-louder than the element's own label, and it mixed what an element **has** (a note) with what you
-can **do** to it, all at equal weight, all the time. Indicators are status: they should
+One connected chip of buttons on the element's corner, with a ring, a shadow and dividers, would read as
+a toolbar parked on the canvas, louder than the element's own label, and would mix what an element **has**
+(a note) with what you can **do** to it, all at equal weight, all the time. Indicators are status: they should
 read as part of the element, quiet until you look for them, and commands should appear only when
 you are working on that element.
 

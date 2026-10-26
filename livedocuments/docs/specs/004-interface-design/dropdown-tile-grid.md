@@ -1,7 +1,5 @@
 # Tile grids for the palette dropdowns
 
-Status: shipped
-
 ## What
 
 The **canvas-tool** picker (Select / Hand / Format / Laser /
@@ -48,8 +46,7 @@ a grid is not always the better shape:
   rather than taking a column of their own. A shortcut is worth discovering
   and worth nothing at the cost of the label's line.
 - **The selected option is shown, in its selected tone**, not filtered out.
-  It used to be hidden on the reasoning that the trigger already names it —
-  but that makes the reader infer the current value from the trigger alone,
+  Hiding it because the trigger already names it would make the reader infer the current value from the trigger alone,
   and worse, the remaining options _shift position_ every time the selection
   changes, so the thing you want is never twice in the same place. Showing all
   of them keeps the layout stable and states the current value where you are

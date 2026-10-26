@@ -13,9 +13,9 @@ what the gesture touches, not the size of the board. The measurements behind it 
   between them, 10% freehand strokes, 10% text, 5% paths, 5% stickies), spread over an area four
   screens wide and three high, with arrows routed behind boxes by default as drawn. As in real
   diagrams, an arrow joins a shape to one of its nearest neighbours, not to any shape on the board.
-- It is opened twice, as two series that keep their livediagram names, **whiteboard** and **diagram**. In
-  livediagram the two rendered differently; in livedocuments both open in Pages, so the series measure the same
-  canvas and differ only by the tab's stored `opensIn`.
+- It is opened twice, as two series that keep their livediagram names, **whiteboard** and **diagram**. Both open in Pages, so the
+  series measure the same canvas; the whiteboard's seeded tab carries an `opensIn: 'draw'` field livedocuments does
+  not read.
 
 ## The budget
 

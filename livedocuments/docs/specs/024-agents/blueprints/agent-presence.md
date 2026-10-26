@@ -12,7 +12,7 @@ It builds on the sibling blueprints and calls what they provide by these names:
 
 | Provided by      | Name used here                                                                      | What it is                                                                                                                                                                                                          |
 | ---------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| share-roles      | `ShareRole`, `TokenRole`                                                            | The levels on grants, tickets, room sessions and tokens; no member is named here                                                                                                                                    |
+| share-roles      | `ShareRole`, `AccessLevel`                                                          | The levels on grants, tickets, room sessions and tokens; no member is named here                                                                                                                                    |
 | share-roles      | `gateParticipate`, `gateEdit` `(ctx, id, ownerId, teamId, tabId?)`                  | True when the caller's grant and its token (if any) pass that gate; until share roles land, `gateParticipate` is read access (`apps/api/src/routes/context.ts`), read-only tokens refused writes at the choke point |
 | share-roles      | The write choke point's route-gate matcher                                          | Lets a token's write reach a route only when the token passes that route's gate                                                                                                                                     |
 | agent-changesets | `ctx.token: { id, ownerId, role } \| null` on `RouteContext`                        | The presenting API token, null for a session or a guest                                                                                                                                                             |
@@ -75,7 +75,7 @@ Scope, by file:
 | Refresh         | `refreshAgentPresence`, room mode `refresh`                              | A changeset extending the entry, keeping status and focus               |
 | Person tag      | `personTag`, `X-Verified-Person`                                         | Opaque per-document stand-in for an owner id, held inside the room only |
 | Joins           | `AgentPresence.joins`, `AgentPresence.self`, `AgentPresence.person`      | Which roster sessions are the same person as the agent, per recipient   |
-| Thread verbs    | reply, resolve, reopen (`CommentVerb`)                                   | The comment endpoints beside add and delete-own                         |
+| Thread verbs    | reply, resolve, reopen (`ThreadVerb`, `comment-routes.ts`)               | The comment endpoints beside add and delete-own                         |
 | Thread listing  | `DocumentCommentThread`, `CommentListStatus` (`open`, `resolved`, `all`) | One thread across the document, with its element's ref and label        |
 | Comment's token | `Comment.tokenId`                                                        | The token a comment was posted with; audit only                         |
 | Effective level | `AgentPresence.role`                                                     | The level the gates resolve for the token on this document (PR27)       |
@@ -184,13 +184,13 @@ does; the add's route answers 201 too, as the OpenAPI manifest says. Resolve and
 
 Side effects, all in `waitUntil` (PR24, PR25):
 
-| Verb    | Timeline                                                                                        | Email                                               |
-| ------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| add     | `recordCommentAdded`, `reply` when the thread held a comment                                    | `notifyNewComment` when the caller is not the owner |
-| reply   | `recordCommentAdded` with `reply: true`                                                         | as add                                              |
-| resolve | `recordCommentResolved` with thread key `<documentId>:<elementId>` and the first comment's text | none                                                |
-| reopen  | none                                                                                            | none                                                |
-| delete  | none                                                                                            | none                                                |
+| Verb    | Room                                | Email                                                                                                                             |
+| ------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| add     | the change relayed as an `el-delta` | `afterCommentPosted`: `notifyNewComment` when the caller is not the owner; `notifyMentions` on a team document, never for a token |
+| reply   | as add                              | as add                                                                                                                            |
+| resolve | as add                              | none                                                                                                                              |
+| reopen  | as add                              | none                                                                                                                              |
+| delete  | as add                              | none                                                                                                                              |
 
 `DocumentCommentThread`:
 
@@ -321,7 +321,7 @@ none, and the room pins it on the session attachment as `personTag`.
   stack shows its owner's agent.
 - `buildAgentFocusByElement(agents, activeId, elementIds)` returns `Map<elementId, { name, color }[]>` for entries on
   the active tab, ids missing from the tab skipped, once per person. It reaches the canvas through `AgentFocusContext`,
-  apart from `remoteSelectionsByElement`, and never reaches `isElementHeldByOther`.
+  apart from `remoteSelectionsByElement`, and never reaches the selection lock (`lockedByOther`).
 - `withoutAgentRows(rows)` drops standalone agent rows for the Collaborators count.
 - `apiSetThreadResolved(ownerId, documentId, tabId, commentId, resolved, shareCode)`: a session that may participate
   but not edit calls it from `resolveThread` / `unresolveThread` with the thread's first comment id, as its add calls

@@ -3,46 +3,42 @@
 Derived from [Import image pipeline](../import-image-pipeline.md). The spec decides; this file only
 adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (all under `apps/editor/lib/import-images/`):
+Scope, by file (under `apps/editor/lib/import-images/`, except the two marked `workbench`, which are in
+`../packages/workbench/src/lib/import-images/`):
 
-| File              | Role                                                                                           |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| `constants.ts`    | Every number the pipeline uses, named                                                          |
-| `types.ts`        | Sources, hints, outcomes, failures, requests, the report                                       |
-| `source.ts`       | `readImportImageSource`: a source to bytes + MIME type, or a failure                           |
-| `policy.ts`       | `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                         |
-| `prepare.ts`      | `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec`        |
-| `upload-error.ts` | `failureFromUploadError`: an upload rejection to a named failure                               |
-| `session.ts`      | `createImportImageSession`: concurrency, offline budget, short-circuit, logging                |
-| `attach.ts`       | `attachImportImages`: key dedupe, element patching, progress, the report                       |
-| `report.ts`       | `emptyImportImageReport`, `describeImportImageReport`: tallies and the dialog copy             |
-| `webp.ts`         | `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered        |
-| `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring |
-| `index.ts`        | Public surface for callers (everything but the browser wiring)                                 |
-| `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                    |
+| File              | Role                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| `constants.ts`    | (workbench) Every number the pipeline uses, named                                                   |
+| `types.ts`        | Sources, hints, outcomes, failures, the codec                                                       |
+| `source.ts`       | `readImportImageSource`: a source to bytes + MIME type, or a failure                                |
+| `policy.ts`       | `planImageEncoding`, `fallbackOutputType`: the pure encoding decisions                              |
+| `prepare.ts`      | `prepareImportImage`: decode, plan, encode, pick, cap, through an injected `ImageCodec`             |
+| `upload-error.ts` | `failureFromUploadError`: an upload rejection to a named failure                                    |
+| `session.ts`      | `createImportImageSession`: concurrency, offline budget, short-circuit, logging                     |
+| `webp.ts`         | (workbench) `createWebpEncoder`: canvas WebP, else the on-demand WASM encoder, detection remembered |
+| `browser.ts`      | `browserImageCodec`, `createBrowserImportImageSession`: the DOM codec + the api/offline wiring      |
+| `index.ts`        | Public surface for callers (everything but the browser wiring)                                      |
+| `test-fakes.ts`   | Fake codec and typed image blobs for the unit tests; imported by tests only                         |
 
 Only `browser.ts` touches the DOM or the network; every other module runs in Node under Vitest.
 
 ## Domain and naming
 
-| Term           | Identifier              | Meaning                                                                                                                 |
-| -------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Image source   | `ImportImageSource`     | Bytes found in an imported file: `{ kind: 'data-url', dataUrl }` or `{ kind: 'blob', blob }`, each with optional `name` |
-| Display hint   | `DisplayHint`           | `{ width, height }` of the element the image fills (canvas units)                                                       |
-| Image request  | `ImportImageRequest`    | `{ elementId, key, source: ImportImageSource \| null, hint? }`; `null` source is `missing-bytes`                        |
-| Import session | `ImportImageSession`    | Per-import state; `store(source, hint?)`                                                                                |
-| Stored image   | `StoredImportImage`     | `{ ok: true, imageId, width, height, kind }`                                                                            |
-| Stored kind    | `StoredImportImageKind` | `'uploaded' \| 'deduped' \| 'embedded'`                                                                                 |
-| Named failure  | `ImportImageFailure`    | One of `IMPORT_IMAGE_FAILURES` (below)                                                                                  |
-| Outcome        | `ImportImageOutcome`    | `StoredImportImage \| { ok: false, failure }`                                                                           |
-| Prepared image | `PreparedImportImage`   | `{ blob, mimeType: AcceptedImageType, width, height }`, ready to store                                                  |
-| Encoding plan  | `EncodingPlan`          | `{ action: 'keep' } \| { action: 'encode', width, height, keepIfSmaller }`                                              |
-| Codec          | `ImageCodec`            | `decode(blob, mimeType)`, `encode(decoded, width, height, type, quality)`                                               |
-| Report         | `ImportImageReport`     | `{ imported, deduped, placeholders: Partial<Record<ImportImageFailure, number>> }`                                      |
-| Progress       | `ImportImageProgress`   | `{ done, total }`, per distinct key                                                                                     |
+| Term           | Identifier              | Meaning                                                                                                        |
+| -------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Image source   | `ImportImageSource`     | Picture bytes to store: `{ kind: 'data-url', dataUrl }` or `{ kind: 'blob', blob }`, each with optional `name` |
+| Display hint   | `DisplayHint`           | `{ width, height }` of the element the image fills (canvas units)                                              |
+| Import session | `ImportImageSession`    | Per-import state; `store(source, hint?)`                                                                       |
+| Stored image   | `StoredImportImage`     | `{ ok: true, imageId, width, height, kind }`                                                                   |
+| Stored kind    | `StoredImportImageKind` | `'uploaded' \| 'deduped' \| 'embedded'`                                                                        |
+| Named failure  | `ImportImageFailure`    | One of the union's names (below)                                                                               |
+| Outcome        | `ImportImageOutcome`    | `StoredImportImage \| { ok: false, failure }`                                                                  |
+| Prepared image | `PreparedImportImage`   | `{ blob, mimeType: AcceptedImageType, width, height }`, ready to store                                         |
+| Encoding plan  | `EncodingPlan`          | `{ action: 'keep' } \| { action: 'encode', width, height, keepIfSmaller }`                                     |
+| Codec          | `ImageCodec`            | `decode(blob, mimeType)`, `encode(decoded, width, height, type, quality)`                                      |
 
 "Image" is canonical in identifiers and copy. "Picture", "file" (for the image) and "asset" are
-not used. `IMPORT_IMAGE_FAILURES`, in this order (the order the report lists them):
+not used. `ImportImageFailure`, in this order (file problems, then limits, then transport, D1):
 `missing-bytes`, `unsupported`, `too-large`, `gallery-full`, `images-unavailable`,
 `offline-budget`, `upload-failed`.
 
@@ -81,13 +77,13 @@ not used. `IMPORT_IMAGE_FAILURES`, in this order (the order the report lists the
 
 `longest = max(width, height)`; `fits = longest <= IMPORT_IMAGE_MAX_EDGE_PX`.
 
-- `image/svg+xml`: `edge = min(MAX_EDGE, max(longest, hintLongest) * SVG_RASTER_SCALE)`, or
-  `SVG_DEFAULT_EDGE` when both are 0. Aspect = `width / height` when both are positive, else the
+- `image/svg+xml`: `edge = min(IMPORT_IMAGE_MAX_EDGE_PX, max(longest, the hint's longest side) *
+IMPORT_IMAGE_SVG_RASTER_SCALE)`, or `IMPORT_IMAGE_SVG_DEFAULT_EDGE_PX` when both are 0. Aspect = `width / height` when both are positive, else the
   hint's, else 1. Encode at the longest side `edge`: `{ action: 'encode', keepIfSmaller: false }`.
 - `image/gif`, `fits`, `byteLength <= MAX_IMAGE_BYTES`: `keep`.
 - `image/webp`, `fits`, `byteLength <= MAX_IMAGE_BYTES`: `keep`.
 - `image/png` or `image/jpeg`, `fits`: encode at the same size, `keepIfSmaller: true`.
-- Otherwise: encode at `scale = min(1, MAX_EDGE / longest)`, `keepIfSmaller: false`.
+- Otherwise: encode at `scale = min(1, IMPORT_IMAGE_MAX_EDGE_PX / longest)`, `keepIfSmaller: false`.
 
 Scaled sizes are `max(1, round(side * scale))`.
 
@@ -98,7 +94,7 @@ Scaled sizes are `max(1, round(side * scale))`.
 1. `decoded = await codec.decode(blob, mimeType)`; `null` or a throw: `unsupported`.
 2. `plan = planImageEncoding(...)` with `decoded.width/height`.
 3. `keep`: the original blob with its sniffed accepted type.
-4. `encode`: `out = await codec.encode(decoded, w, h, 'image/webp', WEBP_QUALITY)` (the browser
+4. `encode`: `out = await codec.encode(decoded, w, h, 'image/webp', IMPORT_IMAGE_WEBP_QUALITY)` (the browser
    codec's WebP step is `createWebpEncoder`, below). When `out` is `null` or
    `out.type !== 'image/webp'`: `out = await codec.encode(decoded, w, h, fallbackOutputType(mime),
 quality)`. `null` or a throw: `unsupported`. With `keepIfSmaller` and
@@ -160,29 +156,6 @@ OFFLINE_IMPORT_EMBED_BUDGET_CHARS`: `offline-budget` (the budget is not consumed
 5. Any unexpected throw inside the slot: `upload-failed` (never rejects). Release the slot.
 6. `gallery-full` changes no state: later stores still upload (spec).
 
-### `attachImportImages(elements, requests, session, onProgress?)`
-
-1. Group requests by `key`. A key whose first request has a `null` source is `missing-bytes`
-   without calling the session.
-2. `total` = number of distinct keys with a source; `onProgress({ done: 0, total })` first when
-   `total > 0`, then after each settles.
-3. Every distinct key calls `session.store(source, hint)` once (the first request's hint);
-   all run together and the session limits concurrency.
-4. For each request: stored → the element (by `elementId`, `type === 'image'`) gains `imageId`,
-   `naturalWidth`, `naturalHeight`; failed → unchanged (`imageId: null`). Other elements pass
-   through by reference.
-5. Report per request: `uploaded` and `embedded` → `imported`; `deduped` → `deduped`; failure →
-   `placeholders[failure] += 1`. Invariant: `imported + deduped + Σ placeholders ===
-requests.length`.
-6. Log `[import-images] report` with the report.
-
-### `describeImportImageReport(report)` → `{ lines: string[], failures: { failure, count, sentence }[], hint: string | null }`
-
-- `lines`: `"{n} image(s) imported"` when `imported > 0`; `"{n} already in your gallery"` when
-  `deduped > 0`; `"1 left as a placeholder"` / `"{n} left as placeholders"` when placeholders > 0.
-- `failures`: in `IMPORT_IMAGE_FAILURES` order, only non-zero, with the spec's sentence.
-- `hint`: `"Double-click a placeholder to add its image."` when placeholders > 0, else `null`.
-
 ## Interfaces and contracts
 
 ```ts
@@ -210,9 +183,10 @@ resolves `null`. For `image/webp` it hands `createWebpEncoder` the canvas encode
 isOfflineIdSync(documentId)`; `upload` computes `sha256Hex` and calls `apiUploadImage` with the
 prepared type, dimensions and the source `name` as `originalName`; `toDataUrl` is `FileReader`.
 
-Callers depend on `index.ts` (the types, `attachImportImages`, `describeImportImageReport`,
-`emptyImportImageReport`, `importImageReportTotal`, `importImagePlaceholderCount`) and lazy-import
-`browser.ts` for `createBrowserImportImageSession`, so no DOM code reaches the first bundle.
+Callers depend on `index.ts` (the types `ImportImageFailure`, `ImportImageOutcome`, `ImportImageSession` and
+`ImportImageSource`) and lazy-import `browser.ts` for `createBrowserImportImageSession`, so no DOM code reaches the
+first bundle. The caller is image search: `useImageSearch.ts` opens a session per pick and `pick.ts` hands it the
+downloaded blob.
 
 ## Data and persistence
 
@@ -223,24 +197,20 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 
 ## Errors and edge cases
 
-| Case                                         | Handling                                                  |
-| -------------------------------------------- | --------------------------------------------------------- |
-| Request with `null` source                   | `missing-bytes`, no session call                          |
-| Malformed / non-base64 data URL              | `unsupported`                                             |
-| Empty payload                                | `missing-bytes`                                           |
-| Source over 50 MB                            | `too-large` before decoding                               |
-| Browser cannot decode                        | `unsupported`                                             |
-| SVG that taints the canvas                   | encode resolves `null` → `unsupported`                    |
-| Browser cannot encode WebP                   | fallback type (JPEG/PNG)                                  |
-| Encoded result not an accepted type          | `unsupported`                                             |
-| Encoded result over 10 MB                    | `too-large`                                               |
-| Upload 403 `gallery_full`                    | `gallery-full`; later stores still try                    |
-| Upload 503                                   | `images-unavailable`; later stores short-circuit          |
-| Network failure / other status               | `upload-failed`                                           |
-| Offline budget exceeded                      | `offline-budget`; smaller later images may still fit (D5) |
-| Two elements, one key                        | One store; both elements get its outcome                  |
-| Request whose element is missing / not image | Counted in the report, no element patched (D6)            |
-| Zero requests                                | No progress calls; report all zeros                       |
+| Case                                | Handling                                                  |
+| ----------------------------------- | --------------------------------------------------------- |
+| Malformed / non-base64 data URL     | `unsupported`                                             |
+| Empty payload                       | `missing-bytes`                                           |
+| Source over 50 MB                   | `too-large` before decoding                               |
+| Browser cannot decode               | `unsupported`                                             |
+| SVG that taints the canvas          | encode resolves `null` → `unsupported`                    |
+| Browser cannot encode WebP          | fallback type (JPEG/PNG)                                  |
+| Encoded result not an accepted type | `unsupported`                                             |
+| Encoded result over 10 MB           | `too-large`                                               |
+| Upload 403 `gallery_full`           | `gallery-full`; later stores still try                    |
+| Upload 503                          | `images-unavailable`; later stores short-circuit          |
+| Network failure / other status      | `upload-failed`                                           |
+| Offline budget exceeded             | `offline-budget`; smaller later images may still fit (D5) |
 
 ## Security and trust
 
@@ -254,50 +224,44 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 ## Performance and limits
 
 - Peak memory ≈ 3 × (source bytes + decoded RGBA at ≤ 2048² × 4 = 16 MB) ≈ 100 MB worst case.
-- Encode of a 2048² canvas to WebP: ~50 to 150 ms on a laptop; 30 images ≈ 2 to 5 s plus upload.
+- Encode of a 2048² canvas to WebP: ~50 to 150 ms on a laptop, plus the upload.
 - WASM encoder, only without canvas WebP: one chunk (~20 KB) plus one `.wasm` (340 KB SIMD, 280 KB
   plain), fetched once per page. Never in the editor's first bundle (verified against the built
   `document/placeholder.html`'s chunk list).
 - Hosted server cost per image: one media service upload (a hash lookup, a totals query, and an R2 put when new) and one owner-index upsert.
-- Offline budget caps the tab body growth from one import at 8 MB.
+- Offline budget caps the tab body growth from one session at 8 MB.
 
 ## Observability
 
-- `console.info('[import-images]', outcomeName, { mimeType, sourceBytes, storedBytes, width, height })`
-  per store, `outcomeName` ∈ `uploaded | deduped | embedded | <failure>`.
-- `console.info('[import-images]', 'missing-bytes', { key })` per key without a source (from
-  `attachImportImages`, which never hands those to the session).
-- `console.info('[import-images] report', report)` once per `attachImportImages`.
-- `console.info('[import-images]', 'webp-wasm' | 'webp-wasm-unavailable' | 'webp-wasm-failed', detail)`
-  from the WASM path.
-- Failures that come from a throw also `console.warn('[import-images] error', failure, error)`.
+- `debugLog('[import-images]', outcomeName, { mimeType, sourceBytes, storedBytes, width, height })` per store,
+  `outcomeName` ∈ `uploaded | deduped | embedded | <failure>`, and `upload-conflict-retry` before a retried upload.
+- `'webp-wasm' | 'webp-wasm-unavailable' | 'webp-wasm-failed'` from the WASM path, through the same log.
+- A store that throws unexpectedly also `console.warn('[import-images] error', error)`.
 
 ## Testing
 
-| Rule                                                  | Test                                |
-| ----------------------------------------------------- | ----------------------------------- |
-| Longest side 2048, never upscale                      | `policy.test.ts` scale cases        |
-| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts` |
-| WebP within size kept                                 | `policy.test.ts`                    |
-| GIF kept when it fits, flattened when not             | `policy.test.ts`                    |
-| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                    |
-| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts` |
-| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts` |
-| Data URL parsing, MIME sniff                          | `source.test.ts`                    |
-| Upload error mapping                                  | `upload-error.test.ts`              |
-| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                   |
-| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                   |
-| Offline embed + budget                                | `session.test.ts`                   |
-| Concurrency never above 3                             | `session.test.ts`                   |
-| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                    |
-| Report copy                                           | `report.test.ts`                    |
-| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                      |
-| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                      |
-| Detection remembered; failed load retried             | `webp.test.ts`                      |
-| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                   |
+| Rule                                                 | Test                                |
+| ---------------------------------------------------- | ----------------------------------- |
+| Longest side 2048, never upscale                     | `policy.test.ts` scale cases        |
+| PNG/JPEG within size: encode, keep if smaller        | `policy.test.ts`, `prepare.test.ts` |
+| WebP within size kept                                | `policy.test.ts`                    |
+| GIF kept when it fits, flattened when not            | `policy.test.ts`                    |
+| SVG raster size from intrinsic/hint/default          | `policy.test.ts`                    |
+| WebP fallback type                                   | `policy.test.ts`, `prepare.test.ts` |
+| 50 MB source cap, 10 MB output cap                   | `source.test.ts`, `prepare.test.ts` |
+| Data URL parsing, MIME sniff                         | `source.test.ts`                    |
+| Upload error mapping                                 | `upload-error.test.ts`              |
+| Unavailable short-circuit; cap keeps trying          | `session.test.ts`                   |
+| 409 `upload_conflict` retried once, then placeholder | `session.test.ts`                   |
+| Offline embed + budget                               | `session.test.ts`                   |
+| Concurrency never above 3                            | `session.test.ts`                   |
+| Canvas WebP used when present; WASM never loaded     | `webp.test.ts`                      |
+| No canvas WebP detected by blob type; WASM encodes   | `webp.test.ts`                      |
+| Detection remembered; failed load retried            | `webp.test.ts`                      |
+| No WebP at all → PNG / JPEG fallback                 | `prepare.test.ts`                   |
 
 All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; no e2e spec drives the
-browser codec today.
+browser codec.
 
 ## Assets and external resources
 

@@ -1,7 +1,5 @@
 # Toasts
 
-Status: shipped
-
 ## What
 
 A toast is a short, floating notice that says what just happened or what went wrong, and offers at most a couple of

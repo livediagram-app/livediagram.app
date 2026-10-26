@@ -178,10 +178,9 @@ Checks, Tests, every Editor unit tests job and Build are required status checks 
 ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
 `workflow_dispatch` run on the same commit is not attached to it.
 
-Coverage is a separate step because it enforces the thresholds above — and
-because running it at all keeps the coverage tooling exercised. It previously
-did not run in CI, which is how a v4 coverage provider came to sit against a
-v5 test runner with every check green: nothing invoked the broken path.
+Coverage is a separate step because it enforces the thresholds above, and
+because running it at all keeps the coverage tooling exercised: a coverage provider out of step with the test
+runner would otherwise sit there with every check green, since nothing invoked the broken path.
 
 ### Sizing the shards
 
@@ -199,27 +198,23 @@ stays the thresholds above, and a failed upload leaves the job green.
 
 The pull request's coverage report is the monorepo's own, written into the description from CI's
 lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
-coverage, and a row per product the run reached against `main`. It replaces the
-`coverage-report.yml` and `scripts/coverage-report.mjs` this product carried in its own repository,
-which no longer run.
+coverage, and a row per product the run reached against `main`.
 
 ## Before a push
 
 The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
 changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
-It replaces the hook this product carried in its own repository, whose `.githooks/` and
-`scripts/git-hooks/` are no longer installed.
 
 The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
 inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
 
-## What's tested now, what's ahead
+## What's tested
 
-- **Tested now.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
+- **Tested.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages and articles, rich text, tables, comments + mentions, element ops and deltas, slide decks, tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages and articles, rich text, tables, comments + mentions, element ops and deltas, slide decks, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/editor`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -304,12 +299,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   what they exercise; flipping the whole workspace to `jsdom` to serve the
   files that render would tax every other suite for nothing.
 
-  This exists because real bugs could not be caught without it, both in the
-  Timeline, whose state lives in hooks rather than in pure helpers:
-  `useTimelineFeed.test.ts` covers a failed Show More that swapped every
-  event already shown for an error ([Timeline](../013-workspace/timeline.md) §3), and `useTimelineControls.test.tsx` covers a
-  Clear filters button that cleared only half the filters. Each fails if its
-  fix is reverted.
+  State that lives in hooks rather than pure helpers is only testable this way: the
+  editor's autosave (`useAutosave.test.tsx`), its changeset feed (`useChangesetFeed.test.tsx`) and the
+  workbench page's renewal (`useWorkbenchRenewal.test.ts`) each render their hook.
 
   Both workspaces load the same setup file — `react-cleanup` out of
   `@liveworkspace/vitest-config`, one copy for the repo rather than one per
@@ -333,13 +325,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   properties of null". Next's bundler dedupes for real builds; the test
   resolver has to be told.
 
-- **Ahead:**
-  - Worker-runtime tests for `apps/api`: the current suites run under plain
-    vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state, and a document's SQLite as in-memory SQLite (see
-    Conventions); a future move to `@cloudflare/vitest-pool-workers` would
-    let the Durable Objects run in a real `workerd` runtime, but
-    that's an aspiration, not the current setup.
+- **Not covered:** the Workers runtime itself. `apps/api`'s suites run under plain vitest in the `node`
+  environment with fakes for `WebSocket` / Durable Object state, and a document's SQLite as in-memory SQLite (see
+  Conventions), not in `workerd`.
 
 Browser end-to-end tests are not part of this gate; they are specified in
 [End-to-end tests](e2e-smoke.md).

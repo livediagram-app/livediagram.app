@@ -1,7 +1,5 @@
 # Format Panel
 
-Status: **implemented**.
-
 While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The third mode panel, after [Laser](laser-panel.md) and [Spotlight](spotlight-panel.md).
 
 ## Why

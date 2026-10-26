@@ -219,7 +219,7 @@ transition and Auto-advance are read, never written.
 
 ## Performance and limits
 
-Measured 2026-10-14, M-series, the seeded two-slide deck (aurora and bokeh backgrounds, pulse, bounce and wave text),
+Measured on an M-series laptop, the seeded two-slide deck (aurora and bokeh backgrounds, pulse, bounce and wave text),
 `next dev`, headless Chromium and WebKit through Playwright.
 
 - **First load**: only `GifOmit` and `gif-omit.ts` (the `data-gif-omit` marker) are in the document page's initial

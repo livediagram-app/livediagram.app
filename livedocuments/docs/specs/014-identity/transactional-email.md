@@ -1,18 +1,18 @@
 # Transactional email
 
-**Status: in progress.** Optional, off by default. Sends a small set of account emails from the api worker
+Optional, off by default. Sends a small set of account emails from the api worker
 through Cloudflare Email Service, as every liveworkspace app does
-([liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)). Like
+([liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like
 sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on one switch**, here the
-`send_email` binding `EMAIL`: when it is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the canvas stay
+`send_email` binding `EMAIL`: when it is absent the whole feature is inert (no sends, no new request
+work) and everything else behaves the same. Guests and the canvas stay
 account-free and never receive email.
 
 ## 1. What we send
 
 **Onboarding — sent by liveworkspace, not here.** The welcome, activation nudge,
 week 1, week 2 and win-back series is one per liveworkspace account, sent by the
-accounts Worker for every app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+accounts Worker for every app ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
 "Onboarding emails"). livedocuments keeps no lifecycle table and runs no sweep; it
 reports when someone saves a document they own (`reportActivity`: a genuine
 create, and each summary push from a document's room) so the series knows who
@@ -20,7 +20,7 @@ is active.
 
 **Transactional — always send (when the feature is on):**
 
-1. **Team invite** — no longer sent by livedocuments: teams, their invitations
+1. **Team invite**: not sent by livedocuments. Teams, their invitations
    and those emails (the invite, its reminders and the answer to the admins)
    belong to the liveworkspace account and come from liveworkspace, which also
    counts them ([Teams](../013-workspace/teams.md)).
@@ -36,10 +36,10 @@ is active.
 4. **API-token expiry** — not sent by livedocuments: API tokens belong to the
    liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
    and liveworkspace warns the owner a week before one expires, for every app
-   ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Expiry warnings").
+   ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Expiry warnings").
 5. **Someone joined my document** (opt-out `notifyDocumentJoin`) — a signed-in person
    opened one of the owner's documents through a share link for the first time. The
-   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/one-explorer-contracts.md)
+   index says so (its `joined` notice, [One Explorer contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
    "Notices"), and the document's room emails the owner, at most once a document per 15
    minutes. Never for a guest or the owner.
 6. **Milestones** (opt-out `notifyMilestones`) — the owner's **tenth document** (the
@@ -159,10 +159,9 @@ name, or a recipient count.
 - Off by default; a deployment opts in with the `EMAIL` binding and a sender domain onboarded to Email Service
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) intact — no required SaaS call).
 
-## 6. Out of scope (for now)
+## 6. Out of scope
 
 Dark-mode email variants, bounce handling (Email Service handles delivery and its suppression list; sends are
-best-effort, and milestones idempotent via their claims). Per-notification
-**email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
-adds an opt-out toggle for each of its two transactional notifications, stored
-in the [User preferences](../007-editor/user-preferences.md) preference blob.
+best-effort, and milestones idempotent via their claims). Per-notification **email preferences** are in scope:
+[Account settings & email notifications](profile-and-email-notifications.md) adds an opt-out toggle for each of its
+two transactional notifications, stored in the [User preferences](../007-editor/user-preferences.md) preference blob.

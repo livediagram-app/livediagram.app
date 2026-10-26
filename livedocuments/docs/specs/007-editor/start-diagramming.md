@@ -45,11 +45,12 @@ are, the panel draws them.
 
 ### Recommended and groups
 
-Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
-first**, less **Timeline**, which is left to its group. The start swaps two of the shelf's picks for blanks of a page
-kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank Illustration and
-**Blank Article** in place of the Project Brief template, so it leads Blank Infographic, Blank Article, Blank Slide
-Deck. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`), by
+Recommended is the template step's Popular list (`stepPopularKinds` in `@livedocuments/templates` `popular.ts`:
+Blank Illustration, Project Brief, Blank Slide Deck, Event Poster, Year in Review, Social Carousel, hidden templates
+left out). The start swaps two of its picks for blanks of a page kind (`RECOMMENDED_SWAPS`), a page already of its
+kind being the quicker start: **Blank Infographic** in place of Blank Illustration and **Blank Article** in place of
+the Project Brief template, so it leads Blank Infographic, Blank Article, Blank Slide Deck. The marketing gallery's
+shelf (`POPULAR_TEMPLATE_KINDS`) is its own, longer list. The groups (`components/start/start-template-items.ts`), by
 what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social** and **Design**
 (storyboards and floor plans). Slides, Infographics and Articles each lead with their blank of
 that page kind (Blank Slide Deck, Blank Infographic, Blank Article), one empty page of the kind meant.
@@ -59,7 +60,7 @@ Illustration is not offered: closing the panel leaves the same empty tab.
 
 ## When it shows
 
-`templateStartMode` (`components/start/template-start-mode.ts`) decides, from the editor's state:
+`showsTemplateStart` (`components/start/template-start-mode.ts`) decides, from the editor's state:
 
 - To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with no draw tool armed.
 - While the tab is empty: no elements, and its one page still has no kind.
@@ -74,7 +75,7 @@ wrapper has no box to picture.
 A **Participant** or **Viewer** never sees a start: they see the empty page ([New document
 route](new-document-route.md) "The empty-canvas hint").
 
-A new tab opens on its start (`newTabOpening` in `apps/editor/lib/new-tab-seed.ts`).
+A new tab opens on its start: it is empty, carrying only the theme and canvas styling of the tab it was added from (`newTabSeed` in `apps/editor/lib/new-tab-seed.ts`).
 
 An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Start Blank's
 `/new?blank=1`, a blank's `/new?template=` link, or the public sites' Start Blank (`/new?start=blank`).
@@ -82,7 +83,7 @@ An **explicit blank** opens with its start already closed (`closeStartForBlank`)
 ## Bringing it back
 
 The × starts from a blank canvas: the start stays closed on that tab, for this person in this browser
-(`empty-card-dismissed.ts`, `startClosedKey`). On a phone, dragging the sheet's grab handle down closes it too.
+(`../packages/workbench/src/components/canvas/empty-card-dismissed.ts`, keyed by `startClosedKey`). On a phone, dragging the sheet's grab handle down closes it too.
 
 While a closed start's tab is still empty, the **palette tray** (the strip that hangs from the palette, [Toolbar
 layout](toolbar-layout.md)) reads "Tab 1 is empty" with **Show Templates**, which opens the start again
@@ -107,7 +108,8 @@ page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`
 A template picked here on a document `/new` just made goes to that template's default folder, unless the document
 was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default
 folders](../013-workspace/default-folders.md) "A template picked after creation"). The move loads only at the pick
-(`useTemplatePickMove`, a dynamic import of `move-on-template-pick.ts`).
+(`useTemplatePickMove`, with the platform's `moveOnTemplatePick` from `@liveworkspace/explorer`): only a pick on a
+noted document asks the index anything.
 
 ## The tour waits
 

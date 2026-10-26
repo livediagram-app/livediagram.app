@@ -284,8 +284,8 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 
 ### Exports (`packages/document/src/svg-render*.ts`)
 
-`svgArrow` resolves its ends and drawn arrow through `finishArrowEnds(arrow, elements, finish)`, so a Professional
-mind connector exports on the same bracket as the canvas. `renderElementsToSvg` resolves each element's finish from `tab.finish`; `svgBoxed` and `svgArrow` take it and draw
+`svgArrow` takes the tab's finish (`tabFinish`) for an arrow without its own, and its width through
+`finishArrowWidthPx`. `renderElementsToSvg` resolves each element's finish from `tab.finish`; `svgBoxed` and `svgArrow` take it and draw
 the same strokes, hatching and heads from `sketch.ts`, and the Professional fallbacks from `finish.ts`
 (`svg-render-sketch.ts` places a sketched body: `svgSketchedBody` calls `handDrawnElementPaint` when
 `isHandDrawn(finish)` and writes `svgMarkerDrawing` for a marker drawing, the canvas overlay's layers in a
@@ -335,8 +335,8 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
-- `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `handDrawnPathPaint`
-  (line and shading only; a combined path is never shaded), `imageCornerPx`, `handDrawnImagePaint` (an edge round
+- `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`
+  (line and shading only), `imageCornerPx`, `handDrawnImagePaint` (an edge round
   the picture), reached through `handDrawnElementPaint`. Marker's sticky is a colouring drawing over its paper.
 
 - Sketch's face shading: `sketchFacePart` (marker-face.ts) hatches a face's shapes (`SKETCH_FACE_HATCH_OPACITY` 0.4,
@@ -371,7 +371,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
-  `FinishTab`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
+  `FinishTab`'s `TabStylePreview` (`finishPreviewSvg`) memoises it on finish, background, theme and font and inlines it
   (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
   (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 

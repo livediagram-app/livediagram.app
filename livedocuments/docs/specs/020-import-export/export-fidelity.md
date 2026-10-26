@@ -1,7 +1,5 @@
 # Export fidelity
 
-Status: shipped
-
 ## The rule
 
 **An exported image is a picture of the document.** Whatever the canvas draws,

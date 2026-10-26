@@ -20,8 +20,8 @@ livediagram, drawn there or imported.
 ## The format
 
 A freehand element carries **`packedPoints`**: a string holding the stroke's points, and the
-pen's pressure at each point when it reported one. It replaces the former `points` list of
-`{ nx, ny }` objects and the `pressures` list; neither field exists any more.
+pen's pressure at each point when it reported one. An element has no `points` or `pressures` field; that
+legacy shape is read only as migration input (below).
 
 - **Encoding:** standard base64 (RFC 4648 section 4, `+` and `/`, `=` padding) of a byte block.
 - **Byte block**, little-endian:
@@ -35,7 +35,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
   - A record is 4 bytes without pressure and 5 with it, so point `i` starts at byte
     `2 + i × 4` (or `2 + i × 5`). The point count is the block's length less the header,
     divided by the record size; a remainder is corrupt.
-- **Bounds:** the element's `x`, `y`, `width` and `height` are its bounding box, as before; the
+- **Bounds:** the element's `x`, `y`, `width` and `height` are its bounding box; the
   points are normalised into it, so resizing the element scales the stroke and leaves the block
   unchanged.
 - **Quantisation:** a coordinate in `[0, 1]` is stored as `round(n × 65535)` and read back as
@@ -113,18 +113,16 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 ## Limits
 
-- At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
-  133,336 base64 characters.
-- A stroke drawn with more samples than that is **kept, never lost**: on release it is simplified
-  just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
-  under the cap, else evenly thinned), its pressures following the samples it keeps. A stroke
-  that fits is stored exactly as drawn.
+- At most `MAX_FREEHAND_POINTS` (20,000) points per stroke: at most 100,002 bytes,
+  133,336 base64 characters. A writer with more is refused (the MCP server names the limit,
+  [MCP server](../015-api/mcp-server.md)); livedocuments has no freehand pen, so every stroke it stores comes
+  from the polygon tool, an import or an agent.
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 
 ## Measured wins
 
-Measured by a stroke-points bench (since removed) on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
+Measured by a stroke-points bench on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
 66,000 points, a pressure on every point. Before is the former shape as the pen wrote it (full
 doubles); timings are medians on a developer machine and move with it, the ratios hold.
 

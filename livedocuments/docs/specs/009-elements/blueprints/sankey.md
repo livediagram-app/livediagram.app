@@ -148,7 +148,8 @@ No migration: a new kind.
 
 Bounds above enforced at the api by `isValidTab`. Names are React text on canvas and `xmlEscape`d in export;
 gradient ids are the element id with non-word characters replaced. A Participant's `applyParticipantOp` has no
-`sankey*` field in its writable lists, and `addableOn` refuses a Sankey.
+`sankey*` field in its writable lists (`PARTICIPANT_TEXT_FIELDS`), and it refuses every add (`not-addable`), a
+Sankey's included.
 
 The text reader (`parseSankeyText`, `readSankeyNumber`) reads whatever is pasted, so it scans by index with no
 backtracking pattern (CodeQL `js/polynomial-redos`), and a line past `SANKEY_LINE_MAX` (1,000 characters) is named

@@ -1,10 +1,10 @@
 # Assigned actions
 
-**Status: implemented.** Assign a piece of work to a teammate directly from an
-element on the canvas: a new **Assign Action** tile attaches a named, described,
+Assign a piece of work to a teammate directly from an
+element on the canvas: an **Assign Action** tile attaches a named, described,
 assigned action to the element, optionally emailing the assignee. It sits on the element menu's
 [quick bar](../008-canvas/element-menu-quick-bar.md) with Add Comment, Add Link and Add Note, above every category. The floating
-**Collaborate Panel** (§5 — the merged Comments + Actions surface,
+**Collaborate Panel** (§5, the merged Comments + Actions surface,
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
@@ -208,7 +208,7 @@ The server, not the client, establishes every fact that matters:
 
 - verifies the **caller** can open the document (the index's grant) and is a joined member of `teamId`: their
   token names the team, and the team as liveworkspace keeps it now (`POST /api/account/internal/teams/members`,
-  [liveworkspace accounts](../../../../liveworkspace/docs/accounts.md) "Notification emails") still holds them;
+  [liveworkspace accounts](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails") still holds them;
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `teamId`, and not the caller (404
   otherwise, so there is no probing which users exist);
@@ -295,7 +295,7 @@ the tab has threads or actions. Comments and actions keep working from the eleme
 
 The panel's look: soft tinted rows rather than a ruled list, a friendly empty state with its glyph in a soft brand disc, round brand controls, count chips, and short motion that collapses under Reduce motion. It is editor chrome, not a card on a themed tab, so its accent is the **brand** colour rather than a tab theme's.
 
-- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero. It no longer floats in the middle of the header.
+- **Header.** The title with the **open count** in a brand chip sitting directly beside it (`MovablePanel`'s `titleAdornment`), hidden at zero.
 - **Open / Resolved.** A segmented control on the shared sliding pill (`SegmentSlider`), each side carrying its count. **Open** = open actions + unresolved comment threads; **Resolved** = completed actions + resolved comment threads (the thread still reopens from its element badge). It lands on Open, or Resolved when nothing is open.
 - **Kind chips.** Under the segmented control, three small chips: **All** (the word), **Comments** (bubble glyph) and **Actions** (clipboard glyph), each with its count for the current side. Comments and Actions show only their glyph and count, so the row fits a narrow panel; their name is the chip's accessible name ("Comments 12") and its tooltip; the active one takes a soft brand fill. They show only when the tab has BOTH kinds; with one kind there is nothing to narrow. (They replace an unlabelled funnel button that cycled through three hidden states.)
 - **Sections.** In the Open view, rows assigned to you lead under a **For You** label, and everything else follows under **Everything Else**. The labels show only when both groups have rows; a single group needs no heading.

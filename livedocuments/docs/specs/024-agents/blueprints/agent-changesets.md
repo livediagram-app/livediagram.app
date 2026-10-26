@@ -133,9 +133,10 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 10. **Relay** `relayChangeset(env, documentId, changesetRoomOp(record))` to the submitting document's room only,
     awaited with `ROOM_RELAY_TIMEOUT_MS`; a failure logs `[changeset] relay-failed` and the answer stays 200.
     Other documents linking the tab are protected by the merge on save.
-11. **After**, off the response path (`ctx.waitUntil`): `recordTabSave` and the new-comment email exactly as a
-    save does (CS29), and the `Agent` telemetry. The agent presence refresh of the
-    [agent presence blueprint](agent-presence.md) joins here when agent presence is built.
+11. **After**, off the response path (`ctx.waitUntil`, `afterChangeset` in `apps/api/src/changesets/after.ts`): the
+    new-comment and mention emails exactly as a save sends them (CS29), and the `Agent` telemetry for a token's
+    changeset. The route then refreshes the token's agent presence (`refreshAgentPresence`,
+    [agent presence blueprint](agent-presence.md)).
 
 The write applies, before step 8, the server rules a save applies: `migrateIncomingTab` on a replace's elements,
 `capStoredName` on a created tab's name, and

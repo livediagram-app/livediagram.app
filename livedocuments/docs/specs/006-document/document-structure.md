@@ -87,12 +87,10 @@ type LiveDoc = {
 type Tab = {
   id: TabId;
   name: string;
-  kind?: TabKind; // 'diagram', the one general tab kind; any other stored kind reads as it
-  // The tab's editor mode: always 'pages'. A stored livediagram mode reads as 'pages'
-  // (docs/specs/003-system-architecture/domain-language.md "Mode").
-  opensIn?: EditorMode; // 'pages'
+  pages?: Page[]; // its pages, all of one page kind (docs/specs/003-system-architecture/domain-language.md)
+  articles?: Record<string, ArticleFlow>; // an article page's writing, block by block
   elements: Element[];
-  // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
+  // …plus theme, font, finish, background colour/pattern/opacity, page orientation, tag colours
 };
 
 // Concrete element kinds, see packages/document for the full shape of each:
@@ -102,7 +100,7 @@ type Tab = {
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
 //                     fixed box; and
 //                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
-//   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)
+//   ImageElement     (boxed, references an uploaded image by imageId, kept by liveworkspace's media service)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-document/stroke-points.md,
 //                     + optional auto-close flag for
@@ -167,7 +165,7 @@ Element IDs are document-scoped so cross-tab links are stable even if elements m
 
 ## UI implications
 
-- The tab bar sits at the **bottom** of the editor (see [07-editor-app.md](../007-editor/editor-app.md)). The active tab fills the canvas area.
+- The tab bar sits at the **bottom** of the editor (see [Editor app](../007-editor/editor-app.md)). The active tab fills the canvas area.
 - A `+` button on the tab bar adds a new empty tab and switches to it.
 - **Rename** a tab by double-clicking its label (inline input — Enter commits, Escape cancels). Also available via the per-tab ellipsis menu.
 - **Reorder** tabs by dragging a tab to a new position in the bar.

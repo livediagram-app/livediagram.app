@@ -1,7 +1,5 @@
 # Contextual help links
 
-Status: accepted
-
 ## Problem
 
 The help centre ([Help app](help-app.md)) holds 130+ articles, but the editor only exposes
@@ -76,15 +74,13 @@ real page under `apps/help/app/.../page.mdx` (and its registry entry) - a key
 pointing at a missing article is a bug, the same way an unregistered article
 is.
 
-## Placements (initial set)
+## Placements
 
 Grouped by priority; each links the keyed article.
 
-> **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity (since removed), Comments, and AI (since removed) panels previously each had a bare-glyph
-> `HelpArticleLink` in their header. These were removed: the editor header
-> already has a prominent global Help icon, and a `?` on every panel made the
-> canvas chrome noisy. Contextual links now live only in dialogs, in-panel
+> **Floating-panel headers carry no help icon.** The Explorer, Palette and Comments panels have no bare-glyph
+> `HelpArticleLink` in their header: the editor header has a prominent global Help icon, and a `?` on every panel
+> would make the canvas chrome noisy. Contextual links live only in dialogs, in-panel
 > settings (the Settings dialog's rows), and **empty-state messages** (the
 > empty-canvas card keeps its link). The articles themselves
 > (`explorerPanel`, `palette`, `comments`)

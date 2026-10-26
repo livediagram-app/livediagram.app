@@ -1,7 +1,6 @@
 # Diagram lint
 
-**Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint`.
-`@livedocuments/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
+`@livedocuments/diagram-lint` checks a tab, and the [CLI](../015-api/cli.md)'s `tab lint` runs it; the api serves `?view=lint`, every changeset, dry run and revert carries
 the verdict, and the MCP's write tools carry the summary line.
 
 The **diagram lint** reports what is wrong with how a tab is drawn, as text an agent can act on without looking at

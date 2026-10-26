@@ -31,7 +31,7 @@ Scope, by file:
 | Route            | `route: Pt[]` (polyline, draw order)             | `arrowPathPolyline` of the resolved (spread) endpoints          |
 | Placement        | `placementOf(arrow, route, clear, blockOn)`      | The span a label may occupy and its preferred centre `sc`       |
 | Open run         | `openRunOf(span, clearances)`                    | A span minus end / corner clearances                            |
-| Label block      | `LabelBlock = { lines, width, height }`          | Wrapped text plus padding; `width`/`height` are the plate size  |
+| Label block      | (internal) `Block = { lines, width, height }`    | Wrapped text plus padding; `width`/`height` are the plate size  |
 | Footprint        | `footprintAlong(block, dir)`                     | Length of route the block covers when centred on it             |
 | Knockout         | `knockout: Rect \| null`                         | The block inflated by `KNOCKOUT_MARGIN_PX`, cut from lines      |
 | Plate rect       | `labelPlate(layout): Rect`                       | The plate as a rect, centred on `center`                        |
@@ -66,7 +66,7 @@ An arrow with empty text has no entry.
      arrow's own `labelMaxWidth` (finite, > 0, validated) replaces the direction blend and is never
      narrowed below itself by the run limit: a label that does not fit at it moves beside the line. While `footprintAlong(block, u) > 2 * half` and the widest
      line has more than one word, re-wrap at `block.textWidth - 1`. Still too long → beside.
-   - Balance: binary search the smallest width in `[longestWord, found]` that keeps the same line
+   - Balance: binary search the smallest width in `[longestWordWidth, found]` that keeps the same line
      count (8 iterations, D19).
    - `footprintAlong(block, u) = min(block.width / |u.x|, block.height / |u.y|)`, with the knockout
      margin included on both sides; a zero component drops its term.

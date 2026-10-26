@@ -20,7 +20,7 @@ Scope, by file:
 | `apps/editor/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
 | `apps/editor/components/dialogs/CodeEditDialog.tsx`            | Edit code dialog                                                                              |
 | `apps/editor/components/dialogs/EditorElementDialogs.tsx`      | Mounts the dialog for `codeEditOpenForId`                                                     |
-| `apps/editor/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCode`                                              |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCodeBlock`                                         |
 | `apps/editor/components/palette/ElementDataSections.tsx`       | The Code section (Tools flyout)                                                               |
 | `apps/editor/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
 | `apps/editor/components/palette/PresetSections.tsx`            | `CodeThemePresetsSection` in the Style band                                                   |
@@ -86,7 +86,7 @@ A failed load renders plain text and retries on the next mount (D105).
 
 ### Edit
 
-1. Double-click on the card calls `onEditCode(id)` before any label edit, unless
+1. Double-click on the card calls `onEditCodeBlock(id)` before any label edit, unless
    `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [QE7].
 2. The Code section (Tools flyout): `CodeSummary` ("No code yet" or "n lines · language"), an
    **Edit Code** button opening the same dialog, and a **Wrap Long Lines** toggle
@@ -159,7 +159,7 @@ Scheme ids are permanent. An unknown stored id renders as `midnight` but cannot 
 | E5  | Very long unbroken token        | Wrap on: broken anywhere (canvas), mid-token fallback (export) [GE8]                      |
 | E6  | More lines than fit             | Clipped by the card on the canvas; export draws `floor((h - 24) / 16)` lines              |
 | E7  | Block deleted while dialog open | The dialog unmounts and closes (`useCloseVanishedDialogs`), so an undo does not reopen it |
-| E8  | Read-only session               | No `onEditCode`, and the dialog never mounts when read-only                               |
+| E8  | Read-only session               | No `onEditCodeBlock`, and the dialog never mounts when read-only                          |
 
 ## Security and trust
 

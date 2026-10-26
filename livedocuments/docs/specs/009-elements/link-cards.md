@@ -57,8 +57,7 @@ are unit-tested. `UnfurlResult` is a shared `@livedocuments/api-schema` DTO.
 ## Images
 
 The OG image and favicon are **referenced by URL** (`<img src=…>`,
-`referrerPolicy="no-referrer"`) — like a normal web embed, no bytes stored in
-R2. Broken images fall back gracefully (the image hides, the favicon shows a
+`referrerPolicy="no-referrer"`): like a normal web embed, no bytes stored. Broken images fall back gracefully (the image hides, the favicon shows a
 neutral chip).
 
 ## Telemetry

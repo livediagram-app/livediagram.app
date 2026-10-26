@@ -163,11 +163,8 @@ the next edit, see Retrying a failed save).
 
 It's wrong for a **403**. The server isn't failing, it's refusing: the share
 link was revoked, we were removed from the team, or the role changed under us.
-No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
-and the only feedback blamed a connection that was fine — so someone could
-edit for an hour against a document that would never take a single write. Live
-telemetry showed the shape of it: **297 `Http403` in one day** against a
-baseline in single digits, which is one long session failing over and over.
+No retry can succeed, and a toast blaming the connection would leave someone editing for an hour against a
+document that will never take a single write.
 
 So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
 
@@ -222,8 +219,8 @@ anything else thrown on the save path reports as `SaveFailed.<Kind>`.
 
 A **413** (`payload_too_large`) is the server refusing a tab over its row cap
 ([Tab size](../015-api/api.md#tab-size), `MAX_TAB_BYTES`, just under 2 MB: about 5,000 labelled shapes). It is
-neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. It used to toast
-"Couldn't save your changes. Check your connection." and retry every minute, a save that could never land.
+neither a connection problem nor a refusal of the person: the same tab, made smaller, saves. Toasting "Couldn't save your changes. Check your connection." and retrying every minute would be a save that
+can never land.
 
 So it gets its own `tooLarge` save status (`saveFailureStatus` in `save-failure.ts`):
 

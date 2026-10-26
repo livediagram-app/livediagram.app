@@ -95,7 +95,7 @@ Each is set to the token of the exit animation it waits for.
 | `QuickConnectRing` `EXIT_MS`    | 200    | `MOTION_MS.short` |
 
 Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
-`RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, `AUTO_DISMISS_MS`,
+`RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces,
 `IDLE_MS` and the `useBoxedElementAnimation` 400ms canvas timeout.
 
 ### Chrome keyframe tokens (`apps/editor/app/globals.css`)
@@ -143,11 +143,11 @@ keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explore
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/editor`**
-  - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
+  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     and the `MovablePanel` fade.
   - `short`: `AccordionSection`,
-    `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar and `NoteBox`.
+    `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, and the
+    template cards' progress bar.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.

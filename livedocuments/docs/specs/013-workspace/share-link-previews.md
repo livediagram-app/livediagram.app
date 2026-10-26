@@ -1,7 +1,5 @@
 # Share-link previews
 
-**Status: built.**
-
 > The shared Share dialog (`@liveworkspace/explorer`) copies a link as `/document/shared?s=<code>`
 > (`shareUrl` in `apps/editor/lib/explorer-host.ts`), the address whose head is filled in below, so a copied link
 > previews as its document.
@@ -35,7 +33,7 @@ gave nobody a reason to tell them apart or click.
 
 ## The share card and the share page's head are liveworkspace's
 
-Both are built once for every app ([Previews](../../../../liveworkspace/docs/previews.md)); livedocuments supplies only
+Both are built once for every app ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)); livedocuments supplies only
 its drawing (the export door, [Document previews](../006-document/document-snapshots.md)) and its words.
 
 - **The share card** is `GET /api/share/<code>/image.png` on this app's address, which the router forwards to
@@ -59,6 +57,6 @@ of that link sees, so it needs no gate beyond the link's own.
 ## Limits and abuse
 
 The card, its picture and their caching and limits are the platform's
-([Previews](../../../../liveworkspace/docs/previews.md) "Cost"). Both doors answer only what the live image already
+([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md) "Cost"). Both doors answer only what the live image already
 answers for the same code, so they add no way to learn more from a guessed code. The api's `SHARE_RATE_LIMITER`
 counts only the share resolve itself.

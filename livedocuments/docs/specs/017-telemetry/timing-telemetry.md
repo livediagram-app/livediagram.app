@@ -1,7 +1,5 @@
 # Timing telemetry
 
-Status: shipped
-
 ## What
 
 How long the key moments of the experience take, measured in real browsers and reported as anonymous

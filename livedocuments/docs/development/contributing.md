@@ -14,7 +14,7 @@ Start by reading [`docs/specs/README.md`](../specs/README.md) for the category i
 
 ## Setting up
 
-See [Local development](local-development.md). The short version: clone, `pnpm install`, `pnpm dev`.
+See [Local development](local-development.md). The short version, from the monorepo root: `corepack pnpm install`, `corepack pnpm dev:documents`.
 
 ## Code style
 
@@ -27,33 +27,32 @@ See [Local development](local-development.md). The short version: clone, `pnpm i
 
 ## Before you commit
 
-Always run:
+Always run, inside `livedocuments/`:
 
 ```sh
-pnpm typecheck
-pnpm lint
-pnpm format:check
-pnpm test
-pnpm build
+corepack pnpm typecheck
+corepack pnpm lint
+corepack pnpm format:check
+corepack pnpm test
+corepack pnpm build
 ```
 
-CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
+CI runs the same five steps on every push, plus `corepack pnpm staging:check`. Failing any of them blocks the merge.
 
-Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `../packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
+Adding or upgrading a dependency that ships to a browser or a worker can fail `corepack pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `../packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
 
 ### Security alerts and `pnpm.overrides`
 
-A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the root `package.json` `pnpm.overrides` is for when no upstream release fixes it; `package.json` holds no comments, so each such entry is listed here with its alert:
-
-| Override          | Alert                                             | Why no upstream fix                                |
-| ----------------- | ------------------------------------------------- | -------------------------------------------------- |
-| `sharp` `^0.35.5` | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`) | `miniflare` 5.20261006.0-alpha pins `sharp` 0.35.4 |
-
-Drop an entry once an upstream release makes it redundant.
+A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the
+monorepo root `package.json`'s `pnpm.overrides` is for when no upstream release fixes it. The overrides are the
+monorepo's, shared by every product: there are 16 (`postcss`, `undici`, `js-yaml`, `esbuild`, `fast-uri`, `qs`,
+`nanoid`, `vitest`, `@hono/node-server`, `ws`, `sharp`, three `brace-expansion` ranges,
+`onnxruntime-node>global-agent` and `@tensorflow/tfjs>argparse`). `package.json` holds no comments, so the alert
+behind an override goes in the commit that adds it. Drop an entry once an upstream release makes it redundant.
 
 ### Merging to `main` deploys
 
-A merge to `main` that passes CI **deploys automatically to staging** —
+A merge to `main` that passes CI **deploys automatically to staging**,
 [staging.livedocuments.app](https://staging.livedocuments.app), a complete copy of the
 platform with its own Durable Objects and liveworkspace's staging index ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
 presses anything. Within a few minutes your change is running somewhere public, against
@@ -68,12 +67,12 @@ Two things follow for you as a contributor:
   something works in tests but not in a browser.
 - **If you touch a worker's bindings**, add the same change to its `[env.staging]` block
   in `wrangler.toml`. Wrangler does not inherit bindings into a named environment, so a
-  binding added only at the top level is silently missing from staging. `pnpm
+  binding added only at the top level is silently missing from staging. `corepack pnpm
 staging:check` catches it in CI.
 
 ### TypeScript
 
-Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go compiler: `"typescript": "^7.0.2"`. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects). `pnpm typecheck` runs its `tsc`, and so does `next build`, which type-checks through the project's `tsc` rather than a compiler API.
+Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go compiler: `"typescript": "^7.0.2"`. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects). `corepack pnpm typecheck` runs its `tsc`, and so does `next build`, which type-checks through the project's `tsc` rather than a compiler API.
 
 TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
@@ -82,15 +81,15 @@ TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` find
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
-The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livedocuments/api gen:openapi` and its drift test.
+The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `corepack pnpm --filter @livedocuments/api gen:openapi` and its drift test.
 
-`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
+`corepack pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 
 ## Tests
 
 Tests live next to the code they cover, as `*.test.ts` / `*.test.tsx` files. The runner is [Vitest](https://vitest.dev) with the shared config in `@liveworkspace/vitest-config`. See [`docs/specs/003-system-architecture/testing.md`](../specs/003-system-architecture/testing.md) for the testing contract.
 
-`pnpm install` installs a pre-push hook (`.githooks/pre-push`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
+`corepack pnpm install` at the monorepo root installs a pre-push hook (`.githooks/pre-push`, `scripts/git-hooks/`) that runs format, lint, typecheck and tests for what your push changes, so a CI failure shows up on your machine first ([Before a push](../specs/003-system-architecture/testing.md#before-a-push)).
 
 When you add a feature, add tests for the critical paths. When you fix a bug, add a test that would have caught it.
 
@@ -98,24 +97,24 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium: the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
-Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3302` / `:8987`):
+Run it locally against a running `corepack pnpm dev` stack (it reuses the servers on `:3302` / `:8987`):
 
 ```sh
-pnpm --filter @livedocuments/editor test:e2e
+corepack pnpm --filter @livedocuments/editor test:e2e
 ```
 
-Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @livedocuments/editor build` first, or it exits naming the missing build.
+Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `corepack pnpm --filter @livedocuments/editor build` first, or it exits naming the missing build.
 
 The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livedocuments/editor build:signed-in
-pnpm --filter @livedocuments/editor test:e2e:signed-in
+corepack pnpm --filter @livedocuments/editor build:signed-in
+corepack pnpm --filter @livedocuments/editor test:e2e:signed-in
 ```
 
-Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3302` is already taken (a second checkout, a worktree):
+Those ports are defaults, not fixtures. Four environment variables move them, which is what you want when `:3302` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
@@ -124,11 +123,11 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | `E2E_API_PORT`       | `8987`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3313`                  | The port the stack serves the built marketing site on (optical audit) |
 
-`E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
+`E2E_API_PORT` and `E2E_MARKETING_PORT` are self-contained: each sets a server's port and what reaches it together. `E2E_BASE_URL` and `E2E_EDITOR_PORT` are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
-The optical audit also opens the help centre and the marketing site: build them (`pnpm --filter @livedocuments/help --filter @livedocuments/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers. (The telemetry dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+The optical audit also opens the help centre and the marketing site: build them (`corepack pnpm --filter @livedocuments/help --filter @livedocuments/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers. The telemetry dashboard is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md), so the audit does not open it.
 
-Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
+Keep the suite tiny: add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 
 ## PRs
 

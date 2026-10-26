@@ -22,7 +22,7 @@ something it cannot.
 4. **Pick the editor gate.** Never gate on `isReadOnly` alone: it is true for a Participant too. Use the session's
    `can` (`apps/editor/lib/editor-capabilities.ts`): `can.takePart` for comments and reactions, `can.writeText(el)`
    for an element's words, `can.writeArticle` for writing in an article; add a flag there (with the Viewer branch
-   `false`) when none fits. Structural hooks take `structureBlocked` / `structureCreateBlocked`.
+   `false`) when none fits. Structural hooks take `structureBlocked` (`editsBlocked || isReadOnly`) or `createBlocked` (`structureBlocked || activeLayerBlocked`), from `useEditorState.ts`.
 5. **Hide, do not dead-end.** A control the session cannot use is not rendered, or renders inert. A tool that
    changes the document carries `mutates: true` in `CANVAS_TOOLS` (`apps/editor/lib/editor-commands.ts`), which keeps it
    out of read-only command lists.

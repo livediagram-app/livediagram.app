@@ -12,42 +12,40 @@ This is non-negotiable. The same rule applies to README examples, test fixtures,
 | ---------------------- | ----------------------------------------------------------------- |
 | Local development      | `.env.local` (gitignored) per app/worker                          |
 | Cloudflare Workers     | `wrangler secret put` — never in `wrangler.toml`                  |
-| Cloudflare Pages       | Project env vars in the Cloudflare dashboard                      |
-| CI / Deploy            | GitHub repo secrets — see below                                   |
+| CI / Deploy            | The monorepo's GitHub repository secret, below                    |
 | Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
 
 ### GitHub Actions secrets
 
-Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deployment.md)):
+The monorepo's deploy ([Deployment](../016-platform/deployment.md) "Credentials") holds one:
 
-| Secret          | Purpose                                                                                                                                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
-| `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                     |
+| Secret                 | Purpose                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN` | A Cloudflare API token for the liveworkspace account (pinned as `account_id` in every `wrangler.toml`), with Workers Scripts edit rights. |
 
-The deploy workflow also **syncs** the sign-in values and `INDEX_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` and `INDEX_KEY`. Each sync is guarded on the GitHub secret being non-empty, so an environment that sets none still deploys.
+A deploy writes code and plain vars only: the worker secrets below are set on each Worker and survive every deploy.
 
-## Worker secrets in use today
+## Worker secrets
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking (local dev, staging; see [03](open-source-and-business-model.md)).
 
-| Secret                                          | Worker          | Absent means                                                                                                                                                                               |
-| ----------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so documents stay in This Browser ([04](../014-identity/auth-and-guest-access.md))                                      |
-| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                          |
-| `INDEX_KEY`                                     | api             | The document rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index)) |
-| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                        |
-| `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                               |
-| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export documents as files or import them ([drive.md](../../../../liveworkspace/docs/drive.md#the-apps))                                                |
+| Secret                                          | Worker          | Absent means                                                                                                                                                                                                                 |
+| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so documents stay in This Browser ([04](../014-identity/auth-and-guest-access.md))                                                                        |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                            |
+| `INDEX_KEY`                                     | api             | The document rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#reaching-the-index))                   |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                                                          |
+| `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                                                                 |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export documents as files or import them ([drive.md](../../../../liveworkspace/docs/specs/005-drive/drive.md#the-apps))                                                                  |
 | `MIGRATION_KEY`                                 | api             | the one-time move from the old livediagram.app cannot write this app's parts with its own key (the index's key still opens the migration door); set only while the move runs ([migration.md](../../../../docs/migration.md)) |
 
-Email needs no secret: the api sends through Cloudflare Email Service's `send_email` binding `EMAIL`, declared in `wrangler.toml`, and without it all transactional email is inert ([64](../014-identity/transactional-email.md), [liveworkspace/docs/email.md](../../../../liveworkspace/docs/email.md)).
+Email needs no secret: the api sends through Cloudflare Email Service's `send_email` binding `EMAIL`, declared in `wrangler.toml`, and without it all transactional email is inert ([64](../014-identity/transactional-email.md), [liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEDOCUMENTS`). A mismatch is silent — the posts are simply not stored — so verify with `wrangler secret list` on both rather than assuming. `MEDIA_KEY` likewise matches liveworkspace's media service's `MEDIA_KEY_LIVEDOCUMENTS`; a mismatch there is loud, as every image route answers 503. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedocuments.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
-`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
+`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are set the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
 ## What is "safe to publish" client-side
 

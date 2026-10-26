@@ -1,7 +1,5 @@
 # Power user mode
 
-Status: shipped
-
 ## What
 
 **Power user mode** is a user preference for people who already know the editor. Switching it on applies a **preset**

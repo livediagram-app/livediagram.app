@@ -11,8 +11,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 ## Behaviour
 
 - Drag a **Pie**, **Column**, or **Line** chart in from the palette's **Data**
-  category. It drops with sample data. (The Column tile was called **Bar** until October 2026; it makes the same
-  `bar-chart` element, named as Google Sheets and Excel name a chart of upright bars.) Any of them then becomes any
+  category. It drops with sample data. (The Column tile makes the `bar-chart` element, named as Google Sheets and Excel
+  name a chart of upright bars.) Any of them then becomes any
   chart type from its menu's **Chart Type** section. Each is a row with a one-line blurb
   ("Proportions of a whole", "A trend over time") rather than a caption tile:
   the picture names the chart, not the job it does.
@@ -127,7 +127,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
 - `ShapeElement.chartAxis?: boolean`: the value axis, its tick labels and gridlines (Show Axis); absent means off.
   A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
-  axes are laid out with the marks, in `chartValueAxis` (`packages/document/src/chart-axis.ts`) for both renderers.
+  axes are laid out with the marks, in `packages/document/src/chart-axis.ts` (`axisScale`, `axisLabelRoom`, `rightAxisSeries`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.

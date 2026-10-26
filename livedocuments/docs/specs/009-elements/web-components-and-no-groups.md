@@ -1,4 +1,4 @@
-# Web components are elements; groups are gone
+# Web components are elements; no groups
 
 ## What
 
@@ -78,8 +78,8 @@ headless SVG renderer call, so an export matches the editor.
 
 - **Banner and Header** paint their bar in `fillColor`, falling back to the stroke (the theme
   accent) when unset, with white text by default. Theme switches retheme only their stroke
-  (`THEME_COLOUR_FIELDS` exception), because writing the theme's pale element fill into an
-  accent bar under white text is how the old grouped banner went unreadable.
+  (`THEME_COLOUR_FIELDS` exception), because the theme's pale element fill in an accent bar under
+  white text is unreadable.
 - **Stat row, Process** (and the Card, the Callout included) are ordinary cards: the theme's surface fill and ink text, with
   the accent (stroke) for the badge, the values and the step circles.
 - **Hero**: the caption card is the image's `fillColor` (the theme accent at creation), white text.
@@ -92,10 +92,9 @@ embedding and the image menu all keep working with no second image pipeline. The
 can be turned off and on from the image's context menu, which also means any image can become a
 hero.
 
-## Existing documents
+## Stored documents
 
-- livedocuments starts with no stored documents, so no grouped element or group arrow end exists to
-  migrate, and nothing on the read path looks for one.
+- No stored element carries a group, and nothing on the read path looks for one.
 - An arrow end is free, pinned to an element, or on another arrow; the validator refuses any other
   kind, a group end included.
 

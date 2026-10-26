@@ -63,8 +63,8 @@ about the host's centre by `host.rotation` degrees.
 
 ### Carry and copies
 
-`withAttached(elements, ids)`: `ids` plus every chip attached to an element in `ids`. Composed beside
-`withSheetCharts` in the drag, nudge, copy and duplicate paths, so a host's chips move in its drag preview and copy
+`withAttached(elements, ids)`: `ids` plus every chip attached to an element in `ids`. Composed in the drag,
+nudge, copy and duplicate paths (`useBoxedDragHandlers`, `useClipboard`, `useElementDuplication`), so a host's chips move in its drag preview and copy
 with it. Deletion needs no path of its own (settling removes orphans of a deleted host).
 
 `duplicate.ts`: `attachedTo` maps to the host's copy when the host was copied; otherwise both fields are deleted.
@@ -78,7 +78,7 @@ with it. Deletion needs no path of its own (settling removes orphans of a delete
 - `renumberSteps(elements)`: steps sorted by reading order (rows: centres within half the step's height of the row's
   first; rows top to bottom, then left to right) take `"1"`, `"2"`, … One history step; telemetry `RenumberSteps`.
 - `stepSequence: true` on a step with a body animation and a whole-number label `n`: the wrapper's
-  `animation-delay` is `(n − 1) × STEP_SEQUENCE_BEAT_S / speedFactor` (D183). Turning it on or off writes every step
+  `animation-delay` is `(n − 1) × STEP_SEQUENCE_BEAT_S × ANIMATION_SPEED_FACTOR[animationSpeed]` (D183). Turning it on or off writes every step
   on the tab.
 
 ### Writes
@@ -200,11 +200,11 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 
 ## Constants and configuration
 
-| Name                   | Value               | Provenance / safe range |
-| ---------------------- | ------------------- | ----------------------- |
-| `ATTACH_SNAP_PX`       | 16                  | Spec; 8 to 24           |
-| `BADGE_LABEL_MAX`      | 24                  | Spec                    |
-| `STEP_LABEL_MAX`       | 3                   | Spec                    |
-| `BADGE_HEIGHT_PX`      | sm 22, md 28, lg 36 | D181                    |
-| `STEP_SIZE_PX`         | 28                  | Spec (D182)             |
-| `STEP_SEQUENCE_BEAT_S` | 0.4                 | D183; 0.25 to 0.8       |
+| Name                           | Value                  | Provenance / safe range |
+| ------------------------------ | ---------------------- | ----------------------- |
+| `ATTACH_SNAP_PX`               | 16                     | Spec; 8 to 24           |
+| `BADGE_LABEL_MAX`              | 24                     | Spec                    |
+| `STEP_LABEL_MAX`               | 3                      | Spec                    |
+| Badge height (`badgeSize`)     | 1.7 x the label's font | D181                    |
+| Step disc (`shape-factory.ts`) | 28 x 28                | Spec (D182)             |
+| `STEP_SEQUENCE_BEAT_S`         | 0.4                    | D183; 0.25 to 0.8       |

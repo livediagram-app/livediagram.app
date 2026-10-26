@@ -1,13 +1,13 @@
 # Live image share link
 
-> **Status: implemented, as liveworkspace's.** The live image is a platform capability now
-> ([Previews](../../../../liveworkspace/docs/previews.md)): liveworkspace's previews serve it, on this app's address
+> The live image is a platform service
+> ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)): liveworkspace's previews serve it, on this app's address
 > through its router, and livedocuments only draws the document when asked ([Document previews](../006-document/document-snapshots.md)
 > "The export door"). Not re-rendered per request: the platform keeps the drawing until the document is saved again.
-> The renderer was never extracted into a new package: `renderElementsToSvg` already lives DOM-free in
-> `@livedocuments/document` and powers the MCP worker ([MCP server](../015-api/mcp-server.md)).
+> The renderer is `renderElementsToSvg`, DOM-free in `@livedocuments/document`, which also powers the MCP worker
+> ([MCP server](../015-api/mcp-server.md)).
 >
-> The rest of this spec (URL shape, password exclusion) holds. The same drawing, fitted onto a 1200 x 630 PNG, is
+> The same drawing, fitted onto a 1200 x 630 PNG, is
 > what a pasted share link previews with in a chat app: [Share-link previews](share-link-previews.md).
 
 A share option that serves the document as a **live image**: an `<img>`-able URL

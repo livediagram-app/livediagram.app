@@ -32,8 +32,7 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | a set's class prefix     | `ANIMATION_CLASS_PREFIX[set]`: `lvd-anim-`, `lvd-tx-`, `lvd-note-`, `lvd-draw-`, `lvd-media-`, `lvd-tbl-` |
 | play once                | the `lvd-once` class (`ONCE_CLASS`), on a reveal whose Repeat is off                                      |
 
-`ElementAnimation` keeps its name: it is the type of the stored `animation` field. `ELEMENT_ANIMATIONS` became
-`SHAPE_ANIMATIONS` (its values were exactly the Shape set).
+`ElementAnimation` is the type of the stored `animation` field. `SHAPE_ANIMATIONS` lists the Shape set.
 
 ## Modules
 
@@ -248,9 +247,8 @@ of `EditorContextMenuProps`). It renders one `MenuFlyoutSection` titled Animatio
 category it renders that section alone, titled Animation. Section keys are `<prefix>animation-<category>`, and
 `<prefix>flow` for arrows.
 
-`EditorContextMenuProps` gained `onSetSetAnimation(set, v)`, `onPreviewSetAnimation(set, v)`,
-`onSetSetAnimationSpeed(set, s)`, `onSetSetAnimationRepeat(set, r)` and lost `onSetAnimation`,
-`onPreviewAnimation`, `onSetAnimationSpeed`, `onSetAnimationRepeat`; the multi menu lost `bothAnimated`.
+`EditorContextMenuProps` carries `onSetSetAnimation(set, v)`, `onPreviewSetAnimation(set, v)`,
+`onSetSetAnimationSpeed(set, s)` and `onSetSetAnimationRepeat(set, r)`, one handler of each per animation set.
 
 ## Errors and edge cases
 
@@ -289,8 +287,7 @@ Animation). Tiles are `AnimationPreviewTile`s: a 46 × 30 stage holding the mini
 `useFrozenAnimations` at `previewFrame(set, value)` (one `getAnimations({ subtree: true })` pass on mount: pause, set
 `currentTime` to frame × duration) and played on pointer enter; moving values (`MOVES`, `ICON_MOVES`) add a dashed
 ghost at rest. The miniatures set the variables the canvas would, scaled as for a 120 × 80 element. The kept tile
-shows a Shape miniature and the old label. The old static glyphs (`AnimationKindGlyph`, `FlowKindGlyph`,
-`IconAnimKindGlyph`, `ProgressAnimKindGlyph`) are gone.
+shows a Shape miniature and the stored value's label.
 
 ## Accessibility
 

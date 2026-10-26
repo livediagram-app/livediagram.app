@@ -219,7 +219,6 @@ The Charcoal migration logs as its blueprint states.
 | Surfaces 950 / 900 / 800       | `#0b0f16` / `#131b26` / `#16202e`        | Operator decision 2                          | Dark, ordered                      |
 | Steel ramp                     | spec table                               | Operator decision 3                          | White on 600 >= 4.5:1              |
 | Wordmark accent                | `#fbbf24`                                | Tailwind amber-400                           | >= 4.5:1 on slate-950              |
-| `PARTICIPANT_DEEP`             | each colour's Tailwind 700 step          | Operator choice (identity avatars, option B) | White >= 4.5:1                     |
 | `SHADE_STEP`                   | `0.05`                                   | D20                                          | 0.01 to 0.1                        |
 | Tile plate / veil              | `#f3faff`                                | Measured: maps to `#0d1318` under the filter | Within 2 of the canvas per channel |
 | Tile invert                    | `0.95`                                   | Operator decision 6                          | 0.9 to 1                           |

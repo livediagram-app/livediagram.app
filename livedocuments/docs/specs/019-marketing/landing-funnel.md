@@ -1,7 +1,5 @@
 # Landing funnel
 
-Status: shipped
-
 ## What
 
 Measure how the public pages turn visitors into documents: for every call to
@@ -83,29 +81,25 @@ The slots:
 
 - `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
   pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so its `HeaderBlank` no longer fires.
-- `HeaderDraw` / `HeaderIllustration` / `HeaderSession` (**retired** in October 2026 with the Start Blank
-  menu, [Start Blank](marketing-site.md#start-blank); the slots stay so their stored history still reads):
+  bar has no Start Blank, so its `HeaderBlank` never fires.
+- `HeaderDraw` / `HeaderIllustration` / `HeaderSession` (**retired**: no link carries them
+  ([Start Blank](marketing-site.md#start-blank)); the slots stay so their stored history still reads):
   the menu's rows beside Choose Template. The help centre's header has one Start button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
-- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's old three buttons. On a feature page, `Hero` is the category hero's
+- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero has no buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them): three hero buttons. On a feature page, `Hero` is the category hero's
   start button.
-- `HeroBuild` (**retired** with the hero's stage in October 2026; the slot stays so its history still
-  reads): the **Build yours** button on each of the hero's old windows, opening the template
+- `HeroBuild` (**retired**: no link carries it; the slot stays so its history still
+  reads): a **Build yours** button on a hero window, opening the template
   step narrowed to that window's kind.
 - `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
 - `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
-- `HeroBlank<Blank>` (**retired** with the Start Blank menu in October 2026; the slots stay so their history
-  still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
-  header's `Header<Blank>`.
+- `HeroBlank<Blank>` (**retired**: no link carries them; the slots stay so their history
+  still reads): one slot per blank, as the header's `Header<Blank>`.
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
-- `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
-  into the editor.
+- `HeroCanvas` (**retired**: no link carries it; the slot stays so its history still reads): a hero launch window.
 - `Gallery`: any card in the landing template gallery
   (`/new?template=<kind>`). The template itself is already reported by
-  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**
-  when the gallery's search moved to the hero in October 2026) was the blank-canvas link shown when a
-  gallery search matched nothing.
+  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**: the gallery has no search, so no link carries it).
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
@@ -159,8 +153,7 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 ### The Dashboard tab
 
 A **Calls to Action** chart stack (CTA Arrivals and Documents from CTAs, headed by
-Documents from CTAs) sits beside the funnel in the Pages section; it left the
-Dashboard's Visitors group in October 2026.
+Documents from CTAs) sits beside the funnel in the Pages section.
 
 ## Out of scope
 

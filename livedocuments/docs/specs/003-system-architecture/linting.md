@@ -1,7 +1,5 @@
 # Linting
 
-Status: shipped
-
 ## What
 
 Every workspace is linted by **oxlint** with one shared config, `@liveworkspace/oxlint-config`

@@ -24,9 +24,8 @@ lets you jump the viewport anywhere with a tap or drag.
   help article's URL, and search keywords, so existing links, data and
   dashboards keep working and a reader typing "minimap" still finds it.
   The panel header keeps only the standard **Reset position** button, shown
-  once the map has left its default corner. It used to carry a settings gear
-  of its own; that popover was removed when every preference was centralised,
-  since one setting with two controls is one control too many.
+  once the map has left its default corner. It has no settings gear: its
+  preferences live in Settings, since one setting with two controls is one control too many.
 - **What it shows.** A **full-fidelity miniature of the tab**: the map is
   drawn by the SAME headless renderer the exports / live image use
   (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
@@ -58,8 +57,8 @@ lets you jump the viewport anywhere with a tap or drag.
   map's own background is the tab's resolved paper colour
   (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
   view darkens rather than greys on dark paper. A kind whose look depends on
-  the paper keeps that dependency in ONE shared value both renderers read
-  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  the paper keeps that dependency in ONE shared value both renderers read,
+  and a drift test
   (`svg-render-surface.test.ts`) fails if any kind without a stored fill
   paints a light base on dark paper. The Layers panel's previews follow the
   same rule.

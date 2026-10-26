@@ -64,7 +64,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
 - **Guests as production makes them**: a spec seeds through a guest token from the stack's accounts
-  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each document (`planHeaders`, `seedPlan`;
+  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each document (`documentGrant`, `documentHeaders`, `seedDocumentItem`;
   `pageOwnerHeaders` for calls made inside the page, `apps/editor/e2e/fixtures.ts`).
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)).
   A spec that needs its new document on the server (it seeds it through the api with `seedTab`, watches the api's
@@ -107,9 +107,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
-  `dismissQuickTour` does nothing, since no tour offers itself (kept so the specs that call it need not change;
-  until 25 October 2026 it returned at once unless /new's tour handoff flag was in sessionStorage, rather than
-  sitting out a 5-second timeout after every reload or by-URL visit). `seedTab` returns once the seeded elements have
+  `dismissQuickTour` does nothing, since no tour offers itself (it stays so the specs that call it need not change). `seedTab` returns once the seeded elements have
   finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
 
 ## The stack under test
@@ -118,7 +116,7 @@ The suite runs against the **real production build**, the editor app's
 `output: 'export'` static bundle plus the real api worker on local Durable Objects,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
-`pnpm --filter @livedocuments/editor build` first; an old `out/` fails audits for code that has since changed.
+`pnpm --filter @livedocuments/editor build` first; an old `out/` fails audits for code changed after it was built.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
@@ -142,8 +140,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own
      `apps/router/src/cache-policy.ts` (pages `no-store`, build assets immutable, a missing asset a
-     plain-text 404). `E2E_CACHE_POLICY=off` serves without the router's rules, as production did
-     before them;
+     plain-text 404). `E2E_CACHE_POLICY=off` serves without the router's rules;
    - simulate a deploy for the stale build specs: `POST /__e2e/deploy` swaps in a copy of the
      build whose chunk files all carry new names (every reference rewritten), and
      `POST /__e2e/assets-out-of-cache` serves build assets `no-store` until then, so the browser

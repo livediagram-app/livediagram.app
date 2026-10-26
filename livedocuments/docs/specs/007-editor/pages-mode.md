@@ -8,11 +8,9 @@ snapping to it, and exporting it.
 ## One mode
 
 The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.ts`) whose only id is
-`pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link) read through one
-function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
-and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
-reads as nothing. There is no mode switch and no mode step on `/new`, and no surface reads the mode from a
-context: the editor resolves it once (`useEditorMode`) and hands it to the canvas and the tours that ask.
+`pages`, so the places that name a mode (a new document's creation intent, `CREATION_INTENT`) read through one type
+(`isEditorMode`). A tab stores no mode. There is no mode switch and no mode step on `/new`, and no surface reads the
+mode from a context: the editor resolves it once (`useEditorMode`) and hands it to the canvas and the tours that ask.
 
 ## The pages
 
@@ -1135,7 +1133,7 @@ swipe, with no X.
     description. Under the pointer a tile lifts and takes the brand ring with a **Use** pill at
     its corner (the same on keyboard focus); none of the motion under reduced motion. Tiles cascade
     in as a view opens, and draw their preview once they scroll near view (a soft placeholder of
-    the page's shape until then), so ninety layouts open without drawing them all.
+    the page's shape until then), so dozens of layouts open without drawing them all.
   - **Surprise Me** places a random layout from those shown (never the one it last landed on while
     there is another), and its dice tumble. In the Layout popover it keeps the popover open, so
     pressing it again rolls again with the page changing behind it; elsewhere it places and
@@ -1614,7 +1612,7 @@ separate pages. It is explicit: never run on opening a tab.
     (`pageMoveForDeckOrder`): just after the page whose slide now comes before it, else before
     the page whose slide comes after it; nothing moves while it already sits between them.
   - A slide page's only slide has no Delete (it would come straight back); **Hide** leaves it out
-    of the show. A copy of it, and a slide of any other page, delete as before.
+    of the show. A copy of it, and a slide of any other page, delete as any slide does.
   - **A deleted page leaves the deck with it.** The follow pass removes every slide of a page its
     tab no longer has: the slide page's own slide, its copies, and a slide added for a non-slide
     page. Only on a tab whose pages have loaded, so a tab still loading never loses its slides,

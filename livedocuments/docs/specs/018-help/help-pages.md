@@ -81,19 +81,20 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Working with Pages, Sharing Your Document, Keyboard
-   Shortcuts, Templates, Exporting Pages, Slide Pages). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
-   and a test checks every entry names a real article.
+   link straight to the articles most readers come for (Your first document, Sharing, Keyboard shortcuts,
+   Templates, Exporting, Slide pages). The list is `popular` in `lib/home-sections.ts` (exported as `HOME`), and a
+   test checks every entry names a real article.
 2. **Start here.** A full-width card: livedocuments's own Getting Started scene (a first document: an article, slide or infographic page, writing on it, and the share link) beside
    four numbered steps (Your First Document, Working with Pages, Writing Articles, Sharing Your Document), named in `startHere.steps` in `lib/home-sections.ts`, and a
    link to every Getting Started guide; then About livedocuments and Tips and Tricks as two wide cards.
-3. **Editor guides.** The feature categories as art cards, three across on a computer.
+3. **Editor guides.** The feature categories as art cards, three across on a computer: Pages, Canvas, Palette,
+   Selection Modes, Tabs, Collaboration, Explorer, User Interface, Tools and Search Panel.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
 5. **Developers.** Developers, as a wide card.
 6. **Still stuck?** A dark closing band: the contact form and GitHub issues as buttons, beside the
    Troubleshooting card.
 
-The sections and their categories are `HOME_SECTIONS` in `lib/home-sections.ts`. Every category in the registry
+The sections and their categories are `sections` in `lib/home-sections.ts` (exported in `HOME`). Every category in the registry
 appears in exactly one section (Contact as the closing band's second half), so a new category cannot be left off
 the home page without a test failing.
 

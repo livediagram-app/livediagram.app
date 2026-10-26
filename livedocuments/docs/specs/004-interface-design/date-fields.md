@@ -1,7 +1,5 @@
 # Date fields
 
-Status: shipped
-
 ## What
 
 Every date and time field (`date`, `datetime-local`, `time`, `month`) in every app fits the box it is

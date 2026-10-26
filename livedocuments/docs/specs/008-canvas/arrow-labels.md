@@ -1,7 +1,5 @@
 # Arrow labels
 
-Status: shipped
-
 An arrow's label names the relationship the arrow draws. It belongs to its line, so it sits **on**
 the line, centred, with the line broken open around it. It wraps onto several lines rather than
 running as one long strip, and how wide it may grow depends on the shape of the arrow it labels.

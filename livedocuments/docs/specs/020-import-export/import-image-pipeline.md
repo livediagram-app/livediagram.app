@@ -6,24 +6,23 @@ livedocuments image element carries an `imageId` that points into the owner's ga
 one browser-side path that turns those bytes into a stored image, so every caller stores images
 the same way, under the same limits, with the same named outcomes.
 
-Its caller today is [Image search](../009-elements/image-search.md): a picked Openverse result is
+Its caller is [Image search](../009-elements/image-search.md): a picked Openverse result is
 downloaded in the browser and handed to the pipeline (`apps/editor/lib/image-search/pick.ts`). The
-session and the report below are shaped for an import that meets many images at once, so a
-future importer plugs in unchanged: it should see its images arrive, and when some cannot, see
-how many and why, never a failed import.
+session below is shaped for many images at once: it shares one concurrency limit, one offline budget and one
+short-circuit across them.
 
 ## Where it lives
 
-`apps/editor/lib/import-images/`, a folder of small modules, not a package:
+`apps/editor/lib/import-images/`, a folder of small modules, with its numbers (`constants.ts`) and its WebP encoder
+(`webp.ts`) in `@liveworkspace/workbench` (`../packages/workbench/src/lib/import-images/`):
 
 - Every caller is in the live editor; no other app stores outside pictures.
 - It needs the browser: canvas decoding and encoding (`createImageBitmap`, `<canvas>`), the
   editor's authenticated api client (`apiUploadImage`) and the Offline Mode store check. The MCP
   worker has none of these, and uploading from a worker would spend server CPU the browser can
   spend instead.
-- The pure parts (encoding policy, outcome tallies, error mapping) are separate modules with no
-  DOM, so they are unit-tested in Node and can move to a package unchanged the day a second app
-  needs them.
+- The pure parts (encoding policy, error mapping) are separate modules with no DOM, so they are unit-tested in
+  Node.
 
 ## What goes in
 
@@ -132,52 +131,26 @@ document and whether it is offline. The session holds what must be shared across
 the concurrency limit (three images in flight at once), the offline budget, and the
 `images-unavailable` short-circuit. Within one import, images named by the same key are processed once and every element referencing it shares the outcome.
 
-The session is the seam bulk import will use: many files through one session share one budget and
-one short-circuit, and their reports add up, so importing many files at once later needs no change
-to the pipeline.
+## What the caller shows
 
-## Order: images first, then the tab
+Image search shows a failed pick as one line under the grid (`pickFailureMessage` in `pick.ts`):
 
-An import stores every image first and then replaces the tab once, so the import stays a single
-undo step with no half-filled state. While images upload, the Import dialog's footer reports
-progress beside its buttons ("Importing images 3 of 12…"), so the buttons never move. The tab changes only when every image has an outcome.
-
-## The report
-
-Each import that meets images returns a **report**, counted per image element on the tab:
-
-- **imported**: new images stored (uploaded, or embedded in an offline document);
-- **already in your gallery**: images the gallery already held (the server deduped them);
-- **placeholders**, counted per failure.
-
-An image used on several elements counts once per element, each with its image's outcome, so
-the three numbers always add up to the image elements on the tab.
-
-The Import dialog shows the report calmly in place of closing: a short summary with the counts,
-one plain sentence per failure that occurred, what to do about it, and a Done button. An import
-without images closes the dialog as before. Copy per failure:
-
-| Failure              | Sentence                                                                   |
-| -------------------- | -------------------------------------------------------------------------- |
-| `missing-bytes`      | The file didn't include the image data.                                    |
-| `unsupported`        | The image format couldn't be read.                                         |
-| `too-large`          | The image was too large to import.                                         |
-| `gallery-full`       | Your image gallery is full. Free up space in the Explorer's Image Gallery. |
-| `images-unavailable` | This server doesn't store images.                                          |
-| `offline-budget`     | This offline document reached its image limit for one import.              |
-| `upload-failed`      | The upload didn't go through. Check your connection and try again.         |
-
-Every summary that lists placeholders ends with the same way forward: _Double-click a placeholder to add its image._
+| Failure                       | Line                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `gallery-full`                | Your image gallery is full. Delete some images and try again. |
+| `images-unavailable`          | Image uploads are not available on this server.               |
+| `too-large`, `offline-budget` | That image is too large to add.                               |
+| any other                     | Couldn’t download that image. Try another one.                |
 
 ## Observability
 
 Every image's outcome is logged once as `[import-images]` with the failure name or `stored`,
-`deduped` or `embedded`, plus the source MIME type and byte sizes before and after encoding; the
-session logs one `[import-images] report` line with the tallies when it finishes.
+`deduped` or `embedded`, plus the source MIME type and byte sizes before and after encoding, and a retried
+conflict as `upload-conflict-retry`.
 
 ## Non-goals
 
 - Server-side resizing or format conversion (a Cloudflare Images bill for a free product).
 - Fetching images by URL from the source file (an external image link stays out: every image is
   internal, [Image element + per-owner gallery](../009-elements/images.md)).
-- Bulk import of many files at once; the session above is where it will plug in.
+- Bulk import of many files at once.

@@ -1,8 +1,5 @@
 # Share roles
 
-**Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
-ahead ([Later](#later)).**
-
 Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
 document, held apart from editing. The research behind this is in `docs/research/access-levels/`.
@@ -78,8 +75,8 @@ capabilities, the room) keep a new feature from widening a role by accident.
 
 Ownership is a set of powers, held by the document's **owner** (its creator) and every joined member of the team it is
 filed in. Who holds them is the index's to say: it issues the owner and team members an `edit` grant, and keeps
-sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
-"Sharing and access"). No level grants any of them. The full ownership model is [Later](#later).
+sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
+"Sharing and access"). No level grants any of them. A named set of ownership powers is [out of scope](#out-of-scope).
 
 ## Share links
 
@@ -100,7 +97,7 @@ once a document is open.
   just before it goes and the first page after takes it once (`apps/editor/lib/access-notice.ts`, honoured for a
   minute). A session whose link is revoked leaves for the Explorer at `/explorer?ended=revoked`: the Explorer is
   liveworkspace's, on another origin, so the reason rides in the address, and the Explorer says once that the link
-  was revoked (liveworkspace/docs/site.md "Addresses handed over").
+  was revoked (liveworkspace/docs/specs/010-site/site.md "Addresses handed over").
 - The collaborators list badges each person Editor, Participant or Viewer.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
@@ -123,21 +120,20 @@ once a document is open.
 - **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a
   team member or an Editor there; a Participant's access places no image.
 
-## Moving to three levels
+## Reading a level
 
-- **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
-  change loses commenting (decided 2026-10-10): an owner who wants an audience to
-  chime in issues a Participant link.
-- **No old reader escalates.** Every reader of a level reads an unknown value as Viewer.
+- **An edit link is Editor; a view link is Viewer, which only looks.** An owner who wants an audience to chime in
+  issues a Participant link.
+- **Nothing escalates.** Every reader of a level reads an unknown value as Viewer.
 
 ## Telemetry
 
 `Document·Joined` takes the type `Participate` beside `Edit` and `View`
 ([Telemetry](../017-telemetry/telemetry.md)).
 
-## Later
+## Out of scope
 
-Specified in the research and not built yet:
+Outside this design:
 
 - **Token levels**: API tokens carry view, participate or edit instead of the read-only flag.
 - **Ownership powers** as a named set every door asks beside the level.

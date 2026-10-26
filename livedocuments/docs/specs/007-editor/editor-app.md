@@ -4,11 +4,11 @@ The Pages editor: where people build articles, slide decks and infographics on p
 
 - **Workspace:** `apps/editor` (`@livedocuments/editor`).
 - **Public URL:** `https://livedocuments.app` — the app serves at **clean routes** (`/document/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.
-- **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [08-router-app.md](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
+- **Tech:** Next.js (static export), React, TypeScript, Tailwind. No `basePath` (pages serve at clean root paths). A prod-only `assetPrefix: '/live'` keeps the bundled `_next` assets from colliding with marketing's `/_next`; the router strips `/live` from those asset requests (see [Router app](../016-platform/router-app.md)). Dev runs standalone with clean asset paths.
 
 ## Always available without sign-in
 
-A guest can open `/new`, create a document, and use the full canvas without an account. See [04-auth-and-guest-access.md](../014-identity/auth-and-guest-access.md).
+A guest can open `/new`, create a document, and use the full canvas without an account. See [Auth + guest access](../014-identity/auth-and-guest-access.md).
 
 ## Routes
 
@@ -18,7 +18,7 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary — the editor never reads or writes document state to `localStorage`. Each document's Durable Object holds the durable copy; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [API app](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary: the editor never reads or writes document state to `localStorage`. Each document's Durable Object holds the durable copy; per-tab content is split into its own rows (see [Per-tab storage](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livedocuments:v2:self-id`, plus a `livedocuments:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 
@@ -43,7 +43,7 @@ Three regions stacked vertically, filling the viewport:
 ```
 
 - **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
-- **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
+- **Canvas:** owns most of the viewport. See [Canvas and palette](../008-canvas/canvas-and-palette.md) for the full surface: shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. When the tabs run past the bar it scrolls sideways, the edge with more tabs beyond it fading out (`scroll-edge-fade`, as the strip's rails do) rather than clipping a label mid-word, and **the active tab is always in view**: switching to a tab, or adding one, scrolls the row the least distance that shows all of it, and **Add tab** with it when it is the last tab (smoothly, or at once under reduced motion). Its right-hand cluster (`ChromeControls`) holds **Search**, the **Start Tour** button, **Settings**, and the appearance toggle. The Start Tour button, immediately left of Settings, is the one way into a tour: a contained chip with a play glyph in a small accent disc reading **Start Pages Tour**, **Start Sankey Tour** and so on, the most specific tour on offer ([Pages tour](pages-tour.md), [Element tours](element-tours.md); [Pages tour](pages-tour.md) "Where it appears"), glyph-only on a phone with its words kept as its accessible name, and not drawn while no tour is on offer. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too, as Minimal chrome does; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
 ## Role pill
@@ -74,9 +74,9 @@ The **role pill** says whether you are editing, participating in or viewing this
 
 - Boxed elements (shape, text, sticky), arrows (straight / curved / angled, optional label, configurable line thickness + arrowhead size), groups, multi-select via marquee + plain-click + shift-click.
 - Per-element format painter, lock, link-to-tab, comment threads.
-- Real-time presence + selection + cursor broadcast via the per-document Durable Object room (see [11-api.md](../015-api/api.md)).
-- Undo and redo (snapshot-based, personal to each editor; the per-tab Activity panel was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md#removed-the-activity-panel)).
-- Folders in the Explorer (see [15-folders.md](../013-workspace/folders.md)).
+- Real-time presence + selection + cursor broadcast via the per-document Durable Object room (see [API app](../015-api/api.md)).
+- Undo and redo (snapshot-based, personal to each editor; there is no per-tab Activity panel).
+- Folders in the Explorer (see [Folders](../013-workspace/folders.md)).
 - Themed Pages templates (chosen on the tab's start, [Template start](start-diagramming.md)).
 
 ## Concurrent-selection lock
@@ -103,7 +103,7 @@ The editor app is the product, not a content surface. Every page the editor app 
 
 `apps/editor/app/layout.tsx` declares `robots: { index: false, follow: false }` in the root metadata so every live-app route inherits the directive. Cascades correctly through the static-export pages: each rendered HTML head carries `<meta name="robots" content="noindex,nofollow">`.
 
-This complements the marketing site's SEO policy (see [16-marketing-site.md](../019-marketing/marketing-site.md)): marketing is the indexable surface, the editor app is explicitly off-limits to crawlers. The two policies meet at the router worker, which serves them on the same hostname but distinct paths.
+This complements the marketing site's SEO policy (see [Marketing site](../019-marketing/marketing-site.md)): marketing is the indexable surface, the editor app is explicitly off-limits to crawlers. The two policies meet at the router worker, which serves them on the same hostname but distinct paths.
 
 ## Appearance (light / dark / system)
 
@@ -117,12 +117,12 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 - **Dark is its own palette.** The dark chrome is the blue-slate **Steel** palette ([Colour scheme](../004-interface-design/color-scheme.md#dark-palette-steel)), and the Default scheme's dark half is the canvas of the same hue ([Canvas and palette](../008-canvas/canvas-and-palette.md#default-scheme-dark-half)). Light mode's colours are not touched by it.
 - **The Default theme follows it** ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Default has hand-made light and dark halves, resolved per viewer at render time: nothing is written to the document when the appearance changes, so a colleague in light chrome reads the light half of the same tab. Every other theme derives its other half the same way ([Light and dark halves](../011-theme/light-and-dark.md)).
 - **Unpainted elements take the canvas's ink.** An element carrying no colour of its own is drawn from `defaultStrokeColor` / `defaultFillColor` / `defaultTextColor`, which take a `CanvasSurface` (`'light' | 'dark'`, derived from the resolved backdrop by `canvasSurface`). That is what lets the Default scheme paint nothing onto elements and still read correctly on a charcoal canvas — and it fixes every dark scheme's unpainted elements as a side effect. The surface reaches the views through `CanvasSurfaceContext` rather than props, because the element views are `React.memo`'d and memo blocks a parent re-render but not a context update; the element MENUS read the same context, so a swatch can't show a light-canvas blue beside a grey shape. Exports derive it from the paper they are exporting onto, so what you export is what you see.
-- **No match nudge.** Every theme has a light and a dark half ([Light and dark halves](../011-theme/light-and-dark.md)), so a tab never needs the viewer to switch appearance; the floating prompt that used to offer it (`ThemeModeBanner`) and the theme browser's inline switch are gone.
+- **No match nudge.** Every theme has a light and a dark half ([Light and dark halves](../011-theme/light-and-dark.md)), so a tab never needs the viewer to switch appearance, and nothing prompts them to.
 - **One setting for the whole origin** ([Appearance](../004-interface-design/appearance.md)). Stored in `localStorage` under `livedocuments:v2:ui-mode`. The value, its storage, the OS watch, the pre-paint script and the public-site toggle live in `@livedocuments/ui` (`packages/ui/src/appearance/`), shared with marketing, help and the dashboard, so a pick made on any of them holds in the editor. The shared `useAppearance` returns both the `setting` (what the user picked, what a control renders) and the resolved `appearance` (what the chrome is painted as, what a colour decision reads). The editor wraps it in `hooks/ui/useAppearance.ts` only to add its `UI / Toggled` telemetry, and `AppearanceToggle` draws the shared `AppearanceIcon`.
 - The choice is applied on **every** route by a tiny inline script in the root layout (`app/layout.tsx`) that runs before first paint. This matters for two reasons. React mounts after first paint, so ANY hook-based application flashes light before it lands. And the hook is not mounted everywhere anyway — the TabBar, the appearance toggle and the scheme browser render it, but the standalone `/new` route renders none of them, so without the layout script it would paint light over a dark body and stay that way. The snippet is the shared `APPEARANCE_BOOT_SCRIPT`, a string a test EXECUTES against stub globals: what matters about it is not its text but which stored value ends up dark before first paint, and a string assertion happily passed while `system` painted light on a dark machine.
 - **Dark Reader stands down.** The root layout declares `<meta name="darkreader-lock">` (through `metadata.other`), the opt-out the Dark Reader extension honours. The editor already paints its own dark chrome, so a reader running the extension gets that instead of a filter over it: without the lock, Dark Reader re-darkens the already dark chrome, muddies the template preview art, and rewrites inline SVG attributes before React hydrates, which React reports as a hydration mismatch. Every app paints its own dark appearance, so every root layout carries the lock (`DARK_READER_LOCK` in `@livedocuments/ui`). The meta carries a non-empty `content`, because Next drops a meta whose content is empty; Dark Reader keys on the name alone.
 - The `@custom-variant dark (&:where(.dark, .dark *))` declaration in `../packages/tailwind-config/theme.css` configures Tailwind v4's `dark:` variant to use the class selector rather than the media query.
-- **Surfaces covered:** body backdrop, TabBar, EditorHeader, the TemplatePicker modal (the welcome / "New Document" / "Pick a template" flow) and the `/new` backdrop. Template **preview tiles** and the export-format glyphs are light-canvas art (white fills, slate rules, dark ink). They used to keep a LIGHT plate in dark chrome so they stayed legible, which left the New Document screen reading as a grid of bright white cards on a near-black dialog. They are now re-lit instead of redrawn: `.preview-art-tile` (shipped by `@livedocuments/template-previews`) inverts lightness and spins the hue back under `.dark`, so the art lands on dark paper with its hues intact (a blue node stays blue, an amber sticky stays amber) and new previews inherit it for free. The paper it lands on is the dark canvas colour: the tile's plate and every white fill are clamped to `#f3faff` before the filter (`invert(0.95) hue-rotate(180deg)`, with a `mix-blend-mode: darken` veil), which the filter maps to `#0d1318`, the nearest it can reach to the canvas `#0d121a`. A thumbnail therefore previews the canvas you will get. The marketing template gallery uses the same rule. Colour-scheme swatches are deliberately EXCLUDED — those show a scheme's actual colours, so re-lighting them would be a lie. The **loading screen** (`DocumentLoading`) is dark-aware for the same reason: it is a whole screen between the click and the editor, and a white flash there is the appearance failing at the one moment the user is waiting. Panel chromes (`MovablePanel`) carry the effect on the outer frame; per-panel content (Palette, Context, Explorer) lights up incrementally as the `dark:` variants get added to each accordion / row. Until that's done, an open panel reads light over a dark backdrop — usable, not yet polished.
+- **Surfaces covered:** body backdrop, TabBar, EditorHeader, the start panel and its template cards, and the `/new` backdrop. Template **preview tiles** and the export-format glyphs are light-canvas art (white fills, slate rules, dark ink). In dark chrome they are re-lit rather than redrawn, so they never read as bright white cards on a near-black panel: `.preview-art-tile` (shipped by `@livedocuments/template-previews`) inverts lightness and spins the hue back under `.dark`, so the art lands on dark paper with its hues intact (a blue node stays blue, an amber sticky stays amber) and new previews inherit it for free. The paper it lands on is the dark canvas colour: the tile's plate and every white fill are clamped to `#f3faff` before the filter (`invert(0.95) hue-rotate(180deg)`, with a `mix-blend-mode: darken` veil), which the filter maps to `#0d1318`, the nearest it can reach to the canvas `#0d121a`. A thumbnail therefore previews the canvas you will get. The marketing template gallery uses the same rule. Colour-scheme swatches are deliberately EXCLUDED: those show a scheme's actual colours, so re-lighting them would be a lie. The **loading screen** (`DocumentLoading`) is dark-aware for the same reason: it is a whole screen between the click and the editor, and a white flash there is the appearance failing at the one moment the user is waiting. Panel chromes (`MovablePanel`) carry the effect on the outer frame; per-panel content (Palette, Context, Explorer) lights up incrementally as the `dark:` variants get added to each accordion / row. A panel whose content has no `dark:` variants reads light over a dark backdrop.
 
 ## Header actions
 
@@ -139,7 +139,7 @@ The header Share button opens the shared Share dialog, `ShareDialog` from
 Explorer's item menu use, for the owner and, on a team document, every joined member
 ([Team shared documents](../013-workspace/team-shared-documents.md)). It talks to liveworkspace's index directly:
 share links, their levels and the password are the index's
-([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access"). Its look is livediagram's Share dialog from before the Explorer split, the same in every app ([livediagram's Share dialog](../../../../livediagram/docs/specs/007-editor/editor-app.md#share-dialog)).
+([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Sharing and access"). Its look is livediagram's Share dialog from before the Explorer split, the same in every app ([livediagram's Share dialog](../../../../livediagram/docs/specs/007-editor/editor-app.md#share-dialog)).
 
 It draws every link as a **pass**, a ticket that admits whoever holds it. Top to bottom:
 
@@ -194,7 +194,7 @@ check).
 
 ## Toasts
 
-Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/editor/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
+Asynchronous failures (link-tab, gallery delete, image upload from a background flow) surface through a bottom-right toast stack: `apps/editor/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
 
 Toasts are NOT used for:
 
@@ -217,8 +217,8 @@ On a phone-sized viewport the editor's chrome would crowd the canvas. It tighten
 ### A phone held sideways
 
 **The header and the tab bar fold away on a phone held sideways**, so the canvas fills the screen.
-Held sideways, a phone is short: the header (56px) and the tab bar (48px) took 104px of an iPhone
-15's 393px, leaving the canvas 289px, and 256px of a small Android's 360px (measured 2026-10-17).
+Held sideways, a phone is short: the header (56px) and the tab bar (48px) take 104px of an iPhone
+15's 393px, leaving the canvas 289px, and 256px of a small Android's 360px.
 Folded, the canvas gets all of it (393px, 360px). Sideways means a touch screen in landscape under
 500px tall: `LANDSCAPE_PHONE_MEDIA_QUERY` in `../packages/workbench/src/lib/responsive.ts`,
 `(pointer: coarse) and (orientation: landscape) and (max-height: 499px)`, with the CSS twin the
@@ -276,8 +276,8 @@ These don't change desktop layout. The strip and the popovers are what resolve t
 
 The routes that draw the canvas (`/document/<id>`, `/new`, which opens the editor in place, `/embed` and `/embed/workbench`) export `EDITOR_VIEWPORT` (`../packages/workbench/src/lib/page-viewport.ts`), which pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
-That lock stays. Lifting it was tested (2026-10-03): with page zoom allowed, a pinch on the canvas
-zoomed the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
+The lock is deliberate: with page zoom allowed, a pinch on the canvas
+zooms the whole page (Chromium, 1.5x) instead of the canvas, which breaks the editor's core
 gesture. Readability on a phone comes from the UI scale ([UI scale](ui-scale.md)) and the canvas
 zoom instead.
 
@@ -353,10 +353,10 @@ the side insets, the strip's row and the bottom-right cluster past a landscape n
 `viewport-fit=cover`, so the insets are 0 today and nothing moves; the rules keep the chrome clear
 the day it goes edge to edge.
 
-## Out of scope (next iterations)
+## Out of scope
 
-- **Per-user grants** — a document is private, shared via a per-link role, or in a team's shared library. Teams shipped ([Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)), but every member can edit every team document; there are no per-document per-user grants.
+- **Per-user grants**: a document is private, shared via a per-link role, or in a team's shared library ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)); every member can edit every team document, and there are no per-document per-user grants.
 
-(Four earlier bullets here have shipped. Auth UI landed per [Auth + guest access](../014-identity/auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [Transactional email](../014-identity/transactional-email.md); and realtime is no longer whole-tab LWW: [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) merges concurrent edits to different elements. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped; the advisory selection lock above makes that case rare, and when it happens it stays last-writer-wins.)
+- **A field-level CRDT** for two people editing the SAME element: concurrent edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)); the advisory selection lock makes the same-element case rare, and it stays last-writer-wins.
 
 The image exports (PNG / SVG / PDF) honour the tab's theme: per-element colours, or the same `defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` the canvas uses for elements that defer to the theme, plus the tab's background colour. An iOS-style toggle in the dialog tunes the image output: **Background pattern** (on by default; paints the tab's backdrop pattern (grid, dots, …) via `backgroundPatternTile` in `canvas-backgrounds.ts`, shared by the SVG and the PNG/PDF rasteriser). A single-page PDF prints at the size the tab shows: its page is the rendered image's CSS size at 0.75 pt per px (`singlePageMedia` in `export-tab-pdf.ts`), not its 2x pixel count, and a page past the PDF limit of 14400 pt (`MAX_PDF_PAGE_PT`) shrinks uniformly to fit it while the image keeps every pixel.

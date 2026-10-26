@@ -1,19 +1,19 @@
 # Within reach: blueprint
 
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
-surfaces that use the rule own their own blueprints ([Explorer Home, data](../../013-workspace/blueprints/explorer-home.md),
-[Explorer Home, view](../../013-workspace/blueprints/explorer-home-view.md)); this one is the allocation they share.
+surface that uses the rule, the shared Explorer's Jump Back In, is liveworkspace's
+([one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); this one is the allocation.
 
 Scope, by file:
 
-| File                                           | Role                                                     |
-| ---------------------------------------------- | -------------------------------------------------------- |
-| `../packages/api-schema/src/within-reach.ts`   | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
-| `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
-| `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
+| File                                              | Role                                                     |
+| ------------------------------------------------- | -------------------------------------------------------- |
+| `../packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` |
+| `../packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
+| `packages/api-schema/src/index.ts`                | Re-exports the module                                    |
 
-`@livedocuments/api-schema` is the home because it is already the one package both the api worker and the editor app
-import (`D48`).
+`@liveworkspace/api-schema` is the home because every app's api and editor, and the index, import it (`D48`);
+`@livedocuments/api-schema` re-exports it (`packages/api-schema/src/index.ts`).
 
 ## Domain and naming
 

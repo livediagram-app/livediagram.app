@@ -41,31 +41,20 @@ Prose follows the context:
 
 <!-- legacy-names -->
 
-## Renaming from diagram
+## Names
 
-The container was called a diagram until the domain language settled on document. Everything
-that named it moved in one change:
+The container is a **document** everywhere:
 
 - **Code:** identifiers, files and packages (`@livedocuments/document`, `apps/editor/app/document/[id]`).
-- **Storage:** the document's own schema (`document-room/document-schema.ts`) and the index name the tables and columns `documents`,
-  `document`, `document_tabs` and `document_id`, and the timeline's source, scope and event types say document. The tab kind
-  `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+- **Storage:** the document's own schema (`document-room/document-schema.ts`) and the index name the tables and
+  columns `documents`, `document`, `document_tabs` and `document_id`. The tab kind `'diagram'` and anything naming a
+  drawing (`ErDiagram`) name what they draw, not the container.
 - **Realtime and storage:** the Durable Object class is `DocumentRoom` (binding `DOCUMENT_ROOM`), a SQLite-backed
-  class declared new in its first migration (livedocuments was never deployed with data, so it carries no rename
-  history); it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
+  class; it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
   `document-meta` and `document-trashed`.
-- **Copies from elsewhere** are upgraded where they arrive: element links in exported files and
-  offline documents (`upgradeLegacyLinks`, run by `migrateStoredTab`), the browser's cached
-  preferences (`upgradeLegacyPreferences`), the offline store (moved to the `documents` object
-  store on the next visit), and stored names: a document still called "Untitled diagram" counts as
-  untitled, exactly as "Untitled document" does.
-- **Addresses people already have** keep working: the public API's
-  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
-  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
-  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
-- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
-  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
-  changes from others until it reloads.
+- **Preferences** stored under older keys pass through `upgradeLegacyPreferences` where they are read, in the
+  browser's cache and the person's stored copy. A document is untitled while its name is "Untitled document"
+  (`isUntitledDocumentName`).
 
-Files that hold the old names on purpose are named `legacy-*`.
+Files that read older shapes on purpose are named `legacy-*` (`legacy-preferences.ts`, `legacy-stroke-points.ts`).
 <!-- /legacy-names -->

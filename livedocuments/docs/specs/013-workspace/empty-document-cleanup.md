@@ -1,7 +1,5 @@
 # Empty document clean-up
 
-Status: shipped
-
 ## What
 
 A document that has held nothing for 30 days moves to the

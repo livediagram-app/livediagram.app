@@ -51,7 +51,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## pages
+## pages-mode
 
 - [x] Domain and naming
 - [x] Behaviour and state

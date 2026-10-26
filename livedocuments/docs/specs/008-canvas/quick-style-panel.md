@@ -1,7 +1,5 @@
 # Quick style panel
 
-Status: **implemented**.
-
 While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
@@ -22,8 +20,8 @@ notation carry itself.
 
 ## What it is not
 
-A right-hand **Editor panel** once held every per-element setting. It was removed: it duplicated the
-context menu, grew with every feature, and covered the canvas it was meant to serve. Per-element
+There is no right-hand **Editor panel** holding every per-element setting: it would duplicate the
+context menu, grow with every feature, and cover the canvas it is meant to serve. Per-element
 formatting lives in the right-click context menus ([Editor app](../007-editor/editor-app.md),
 [Canvas and palette](canvas-and-palette.md)).
 
@@ -88,17 +86,17 @@ working from the context menu.
 
 Top to bottom, each a small title over one row of option buttons:
 
-| Section        | Applies to                                         | Options                            |
-| -------------- | -------------------------------------------------- | ---------------------------------- |
-| Stroke         | Shapes + arrows                                    | 7 colours, then Ink                |
-| Background     | Shapes                                             | 7 colours, then Transparent        |
-| Text colour    | Text elements                                      | 7 colours, then Ink                |
-| Stroke width   | Shapes + arrows                                    | Thin / Medium / Thick              |
-| Stroke style   | Shapes                                             | Solid / Dashed / Dotted            |
-|                | Arrows                                             | Solid / Dashed / Flowing           |
-| Text alignment | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal) |
-| Icon alignment | Shapes with icon                                   | Before / Above / After the label   |
-| Actions        | Shapes + arrows + text elements                    | Clear Styles                       |
+| Section        | Applies to                                            | Options                            |
+| -------------- | ----------------------------------------------------- | ---------------------------------- |
+| Stroke         | Shapes + arrows                                       | 7 colours, then Ink                |
+| Background     | Shapes                                                | 7 colours, then Transparent        |
+| Text colour    | Text elements                                         | 7 colours, then Ink                |
+| Stroke width   | Shapes + arrows                                       | Thin / Medium / Thick              |
+| Stroke style   | Shapes                                                | Solid / Dashed / Dotted            |
+|                | Arrows                                                | Solid / Dashed / Flowing           |
+| Text alignment | Shapes with a label it moves (`supportsQuickSection`) | Left / Centre / Right (horizontal) |
+| Icon alignment | Shapes with icon                                      | Before / Above / After the label   |
+| Actions        | Shapes + arrows + text elements                       | Clear Styles                       |
 
 **Transparent** ends the Background row, after its seven colours: the shared no-colour chip (white
 crossed by a diagonal), named "Transparent". A press clears the shape's fill to `transparent`
@@ -115,8 +113,8 @@ opens nothing.
 - **Text alignment** is the horizontal axis only. Vertical alignment is the less-used half and stays
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
   label) and not on kinds with their own face, whose label is a fixed
-  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@livedocuments/document`, gates both this panel and the
-  context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
+  title, and not on icons or stickers (a glyph, at most a short caption). The panel's gate is `supportsQuickSection(el, 'textAlign')` (`apps/editor/lib/quick-style.ts`); the
+  context menu's Text Alignment section follows the same rule (no self-drawing kind, words to align). The panel also waits for words:
   a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
   nothing to align yet, and the row appears as soon as the shape is given text.
 - **Text colour** is the colour row a text element gets. A text element is its words, with no

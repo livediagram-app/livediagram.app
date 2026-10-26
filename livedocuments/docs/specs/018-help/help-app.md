@@ -15,7 +15,7 @@ A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and 
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 - **The code is shared.** The pages, components, MDX styles, SEO helpers (metadata, social cards, JSON-LD, sitemap), styles and catalogue checks are `@liveworkspace/help-site` ([README](../../../../packages/help-site/README.md)), one copy for every product's help centre. This app binds it to its own catalogue, art and facts (`lib/help-site.tsx` on the server, `lib/help-client.tsx` in the browser). It keeps its articles, illustrations, catalogue, card art, header, footer, home layout (`lib/home-sections.ts`) and page copy. A help-centre change that is not about this product's content is made there, once, for every product.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livedocuments's) and the **brand**: livedocuments is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livedocuments/tailwind-config` brand ramp and slate neutrals to match `apps/marketing`.
+It is designed in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livedocuments's) and the **brand**: livedocuments is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livedocuments/tailwind-config` brand ramp and slate neutrals to match `apps/marketing`.
 
 ### No paid tier
 
@@ -62,11 +62,9 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 A category or article that is removed keeps its old URL landing: `apps/help/public/_redirects` moves it permanently
 (301) to the live page nearest to it, with paths as the help worker sees them (no `/help` prefix, which the router
-strips). The Self-Hosting category (its overview, deploying, configuration and MCP server articles) is retired, and
-every `/self-hosting` URL goes to the help centre home. `lib/retired-articles.test.ts` checks every rule targets a
-live page and never redirects a live article or category away. Isometric Mode
-(`selection-modes/isometric-mode`) retired on 2026-10-25 with the isometric view
-([Canvas and palette](../008-canvas/canvas-and-palette.md#retired-features)); its URL goes to the Selection Modes page.
+strips). Every `/self-hosting` URL goes to the help centre home. `lib/retired-articles.test.ts` checks every rule targets a
+live page and never redirects a live article or category away. `selection-modes/isometric-mode` goes to the Selection Modes page (livedocuments
+has no isometric view, [Canvas and palette](../008-canvas/canvas-and-palette.md#isometric)).
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 
@@ -213,19 +211,18 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   `<CliConsent product="livedocuments" noun="document" />`.
 - **`components/illustrations/<area>.tsx`** — one file per area (canvas, palette,
   collaboration, ...) exporting named **scene** components (e.g.
-  `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
+  `AddingElements`, `PanAndZoom`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
 - **`components/illustrations/<surface>.tsx`**: an editor surface several
   areas show, drawn once and imported wherever it recurs (the Settings dialog, with the shared
   `Switch`, is every product's: `@liveworkspace/help-site/art/illustrations/settings-dialog`). Files are named after
   their subject, never after the batch of work that produced them.
-- **`components/illustrations/<area>-parts.tsx`** — an area's own building
-  blocks, when it grows enough of them to interleave with its scenes (the
-  Explorer's sidebar row and document card). Distinct from `primitives.tsx`, which is the house style
+- **`components/illustrations/<area>-parts.tsx`**: an area's own building
+  blocks, when it grows enough of them to interleave with its scenes. Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
-  alternating between two kinds of thing — an area with one or two helpers
+  alternating between two kinds of thing; an area with one or two helpers
   keeps them inline and needs no parts file. The marketing feature-art files
   (`apps/marketing/components/feature-art/<name>-parts.tsx`) follow the same
   convention.
@@ -241,7 +238,7 @@ the same surface recurs rather than redrawn.
 
 ## Header
 
-The help centre's header is the shared `SiteHeader` from `@livedocuments/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand (hover it for liveworkspace's other sites, the [site switcher](../../../../liveworkspace/docs/site-switcher.md)) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
+The help centre's header is the shared `SiteHeader` from `@livedocuments/ui`, the same bar marketing and the telemetry dashboard render, so the three read as one product: Brand (hover it for liveworkspace's other sites, the [site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md)) on the left, the article search (`SearchInput`) in the header's centre slot from `sm` up, and on the right the same **Start Blank** and **Choose Template** CTA pair the landing page shows (`ctaSurface="Help"`, so its links carry `Help.HeaderBlank` and `Help.Header` for the [Landing funnel](../019-marketing/landing-funnel.md)), Start Blank hidden below `md` (rather than `sm`, as on pages without a centre slot) so the search box keeps room on a small tablet. It leaves the page-edge ShareRail off: the rail sits in the gutter beside a `max-w-6xl` page, and help's pages run `max-w-7xl`, so on an `xl` screen it would cover the article sidebar. It passes `wide`, which gives the bar help's own `max-w-7xl` / `md:px-8` column, so the logo lines up with the breadcrumb and article content below. The bar is a fixed 72px (`h-18`) at every breakpoint, which the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky offset rely on.
 
 ## SEO
 
@@ -285,9 +282,9 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `livedocuments-help`.
+`livedocuments-help` deploys with the other sites, in the monorepo deploy's second tier (its build from full history, so the sitemap dates each article by its last commit), before the router, whose `HELP` service binding names it ([Deployment](../016-platform/deployment.md) "Deploy").
 
-## Out of scope (for now)
+## Out of scope
 
 - Weighted ranking inside the Help group (title hits before keyword hits).
   Matching is a flat case-insensitive substring over title + description +
@@ -300,4 +297,4 @@ per-article `keywords`, and `help-search.ts` now derives from it.)
 
 ## articleCount is pinned by a test
 
-A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.
+A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category: **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `help-site.test.ts` pins it, along with two more rules: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.
